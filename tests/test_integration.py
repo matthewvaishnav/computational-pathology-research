@@ -38,12 +38,12 @@ def temp_workspace():
         for i in range(5):
             wsi_file = workspace / "data" / "wsi_features" / f"{split}_patient_{i}_wsi.h5"
             with h5py.File(wsi_file, 'w') as f:
-                f.create_dataset('features', data=np.random.randn(100, 512).astype(np.float32))
+                f.create_dataset('features', data=np.random.randn(100, 1024).astype(np.float32))
         
         # Create genomic features
         for i in range(5):
             genomic_file = workspace / "data" / "genomic" / f"{split}_patient_{i}_genomic.npy"
-            np.save(genomic_file, np.random.randn(1000).astype(np.float32))
+            np.save(genomic_file, np.random.randn(2000).astype(np.float32))
         
         # Create clinical text
         for i in range(5):
@@ -104,8 +104,8 @@ def test_complete_training_workflow(temp_workspace):
     assert len(val_dataset) == 5
     
     # Create data loaders
-    train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False, drop_last=True)
     
     # Initialize model
     model = MultimodalFusionModel(embed_dim=128)
@@ -209,50 +209,64 @@ def test_missing_modality_handling(temp_workspace):
     model.eval()
     classifier.eval()
     
+    def add_batch_dim(sample):
+        """Add batch dimension to sample tensors."""
+        batched = {}
+        for key, value in sample.items():
+            if value is not None and isinstance(value, torch.Tensor):
+                batched[key] = value.unsqueeze(0)
+            else:
+                batched[key] = value
+        return batched
+    
     # Test with all modalities
     sample = dataset[0]
     labels = sample.pop('label')
+    sample_batched = add_batch_dim(sample)
     
     with torch.no_grad():
-        embeddings = model(sample)
+        embeddings = model(sample_batched)
         logits = classifier(embeddings)
     
-    assert embeddings.shape == (128,), "Should produce embedding"
-    assert logits.shape == (4,), "Should produce logits"
+    assert embeddings.shape == (1, 128), "Should produce batched embedding"
+    assert logits.shape == (1, 4), "Should produce batched logits"
     
     # Test with missing WSI
     sample_no_wsi = dataset[0]
     sample_no_wsi['wsi_features'] = None
     labels = sample_no_wsi.pop('label')
+    sample_no_wsi_batched = add_batch_dim(sample_no_wsi)
     
     with torch.no_grad():
-        embeddings = model(sample_no_wsi)
+        embeddings = model(sample_no_wsi_batched)
         logits = classifier(embeddings)
     
-    assert embeddings.shape == (128,), "Should handle missing WSI"
+    assert embeddings.shape == (1, 128), "Should handle missing WSI"
     
     # Test with missing genomic
     sample_no_genomic = dataset[0]
     sample_no_genomic['genomic'] = None
     labels = sample_no_genomic.pop('label')
+    sample_no_genomic_batched = add_batch_dim(sample_no_genomic)
     
     with torch.no_grad():
-        embeddings = model(sample_no_genomic)
+        embeddings = model(sample_no_genomic_batched)
         logits = classifier(embeddings)
     
-    assert embeddings.shape == (128,), "Should handle missing genomic"
+    assert embeddings.shape == (1, 128), "Should handle missing genomic"
     
     # Test with only one modality
     sample_wsi_only = dataset[0]
     sample_wsi_only['genomic'] = None
     sample_wsi_only['clinical_text'] = None
     labels = sample_wsi_only.pop('label')
+    sample_wsi_only_batched = add_batch_dim(sample_wsi_only)
     
     with torch.no_grad():
-        embeddings = model(sample_wsi_only)
+        embeddings = model(sample_wsi_only_batched)
         logits = classifier(embeddings)
     
-    assert embeddings.shape == (128,), "Should handle single modality"
+    assert embeddings.shape == (1, 128), "Should handle single modality"
 
 
 def test_inference_pipeline(temp_workspace):
@@ -365,8 +379,8 @@ def test_model_serialization(temp_workspace):
     
     # Verify models produce same output
     dummy_input = {
-        'wsi_features': torch.randn(1, 100, 512),
-        'genomic': torch.randn(1, 1000),
+        'wsi_features': torch.randn(1, 100, 1024),
+        'genomic': torch.randn(1, 2000),
         'clinical_text': torch.randint(0, 1000, (1, 50))
     }
     
@@ -397,8 +411,8 @@ def test_gradient_flow(temp_workspace):
     
     # Create dummy batch
     batch = {
-        'wsi_features': torch.randn(2, 100, 512, requires_grad=True),
-        'genomic': torch.randn(2, 1000, requires_grad=True),
+        'wsi_features': torch.randn(2, 100, 1024, requires_grad=True),
+        'genomic': torch.randn(2, 2000, requires_grad=True),
         'clinical_text': torch.randint(0, 1000, (2, 50))
     }
     labels = torch.tensor([0, 1])
@@ -440,8 +454,8 @@ def test_batch_processing(temp_workspace):
     
     for batch_size in batch_sizes:
         batch = {
-            'wsi_features': torch.randn(batch_size, 100, 512),
-            'genomic': torch.randn(batch_size, 1000),
+            'wsi_features': torch.randn(batch_size, 100, 1024),
+            'genomic': torch.randn(batch_size, 2000),
             'clinical_text': torch.randint(0, 1000, (batch_size, 50))
         }
         

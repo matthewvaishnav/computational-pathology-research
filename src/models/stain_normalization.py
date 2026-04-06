@@ -164,6 +164,7 @@ class StyleTransferDecoder(nn.Module):
         patch_size: Size of each patch (default: 16)
         out_channels: Number of output channels (default: 3 for RGB)
         num_layers: Number of decoder layers (default: 4)
+        dropout: Dropout rate for transformer layers (default: 0.1)
     """
     
     def __init__(
@@ -171,7 +172,8 @@ class StyleTransferDecoder(nn.Module):
         embed_dim: int = 256,
         patch_size: int = 16,
         out_channels: int = 3,
-        num_layers: int = 4
+        num_layers: int = 4,
+        dropout: float = 0.1
     ):
         super().__init__()
         self.patch_size = patch_size
