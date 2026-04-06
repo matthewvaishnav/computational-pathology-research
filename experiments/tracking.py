@@ -6,7 +6,7 @@ import json
 import os
 import subprocess
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 _EXPERIMENTS_DIR = 'results/experiments'
 
@@ -121,7 +121,7 @@ def get_experiment_by_name(name: str) -> list[dict[str, Any]]:
     return [exp for exp in history if exp.get('name') == name]
 
 
-def get_latest_experiment(name: str) -> dict[str, Any] | None:
+def get_latest_experiment(name: str) -> Optional[dict[str, Any]]:
     """
     Get the most recent experiment with a specific name.
 
