@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # API service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pathology-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount models directory for trained weights
+      - ./models:/app/models:ro
+      # Mount data directory (optional)
+      - ./data:/app/data:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Jupyter notebook service (optional, for development)
+  notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pathology-notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./results:/app/results
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
+    restart: unless-stopped
+
+networks:
+  default:
+    name: pathology-network

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pathology
+  labels:
+    name: pathology
+    environment: production

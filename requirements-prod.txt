@@ -1,0 +1,133 @@
+# Production dependencies
+# Install with: pip install -r requirements-prod.txt
+# Optimized for production deployment with minimal dependencies
+
+# ============================================================================
+# Core Deep Learning Framework
+# ============================================================================
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0,<1.0.0
+
+# ============================================================================
+# Configuration Management
+# ============================================================================
+hydra-core>=1.3.0,<2.0.0
+omegaconf>=2.3.0,<3.0.0
+
+# ============================================================================
+# Logging and Monitoring (Production-focused)
+# ============================================================================
+tensorboard>=2.12.0,<3.0.0  # For training monitoring
+prometheus-client>=0.17.0  # Metrics export for Prometheus
+
+# ============================================================================
+# Data Handling (Core only)
+# ============================================================================
+h5py>=3.8.0,<4.0.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+scikit-learn>=1.2.0,<2.0.0
+
+# ============================================================================
+# Utilities (Essential only)
+# ============================================================================
+tqdm>=4.65.0,<5.0.0  # Progress bars
+pyyaml>=6.0,<7.0  # YAML parsing
+python-dotenv>=1.0.0,<2.0.0  # Environment variables
+
+# ============================================================================
+# API Deployment (Production-ready)
+# ============================================================================
+fastapi>=0.104.0,<1.0.0
+uvicorn[standard]>=0.24.0,<1.0.0  # With production extras
+pydantic>=2.0.0,<3.0.0
+python-multipart>=0.0.6  # File upload support
+
+# Authentication and Security
+python-jose[cryptography]>=3.3.0  # JWT tokens
+passlib[bcrypt]>=1.7.4  # Password hashing
+slowapi>=0.1.9  # Rate limiting
+
+# ============================================================================
+# Production Enhancements
+# ============================================================================
+# ASGI server with production features
+gunicorn>=21.2.0  # Production WSGI server (if needed)
+
+# Caching
+redis>=5.0.0  # Redis client for caching (optional)
+
+# Database (if needed)
+# sqlalchemy>=2.0.0  # ORM for database access
+# psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# ============================================================================
+# Security
+# ============================================================================
+cryptography>=41.0.0  # Cryptographic operations
+python-jose[cryptography]>=3.3.0  # JWT tokens
+passlib[bcrypt]>=1.7.4  # Password hashing
+
+# ============================================================================
+# Observability
+# ============================================================================
+# Structured logging
+python-json-logger>=2.0.7
+
+# Distributed tracing (optional)
+# opentelemetry-api>=1.20.0
+# opentelemetry-sdk>=1.20.0
+# opentelemetry-instrumentation-fastapi>=0.41b0
+
+# ============================================================================
+# Performance
+# ============================================================================
+# Async HTTP client
+httpx>=0.25.0
+
+# Efficient data serialization
+orjson>=3.9.0  # Fast JSON serialization
+
+# ============================================================================
+# Health Checks and Monitoring
+# ============================================================================
+psutil>=5.9.0  # System and process utilities
+
+# ============================================================================
+# Notes
+# ============================================================================
+# 1. Version pinning: Uses compatible release specifiers (>=X.Y.0,<X+1.0.0)
+#    to allow patch updates while preventing breaking changes
+#
+# 2. Excluded from production:
+#    - Testing frameworks (pytest, etc.)
+#    - Development tools (black, flake8, mypy, etc.)
+#    - Documentation tools (sphinx, etc.)
+#    - Jupyter and interactive tools
+#    - Debugging tools (ipdb, pdbpp, etc.)
+#    - Profiling tools (line-profiler, etc.)
+#
+# 3. Production-specific additions:
+#    - prometheus-client: Metrics export
+#    - gunicorn: Production WSGI server
+#    - python-json-logger: Structured logging
+#    - cryptography: Security features
+#    - httpx: Async HTTP client
+#    - orjson: Fast JSON serialization
+#    - psutil: System monitoring
+#
+# 4. Optional dependencies (commented out):
+#    - redis: For caching layer
+#    - sqlalchemy/psycopg2: For database access
+#    - opentelemetry: For distributed tracing
+#
+# 5. Installation:
+#    pip install -r requirements-prod.txt
+#
+# 6. Docker usage:
+#    COPY requirements-prod.txt .
+#    RUN pip install --no-cache-dir -r requirements-prod.txt
+#
+# 7. Verification:
+#    pip check  # Check for dependency conflicts
+#    pip list --outdated  # Check for updates

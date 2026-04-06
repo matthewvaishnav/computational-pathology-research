@@ -1,0 +1,97 @@
+# Ablation study configuration
+# For systematic evaluation of each component's contribution
+
+# Inherit from default config
+defaults:
+  - default
+
+# Model configuration
+model:
+  embed_dim: 256
+  dropout: 0.1
+
+# Task configuration
+task:
+  type: classification
+  num_classes: 4
+
+# Training configuration
+training:
+  num_epochs: 50
+  batch_size: 16
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  
+  optimizer:
+    name: adamw
+  
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+
+# Data configuration
+data:
+  num_workers: 4
+  missing_modality_rate: 0.0  # No missing modalities for ablation
+
+# Validation and checkpointing
+validation:
+  interval: 1
+  metric: val_accuracy
+  maximize: true
+
+checkpoint:
+  save_interval: 10
+  checkpoint_dir: ./checkpoints/ablation
+
+# Early stopping
+early_stopping:
+  enabled: true
+  patience: 15
+
+# Logging
+logging:
+  log_dir: ./logs/ablation
+  log_interval: 10
+  use_tensorboard: true
+  use_wandb: false
+
+# Evaluation - enable all analysis
+evaluation:
+  generate_plots: true
+  run_ablation: true  # Enable ablation study
+  test_missing_modalities: true  # Test robustness
+  error_analysis: true
+  output_dir: ./results/ablation
+
+# Ablation study specific settings
+ablation:
+  # Test each modality individually
+  single_modality_tests:
+    - wsi_only
+    - genomic_only
+    - clinical_only
+  
+  # Test pairs of modalities
+  pairwise_tests:
+    - wsi_genomic
+    - wsi_clinical
+    - genomic_clinical
+  
+  # Test without each modality
+  leave_one_out:
+    - without_wsi
+    - without_genomic
+    - without_clinical
+  
+  # Test different fusion strategies
+  fusion_variants:
+    - concatenation
+    - attention
+    - gated
+
+# Experiment tracking
+experiment:
+  name: ablation_study
+  description: Systematic ablation study of multimodal components
+  tags: [ablation, analysis, components]

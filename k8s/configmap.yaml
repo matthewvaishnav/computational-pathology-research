@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pathology-config
+  namespace: pathology
+data:
+  # Application configuration
+  app.yaml: |
+    server:
+      host: 0.0.0.0
+      port: 8000
+      workers: 4
+    
+    model:
+      path: /app/models/best_model.pth
+      device: cpu
+      batch_size: 32
+    
+    logging:
+      level: INFO
+      format: json
+    
+    monitoring:
+      enabled: true
+      prometheus_port: 9090
+  
+  # Model configuration
+  model-config.yaml: |
+    embed_dim: 256
+    num_classes: 4
+    dropout: 0.1
+    
+    wsi:
+      input_dim: 1024
+      hidden_dim: 512
+      num_heads: 8
+    
+    genomic:
+      input_dim: 2000
+      hidden_dims: [1024, 512]
+    
+    clinical:
+      vocab_size: 30000
+      embed_dim: 256
+      hidden_dim: 512

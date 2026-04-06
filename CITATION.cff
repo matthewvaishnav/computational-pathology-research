@@ -1,0 +1,56 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Computational Pathology Research Repository: Multimodal Fusion with Temporal Reasoning"
+abstract: "A research repository implementing novel multimodal fusion architectures for computational pathology. Combines whole-slide images (WSI), genomic features, and clinical text through attention-based fusion, incorporates cross-slide temporal reasoning for disease progression analysis, implements transformer-based stain normalization, and provides self-supervised pretraining objectives tailored to histopathology data."
+authors:
+  - family-names: "Research"
+    given-names: "Computational Pathology"
+repository-code: "https://github.com/your-username/computational-pathology-research"
+keywords:
+  - computational pathology
+  - multimodal fusion
+  - deep learning
+  - whole-slide imaging
+  - temporal reasoning
+  - stain normalization
+  - self-supervised learning
+  - attention mechanisms
+license: MIT
+version: 1.0.0
+date-released: 2024-03-15
+
+references:
+  - type: article
+    title: "The Cancer Genome Atlas Pan-Cancer analysis project"
+    authors:
+      - name: "The Cancer Genome Atlas Research Network"
+    journal: "Nature Genetics"
+    volume: 45
+    issue: 10
+    year: 2013
+    start: 1113
+    end: 1120
+    doi: "10.1038/ng.2764"
+  
+  - type: article
+    title: "From Detection of Individual Metastases to Classification of Lymph Node Status at the Patient Level: The CAMELYON17 Challenge"
+    authors:
+      - family-names: "Bandi"
+        given-names: "P."
+    journal: "IEEE Transactions on Medical Imaging"
+    volume: 38
+    issue: 2
+    year: 2019
+    start: 550
+    end: 560
+    doi: "10.1109/TMI.2018.2867350"
+
+preferred-citation:
+  type: software
+  title: "Computational Pathology Research Repository: Multimodal Fusion with Temporal Reasoning"
+  authors:
+    - family-names: "Research"
+      given-names: "Computational Pathology"
+  year: 2024
+  version: 1.0.0
