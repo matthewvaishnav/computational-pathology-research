@@ -5,11 +5,13 @@ Unit tests for stain normalization transformer.
 import pytest
 import torch
 
-from src.models.stain_normalization import (ColorFeatureEncoder,
-                                            PatchEmbedding,
-                                            StainNormalizationTransformer,
-                                            StyleConditioner,
-                                            StyleTransferDecoder)
+from src.models.stain_normalization import (
+    ColorFeatureEncoder,
+    PatchEmbedding,
+    StainNormalizationTransformer,
+    StyleConditioner,
+    StyleTransferDecoder,
+)
 
 
 class TestPatchEmbedding:
