@@ -1,0 +1,134 @@
+# Survival analysis configuration
+# For time-to-event prediction tasks
+
+# Inherit from default config
+defaults:
+  - default
+
+# Model configuration
+model:
+  embed_dim: 256
+  dropout: 0.15
+  
+  wsi:
+    input_dim: 1024
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 3
+    pooling: attention
+  
+  genomic:
+    input_dim: 2000
+    hidden_dims: [1024, 512]
+    dropout: 0.2
+    use_batch_norm: true
+  
+  clinical:
+    vocab_size: 30000
+    embed_dim: 256
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 3
+    max_seq_length: 512
+    pooling: mean
+
+# Task configuration - survival analysis
+task:
+  type: survival
+  
+  survival:
+    hidden_dims: [256, 128]
+    dropout: 0.2
+    num_time_bins: 20  # Number of time intervals
+    max_time: 60  # Maximum follow-up time (months)
+    
+    # Loss function
+    loss:
+      type: cox  # Options: cox, discrete, continuous
+      alpha: 0.5  # Weighting for different loss components
+
+# Training configuration
+training:
+  num_epochs: 150
+  batch_size: 24
+  learning_rate: 5e-5
+  weight_decay: 0.02
+  
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: cosine
+    min_lr: 1e-7
+    warmup_epochs: 10
+  
+  max_grad_norm: 1.0
+  use_amp: true
+
+# Data configuration
+data:
+  data_dir: ./data
+  num_workers: 6
+  pin_memory: true
+  
+  missing_modality_rate: 0.1
+  
+  # Survival-specific data settings
+  censoring_rate: 0.3  # Expected censoring rate
+  time_unit: months  # Time unit for survival times
+
+# Validation and checkpointing
+validation:
+  interval: 1
+  metric: val_c_index  # Concordance index for survival
+  maximize: true
+
+checkpoint:
+  save_interval: 10
+  checkpoint_dir: ./checkpoints/survival
+
+# Early stopping
+early_stopping:
+  enabled: true
+  patience: 20
+  min_delta: 0.001
+
+# Logging
+logging:
+  log_dir: ./logs/survival
+  log_interval: 15
+  use_tensorboard: true
+  use_wandb: true
+  
+  wandb:
+    project: computational-pathology-survival
+    entity: null
+    name: survival_analysis
+    tags: [survival, cox, time-to-event]
+
+# Evaluation
+evaluation:
+  generate_plots: true
+  run_ablation: true
+  test_missing_modalities: true
+  error_analysis: true
+  output_dir: ./results/survival
+  
+  # Survival-specific evaluation
+  survival_metrics:
+    - c_index
+    - brier_score
+    - integrated_brier_score
+    - time_dependent_auc
+  
+  # Kaplan-Meier plots
+  km_plots:
+    enabled: true
+    risk_groups: 3  # Number of risk groups for stratification
+
+# Experiment tracking
+experiment:
+  name: survival_analysis
+  description: Survival analysis with multimodal fusion
+  tags: [survival, cox, prognosis, time-to-event]

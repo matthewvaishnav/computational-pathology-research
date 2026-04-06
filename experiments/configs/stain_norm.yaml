@@ -1,0 +1,154 @@
+# Stain normalization training configuration
+# For training the StainNormalizationTransformer
+
+# Model configuration
+model:
+  name: stain_normalization_transformer
+  
+  # Patch embedding
+  patch_size: 16
+  image_size: 256
+  in_channels: 3
+  embed_dim: 512
+  
+  # Transformer encoder
+  encoder:
+    num_layers: 6
+    num_heads: 8
+    mlp_ratio: 4.0
+    dropout: 0.1
+    attention_dropout: 0.1
+  
+  # Style conditioning
+  style_conditioner:
+    enabled: true
+    num_style_tokens: 8
+    use_adaptive_instance_norm: true
+  
+  # Decoder
+  decoder:
+    num_layers: 4
+    num_heads: 8
+    mlp_ratio: 4.0
+    dropout: 0.1
+
+# Training configuration
+training:
+  num_epochs: 100
+  batch_size: 16
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+    eps: 1e-8
+  
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+    warmup_epochs: 5
+  
+  max_grad_norm: 1.0
+  use_amp: true
+
+# Loss configuration
+loss:
+  # Reconstruction loss
+  reconstruction:
+    type: l1  # Options: l1, l2, smooth_l1
+    weight: 1.0
+  
+  # Perceptual loss
+  perceptual:
+    enabled: true
+    weight: 1.0
+    layers: [3, 8, 15, 22]  # VGG16 layers
+    layer_weights: [1.0, 1.0, 1.0, 1.0]
+  
+  # Color consistency loss
+  color_consistency:
+    enabled: true
+    weight: 0.5
+    color_space: rgb  # Options: rgb, lab
+  
+  # Style loss
+  style:
+    enabled: false
+    weight: 0.1
+
+# Data configuration
+data:
+  data_dir: ./data/stain_norm
+  num_workers: 6
+  pin_memory: true
+  
+  # Image preprocessing
+  image_size: 256
+  normalize: true
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  
+  # Augmentation
+  augmentation:
+    enabled: true
+    random_crop: true
+    random_flip: true
+    color_jitter: true
+    rotation: 15  # degrees
+
+# Validation and checkpointing
+validation:
+  interval: 1
+  metric: val_ssim  # Structural similarity
+  maximize: true
+
+checkpoint:
+  save_interval: 5
+  checkpoint_dir: ./checkpoints/stain_norm
+
+# Early stopping
+early_stopping:
+  enabled: true
+  patience: 15
+  min_delta: 0.001
+
+# Logging
+logging:
+  log_dir: ./logs/stain_norm
+  log_interval: 10
+  use_tensorboard: true
+  use_wandb: false
+  
+  # Log sample images
+  log_images: true
+  log_image_interval: 100  # Log every N batches
+
+# Evaluation
+evaluation:
+  output_dir: ./results/stain_norm
+  
+  # Morphology preservation metrics
+  metrics:
+    - ssim
+    - psnr
+    - edge_preservation
+    - color_consistency
+  
+  # Generate comparison images
+  generate_comparisons: true
+  num_comparison_samples: 20
+
+# Reproducibility
+seed: 42
+deterministic: true
+
+# Hardware
+device: cuda
+num_gpus: 1
+
+# Experiment tracking
+experiment:
+  name: stain_normalization
+  description: Training stain normalization transformer
+  tags: [stain_norm, preprocessing, color]

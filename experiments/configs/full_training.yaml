@@ -1,0 +1,140 @@
+# Full training configuration - production-ready settings
+# Optimized for best performance on real datasets
+
+# Inherit from default config
+defaults:
+  - default
+
+# Model configuration - larger capacity
+model:
+  embed_dim: 512  # Larger embedding dimension
+  dropout: 0.15
+  
+  wsi:
+    input_dim: 1024
+    hidden_dim: 1024
+    num_heads: 16
+    num_layers: 4
+    pooling: attention
+  
+  genomic:
+    input_dim: 2000
+    hidden_dims: [2048, 1024, 512]
+    dropout: 0.2
+    use_batch_norm: true
+  
+  clinical:
+    vocab_size: 30000
+    embed_dim: 512
+    hidden_dim: 1024
+    num_heads: 16
+    num_layers: 6
+    max_seq_length: 512
+    pooling: mean
+  
+  fusion:
+    num_heads: 16
+
+# Task configuration
+task:
+  type: classification
+  num_classes: 4
+  
+  classification:
+    hidden_dims: [512, 256, 128]
+    dropout: 0.3
+
+# Training configuration
+training:
+  num_epochs: 200
+  batch_size: 32
+  learning_rate: 5e-5  # Lower learning rate for stability
+  weight_decay: 0.02
+  
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+    eps: 1e-8
+  
+  scheduler:
+    name: cosine
+    min_lr: 1e-7
+    warmup_epochs: 10
+  
+  max_grad_norm: 1.0
+  
+  # Mixed precision for faster training
+  use_amp: true
+  
+  # Gradient accumulation for larger effective batch size
+  accumulation_steps: 2
+
+# Data configuration
+data:
+  data_dir: ./data
+  num_workers: 8
+  pin_memory: true
+  prefetch_factor: 4
+  
+  missing_modality_rate: 0.15
+  
+  # Data augmentation
+  augmentation:
+    enabled: true
+    random_crop: true
+    random_flip: true
+
+# Validation and checkpointing
+validation:
+  interval: 1
+  metric: val_f1  # Use F1 for imbalanced datasets
+  maximize: true
+
+checkpoint:
+  save_interval: 10
+  save_best: true
+  save_last: true
+  checkpoint_dir: ./checkpoints/full_training
+
+# Early stopping
+early_stopping:
+  enabled: true
+  patience: 20
+  min_delta: 0.0001
+
+# Logging
+logging:
+  log_dir: ./logs/full_training
+  log_interval: 20
+  use_tensorboard: true
+  use_wandb: true
+  
+  wandb:
+    project: computational-pathology
+    entity: null
+    name: full_training_run
+    tags: [full, production, multimodal]
+
+# Evaluation
+evaluation:
+  generate_plots: true
+  run_ablation: true
+  test_missing_modalities: true
+  error_analysis: true
+  output_dir: ./results/full_training
+
+# Reproducibility
+seed: 42
+deterministic: true
+benchmark: false
+
+# Hardware
+device: cuda
+num_gpus: 1
+distributed: false
+
+# Experiment tracking
+experiment:
+  name: full_training
+  description: Full training configuration for production deployment
+  tags: [production, full, multimodal, fusion]

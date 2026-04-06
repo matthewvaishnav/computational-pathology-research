@@ -1,0 +1,161 @@
+# Default configuration for multimodal fusion training
+# This file contains all default hyperparameters and settings
+
+# Model configuration
+model:
+  embed_dim: 256
+  dropout: 0.1
+  
+  # WSI encoder config
+  wsi:
+    input_dim: 1024
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: attention  # Options: attention, mean, max
+  
+  # Genomic encoder config
+  genomic:
+    input_dim: 2000
+    hidden_dims: [1024, 512]
+    dropout: 0.15
+    use_batch_norm: true
+  
+  # Clinical text encoder config
+  clinical:
+    vocab_size: 30000
+    embed_dim: 256
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 3
+    max_seq_length: 512
+    pooling: mean  # Options: mean, max, cls
+  
+  # Fusion layer config
+  fusion:
+    num_heads: 8
+    modalities: [wsi, genomic, clinical]
+
+# Task configuration
+task:
+  type: classification  # Options: classification, survival
+  num_classes: 4
+  
+  # Classification head config
+  classification:
+    hidden_dims: [256, 128]
+    dropout: 0.2
+  
+  # Survival head config (if using survival task)
+  survival:
+    hidden_dims: [256, 128]
+    dropout: 0.2
+    num_time_bins: 10
+
+# Training configuration
+training:
+  num_epochs: 100
+  batch_size: 16
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  
+  # Optimizer
+  optimizer:
+    name: adamw  # Options: adamw, adam, sgd
+    betas: [0.9, 0.999]
+    eps: 1e-8
+    momentum: 0.9  # For SGD
+  
+  # Learning rate scheduler
+  scheduler:
+    name: cosine  # Options: cosine, step, plateau, none
+    min_lr: 1e-6
+    warmup_epochs: 5
+    step_size: 30  # For step scheduler
+    gamma: 0.1  # For step scheduler
+  
+  # Gradient clipping
+  max_grad_norm: 1.0
+  
+  # Mixed precision training
+  use_amp: false
+  
+  # Gradient accumulation
+  accumulation_steps: 1
+
+# Data configuration
+data:
+  data_dir: ./data
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  
+  # Data splits
+  train_split: train
+  val_split: val
+  test_split: test
+  
+  # Missing modality handling
+  missing_modality_rate: 0.1  # Probability of missing modality during training
+  
+  # Augmentation (if applicable)
+  augmentation:
+    enabled: false
+    random_crop: false
+    random_flip: false
+
+# Validation and checkpointing
+validation:
+  interval: 1  # Validate every N epochs
+  metric: val_accuracy  # Metric to monitor
+  maximize: true  # Whether to maximize the metric
+  
+checkpoint:
+  save_interval: 5  # Save checkpoint every N epochs
+  save_best: true
+  save_last: true
+  checkpoint_dir: ./checkpoints
+  
+# Early stopping
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.0001
+
+# Logging
+logging:
+  log_dir: ./logs
+  log_interval: 10  # Log every N batches
+  use_tensorboard: true
+  use_wandb: false
+  
+  # Weights & Biases config (if enabled)
+  wandb:
+    project: computational-pathology
+    entity: null
+    name: null
+    tags: []
+
+# Evaluation
+evaluation:
+  generate_plots: true
+  run_ablation: false
+  test_missing_modalities: false
+  error_analysis: true
+  output_dir: ./results/evaluation
+
+# Reproducibility
+seed: 42
+deterministic: true
+benchmark: false
+
+# Hardware
+device: cuda  # Options: cuda, cpu
+num_gpus: 1
+distributed: false
+
+# Experiment tracking
+experiment:
+  name: default
+  description: Default configuration for multimodal fusion
+  tags: []

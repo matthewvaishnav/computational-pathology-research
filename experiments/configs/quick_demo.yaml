@@ -1,0 +1,88 @@
+# Quick demo configuration - fast training for testing
+# Optimized for quick convergence on small datasets
+
+# Inherit from default config
+defaults:
+  - default
+
+# Override model settings for faster training
+model:
+  embed_dim: 128  # Smaller embedding dimension
+  dropout: 0.1
+  
+  wsi:
+    hidden_dim: 256
+    num_heads: 4
+    num_layers: 1
+  
+  genomic:
+    hidden_dims: [512, 256]
+  
+  clinical:
+    hidden_dim: 256
+    num_heads: 4
+    num_layers: 2
+
+# Task configuration
+task:
+  type: classification
+  num_classes: 3  # Fewer classes for quick demo
+  
+  classification:
+    hidden_dims: [128, 64]
+    dropout: 0.2
+
+# Training configuration
+training:
+  num_epochs: 5  # Very short training
+  batch_size: 16
+  learning_rate: 5e-4  # Higher learning rate for faster convergence
+  weight_decay: 0.01
+  
+  optimizer:
+    name: adamw
+  
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+  
+  max_grad_norm: 1.0
+
+# Data configuration
+data:
+  num_workers: 2
+  missing_modality_rate: 0.1
+
+# Validation and checkpointing
+validation:
+  interval: 1
+  metric: val_accuracy
+  maximize: true
+
+checkpoint:
+  save_interval: 2
+  checkpoint_dir: ./checkpoints/quick_demo
+
+# Early stopping
+early_stopping:
+  enabled: false  # Disabled for quick demo
+
+# Logging
+logging:
+  log_dir: ./logs/quick_demo
+  log_interval: 5
+  use_tensorboard: true
+  use_wandb: false
+
+# Evaluation
+evaluation:
+  generate_plots: true
+  run_ablation: false
+  test_missing_modalities: false
+  output_dir: ./results/quick_demo
+
+# Experiment tracking
+experiment:
+  name: quick_demo
+  description: Quick demo configuration for fast testing
+  tags: [demo, quick, test]
