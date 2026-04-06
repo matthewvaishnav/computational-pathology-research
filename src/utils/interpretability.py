@@ -26,7 +26,8 @@ import os
 import numpy as np
 import torch
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.manifold import TSNE
@@ -35,10 +36,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 from typing import Dict, List, Optional, Tuple, Union, Any
 from pathlib import Path
 
-
 # ============================================================================
 # Attention Visualization
 # ============================================================================
+
 
 class AttentionVisualizer:
     """
@@ -53,7 +54,7 @@ class AttentionVisualizer:
         style: Plot style (default: 'seaborn-v0_8')
     """
 
-    def __init__(self, output_dir: str = 'results/interpretability', style: str = 'seaborn-v0_8'):
+    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         plt.style.use(style)
@@ -61,7 +62,7 @@ class AttentionVisualizer:
     def plot_modality_attention(
         self,
         embeddings: Dict[str, torch.Tensor],
-        modality_masks: Optional[Dict[str, torch.Tensor]] = None
+        modality_masks: Optional[Dict[str, torch.Tensor]] = None,
     ) -> str:
         """
         Visualize cross-modal attention weights between modalities.
@@ -87,10 +88,9 @@ class AttentionVisualizer:
 
                     # Compute cosine similarity for each sample
                     for b in range(batch_size):
-                        sim = cosine_similarity(
-                            emb_i[b].reshape(1, -1),
-                            emb_j[b].reshape(1, -1)
-                        )[0, 0]
+                        sim = cosine_similarity(emb_i[b].reshape(1, -1), emb_j[b].reshape(1, -1))[
+                            0, 0
+                        ]
                         attention_matrix[i, j, b] = sim
 
         # Average attention across batch
@@ -101,28 +101,26 @@ class AttentionVisualizer:
         sns.heatmap(
             mean_attention,
             annot=True,
-            fmt='.3f',
-            cmap='viridis',
+            fmt=".3f",
+            cmap="viridis",
             xticklabels=modalities,
             yticklabels=modalities,
             ax=ax,
-            cbar_kws={'label': 'Cosine Similarity'}
+            cbar_kws={"label": "Cosine Similarity"},
         )
-        ax.set_xlabel('Target Modality')
-        ax.set_ylabel('Source Modality')
-        ax.set_title('Cross-Modal Attention Weights')
+        ax.set_xlabel("Target Modality")
+        ax.set_ylabel("Source Modality")
+        ax.set_title("Cross-Modal Attention Weights")
 
         plt.tight_layout()
-        filepath = self.output_dir / 'modality_attention.png'
-        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        filepath = self.output_dir / "modality_attention.png"
+        plt.savefig(filepath, dpi=300, bbox_inches="tight")
         plt.close()
 
         return str(filepath)
 
     def plot_temporal_attention(
-        self,
-        slide_embeddings: torch.Tensor,
-        timestamps: Optional[torch.Tensor] = None
+        self, slide_embeddings: torch.Tensor, timestamps: Optional[torch.Tensor] = None
     ) -> str:
         """
         Visualize temporal attention for WSI slide embeddings.
@@ -145,10 +143,7 @@ class AttentionVisualizer:
         attention_scores = np.zeros((batch_size, num_patches, num_patches))
 
         for b in range(batch_size):
-            attn = cosine_similarity(
-                embeddings_np[b],
-                embeddings_np[b]
-            )
+            attn = cosine_similarity(embeddings_np[b], embeddings_np[b])
             attention_scores[b] = attn
 
         # Average across batch
@@ -159,27 +154,24 @@ class AttentionVisualizer:
 
         # Left: Full attention heatmap
         sns.heatmap(
-            mean_attention,
-            cmap='viridis',
-            ax=axes[0],
-            cbar_kws={'label': 'Attention Score'}
+            mean_attention, cmap="viridis", ax=axes[0], cbar_kws={"label": "Attention Score"}
         )
-        axes[0].set_xlabel('Patch Index')
-        axes[0].set_ylabel('Patch Index')
-        axes[0].set_title('Temporal Attention Between Patches')
+        axes[0].set_xlabel("Patch Index")
+        axes[0].set_ylabel("Patch Index")
+        axes[0].set_title("Temporal Attention Between Patches")
 
         # Right: Attention profile (mean attention per patch)
         patch_attention = mean_attention.mean(axis=1)
-        axes[1].plot(patch_attention, marker='o', linewidth=2, markersize=4)
+        axes[1].plot(patch_attention, marker="o", linewidth=2, markersize=4)
         axes[1].fill_between(range(len(patch_attention)), patch_attention, alpha=0.3)
-        axes[1].set_xlabel('Patch Index (Temporal Order)')
-        axes[1].set_ylabel('Mean Attention')
-        axes[1].set_title('Patch Importance Profile')
+        axes[1].set_xlabel("Patch Index (Temporal Order)")
+        axes[1].set_ylabel("Mean Attention")
+        axes[1].set_title("Patch Importance Profile")
         axes[1].grid(True, alpha=0.3)
 
         plt.tight_layout()
-        filepath = self.output_dir / 'temporal_attention.png'
-        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        filepath = self.output_dir / "temporal_attention.png"
+        plt.savefig(filepath, dpi=300, bbox_inches="tight")
         plt.close()
 
         return str(filepath)
@@ -188,6 +180,7 @@ class AttentionVisualizer:
 # ============================================================================
 # Saliency Maps
 # ============================================================================
+
 
 class SaliencyMap:
     """
@@ -207,13 +200,13 @@ class SaliencyMap:
         Args:
             device: torch device to use (defaults to CUDA if available)
         """
-        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def compute_gradient_saliency(
         self,
         model: torch.nn.Module,
         batch: Dict[str, Optional[torch.Tensor]],
-        target_idx: Optional[int] = None
+        target_idx: Optional[int] = None,
     ) -> Dict[str, np.ndarray]:
         """
         Compute gradient-based saliency for each modality.
@@ -237,21 +230,26 @@ class SaliencyMap:
         model.eval()
 
         # Prepare batch
-        batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                 for k, v in batch.items()}
+        batch = {
+            k: v.to(self.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
+        }
 
         # Get labels if provided
-        labels = batch.pop('label', None)
+        labels = batch.pop("label", None)
 
         # Enable gradient computation for inputs
-        wsi_features = batch.get('wsi_features')
-        genomic = batch.get('genomic')
-        clinical_text = batch.get('clinical_text')
+        wsi_features = batch.get("wsi_features")
+        genomic = batch.get("genomic")
+        clinical_text = batch.get("clinical_text")
 
         saliency_maps = {}
 
         # Compute saliency for each modality
-        for modality, input_tensor in [('wsi', wsi_features), ('genomic', genomic), ('clinical', clinical_text)]:
+        for modality, input_tensor in [
+            ("wsi", wsi_features),
+            ("genomic", genomic),
+            ("clinical", clinical_text),
+        ]:
             if input_tensor is None:
                 continue
 
@@ -260,14 +258,16 @@ class SaliencyMap:
 
             # Create temporary batch for this modality
             temp_batch = batch.copy()
-            temp_batch[modality if modality != 'clinical' else 'clinical_text'] = input_tensor
+            temp_batch[modality if modality != "clinical" else "clinical_text"] = input_tensor
 
             # Forward pass
             output = model(temp_batch)
 
             # Get target
             if target_idx is not None:
-                logits = output.gather(1, torch.tensor([[target_idx]], device=self.device).expand(output.size(0), 1))
+                logits = output.gather(
+                    1, torch.tensor([[target_idx]], device=self.device).expand(output.size(0), 1)
+                )
             elif labels is not None:
                 logits = output.gather(1, labels.unsqueeze(-1))
             else:
@@ -285,7 +285,7 @@ class SaliencyMap:
 
         # Restore label to batch if it was present
         if labels is not None:
-            batch['label'] = labels
+            batch["label"] = labels
 
         return saliency_maps
 
@@ -295,7 +295,7 @@ class SaliencyMap:
         batch: Dict[str, Optional[torch.Tensor]],
         baseline: Optional[Dict[str, torch.Tensor]] = None,
         num_steps: int = 50,
-        target_idx: Optional[int] = None
+        target_idx: Optional[int] = None,
     ) -> Dict[str, np.ndarray]:
         """
         Compute Integrated Gradients saliency for each modality.
@@ -317,22 +317,27 @@ class SaliencyMap:
         model.eval()
 
         # Prepare batch
-        batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                 for k, v in batch.items()}
+        batch = {
+            k: v.to(self.device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
+        }
 
-        labels = batch.pop('label', None)
+        labels = batch.pop("label", None)
 
         # Get baselines (zero baseline if not provided)
         if baseline is None:
             baseline = {}
 
-        wsi_features = batch.get('wsi_features')
-        genomic = batch.get('genomic')
-        clinical_text = batch.get('clinical_text')
+        wsi_features = batch.get("wsi_features")
+        genomic = batch.get("genomic")
+        clinical_text = batch.get("clinical_text")
 
         integrated_grads = {}
 
-        for modality, input_tensor in [('wsi', wsi_features), ('genomic', genomic), ('clinical', clinical_text)]:
+        for modality, input_tensor in [
+            ("wsi", wsi_features),
+            ("genomic", genomic),
+            ("clinical", clinical_text),
+        ]:
             if input_tensor is None:
                 continue
 
@@ -357,14 +362,17 @@ class SaliencyMap:
 
                 # Create temporary batch
                 temp_batch = batch.copy()
-                temp_batch[modality if modality != 'clinical' else 'clinical_text'] = interpolated
+                temp_batch[modality if modality != "clinical" else "clinical_text"] = interpolated
 
                 # Forward pass
                 output = model(temp_batch)
 
                 # Get target
                 if target_idx is not None:
-                    logits = output.gather(1, torch.tensor([[target_idx]], device=self.device).expand(output.size(0), 1))
+                    logits = output.gather(
+                        1,
+                        torch.tensor([[target_idx]], device=self.device).expand(output.size(0), 1),
+                    )
                 elif labels is not None:
                     logits = output.gather(1, labels.unsqueeze(-1))
                 else:
@@ -380,13 +388,14 @@ class SaliencyMap:
 
             # Average gradients and scale by input difference
             integrated_grads[modality] = (
-                (input_tensor - baseline_tensor).detach().cpu().numpy() *
-                accumulated_grads.cpu().numpy() / num_steps
+                (input_tensor - baseline_tensor).detach().cpu().numpy()
+                * accumulated_grads.cpu().numpy()
+                / num_steps
             )
 
         # Restore label to batch if it was present
         if labels is not None:
-            batch['label'] = labels
+            batch["label"] = labels
 
         return integrated_grads
 
@@ -394,6 +403,7 @@ class SaliencyMap:
 # ============================================================================
 # Embedding Analysis
 # ============================================================================
+
 
 class EmbeddingAnalyzer:
     """
@@ -405,7 +415,7 @@ class EmbeddingAnalyzer:
     - Modality correlation computation
     """
 
-    def __init__(self, output_dir: str = 'results/interpretability', style: str = 'seaborn-v0_8'):
+    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8"):
         """
         Initialize embedding analyzer.
 
@@ -421,10 +431,10 @@ class EmbeddingAnalyzer:
         self,
         embeddings: np.ndarray,
         labels: np.ndarray,
-        title: str = 't-SNE Visualization',
-        filename: str = 'tsne_visualization.png',
+        title: str = "t-SNE Visualization",
+        filename: str = "tsne_visualization.png",
         perplexity: Optional[int] = None,
-        colormap: str = 'viridis'
+        colormap: str = "viridis",
     ) -> str:
         """
         Create t-SNE visualization of embeddings.
@@ -468,21 +478,21 @@ class EmbeddingAnalyzer:
             cmap=colormap,
             alpha=0.7,
             s=80,
-            edgecolors='white',
-            linewidths=0.5
+            edgecolors="white",
+            linewidths=0.5,
         )
 
         cbar = plt.colorbar(scatter, ax=ax)
-        cbar.set_label('Class', fontsize=12)
+        cbar.set_label("Class", fontsize=12)
 
-        ax.set_xlabel('t-SNE Dimension 1', fontsize=12)
-        ax.set_ylabel('t-SNE Dimension 2', fontsize=12)
+        ax.set_xlabel("t-SNE Dimension 1", fontsize=12)
+        ax.set_ylabel("t-SNE Dimension 2", fontsize=12)
         ax.set_title(title, fontsize=14)
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
         filepath = self.output_dir / filename
-        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        plt.savefig(filepath, dpi=300, bbox_inches="tight")
         plt.close()
 
         return str(filepath)
@@ -491,9 +501,9 @@ class EmbeddingAnalyzer:
         self,
         embeddings: np.ndarray,
         labels: np.ndarray,
-        title: str = 'PCA Visualization',
-        filename: str = 'pca_visualization.png',
-        colormap: str = 'viridis'
+        title: str = "PCA Visualization",
+        filename: str = "pca_visualization.png",
+        colormap: str = "viridis",
     ) -> Tuple[str, Dict[str, float]]:
         """
         Create PCA visualization of embeddings with explained variance.
@@ -517,9 +527,9 @@ class EmbeddingAnalyzer:
         embeddings_2d = pca.fit_transform(embeddings)
 
         explained_variance = {
-            'PC1': float(pca.explained_variance_ratio_[0]),
-            'PC2': float(pca.explained_variance_ratio_[1]),
-            'total': float(pca.explained_variance_ratio_.sum())
+            "PC1": float(pca.explained_variance_ratio_[0]),
+            "PC2": float(pca.explained_variance_ratio_[1]),
+            "total": float(pca.explained_variance_ratio_.sum()),
         }
 
         # Create visualization
@@ -532,26 +542,28 @@ class EmbeddingAnalyzer:
             cmap=colormap,
             alpha=0.7,
             s=80,
-            edgecolors='white',
-            linewidths=0.5
+            edgecolors="white",
+            linewidths=0.5,
         )
 
         cbar = plt.colorbar(scatter, ax=ax)
-        cbar.set_label('Class', fontsize=12)
+        cbar.set_label("Class", fontsize=12)
 
         # Add explained variance annotation
         variance_text = (
-            f'Explained Variance:\n'
+            f"Explained Variance:\n"
             f'PC1: {explained_variance["PC1"]:.2%}\n'
             f'PC2: {explained_variance["PC2"]:.2%}\n'
             f'Total: {explained_variance["total"]:.2%}'
         )
         ax.text(
-            0.02, 0.98, variance_text,
+            0.02,
+            0.98,
+            variance_text,
             transform=ax.transAxes,
             fontsize=10,
-            verticalalignment='top',
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.8)
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
         )
 
         ax.set_xlabel(f'PC1 ({explained_variance["PC1"]:.2%})', fontsize=12)
@@ -561,15 +573,13 @@ class EmbeddingAnalyzer:
 
         plt.tight_layout()
         filepath = self.output_dir / filename
-        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        plt.savefig(filepath, dpi=300, bbox_inches="tight")
         plt.close()
 
         return str(filepath), explained_variance
 
     def compute_modality_correlation(
-        self,
-        embeddings: Dict[str, torch.Tensor],
-        filename: str = 'modality_correlation.png'
+        self, embeddings: Dict[str, torch.Tensor], filename: str = "modality_correlation.png"
     ) -> Tuple[str, np.ndarray]:
         """
         Compute and visualize correlation between modalities.
@@ -608,8 +618,8 @@ class EmbeddingAnalyzer:
             correlation_matrix,
             mask=mask,
             annot=True,
-            fmt='.3f',
-            cmap='coolwarm',
+            fmt=".3f",
+            cmap="coolwarm",
             center=0,
             vmin=-1,
             vmax=1,
@@ -617,13 +627,13 @@ class EmbeddingAnalyzer:
             yticklabels=modalities,
             ax=ax,
             square=True,
-            cbar_kws={'label': 'Correlation'}
+            cbar_kws={"label": "Correlation"},
         )
-        ax.set_title('Modality Correlation Matrix', fontsize=14)
+        ax.set_title("Modality Correlation Matrix", fontsize=14)
 
         plt.tight_layout()
         filepath = self.output_dir / filename
-        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        plt.savefig(filepath, dpi=300, bbox_inches="tight")
         plt.close()
 
         return str(filepath), correlation_matrix

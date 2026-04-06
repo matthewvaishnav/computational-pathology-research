@@ -15,11 +15,11 @@ from .fusion import MultiModalFusionLayer
 class MultimodalFusionModel(nn.Module):
     """
     Complete multimodal fusion model for computational pathology.
-    
+
     Integrates modality-specific encoders (WSI, genomic, clinical text) with
     cross-modal attention fusion. Handles missing modalities gracefully through
     masking and produces a unified multimodal representation.
-    
+
     Args:
         wsi_config: Configuration dict for WSI encoder
         genomic_config: Configuration dict for genomic encoder
@@ -27,7 +27,7 @@ class MultimodalFusionModel(nn.Module):
         fusion_config: Configuration dict for fusion layer
         embed_dim: Common embedding dimension for all modalities (default: 256)
         dropout: Dropout rate (default: 0.1)
-    
+
     Example:
         >>> model = MultimodalFusionModel(embed_dim=256)
         >>> batch = {
@@ -39,7 +39,7 @@ class MultimodalFusionModel(nn.Module):
         >>> output.shape
         torch.Size([16, 256])
     """
-    
+
     def __init__(
         self,
         wsi_config: Optional[Dict] = None,
@@ -47,73 +47,71 @@ class MultimodalFusionModel(nn.Module):
         clinical_config: Optional[Dict] = None,
         fusion_config: Optional[Dict] = None,
         embed_dim: int = 256,
-        dropout: float = 0.1
+        dropout: float = 0.1,
     ):
         super().__init__()
-        
+
         self.embed_dim = embed_dim
-        
+
         # Default configurations
         if wsi_config is None:
             wsi_config = {
-                'input_dim': 1024,
-                'hidden_dim': 512,
-                'output_dim': embed_dim,
-                'num_heads': 8,
-                'num_layers': 2,
-                'dropout': dropout,
-                'pooling': 'attention'
+                "input_dim": 1024,
+                "hidden_dim": 512,
+                "output_dim": embed_dim,
+                "num_heads": 8,
+                "num_layers": 2,
+                "dropout": dropout,
+                "pooling": "attention",
             }
-        
+
         if genomic_config is None:
             genomic_config = {
-                'input_dim': 2000,
-                'hidden_dims': [1024, 512],
-                'output_dim': embed_dim,
-                'dropout': dropout * 1.5,  # Higher dropout for genomic data
-                'use_batch_norm': True
+                "input_dim": 2000,
+                "hidden_dims": [1024, 512],
+                "output_dim": embed_dim,
+                "dropout": dropout * 1.5,  # Higher dropout for genomic data
+                "use_batch_norm": True,
             }
-        
+
         if clinical_config is None:
             clinical_config = {
-                'vocab_size': 30000,
-                'embed_dim': 256,
-                'hidden_dim': 512,
-                'output_dim': embed_dim,
-                'num_heads': 8,
-                'num_layers': 3,
-                'max_seq_length': 512,
-                'dropout': dropout,
-                'pooling': 'mean'
+                "vocab_size": 30000,
+                "embed_dim": 256,
+                "hidden_dim": 512,
+                "output_dim": embed_dim,
+                "num_heads": 8,
+                "num_layers": 3,
+                "max_seq_length": 512,
+                "dropout": dropout,
+                "pooling": "mean",
             }
-        
+
         if fusion_config is None:
             fusion_config = {
-                'embed_dim': embed_dim,
-                'num_heads': 8,
-                'dropout': dropout,
-                'modalities': ['wsi', 'genomic', 'clinical']
+                "embed_dim": embed_dim,
+                "num_heads": 8,
+                "dropout": dropout,
+                "modalities": ["wsi", "genomic", "clinical"],
             }
-        
+
         # Initialize modality-specific encoders
         self.wsi_encoder = WSIEncoder(**wsi_config)
         self.genomic_encoder = GenomicEncoder(**genomic_config)
         self.clinical_encoder = ClinicalTextEncoder(**clinical_config)
-        
+
         # Initialize fusion layer
         self.fusion_layer = MultiModalFusionLayer(**fusion_config)
-        
+
         # Modality names
-        self.modalities = ['wsi', 'genomic', 'clinical']
-        
+        self.modalities = ["wsi", "genomic", "clinical"]
+
     def forward(
-        self,
-        batch: Dict[str, Optional[torch.Tensor]],
-        return_modality_embeddings: bool = False
+        self, batch: Dict[str, Optional[torch.Tensor]], return_modality_embeddings: bool = False
     ) -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]]]:
         """
         Forward pass through multimodal fusion model.
-        
+
         Args:
             batch: Dictionary containing:
                 - 'wsi_features': WSI patch features [batch_size, num_patches, feature_dim] or None
@@ -122,7 +120,7 @@ class MultimodalFusionModel(nn.Module):
                 - 'wsi_mask': Optional mask for WSI patches [batch_size, num_patches]
                 - 'clinical_mask': Optional mask for clinical text [batch_size, seq_len]
             return_modality_embeddings: If True, return individual modality embeddings
-            
+
         Returns:
             If return_modality_embeddings is False:
                 Fused embedding [batch_size, embed_dim]
@@ -131,59 +129,55 @@ class MultimodalFusionModel(nn.Module):
         """
         device = next(self.parameters()).device
         batch_size = self._get_batch_size(batch)
-        
+
         # Encode each modality
         modality_embeddings = {}
         modality_masks = {}
-        
+
         # WSI encoding
-        if batch.get('wsi_features') is not None:
-            wsi_emb = self.wsi_encoder(
-                batch['wsi_features'],
-                mask=batch.get('wsi_mask')
-            )
-            modality_embeddings['wsi'] = wsi_emb
-            modality_masks['wsi'] = torch.ones(batch_size, dtype=torch.bool, device=device)
+        if batch.get("wsi_features") is not None:
+            wsi_emb = self.wsi_encoder(batch["wsi_features"], mask=batch.get("wsi_mask"))
+            modality_embeddings["wsi"] = wsi_emb
+            modality_masks["wsi"] = torch.ones(batch_size, dtype=torch.bool, device=device)
         else:
-            modality_embeddings['wsi'] = None
-            modality_masks['wsi'] = torch.zeros(batch_size, dtype=torch.bool, device=device)
-        
+            modality_embeddings["wsi"] = None
+            modality_masks["wsi"] = torch.zeros(batch_size, dtype=torch.bool, device=device)
+
         # Genomic encoding
-        if batch.get('genomic') is not None:
-            genomic_emb = self.genomic_encoder(batch['genomic'])
-            modality_embeddings['genomic'] = genomic_emb
-            modality_masks['genomic'] = torch.ones(batch_size, dtype=torch.bool, device=device)
+        if batch.get("genomic") is not None:
+            genomic_emb = self.genomic_encoder(batch["genomic"])
+            modality_embeddings["genomic"] = genomic_emb
+            modality_masks["genomic"] = torch.ones(batch_size, dtype=torch.bool, device=device)
         else:
-            modality_embeddings['genomic'] = None
-            modality_masks['genomic'] = torch.zeros(batch_size, dtype=torch.bool, device=device)
-        
+            modality_embeddings["genomic"] = None
+            modality_masks["genomic"] = torch.zeros(batch_size, dtype=torch.bool, device=device)
+
         # Clinical text encoding
-        if batch.get('clinical_text') is not None:
+        if batch.get("clinical_text") is not None:
             clinical_emb = self.clinical_encoder(
-                batch['clinical_text'],
-                attention_mask=batch.get('clinical_mask')
+                batch["clinical_text"], attention_mask=batch.get("clinical_mask")
             )
-            modality_embeddings['clinical'] = clinical_emb
-            modality_masks['clinical'] = torch.ones(batch_size, dtype=torch.bool, device=device)
+            modality_embeddings["clinical"] = clinical_emb
+            modality_masks["clinical"] = torch.ones(batch_size, dtype=torch.bool, device=device)
         else:
-            modality_embeddings['clinical'] = None
-            modality_masks['clinical'] = torch.zeros(batch_size, dtype=torch.bool, device=device)
-        
+            modality_embeddings["clinical"] = None
+            modality_masks["clinical"] = torch.zeros(batch_size, dtype=torch.bool, device=device)
+
         # Fuse modalities
         fused_embedding = self.fusion_layer(modality_embeddings, modality_masks)
-        
+
         if return_modality_embeddings:
             return fused_embedding, modality_embeddings
         else:
             return fused_embedding
-    
+
     def _get_batch_size(self, batch: Dict[str, Optional[torch.Tensor]]) -> int:
         """Extract batch size from the first available modality."""
-        for key in ['wsi_features', 'genomic', 'clinical_text']:
+        for key in ["wsi_features", "genomic", "clinical_text"]:
             if batch.get(key) is not None:
                 return batch[key].shape[0]
         raise ValueError("At least one modality must be provided")
-    
+
     def get_embedding_dim(self) -> int:
         """Return the dimension of the fused embedding."""
         return self.embed_dim
