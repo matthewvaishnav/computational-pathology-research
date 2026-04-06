@@ -28,23 +28,25 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-      if: github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != ''
+      if: github.event_name != 'pull_request'
+      continue-on-error: true
     
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ secrets.DOCKER_USERNAME }}/pathology-api
+        images: pathology-api
         tags: |
           type=ref,event=branch
           type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
     
-    - name: Build and push
+    - name: Build Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
-        push: ${{ github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != '' }}
+        push: false
+        load: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
@@ -52,5 +54,4 @@ jobs:
     
     - name: Test Docker image
       run: |
-        docker run --rm ${{ secrets.DOCKER_USERNAME }}/pathology-api:latest python -c "import src; print('✓ Import successful')"
-      if: secrets.DOCKER_USERNAME != ''
+        docker run --rm pathology-api:latest python -c "import src; print('✓ Import successful')"
