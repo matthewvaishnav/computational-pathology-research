@@ -13,9 +13,11 @@ import torch
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from experiments.train_stain_norm import (ColorConsistencyLoss,
-                                          MorphologyPreservationMetrics,
-                                          PerceptualLoss)
+from experiments.train_stain_norm import (
+    ColorConsistencyLoss,
+    MorphologyPreservationMetrics,
+    PerceptualLoss,
+)
 
 
 class TestPerceptualLoss:
