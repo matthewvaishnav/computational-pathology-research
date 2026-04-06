@@ -5,11 +5,12 @@ This module implements contrastive learning and reconstruction objectives
 tailored for histopathology data, enabling pretraining on unlabeled WSI.
 """
 
+import random
+from typing import Literal, Optional, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Tuple, Literal
-import random
 
 
 class PatchContrastiveLoss(nn.Module):

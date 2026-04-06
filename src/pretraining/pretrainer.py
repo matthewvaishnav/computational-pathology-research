@@ -5,13 +5,14 @@ This module provides a unified interface for pretraining models using
 contrastive learning and reconstruction objectives.
 """
 
+import logging
+from pathlib import Path
+from typing import Any, Callable, Dict, Optional
+
 import torch
 import torch.nn as nn
-from typing import Dict, Optional, Any, Callable
-from pathlib import Path
-import logging
 
-from .objectives import PatchContrastiveLoss, MaskedPatchReconstruction
+from .objectives import MaskedPatchReconstruction, PatchContrastiveLoss
 
 logger = logging.getLogger(__name__)
 

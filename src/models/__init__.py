@@ -1,24 +1,15 @@
 """Neural network model definitions."""
 
-from .stain_normalization import (
-    StainNormalizationTransformer,
-    PatchEmbedding,
-    ColorFeatureEncoder,
-    StyleConditioner,
-    StyleTransferDecoder,
-)
-
-from .encoders import WSIEncoder, GenomicEncoder, ClinicalTextEncoder
-
+from .baselines import (AttentionBaseline, LateFusionModel,
+                        SingleModalityModel, get_baseline_model)
+from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .fusion import CrossModalAttention, MultiModalFusionLayer
-
+from .heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
 from .multimodal import MultimodalFusionModel
-
-from .temporal import TemporalAttention, CrossSlideTemporalReasoner
-
-from .heads import ClassificationHead, SurvivalPredictionHead, MultiTaskHead
-
-from .baselines import SingleModalityModel, LateFusionModel, AttentionBaseline, get_baseline_model
+from .stain_normalization import (ColorFeatureEncoder, PatchEmbedding,
+                                  StainNormalizationTransformer,
+                                  StyleConditioner, StyleTransferDecoder)
+from .temporal import CrossSlideTemporalReasoner, TemporalAttention
 
 __all__ = [
     "StainNormalizationTransformer",

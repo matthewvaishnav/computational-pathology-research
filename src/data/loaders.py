@@ -5,14 +5,15 @@ This module provides dataset classes for loading WSI features, genomic data,
 and clinical text with support for missing modalities and temporal sequences.
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
 import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import h5py
 import numpy as np
 import torch
-from torch.utils.data import Dataset
 from omegaconf import DictConfig
+from torch.utils.data import Dataset
 
 
 class MultimodalDataset(Dataset):

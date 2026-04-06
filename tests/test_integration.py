@@ -4,18 +4,19 @@ End-to-end integration tests for the complete system.
 Tests the entire pipeline from data loading through training to inference.
 """
 
-import pytest
-import torch
-import tempfile
-import shutil
-from pathlib import Path
 import json
+import shutil
+import tempfile
+from pathlib import Path
+
 import h5py
 import numpy as np
-
-from src.models import MultimodalFusionModel, ClassificationHead
-from src.data import MultimodalDataset
+import pytest
+import torch
 from torch.utils.data import DataLoader
+
+from src.data import MultimodalDataset
+from src.models import ClassificationHead, MultimodalFusionModel
 
 
 @pytest.fixture

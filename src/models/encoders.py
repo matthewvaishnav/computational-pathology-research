@@ -5,10 +5,11 @@ This module implements encoders for WSI features, genomic data, and clinical tex
 that transform each modality into a common embedding space for fusion.
 """
 
+from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional
 
 
 class WSIEncoder(nn.Module):

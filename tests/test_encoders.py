@@ -4,7 +4,8 @@ Unit tests for modality-specific encoders.
 
 import pytest
 import torch
-from src.models.encoders import WSIEncoder, GenomicEncoder, ClinicalTextEncoder
+
+from src.models.encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 
 
 class TestWSIEncoder:

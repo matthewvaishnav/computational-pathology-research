@@ -4,21 +4,18 @@ Unit tests for data loading utilities.
 Tests MultimodalDataset, TemporalDataset, and collation functions.
 """
 
-import pytest
-import tempfile
 import json
+import tempfile
+from pathlib import Path
+
 import h5py
 import numpy as np
-from pathlib import Path
+import pytest
 import torch
 from omegaconf import DictConfig
 
-from src.data.loaders import (
-    MultimodalDataset,
-    TemporalDataset,
-    collate_multimodal,
-    collate_temporal,
-)
+from src.data.loaders import (MultimodalDataset, TemporalDataset,
+                              collate_multimodal, collate_temporal)
 
 
 @pytest.fixture
