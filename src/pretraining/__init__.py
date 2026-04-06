@@ -4,7 +4,7 @@ from .objectives import PatchContrastiveLoss, MaskedPatchReconstruction
 from .pretrainer import SelfSupervisedPretrainer
 
 __all__ = [
-    'PatchContrastiveLoss',
-    'MaskedPatchReconstruction',
-    'SelfSupervisedPretrainer',
+    "PatchContrastiveLoss",
+    "MaskedPatchReconstruction",
+    "SelfSupervisedPretrainer",
 ]

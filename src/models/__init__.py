@@ -5,61 +5,40 @@ from .stain_normalization import (
     PatchEmbedding,
     ColorFeatureEncoder,
     StyleConditioner,
-    StyleTransferDecoder
+    StyleTransferDecoder,
 )
 
-from .encoders import (
-    WSIEncoder,
-    GenomicEncoder,
-    ClinicalTextEncoder
-)
+from .encoders import WSIEncoder, GenomicEncoder, ClinicalTextEncoder
 
-from .fusion import (
-    CrossModalAttention,
-    MultiModalFusionLayer
-)
+from .fusion import CrossModalAttention, MultiModalFusionLayer
 
-from .multimodal import (
-    MultimodalFusionModel
-)
+from .multimodal import MultimodalFusionModel
 
-from .temporal import (
-    TemporalAttention,
-    CrossSlideTemporalReasoner
-)
+from .temporal import TemporalAttention, CrossSlideTemporalReasoner
 
-from .heads import (
-    ClassificationHead,
-    SurvivalPredictionHead,
-    MultiTaskHead
-)
+from .heads import ClassificationHead, SurvivalPredictionHead, MultiTaskHead
 
-from .baselines import (
-    SingleModalityModel,
-    LateFusionModel,
-    AttentionBaseline,
-    get_baseline_model
-)
+from .baselines import SingleModalityModel, LateFusionModel, AttentionBaseline, get_baseline_model
 
 __all__ = [
-    'StainNormalizationTransformer',
-    'PatchEmbedding',
-    'ColorFeatureEncoder',
-    'StyleConditioner',
-    'StyleTransferDecoder',
-    'WSIEncoder',
-    'GenomicEncoder',
-    'ClinicalTextEncoder',
-    'CrossModalAttention',
-    'MultiModalFusionLayer',
-    'MultimodalFusionModel',
-    'TemporalAttention',
-    'CrossSlideTemporalReasoner',
-    'ClassificationHead',
-    'SurvivalPredictionHead',
-    'MultiTaskHead',
-    'SingleModalityModel',
-    'LateFusionModel',
-    'AttentionBaseline',
-    'get_baseline_model'
+    "StainNormalizationTransformer",
+    "PatchEmbedding",
+    "ColorFeatureEncoder",
+    "StyleConditioner",
+    "StyleTransferDecoder",
+    "WSIEncoder",
+    "GenomicEncoder",
+    "ClinicalTextEncoder",
+    "CrossModalAttention",
+    "MultiModalFusionLayer",
+    "MultimodalFusionModel",
+    "TemporalAttention",
+    "CrossSlideTemporalReasoner",
+    "ClassificationHead",
+    "SurvivalPredictionHead",
+    "MultiTaskHead",
+    "SingleModalityModel",
+    "LateFusionModel",
+    "AttentionBaseline",
+    "get_baseline_model",
 ]
