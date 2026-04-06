@@ -5,32 +5,19 @@ Tests WSI feature extraction, genomic normalization, clinical text tokenization,
 and HDF5 I/O operations.
 """
 
-import pytest
 import tempfile
-import numpy as np
-import h5py
 from pathlib import Path
 
-from src.data.preprocessing import (
-    # WSI utilities
-    extract_wsi_patches,
-    aggregate_patch_features,
-    normalize_wsi_features,
-    # Genomic utilities
-    normalize_genomic_data,
-    filter_low_variance_genes,
-    impute_missing_genomic_values,
-    # Clinical text utilities
-    tokenize_clinical_text,
-    build_clinical_vocab,
-    pad_token_sequences,
-    # HDF5 utilities
-    save_features_to_hdf5,
-    load_features_from_hdf5,
-    append_to_hdf5,
-    batch_save_to_hdf5,
-    load_batch_from_hdf5,
-)
+import h5py
+import numpy as np
+import pytest
+
+from src.data.preprocessing import (  # WSI utilities; Genomic utilities; Clinical text utilities; HDF5 utilities
+    aggregate_patch_features, append_to_hdf5, batch_save_to_hdf5,
+    build_clinical_vocab, extract_wsi_patches, filter_low_variance_genes,
+    impute_missing_genomic_values, load_batch_from_hdf5,
+    load_features_from_hdf5, normalize_genomic_data, normalize_wsi_features,
+    pad_token_sequences, save_features_to_hdf5, tokenize_clinical_text)
 
 # ============================================================================
 # WSI Feature Extraction Tests

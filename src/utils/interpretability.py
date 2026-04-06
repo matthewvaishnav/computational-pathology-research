@@ -23,18 +23,20 @@ Usage:
 """
 
 import os
+
+import matplotlib
 import numpy as np
 import torch
-import matplotlib
 
 matplotlib.use("Agg")
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
-from typing import Dict, List, Optional, Tuple, Union, Any
-from pathlib import Path
 
 # ============================================================================
 # Attention Visualization

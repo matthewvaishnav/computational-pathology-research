@@ -5,10 +5,11 @@ This module implements a transformer-based architecture for normalizing color va
 across different staining protocols while preserving tissue morphology.
 """
 
+from typing import Optional, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Tuple
 
 
 class PatchEmbedding(nn.Module):

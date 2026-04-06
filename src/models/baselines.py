@@ -10,10 +10,12 @@ Baselines:
 3. AttentionBaseline - Self-attention only, no cross-modal interaction
 """
 
+from typing import Dict, List, Optional, Tuple
+
 import torch
 import torch.nn as nn
-from typing import Optional, Dict, Tuple, List
-from .encoders import WSIEncoder, GenomicEncoder, ClinicalTextEncoder
+
+from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 
 
 class SingleModalityModel(nn.Module):

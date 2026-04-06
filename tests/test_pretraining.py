@@ -2,16 +2,18 @@
 Unit tests for self-supervised pretraining objectives and pretrainer.
 """
 
+import shutil
+import tempfile
+from pathlib import Path
+
 import pytest
 import torch
 import torch.nn as nn
-from pathlib import Path
-import tempfile
-import shutil
 
-from src.pretraining.objectives import PatchContrastiveLoss, MaskedPatchReconstruction
-from src.pretraining.pretrainer import SelfSupervisedPretrainer
 from src.models.encoders import WSIEncoder
+from src.pretraining.objectives import (MaskedPatchReconstruction,
+                                        PatchContrastiveLoss)
+from src.pretraining.pretrainer import SelfSupervisedPretrainer
 
 
 class TestPatchContrastiveLoss:

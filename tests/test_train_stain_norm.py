@@ -4,19 +4,18 @@ Unit tests for stain normalization training utilities.
 Tests the loss functions and morphology preservation metrics.
 """
 
-import torch
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
+import torch
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from experiments.train_stain_norm import (
-    PerceptualLoss,
-    ColorConsistencyLoss,
-    MorphologyPreservationMetrics,
-)
+from experiments.train_stain_norm import (ColorConsistencyLoss,
+                                          MorphologyPreservationMetrics,
+                                          PerceptualLoss)
 
 
 class TestPerceptualLoss:

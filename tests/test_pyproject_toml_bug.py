@@ -8,8 +8,8 @@ When the test FAILS, it proves the TOML parsing error is present.
 After the fix is implemented, this test should PASS.
 """
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Use tomllib for Python 3.11+, tomli for earlier versions

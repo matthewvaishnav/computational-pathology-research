@@ -6,9 +6,10 @@ representations into task-specific outputs (classification logits, survival
 predictions, etc.).
 """
 
+from typing import Optional, Tuple
+
 import torch
 import torch.nn as nn
-from typing import Optional, Tuple
 
 
 class ClassificationHead(nn.Module):

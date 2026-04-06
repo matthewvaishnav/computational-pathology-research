@@ -5,10 +5,12 @@ This module provides the end-to-end multimodal architecture that combines
 WSI, genomic, and clinical text data through attention-based fusion.
 """
 
+from typing import Dict, Optional, Tuple
+
 import torch
 import torch.nn as nn
-from typing import Optional, Dict, Tuple
-from .encoders import WSIEncoder, GenomicEncoder, ClinicalTextEncoder
+
+from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .fusion import MultiModalFusionLayer
 
 

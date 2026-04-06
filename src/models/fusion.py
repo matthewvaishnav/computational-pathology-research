@@ -6,10 +6,11 @@ interaction between different modalities (WSI, genomic, clinical text)
 through multi-head cross-attention.
 """
 
+from typing import Dict, List, Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Dict, List
 
 
 class CrossModalAttention(nn.Module):
