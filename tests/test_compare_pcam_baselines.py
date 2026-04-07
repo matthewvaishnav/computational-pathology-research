@@ -377,5 +377,191 @@ def test_no_configs_found_exits_gracefully(tmp_path):
         assert exc_info.value.code == 1
 
 
+def test_manifest_recording(tmp_path, mock_config):
+    """
+    Test that comparison results are recorded to benchmark manifest.
+    
+    Verifies that the manifest entry contains correct metadata and metrics.
+    """
+    from experiments.compare_pcam_baselines import _record_comparison_to_manifest
+    
+    # Create config file
+    config_path = tmp_path / "test_config.yaml"
+    with open(config_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    # Mock comparison results
+    comparison = {
+        'timestamp': '2026-04-07 12:00:00',
+        'variants': [
+            {
+                'name': 'test_variant',
+                'config_path': str(config_path),
+                'training_status': 'success',
+                'evaluation_status': 'success',
+                'training_time_seconds': 100.5,
+                'test_accuracy': 0.95,
+                'test_auc': 0.98,
+                'test_f1': 0.94,
+                'test_precision': 0.96,
+                'test_recall': 0.92,
+                'model_parameters': {'total': 12000000},
+                'inference_time_seconds': 0.5,
+                'samples_per_second': 200.0,
+                'checkpoint_path': './checkpoints/test_variant/best_model.pth',
+                'results_dir': './results/pcam_comparison/test_variant'
+            }
+        ]
+    }
+    
+    output_path = tmp_path / "comparison_results.json"
+    manifest_path = tmp_path / "manifest.jsonl"
+    
+    # Mock BenchmarkManifest to use temp path
+    with patch('experiments.compare_pcam_baselines.BenchmarkManifest') as mock_manifest_class:
+        mock_manifest = MagicMock()
+        mock_manifest_class.return_value = mock_manifest
+        
+        # Record to manifest
+        _record_comparison_to_manifest(comparison, output_path)
+        
+        # Verify manifest.add_entry was called
+        assert mock_manifest.add_entry.called
+        
+        # Get the entry that was added
+        entry = mock_manifest.add_entry.call_args[0][0]
+        
+        # Verify entry structure
+        assert 'pcam_comparison' in entry.experiment_name
+        assert '2026-04-07' in entry.experiment_name
+        assert entry.dataset_name == "PatchCamelyon (PCam) - Comparison"
+        assert entry.dataset_subset_size == 700
+        assert str(config_path) in entry.config_path
+        assert 'compare_pcam_baselines.py' in entry.train_command
+        assert entry.final_metrics['num_variants'] == 1
+        assert entry.final_metrics['successful_variants'] == 1
+        assert entry.final_metrics['best_accuracy'] == 0.95
+        assert entry.final_metrics['best_auc'] == 0.98
+        assert entry.final_metrics['best_f1'] == 0.94
+        assert entry.final_metrics['best_variant_name'] == 'test_variant'
+        assert entry.final_metrics['total_training_time_seconds'] == 100.5
+        assert str(output_path) in entry.artifact_paths['comparison_results']
+        assert len(entry.caveats) > 0
+        assert 'Synthetic data' in entry.caveats[0]
+        assert entry.date == '2026-04-07'
+        assert entry.status == 'COMPLETE'
+
+
+def test_manifest_recording_partial_success(tmp_path, mock_config):
+    """
+    Test manifest recording when some variants fail.
+    
+    Verifies that status is PARTIAL when not all variants succeed.
+    """
+    from experiments.compare_pcam_baselines import _record_comparison_to_manifest
+    
+    # Create config files
+    config1_path = tmp_path / "config1.yaml"
+    config2_path = tmp_path / "config2.yaml"
+    
+    with open(config1_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    mock_config['experiment']['name'] = 'variant2'
+    with open(config2_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    # Mock comparison with one success and one failure
+    comparison = {
+        'timestamp': '2026-04-07 12:00:00',
+        'variants': [
+            {
+                'name': 'variant1',
+                'config_path': str(config1_path),
+                'training_status': 'success',
+                'evaluation_status': 'success',
+                'training_time_seconds': 100.0,
+                'test_accuracy': 0.95,
+                'test_auc': 0.98,
+                'test_f1': 0.94,
+                'checkpoint_path': './checkpoints/variant1/best_model.pth',
+                'results_dir': './results/variant1'
+            },
+            {
+                'name': 'variant2',
+                'config_path': str(config2_path),
+                'training_status': 'failed',
+                'evaluation_status': 'failed',
+                'training_time_seconds': 50.0,
+                'test_accuracy': None,
+                'test_auc': None,
+                'test_f1': None,
+                'checkpoint_path': None,
+                'results_dir': './results/variant2'
+            }
+        ]
+    }
+    
+    output_path = tmp_path / "comparison_results.json"
+    
+    # Mock BenchmarkManifest
+    with patch('experiments.compare_pcam_baselines.BenchmarkManifest') as mock_manifest_class:
+        mock_manifest = MagicMock()
+        mock_manifest_class.return_value = mock_manifest
+        
+        # Record to manifest
+        _record_comparison_to_manifest(comparison, output_path)
+        
+        # Get the entry
+        entry = mock_manifest.add_entry.call_args[0][0]
+        
+        # Verify partial success status
+        assert entry.status == 'PARTIAL'
+        assert entry.final_metrics['num_variants'] == 2
+        assert entry.final_metrics['successful_variants'] == 1
+        assert entry.final_metrics['best_variant_name'] == 'variant1'
+
+
+def test_manifest_recording_disabled(tmp_path, mock_config):
+    """
+    Test that manifest recording can be disabled.
+    """
+    from experiments.compare_pcam_baselines import aggregate_results
+    
+    # Create config file
+    config_path = tmp_path / "test_config.yaml"
+    with open(config_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    training_results = [{
+        'variant_name': 'test_variant',
+        'config_path': str(config_path),
+        'status': 'success',
+        'training_time_seconds': 100.0
+    }]
+    
+    evaluation_results = [{
+        'variant_name': 'test_variant',
+        'checkpoint_path': './checkpoints/test/best_model.pth',
+        'status': 'success',
+        'metrics': {'accuracy': 0.95, 'auc': 0.98, 'f1': 0.94}
+    }]
+    
+    output_path = tmp_path / "comparison_results.json"
+    
+    # Mock the manifest recording function
+    with patch('experiments.compare_pcam_baselines._record_comparison_to_manifest') as mock_record:
+        # Call with record_to_manifest=False
+        aggregate_results(
+            training_results,
+            evaluation_results,
+            str(output_path),
+            record_to_manifest=False
+        )
+        
+        # Verify manifest recording was not called
+        assert not mock_record.called
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
