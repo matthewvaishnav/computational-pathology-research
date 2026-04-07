@@ -27,16 +27,18 @@ python experiments/evaluate_pcam.py \
 
 ## Artifacts Generated
 
-### Checkpoints
+**NOTE**: All artifacts below are gitignored and not committed to the repository.
+
+### Checkpoints (gitignored)
 - `checkpoints/pcam_test/best_model.pth` (49.3 MB)
 - `checkpoints/pcam_test/checkpoint_epoch_1.pth` (49.3 MB)
 
-### Results
+### Results (gitignored)
 - `results/pcam_test/metrics.json` - Complete evaluation metrics
 - `results/pcam_test/confusion_matrix.png` - Confusion matrix heatmap
 - `results/pcam_test/roc_curve.png` - ROC curve with AUC
 
-### Logs
+### Logs (gitignored)
 - `logs/pcam_test/` - TensorBoard logs
 - `logs/pcam_test/training_status.json` - Training status tracking
 
