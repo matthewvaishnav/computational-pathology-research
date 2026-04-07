@@ -1,18 +1,19 @@
-# Quick test configuration for PCam (CPU-friendly)
-# Runs on small subset for testing
+# PatchCamelyon Test Configuration - 1 epoch smoke test
+# Binary classification of metastatic vs normal tissue patches
 
 experiment:
   name: patchcamelyon_test
-  description: Quick test of PatchCamelyon experiment
-  tags: [pcam, test, cpu]
+  description: 1-epoch smoke test on PatchCamelyon dataset
+  tags: [pcam, single-modality, test]
 
 data:
   dataset: pcam
   root_dir: ./data/pcam
-  download: true
-  num_workers: 0
-  pin_memory: false
+  download: false  # Dataset should already exist
+  num_workers: 0  # Set to 0 to avoid multiprocessing issues on Windows
+  pin_memory: false  # Disable since running on CPU
 
+  # Augmentation - applied at dataset level
   augmentation:
     enabled: true
     random_horizontal_flip: true
@@ -24,31 +25,34 @@ data:
       hue: 0.05
 
 model:
+  # Single modality mode
   modalities: [wsi]
-  embed_dim: 128
+  embed_dim: 256
 
+  # Feature extractor (applied batch-time in training script)
   feature_extractor:
     model: resnet18
     pretrained: true
     feature_dim: 512
 
   wsi:
-    input_dim: 512
-    hidden_dim: 128
+    input_dim: 512  # ResNet-18 feature dim
+    hidden_dim: 256
     num_heads: 4
     num_layers: 1
-    pooling: mean
+    pooling: mean  # Simple mean pooling for single patch
 
 task:
   type: classification
-  num_classes: 1
+  num_classes: 2  # Dataset has 2 classes (0=normal, 1=tumor); model outputs 1 logit for BCE
+
   classification:
-    hidden_dims: [64]
+    hidden_dims: [128]
     dropout: 0.3
 
 training:
-  num_epochs: 3
-  batch_size: 16
+  num_epochs: 1  # Just 1 epoch for smoke test
+  batch_size: 128
   learning_rate: 1e-3
   weight_decay: 1e-4
 
@@ -59,10 +63,10 @@ training:
   scheduler:
     name: cosine
     min_lr: 1e-6
-    warmup_epochs: 0
+    warmup_epochs: 0  # No warmup for 1 epoch
 
   max_grad_norm: 1.0
-  use_amp: false
+  use_amp: true  # Mixed precision
 
 validation:
   interval: 1
@@ -70,21 +74,21 @@ validation:
   maximize: true
 
 checkpoint:
-  save_interval: 1
+  save_interval: 1  # Save after 1 epoch
   save_best: true
   checkpoint_dir: ./checkpoints/pcam_test
 
 early_stopping:
-  enabled: false
+  enabled: false  # Disable for smoke test
 
 logging:
   log_dir: ./logs/pcam_test
-  log_interval: 10
-  use_tensorboard: false
+  log_interval: 50
+  use_tensorboard: true
 
 evaluation:
   generate_plots: true
   output_dir: ./results/pcam_test
 
 seed: 42
-device: cpu
+device: cuda
