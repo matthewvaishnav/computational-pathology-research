@@ -257,6 +257,13 @@ def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
     # Format accuracy for notes (handle None)
     accuracy_str = f"{best_variant['test_accuracy']:.4f}" if best_variant['test_accuracy'] is not None else "N/A"
     
+    # Convert output_path to relative path for portability
+    try:
+        relative_output_path = output_path.relative_to(Path.cwd())
+    except ValueError:
+        # If path is not relative to cwd, use as-is
+        relative_output_path = output_path
+    
     # Create manifest entry
     entry = BenchmarkEntry(
         experiment_name=f"pcam_comparison_{comparison['timestamp'].replace(' ', '_').replace(':', '-')}",
@@ -275,7 +282,7 @@ def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
             'total_training_time_seconds': sum(v['training_time_seconds'] for v in successful_variants),
         },
         artifact_paths={
-            'comparison_results': str(output_path),
+            'comparison_results': str(relative_output_path),
             'variant_checkpoints': [v['checkpoint_path'] for v in successful_variants if v.get('checkpoint_path')],
             'variant_results': [v['results_dir'] for v in successful_variants if v.get('results_dir')],
         },
@@ -287,7 +294,7 @@ def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
         ],
         notes=f"PCam baseline comparison run with {len(comparison['variants'])} variants: {variant_summary}. "
               f"Best performing variant: {best_variant['name']} with {accuracy_str} accuracy. "
-              f"See {output_path} for detailed comparison results.",
+              f"See {relative_output_path} for detailed comparison results.",
         date=comparison['timestamp'].split()[0],  # Extract date from timestamp
         status="COMPLETE" if len(successful_variants) == len(comparison['variants']) else "PARTIAL"
     )
