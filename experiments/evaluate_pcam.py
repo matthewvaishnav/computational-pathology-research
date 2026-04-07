@@ -270,8 +270,22 @@ def save_metrics(metrics: Dict, output_path: str) -> None:
     output_dir = Path(output_path).parent
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Remove non-serializable items if present
-    metrics_to_save = {k: v for k, v in metrics.items()}
+    # Convert numpy types to Python native types for JSON serialization
+    def convert_to_serializable(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, (np.int64, np.int32, np.int16, np.int8)):
+            return int(obj)
+        elif isinstance(obj, (np.float64, np.float32, np.float16)):
+            return float(obj)
+        elif isinstance(obj, dict):
+            return {k: convert_to_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_to_serializable(item) for item in obj]
+        else:
+            return obj
+    
+    metrics_to_save = convert_to_serializable(metrics)
 
     with open(output_path, 'w') as f:
         json.dump(metrics_to_save, f, indent=2)
@@ -454,44 +468,59 @@ Examples:
 
     # Load checkpoint
     try:
-        # Create models first
-        # We'll create them with dummy config and load from checkpoint
+        # First, load checkpoint to get config
+        logger.info(f"Loading checkpoint from: {args.checkpoint}")
+        checkpoint = torch.load(args.checkpoint, map_location=str(device))
+        
+        if 'config' not in checkpoint:
+            raise RuntimeError("Checkpoint does not contain config. Cannot determine model architecture.")
+        
+        config = checkpoint['config']
+        checkpoint_metrics = checkpoint.get('metrics', {})
+        epoch = checkpoint.get('epoch', 0)
+        
+        logger.info(f"Successfully loaded checkpoint from epoch {epoch}")
+        logger.info(f"Checkpoint metrics: {checkpoint_metrics}")
+        
+        # Now create models with correct dimensions from config
+        feature_extractor_config = config['model']['feature_extractor']
         feature_extractor = ResNetFeatureExtractor(
-            model_name='resnet18',
+            model_name=feature_extractor_config['model'],
             pretrained=False,
-            feature_dim=512,
+            feature_dim=feature_extractor_config.get('feature_dim', 512),
         )
+        
+        wsi_config = config['model']['wsi']
         encoder = WSIEncoder(
-            input_dim=512,
-            hidden_dim=512,
-            output_dim=256,
-            num_heads=8,
-            num_layers=2,
-            pooling='mean',
-            dropout=0.1,
+            input_dim=wsi_config['input_dim'],
+            hidden_dim=wsi_config['hidden_dim'],
+            output_dim=config['model']['embed_dim'],
+            num_heads=wsi_config['num_heads'],
+            num_layers=wsi_config['num_layers'],
+            pooling=wsi_config.get('pooling', 'mean'),
+            dropout=config['training'].get('dropout', 0.1),
         )
+        
+        classification_config = config['task']['classification']
         head = ClassificationHead(
-            input_dim=256,
-            hidden_dim=128,
+            input_dim=config['model']['embed_dim'],
+            hidden_dim=classification_config['hidden_dims'][0],
             num_classes=1,
-            dropout=0.3,
+            dropout=classification_config['dropout'],
             use_hidden_layer=True,
         )
-
-        config, checkpoint_metrics, epoch = load_checkpoint(
-            args.checkpoint,
-            feature_extractor,
-            encoder,
-            head,
-            str(device),
-        )
+        
+        # Load state dicts
+        feature_extractor.load_state_dict(checkpoint['feature_extractor_state_dict'])
+        encoder.load_state_dict(checkpoint['encoder_state_dict'])
+        head.load_state_dict(checkpoint['head_state_dict'])
 
         # Move to device
         feature_extractor = feature_extractor.to(device)
         encoder = encoder.to(device)
         head = head.to(device)
 
-    except (FileNotFoundError, RuntimeError) as e:
+    except (FileNotFoundError, RuntimeError, KeyError) as e:
         logger.error(f"Failed to load checkpoint: {e}")
         sys.exit(1)
 
