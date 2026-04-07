@@ -34,7 +34,9 @@ def _write_split(root_dir: Path, split: str, images: np.ndarray, labels: np.ndar
         f.create_dataset("labels", data=labels)
 
 
-def _write_metadata(root_dir: Path, train_count: int = 0, val_count: int = 0, test_count: int = 0) -> None:
+def _write_metadata(
+    root_dir: Path, train_count: int = 0, val_count: int = 0, test_count: int = 0
+) -> None:
     """Write lightweight metadata.json used by the dataset."""
     metadata = {
         "dataset": "PCam",

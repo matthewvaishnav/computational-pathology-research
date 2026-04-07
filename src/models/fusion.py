@@ -104,7 +104,7 @@ class CrossModalAttention(nn.Module):
             # Expand mask for heads: [B, num_heads, 1]
             mask_expanded = key_mask.view(batch_size, 1, 1).expand(-1, self.num_heads, 1)
             attn_scores = attn_scores.masked_fill(~mask_expanded, float("-inf"))
-            
+
             # Check if all keys are masked (all False) - handle per sample
             all_masked = ~key_mask  # [B]
             if all_masked.all():
@@ -117,19 +117,19 @@ class CrossModalAttention(nn.Module):
 
         # Softmax to get attention weights
         attn_weights = F.softmax(attn_scores, dim=-1)  # [B, num_heads, 1]
-        
+
         # Handle NaN from all-masked samples (softmax of all -inf)
         if key_mask is not None:
             all_masked = ~key_mask  # [B]
             if all_masked.any():
                 # Replace NaN attention weights with zeros for all-masked samples
-                all_masked_expanded = all_masked.view(batch_size, 1, 1).expand(-1, self.num_heads, 1)
-                attn_weights = torch.where(
-                    all_masked_expanded,
-                    torch.zeros_like(attn_weights),
-                    attn_weights
+                all_masked_expanded = all_masked.view(batch_size, 1, 1).expand(
+                    -1, self.num_heads, 1
                 )
-        
+                attn_weights = torch.where(
+                    all_masked_expanded, torch.zeros_like(attn_weights), attn_weights
+                )
+
         attn_weights = self.attn_dropout(attn_weights)
 
         # Apply attention to values
