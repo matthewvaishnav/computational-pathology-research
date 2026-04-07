@@ -415,8 +415,8 @@ def main():
     # Create optimizer and loss
     optimizer = optim.AdamW(
         model.parameters(),
-        lr=config['training']['learning_rate'],
-        weight_decay=config['training']['weight_decay'],
+        lr=float(config['training']['learning_rate']),
+        weight_decay=float(config['training']['weight_decay']),
     )
     
     criterion = nn.BCEWithLogitsLoss()
