@@ -207,6 +207,68 @@ def test_camelyon_training_script_is_executable():
     assert 'def main()' in content
     assert 'argparse' in content
     assert '__main__' in content
+    assert 'CAMELYONSlideIndex' in content
+    assert 'CAMELYONPatchDataset' in content
+
+
+def test_camelyon_training_script_has_real_training_loop():
+    """Test that CAMELYON training script has real training logic."""
+    script_path = Path("experiments/train_camelyon.py")
+    
+    with open(script_path, 'r') as f:
+        content = f.read()
+    
+    # Check for real training components (not just placeholder)
+    assert 'def train_epoch' in content
+    assert 'def validate' in content
+    assert 'SimpleSlideClassifier' in content
+    assert 'optimizer.zero_grad()' in content
+    assert 'loss.backward()' in content
+    assert 'torch.save' in content  # Model saving
+
+
+def test_simple_slide_classifier_can_be_imported():
+    """Test that SimpleSlideClassifier can be imported and instantiated."""
+    # Import the training script as a module
+    import sys
+    from pathlib import Path
+    
+    # Add experiments to path
+    experiments_path = Path("experiments")
+    sys.path.insert(0, str(experiments_path.absolute()))
+    
+    try:
+        from train_camelyon import SimpleSlideClassifier
+        
+        # Create a simple model
+        model = SimpleSlideClassifier(
+            feature_dim=2048,
+            hidden_dim=256,
+            num_classes=2,
+            pooling='mean',
+            dropout=0.3,
+        )
+        
+        # Check model structure
+        assert hasattr(model, 'classifier')
+        assert hasattr(model, 'pooling')
+        assert model.pooling == 'mean'
+        
+        # Test forward pass
+        import torch
+        batch_size = 4
+        num_patches = 10
+        feature_dim = 2048
+        
+        dummy_input = torch.randn(batch_size, num_patches, feature_dim)
+        output = model(dummy_input)
+        
+        # Check output shape (binary classification)
+        assert output.shape == (batch_size, 1)
+        
+    finally:
+        # Clean up sys.path
+        sys.path.remove(str(experiments_path.absolute()))
 
 
 if __name__ == "__main__":
