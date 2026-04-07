@@ -22,6 +22,7 @@ This repository provides a **tested code framework** for exploring multimodal fu
 - ✅ Comprehensive unit tests with 62% code coverage
 - ✅ Working MCP server for repository exploration
 - ✅ **PatchCamelyon benchmark: 94% accuracy on synthetic subset** ([details](PCAM_BENCHMARK_RESULTS.md))
+- ✅ **CAMELYON16 training path: Functional slide-level pipeline** ([details](CAMELYON_TRAINING_STATUS.md))
 - ✅ ONNX export capabilities for model deployment
 - ✅ Model profiling and ablation study tools
 - ❌ **No experiments on full-scale published datasets**
@@ -59,6 +60,7 @@ This repository provides a **tested code framework** for exploring multimodal fu
 **Artifacts** (gitignored):
 - Checkpoints: `checkpoints/pcam/best_model.pth`, `checkpoints/pcam/checkpoint_epoch_5.pth`
 - Results: `results/pcam/metrics.json`, `results/pcam/confusion_matrix.png`, `results/pcam/roc_curve.png`
+- Interpretability: `results/pcam/interpretability/interpretability_summary.json`, `results/pcam/interpretability/interpretability_report.md`, embedding plots, and feature saliency artifacts
 - Logs: `logs/pcam/`, `pcam_full_training.log`
 
 **Commands**:
@@ -76,6 +78,15 @@ python experiments/evaluate_pcam.py \
   --output-dir results/pcam \
   --batch-size 64 \
   --num-workers 0
+
+# Evaluation + interpretability artifacts
+python experiments/evaluate_pcam.py \
+  --checkpoint checkpoints/pcam/best_model.pth \
+  --data-root data/pcam \
+  --output-dir results/pcam \
+  --batch-size 64 \
+  --num-workers 0 \
+  --generate-interpretability
 ```
 
 ## Abstract
@@ -554,6 +565,25 @@ python experiments/compare_pcam_baselines.py \
 ```
 
 See [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.md) for detailed comparison documentation.
+
+### CAMELYON16 Slide-Level Training
+
+Train on CAMELYON16-style slide-level classification:
+
+```bash
+# Generate synthetic CAMELYON data for testing
+python scripts/generate_synthetic_camelyon.py
+
+# Quick 1-epoch smoke test
+python experiments/train_camelyon.py \
+  --config experiments/configs/camelyon_quick_test.yaml
+
+# Full training (50 epochs)
+python experiments/train_camelyon.py \
+  --config experiments/configs/camelyon.yaml
+```
+
+See [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.md) for complete status and usage details.
 
 ### Model Profiling and Analysis
 
