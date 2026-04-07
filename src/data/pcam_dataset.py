@@ -30,6 +30,7 @@ from torchvision import transforms
 
 try:
     import tensorflow_datasets as tfds
+
     TFDS_AVAILABLE = True
 except ImportError:
     TFDS_AVAILABLE = False
@@ -75,21 +76,21 @@ class PCamDataset(Dataset):
 
     # URLs for direct download from PCam GitHub release
     PCAM_URLS = {
-        'train': 'https://github.com/basveeling/pcam/raw/master/pcam_v1/train.tar.gz',
-        'val': 'https://github.com/basveeling/pcam/raw/master/pcam_v1/valid.tar.gz',
-        'test': 'https://github.com/basveeling/pcam/raw/master/pcam_v1/test.tar.gz',
+        "train": "https://github.com/basveeling/pcam/raw/master/pcam_v1/train.tar.gz",
+        "val": "https://github.com/basveeling/pcam/raw/master/pcam_v1/valid.tar.gz",
+        "test": "https://github.com/basveeling/pcam/raw/master/pcam_v1/test.tar.gz",
     }
 
     SPLIT_SIZES = {
-        'train': (262144, 8000),  # (images, samples_for_val)
-        'val': (8000, 8000),
-        'test': (32768, 32768),
+        "train": (262144, 8000),  # (images, samples_for_val)
+        "val": (8000, 8000),
+        "test": (32768, 32768),
     }
 
     def __init__(
         self,
         root_dir: str,
-        split: str = 'train',
+        split: str = "train",
         transform: Optional[Callable] = None,
         download: bool = True,
     ):
@@ -118,22 +119,22 @@ class PCamDataset(Dataset):
         self.transform = transform
         self.download_flag = download
 
-        if self.split not in ('train', 'val', 'test'):
-            raise ValueError(
-                f"Invalid split '{split}'. Must be one of 'train', 'val', or 'test'."
-            )
+        if self.split not in ("train", "val", "test"):
+            raise ValueError(f"Invalid split '{split}'. Must be one of 'train', 'val', or 'test'.")
 
         # Default transform if none provided
         if self.transform is None:
-            self.transform = transforms.Compose([
-                transforms.ToTensor(),
-            ])
+            self.transform = transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                ]
+            )
 
         # Dataset files
         self.split_dir = self.root_dir / self.split
-        self.images_file = self.split_dir / 'images.h5py'
-        self.labels_file = self.split_dir / 'labels.h5py'
-        self.metadata_file = self.root_dir / 'metadata.json'
+        self.images_file = self.split_dir / "images.h5py"
+        self.labels_file = self.split_dir / "labels.h5py"
+        self.metadata_file = self.root_dir / "metadata.json"
 
         # Load or download dataset
         if self._check_exists():
@@ -145,8 +146,7 @@ class PCamDataset(Dataset):
             self._load_metadata()
         else:
             raise RuntimeError(
-                f"Dataset not found at {self.root_dir}. "
-                f"Set download=True to download it."
+                f"Dataset not found at {self.root_dir}. " f"Set download=True to download it."
             )
 
         # Open HDF5 files
@@ -159,12 +159,12 @@ class PCamDataset(Dataset):
     def _open_h5_files(self) -> None:
         """Open HDF5 files for lazy access."""
         try:
-            self._images_h5 = h5py.File(str(self.images_file), 'r')
-            self._labels_h5 = h5py.File(str(self.labels_file), 'r')
+            self._images_h5 = h5py.File(str(self.images_file), "r")
+            self._labels_h5 = h5py.File(str(self.labels_file), "r")
 
             # Get dataset shapes
-            self._num_images = self._images_h5['images'].shape[0]
-            self._num_labels = self._labels_h5['labels'].shape[0]
+            self._num_images = self._images_h5["images"].shape[0]
+            self._num_labels = self._labels_h5["labels"].shape[0]
 
             if self._num_images != self._num_labels:
                 raise RuntimeError(
@@ -173,8 +173,7 @@ class PCamDataset(Dataset):
                 )
 
             logger.debug(
-                f"Opened HDF5 files for split '{self.split}': "
-                f"{self._num_images} samples"
+                f"Opened HDF5 files for split '{self.split}': " f"{self._num_images} samples"
             )
 
         except Exception as e:
@@ -183,7 +182,7 @@ class PCamDataset(Dataset):
 
     def _close_h5_files(self) -> None:
         """Close HDF5 file handles."""
-        images_h5 = getattr(self, '_images_h5', None)
+        images_h5 = getattr(self, "_images_h5", None)
         if images_h5 is not None:
             try:
                 images_h5.close()
@@ -191,7 +190,7 @@ class PCamDataset(Dataset):
                 pass
             self._images_h5 = None
 
-        labels_h5 = getattr(self, '_labels_h5', None)
+        labels_h5 = getattr(self, "_labels_h5", None)
         if labels_h5 is not None:
             try:
                 labels_h5.close()
@@ -202,7 +201,7 @@ class PCamDataset(Dataset):
     def _load_metadata(self) -> None:
         """Load dataset metadata from JSON file."""
         if self.metadata_file.exists():
-            with open(self.metadata_file, 'r') as f:
+            with open(self.metadata_file, "r") as f:
                 self.metadata = json.load(f)
         else:
             self.metadata = {}
@@ -210,7 +209,7 @@ class PCamDataset(Dataset):
     def _save_metadata(self, metadata: Dict[str, Any]) -> None:
         """Save dataset metadata to JSON file."""
         self.metadata = metadata
-        with open(self.metadata_file, 'w') as f:
+        with open(self.metadata_file, "w") as f:
             json.dump(metadata, f, indent=2)
 
     def download(self) -> None:
@@ -232,8 +231,7 @@ class PCamDataset(Dataset):
             self._download_via_tfds()
         else:
             logger.warning(
-                "TensorFlow Datasets not available. "
-                "Falling back to direct download from GitHub."
+                "TensorFlow Datasets not available. " "Falling back to direct download from GitHub."
             )
             self._download_direct()
 
@@ -242,17 +240,17 @@ class PCamDataset(Dataset):
 
         # Save metadata
         metadata = {
-            'dataset': 'PCam',
-            'version': '1.0',
-            'splits': {
+            "dataset": "PCam",
+            "version": "1.0",
+            "splits": {
                 split: {
-                    'num_samples': self._get_split_size(split),
+                    "num_samples": self._get_split_size(split),
                 }
-                for split in ('train', 'val', 'test')
+                for split in ("train", "val", "test")
             },
-            'image_shape': [96, 96, 3],
-            'num_classes': 2,
-            'class_names': ['normal', 'metastatic'],
+            "image_shape": [96, 96, 3],
+            "num_classes": 2,
+            "class_names": ["normal", "metastatic"],
         }
         self._save_metadata(metadata)
 
@@ -265,15 +263,15 @@ class PCamDataset(Dataset):
         try:
             # Download and process each split
             for split_name, tfds_split in [
-                ('train', 'train'),
-                ('val', 'validation'),
-                ('test', 'test')
+                ("train", "train"),
+                ("val", "validation"),
+                ("test", "test"),
             ]:
                 logger.info(f"Processing split: {split_name}")
 
                 # Get dataset from TFDS
                 dataset = tfds.load(
-                    'pcam',
+                    "pcam",
                     split=tfds_split,
                     data_dir=str(self.root_dir),
                     download=True,
@@ -284,8 +282,8 @@ class PCamDataset(Dataset):
                 labels_list = []
 
                 for example in tfds.as_numpy(dataset):
-                    images_list.append(example['image'])
-                    labels_list.append(example['label'])
+                    images_list.append(example["image"])
+                    labels_list.append(example["label"])
 
                 images = np.array(images_list, dtype=np.uint8)
                 labels = np.array(labels_list, dtype=np.int32)
@@ -294,15 +292,13 @@ class PCamDataset(Dataset):
                 split_dir = self.root_dir / split_name
                 split_dir.mkdir(parents=True, exist_ok=True)
 
-                with h5py.File(split_dir / 'images.h5py', 'w') as f:
-                    f.create_dataset('images', data=images, compression='gzip')
+                with h5py.File(split_dir / "images.h5py", "w") as f:
+                    f.create_dataset("images", data=images, compression="gzip")
 
-                with h5py.File(split_dir / 'labels.h5py', 'w') as f:
-                    f.create_dataset('labels', data=labels, compression='gzip')
+                with h5py.File(split_dir / "labels.h5py", "w") as f:
+                    f.create_dataset("labels", data=labels, compression="gzip")
 
-                logger.info(
-                    f"Saved {split_name} split: {len(images)} samples"
-                )
+                logger.info(f"Saved {split_name} split: {len(images)} samples")
 
         except Exception as e:
             raise RuntimeError(f"Failed to download via TFDS: {e}")
@@ -316,16 +312,16 @@ class PCamDataset(Dataset):
 
             try:
                 # Create temp directory for extraction
-                temp_dir = self.root_dir / 'temp'
+                temp_dir = self.root_dir / "temp"
                 temp_dir.mkdir(parents=True, exist_ok=True)
 
                 # Download tarball
-                tarball_path = temp_dir / f'{split_name}.tar.gz'
+                tarball_path = temp_dir / f"{split_name}.tar.gz"
                 urllib.request.urlretrieve(url, str(tarball_path))
 
                 # Extract tarball
                 logger.info(f"Extracting {split_name} split...")
-                with tarfile.open(str(tarball_path), 'r:gz') as tar:
+                with tarfile.open(str(tarball_path), "r:gz") as tar:
                     tar.extractall(str(temp_dir))
 
                 # Clean up tarball
@@ -345,9 +341,7 @@ class PCamDataset(Dataset):
                 logger.info(f"Downloaded and extracted {split_name} split")
 
             except Exception as e:
-                raise RuntimeError(
-                    f"Failed to download {split_name} split: {e}"
-                )
+                raise RuntimeError(f"Failed to download {split_name} split: {e}")
 
     def _process_downloaded_data(self) -> None:
         """
@@ -357,11 +351,11 @@ class PCamDataset(Dataset):
         HDF5 files for efficient random access.
         """
         # Process each split directory
-        for split_name in ('train', 'val', 'test'):
+        for split_name in ("train", "val", "test"):
             split_dir = self.root_dir / split_name
 
             # Check if already processed
-            if (split_dir / 'images.h5py').exists():
+            if (split_dir / "images.h5py").exists():
                 continue
 
             # Find image files
@@ -386,16 +380,16 @@ class PCamDataset(Dataset):
                     # or center_XXX.tif for test set
                     filename = img_path.stem
 
-                    if '_' in filename:
+                    if "_" in filename:
                         # Training/validation: filename is like "kidney_1010_0_128_128_48"
                         # or "tumor_1010_0_128_128_48"
-                        label_str = filename.split('_')[-1]
+                        label_str = filename.split("_")[-1]
                         # Check if last element is a valid label
-                        if label_str in ('0', '1'):
+                        if label_str in ("0", "1"):
                             label = int(label_str)
                         else:
                             # Check for 'tumor' prefix
-                            label = 1 if 'tumor' in filename else 0
+                            label = 1 if "tumor" in filename else 0
                     else:
                         # Fallback: assume test set has no labels
                         label = 0
@@ -413,23 +407,21 @@ class PCamDataset(Dataset):
                 labels = np.array(labels, dtype=np.int32)
 
                 # Save as HDF5
-                with h5py.File(split_dir / 'images.h5py', 'w') as f:
-                    f.create_dataset('images', data=images, compression='gzip')
+                with h5py.File(split_dir / "images.h5py", "w") as f:
+                    f.create_dataset("images", data=images, compression="gzip")
 
-                with h5py.File(split_dir / 'labels.h5py', 'w') as f:
-                    f.create_dataset('labels', data=labels, compression='gzip')
+                with h5py.File(split_dir / "labels.h5py", "w") as f:
+                    f.create_dataset("labels", data=labels, compression="gzip")
 
-                logger.info(
-                    f"Processed {split_name}: {len(images)} images saved"
-                )
+                logger.info(f"Processed {split_name}: {len(images)} images saved")
 
     def _find_image_files(self, directory: Path) -> List[Path]:
         """Find all image files in a directory."""
-        image_extensions = {'.tif', '.tiff', '.png', '.jpg', '.jpeg'}
+        image_extensions = {".tif", ".tiff", ".png", ".jpg", ".jpeg"}
         image_files = []
 
         for ext in image_extensions:
-            image_files.extend(directory.glob(f'**/*{ext}'))
+            image_files.extend(directory.glob(f"**/*{ext}"))
 
         return sorted(image_files)
 
@@ -465,8 +457,8 @@ class PCamDataset(Dataset):
 
         try:
             # Load image and label from HDF5
-            image = self._images_h5['images'][idx]
-            label = self._labels_h5['labels'][idx]
+            image = self._images_h5["images"][idx]
+            label = self._labels_h5["labels"][idx]
 
             # Convert numpy arrays to proper types
             if isinstance(image, np.ndarray):
@@ -478,9 +470,7 @@ class PCamDataset(Dataset):
                 if len(image.shape) == 2:
                     image = np.stack([image] * 3, axis=-1)
                 elif image.shape[-1] != 3:
-                    raise ValueError(
-                        f"Expected 3-channel image, got shape {image.shape}"
-                    )
+                    raise ValueError(f"Expected 3-channel image, got shape {image.shape}")
 
                 # Convert HWC to CHW format for PyTorch
                 image = np.transpose(image, (2, 0, 1))
@@ -489,8 +479,7 @@ class PCamDataset(Dataset):
                 # Clamp to valid range first
                 image = np.clip(image, 0, 255).astype(np.uint8)
                 image_pil = Image.fromarray(
-                    np.transpose(image, (1, 2, 0)),  # CHW -> HWC for PIL
-                    mode='RGB'
+                    np.transpose(image, (1, 2, 0)), mode="RGB"  # CHW -> HWC for PIL
                 )
 
                 # Apply transforms
@@ -508,28 +497,26 @@ class PCamDataset(Dataset):
             image_id = f"{self.split}_{idx:08d}"
 
             return {
-                'image': image,
-                'label': label_tensor,
-                'image_id': image_id,
+                "image": image,
+                "label": label_tensor,
+                "image_id": image_id,
             }
 
         except IndexError as e:
-            raise IndexError(
-                f"Error accessing index {idx}: {e}"
-            )
+            raise IndexError(f"Error accessing index {idx}: {e}")
         except Exception as e:
             # Log warning and return a placeholder for corrupted images
             warnings.warn(
                 f"Error loading sample {idx} from {self.split} split: {e}. "
                 f"Returning zeros as placeholder.",
-                RuntimeWarning
+                RuntimeWarning,
             )
 
             # Return a placeholder sample
             return {
-                'image': torch.zeros(3, 96, 96, dtype=torch.float32),
-                'label': torch.tensor(0, dtype=torch.long),
-                'image_id': f"{self.split}_{idx:08d}_error",
+                "image": torch.zeros(3, 96, 96, dtype=torch.float32),
+                "label": torch.tensor(0, dtype=torch.long),
+                "image_id": f"{self.split}_{idx:08d}_error",
             }
 
     def __repr__(self) -> str:
@@ -566,7 +553,7 @@ class PCamDatasetWithFeatures(Dataset):
     def __init__(
         self,
         root_dir: str,
-        split: str = 'train',
+        split: str = "train",
         features_path: Optional[str] = None,
         transform: Optional[Callable] = None,
         download: bool = True,
@@ -597,7 +584,7 @@ class PCamDatasetWithFeatures(Dataset):
     def _load_features(self) -> None:
         """Load pre-extracted features from HDF5 file."""
         if self.features_path and Path(self.features_path).exists():
-            self._features_h5 = h5py.File(self.features_path, 'r')
+            self._features_h5 = h5py.File(self.features_path, "r")
             logger.info(f"Loaded features from {self.features_path}")
         else:
             logger.warning(
@@ -624,19 +611,17 @@ class PCamDatasetWithFeatures(Dataset):
 
         if self._features_h5 is not None:
             try:
-                features = self._features_h5['features'][idx]
-                sample['wsi_features'] = torch.from_numpy(features).float()
+                features = self._features_h5["features"][idx]
+                sample["wsi_features"] = torch.from_numpy(features).float()
             except Exception as e:
-                logger.warning(
-                    f"Failed to load features for index {idx}: {e}"
-                )
-                sample['wsi_features'] = None
+                logger.warning(f"Failed to load features for index {idx}: {e}")
+                sample["wsi_features"] = None
 
         return sample
 
     def __del__(self) -> None:
         """Clean up resources."""
-        features_h5 = getattr(self, '_features_h5', None)
+        features_h5 = getattr(self, "_features_h5", None)
         if features_h5 is not None:
             try:
                 features_h5.close()
@@ -645,7 +630,7 @@ class PCamDatasetWithFeatures(Dataset):
 
 
 def get_pcam_transforms(
-    split: str = 'train',
+    split: str = "train",
     augmentation: bool = True,
 ) -> Optional[Callable]:
     """
@@ -658,41 +643,45 @@ def get_pcam_transforms(
     Returns:
         Composed transform pipeline.
     """
-    if split == 'train' and augmentation:
-        return transforms.Compose([
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomVerticalFlip(p=0.5),
-            transforms.ColorJitter(
-                brightness=0.1,
-                contrast=0.1,
-                saturation=0.1,
-                hue=0.05,
-            ),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-        ])
+    if split == "train" and augmentation:
+        return transforms.Compose(
+            [
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomVerticalFlip(p=0.5),
+                transforms.ColorJitter(
+                    brightness=0.1,
+                    contrast=0.1,
+                    saturation=0.1,
+                    hue=0.05,
+                ),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
+            ]
+        )
     else:
         # Validation/test: minimal preprocessing
-        return transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-        ])
+        return transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
+            ]
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Simple test
     logging.basicConfig(level=logging.INFO)
 
     # Try to load dataset (will download if not present)
     dataset = PCamDataset(
-        root_dir='data/pcam',
-        split='train',
+        root_dir="data/pcam",
+        split="train",
         download=True,
     )
 

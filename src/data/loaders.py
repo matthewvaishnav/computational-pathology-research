@@ -447,7 +447,7 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
     wsi_list = []
     max_patches = 0
     feature_dim = None
-    
+
     for i, sample in enumerate(batch):
         if sample["wsi_features"] is not None:
             wsi_list.append(sample["wsi_features"])
