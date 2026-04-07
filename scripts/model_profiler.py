@@ -5,14 +5,17 @@ Performance Profiling Script
 This script profiles model performance to identify bottlenecks:
 - Execution time profiling
 - Memory profiling
-- GPU profiling
-- Line-by-line profiling
-- Bottleneck identification
+- PyTorch profiling
+- cProfile profiling
+- Model size analysis
 
 Usage:
-    python scripts/profile.py --checkpoint checkpoints/best_model.pth
-    python scripts/profile.py --checkpoint checkpoints/best_model.pth --profile-type memory
-    python scripts/profile.py --checkpoint checkpoints/best_model.pth --profile-type gpu
+    python scripts/model_profiler.py --checkpoint checkpoints/best_model.pth
+    python scripts/model_profiler.py --checkpoint checkpoints/best_model.pth --profile-type time
+    python scripts/model_profiler.py --checkpoint checkpoints/best_model.pth --profile-type memory
+    python scripts/model_profiler.py --checkpoint checkpoints/best_model.pth --profile-type pytorch
+    python scripts/model_profiler.py --checkpoint checkpoints/best_model.pth --profile-type cprofile
+    python scripts/model_profiler.py --checkpoint checkpoints/best_model.pth --profile-type size
 """
 
 import argparse
@@ -21,6 +24,7 @@ import io
 import pstats
 import sys
 import time
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -41,8 +45,12 @@ class ModelProfiler:
         self,
         checkpoint_path: str,
         batch_size: int = 32,
-        wsi_size: int = 224,
-        num_clinical: int = 10,
+        wsi_feature_dim: int = 1024,
+        wsi_num_patches: int = 100,
+        genomic_dim: int = 2000,
+        clinical_vocab_size: int = 30000,
+        clinical_seq_len: int = 128,
+        embed_dim: int = 256,
         device: str = 'cuda' if torch.cuda.is_available() else 'cpu',
         verbose: bool = True
     ):
@@ -52,15 +60,23 @@ class ModelProfiler:
         Args:
             checkpoint_path: Path to model checkpoint
             batch_size: Batch size for profiling
-            wsi_size: WSI feature dimension
-            num_clinical: Number of clinical features
+            wsi_feature_dim: WSI patch feature dimension
+            wsi_num_patches: Number of WSI patches per sample
+            genomic_dim: Genomic feature dimension
+            clinical_vocab_size: Clinical text vocabulary size
+            clinical_seq_len: Clinical text sequence length
+            embed_dim: Model embedding dimension
             device: Device to use
             verbose: Whether to print detailed information
         """
         self.checkpoint_path = Path(checkpoint_path)
         self.batch_size = batch_size
-        self.wsi_size = wsi_size
-        self.num_clinical = num_clinical
+        self.wsi_feature_dim = wsi_feature_dim
+        self.wsi_num_patches = wsi_num_patches
+        self.genomic_dim = genomic_dim
+        self.clinical_vocab_size = clinical_vocab_size
+        self.clinical_seq_len = clinical_seq_len
+        self.embed_dim = embed_dim
         self.device = device
         self.verbose = verbose
         
@@ -77,30 +93,22 @@ class ModelProfiler:
         self.log(f"Loading model from {self.checkpoint_path}")
         
         checkpoint = torch.load(self.checkpoint_path, map_location='cpu')
+        config = self._extract_model_config(checkpoint)
+        wsi_config = config.get('wsi_config', None)
+        genomic_config = config.get('genomic_config', None)
+        clinical_config = config.get('clinical_config', None)
+        fusion_config = config.get('fusion_config', None)
+        embed_dim = config.get('embed_dim', self.embed_dim)
+        dropout = config.get('dropout', 0.1)
         
-        # Extract config
-        if 'config' in checkpoint:
-            config = checkpoint['config']
-        else:
-            config = {
-                'wsi_dim': self.wsi_size,
-                'clinical_dim': self.num_clinical,
-                'embed_dim': 256,
-                'num_heads': 8,
-                'num_layers': 4,
-                'dropout': 0.1,
-                'num_classes': 4
-            }
-        
-        # Create model
+        # Create model with current API
         model = MultimodalFusionModel(
-            wsi_dim=config.get('wsi_dim', self.wsi_size),
-            clinical_dim=config.get('clinical_dim', self.num_clinical),
-            embed_dim=config.get('embed_dim', 256),
-            num_heads=config.get('num_heads', 8),
-            num_layers=config.get('num_layers', 4),
-            dropout=config.get('dropout', 0.1),
-            num_classes=config.get('num_classes', 4)
+            wsi_config=wsi_config,
+            genomic_config=genomic_config,
+            clinical_config=clinical_config,
+            fusion_config=fusion_config,
+            embed_dim=embed_dim,
+            dropout=dropout,
         )
         
         # Load weights
@@ -116,16 +124,46 @@ class ModelProfiler:
         
         self.log("✓ Model loaded successfully")
         return model
+
+    def _extract_model_config(self, checkpoint: Dict) -> Dict:
+        """Extract model config from state-dict-only, flat, or nested checkpoints."""
+        raw_config = checkpoint.get('config', None)
+        if raw_config is None:
+            # State-dict-only checkpoints should instantiate model defaults.
+            self.log("No config found in checkpoint, using MultimodalFusionModel defaults")
+            return {}
+
+        if not isinstance(raw_config, Mapping):
+            return {}
+
+        # Hydra-style payloads often store model settings under config.model.
+        nested_model_config = raw_config.get('model', None)
+        if isinstance(nested_model_config, Mapping):
+            return dict(nested_model_config)
+
+        # Flat checkpoints store model keys directly in config.
+        return dict(raw_config)
     
-    def create_dummy_inputs(self):
-        """Create dummy inputs for profiling."""
-        wsi_features = torch.randn(
-            self.batch_size, self.wsi_size, device=self.device
-        )
-        clinical_features = torch.randn(
-            self.batch_size, self.num_clinical, device=self.device
-        )
-        return wsi_features, clinical_features
+    def create_dummy_inputs(self) -> Dict[str, torch.Tensor]:
+        """Create dummy inputs as a batch dict for profiling."""
+        batch = {
+            'wsi_features': torch.randn(
+                self.batch_size, self.wsi_num_patches, self.wsi_feature_dim, device=self.device
+            ),
+            'wsi_mask': torch.ones(
+                self.batch_size, self.wsi_num_patches, dtype=torch.bool, device=self.device
+            ),
+            'genomic': torch.randn(
+                self.batch_size, self.genomic_dim, device=self.device
+            ),
+            'clinical_text': torch.randint(
+                0, self.clinical_vocab_size, (self.batch_size, self.clinical_seq_len), device=self.device
+            ),
+            'clinical_mask': torch.ones(
+                self.batch_size, self.clinical_seq_len, dtype=torch.bool, device=self.device
+            ),
+        }
+        return batch
     
     def profile_execution_time(self, num_iterations: int = 100) -> Dict[str, float]:
         """
@@ -141,13 +179,13 @@ class ModelProfiler:
         self.log("Execution Time Profiling")
         self.log("=" * 60)
         
-        wsi_features, clinical_features = self.create_dummy_inputs()
+        batch = self.create_dummy_inputs()
         
         # Warmup
         self.log("Warming up...")
         for _ in range(10):
             with torch.no_grad():
-                _ = self.model(wsi_features, clinical_features)
+                _ = self.model(batch)
         
         # Profile
         self.log(f"Running {num_iterations} iterations...")
@@ -156,7 +194,7 @@ class ModelProfiler:
         with torch.no_grad():
             for _ in range(num_iterations):
                 start = time.time()
-                _ = self.model(wsi_features, clinical_features)
+                _ = self.model(batch)
                 if self.device == 'cuda':
                     torch.cuda.synchronize()
                 end = time.time()
@@ -204,13 +242,13 @@ class ModelProfiler:
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.empty_cache()
         
-        wsi_features, clinical_features = self.create_dummy_inputs()
+        batch = self.create_dummy_inputs()
         
         # Measure memory
         torch.cuda.reset_peak_memory_stats()
         
         with torch.no_grad():
-            _ = self.model(wsi_features, clinical_features)
+            _ = self.model(batch)
         
         stats = {
             'allocated': torch.cuda.memory_allocated() / 1024 / 1024,
@@ -233,7 +271,7 @@ class ModelProfiler:
         self.log("PyTorch Profiler")
         self.log("=" * 60)
         
-        wsi_features, clinical_features = self.create_dummy_inputs()
+        batch = self.create_dummy_inputs()
         
         activities = [ProfilerActivity.CPU]
         if self.device == 'cuda':
@@ -247,7 +285,7 @@ class ModelProfiler:
         ) as prof:
             with record_function("model_inference"):
                 with torch.no_grad():
-                    _ = self.model(wsi_features, clinical_features)
+                    _ = self.model(batch)
         
         # Print summary
         self.log("\nTop 10 operations by CPU time:")
@@ -273,14 +311,14 @@ class ModelProfiler:
         self.log("cProfile Profiling")
         self.log("=" * 60)
         
-        wsi_features, clinical_features = self.create_dummy_inputs()
+        batch = self.create_dummy_inputs()
         
         profiler = cProfile.Profile()
         profiler.enable()
         
         with torch.no_grad():
             for _ in range(10):
-                _ = self.model(wsi_features, clinical_features)
+                _ = self.model(batch)
         
         profiler.disable()
         
@@ -368,16 +406,40 @@ def parse_args() -> argparse.Namespace:
         help='Batch size for profiling'
     )
     parser.add_argument(
-        '--wsi-size',
+        '--wsi-feature-dim',
         type=int,
-        default=224,
-        help='WSI feature dimension'
+        default=1024,
+        help='WSI patch feature dimension'
     )
     parser.add_argument(
-        '--num-clinical',
+        '--wsi-num-patches',
         type=int,
-        default=10,
-        help='Number of clinical features'
+        default=100,
+        help='Number of WSI patches per sample'
+    )
+    parser.add_argument(
+        '--genomic-dim',
+        type=int,
+        default=2000,
+        help='Genomic feature dimension'
+    )
+    parser.add_argument(
+        '--clinical-vocab-size',
+        type=int,
+        default=30000,
+        help='Clinical text vocabulary size'
+    )
+    parser.add_argument(
+        '--clinical-seq-len',
+        type=int,
+        default=128,
+        help='Clinical text sequence length'
+    )
+    parser.add_argument(
+        '--embed-dim',
+        type=int,
+        default=256,
+        help='Model embedding dimension'
     )
     parser.add_argument(
         '--device',
@@ -413,8 +475,12 @@ def main():
     profiler = ModelProfiler(
         checkpoint_path=args.checkpoint,
         batch_size=args.batch_size,
-        wsi_size=args.wsi_size,
-        num_clinical=args.num_clinical,
+        wsi_feature_dim=args.wsi_feature_dim,
+        wsi_num_patches=args.wsi_num_patches,
+        genomic_dim=args.genomic_dim,
+        clinical_vocab_size=args.clinical_vocab_size,
+        clinical_seq_len=args.clinical_seq_len,
+        embed_dim=args.embed_dim,
         device=args.device,
         verbose=not args.quiet
     )

@@ -264,6 +264,31 @@ def test_missing_modality_handling(temp_workspace):
     assert embeddings.shape == (1, 128), "Should handle single modality"
 
 
+def test_all_modalities_missing(temp_workspace):
+    """Test model raises error when all modalities are missing."""
+    config = {
+        "wsi_enabled": True,
+        "genomic_enabled": True,
+        "clinical_text_enabled": True,
+        "max_text_length": 100,
+    }
+
+    # Initialize model
+    model = MultimodalFusionModel(embed_dim=128)
+    model.eval()
+
+    # Create batch with all modalities as None
+    batch = {
+        "wsi_features": None,
+        "genomic": None,
+        "clinical_text": None,
+    }
+
+    # Should raise ValueError because no modalities available to determine batch size
+    with pytest.raises(ValueError, match="At least one modality must be provided"):
+        model(batch)
+
+
 def test_inference_pipeline(temp_workspace):
     """Test complete inference pipeline."""
     config = {

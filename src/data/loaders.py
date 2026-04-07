@@ -6,6 +6,7 @@ and clinical text with support for missing modalities and temporal sequences.
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -14,6 +15,8 @@ import numpy as np
 import torch
 from omegaconf import DictConfig
 from torch.utils.data import Dataset
+
+logger = logging.getLogger(__name__)
 
 
 class MultimodalDataset(Dataset):
@@ -133,7 +136,7 @@ class MultimodalDataset(Dataset):
                 features = torch.from_numpy(features).float()
             return features
         except Exception as e:
-            print(f"Warning: Failed to load WSI features for {patient_id}: {e}")
+            logger.warning(f"Failed to load WSI features for {patient_id}: {e}", exc_info=True)
             return None
 
     def _load_genomic_features(self, patient_id: str, sample_info: Dict) -> Optional[torch.Tensor]:
@@ -160,7 +163,7 @@ class MultimodalDataset(Dataset):
             features = torch.from_numpy(features).float()
             return features
         except Exception as e:
-            print(f"Warning: Failed to load genomic features for {patient_id}: {e}")
+            logger.warning(f"Failed to load genomic features for {patient_id}: {e}", exc_info=True)
             return None
 
     def _load_clinical_text(self, patient_id: str, sample_info: Dict) -> Optional[torch.Tensor]:
@@ -198,7 +201,7 @@ class MultimodalDataset(Dataset):
 
             return token_ids
         except Exception as e:
-            print(f"Warning: Failed to load clinical text for {patient_id}: {e}")
+            logger.warning(f"Failed to load clinical text for {patient_id}: {e}", exc_info=True)
             return None
 
 
@@ -422,13 +425,13 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     Returns:
         Batched dictionary with:
-            - 'wsi_features': List[Tensor] or None (variable length patches)
-            - 'wsi_mask': Tensor [batch_size] indicating availability
+            - 'wsi_features': Tensor [batch_size, max_num_patches, feature_dim] or None
+            - 'wsi_mask': Tensor [batch_size, max_num_patches] where True indicates valid patches
             - 'genomic': Tensor [batch_size, num_genes] or None
             - 'genomic_mask': Tensor [batch_size] indicating availability
             - 'clinical_text': Tensor [batch_size, max_seq_len] or None
             - 'clinical_mask': Tensor [batch_size] indicating availability
-            - 'labels': Tensor [batch_size]
+            - 'label': Tensor [batch_size]
             - 'patient_ids': List[str]
             - 'timestamps': List[Optional[float]]
     """
@@ -439,15 +442,34 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
     labels = torch.stack([sample["label"] for sample in batch])
     timestamps = [sample["timestamp"] for sample in batch]
 
-    # Collate WSI features (keep as list due to variable length)
-    wsi_features_list = []
+    # Collate WSI features (pad to max patches in batch)
     wsi_mask = torch.zeros(batch_size, dtype=torch.bool)
+    wsi_list = []
+    max_patches = 0
+    feature_dim = None
+    
     for i, sample in enumerate(batch):
         if sample["wsi_features"] is not None:
-            wsi_features_list.append(sample["wsi_features"])
+            wsi_list.append(sample["wsi_features"])
             wsi_mask[i] = True
+            max_patches = max(max_patches, sample["wsi_features"].shape[0])
+            if feature_dim is None:
+                feature_dim = sample["wsi_features"].shape[1]
         else:
-            wsi_features_list.append(None)
+            wsi_list.append(None)
+
+    if wsi_mask.any() and feature_dim is not None:
+        # Create padded tensor and per-patch mask
+        wsi_features = torch.zeros(batch_size, max_patches, feature_dim, dtype=torch.float32)
+        wsi_patch_mask = torch.zeros(batch_size, max_patches, dtype=torch.bool)
+        for i, wsi in enumerate(wsi_list):
+            if wsi is not None:
+                num_patches = wsi.shape[0]
+                wsi_features[i, :num_patches] = wsi
+                wsi_patch_mask[i, :num_patches] = True
+    else:
+        wsi_features = None
+        wsi_patch_mask = None
 
     # Collate genomic features
     genomic_mask = torch.zeros(batch_size, dtype=torch.bool)
@@ -468,7 +490,7 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
     clinical_list = [
         sample["clinical_text"] for sample in batch if sample["clinical_text"] is not None
     ]
-    clinical_mask = torch.zeros(batch_size, dtype=torch.bool)
+    clinical_mask = None
     if len(clinical_list) > 0:
         # Pad to max length in batch
         max_len = max(text.shape[0] for text in clinical_list)
@@ -482,24 +504,25 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
         clinical_tensor = torch.stack(clinical_padded)
         # Create full batch tensor with zeros for missing
         clinical_batch = torch.zeros(batch_size, max_len, dtype=torch.long)
+        clinical_mask = torch.zeros(batch_size, max_len, dtype=torch.bool)
         clinical_idx = 0
         for i, sample in enumerate(batch):
             if sample["clinical_text"] is not None:
                 clinical_batch[i] = clinical_padded[clinical_idx]
-                clinical_mask[i] = True
+                clinical_mask[i] = clinical_padded[clinical_idx] != 0
                 clinical_idx += 1
         clinical_text = clinical_batch
     else:
         clinical_text = None
 
     return {
-        "wsi_features": wsi_features_list,
-        "wsi_mask": wsi_mask,
+        "wsi_features": wsi_features,
+        "wsi_mask": wsi_patch_mask,
         "genomic": genomic,
         "genomic_mask": genomic_mask,
         "clinical_text": clinical_text,
         "clinical_mask": clinical_mask,
-        "labels": labels,
+        "label": labels,
         "patient_ids": patient_ids,
         "timestamps": timestamps,
     }
@@ -519,7 +542,7 @@ def collate_temporal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
             - 'slide_sequences': List[List[Dict]] - nested list structure
             - 'sequence_lengths': Tensor [batch_size] - number of slides per patient
             - 'timestamps': List[Tensor] - timestamps for each patient's slides
-            - 'labels': Tensor [batch_size]
+            - 'label': Tensor [batch_size]
             - 'patient_ids': List[str]
     """
     batch_size = len(batch)
@@ -539,6 +562,6 @@ def collate_temporal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
         "slide_sequences": slide_sequences,
         "sequence_lengths": sequence_lengths,
         "timestamps": timestamps,
-        "labels": labels,
+        "label": labels,
         "patient_ids": patient_ids,
     }

@@ -20,6 +20,7 @@ from src.data.loaders import (
     collate_multimodal,
     collate_temporal,
 )
+from src.models import MultimodalFusionModel
 
 
 @pytest.fixture
@@ -269,10 +270,11 @@ def test_collate_multimodal(temp_data_dir):
 
     collated = collate_multimodal(batch)
 
-    assert len(collated["wsi_features"]) == 2
-    assert collated["wsi_features"][0] is not None
-    assert collated["wsi_features"][1] is None
-    assert collated["wsi_mask"].sum().item() == 1  # Only first sample has WSI
+    assert collated["wsi_features"] is not None
+    assert collated["wsi_features"].shape == (2, 100, 512)
+    assert collated["wsi_mask"].shape == (2, 100)
+    assert collated["wsi_mask"][0].all()
+    assert not collated["wsi_mask"][1].any()  # Second sample has no WSI
 
     assert collated["genomic"] is not None
     assert collated["genomic"].shape == (2, 1000)
@@ -280,10 +282,56 @@ def test_collate_multimodal(temp_data_dir):
 
     assert collated["clinical_text"] is not None
     assert collated["clinical_text"].shape == (2, 100)
-    assert collated["clinical_mask"].sum().item() == 1  # Only first sample has clinical
+    assert collated["clinical_mask"].shape == (2, 100)
+    assert collated["clinical_mask"][0].any()
+    assert not collated["clinical_mask"][1].any()  # Only first sample has clinical
 
-    assert collated["labels"].shape == (2,)
+    assert collated["label"].shape == (2,)
     assert len(collated["patient_ids"]) == 2
+
+
+def test_collate_multimodal_contract_with_model(temp_data_dir):
+    """Regression test: collated batch should work with model/trainer contract."""
+    config = DictConfig(
+        {
+            "wsi_enabled": True,
+            "genomic_enabled": True,
+            "clinical_text_enabled": True,
+            "max_text_length": 100,
+        }
+    )
+
+    dataset = MultimodalDataset(temp_data_dir, "train", config)
+    collated = collate_multimodal([dataset[0], dataset[1]])
+
+    # Trainer expects singular key.
+    assert "label" in collated
+    assert "labels" not in collated
+
+    model_batch = {k: v for k, v in collated.items() if k != "label"}
+    model = MultimodalFusionModel(
+        wsi_config={"input_dim": 512, "hidden_dim": 64, "output_dim": 32, "num_heads": 4, "num_layers": 1},
+        genomic_config={"input_dim": 1000, "hidden_dims": [128], "output_dim": 32, "dropout": 0.1, "use_batch_norm": True},
+        clinical_config={
+            "vocab_size": 1000,
+            "embed_dim": 32,
+            "hidden_dim": 64,
+            "output_dim": 32,
+            "num_heads": 4,
+            "num_layers": 1,
+            "max_seq_length": 100,
+            "dropout": 0.1,
+            "pooling": "mean",
+        },
+        fusion_config={"embed_dim": 32, "num_heads": 4, "dropout": 0.1, "modalities": ["wsi", "genomic", "clinical"]},
+        embed_dim=32,
+    )
+    model.eval()
+
+    with torch.no_grad():
+        fused = model(model_batch)
+
+    assert fused.shape == (2, 32)
 
 
 def test_collate_temporal(temp_temporal_data_dir):
@@ -308,5 +356,5 @@ def test_collate_temporal(temp_temporal_data_dir):
     assert collated["sequence_lengths"][0].item() == 3
     assert len(collated["timestamps"]) == 1
     assert collated["timestamps"][0].shape == (3,)
-    assert collated["labels"].shape == (1,)
+    assert collated["label"].shape == (1,)
     assert len(collated["patient_ids"]) == 1
