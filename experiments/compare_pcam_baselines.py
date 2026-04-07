@@ -5,11 +5,19 @@ This script runs multiple PCam model configurations and compares their performan
 It provides a reproducible way to evaluate different model variants and baselines.
 
 Usage:
+    # Windows/PowerShell - use quotes around wildcard
+    python experiments/compare_pcam_baselines.py --configs "experiments/configs/pcam_comparison/*.yaml"
+    python experiments/compare_pcam_baselines.py --configs "experiments/configs/pcam_comparison/*.yaml" --quick-test
+    
+    # Linux/macOS/bash - wildcard expansion works
     python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/*.yaml
-    python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/*.yaml --quick-test
+    
+    # Explicit file list (cross-platform)
+    python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/baseline_resnet18.yaml experiments/configs/pcam_comparison/resnet50.yaml
 """
 
 import argparse
+import glob
 import json
 import logging
 import subprocess
@@ -51,6 +59,7 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
     Returns:
         Dictionary with training results and metadata.
     """
+    original_config_path = config_path  # Store original path for metadata
     config = load_config(config_path)
     variant_name = config['experiment']['name']
     
@@ -60,6 +69,7 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
     logger.info(f"{'='*60}\n")
     
     # Modify config for quick test if needed
+    temp_config_path = None
     if quick_test:
         config['training']['num_epochs'] = 3
         config['early_stopping']['patience'] = 2
@@ -92,12 +102,12 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
         logger.info(f"  Training time: {training_time:.2f} seconds")
         
         # Clean up temp config if created
-        if quick_test and Path(config_path).exists():
-            Path(config_path).unlink()
+        if temp_config_path and Path(temp_config_path).exists():
+            Path(temp_config_path).unlink()
         
         return {
             'variant_name': variant_name,
-            'config_path': str(config_path),
+            'config_path': original_config_path,  # Return original path, not temp
             'status': 'success',
             'training_time_seconds': training_time,
             'stdout': result.stdout,
@@ -112,12 +122,12 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
         logger.error(f"  Stderr: {e.stderr}")
         
         # Clean up temp config if created
-        if quick_test and Path(config_path).exists():
-            Path(config_path).unlink()
+        if temp_config_path and Path(temp_config_path).exists():
+            Path(temp_config_path).unlink()
         
         return {
             'variant_name': variant_name,
-            'config_path': str(config_path),
+            'config_path': original_config_path,  # Return original path, not temp
             'status': 'failed',
             'training_time_seconds': training_time,
             'error': str(e),
@@ -217,13 +227,17 @@ def aggregate_results(
     
     for train_res, eval_res in zip(training_results, evaluation_results):
         variant_name = train_res['variant_name']
+        config_path = train_res['config_path']
+        
+        # Load config to get correct paths
+        config = load_config(config_path)
         
         # Extract key metrics
         metrics = eval_res.get('metrics', {})
         
         variant_data = {
             'name': variant_name,
-            'config_path': train_res['config_path'],
+            'config_path': config_path,
             'training_status': train_res['status'],
             'evaluation_status': eval_res['status'],
             'training_time_seconds': train_res.get('training_time_seconds', 0),
@@ -236,7 +250,7 @@ def aggregate_results(
             'inference_time_seconds': metrics.get('inference_time_seconds', None),
             'samples_per_second': metrics.get('samples_per_second', None),
             'checkpoint_path': eval_res.get('checkpoint_path', None),
-            'results_dir': str(Path(train_res['config_path']).parent.parent / 'results' / variant_name),
+            'results_dir': config['evaluation']['output_dir'],  # Use config value
         }
         
         comparison['variants'].append(variant_data)
@@ -283,14 +297,14 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run all comparison configs
-  python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/*.yaml
+  # Windows/PowerShell - use quotes around wildcard
+  python experiments/compare_pcam_baselines.py --configs "experiments/configs/pcam_comparison/*.yaml"
   
   # Quick test with reduced epochs
-  python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/*.yaml --quick-test
+  python experiments/compare_pcam_baselines.py --configs "experiments/configs/pcam_comparison/*.yaml" --quick-test
   
-  # Run specific configs
-  python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/baseline.yaml experiments/configs/pcam_comparison/resnet50.yaml
+  # Run specific configs (cross-platform)
+  python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/baseline_resnet18.yaml experiments/configs/pcam_comparison/resnet50.yaml
         """
     )
     parser.add_argument(
@@ -298,7 +312,7 @@ Examples:
         type=str,
         nargs='+',
         required=True,
-        help='Paths to configuration files to compare'
+        help='Paths to configuration files (supports wildcards like "*.yaml")'
     )
     parser.add_argument(
         '--quick-test',
@@ -319,10 +333,35 @@ Examples:
     
     args = parser.parse_args()
     
+    # Expand wildcards in config paths (for Windows/PowerShell compatibility)
+    expanded_configs = []
+    for pattern in args.configs:
+        matches = glob.glob(pattern)
+        if matches:
+            expanded_configs.extend(matches)
+        else:
+            # If no matches, treat as literal path (might be a typo or missing file)
+            expanded_configs.append(pattern)
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    config_paths = []
+    for path in expanded_configs:
+        if path not in seen:
+            seen.add(path)
+            config_paths.append(path)
+    
+    if not config_paths:
+        logger.error("No configuration files found!")
+        logger.error(f"Patterns provided: {args.configs}")
+        sys.exit(1)
+    
     logger.info("=" * 60)
     logger.info("PCam Baseline Comparison Runner")
     logger.info("=" * 60)
-    logger.info(f"Configs: {len(args.configs)}")
+    logger.info(f"Configs: {len(config_paths)}")
+    for i, path in enumerate(config_paths, 1):
+        logger.info(f"  {i}. {path}")
     logger.info(f"Quick test: {args.quick_test}")
     logger.info(f"Output: {args.output}")
     logger.info("=" * 60)
@@ -332,13 +371,13 @@ Examples:
     
     # Run training for each config
     if not args.skip_training:
-        for config_path in args.configs:
+        for config_path in config_paths:
             result = run_training(config_path, quick_test=args.quick_test)
             training_results.append(result)
     else:
         logger.info("Skipping training (--skip-training flag set)")
         # Load configs to get variant names
-        for config_path in args.configs:
+        for config_path in config_paths:
             config = load_config(config_path)
             training_results.append({
                 'variant_name': config['experiment']['name'],
@@ -348,7 +387,7 @@ Examples:
             })
     
     # Run evaluation for each trained model
-    for i, config_path in enumerate(args.configs):
+    for i, config_path in enumerate(config_paths):
         config = load_config(config_path)
         checkpoint_dir = Path(config['checkpoint']['checkpoint_dir'])
         checkpoint_path = checkpoint_dir / 'best_model.pth'
