@@ -5,7 +5,7 @@ This module implements encoders for WSI features, genomic data, and clinical tex
 that transform each modality into a common embedding space for fusion.
 """
 
-from typing import Optional
+from typing import List, Optional
 
 import torch
 import torch.nn as nn
@@ -171,7 +171,7 @@ class GenomicEncoder(nn.Module):
     def __init__(
         self,
         input_dim: int = 2000,
-        hidden_dims: list = None,
+        hidden_dims: Optional[List[int]] = None,
         output_dim: int = 256,
         dropout: float = 0.3,
         use_batch_norm: bool = True,
@@ -342,7 +342,7 @@ class ClinicalTextEncoder(nn.Module):
             # Truncate if sequence is too long
             x = x[:, : self.max_seq_length, :]
             attention_mask = attention_mask[:, : self.max_seq_length]
-            x = x + self.positional_encoding
+            x = x + self.positional_encoding[:, : self.max_seq_length, :]
 
         x = self.dropout(x)
 

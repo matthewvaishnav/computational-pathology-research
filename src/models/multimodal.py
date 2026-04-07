@@ -140,7 +140,10 @@ class MultimodalFusionModel(nn.Module):
         if batch.get("wsi_features") is not None:
             wsi_emb = self.wsi_encoder(batch["wsi_features"], mask=batch.get("wsi_mask"))
             modality_embeddings["wsi"] = wsi_emb
-            modality_masks["wsi"] = torch.ones(batch_size, dtype=torch.bool, device=device)
+            if batch.get("wsi_mask") is not None:
+                modality_masks["wsi"] = batch["wsi_mask"].any(dim=1).to(device)
+            else:
+                modality_masks["wsi"] = torch.ones(batch_size, dtype=torch.bool, device=device)
         else:
             modality_embeddings["wsi"] = None
             modality_masks["wsi"] = torch.zeros(batch_size, dtype=torch.bool, device=device)
@@ -149,7 +152,10 @@ class MultimodalFusionModel(nn.Module):
         if batch.get("genomic") is not None:
             genomic_emb = self.genomic_encoder(batch["genomic"])
             modality_embeddings["genomic"] = genomic_emb
-            modality_masks["genomic"] = torch.ones(batch_size, dtype=torch.bool, device=device)
+            if batch.get("genomic_mask") is not None:
+                modality_masks["genomic"] = batch["genomic_mask"].to(device)
+            else:
+                modality_masks["genomic"] = torch.ones(batch_size, dtype=torch.bool, device=device)
         else:
             modality_embeddings["genomic"] = None
             modality_masks["genomic"] = torch.zeros(batch_size, dtype=torch.bool, device=device)
@@ -160,7 +166,13 @@ class MultimodalFusionModel(nn.Module):
                 batch["clinical_text"], attention_mask=batch.get("clinical_mask")
             )
             modality_embeddings["clinical"] = clinical_emb
-            modality_masks["clinical"] = torch.ones(batch_size, dtype=torch.bool, device=device)
+            if batch.get("clinical_mask") is not None:
+                if batch["clinical_mask"].dim() > 1:
+                    modality_masks["clinical"] = batch["clinical_mask"].any(dim=1).to(device)
+                else:
+                    modality_masks["clinical"] = batch["clinical_mask"].to(device)
+            else:
+                modality_masks["clinical"] = torch.ones(batch_size, dtype=torch.bool, device=device)
         else:
             modality_embeddings["clinical"] = None
             modality_masks["clinical"] = torch.zeros(batch_size, dtype=torch.bool, device=device)

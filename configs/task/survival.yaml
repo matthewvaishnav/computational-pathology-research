@@ -1,0 +1,10 @@
+# @package task
+# Survival prediction task configuration
+
+name: survival
+
+# Number of time bins for survival prediction
+num_time_bins: 10
+
+# Time range (in months)
+max_time: 120

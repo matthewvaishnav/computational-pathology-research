@@ -1,0 +1,21 @@
+# Main training configuration
+# Usage: python scripts/train.py model=multimodal task=classification
+
+defaults:
+  - model: multimodal
+  - task: classification
+  - data: default
+  - training: default
+  - _self_
+
+# Experiment name for logging
+experiment_name: "multimodal_pathology"
+
+# Hydra settings
+hydra:
+  run:
+    dir: ./experiments/${experiment_name}/${now:%Y-%m-%d_%H-%M-%S}
+  sweep:
+    dir: ./experiments/${experiment_name}/multirun/${now:%Y-%m-%d_%H-%M-%S}
+  job:
+    chdir: true

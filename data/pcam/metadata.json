@@ -1,0 +1,26 @@
+{
+  "dataset": "synthetic_pcam",
+  "version": "test",
+  "splits": {
+    "train": {
+      "num_samples": 500
+    },
+    "val": {
+      "num_samples": 100
+    },
+    "test": {
+      "num_samples": 100
+    }
+  },
+  "image_shape": [
+    96,
+    96,
+    3
+  ],
+  "num_classes": 2,
+  "class_names": [
+    "normal",
+    "metastatic"
+  ],
+  "synthetic": true
+}

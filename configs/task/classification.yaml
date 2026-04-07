@@ -1,0 +1,13 @@
+# @package task
+# Classification task configuration
+
+name: classification
+
+# Number of output classes
+num_classes: 4
+
+# Classification head configuration
+head_hidden_dims: [128]
+
+# Class names (for logging)
+class_names: ["class_0", "class_1", "class_2", "class_3"]
