@@ -27,6 +27,15 @@ from pathlib import Path
 from typing import Dict, List, Any
 import yaml
 
+# Add benchmark manifest import
+try:
+    from src.utils.benchmark_manifest import BenchmarkManifest, BenchmarkEntry
+    MANIFEST_AVAILABLE = True
+except ImportError:
+    MANIFEST_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Benchmark manifest utilities not available")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -204,10 +213,97 @@ def run_evaluation(config_path: str, checkpoint_path: str) -> Dict[str, Any]:
         }
 
 
+def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
+    """Record comparison run to benchmark manifest.
+    
+    Args:
+        comparison: Comparison results dictionary.
+        output_path: Path where comparison results were saved.
+    """
+    if not MANIFEST_AVAILABLE:
+        logger.warning("Skipping manifest recording: benchmark_manifest module not available")
+        return
+    
+    # Extract summary metrics across all variants
+    successful_variants = [
+        v for v in comparison['variants']
+        if v['training_status'] == 'success' and v['evaluation_status'] == 'success'
+    ]
+    
+    if not successful_variants:
+        logger.warning("No successful variants to record in manifest")
+        return
+    
+    # Build variant summary for notes
+    variant_names = [v['name'] for v in comparison['variants']]
+    variant_summary = ", ".join(variant_names)
+    
+    # Aggregate metrics (best accuracy across variants)
+    best_variant = max(successful_variants, key=lambda v: v['test_accuracy'] or 0)
+    
+    # Build config paths list
+    config_paths = [v['config_path'] for v in comparison['variants']]
+    
+    # Construct comparison command (reconstructed from available data)
+    config_pattern = "experiments/configs/pcam_comparison/*.yaml"
+    if len(config_paths) > 0:
+        # Try to infer pattern from first config
+        first_config = Path(config_paths[0])
+        if 'pcam_comparison' in str(first_config):
+            config_pattern = f"{first_config.parent}/*.yaml"
+    
+    comparison_command = f'python experiments/compare_pcam_baselines.py --configs "{config_pattern}"'
+    
+    # Create manifest entry
+    entry = BenchmarkEntry(
+        experiment_name=f"pcam_comparison_{comparison['timestamp'].replace(' ', '_').replace(':', '-')}",
+        dataset_name="PatchCamelyon (PCam) - Comparison",
+        dataset_subset_size=700,  # Synthetic subset size
+        config_path=", ".join(config_paths),
+        train_command=comparison_command,
+        eval_command=comparison_command,  # Same command handles both
+        final_metrics={
+            'num_variants': len(comparison['variants']),
+            'successful_variants': len(successful_variants),
+            'best_accuracy': best_variant['test_accuracy'],
+            'best_auc': best_variant['test_auc'],
+            'best_f1': best_variant['test_f1'],
+            'best_variant_name': best_variant['name'],
+            'total_training_time_seconds': sum(v['training_time_seconds'] for v in successful_variants),
+        },
+        artifact_paths={
+            'comparison_results': str(output_path),
+            'variant_checkpoints': [v['checkpoint_path'] for v in successful_variants if v.get('checkpoint_path')],
+            'variant_results': [v['results_dir'] for v in successful_variants if v.get('results_dir')],
+        },
+        caveats=[
+            "Synthetic data: Not real PCam samples, generated for testing",
+            "Tiny scale: 500 train / 100 test vs 262K train / 32K test in full PCam",
+            "Comparison run: Multiple model variants evaluated on same synthetic subset",
+            "Not comparable to published baselines: Different dataset scale",
+        ],
+        notes=f"PCam baseline comparison run with {len(comparison['variants'])} variants: {variant_summary}. "
+              f"Best performing variant: {best_variant['name']} with {best_variant['test_accuracy']:.4f} accuracy. "
+              f"See {output_path} for detailed comparison results.",
+        date=comparison['timestamp'].split()[0],  # Extract date from timestamp
+        status="COMPLETE" if len(successful_variants) == len(comparison['variants']) else "PARTIAL"
+    )
+    
+    # Write to manifest
+    manifest = BenchmarkManifest()
+    manifest.add_entry(entry)
+    
+    logger.info(f"\n✓ Recorded comparison to benchmark manifest")
+    logger.info(f"  Experiment: {entry.experiment_name}")
+    logger.info(f"  Status: {entry.status}")
+    logger.info(f"  Variants: {len(comparison['variants'])} ({len(successful_variants)} successful)")
+
+
 def aggregate_results(
     training_results: List[Dict],
     evaluation_results: List[Dict],
-    output_path: str
+    output_path: str,
+    record_to_manifest: bool = True
 ) -> None:
     """Aggregate and save comparison results.
     
@@ -215,6 +311,7 @@ def aggregate_results(
         training_results: List of training result dictionaries.
         evaluation_results: List of evaluation result dictionaries.
         output_path: Path to save aggregated results.
+        record_to_manifest: If True, record comparison to benchmark manifest.
     """
     # Build comparison table
     comparison = {
@@ -285,6 +382,10 @@ def aggregate_results(
         logger.info(f"{name:<30} {acc_str:<12} {auc_str:<12} {f1_str:<12} {time_str:<15}")
     
     logger.info("-" * 100)
+    
+    # Record to benchmark manifest if requested
+    if record_to_manifest:
+        _record_comparison_to_manifest(comparison, output_path)
 
 
 def main():
@@ -326,6 +427,11 @@ Examples:
         '--skip-training',
         action='store_true',
         help='Skip training and only run evaluation (requires existing checkpoints)'
+    )
+    parser.add_argument(
+        '--no-manifest',
+        action='store_true',
+        help='Skip recording comparison to benchmark manifest'
     )
     
     args = parser.parse_args()
@@ -405,7 +511,12 @@ Examples:
             })
     
     # Aggregate and save results
-    aggregate_results(training_results, evaluation_results, args.output)
+    aggregate_results(
+        training_results,
+        evaluation_results,
+        args.output,
+        record_to_manifest=not args.no_manifest
+    )
     
     logger.info("\n✓ Comparison complete!")
 
