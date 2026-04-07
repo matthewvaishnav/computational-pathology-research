@@ -3,30 +3,34 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code Coverage](https://img.shields.io/badge/coverage-66%25-green.svg)](htmlcov/index.html)
+[![Code Coverage](https://img.shields.io/badge/coverage-62%25-yellow.svg)](htmlcov/index.html)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](Dockerfile)
 
 > **📋 Portfolio Overview**: See [PORTFOLIO_SUMMARY.md](PORTFOLIO_SUMMARY.md) for a complete overview of this project's achievements and capabilities.
 
 > **🚀 Quick Start**: See [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for commands and quick navigation.
 
-**⚠️ IMPORTANT: This is an untested research framework, not validated research.**
+**⚠️ IMPORTANT: This is a tested research codebase, not clinically or experimentally validated.**
 
-This repository provides a **code framework** for exploring multimodal fusion architectures in computational pathology. It implements architectural ideas for integrating whole-slide images (WSI), genomic features, and clinical text, but **has not been validated on real data**.
+This repository provides a **tested code framework** for exploring multimodal fusion architectures in computational pathology. It implements architectural ideas for integrating whole-slide images (WSI), genomic features, and clinical text, with comprehensive unit tests but **has not been validated on real clinical data or published datasets**.
 
 ## What This Actually Is
 
-**This is a starting point for research, not completed research:**
+**This is a tested starting point for research, not completed research:**
 - ✅ Well-structured PyTorch implementations of proposed architectures
 - ✅ Modular components that can be used independently
-- ✅ Unit tests verifying code runs without errors
-- ❌ **No experiments on real datasets**
-- ❌ **No validation of effectiveness**
-- ❌ **No comparison to existing methods**
-- ❌ **No trained models or results**
-- ❌ **No proof these ideas actually work**
+- ✅ Comprehensive unit tests with 62% code coverage
+- ✅ Working MCP server for repository exploration
+- ✅ PatchCamelyon (PCam) dataset integration and training pipeline
+- ✅ ONNX export capabilities for model deployment
+- ✅ Model profiling and ablation study tools
+- ❌ **No experiments on real clinical datasets**
+- ❌ **No validation of clinical effectiveness**
+- ❌ **No comparison to published methods**
+- ❌ **No trained models or clinical results**
+- ❌ **No proof these ideas work in practice**
 
-**Honest Assessment**: This code has never been trained on actual pathology data. The architectural choices are reasonable but unproven. Claims about "expected improvements" are speculation, not experimental results.
+**Honest Assessment**: This code has been tested with synthetic data and the PCam benchmark dataset. The architectural choices are reasonable but unproven on clinical pathology data. Claims about "expected improvements" are speculation, not experimental results.
 
 ## Abstract
 
@@ -257,7 +261,7 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-**Dependency Versions**: All dependencies are pinned in `requirements.txt` to ensure reproducibility. Key versions:
+**Dependency Versions**: Dependencies use minimum version constraints (e.g., `torch>=2.0.0`) to allow flexibility. For exact reproducibility, consider using `pip freeze > requirements-frozen.txt` after installation. Key minimum versions:
 - PyTorch 2.0.0+
 - Hydra 1.3.0+
 - TensorBoard 2.12.0+
@@ -301,7 +305,10 @@ torch.backends.cudnn.benchmark = False
 **Training Commands**:
 ```bash
 # Multimodal fusion training
-python experiments/train.py --config-name=multimodal_fusion
+python scripts/train.py --config-name=multimodal
+
+# PatchCamelyon (PCam) training
+python experiments/train_pcam.py --config-name=pcam
 
 # Stain normalization training
 python experiments/train_stain_norm.py --config-name=stain_norm
@@ -310,7 +317,7 @@ python experiments/train_stain_norm.py --config-name=stain_norm
 python examples/pretraining_example.py
 
 # Ablation studies
-python experiments/run_ablation.py --config-name=ablation
+python scripts/run_ablation_study.py --config-name=ablation
 ```
 
 **Configuration Files**: All hyperparameters are specified in `experiments/configs/` YAML files. Modify these files to adjust training settings.
@@ -349,7 +356,7 @@ pytest tests/ -v
 pytest tests/ --cov=src --cov-report=html
 ```
 
-**Expected Test Results**: All tests should pass. Coverage should be >80% for core modules.
+**Expected Test Results**: All tests should pass. Current coverage is 62% for core modules. Coverage target is >80% (work in progress).
 
 ## Future Work
 
@@ -446,6 +453,72 @@ open http://localhost:8000/docs
 ```
 
 See [DOCKER.md](DOCKER.md) for complete Docker deployment guide including GPU support, Kubernetes, and cloud deployment.
+
+### Repository Exploration with MCP Server
+
+This repository includes an MCP (Model Context Protocol) server for AI-assisted code exploration:
+
+```bash
+# Start the MCP server
+python scripts/project_mcp_server.py
+
+# Available tools:
+# - project_overview: Get repository summary
+# - list_project_files: List files with glob patterns
+# - read_text_file: Read file contents
+# - search_repository: Search for text patterns
+# - run_pytest: Execute targeted tests
+```
+
+See [docs/mcp_server.md](docs/mcp_server.md) for configuration and usage details.
+
+### PatchCamelyon (PCam) Training
+
+Train on the PatchCamelyon benchmark dataset:
+
+```bash
+# Generate synthetic PCam data for testing
+python scripts/generate_synthetic_pcam.py
+
+# Train on PCam
+python experiments/train_pcam.py --config-name=pcam
+
+# Evaluate on PCam
+python experiments/evaluate_pcam.py --checkpoint=models/pcam_best.pth
+```
+
+### Model Profiling and Analysis
+
+Profile model performance and resource usage:
+
+```bash
+# Profile model inference time
+python scripts/model_profiler.py \
+  --checkpoint=models/best_model.pth \
+  --profile-type=time
+
+# Profile memory usage
+python scripts/model_profiler.py \
+  --checkpoint=models/best_model.pth \
+  --profile-type=memory
+
+# Export to ONNX
+python scripts/export_onnx.py \
+  --checkpoint=models/best_model.pth \
+  --output=models/model.onnx
+```
+
+### Ablation Studies
+
+Run systematic ablation studies:
+
+```bash
+# Run full ablation study
+python scripts/run_ablation_study.py \
+  --data-dir=./data \
+  --output-dir=./results/ablation \
+  --num-epochs=10
+```
 
 ### Basic Usage Example
 
@@ -562,6 +635,7 @@ with torch.no_grad():
 ├── src/                    # Source code
 │   ├── data/              # Data loading and preprocessing
 │   │   ├── loaders.py     # MultimodalDataset, TemporalDataset
+│   │   ├── pcam_dataset.py  # PatchCamelyon dataset loader
 │   │   └── preprocessing.py  # Preprocessing utilities
 │   ├── models/            # Model architectures
 │   │   ├── encoders.py    # Modality-specific encoders
@@ -569,28 +643,46 @@ with torch.no_grad():
 │   │   ├── multimodal.py  # Complete fusion model
 │   │   ├── temporal.py    # Temporal reasoning
 │   │   ├── heads.py       # Task-specific prediction heads
+│   │   ├── feature_extractors.py  # Feature extraction utilities
 │   │   └── stain_normalization.py  # Stain normalization transformer
-│   └── pretraining/       # Self-supervised pretraining
-│       ├── objectives.py  # Contrastive and reconstruction losses
-│       └── pretrainer.py  # Pretraining wrapper
+│   ├── pretraining/       # Self-supervised pretraining
+│   │   ├── objectives.py  # Contrastive and reconstruction losses
+│   │   └── pretrainer.py  # Pretraining wrapper
+│   ├── training/          # Training infrastructure
+│   │   └── __init__.py    # SupervisedTrainer
+│   ├── utils/             # Utilities
+│   │   ├── validation.py  # Validation utilities
+│   │   ├── monitoring.py  # Training monitoring
+│   │   └── interpretability.py  # Model interpretability
+│   └── mcp_server.py      # MCP server for repository exploration
+├── scripts/               # Utility scripts
+│   ├── train.py          # Main training script
+│   ├── run_ablation_study.py  # Ablation study runner
+│   ├── model_profiler.py  # Model profiling tool
+│   ├── export_onnx.py    # ONNX export utility
+│   └── project_mcp_server.py  # MCP server entry point
 ├── experiments/           # Training and evaluation scripts
 │   ├── configs/          # Configuration files (YAML)
-│   ├── train.py          # Main training script
+│   ├── train_pcam.py     # PatchCamelyon training
+│   ├── evaluate_pcam.py  # PatchCamelyon evaluation
 │   ├── train_stain_norm.py  # Stain normalization training
-│   ├── evaluate.py       # Evaluation script
+│   ├── evaluate.py       # General evaluation script
 │   └── utils/            # Experiment utilities
 ├── examples/             # Usage examples
 │   └── pretraining_example.py  # Pretraining demonstration
-├── notebooks/            # Jupyter notebooks for exploration
-├── tests/                # Unit tests
+├── tests/                # Unit tests (62% coverage)
 ├── docs/                 # Additional documentation
 │   ├── multimodal_architecture.md  # Architecture details
-│   └── ...
-├── data/                 # Dataset acquisition instructions
+│   └── mcp_server.md     # MCP server documentation
+├── data/                 # Dataset directory
+│   ├── pcam/            # PatchCamelyon dataset
 │   └── README.md         # Dataset guide
-├── models/               # Saved model checkpoints
-├── results/              # Experiment outputs
-├── requirements.txt      # Python dependencies
+├── configs/              # Hydra configuration files
+│   ├── train.yaml       # Main training config
+│   ├── model/           # Model configurations
+│   ├── data/            # Data configurations
+│   └── task/            # Task configurations
+├── requirements.txt      # Python dependencies (minimum versions)
 ├── pyproject.toml        # Package configuration
 └── README.md            # This file
 ```
@@ -613,15 +705,18 @@ with torch.no_grad():
 # Run all tests
 pytest tests/ -v
 
-# Run specific test file
-pytest tests/test_multimodal.py -v
+# Run specific test module
+pytest tests/test_fusion.py -v
 
 # Run with coverage
 pytest tests/ --cov=src --cov-report=html
 
 # View coverage report
-open htmlcov/index.html
+open htmlcov/index.html  # macOS/Linux
+start htmlcov/index.html  # Windows
 ```
+
+**Current Test Coverage**: 62% (target: >80%)
 
 ## License
 
