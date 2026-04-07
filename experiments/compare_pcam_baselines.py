@@ -101,10 +101,6 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
         logger.info(f"✓ Training completed for {variant_name}")
         logger.info(f"  Training time: {training_time:.2f} seconds")
         
-        # Clean up temp config if created
-        if temp_config_path and Path(temp_config_path).exists():
-            Path(temp_config_path).unlink()
-        
         return {
             'variant_name': variant_name,
             'config_path': original_config_path,  # Return original path, not temp
@@ -121,10 +117,6 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
         logger.error(f"  Stdout: {e.stdout}")
         logger.error(f"  Stderr: {e.stderr}")
         
-        # Clean up temp config if created
-        if temp_config_path and Path(temp_config_path).exists():
-            Path(temp_config_path).unlink()
-        
         return {
             'variant_name': variant_name,
             'config_path': original_config_path,  # Return original path, not temp
@@ -134,6 +126,11 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
             'stdout': e.stdout,
             'stderr': e.stderr,
         }
+    
+    finally:
+        # Always clean up temp config if created
+        if temp_config_path and Path(temp_config_path).exists():
+            Path(temp_config_path).unlink()
 
 
 def run_evaluation(config_path: str, checkpoint_path: str) -> Dict[str, Any]:
@@ -340,8 +337,11 @@ Examples:
         if matches:
             expanded_configs.extend(matches)
         else:
-            # If no matches, treat as literal path (might be a typo or missing file)
-            expanded_configs.append(pattern)
+            # If no matches, treat as literal path only if it exists
+            if Path(pattern).exists():
+                expanded_configs.append(pattern)
+            else:
+                logger.warning(f"No files found matching pattern: {pattern}")
     
     # Remove duplicates while preserving order
     seen = set()
