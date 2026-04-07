@@ -615,6 +615,74 @@ def test_manifest_recording_with_missing_metrics(tmp_path, mock_config):
         assert 'N/A' in entry.notes  # Should show N/A for missing accuracy
 
 
+def test_manifest_recording_uses_relative_paths(tmp_path, mock_config):
+    """
+    Test that manifest recording uses relative paths for portability.
+    
+    Regression test for path portability - absolute paths make manifest
+    entries non-portable across machines.
+    """
+    from experiments.compare_pcam_baselines import _record_comparison_to_manifest
+    import os
+    
+    # Create config file
+    config_path = tmp_path / "test_config.yaml"
+    with open(config_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    # Mock comparison results
+    comparison = {
+        'timestamp': '2026-04-07 12:00:00',
+        'variants': [
+            {
+                'name': 'test_variant',
+                'config_path': str(config_path),
+                'training_status': 'success',
+                'evaluation_status': 'success',
+                'training_time_seconds': 100.5,
+                'test_accuracy': 0.95,
+                'test_auc': 0.98,
+                'test_f1': 0.94,
+                'checkpoint_path': './checkpoints/test_variant/best_model.pth',
+                'results_dir': './results/pcam_comparison/test_variant'
+            }
+        ]
+    }
+    
+    # Use a path relative to cwd
+    output_path = Path('results/pcam_comparison/comparison_results.json')
+    
+    # Mock BenchmarkManifest
+    with patch('experiments.compare_pcam_baselines.BenchmarkManifest') as mock_manifest_class:
+        mock_manifest = MagicMock()
+        mock_manifest_class.return_value = mock_manifest
+        
+        # Record to manifest
+        _record_comparison_to_manifest(comparison, output_path)
+        
+        # Get the entry
+        entry = mock_manifest.add_entry.call_args[0][0]
+        
+        # Verify comparison_results path is relative, not absolute
+        comparison_results_path = entry.artifact_paths['comparison_results']
+        
+        # Should not contain drive letter (Windows) or start with / (Unix)
+        assert not (len(comparison_results_path) > 1 and comparison_results_path[1] == ':'), \
+            f"Path should be relative, got: {comparison_results_path}"
+        assert not comparison_results_path.startswith('/'), \
+            f"Path should be relative, got: {comparison_results_path}"
+        
+        # Should be the relative path
+        assert comparison_results_path == str(output_path) or \
+               comparison_results_path == str(output_path).replace('\\', '/'), \
+            f"Expected relative path, got: {comparison_results_path}"
+        
+        # Verify notes also use relative path
+        assert str(output_path) in entry.notes or \
+               str(output_path).replace('\\', '/') in entry.notes, \
+            f"Notes should reference relative path"
+
+
 def test_manifest_recording_disabled(tmp_path, mock_config):
     """
     Test that manifest recording can be disabled.
