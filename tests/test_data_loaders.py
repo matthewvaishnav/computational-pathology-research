@@ -310,8 +310,20 @@ def test_collate_multimodal_contract_with_model(temp_data_dir):
 
     model_batch = {k: v for k, v in collated.items() if k != "label"}
     model = MultimodalFusionModel(
-        wsi_config={"input_dim": 512, "hidden_dim": 64, "output_dim": 32, "num_heads": 4, "num_layers": 1},
-        genomic_config={"input_dim": 1000, "hidden_dims": [128], "output_dim": 32, "dropout": 0.1, "use_batch_norm": True},
+        wsi_config={
+            "input_dim": 512,
+            "hidden_dim": 64,
+            "output_dim": 32,
+            "num_heads": 4,
+            "num_layers": 1,
+        },
+        genomic_config={
+            "input_dim": 1000,
+            "hidden_dims": [128],
+            "output_dim": 32,
+            "dropout": 0.1,
+            "use_batch_norm": True,
+        },
         clinical_config={
             "vocab_size": 1000,
             "embed_dim": 32,
@@ -323,7 +335,12 @@ def test_collate_multimodal_contract_with_model(temp_data_dir):
             "dropout": 0.1,
             "pooling": "mean",
         },
-        fusion_config={"embed_dim": 32, "num_heads": 4, "dropout": 0.1, "modalities": ["wsi", "genomic", "clinical"]},
+        fusion_config={
+            "embed_dim": 32,
+            "num_heads": 4,
+            "dropout": 0.1,
+            "modalities": ["wsi", "genomic", "clinical"],
+        },
         embed_dim=32,
     )
     model.eval()

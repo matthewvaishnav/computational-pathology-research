@@ -219,7 +219,12 @@ class ProjectMCPServer:
                         "path": {"type": "string"},
                         "start_line": {"type": "integer", "minimum": 1, "default": 1},
                         "end_line": {"type": "integer", "minimum": 1},
-                        "max_chars": {"type": "integer", "minimum": 200, "maximum": 50000, "default": 12000},
+                        "max_chars": {
+                            "type": "integer",
+                            "minimum": 200,
+                            "maximum": 50000,
+                            "default": 12000,
+                        },
                     },
                     "required": ["path"],
                     "additionalProperties": False,
@@ -234,7 +239,12 @@ class ProjectMCPServer:
                         "query": {"type": "string"},
                         "subdirectory": {"type": "string", "default": "."},
                         "case_sensitive": {"type": "boolean", "default": False},
-                        "max_results": {"type": "integer", "minimum": 1, "maximum": 100, "default": 20},
+                        "max_results": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 20,
+                        },
                     },
                     "required": ["query"],
                     "additionalProperties": False,
@@ -247,8 +257,18 @@ class ProjectMCPServer:
                     "type": "object",
                     "properties": {
                         "targets": {"type": "array", "items": {"type": "string"}},
-                        "max_failures": {"type": "integer", "minimum": 1, "maximum": 20, "default": 1},
-                        "timeout_seconds": {"type": "integer", "minimum": 5, "maximum": 1800, "default": 120},
+                        "max_failures": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 20,
+                            "default": 1,
+                        },
+                        "timeout_seconds": {
+                            "type": "integer",
+                            "minimum": 5,
+                            "maximum": 1800,
+                            "default": 120,
+                        },
                     },
                     "additionalProperties": False,
                 },
@@ -319,7 +339,7 @@ class ProjectMCPServer:
         if end_line < start_line:
             raise JSONRPCError(-32602, "end_line must be >= start_line")
 
-        selected = lines[start_line - 1:end_line]
+        selected = lines[start_line - 1 : end_line]
         numbered = "\n".join(
             f"{line_number}: {line_text}"
             for line_number, line_text in enumerate(selected, start=start_line)
@@ -346,7 +366,9 @@ class ProjectMCPServer:
         matches: List[Dict[str, Any]] = []
 
         for file_path in self._iter_repo_files(directory):
-            if file_path.stat().st_size > MAX_TEXT_FILE_BYTES or not _is_probably_text_file(file_path):
+            if file_path.stat().st_size > MAX_TEXT_FILE_BYTES or not _is_probably_text_file(
+                file_path
+            ):
                 continue
             try:
                 text = file_path.read_text(encoding="utf-8", errors="replace")

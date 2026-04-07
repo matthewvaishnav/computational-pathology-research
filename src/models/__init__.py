@@ -19,6 +19,7 @@ def __getattr__(name):
     """Lazy import for ResNetFeatureExtractor to avoid eager torchvision import."""
     if name == "ResNetFeatureExtractor":
         from .feature_extractors import ResNetFeatureExtractor
+
         return ResNetFeatureExtractor
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

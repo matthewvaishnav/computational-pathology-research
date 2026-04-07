@@ -22,17 +22,17 @@ class ResNetFeatureExtractor(nn.Module):
 
     def __init__(
         self,
-        model_name: str = 'resnet18',
+        model_name: str = "resnet18",
         pretrained: bool = True,
         feature_dim: Optional[int] = None,
     ):
         super().__init__()
 
-        if model_name == 'resnet18':
-            self.model = models.resnet18(weights='IMAGENET1K_V1' if pretrained else None)
+        if model_name == "resnet18":
+            self.model = models.resnet18(weights="IMAGENET1K_V1" if pretrained else None)
             self._feature_dim = 512
-        elif model_name == 'resnet50':
-            self.model = models.resnet50(weights='IMAGENET1K_V1' if pretrained else None)
+        elif model_name == "resnet50":
+            self.model = models.resnet50(weights="IMAGENET1K_V1" if pretrained else None)
             self._feature_dim = 2048
         else:
             raise ValueError(f"Unknown model_name: {model_name}. Use 'resnet18' or 'resnet50'.")
