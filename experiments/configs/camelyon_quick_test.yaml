@@ -1,0 +1,100 @@
+# CAMELYON16 Quick Test Configuration
+# 1-epoch smoke test for synthetic data
+
+experiment:
+  name: camelyon16_quick_test
+  description: Quick test of CAMELYON16 training pipeline
+  tags: [camelyon, slide-level, quick-test]
+
+data:
+  dataset: camelyon16
+  root_dir: ./data/camelyon
+  download: false
+  num_workers: 0  # Avoid multiprocessing issues
+  pin_memory: false
+
+  slide:
+    patch_size: 256
+    patch_level: 0
+    stride: 256
+    background_threshold: 0.5
+    max_patches_per_slide: 1000
+
+  augmentation:
+    enabled: false  # Disable for quick test
+
+model:
+  modalities: [wsi]
+  embed_dim: 512
+
+  feature_extractor:
+    model: resnet50
+    pretrained: true
+    feature_dim: 2048
+    freeze_backbone: false
+
+  wsi:
+    input_dim: 2048
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: attention
+    dropout: 0.1
+
+task:
+  type: classification
+  num_classes: 2
+
+  classification:
+    hidden_dims: [256, 128]
+    dropout: 0.3
+    activation: relu
+
+training:
+  num_epochs: 1  # Quick test
+  batch_size: 32  # Larger batch for faster test
+  learning_rate: 1e-4
+  weight_decay: 1e-4
+
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+    eps: 1e-8
+
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+    warmup_epochs: 0  # No warmup for quick test
+
+  max_grad_norm: 1.0
+  use_amp: false  # Disable for CPU
+  gradient_accumulation_steps: 1
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+checkpoint:
+  save_interval: 1
+  save_best: true
+  checkpoint_dir: ./checkpoints/camelyon_quick_test
+
+early_stopping:
+  enabled: false  # Disable for quick test
+  patience: 10
+  min_delta: 0.001
+
+logging:
+  log_dir: ./logs/camelyon_quick_test
+  log_interval: 10
+  use_tensorboard: false
+
+evaluation:
+  generate_plots: false
+  output_dir: ./results/camelyon_quick_test
+  save_predictions: false
+  compute_slide_metrics: true
+
+seed: 42
+device: cpu
