@@ -64,16 +64,18 @@ python experiments/evaluate_pcam.py \
 
 ## Artifact Paths
 
-### Checkpoints
+**NOTE**: All artifacts below are gitignored and not committed to the repository. To reproduce, run the commands in the "Commands Used" section.
+
+### Checkpoints (gitignored)
 - `checkpoints/pcam/best_model.pth` (49.3 MB) - Best model from epoch 3
 - `checkpoints/pcam/checkpoint_epoch_5.pth` (49.3 MB) - Periodic checkpoint
 
-### Results
+### Results (gitignored)
 - `results/pcam/metrics.json` - Complete evaluation metrics (JSON)
 - `results/pcam/confusion_matrix.png` - Confusion matrix visualization
 - `results/pcam/roc_curve.png` - ROC curve (AUC=1.0)
 
-### Logs
+### Logs (gitignored)
 - `logs/pcam/` - TensorBoard training logs
 - `logs/pcam/training_status.json` - Real-time training status
 - `pcam_full_training.log` - Complete training output
@@ -122,15 +124,20 @@ early_stopping:
 - **Test Samples**: 100 (vs 32,768 in full PCam)
 - **Image Size**: 96×96 RGB patches
 - **Classes**: Binary (0=normal, 1=metastatic tumor)
-- **Source**: Synthetic H5 files generated for testing
+- **Source**: Synthetic H5 files generated for testing (`data/pcam/train/images.h5py`, `data/pcam/train/labels.h5py`, etc.)
 
 ### Why Synthetic Data?
 
 The full PatchCamelyon dataset is ~7GB and requires significant download time. For rapid iteration and CI/CD, we generated a small synthetic subset that maintains the same data format and structure. This allows:
 - Fast training/testing cycles
-- Reproducible results
+- Reproducible results without large downloads
 - Framework validation
 - CI/CD integration
+
+**To generate synthetic data**:
+```bash
+python scripts/generate_synthetic_pcam.py
+```
 
 ## Performance Characteristics
 
@@ -269,8 +276,31 @@ Do NOT claim:
 ## Reproducibility
 
 ### Exact Reproduction
+
+**Prerequisites**:
+1. Ensure synthetic PCam data exists in `data/pcam/` directory
+2. If not present, generate it first:
+   ```bash
+   python scripts/generate_synthetic_pcam.py
+   ```
+
+**Expected directory structure**:
+```
+data/pcam/
+├── train/
+│   ├── images.h5py
+│   └── labels.h5py
+├── val/
+│   ├── images.h5py
+│   └── labels.h5py
+└── test/
+    ├── images.h5py
+    └── labels.h5py
+```
+
+**Training and evaluation**:
 ```bash
-# 1. Ensure synthetic PCam data exists
+# 1. Verify data exists
 ls data/pcam/train/images.h5py
 
 # 2. Run training

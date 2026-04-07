@@ -56,8 +56,16 @@ This repository provides a **tested code framework** for exploring multimodal fu
 - ✅ Demonstrates framework works end-to-end on pathology image format
 - ✅ Provides reproducible baseline for framework development
 
+**Artifacts** (gitignored):
+- Checkpoints: `checkpoints/pcam/best_model.pth`, `checkpoints/pcam/checkpoint_epoch_5.pth`
+- Results: `results/pcam/metrics.json`, `results/pcam/confusion_matrix.png`, `results/pcam/roc_curve.png`
+- Logs: `logs/pcam/`, `pcam_full_training.log`
+
 **Commands**:
 ```bash
+# Generate synthetic data (if not already present)
+python scripts/generate_synthetic_pcam.py
+
 # Training
 python experiments/train_pcam.py --config experiments/configs/pcam.yaml
 
@@ -65,7 +73,9 @@ python experiments/train_pcam.py --config experiments/configs/pcam.yaml
 python experiments/evaluate_pcam.py \
   --checkpoint checkpoints/pcam/best_model.pth \
   --data-root data/pcam \
-  --output-dir results/pcam
+  --output-dir results/pcam \
+  --batch-size 64 \
+  --num-workers 0
 ```
 
 ## Abstract
@@ -341,19 +351,19 @@ torch.backends.cudnn.benchmark = False
 **Training Commands**:
 ```bash
 # Multimodal fusion training
-python scripts/train.py --config-name=multimodal
+python scripts/train.py --config configs/train.yaml
 
 # PatchCamelyon (PCam) training
-python experiments/train_pcam.py --config-name=pcam
+python experiments/train_pcam.py --config experiments/configs/pcam.yaml
 
 # Stain normalization training
-python experiments/train_stain_norm.py --config-name=stain_norm
+python experiments/train_stain_norm.py --config experiments/configs/stain_norm.yaml
 
 # Self-supervised pretraining
 python examples/pretraining_example.py
 
 # Ablation studies
-python scripts/run_ablation_study.py --config-name=ablation
+python scripts/run_ablation_study.py --config experiments/configs/ablation.yaml
 ```
 
 **Configuration Files**: All hyperparameters are specified in `experiments/configs/` YAML files. Modify these files to adjust training settings.
@@ -517,10 +527,15 @@ Train on the PatchCamelyon benchmark dataset:
 python scripts/generate_synthetic_pcam.py
 
 # Train on PCam
-python experiments/train_pcam.py --config-name=pcam
+python experiments/train_pcam.py --config experiments/configs/pcam.yaml
 
 # Evaluate on PCam
-python experiments/evaluate_pcam.py --checkpoint=models/pcam_best.pth
+python experiments/evaluate_pcam.py \
+  --checkpoint checkpoints/pcam/best_model.pth \
+  --data-root data/pcam \
+  --output-dir results/pcam \
+  --batch-size 64 \
+  --num-workers 0
 ```
 
 ### Model Profiling and Analysis
