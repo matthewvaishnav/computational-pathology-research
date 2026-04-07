@@ -45,6 +45,12 @@ This directory contains configuration files for comparing different PCam model v
 
 ### Quick Test (3 epochs)
 ```bash
+# Windows/PowerShell - use quotes around wildcard
+python experiments/compare_pcam_baselines.py \
+  --configs "experiments/configs/pcam_comparison/*.yaml" \
+  --quick-test
+
+# Linux/macOS/bash - wildcard expansion works without quotes
 python experiments/compare_pcam_baselines.py \
   --configs experiments/configs/pcam_comparison/*.yaml \
   --quick-test
@@ -52,11 +58,16 @@ python experiments/compare_pcam_baselines.py \
 
 ### Full Training (20 epochs)
 ```bash
+# Windows/PowerShell
+python experiments/compare_pcam_baselines.py \
+  --configs "experiments/configs/pcam_comparison/*.yaml"
+
+# Linux/macOS/bash
 python experiments/compare_pcam_baselines.py \
   --configs experiments/configs/pcam_comparison/*.yaml
 ```
 
-### Specific Variants
+### Specific Variants (cross-platform)
 ```bash
 python experiments/compare_pcam_baselines.py \
   --configs \

@@ -37,6 +37,10 @@ from sklearn.metrics import (
     roc_curve,
 )
 
+from experiments.generate_pcam_interpretability import (
+    generate_pcam_interpretability_artifacts as build_pcam_interpretability_artifacts,
+)
+
 try:
     import seaborn as sns
     import matplotlib.pyplot as plt
@@ -393,6 +397,57 @@ def get_hardware_info() -> Dict[str, Any]:
     return info
 
 
+def build_interpretability_metadata(
+    args: argparse.Namespace, config: Dict[str, Any], output_dir: Path
+) -> Dict[str, Any]:
+    """Build reproducibility metadata for optional interpretability artifacts."""
+    return {
+        'checkpoint_path': args.checkpoint,
+        'data_root': args.data_root,
+        'split': 'test',
+        'batch_size': args.batch_size,
+        'max_samples': args.interpretability_max_samples,
+        'experiment_name': config.get('experiment', {}).get('name'),
+        'evaluation_output_dir': str(output_dir),
+    }
+
+
+def maybe_generate_interpretability_artifacts(
+    args: argparse.Namespace,
+    config: Dict[str, Any],
+    feature_extractor: nn.Module,
+    encoder: nn.Module,
+    head: nn.Module,
+    dataloader: DataLoader,
+    output_dir: Path,
+    device: torch.device,
+) -> Optional[Dict[str, Any]]:
+    """Optionally generate interpretability artifacts alongside evaluation outputs."""
+    if not args.generate_interpretability:
+        return None
+
+    interpretability_output_dir = (
+        Path(args.interpretability_output_dir)
+        if args.interpretability_output_dir is not None
+        else output_dir / 'interpretability'
+    )
+
+    logger.info("Generating interpretability artifacts...")
+    summary = build_pcam_interpretability_artifacts(
+        feature_extractor=feature_extractor,
+        encoder=encoder,
+        head=head,
+        dataloader=dataloader,
+        output_dir=str(interpretability_output_dir),
+        device=device,
+        max_samples=args.interpretability_max_samples,
+        top_k=args.interpretability_top_k,
+        metadata=build_interpretability_metadata(args, config, output_dir),
+    )
+    logger.info("Interpretability summary saved to: %s", summary["summary_path"])
+    return summary
+
+
 def main():
     """Main evaluation function."""
     parser = argparse.ArgumentParser(
@@ -441,6 +496,29 @@ Examples:
         default='cuda',
         choices=['cuda', 'cpu'],
         help='Device to use for evaluation (default: cuda if available)'
+    )
+    parser.add_argument(
+        '--generate-interpretability',
+        action='store_true',
+        help='Generate PCam interpretability artifacts alongside evaluation results'
+    )
+    parser.add_argument(
+        '--interpretability-output-dir',
+        type=str,
+        default=None,
+        help='Optional output directory for interpretability artifacts (default: <output-dir>/interpretability)'
+    )
+    parser.add_argument(
+        '--interpretability-max-samples',
+        type=int,
+        default=128,
+        help='Maximum number of samples to use for interpretability artifacts (default: 128)'
+    )
+    parser.add_argument(
+        '--interpretability-top-k',
+        type=int,
+        default=20,
+        help='Number of top feature saliency entries to save (default: 20)'
     )
 
     args = parser.parse_args()
@@ -602,6 +680,23 @@ Examples:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    interpretability_summary = maybe_generate_interpretability_artifacts(
+        args=args,
+        config=config,
+        feature_extractor=feature_extractor,
+        encoder=encoder,
+        head=head,
+        dataloader=test_loader,
+        output_dir=output_dir,
+        device=device,
+    )
+    if interpretability_summary is not None:
+        test_metrics['interpretability'] = {
+            'summary_path': interpretability_summary['summary_path'],
+            'artifacts': interpretability_summary['artifacts'],
+            'metadata': interpretability_summary.get('metadata', {}),
+        }
+
     # Save metrics JSON
     metrics_path = output_dir / 'metrics.json'
     save_metrics(test_metrics, str(metrics_path))
@@ -654,6 +749,8 @@ Examples:
     if PLOT_AVAILABLE:
         logger.info(f"  Confusion matrix: {output_dir / 'confusion_matrix.png'}")
         logger.info(f"  ROC curve: {output_dir / 'roc_curve.png'}")
+    if interpretability_summary is not None:
+        logger.info(f"  Interpretability summary: {interpretability_summary['summary_path']}")
     logger.info("=" * 60)
 
 
