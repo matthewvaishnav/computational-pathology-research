@@ -255,11 +255,9 @@ class MultiTaskHead(nn.Module):
             self.shared_layer = None
             head_input_dim = input_dim
 
-        # Default configurations
-        if classification_config is None:
-            classification_config = {}
-        if survival_config is None:
-            survival_config = {}
+        # Copy configs so callers do not observe internal input-dimension injection.
+        classification_config = dict(classification_config or {})
+        survival_config = dict(survival_config or {})
 
         # Set input_dim for both heads
         classification_config["input_dim"] = head_input_dim
