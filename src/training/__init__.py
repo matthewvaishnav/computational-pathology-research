@@ -34,13 +34,17 @@ from sklearn.metrics import (
     roc_auc_score,
     roc_curve,
 )
-from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from src.utils.monitoring import get_logger
 
 logger = get_logger(__name__)
+
+
+def _get_amp_device_type(device: str) -> str:
+    """Map torch device strings to autocast/scaler device types."""
+    return "cuda" if device.startswith("cuda") else "cpu"
 
 
 class MetricsComputer:
@@ -202,6 +206,7 @@ class SupervisedTrainer:
         self.num_classes = num_classes
         self.device = device
         self.use_amp = use_amp and torch.cuda.is_available()
+        self.amp_device_type = _get_amp_device_type(device)
         self.grad_clip_norm = grad_clip_norm
 
         # Optimizer
@@ -219,7 +224,11 @@ class SupervisedTrainer:
         self.val_metrics = MetricsComputer(num_classes)
 
         # AMP scaler
-        self.scaler = GradScaler() if self.use_amp else None
+        self.scaler = (
+            torch.amp.GradScaler(self.amp_device_type, enabled=self.use_amp)
+            if self.use_amp
+            else None
+        )
 
         # Checkpointing
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
@@ -263,7 +272,7 @@ class SupervisedTrainer:
             # Forward pass with AMP
             self.optimizer.zero_grad()
 
-            with autocast(enabled=self.use_amp):
+            with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
                 loss = self.criterion(logits, labels)
@@ -316,7 +325,7 @@ class SupervisedTrainer:
             batch = self._move_to_device(batch)
             labels = batch.pop("label")
 
-            with autocast(enabled=self.use_amp):
+            with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
                 loss = self.criterion(logits, labels)
@@ -501,7 +510,7 @@ class SupervisedTrainer:
             batch = self._move_to_device(batch)
             labels = batch.pop("label")
 
-            with autocast(enabled=self.use_amp):
+            with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
                 loss = self.criterion(logits, labels)

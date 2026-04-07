@@ -1,0 +1,93 @@
+# PCam Baseline: ResNet-18 + Transformer Encoder + Hidden Layer Head
+# This is the current default configuration
+
+experiment:
+  name: baseline_resnet18
+  description: ResNet-18 feature extractor with transformer encoder and hidden layer head
+  tags: [pcam, baseline, resnet18, transformer, hidden-head]
+
+data:
+  dataset: pcam
+  root_dir: ./data/pcam
+  download: false
+  num_workers: 0
+  pin_memory: false
+
+  augmentation:
+    enabled: true
+    random_horizontal_flip: true
+    random_vertical_flip: true
+    color_jitter:
+      brightness: 0.1
+      contrast: 0.1
+      saturation: 0.1
+      hue: 0.05
+
+model:
+  modalities: [wsi]
+  embed_dim: 256
+
+  feature_extractor:
+    model: resnet18
+    pretrained: true
+    feature_dim: 512
+
+  wsi:
+    input_dim: 512
+    hidden_dim: 256
+    num_heads: 4
+    num_layers: 1
+    pooling: mean
+
+task:
+  type: classification
+  num_classes: 2
+
+  classification:
+    hidden_dims: [128]
+    dropout: 0.3
+
+training:
+  num_epochs: 20
+  batch_size: 128
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+    warmup_epochs: 2
+
+  max_grad_norm: 1.0
+  use_amp: true
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+checkpoint:
+  save_interval: 5
+  save_best: true
+  checkpoint_dir: ./checkpoints/pcam_comparison/baseline_resnet18
+
+early_stopping:
+  enabled: true
+  patience: 5
+  min_delta: 0.001
+
+logging:
+  log_dir: ./logs/pcam_comparison/baseline_resnet18
+  log_interval: 50
+  use_tensorboard: true
+
+evaluation:
+  generate_plots: true
+  output_dir: ./results/pcam_comparison/baseline_resnet18
+
+seed: 42
+device: cuda

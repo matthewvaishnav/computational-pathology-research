@@ -198,12 +198,16 @@ def create_single_modality_model(config: Dict) -> Tuple[nn.Module, nn.Module, nn
 
     # Classification head - binary classification uses single output logit with BCE loss
     classification_config = config['task']['classification']
+    hidden_dims = classification_config.get('hidden_dims', [128])
+    use_hidden_layer = len(hidden_dims) > 0
+    hidden_dim = hidden_dims[0] if use_hidden_layer else 128  # Default if no hidden layer
+    
     head = ClassificationHead(
         input_dim=config['model']['embed_dim'],
-        hidden_dim=classification_config['hidden_dims'][0],
+        hidden_dim=hidden_dim,
         num_classes=1,  # Binary classification: single logit for BCEWithLogitsLoss
         dropout=classification_config['dropout'],
-        use_hidden_layer=True,
+        use_hidden_layer=use_hidden_layer,
     )
 
     total_params_fe = sum(p.numel() for p in feature_extractor.parameters())

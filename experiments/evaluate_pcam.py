@@ -502,12 +502,16 @@ Examples:
         )
         
         classification_config = config['task']['classification']
+        hidden_dims = classification_config.get('hidden_dims', [128])
+        use_hidden_layer = len(hidden_dims) > 0
+        hidden_dim = hidden_dims[0] if use_hidden_layer else 128
+        
         head = ClassificationHead(
             input_dim=config['model']['embed_dim'],
-            hidden_dim=classification_config['hidden_dims'][0],
+            hidden_dim=hidden_dim,
             num_classes=1,
             dropout=classification_config['dropout'],
-            use_hidden_layer=True,
+            use_hidden_layer=use_hidden_layer,
         )
         
         # Load state dicts

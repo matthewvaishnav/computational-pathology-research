@@ -9,7 +9,6 @@ from typing import List, Optional
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class WSIEncoder(nn.Module):
@@ -71,7 +70,9 @@ class WSIEncoder(nn.Module):
             batch_first=True,
             norm_first=True,
         )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer, num_layers=num_layers, enable_nested_tensor=False
+        )
 
         # Attention-based pooling
         if pooling == "attention":
@@ -298,7 +299,9 @@ class ClinicalTextEncoder(nn.Module):
             batch_first=True,
             norm_first=True,
         )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer, num_layers=num_layers, enable_nested_tensor=False
+        )
 
         # CLS token for classification pooling
         if pooling == "cls":
