@@ -19,6 +19,15 @@ The CAMELYON16 training path is now functional with synthetic data. This documen
 - Configuration loading from YAML
 - Reproducible seed setting
 
+**Evaluation Script**: `experiments/evaluate_camelyon.py`
+- Slide-level evaluation on test/val/train splits
+- Loads checkpoint and reconstructs model
+- Computes accuracy, AUC, precision, recall, F1
+- Generates confusion matrix and ROC curve plots
+- Supports mean/max aggregation methods
+- Saves metrics to JSON with metadata
+- Hardware info and throughput tracking
+
 **Model Architecture**: SimpleSlideClassifier
 - Input: Patch features [batch_size, num_patches, feature_dim]
 - Aggregation: Mean or max pooling across patches
@@ -77,28 +86,41 @@ The CAMELYON16 training path is now functional with synthetic data. This documen
 - Label alternation
 - Existing data validation
 
+**Evaluation Tests**: `tests/test_evaluate_camelyon.py` (7 tests)
+- Script existence and required functions
+- Evaluation on quick test checkpoint
+- Plot generation (confusion matrix, ROC curve)
+- Validation split evaluation
+- Aggregation methods (mean, max)
+- Missing checkpoint handling
+
 ## Smoke Test Results
 
-**Command**:
+**Training** (1 epoch on synthetic data):
 ```bash
 python experiments/train_camelyon.py --config experiments/configs/camelyon_quick_test.yaml
 ```
 
-**Results** (1 epoch on synthetic data):
-- Train Loss: 0.3509
-- Train Accuracy: 95.7%
-- Val Loss: 0.1824
-- Val Accuracy: 100%
-- Val AUC: 1.0
+Results:
+- Train Loss: 0.3509, Train Acc: 95.7%
+- Val Loss: 0.1824, Val Acc: 100%, Val AUC: 1.0
 - Training Time: ~7 seconds (CPU)
 - Model Parameters: 1,180,673
+- Dataset: 2000 train patches, 500 val patches
 
-**Dataset**:
-- 2000 train patches (20 slides × 100 patches)
-- 500 val patches (5 slides × 100 patches)
-- Feature dimension: 2048
+**Evaluation** (test split on synthetic data):
+```bash
+python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon_quick_test/best_model.pth --split test
+```
 
-**Status**: ✅ Training pipeline works end-to-end on synthetic data
+Results:
+- Test Slides: 5
+- Accuracy: 100%, AUC: 1.0
+- Precision: 100%, Recall: 100%, F1: 100%
+- Confusion Matrix: [[TN=3, FP=0], [FN=0, TP=2]]
+- Inference Time: 0.20 seconds (25.6 slides/second)
+
+**Status**: ✅ Complete training → evaluation workflow works end-to-end
 
 ## What Still Needs Implementation
 
@@ -138,13 +160,11 @@ python experiments/train_camelyon.py --config experiments/configs/camelyon_quick
 
 ### ❌ Evaluation and Analysis
 
-**Evaluation Script**:
-- Slide-level prediction aggregation
-- ROC curves and AUC computation
-- Confusion matrices
-- Per-patient metrics
+**Interpretability**:
 - Attention visualization
 - Patch-level heatmaps
+- Feature importance analysis
+- Embedding visualization
 
 **Statistical Analysis**:
 - Cross-validation
@@ -195,6 +215,29 @@ python experiments/train_camelyon.py \
   --config experiments/configs/camelyon.yaml
 ```
 
+### Evaluate Model
+
+```bash
+# Evaluate on test split
+python experiments/evaluate_camelyon.py \
+  --checkpoint checkpoints/camelyon_quick_test/best_model.pth \
+  --split test \
+  --output-dir results/camelyon_quick_test
+
+# Evaluate on validation split
+python experiments/evaluate_camelyon.py \
+  --checkpoint checkpoints/camelyon/best_model.pth \
+  --split val \
+  --output-dir results/camelyon
+
+# Use max pooling aggregation
+python experiments/evaluate_camelyon.py \
+  --checkpoint checkpoints/camelyon/best_model.pth \
+  --split test \
+  --aggregation max \
+  --output-dir results/camelyon_max
+```
+
 ### Run Tests
 
 ```bash
@@ -204,8 +247,11 @@ pytest tests/test_camelyon_config.py -v
 # Generator tests
 pytest tests/test_generate_synthetic_camelyon.py -v
 
+# Evaluation tests
+pytest tests/test_evaluate_camelyon.py -v
+
 # All CAMELYON tests
-pytest tests/test_camelyon*.py -v
+pytest tests/test_camelyon*.py tests/test_generate_synthetic_camelyon.py tests/test_evaluate_camelyon.py -v
 ```
 
 ## File Structure
@@ -214,6 +260,7 @@ pytest tests/test_camelyon*.py -v
 computational-pathology-research/
 ├── experiments/
 │   ├── train_camelyon.py              # Training script
+│   ├── evaluate_camelyon.py           # Evaluation script
 │   └── configs/
 │       ├── camelyon.yaml              # Full training config
 │       └── camelyon_quick_test.yaml   # Quick test config
@@ -225,7 +272,8 @@ computational-pathology-research/
 │       └── camelyon_annotations.py    # Annotation processing (stub)
 ├── tests/
 │   ├── test_camelyon_config.py        # Config tests
-│   └── test_generate_synthetic_camelyon.py  # Generator tests
+│   ├── test_generate_synthetic_camelyon.py  # Generator tests
+│   └── test_evaluate_camelyon.py      # Evaluation tests
 └── data/
     └── camelyon/                      # Data directory (gitignored)
         ├── slide_index.json           # Slide metadata
@@ -240,34 +288,41 @@ computational-pathology-research/
 | Feature | PCam | CAMELYON |
 |---------|------|----------|
 | **Training Script** | ✅ Complete | ✅ Complete |
-| **Evaluation Script** | ✅ Complete | ❌ Not implemented |
+| **Evaluation Script** | ✅ Complete | ✅ Complete |
 | **Synthetic Data** | ✅ 700 samples | ✅ 30 slides (3000 patches) |
 | **Real Data Support** | ✅ H5 format | ❌ Requires WSI preprocessing |
 | **Model Architecture** | ✅ ResNet + Transformer | ✅ SimpleSlideClassifier |
-| **Benchmark Results** | ✅ 94% accuracy | ✅ 100% val acc (synthetic) |
+| **Benchmark Results** | ✅ 94% accuracy | ✅ 100% acc (synthetic) |
 | **Interpretability** | ✅ Full suite | ❌ Not implemented |
 | **Comparison Runner** | ✅ Complete | ❌ Not implemented |
 
 ## Next Steps
 
-### Priority 1: Evaluation Script
-- Create `experiments/evaluate_camelyon.py`
-- Slide-level prediction aggregation
-- Metrics computation and visualization
-- Attention heatmap generation
+### Priority 1: Comparison Runner (Following PCam Pattern)
+- Create `experiments/compare_camelyon_baselines.py`
+- Compare different aggregation methods (mean, max, attention)
+- Compare different model architectures
+- Systematic evaluation with manifest recording
+- Quick test mode for rapid iteration
 
-### Priority 2: Real Data Support
+### Priority 2: Interpretability
+- Attention heatmap generation
+- Patch-level visualization
+- Feature importance analysis
+- Embedding visualization
+
+### Priority 3: Real Data Support
 - WSI preprocessing pipeline
 - Feature extraction script
 - Annotation processing
 - Official CAMELYON16 integration
 
-### Priority 3: Advanced Models
+### Priority 4: Advanced Models
 - Attention MIL implementation
 - Graph-based aggregation
 - Comparison to SimpleSlideClassifier baseline
 
-### Priority 4: Reproducibility
+### Priority 5: Reproducibility
 - Benchmark manifest integration
 - Comparison runner for model variants
 - Statistical analysis tools
@@ -287,6 +342,8 @@ computational-pathology-research/
 - `cbcc317`: Initial CAMELYON config scaffold
 - `2cd907e`: Replace placeholder with real training script
 - `a0496af`: Add synthetic data generator and complete training path
+- `440e868`: Add CAMELYON training status documentation
+- `f7f6bc2`: Add CAMELYON evaluation script with slide-level metrics
 
 ## References
 
