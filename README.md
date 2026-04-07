@@ -109,7 +109,7 @@ This repository addresses these challenges through:
 
 ### Multimodal Fusion Architecture
 
-Our architecture consists of modality-specific encoders followed by cross-modal attention fusion:
+My architecture consists of modality-specific encoders followed by cross-modal attention fusion:
 
 **WSI Encoder**: Processes patch-level features through attention-based aggregation to capture spatial tissue patterns. Uses multi-head self-attention over image patches with learnable positional encodings.
 
@@ -765,8 +765,8 @@ If you use this code in your research, please cite:
 ```bibtex
 @software{computational_pathology_research,
   title = {Computational Pathology Research Repository: Novel Multimodal Fusion Architectures},
-  author = {Research Team},
-  year = {2024},
+  author = Matthew Maishnav,
+  year = {2026},
   url = {https://github.com/your-org/computational-pathology-research}
 }
 ```
