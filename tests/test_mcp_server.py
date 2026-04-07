@@ -7,7 +7,6 @@ import pytest
 
 from src.mcp_server import JSONRPCError, ProjectMCPServer
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SERVER_SCRIPT = REPO_ROOT / "scripts" / "project_mcp_server.py"
 
@@ -61,8 +60,10 @@ def test_read_text_file_stays_inside_repo():
     response = server._tool_read_text_file({"path": "README.md"})
     assert "README.md" in response["content"][0]["text"]
 
-    with pytest.raises(JSONRPCError, match="escapes the repository root"):
-        server._tool_read_text_file({"path": "..\\outside.txt"})
+    escaping_path = Path("..") / "outside.txt"
+    # Use regex pattern that matches both Windows and Unix path separators
+    with pytest.raises(JSONRPCError, match=r"escapes the repository root"):
+        server._tool_read_text_file({"path": str(escaping_path)})
 
 
 def test_run_pytest_builds_targeted_command(monkeypatch):
