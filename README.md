@@ -538,6 +538,23 @@ python experiments/evaluate_pcam.py \
   --num-workers 0
 ```
 
+### PCam Baseline Comparisons
+
+Compare multiple model variants systematically:
+
+```bash
+# Quick test (3 epochs) - compare all baselines
+python experiments/compare_pcam_baselines.py \
+  --configs experiments/configs/pcam_comparison/*.yaml \
+  --quick-test
+
+# Full training (20 epochs)
+python experiments/compare_pcam_baselines.py \
+  --configs experiments/configs/pcam_comparison/*.yaml
+```
+
+See [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.md) for detailed comparison documentation.
+
 ### Model Profiling and Analysis
 
 Profile model performance and resource usage:
