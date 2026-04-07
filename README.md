@@ -16,21 +16,57 @@ This repository provides a **tested code framework** for exploring multimodal fu
 
 ## What This Actually Is
 
-**This is a tested starting point for research, not completed research:**
+**This is a tested starting point for research, with benchmark evidence on synthetic data:**
 - ✅ Well-structured PyTorch implementations of proposed architectures
 - ✅ Modular components that can be used independently
 - ✅ Comprehensive unit tests with 62% code coverage
 - ✅ Working MCP server for repository exploration
-- ✅ PatchCamelyon (PCam) dataset integration and training pipeline
+- ✅ **PatchCamelyon benchmark: 94% accuracy on synthetic subset** ([details](PCAM_BENCHMARK_RESULTS.md))
 - ✅ ONNX export capabilities for model deployment
 - ✅ Model profiling and ablation study tools
-- ❌ **No experiments on real clinical datasets**
+- ❌ **No experiments on full-scale published datasets**
 - ❌ **No validation of clinical effectiveness**
 - ❌ **No comparison to published methods**
-- ❌ **No trained models or clinical results**
-- ❌ **No proof these ideas work in practice**
+- ❌ **No trained models on real clinical data**
+- ❌ **No proof these ideas work at scale**
 
-**Honest Assessment**: This code has been tested with synthetic data and the PCam benchmark dataset. The architectural choices are reasonable but unproven on clinical pathology data. Claims about "expected improvements" are speculation, not experimental results.
+**Honest Assessment**: This code has been tested with synthetic data and achieves 94% accuracy on a small PCam subset (500 train / 100 test samples). The framework is functional and reproducible, but results on synthetic data do not validate clinical utility or performance on full-scale datasets.
+
+## Benchmark Results
+
+### PatchCamelyon (PCam) - Synthetic Subset
+
+**Status**: ✅ Framework validated on pathology image format
+
+| Metric | Value |
+|--------|-------|
+| **Test Accuracy** | 94.0% |
+| **Test AUC** | 1.0 |
+| **Test F1** | 0.938 |
+| **Training Time** | ~40 seconds (8 epochs, CPU) |
+
+**Dataset**: Synthetic PCam subset (500 train / 100 val / 100 test samples)  
+**Model**: ResNet-18 + Transformer Encoder (12.2M parameters)  
+**Details**: See [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.md)
+
+**Important Caveats**:
+- ⚠️ Results on **synthetic subset**, not full PCam dataset (262K train / 32K test)
+- ⚠️ **Not comparable** to published PCam baselines (different scale)
+- ⚠️ **Not clinically validated** or tested on real patient data
+- ✅ Demonstrates framework works end-to-end on pathology image format
+- ✅ Provides reproducible baseline for framework development
+
+**Commands**:
+```bash
+# Training
+python experiments/train_pcam.py --config experiments/configs/pcam.yaml
+
+# Evaluation
+python experiments/evaluate_pcam.py \
+  --checkpoint checkpoints/pcam/best_model.pth \
+  --data-root data/pcam \
+  --output-dir results/pcam
+```
 
 ## Abstract
 
