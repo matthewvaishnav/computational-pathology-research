@@ -1,0 +1,121 @@
+# CAMELYON16 Experiment Configuration
+# Slide-level binary classification for lymph node metastasis detection
+#
+# NOTE: This is a configuration scaffold. Full CAMELYON training requires:
+# - CAMELYON16 dataset downloaded to data/camelyon/
+# - Slide-level dataset implementation (in progress)
+# - WSI preprocessing pipeline for patch extraction
+
+experiment:
+  name: camelyon16
+  description: Slide-level binary classification on CAMELYON16 dataset
+  tags: [camelyon, slide-level, metastasis-detection]
+
+data:
+  dataset: camelyon16
+  root_dir: ./data/camelyon
+  download: false  # Manual download required from grand-challenge.org
+  num_workers: 4
+  pin_memory: true
+
+  # Slide-level data configuration
+  slide:
+    patch_size: 256  # Patch size for extraction (pixels)
+    patch_level: 0  # Pyramid level (0 = highest resolution)
+    stride: 256  # Stride for patch extraction
+    background_threshold: 0.5  # Tissue detection threshold
+    max_patches_per_slide: 1000  # Limit patches per slide for memory
+
+  # Augmentation - applied at patch level
+  augmentation:
+    enabled: true
+    random_horizontal_flip: true
+    random_vertical_flip: true
+    random_rotation: true
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+    random_affine:
+      degrees: 15
+      translate: [0.1, 0.1]
+
+model:
+  # Single modality mode (WSI only)
+  modalities: [wsi]
+  embed_dim: 512
+
+  # Feature extractor for patch-level features
+  feature_extractor:
+    model: resnet50  # Larger model for slide-level
+    pretrained: true
+    feature_dim: 2048
+    freeze_backbone: false  # Allow fine-tuning
+
+  # WSI encoder for aggregating patch features
+  wsi:
+    input_dim: 2048  # ResNet-50 feature dim
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: attention  # Attention-based pooling for multiple patches
+    dropout: 0.1
+
+task:
+  type: classification
+  num_classes: 2  # Binary: 0=normal, 1=metastasis
+
+  classification:
+    hidden_dims: [256, 128]
+    dropout: 0.3
+    activation: relu
+
+training:
+  num_epochs: 50
+  batch_size: 4  # Small batch size for slide-level data
+  learning_rate: 1e-4
+  weight_decay: 1e-4
+
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+    eps: 1e-8
+
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+    warmup_epochs: 5
+
+  max_grad_norm: 1.0
+  use_amp: true  # Mixed precision
+  gradient_accumulation_steps: 4  # Effective batch size = 16
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+checkpoint:
+  save_interval: 5
+  save_best: true
+  checkpoint_dir: ./checkpoints/camelyon
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+
+logging:
+  log_dir: ./logs/camelyon
+  log_interval: 10
+  use_tensorboard: true
+
+evaluation:
+  generate_plots: true
+  output_dir: ./results/camelyon
+  save_predictions: true
+  compute_slide_metrics: true  # Slide-level metrics in addition to patch-level
+
+seed: 42
+device: cuda
