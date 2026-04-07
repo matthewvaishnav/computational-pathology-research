@@ -1,6 +1,6 @@
 # Benchmark Results Manifest
 
-## pcam_baseline
+## patchcamelyon
 
 - **Dataset**: PatchCamelyon (PCam)
 - **Subset Size**: 700

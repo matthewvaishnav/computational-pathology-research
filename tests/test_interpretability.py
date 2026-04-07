@@ -17,6 +17,15 @@ class _ToyMultimodalClassifier(nn.Module):
         return logits
 
 
+class _ToyBinaryClassifier(nn.Module):
+    """Minimal single-logit classifier for BCE-style attribution tests."""
+
+    def forward(self, batch):
+        wsi_term = batch["wsi_features"].mean(dim=(1, 2))
+        genomic_term = batch["genomic"].mean(dim=1)
+        return (wsi_term + genomic_term).unsqueeze(-1)
+
+
 def _make_batch(batch_size=2):
     return {
         "wsi_features": torch.randn(batch_size, 6, 4),
@@ -41,6 +50,19 @@ def test_gradient_saliency_uses_wsi_features_key_and_skips_integer_clinical_inpu
 
 def test_integrated_gradients_uses_wsi_features_key_and_skips_integer_clinical_inputs():
     model = _ToyMultimodalClassifier()
+    saliency = SaliencyMap(device=torch.device("cpu"))
+
+    attributions = saliency.compute_integrated_gradients(model, _make_batch(), num_steps=8)
+
+    assert set(attributions) == {"wsi", "genomic"}
+    assert attributions["wsi"].shape == (2, 6, 4)
+    assert attributions["genomic"].shape == (2, 8)
+    assert np.isfinite(attributions["wsi"]).all()
+    assert np.isfinite(attributions["genomic"]).all()
+
+
+def test_integrated_gradients_supports_single_logit_binary_outputs_with_labels():
+    model = _ToyBinaryClassifier()
     saliency = SaliencyMap(device=torch.device("cpu"))
 
     attributions = saliency.compute_integrated_gradients(model, _make_batch(), num_steps=8)
