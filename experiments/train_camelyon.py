@@ -1,29 +1,340 @@
 """
 Training script for CAMELYON16 slide-level classification experiment.
 
-This script implements the complete training pipeline for the CAMELYON16 dataset,
-including slide-level patch extraction, feature aggregation, and metastasis detection.
+This script implements a minimal training pipeline for CAMELYON16 using
+pre-extracted patch features from HDF5 files. The pipeline includes:
+- Slide-level data loading from HDF5 feature files
+- Simple aggregation (mean/max pooling) of patch features
+- Binary classification for metastasis detection
+- Basic training loop with validation
 
-NOTE: This is a scaffold/placeholder. Full implementation requires:
-1. CAMELYON16 dataset downloaded to data/camelyon/
-2. Slide-level dataset implementation (CAMELYONDataset class)
-3. WSI preprocessing pipeline for patch extraction
-4. Slide-level data loader with patch sampling
+NOTE: This is a first real training path using pre-extracted features.
+Full WSI processing (OpenSlide, patch extraction) is not yet implemented.
 
 Usage:
     python experiments/train_camelyon.py --config experiments/configs/camelyon.yaml
 
-Dependencies:
-    - openslide-python (for WSI reading)
-    - CAMELYON16 dataset (manual download from grand-challenge.org)
+Requirements:
+    - Slide index JSON at data/camelyon/slide_index.json
+    - Pre-extracted HDF5 features at data/camelyon/features/
+    - Each HDF5 file contains 'features' [num_patches, feature_dim] and 'coordinates' [num_patches, 2]
 """
 
 import argparse
+import json
+import logging
+import os
+import random
 import sys
 from pathlib import Path
+from typing import Any, Dict, Tuple
 
-# Add src to path
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+import yaml
+
+# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.data.camelyon_dataset import CAMELYONSlideIndex, CAMELYONPatchDataset
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+def set_seed(seed: int) -> None:
+    """Set random seeds for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    logger.info(f"Random seed set to {seed}")
+
+
+def load_config(config_path: str) -> Dict:
+    """Load YAML configuration file."""
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    return config
+
+
+class SimpleSlideClassifier(nn.Module):
+    """Simple slide-level classifier with patch aggregation.
+    
+    This is a minimal baseline that:
+    1. Takes patch features [num_patches, feature_dim]
+    2. Aggregates via mean/max pooling
+    3. Passes through a simple MLP classifier
+    """
+    
+    def __init__(
+        self,
+        feature_dim: int,
+        hidden_dim: int = 256,
+        num_classes: int = 2,
+        pooling: str = 'mean',
+        dropout: float = 0.3,
+    ):
+        super().__init__()
+        self.pooling = pooling
+        
+        # Simple MLP classifier
+        self.classifier = nn.Sequential(
+            nn.Linear(feature_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim // 2, num_classes if num_classes > 2 else 1),
+        )
+    
+    def forward(self, patch_features: torch.Tensor) -> torch.Tensor:
+        """Forward pass.
+        
+        Args:
+            patch_features: [batch_size, num_patches, feature_dim]
+            
+        Returns:
+            logits: [batch_size, num_classes] or [batch_size, 1] for binary
+        """
+        # Aggregate patches
+        if self.pooling == 'mean':
+            slide_features = patch_features.mean(dim=1)  # [batch_size, feature_dim]
+        elif self.pooling == 'max':
+            slide_features = patch_features.max(dim=1)[0]  # [batch_size, feature_dim]
+        else:
+            raise ValueError(f"Unknown pooling: {self.pooling}")
+        
+        # Classify
+        logits = self.classifier(slide_features)
+        return logits
+
+
+def collate_slide_features(batch):
+    """Custom collate function for slide-level batching.
+    
+    Since slides have different numbers of patches, we need to handle
+    variable-length sequences. For simplicity, we'll pad to max length.
+    """
+    # Extract features and labels
+    features_list = [item['features'] for item in batch]
+    labels = torch.tensor([item['label'] for item in batch], dtype=torch.long)
+    slide_ids = [item['slide_id'] for item in batch]
+    
+    # Pad to max length in batch
+    max_patches = max(f.shape[0] for f in features_list)
+    feature_dim = features_list[0].shape[1]
+    
+    padded_features = torch.zeros(len(batch), max_patches, feature_dim)
+    for i, features in enumerate(features_list):
+        padded_features[i, :features.shape[0], :] = features
+    
+    return {
+        'features': padded_features,
+        'labels': labels,
+        'slide_ids': slide_ids,
+    }
+
+
+def create_slide_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader]:
+    """Create train and val dataloaders for slide-level data.
+    
+    Args:
+        config: Configuration dictionary
+        
+    Returns:
+        Tuple of (train_loader, val_loader)
+    """
+    root_dir = Path(config['data']['root_dir'])
+    features_dir = root_dir / 'features'
+    index_path = root_dir / 'slide_index.json'
+    
+    # Check if required files exist
+    if not index_path.exists():
+        raise FileNotFoundError(
+            f"Slide index not found: {index_path}\n"
+            f"Please create a slide index using CAMELYONSlideIndex.from_directory() "
+            f"or download the pre-built index."
+        )
+    
+    if not features_dir.exists():
+        raise FileNotFoundError(
+            f"Features directory not found: {features_dir}\n"
+            f"Please extract patch features to HDF5 files first."
+        )
+    
+    # Load slide index
+    slide_index = CAMELYONSlideIndex.load(index_path)
+    logger.info(f"Loaded slide index with {len(slide_index)} slides")
+    
+    # Create datasets - using patch-level dataset for now
+    # TODO: Create proper slide-level dataset that returns all patches per slide
+    train_dataset = CAMELYONPatchDataset(
+        slide_index=slide_index,
+        features_dir=features_dir,
+        split='train',
+    )
+    
+    val_dataset = CAMELYONPatchDataset(
+        slide_index=slide_index,
+        features_dir=features_dir,
+        split='val',
+    )
+    
+    # For now, we'll use patch-level data
+    # In a real slide-level setup, we'd batch by slide
+    batch_size = config['training']['batch_size']
+    num_workers = config['data'].get('num_workers', 4)
+    
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=config['data'].get('pin_memory', True),
+    )
+    
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=config['data'].get('pin_memory', True),
+    )
+    
+    logger.info(f"Train: {len(train_dataset)} patches, Val: {len(val_dataset)} patches")
+    
+    return train_loader, val_loader
+
+
+def train_epoch(
+    model: nn.Module,
+    train_loader: DataLoader,
+    criterion: nn.Module,
+    optimizer: optim.Optimizer,
+    device: torch.device,
+    epoch: int,
+) -> Dict[str, float]:
+    """Train for one epoch.
+    
+    Args:
+        model: Model to train
+        train_loader: Training data loader
+        criterion: Loss function
+        optimizer: Optimizer
+        device: Device to train on
+        epoch: Current epoch number
+        
+    Returns:
+        Dictionary with training metrics
+    """
+    model.train()
+    total_loss = 0.0
+    all_preds = []
+    all_labels = []
+    
+    pbar = tqdm(train_loader, desc=f"Epoch {epoch} [Train]")
+    for batch in pbar:
+        # For patch-level data, treat each patch independently for now
+        features = batch['features'].unsqueeze(1).to(device)  # [batch, 1, feature_dim]
+        labels = batch['label'].to(device)
+        
+        # Forward pass
+        optimizer.zero_grad()
+        logits = model(features).squeeze()  # [batch]
+        
+        # Compute loss (BCE for binary classification)
+        loss = criterion(logits, labels.float())
+        
+        # Backward pass
+        loss.backward()
+        optimizer.step()
+        
+        # Track metrics
+        total_loss += loss.item()
+        preds = (torch.sigmoid(logits) > 0.5).long()
+        all_preds.extend(preds.cpu().numpy())
+        all_labels.extend(labels.cpu().numpy())
+        
+        pbar.set_postfix({'loss': f"{loss.item():.4f}"})
+    
+    # Compute epoch metrics
+    avg_loss = total_loss / len(train_loader)
+    accuracy = np.mean(np.array(all_preds) == np.array(all_labels))
+    
+    return {
+        'loss': avg_loss,
+        'accuracy': accuracy,
+    }
+
+
+def validate(
+    model: nn.Module,
+    val_loader: DataLoader,
+    criterion: nn.Module,
+    device: torch.device,
+) -> Dict[str, float]:
+    """Validate the model.
+    
+    Args:
+        model: Model to validate
+        val_loader: Validation data loader
+        criterion: Loss function
+        device: Device to validate on
+        
+    Returns:
+        Dictionary with validation metrics
+    """
+    model.eval()
+    total_loss = 0.0
+    all_preds = []
+    all_labels = []
+    all_probs = []
+    
+    with torch.no_grad():
+        pbar = tqdm(val_loader, desc="Validation")
+        for batch in pbar:
+            features = batch['features'].unsqueeze(1).to(device)
+            labels = batch['label'].to(device)
+            
+            # Forward pass
+            logits = model(features).squeeze()
+            loss = criterion(logits, labels.float())
+            
+            # Track metrics
+            total_loss += loss.item()
+            probs = torch.sigmoid(logits)
+            preds = (probs > 0.5).long()
+            
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+            all_probs.extend(probs.cpu().numpy())
+    
+    # Compute metrics
+    avg_loss = total_loss / len(val_loader)
+    accuracy = np.mean(np.array(all_preds) == np.array(all_labels))
+    
+    # Compute AUC if we have both classes
+    try:
+        from sklearn.metrics import roc_auc_score
+        auc = roc_auc_score(all_labels, all_probs)
+    except:
+        auc = 0.0
+    
+    return {
+        'loss': avg_loss,
+        'accuracy': accuracy,
+        'auc': auc,
+    }
 
 
 def main():
@@ -46,44 +357,115 @@ def main():
     
     args = parser.parse_args()
     
-    # Check if config exists
-    config_path = Path(args.config)
-    if not config_path.exists():
-        print(f"Error: Config file not found: {config_path}")
+    # Load config
+    config = load_config(args.config)
+    
+    # Set seed
+    set_seed(config.get('seed', 42))
+    
+    # Set device
+    device = torch.device(config.get('device', 'cuda') if torch.cuda.is_available() else 'cpu')
+    logger.info(f"Using device: {device}")
+    
+    # Check if data exists
+    root_dir = Path(config['data']['root_dir'])
+    index_path = root_dir / 'slide_index.json'
+    features_dir = root_dir / 'features'
+    
+    if not index_path.exists() or not features_dir.exists():
+        logger.error("=" * 80)
+        logger.error("CAMELYON16 Training - Data Not Found")
+        logger.error("=" * 80)
+        logger.error("")
+        logger.error("Required files not found:")
+        logger.error(f"  - Slide index: {index_path} {'✓' if index_path.exists() else '✗'}")
+        logger.error(f"  - Features dir: {features_dir} {'✓' if features_dir.exists() else '✗'}")
+        logger.error("")
+        logger.error("This training script requires pre-extracted patch features.")
+        logger.error("")
+        logger.error("Next steps:")
+        logger.error("  1. Download CAMELYON16 dataset from grand-challenge.org")
+        logger.error("  2. Create slide index using CAMELYONSlideIndex.from_directory()")
+        logger.error("  3. Extract patch features to HDF5 files")
+        logger.error("")
+        logger.error("=" * 80)
         sys.exit(1)
     
-    print("=" * 80)
-    print("CAMELYON16 Training Script - SCAFFOLD/PLACEHOLDER")
-    print("=" * 80)
-    print()
-    print("This script is a placeholder for future CAMELYON16 training.")
-    print()
-    print("Required components (not yet implemented):")
-    print("  1. CAMELYONDataset class in src/data/")
-    print("  2. WSI preprocessing pipeline for patch extraction")
-    print("  3. Slide-level data loader with patch sampling")
-    print("  4. CAMELYON16 dataset downloaded to data/camelyon/")
-    print()
-    print("Current status:")
-    print("  ✓ Configuration file exists:", config_path)
-    print("  ✗ Dataset implementation: Not yet available")
-    print("  ✗ WSI preprocessing: Not yet available")
-    print("  ✗ Training pipeline: Not yet available")
-    print()
-    print("Next steps:")
-    print("  1. Implement CAMELYONDataset in src/data/camelyon_dataset.py")
-    print("  2. Add WSI preprocessing utilities")
-    print("  3. Implement slide-level training loop")
-    print("  4. Download CAMELYON16 dataset")
-    print()
-    print("=" * 80)
+    # Create dataloaders
+    logger.info("Creating dataloaders...")
+    train_loader, val_loader = create_slide_dataloaders(config)
     
-    # TODO: Implement actual training when dataset is ready
-    # from src.data.camelyon_dataset import CAMELYONDataset
-    # from src.training import train_model
-    # ...
+    # Get feature dimension from first batch
+    sample_batch = next(iter(train_loader))
+    feature_dim = sample_batch['features'].shape[-1]
+    logger.info(f"Feature dimension: {feature_dim}")
     
-    sys.exit(0)
+    # Create model
+    logger.info("Creating model...")
+    model = SimpleSlideClassifier(
+        feature_dim=feature_dim,
+        hidden_dim=config['model']['wsi']['hidden_dim'],
+        num_classes=config['task']['num_classes'],
+        pooling='mean',  # Simple mean pooling for now
+        dropout=config['task']['classification']['dropout'],
+    ).to(device)
+    
+    logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+    
+    # Create optimizer and loss
+    optimizer = optim.AdamW(
+        model.parameters(),
+        lr=config['training']['learning_rate'],
+        weight_decay=config['training']['weight_decay'],
+    )
+    
+    criterion = nn.BCEWithLogitsLoss()
+    
+    # Training loop
+    num_epochs = config['training']['num_epochs']
+    best_val_auc = 0.0
+    
+    logger.info("=" * 80)
+    logger.info("Starting training...")
+    logger.info("=" * 80)
+    
+    for epoch in range(1, num_epochs + 1):
+        # Train
+        train_metrics = train_epoch(model, train_loader, criterion, optimizer, device, epoch)
+        logger.info(
+            f"Epoch {epoch}/{num_epochs} - "
+            f"Train Loss: {train_metrics['loss']:.4f}, "
+            f"Train Acc: {train_metrics['accuracy']:.4f}"
+        )
+        
+        # Validate
+        val_metrics = validate(model, val_loader, criterion, device)
+        logger.info(
+            f"Epoch {epoch}/{num_epochs} - "
+            f"Val Loss: {val_metrics['loss']:.4f}, "
+            f"Val Acc: {val_metrics['accuracy']:.4f}, "
+            f"Val AUC: {val_metrics['auc']:.4f}"
+        )
+        
+        # Save best model
+        if val_metrics['auc'] > best_val_auc:
+            best_val_auc = val_metrics['auc']
+            checkpoint_dir = Path(config['checkpoint']['checkpoint_dir'])
+            checkpoint_dir.mkdir(parents=True, exist_ok=True)
+            
+            checkpoint_path = checkpoint_dir / 'best_model.pth'
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'val_auc': best_val_auc,
+                'config': config,
+            }, checkpoint_path)
+            logger.info(f"Saved best model to {checkpoint_path}")
+    
+    logger.info("=" * 80)
+    logger.info(f"Training complete! Best Val AUC: {best_val_auc:.4f}")
+    logger.info("=" * 80)
 
 
 if __name__ == '__main__':
