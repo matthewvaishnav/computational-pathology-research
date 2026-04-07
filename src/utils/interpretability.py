@@ -204,6 +204,13 @@ class SaliencyMap:
         """
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    @staticmethod
+    def _batch_key_for_modality(modality: str) -> str:
+        """Map interpretability modality names to model batch keys."""
+        return {"wsi": "wsi_features", "genomic": "genomic", "clinical": "clinical_text"}[
+            modality
+        ]
+
     def compute_gradient_saliency(
         self,
         model: torch.nn.Module,
@@ -254,13 +261,15 @@ class SaliencyMap:
         ]:
             if input_tensor is None:
                 continue
+            if not torch.is_floating_point(input_tensor):
+                continue
 
             # Enable gradients for this input
             input_tensor = input_tensor.detach().requires_grad_(True)
 
             # Create temporary batch for this modality
             temp_batch = batch.copy()
-            temp_batch[modality if modality != "clinical" else "clinical_text"] = input_tensor
+            temp_batch[self._batch_key_for_modality(modality)] = input_tensor
 
             # Forward pass
             output = model(temp_batch)
@@ -342,6 +351,8 @@ class SaliencyMap:
         ]:
             if input_tensor is None:
                 continue
+            if not torch.is_floating_point(input_tensor):
+                continue
 
             input_tensor = input_tensor.detach().to(self.device)
             batch_size = input_tensor.shape[0]
@@ -364,7 +375,7 @@ class SaliencyMap:
 
                 # Create temporary batch
                 temp_batch = batch.copy()
-                temp_batch[modality if modality != "clinical" else "clinical_text"] = interpolated
+                temp_batch[self._batch_key_for_modality(modality)] = interpolated
 
                 # Forward pass
                 output = model(temp_batch)
@@ -453,10 +464,13 @@ class EmbeddingAnalyzer:
             Path to saved visualization
         """
         n_samples = embeddings.shape[0]
+        if n_samples < 2:
+            raise ValueError("t-SNE visualization requires at least 2 samples")
 
         # Auto-compute perplexity if not provided
         if perplexity is None:
             perplexity = min(30, max(5, n_samples // 4))
+        perplexity = min(perplexity, n_samples - 1)
 
         # Check for NaN and replace with zeros
         if np.isnan(embeddings).any():
@@ -609,7 +623,17 @@ class EmbeddingAnalyzer:
 
         for i, mod_i in enumerate(modalities):
             for j, mod_j in enumerate(modalities):
-                corr = np.corrcoef(modality_vectors[mod_i], modality_vectors[mod_j])[0, 1]
+                if i == j:
+                    corr = 1.0
+                else:
+                    vec_i = modality_vectors[mod_i]
+                    vec_j = modality_vectors[mod_j]
+                    if len(vec_i) < 2 or np.std(vec_i) == 0 or np.std(vec_j) == 0:
+                        corr = 0.0
+                    else:
+                        corr = float(np.corrcoef(vec_i, vec_j)[0, 1])
+                        if np.isnan(corr):
+                            corr = 0.0
                 correlation_matrix[i, j] = corr
 
         # Plot correlation matrix
