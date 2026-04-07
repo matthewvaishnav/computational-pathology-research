@@ -548,6 +548,99 @@ def test_manifest_recording_disabled(tmp_path, mock_config):
     }]
     
     output_path = tmp_path / "comparison_results.json"
+
+
+def test_manifest_recording_with_missing_metrics(tmp_path, mock_config):
+    """
+    Test manifest recording when successful variants have None metrics.
+    
+    This can happen if evaluation succeeds but metrics.json is missing/corrupted.
+    Regression test for handling None values in best_variant metrics.
+    """
+    from experiments.compare_pcam_baselines import _record_comparison_to_manifest
+    
+    # Create config file
+    config_path = tmp_path / "test_config.yaml"
+    with open(config_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    # Mock comparison with successful status but None metrics
+    comparison = {
+        'timestamp': '2026-04-07 12:00:00',
+        'variants': [
+            {
+                'name': 'test_variant',
+                'config_path': str(config_path),
+                'training_status': 'success',
+                'evaluation_status': 'success',
+                'training_time_seconds': 100.5,
+                'test_accuracy': None,  # Missing metric
+                'test_auc': None,
+                'test_f1': None,
+                'test_precision': None,
+                'test_recall': None,
+                'model_parameters': {'total': 12000000},
+                'inference_time_seconds': None,
+                'samples_per_second': None,
+                'checkpoint_path': './checkpoints/test_variant/best_model.pth',
+                'results_dir': './results/pcam_comparison/test_variant'
+            }
+        ]
+    }
+    
+    output_path = tmp_path / "comparison_results.json"
+    
+    # Mock BenchmarkManifest
+    with patch('experiments.compare_pcam_baselines.BenchmarkManifest') as mock_manifest_class:
+        mock_manifest = MagicMock()
+        mock_manifest_class.return_value = mock_manifest
+        
+        # Record to manifest - should not crash
+        _record_comparison_to_manifest(comparison, output_path)
+        
+        # Verify manifest.add_entry was called
+        assert mock_manifest.add_entry.called
+        
+        # Get the entry
+        entry = mock_manifest.add_entry.call_args[0][0]
+        
+        # Verify entry was created with None metrics
+        assert entry.final_metrics['best_accuracy'] is None
+        assert entry.final_metrics['best_auc'] is None
+        assert entry.final_metrics['best_f1'] is None
+        assert entry.status == 'COMPLETE'
+        
+        # Verify notes handle None accuracy gracefully
+        assert 'test_variant' in entry.notes
+        assert 'N/A' in entry.notes  # Should show N/A for missing accuracy
+
+
+def test_manifest_recording_disabled(tmp_path, mock_config):
+    """
+    Test that manifest recording can be disabled.
+    """
+    from experiments.compare_pcam_baselines import aggregate_results
+    
+    # Create config file
+    config_path = tmp_path / "test_config.yaml"
+    with open(config_path, 'w') as f:
+        yaml.dump(mock_config, f)
+    
+    training_results = [{
+        'variant_name': 'test_variant',
+        'config_path': str(config_path),
+        'status': 'success',
+        'training_time_seconds': 100.0
+    }]
+    
+    evaluation_results = [{
+        'variant_name': 'test_variant',
+        'checkpoint_path': './checkpoints/test/best_model.pth',
+        'status': 'success',
+        'metrics': {'accuracy': 0.95, 'auc': 0.98, 'f1': 0.94}
+    }]
+    
+    output_path = tmp_path / "comparison_results.json"
     
     # Mock the manifest recording function
     with patch('experiments.compare_pcam_baselines._record_comparison_to_manifest') as mock_record:

@@ -254,6 +254,9 @@ def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
     
     comparison_command = f'python experiments/compare_pcam_baselines.py --configs "{config_pattern}"'
     
+    # Format accuracy for notes (handle None)
+    accuracy_str = f"{best_variant['test_accuracy']:.4f}" if best_variant['test_accuracy'] is not None else "N/A"
+    
     # Create manifest entry
     entry = BenchmarkEntry(
         experiment_name=f"pcam_comparison_{comparison['timestamp'].replace(' ', '_').replace(':', '-')}",
@@ -283,7 +286,7 @@ def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
             "Not comparable to published baselines: Different dataset scale",
         ],
         notes=f"PCam baseline comparison run with {len(comparison['variants'])} variants: {variant_summary}. "
-              f"Best performing variant: {best_variant['name']} with {best_variant['test_accuracy']:.4f} accuracy. "
+              f"Best performing variant: {best_variant['name']} with {accuracy_str} accuracy. "
               f"See {output_path} for detailed comparison results.",
         date=comparison['timestamp'].split()[0],  # Extract date from timestamp
         status="COMPLETE" if len(successful_variants) == len(comparison['variants']) else "PARTIAL"
