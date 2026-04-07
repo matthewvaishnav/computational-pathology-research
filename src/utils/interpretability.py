@@ -211,6 +211,40 @@ class SaliencyMap:
             modality
         ]
 
+    @staticmethod
+    def _select_target_logits(
+        output: torch.Tensor,
+        labels: Optional[torch.Tensor],
+        target_idx: Optional[int],
+        device: torch.device,
+    ) -> torch.Tensor:
+        """Select the scalar output used for attribution.
+
+        Supports both multi-class logits [B, C] and binary single-logit outputs [B, 1].
+        For single-logit binary outputs, label/target 1 uses the positive logit and
+        label/target 0 uses the negated logit so attribution aligns with the requested class.
+        """
+        if output.dim() == 1:
+            output = output.unsqueeze(-1)
+
+        if target_idx is not None:
+            if output.size(1) == 1:
+                sign = 1.0 if target_idx == 1 else -1.0
+                return output * sign
+            return output.gather(
+                1, torch.tensor([[target_idx]], device=device).expand(output.size(0), 1)
+            )
+
+        if labels is not None:
+            if output.size(1) == 1:
+                label_sign = labels.view(-1).float().to(device) * 2 - 1
+                return output * label_sign.unsqueeze(-1)
+            return output.gather(1, labels.view(-1, 1).long())
+
+        if output.size(1) == 1:
+            return output
+        return output.max(dim=1, keepdim=True)[0]
+
     def compute_gradient_saliency(
         self,
         model: torch.nn.Module,
@@ -275,14 +309,7 @@ class SaliencyMap:
             output = model(temp_batch)
 
             # Get target
-            if target_idx is not None:
-                logits = output.gather(
-                    1, torch.tensor([[target_idx]], device=self.device).expand(output.size(0), 1)
-                )
-            elif labels is not None:
-                logits = output.gather(1, labels.unsqueeze(-1))
-            else:
-                logits = output.max(dim=1, keepdim=True)[0]
+            logits = self._select_target_logits(output, labels, target_idx, self.device)
 
             # Backward pass
             model.zero_grad()
@@ -381,15 +408,7 @@ class SaliencyMap:
                 output = model(temp_batch)
 
                 # Get target
-                if target_idx is not None:
-                    logits = output.gather(
-                        1,
-                        torch.tensor([[target_idx]], device=self.device).expand(output.size(0), 1),
-                    )
-                elif labels is not None:
-                    logits = output.gather(1, labels.unsqueeze(-1))
-                else:
-                    logits = output.max(dim=1, keepdim=True)[0]
+                logits = self._select_target_logits(output, labels, target_idx, self.device)
 
                 # Backward pass
                 model.zero_grad()
