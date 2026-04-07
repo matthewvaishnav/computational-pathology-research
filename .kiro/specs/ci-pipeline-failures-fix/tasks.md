@@ -16,7 +16,7 @@
   - Mark task complete when test is written, run, and failure is documented
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [~] 2. Write preservation property tests (BEFORE implementing fix)
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
   - **Property 2: Preservation** - Other Configuration Sections Remain Valid
   - **IMPORTANT**: Follow observation-first methodology
   - Create a reference pyproject.toml with [tool.black] section removed (this will be parseable)
@@ -29,9 +29,9 @@
   - Mark task complete when tests are written, run, and passing on reference file
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [~] 3. Fix for corrupted pyproject.toml [tool.black] include line
+- [ ] 3. Fix for corrupted pyproject.toml [tool.black] include line
 
-  - [~] 3.1 Implement the fix
+  - [ ] 3.1 Implement the fix
     - Open pyproject.toml file
     - Locate line 60 in the [tool.black] section with the malformed `include = '\.pyi?` line
     - Replace the incomplete line with the complete valid TOML: `include = '\.pyi?$'`
@@ -43,7 +43,7 @@
     - _Preservation: All other pyproject.toml sections ([build-system], [project], [tool.pytest.ini_options], [tool.mypy]) parse to the same values; Black's line-length and target-version settings remain unchanged_
     - _Requirements: 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4, 3.5_
 
-  - [~] 3.2 Verify bug condition exploration test now passes
+  - [ ] 3.2 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** - TOML Parsing Success
     - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
     - The test from task 1 encodes the expected behavior
@@ -55,7 +55,7 @@
     - Verify the parsed include value is exactly `'\.pyi?$'`
     - _Requirements: 2.1, 2.2, 2.3_
 
-  - [~] 3.3 Verify preservation tests still pass
+  - [ ] 3.3 Verify preservation tests still pass
     - **Property 2: Preservation** - Configuration Sections Unchanged
     - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
     - Run preservation property tests from step 2
@@ -64,7 +64,7 @@
     - Verify [tool.black] line-length and target-version are unchanged
     - Confirm all tests still pass after fix (no regressions)
 
-- [~] 4. Checkpoint - Ensure all tests pass
+- [ ] 4. Checkpoint - Ensure all tests pass
   - Run all tests to verify the fix is complete
   - Verify pip install -e . succeeds in a clean environment
   - Verify CI workflows can proceed past dependency installation

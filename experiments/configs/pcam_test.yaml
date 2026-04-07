@@ -1,0 +1,90 @@
+# Quick test configuration for PCam (CPU-friendly)
+# Runs on small subset for testing
+
+experiment:
+  name: patchcamelyon_test
+  description: Quick test of PatchCamelyon experiment
+  tags: [pcam, test, cpu]
+
+data:
+  dataset: pcam
+  root_dir: ./data/pcam
+  download: true
+  num_workers: 0
+  pin_memory: false
+
+  augmentation:
+    enabled: true
+    random_horizontal_flip: true
+    random_vertical_flip: true
+    color_jitter:
+      brightness: 0.1
+      contrast: 0.1
+      saturation: 0.1
+      hue: 0.05
+
+model:
+  modalities: [wsi]
+  embed_dim: 128
+
+  feature_extractor:
+    model: resnet18
+    pretrained: true
+    feature_dim: 512
+
+  wsi:
+    input_dim: 512
+    hidden_dim: 128
+    num_heads: 4
+    num_layers: 1
+    pooling: mean
+
+task:
+  type: classification
+  num_classes: 1
+  classification:
+    hidden_dims: [64]
+    dropout: 0.3
+
+training:
+  num_epochs: 3
+  batch_size: 16
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+    warmup_epochs: 0
+
+  max_grad_norm: 1.0
+  use_amp: false
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+checkpoint:
+  save_interval: 1
+  save_best: true
+  checkpoint_dir: ./checkpoints/pcam_test
+
+early_stopping:
+  enabled: false
+
+logging:
+  log_dir: ./logs/pcam_test
+  log_interval: 10
+  use_tensorboard: false
+
+evaluation:
+  generate_plots: true
+  output_dir: ./results/pcam_test
+
+seed: 42
+device: cpu

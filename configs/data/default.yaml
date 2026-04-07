@@ -1,0 +1,17 @@
+# @package data
+# Default data configuration
+
+# Data directory (should contain train/val/test splits)
+data_dir: ./data/processed
+
+# Modality settings
+wsi_enabled: true
+genomic_enabled: true
+clinical_text_enabled: true
+
+# Text preprocessing
+max_text_length: 512
+
+# DataLoader settings
+num_workers: 4
+pin_memory: true

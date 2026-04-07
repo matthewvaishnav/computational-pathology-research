@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "computational-pathology": {
+      "command": "python",
+      "args": ["${workspaceFolder}/scripts/project_mcp_server.py"]
+    }
+  }
+}

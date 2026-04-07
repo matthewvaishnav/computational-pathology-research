@@ -1,0 +1,37 @@
+# @package model
+# Multimodal fusion model configuration
+
+name: multimodal
+
+# Model architecture
+embed_dim: 256
+dropout: 0.1
+
+# WSI encoder config
+wsi_config:
+  input_dim: 1024
+  hidden_dim: 512
+  num_heads: 8
+  num_layers: 2
+  pooling: attention
+
+# Genomic encoder config
+genomic_config:
+  input_dim: 2000
+  hidden_dims: [1024, 512]
+  use_batch_norm: true
+
+# Clinical text encoder config
+clinical_config:
+  vocab_size: 30000
+  embed_dim: 256
+  hidden_dim: 512
+  num_heads: 8
+  num_layers: 3
+  max_seq_length: 512
+  pooling: mean
+
+# Fusion config
+fusion_config:
+  num_heads: 8
+  modalities: [wsi, genomic, clinical]

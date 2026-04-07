@@ -1,0 +1,11 @@
+# @package model
+# Single modality baseline configuration
+
+name: baseline
+
+# Modality to use: wsi, genomic, or clinical
+modality: wsi
+
+# Model architecture
+embed_dim: 256
+dropout: 0.1

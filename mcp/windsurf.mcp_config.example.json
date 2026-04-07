@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "computational-pathology": {
+      "command": "C:\\Users\\matth\\Desktop\\computational-pathology-research\\.venv\\Scripts\\python.exe",
+      "args": [
+        "C:\\Users\\matth\\Desktop\\computational-pathology-research\\scripts\\project_mcp_server.py"
+      ]
+    }
+  }
+}
