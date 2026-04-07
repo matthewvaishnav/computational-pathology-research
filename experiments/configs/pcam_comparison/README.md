@@ -105,6 +105,37 @@ logs/pcam_comparison/
 ├── baseline_resnet18/
 ├── resnet50/
 └── simple_head/
+
+benchmarks/
+└── manifest.jsonl                   # Benchmark registry (includes comparison runs)
+```
+
+## Benchmark Registry
+
+Comparison runs are automatically recorded to the benchmark manifest (`benchmarks/manifest.jsonl`) for reproducibility tracking. Each comparison run creates one manifest entry with:
+
+- Experiment name (timestamped)
+- All variant config paths
+- Comparison command used
+- Summary metrics (best variant, total training time)
+- Artifact paths (comparison results, checkpoints, results dirs)
+- Caveats about synthetic data and scale
+
+To skip manifest recording:
+```bash
+python experiments/compare_pcam_baselines.py \
+  --configs "experiments/configs/pcam_comparison/*.yaml" \
+  --no-manifest
+```
+
+View the manifest:
+```bash
+python src/utils/benchmark_manifest.py
+```
+
+Generate markdown summary:
+```bash
+python -c "from src.utils.benchmark_manifest import BenchmarkManifest; BenchmarkManifest().to_markdown('benchmarks/summary.md')"
 ```
 
 ## Comparison Results Format
