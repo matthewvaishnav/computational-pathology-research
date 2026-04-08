@@ -34,7 +34,17 @@ class BenchmarkEntry:
 class BenchmarkManifest:
     """Manages benchmark entries in a JSON Lines manifest file."""
 
-    def __init__(self, manifest_path: str = "benchmarks/manifest.jsonl"):
+    # Default path for the committed benchmark manifest
+    DEFAULT_MANIFEST_PATH = "benchmarks/manifest.jsonl"
+
+    def __init__(self, manifest_path: str = None):
+        """Initialize manifest.
+
+        Args:
+            manifest_path: Path to manifest file. If None, uses DEFAULT_MANIFEST_PATH.
+        """
+        if manifest_path is None:
+            manifest_path = self.DEFAULT_MANIFEST_PATH
         self.manifest_path = manifest_path
         os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
 

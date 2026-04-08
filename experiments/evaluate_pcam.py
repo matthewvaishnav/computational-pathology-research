@@ -39,6 +39,8 @@ from sklearn.metrics import (
     roc_curve,
 )
 
+from src.utils.statistical import compute_all_metrics_with_ci
+
 from experiments.generate_pcam_interpretability import (
     generate_pcam_interpretability_artifacts as build_pcam_interpretability_artifacts,
 )
@@ -126,6 +128,9 @@ def evaluate_model(
     dataloader: DataLoader,
     device: str,
     return_predictions: bool = False,
+    compute_bootstrap_ci: bool = False,
+    bootstrap_samples: int = 1000,
+    confidence_level: float = 0.95,
 ) -> Dict[str, Any]:
     """Run inference and compute metrics.
 
@@ -136,6 +141,9 @@ def evaluate_model(
         dataloader: Test data loader.
         device: Device to run inference on.
         return_predictions: If True, return predictions and probabilities.
+        compute_bootstrap_ci: Whether to compute bootstrap confidence intervals.
+        bootstrap_samples: Number of bootstrap samples for CI computation.
+        confidence_level: Confidence level for bootstrap CIs.
 
     Returns:
         Dictionary containing:
@@ -149,6 +157,7 @@ def evaluate_model(
         - 'predictions': List[int] (if return_predictions=True)
         - 'probabilities': List[float] (if return_predictions=True)
         - 'labels': List[int] (if return_predictions=True)
+        - '*_ci_lower', '*_ci_upper': CI bounds (if compute_bootstrap_ci=True)
     """
     feature_extractor.eval()
     encoder.eval()
@@ -191,7 +200,14 @@ def evaluate_model(
     labels = np.array(all_labels)
 
     # Compute metrics
-    metrics = compute_metrics(predictions, probabilities, labels)
+    metrics = compute_metrics(
+        predictions,
+        probabilities,
+        labels,
+        compute_bootstrap_ci=compute_bootstrap_ci,
+        bootstrap_samples=bootstrap_samples,
+        confidence_level=confidence_level,
+    )
 
     if return_predictions:
         metrics["predictions"] = all_preds
@@ -205,6 +221,9 @@ def compute_metrics(
     predictions: np.ndarray,
     probabilities: np.ndarray,
     labels: np.ndarray,
+    compute_bootstrap_ci: bool = False,
+    bootstrap_samples: int = 1000,
+    confidence_level: float = 0.95,
 ) -> Dict[str, Any]:
     """Compute all classification metrics using sklearn.
 
@@ -212,10 +231,14 @@ def compute_metrics(
         predictions: Binary predictions (0 or 1).
         probabilities: Predicted probabilities for positive class.
         labels: Ground truth labels (0 or 1).
+        compute_bootstrap_ci: Whether to compute bootstrap confidence intervals.
+        bootstrap_samples: Number of bootstrap samples for CI computation.
+        confidence_level: Confidence level for bootstrap CIs.
 
     Returns:
         Dictionary containing accuracy, AUC, precision, recall, F1,
-        confusion matrix, and per-class metrics.
+        confusion matrix, and per-class metrics. If compute_bootstrap_ci is True,
+        also includes CI bounds for each metric.
     """
     class_labels = [0, 1]
 
@@ -276,6 +299,36 @@ def compute_metrics(
             },
         },
     }
+
+    # Compute bootstrap confidence intervals if requested
+    if compute_bootstrap_ci and np.unique(labels).size >= 2:
+        logger.info(f"Computing bootstrap confidence intervals ({bootstrap_samples} samples)...")
+        try:
+            ci_results = compute_all_metrics_with_ci(
+                y_true=labels,
+                y_pred=predictions,
+                y_prob=probabilities,
+                n_bootstrap=bootstrap_samples,
+                confidence_level=confidence_level,
+                random_state=42,
+            )
+
+            # Add CI bounds to metrics
+            for metric_name, ci_data in ci_results.items():
+                if "error" not in ci_data:
+                    metrics[f"{metric_name}_ci_lower"] = ci_data["ci_lower"]
+                    metrics[f"{metric_name}_ci_upper"] = ci_data["ci_upper"]
+
+            # Add bootstrap config
+            metrics["bootstrap_config"] = {
+                "n_samples": bootstrap_samples,
+                "confidence_level": confidence_level,
+                "random_state": 42,
+            }
+
+            logger.info("Bootstrap confidence intervals computed successfully")
+        except Exception as e:
+            logger.warning(f"Failed to compute bootstrap CIs: {e}")
 
     return metrics
 
@@ -603,6 +656,23 @@ Examples:
         default=20,
         help="Number of top feature saliency entries to save (default: 20)",
     )
+    parser.add_argument(
+        "--compute-bootstrap-ci",
+        action="store_true",
+        help="Compute bootstrap confidence intervals for all metrics (default: False)",
+    )
+    parser.add_argument(
+        "--bootstrap-samples",
+        type=int,
+        default=1000,
+        help="Number of bootstrap samples for CI computation (default: 1000)",
+    )
+    parser.add_argument(
+        "--confidence-level",
+        type=float,
+        default=0.95,
+        help="Confidence level for bootstrap CIs (default: 0.95)",
+    )
 
     args = parser.parse_args()
 
@@ -739,6 +809,9 @@ Examples:
         test_loader,
         device,
         return_predictions=True,
+        compute_bootstrap_ci=args.compute_bootstrap_ci,
+        bootstrap_samples=args.bootstrap_samples,
+        confidence_level=args.confidence_level,
     )
 
     inference_time = time.time() - start_time

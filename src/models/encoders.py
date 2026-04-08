@@ -101,12 +101,22 @@ class WSIEncoder(nn.Module):
 
         # Apply transformer encoder
         # Create attention mask for transformer (inverted: True = ignore)
+        all_masked = None
         if mask is not None:
-            attn_mask = ~mask  # Invert: True means ignore in transformer
+            all_masked = ~mask.any(dim=1)
+            safe_mask = mask
+            if all_masked.any():
+                # Keep one placeholder token visible so the transformer does not emit NaNs
+                # for samples that have no valid patches in a mixed batch. We zero these rows
+                # back out after pooling so they do not contribute signal.
+                safe_mask = mask.clone()
+                safe_mask[all_masked, 0] = True
+            attn_mask = ~safe_mask  # Invert: True means ignore in transformer
         else:
             attn_mask = None
 
         x = self.transformer(x, src_key_padding_mask=attn_mask)  # [B, num_patches, hidden_dim]
+        x = torch.nan_to_num(x, nan=0.0)
 
         # Aggregate patches
         if self.pooling == "attention":
@@ -139,6 +149,9 @@ class WSIEncoder(nn.Module):
 
         else:
             raise ValueError(f"Unknown pooling strategy: {self.pooling}")
+
+        if all_masked is not None and all_masked.any():
+            aggregated = aggregated.masked_fill(all_masked.unsqueeze(-1), 0.0)
 
         # Project to output dimension
         embedding = self.output_proj(aggregated)  # [B, output_dim]
@@ -335,6 +348,8 @@ class ClinicalTextEncoder(nn.Module):
         if attention_mask is None:
             attention_mask = token_ids != 0
 
+        all_masked = ~attention_mask.any(dim=1)
+
         # Token embedding
         x = self.token_embedding(token_ids)  # [B, seq_len, embed_dim]
 
@@ -363,8 +378,16 @@ class ClinicalTextEncoder(nn.Module):
 
         # Apply transformer encoder
         # Create attention mask for transformer (inverted: True = ignore)
-        attn_mask = ~attention_mask  # Invert for transformer
+        safe_attention_mask = attention_mask
+        if all_masked.any():
+            # Keep one placeholder token visible so mixed batches with empty text rows
+            # stay numerically stable through the transformer.
+            safe_attention_mask = attention_mask.clone()
+            safe_attention_mask[all_masked, 0] = True
+
+        attn_mask = ~safe_attention_mask  # Invert for transformer
         x = self.transformer(x, src_key_padding_mask=attn_mask)  # [B, seq_len, hidden_dim]
+        x = torch.nan_to_num(x, nan=0.0)
 
         # Pool sequence to fixed-size representation
         if self.pooling == "cls":
@@ -383,6 +406,9 @@ class ClinicalTextEncoder(nn.Module):
 
         else:
             raise ValueError(f"Unknown pooling strategy: {self.pooling}")
+
+        if all_masked.any():
+            pooled = pooled.masked_fill(all_masked.unsqueeze(-1), 0.0)
 
         # Project to output dimension
         embedding = self.output_proj(pooled)  # [B, output_dim]

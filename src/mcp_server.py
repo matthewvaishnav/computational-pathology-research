@@ -509,8 +509,14 @@ class ProjectMCPServer:
         if not pyproject_path.exists() or tomllib is None:
             return {}
 
-        with open(pyproject_path, "rb") as handle:
-            data = tomllib.load(handle)
+        try:
+            with open(pyproject_path, "rb") as handle:
+                data = tomllib.load(handle)
+        except Exception as exc:
+            return {
+                "parse_error": str(exc),
+                "path": self._relative_path(pyproject_path),
+            }
 
         project = data.get("project", {})
         return {

@@ -56,11 +56,11 @@ model:
   # WSI encoder for aggregating patch features
   wsi:
     input_dim: 2048  # ResNet-50 feature dim
-    hidden_dim: 512
+    hidden_dim: 256
     num_heads: 8
     num_layers: 2
-    pooling: attention  # Attention-based pooling for multiple patches
-    dropout: 0.1
+    aggregation: mean  # Options: "mean", "max"
+    dropout: 0.3
 
 task:
   type: classification
@@ -73,9 +73,9 @@ task:
 
 training:
   num_epochs: 50
-  batch_size: 4  # Small batch size for slide-level data
+  batch_size: 8  # Number of slides per batch
   learning_rate: 1e-4
-  weight_decay: 1e-4
+  weight_decay: 1e-5
 
   optimizer:
     name: adamw
@@ -97,9 +97,8 @@ validation:
   maximize: true
 
 checkpoint:
-  save_interval: 5
-  save_best: true
   checkpoint_dir: ./checkpoints/camelyon
+  save_frequency: 5
 
 early_stopping:
   enabled: true
