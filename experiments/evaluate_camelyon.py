@@ -39,6 +39,7 @@ from sklearn.metrics import (
 try:
     import seaborn as sns
     import matplotlib.pyplot as plt
+
     PLOT_AVAILABLE = True
 except ImportError:
     PLOT_AVAILABLE = False
@@ -47,8 +48,7 @@ from src.data.camelyon_dataset import CAMELYONSlideIndex, CAMELYONPatchDataset
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -85,28 +85,28 @@ def load_checkpoint(
         from train_camelyon import SimpleSlideClassifier
 
         # Get config
-        config = checkpoint.get('config', {})
-        
+        config = checkpoint.get("config", {})
+
         # Reconstruct model from config
-        feature_dim = checkpoint['model_state_dict']['classifier.0.weight'].shape[1]
-        hidden_dim = config['model']['wsi']['hidden_dim']
-        num_classes = config['task']['num_classes']
-        dropout = config['task']['classification']['dropout']
-        
+        feature_dim = checkpoint["model_state_dict"]["classifier.0.weight"].shape[1]
+        hidden_dim = config["model"]["wsi"]["hidden_dim"]
+        num_classes = config["task"]["num_classes"]
+        dropout = config["task"]["classification"]["dropout"]
+
         model = SimpleSlideClassifier(
             feature_dim=feature_dim,
             hidden_dim=hidden_dim,
             num_classes=num_classes,
-            pooling='mean',
+            pooling="mean",
             dropout=dropout,
         )
 
         # Load state dict
-        model.load_state_dict(checkpoint['model_state_dict'])
+        model.load_state_dict(checkpoint["model_state_dict"])
         model = model.to(device)
 
-        metrics = checkpoint.get('metrics', {})
-        epoch = checkpoint.get('epoch', 0)
+        metrics = checkpoint.get("metrics", {})
+        epoch = checkpoint.get("epoch", 0)
 
         logger.info(f"Successfully loaded checkpoint from epoch {epoch}")
         if metrics:
@@ -129,7 +129,7 @@ def evaluate_slide_level(
     features_dir: Path,
     split: str,
     device: str,
-    aggregation: str = 'mean',
+    aggregation: str = "mean",
 ) -> Dict[str, Any]:
     """Run slide-level inference and compute metrics.
 
@@ -157,7 +157,7 @@ def evaluate_slide_level(
     model.eval()
 
     slides = slide_index.get_slides_by_split(split)
-    
+
     slide_predictions = {}
     slide_probabilities = {}
     slide_labels = {}
@@ -176,8 +176,9 @@ def evaluate_slide_level(
                 continue
 
             import h5py
-            with h5py.File(feature_file, 'r') as f:
-                features = torch.tensor(f['features'][:], dtype=torch.float32)
+
+            with h5py.File(feature_file, "r") as f:
+                features = torch.tensor(f["features"][:], dtype=torch.float32)
 
             # Add batch dimension: [num_patches, feature_dim] -> [1, num_patches, feature_dim]
             features = features.unsqueeze(0).to(device)
@@ -203,10 +204,10 @@ def evaluate_slide_level(
     metrics = compute_metrics(predictions, probabilities, labels)
 
     # Add slide-level data
-    metrics['slide_predictions'] = slide_predictions
-    metrics['slide_probabilities'] = slide_probabilities
-    metrics['slide_labels'] = slide_labels
-    metrics['num_slides'] = len(slide_ids)
+    metrics["slide_predictions"] = slide_predictions
+    metrics["slide_probabilities"] = slide_probabilities
+    metrics["slide_labels"] = slide_labels
+    metrics["num_slides"] = len(slide_ids)
 
     return metrics
 
@@ -231,7 +232,7 @@ def compute_metrics(
 
     # Basic metrics
     accuracy = accuracy_score(labels, predictions)
-    
+
     if len(np.unique(labels)) < 2:
         auc = None
         logger.warning(
@@ -264,25 +265,25 @@ def compute_metrics(
 
     # Build results
     metrics = {
-        'accuracy': float(accuracy),
-        'auc': auc,
-        'precision': precision_macro,
-        'recall': recall_macro,
-        'f1': f1_macro,
-        'precision_binary': precision_binary,
-        'recall_binary': recall_binary,
-        'f1_binary': f1_binary,
-        'confusion_matrix': cm.tolist(),
-        'per_class_metrics': {
-            'class_0': {
-                'precision': float(precision_per_class[0]),
-                'recall': float(recall_per_class[0]),
-                'f1': float(f1_per_class[0]),
+        "accuracy": float(accuracy),
+        "auc": auc,
+        "precision": precision_macro,
+        "recall": recall_macro,
+        "f1": f1_macro,
+        "precision_binary": precision_binary,
+        "recall_binary": recall_binary,
+        "f1_binary": f1_binary,
+        "confusion_matrix": cm.tolist(),
+        "per_class_metrics": {
+            "class_0": {
+                "precision": float(precision_per_class[0]),
+                "recall": float(recall_per_class[0]),
+                "f1": float(f1_per_class[0]),
             },
-            'class_1': {
-                'precision': float(precision_per_class[1]),
-                'recall': float(recall_per_class[1]),
-                'f1': float(f1_per_class[1]),
+            "class_1": {
+                "precision": float(precision_per_class[1]),
+                "recall": float(recall_per_class[1]),
+                "f1": float(f1_per_class[1]),
             },
         },
     }
@@ -315,10 +316,10 @@ def save_metrics(metrics: Dict, output_path: str) -> None:
             return [convert_to_serializable(item) for item in obj]
         else:
             return obj
-    
+
     metrics_to_save = convert_to_serializable(metrics)
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         json.dump(metrics_to_save, f, indent=2)
 
     logger.info(f"Metrics saved to: {output_path}")
@@ -343,15 +344,15 @@ def plot_confusion_matrix(cm: np.ndarray, output_path: str) -> None:
     sns.heatmap(
         cm,
         annot=True,
-        fmt='d',
-        cmap='Blues',
-        xticklabels=['Predicted Normal', 'Predicted Tumor'],
-        yticklabels=['Actual Normal', 'Actual Tumor'],
-        cbar_kws={'label': 'Count'},
+        fmt="d",
+        cmap="Blues",
+        xticklabels=["Predicted Normal", "Predicted Tumor"],
+        yticklabels=["Actual Normal", "Actual Tumor"],
+        cbar_kws={"label": "Count"},
     )
-    plt.title('Confusion Matrix - Slide-Level Classification')
-    plt.ylabel('True Label')
-    plt.xlabel('Predicted Label')
+    plt.title("Confusion Matrix - Slide-Level Classification")
+    plt.ylabel("True Label")
+    plt.xlabel("Predicted Label")
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
     plt.close()
@@ -377,14 +378,14 @@ def plot_roc_curve(fpr: np.ndarray, tpr: np.ndarray, auc: float, output_path: st
     output_dir.mkdir(parents=True, exist_ok=True)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {auc:.4f})')
-    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random classifier')
+    plt.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (AUC = {auc:.4f})")
+    plt.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--", label="Random classifier")
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC Curve - Slide-Level Classification')
-    plt.legend(loc='lower right')
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve - Slide-Level Classification")
+    plt.legend(loc="lower right")
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
@@ -412,14 +413,14 @@ def get_hardware_info() -> Dict[str, Any]:
         Dictionary with hardware information.
     """
     info = {
-        'cuda_available': torch.cuda.is_available(),
-        'pytorch_version': torch.__version__,
+        "cuda_available": torch.cuda.is_available(),
+        "pytorch_version": torch.__version__,
     }
 
     if torch.cuda.is_available():
-        info['gpu_name'] = torch.cuda.get_device_name(0)
-        info['gpu_memory_total_gb'] = torch.cuda.get_device_properties(0).total_memory / 1e9
-        info['cuda_version'] = torch.version.cuda
+        info["gpu_name"] = torch.cuda.get_device_name(0)
+        info["gpu_memory_total_gb"] = torch.cuda.get_device_properties(0).total_memory / 1e9
+        info["cuda_version"] = torch.version.cuda
 
     return info
 
@@ -435,7 +436,7 @@ def log_evaluation_summary(
     roc_curve_generated: bool,
 ) -> None:
     """Log the final evaluation summary."""
-    cm = np.array(test_metrics['confusion_matrix'])
+    cm = np.array(test_metrics["confusion_matrix"])
 
     logger.info("\n" + "=" * 60)
     logger.info("CAMELYON EVALUATION SUMMARY")
@@ -447,7 +448,7 @@ def log_evaluation_summary(
     logger.info("-" * 60)
     logger.info("Slide-Level Test Metrics:")
     logger.info(f"  Accuracy:  {test_metrics['accuracy']:.4f}")
-    if test_metrics['auc'] is None:
+    if test_metrics["auc"] is None:
         logger.info("  AUC:       undefined (single-class labels)")
     else:
         logger.info(f"  AUC:       {test_metrics['auc']:.4f}")
@@ -456,9 +457,9 @@ def log_evaluation_summary(
     logger.info(f"  F1:        {test_metrics['f1']:.4f}")
     logger.info("-" * 60)
     logger.info("Per-class metrics (Normal / Tumor):")
-    for cls in ['class_0', 'class_1']:
-        cls_name = 'Normal' if cls == 'class_0' else 'Tumor'
-        cls_metrics = test_metrics['per_class_metrics'][cls]
+    for cls in ["class_0", "class_1"]:
+        cls_name = "Normal" if cls == "class_0" else "Tumor"
+        cls_metrics = test_metrics["per_class_metrics"][cls]
         logger.info(f"  {cls_name}:")
         logger.info(f"    Precision: {cls_metrics['precision']:.4f}")
         logger.info(f"    Recall:    {cls_metrics['recall']:.4f}")
@@ -480,61 +481,58 @@ def log_evaluation_summary(
 def main():
     """Main evaluation function."""
     parser = argparse.ArgumentParser(
-        description='Evaluate CAMELYON model on test set',
+        description="Evaluate CAMELYON model on test set",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon_quick_test/best_model.pth --split test
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --output-dir results/camelyon
-        """
+        """,
     )
     parser.add_argument(
-        '--checkpoint',
-        type=str,
-        required=True,
-        help='Path to the checkpoint file (required)'
+        "--checkpoint", type=str, required=True, help="Path to the checkpoint file (required)"
     )
     parser.add_argument(
-        '--data-root',
+        "--data-root",
         type=str,
-        default='data/camelyon',
-        help='Root directory of CAMELYON dataset (default: data/camelyon)'
+        default="data/camelyon",
+        help="Root directory of CAMELYON dataset (default: data/camelyon)",
     )
     parser.add_argument(
-        '--split',
+        "--split",
         type=str,
-        default='test',
-        choices=['train', 'val', 'test'],
-        help='Which split to evaluate (default: test)'
+        default="test",
+        choices=["train", "val", "test"],
+        help="Which split to evaluate (default: test)",
     )
     parser.add_argument(
-        '--output-dir',
+        "--output-dir",
         type=str,
-        default='results/camelyon',
-        help='Output directory for results (default: results/camelyon)'
+        default="results/camelyon",
+        help="Output directory for results (default: results/camelyon)",
     )
     parser.add_argument(
-        '--device',
+        "--device",
         type=str,
-        default='cuda',
-        choices=['cuda', 'cpu'],
-        help='Device to use for evaluation (default: cuda if available)'
+        default="cuda",
+        choices=["cuda", "cpu"],
+        help="Device to use for evaluation (default: cuda if available)",
     )
     parser.add_argument(
-        '--aggregation',
+        "--aggregation",
         type=str,
-        default='mean',
-        choices=['mean', 'max'],
-        help='Patch aggregation method (default: mean)'
+        default="mean",
+        choices=["mean", "max"],
+        help="Patch aggregation method (default: mean)",
     )
 
     args = parser.parse_args()
 
     # Determine device
-    if args.device == 'cuda' and not torch.cuda.is_available():
+    if args.device == "cuda" and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU")
-        device = torch.device('cpu')
+        device = torch.device("cpu")
     else:
         device = torch.device(args.device)
 
@@ -546,7 +544,7 @@ Examples:
     logger.info(f"Checkpoint: {args.checkpoint}")
     logger.info(f"Device: {device}")
     logger.info(f"PyTorch version: {hw_info['pytorch_version']}")
-    if hw_info['cuda_available']:
+    if hw_info["cuda_available"]:
         logger.info(f"GPU: {hw_info['gpu_name']}")
         logger.info(f"GPU memory: {hw_info['gpu_memory_total_gb']:.2f} GB")
         logger.info(f"CUDA version: {hw_info['cuda_version']}")
@@ -564,8 +562,8 @@ Examples:
 
     # Load slide index
     data_root = Path(args.data_root)
-    index_path = data_root / 'slide_index.json'
-    features_dir = data_root / 'features'
+    index_path = data_root / "slide_index.json"
+    features_dir = data_root / "features"
 
     if not index_path.exists():
         logger.error(f"Slide index not found: {index_path}")
@@ -601,50 +599,52 @@ Examples:
     )
 
     inference_time = time.time() - start_time
-    slides_per_second = test_metrics['num_slides'] / inference_time
+    slides_per_second = test_metrics["num_slides"] / inference_time
 
     logger.info(f"Evaluation completed in {inference_time:.2f} seconds")
     logger.info(f"Throughput: {slides_per_second:.2f} slides/second")
 
     # Add metadata to metrics
-    test_metrics['hardware_info'] = hw_info
-    test_metrics['inference_time_seconds'] = inference_time
-    test_metrics['slides_per_second'] = slides_per_second
-    test_metrics['model_parameters'] = total_params
-    test_metrics['checkpoint_epoch'] = epoch
-    test_metrics['checkpoint_path'] = args.checkpoint
-    test_metrics['checkpoint_metrics'] = checkpoint_metrics
-    test_metrics['aggregation_method'] = args.aggregation
-    test_metrics['split'] = args.split
+    test_metrics["hardware_info"] = hw_info
+    test_metrics["inference_time_seconds"] = inference_time
+    test_metrics["slides_per_second"] = slides_per_second
+    test_metrics["model_parameters"] = total_params
+    test_metrics["checkpoint_epoch"] = epoch
+    test_metrics["checkpoint_path"] = args.checkpoint
+    test_metrics["checkpoint_metrics"] = checkpoint_metrics
+    test_metrics["aggregation_method"] = args.aggregation
+    test_metrics["split"] = args.split
 
     # Create output directory
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Save metrics JSON
-    metrics_path = output_dir / 'metrics.json'
+    metrics_path = output_dir / "metrics.json"
     save_metrics(test_metrics, str(metrics_path))
 
-    cm = np.array(test_metrics['confusion_matrix'])
+    cm = np.array(test_metrics["confusion_matrix"])
 
     # Generate plots
     confusion_matrix_generated = False
     roc_curve_generated = False
-    
+
     if PLOT_AVAILABLE:
-        plot_confusion_matrix(cm, str(output_dir / 'confusion_matrix.png'))
+        plot_confusion_matrix(cm, str(output_dir / "confusion_matrix.png"))
         confusion_matrix_generated = True
 
         # ROC curve
-        if test_metrics['auc'] is not None:
-            slide_ids = list(test_metrics['slide_labels'].keys())
-            labels = np.array([test_metrics['slide_labels'][sid] for sid in slide_ids])
-            probabilities = np.array([test_metrics['slide_probabilities'][sid] for sid in slide_ids])
-            
+        if test_metrics["auc"] is not None:
+            slide_ids = list(test_metrics["slide_labels"].keys())
+            labels = np.array([test_metrics["slide_labels"][sid] for sid in slide_ids])
+            probabilities = np.array(
+                [test_metrics["slide_probabilities"][sid] for sid in slide_ids]
+            )
+
             if len(np.unique(labels)) >= 2:
                 fpr, tpr, _ = roc_curve(labels, probabilities)
-                auc = test_metrics['auc']
-                plot_roc_curve(fpr, tpr, auc, str(output_dir / 'roc_curve.png'))
+                auc = test_metrics["auc"]
+                plot_roc_curve(fpr, tpr, auc, str(output_dir / "roc_curve.png"))
                 roc_curve_generated = True
     else:
         logger.warning("matplotlib/seaborn not available - skipping plot generation")
@@ -652,7 +652,7 @@ Examples:
     log_evaluation_summary(
         checkpoint_path=args.checkpoint,
         epoch=epoch,
-        num_slides=test_metrics['num_slides'],
+        num_slides=test_metrics["num_slides"],
         inference_time=inference_time,
         test_metrics=test_metrics,
         output_dir=output_dir,
@@ -661,5 +661,5 @@ Examples:
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

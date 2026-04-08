@@ -5,15 +5,18 @@ Lightweight helper for reading/writing benchmark entries to a JSON Lines manifes
 """
 
 import json
+import logging
 import os
 from dataclasses import dataclass, asdict
-from datetime import datetime
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class BenchmarkEntry:
     """Single benchmark run entry."""
+
     experiment_name: str
     dataset_name: str
     dataset_subset_size: int
@@ -37,23 +40,41 @@ class BenchmarkManifest:
 
     def add_entry(self, entry: BenchmarkEntry) -> None:
         """Append a benchmark entry to the manifest."""
-        with open(self.manifest_path, "a") as f:
+        with open(self.manifest_path, "a", encoding="utf-8") as f:
             # Write compact single-line JSON for JSON Lines format
-            json.dump(asdict(entry), f, separators=(',', ':'))
+            json.dump(asdict(entry), f, separators=(",", ":"))
             f.write("\n")
 
     def read_all(self) -> list[BenchmarkEntry]:
-        """Read all benchmark entries from the manifest."""
+        """Read all benchmark entries from the manifest.
+
+        Skips corrupted lines and logs warnings for invalid entries.
+        """
         entries = []
         if not os.path.exists(self.manifest_path):
             return entries
-        with open(self.manifest_path) as f:
+
+        with open(self.manifest_path, encoding="utf-8") as f:
             content = f.read()
-            # Handle both single-line JSONL and formatted multi-line JSON
-            lines = [line.strip() for line in content.strip().split('\n') if line.strip()]
-            for line in lines:
-                if line:
-                    entries.append(BenchmarkEntry(**json.loads(line)))
+
+        # Handle both single-line JSONL and formatted multi-line JSON
+        lines = [line.strip() for line in content.strip().split("\n") if line.strip()]
+
+        for line_num, line in enumerate(lines, 1):
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+                entries.append(BenchmarkEntry(**data))
+            except json.JSONDecodeError:
+                # Skip lines that aren't valid JSON
+                logger.warning(f"Skipping corrupted line {line_num} in manifest")
+                continue
+            except TypeError as e:
+                # Skip lines that don't match BenchmarkEntry schema
+                logger.warning(f"Skipping invalid entry at line {line_num}: {e}")
+                continue
+
         return entries
 
     def find_by_experiment(self, name: str) -> Optional[BenchmarkEntry]:
@@ -66,7 +87,7 @@ class BenchmarkManifest:
     def to_markdown(self, output_path: str) -> None:
         """Generate a Markdown summary of all benchmarks."""
         entries = self.read_all()
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write("# Benchmark Results Manifest\n\n")
             for entry in entries:
                 f.write(f"## {entry.experiment_name}\n\n")

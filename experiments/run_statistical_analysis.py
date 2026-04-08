@@ -33,13 +33,12 @@ from experiments.statistical_analysis import (
     paired_t_test,
     AblationStudy,
     run_cross_validation,
-    is_significant
+    is_significant,
 )
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -80,20 +79,20 @@ class SyntheticMultimodalDataset(Dataset):
             clinical_text = None
 
         return {
-            'wsi_features': wsi_features,
-            'genomic': genomic,
-            'clinical_text': clinical_text,
-            'label': self.labels[idx]
+            "wsi_features": wsi_features,
+            "genomic": genomic,
+            "clinical_text": clinical_text,
+            "label": self.labels[idx],
         }
 
 
 def collate_fn(batch):
     """Collate function for batching samples."""
     batch_size = len(batch)
-    labels = torch.stack([item['label'] for item in batch])
+    labels = torch.stack([item["label"] for item in batch])
 
     # WSI
-    wsi_list = [item['wsi_features'] for item in batch]
+    wsi_list = [item["wsi_features"] for item in batch]
     max_patches = max((wsi.shape[0] for wsi in wsi_list if wsi is not None), default=0)
 
     if max_patches > 0:
@@ -109,37 +108,37 @@ def collate_fn(batch):
         wsi_mask = None
 
     # Genomic
-    genomic_list = [item['genomic'] for item in batch if item['genomic'] is not None]
+    genomic_list = [item["genomic"] for item in batch if item["genomic"] is not None]
     if len(genomic_list) > 0:
         genomic = torch.zeros(batch_size, 2000)
         for i, item in enumerate(batch):
-            if item['genomic'] is not None:
-                genomic[i] = item['genomic']
+            if item["genomic"] is not None:
+                genomic[i] = item["genomic"]
     else:
         genomic = None
 
     # Clinical text
-    clinical_list = [item['clinical_text'] for item in batch if item['clinical_text'] is not None]
+    clinical_list = [item["clinical_text"] for item in batch if item["clinical_text"] is not None]
     if len(clinical_list) > 0:
         max_len = max(text.shape[0] for text in clinical_list)
         clinical_text = torch.zeros(batch_size, max_len, dtype=torch.long)
         clinical_mask = torch.zeros(batch_size, max_len, dtype=torch.bool)
         for i, item in enumerate(batch):
-            if item['clinical_text'] is not None:
-                length = item['clinical_text'].shape[0]
-                clinical_text[i, :length] = item['clinical_text']
+            if item["clinical_text"] is not None:
+                length = item["clinical_text"].shape[0]
+                clinical_text[i, :length] = item["clinical_text"]
                 clinical_mask[i, :length] = True
     else:
         clinical_text = None
         clinical_mask = None
 
     return {
-        'wsi_features': wsi_padded,
-        'wsi_mask': wsi_mask,
-        'genomic': genomic,
-        'clinical_text': clinical_text,
-        'clinical_mask': clinical_mask,
-        'label': labels
+        "wsi_features": wsi_padded,
+        "wsi_mask": wsi_mask,
+        "genomic": genomic,
+        "clinical_text": clinical_text,
+        "clinical_mask": clinical_mask,
+        "label": labels,
     }
 
 
@@ -150,7 +149,7 @@ def train_model(dataset, num_epochs=5, embed_dim=128, seed=42):
 
     from src.models import MultimodalFusionModel, ClassificationHead
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
     # Split dataset
@@ -170,13 +169,13 @@ def train_model(dataset, num_epochs=5, embed_dim=128, seed=42):
     model = MultimodalFusionModel(embed_dim=embed_dim).to(device)
     classifier = ClassificationHead(input_dim=embed_dim, num_classes=3).to(device)
 
-    total_params = sum(p.numel() for p in model.parameters()) + sum(p.numel() for classifier.parameters())
+    total_params = sum(p.numel() for p in model.parameters()) + sum(
+        p.numel() for p in classifier.parameters()
+    )
     logger.info(f"Total parameters: {total_params:,}")
 
     optimizer = optim.AdamW(
-        list(model.parameters()) + list(classifier.parameters()),
-        lr=5e-4,
-        weight_decay=0.01
+        list(model.parameters()) + list(classifier.parameters()), lr=5e-4, weight_decay=0.01
     )
     criterion = nn.CrossEntropyLoss()
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
@@ -191,8 +190,10 @@ def train_model(dataset, num_epochs=5, embed_dim=128, seed=42):
         total = 0
 
         for batch in train_loader:
-            batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
-            labels = batch.pop('label')
+            batch = {
+                k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
+            }
+            labels = batch.pop("label")
 
             optimizer.zero_grad()
             embeddings = model(batch)
@@ -200,8 +201,7 @@ def train_model(dataset, num_epochs=5, embed_dim=128, seed=42):
             loss = criterion(logits, labels)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
-                list(model.parameters()) + list(classifier.parameters()),
-                max_norm=1.0
+                list(model.parameters()) + list(classifier.parameters()), max_norm=1.0
             )
             optimizer.step()
 
@@ -213,7 +213,9 @@ def train_model(dataset, num_epochs=5, embed_dim=128, seed=42):
         scheduler.step()
 
         train_acc = correct / total
-        logger.info(f"Epoch {epoch+1}/{num_epochs} - Loss: {epoch_loss/len(train_loader):.4f}, Acc: {train_acc:.4f}")
+        logger.info(
+            f"Epoch {epoch+1}/{num_epochs} - Loss: {epoch_loss/len(train_loader):.4f}, Acc: {train_acc:.4f}"
+        )
 
     return model, classifier, val_loader
 
@@ -234,32 +236,31 @@ class AblationWrapper(nn.Module):
 
 def run_ablations(model, classifier, test_loader, n_bootstrap=500, seed=42):
     """Run ablation study on trained model."""
-    logger.info("\n" + "="*60)
+    logger.info("\n" + "=" * 60)
     logger.info("RUNNING ABLATION STUDY")
-    logger.info("="*60)
+    logger.info("=" * 60)
 
     # Wrap model and classifier
     model_wrapper = AblationWrapper(model, classifier)
     model_wrapper.eval()
 
     # Define ablation components
-    ablation_components = ['wsi', 'genomic', 'clinical']
+    ablation_components = ["wsi", "genomic", "clinical"]
 
     # Create ablation study
     study = AblationStudy(
         model_factory=lambda: AblationWrapper(
-            type(model)(model.embed_dim),
-            type(classifier)(model.embed_dim, 3)
+            type(model)(model.embed_dim), type(classifier)(model.embed_dim, 3)
         ),
         dataset=None,  # We'll pass dataloader directly
         ablation_components=ablation_components,
-        device='cuda' if torch.cuda.is_available() else 'cpu',
+        device="cuda" if torch.cuda.is_available() else "cpu",
         n_bootstrap=n_bootstrap,
-        seed=seed
+        seed=seed,
     )
 
     # Since AblationStudy expects to create models, we'll do direct evaluation
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Evaluate full model
     logger.info("\nEvaluating full model...")
@@ -276,14 +277,14 @@ def run_ablations(model, classifier, test_loader, n_bootstrap=500, seed=42):
         # Create modified batch
         def ablate_batch(batch):
             batch = {k: (v.clone() if isinstance(v, torch.Tensor) else v) for k, v in batch.items()}
-            if component == 'wsi':
-                batch['wsi_features'] = None
-                batch['wsi_mask'] = None
-            elif component == 'genomic':
-                batch['genomic'] = None
-            elif component == 'clinical':
-                batch['clinical_text'] = None
-                batch['clinical_mask'] = None
+            if component == "wsi":
+                batch["wsi_features"] = None
+                batch["wsi_mask"] = None
+            elif component == "genomic":
+                batch["genomic"] = None
+            elif component == "clinical":
+                batch["clinical_text"] = None
+                batch["clinical_mask"] = None
             return batch
 
         # Evaluate
@@ -293,18 +294,18 @@ def run_ablations(model, classifier, test_loader, n_bootstrap=500, seed=42):
         deltas = {}
         for metric_name in full_metrics:
             delta = ablated_metrics.get(metric_name, 0) - full_metrics[metric_name]
-            deltas[f'delta_{metric_name}'] = delta
+            deltas[f"delta_{metric_name}"] = delta
 
         # Determine significance (simplified - would need multiple runs for proper test)
         # Using a heuristic: if delta > 0.02, consider potentially significant
-        is_sig = abs(deltas.get('delta_accuracy', 0)) > 0.02
+        is_sig = abs(deltas.get("delta_accuracy", 0)) > 0.02
 
         ablation_results[component] = {
-            'component_removed': component,
-            'full_metrics': full_metrics,
-            'ablated_metrics': ablated_metrics,
-            'deltas': deltas,
-            'is_significant': {'accuracy': is_sig}
+            "component_removed": component,
+            "full_metrics": full_metrics,
+            "ablated_metrics": ablated_metrics,
+            "deltas": deltas,
+            "is_significant": {"accuracy": is_sig},
         }
 
         logger.info(f"  Delta accuracy: {deltas.get('delta_accuracy', 0):+.4f}")
@@ -321,8 +322,10 @@ def evaluate_wrapper(model_wrapper, dataloader, device, batch_transform=None):
 
     with torch.no_grad():
         for batch in dataloader:
-            batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
-            labels = batch.pop('label')
+            batch = {
+                k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
+            }
+            labels = batch.pop("label")
 
             if batch_transform:
                 batch = batch_transform(batch)
@@ -341,10 +344,10 @@ def evaluate_wrapper(model_wrapper, dataloader, device, batch_transform=None):
     from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
     return {
-        'accuracy': accuracy_score(all_labels, all_preds),
-        'f1': f1_score(all_labels, all_preds, average='weighted', zero_division=0),
-        'precision': precision_score(all_labels, all_preds, average='weighted', zero_division=0),
-        'recall': recall_score(all_labels, all_preds, average='weighted', zero_division=0)
+        "accuracy": accuracy_score(all_labels, all_preds),
+        "f1": f1_score(all_labels, all_preds, average="weighted", zero_division=0),
+        "precision": precision_score(all_labels, all_preds, average="weighted", zero_division=0),
+        "recall": recall_score(all_labels, all_preds, average="weighted", zero_division=0),
     }
 
 
@@ -363,11 +366,7 @@ def run_multiple_seeds(n_seeds=5, **kwargs):
         np.random.seed(seed)
 
         # Create dataset with this seed
-        dataset = SyntheticMultimodalDataset(
-            num_samples=200,
-            num_classes=3,
-            missing_rate=0.1
-        )
+        dataset = SyntheticMultimodalDataset(num_samples=200, num_classes=3, missing_rate=0.1)
         dataset.labels = torch.randint(0, 3, (200,))
 
         # Train model
@@ -376,74 +375,61 @@ def run_multiple_seeds(n_seeds=5, **kwargs):
         # Evaluate
         full_metrics, _ = run_ablations(model, classifier, test_loader, seed=seed)
 
-        all_results.append({
-            'seed': seed,
-            'metrics': full_metrics
-        })
+        all_results.append({"seed": seed, "metrics": full_metrics})
 
     # Compute aggregate statistics
-    accuracies = np.array([r['metrics']['accuracy'] for r in all_results])
-    f1_scores = np.array([r['metrics']['f1'] for r in all_results])
+    accuracies = np.array([r["metrics"]["accuracy"] for r in all_results])
+    f1_scores = np.array([r["metrics"]["f1"] for r in all_results])
 
     mean_acc, ci_low_acc, ci_high_acc = compute_bootstrap_ci(accuracies)
     mean_f1, ci_low_f1, ci_high_f1 = compute_bootstrap_ci(f1_scores)
 
     return {
-        'individual_results': all_results,
-        'mean_accuracy': float(mean_acc),
-        'ci_accuracy': (float(ci_low_acc), float(ci_high_acc)),
-        'mean_f1': float(mean_f1),
-        'ci_f1': (float(ci_low_f1), float(ci_high_f1)),
-        'n_seeds': n_seeds
+        "individual_results": all_results,
+        "mean_accuracy": float(mean_acc),
+        "ci_accuracy": (float(ci_low_acc), float(ci_high_acc)),
+        "mean_f1": float(mean_f1),
+        "ci_f1": (float(ci_low_f1), float(ci_high_f1)),
+        "n_seeds": n_seeds,
     }
 
 
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Run statistical analysis on multimodal fusion experiments'
+        description="Run statistical analysis on multimodal fusion experiments"
     )
 
     parser.add_argument(
-        '--n-bootstrap',
+        "--n-bootstrap",
         type=int,
         default=500,
-        help='Number of bootstrap samples for CI (default: 500)'
+        help="Number of bootstrap samples for CI (default: 500)",
     )
     parser.add_argument(
-        '--n-seeds',
+        "--n-seeds",
         type=int,
         default=3,
-        help='Number of random seeds for statistical testing (default: 3)'
+        help="Number of random seeds for statistical testing (default: 3)",
     )
     parser.add_argument(
-        '--num-samples',
+        "--num-samples",
         type=int,
         default=200,
-        help='Number of samples in synthetic dataset (default: 200)'
+        help="Number of samples in synthetic dataset (default: 200)",
     )
     parser.add_argument(
-        '--embed-dim',
-        type=int,
-        default=128,
-        help='Embedding dimension (default: 128)'
+        "--embed-dim", type=int, default=128, help="Embedding dimension (default: 128)"
     )
+    parser.add_argument("--seed", type=int, default=42, help="Random seed (default: 42)")
     parser.add_argument(
-        '--seed',
-        type=int,
-        default=42,
-        help='Random seed (default: 42)'
-    )
-    parser.add_argument(
-        '--output-dir',
+        "--output-dir",
         type=str,
-        default='results/statistical_analysis',
-        help='Output directory for results'
+        default="results/statistical_analysis",
+        help="Output directory for results",
     )
     parser.add_argument(
-        '--skip-multiseed',
-        action='store_true',
-        help='Skip multi-seed experiments (faster)'
+        "--skip-multiseed", action="store_true", help="Skip multi-seed experiments (faster)"
     )
 
     return parser.parse_args()
@@ -457,9 +443,9 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info("STATISTICAL ANALYSIS OF MULTIMODAL FUSION MODEL")
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Bootstrap samples: {args.n_bootstrap}")
     logger.info(f"Random seeds: {args.n_seeds}")
@@ -471,27 +457,18 @@ def main():
     # Create synthetic dataset
     logger.info("\nCreating synthetic dataset...")
     dataset = SyntheticMultimodalDataset(
-        num_samples=args.num_samples,
-        num_classes=3,
-        missing_rate=0.1
+        num_samples=args.num_samples, num_classes=3, missing_rate=0.1
     )
 
     # Train model
     logger.info("\nTraining model...")
     model, classifier, test_loader = train_model(
-        dataset,
-        num_epochs=5,
-        embed_dim=args.embed_dim,
-        seed=args.seed
+        dataset, num_epochs=5, embed_dim=args.embed_dim, seed=args.seed
     )
 
     # Run ablations
     full_metrics, ablation_results = run_ablations(
-        model,
-        classifier,
-        test_loader,
-        n_bootstrap=args.n_bootstrap,
-        seed=args.seed
+        model, classifier, test_loader, n_bootstrap=args.n_bootstrap, seed=args.seed
     )
 
     # Print ablation summary
@@ -503,18 +480,22 @@ def main():
         print(f"  {metric}: {value:.4f}")
 
     print("\n" + "-" * 80)
-    print(f"{'Component Removed':<20} {'Accuracy':<12} {'Delta Acc':<12} {'F1':<12} {'Delta F1':<12} {'Significant':<12}")
+    print(
+        f"{'Component Removed':<20} {'Accuracy':<12} {'Delta Acc':<12} {'F1':<12} {'Delta F1':<12} {'Significant':<12}"
+    )
     print("-" * 80)
 
     for component, result in ablation_results.items():
-        full_acc = result['full_metrics']['accuracy']
-        delta_acc = result['deltas']['delta_accuracy']
-        full_f1 = result['full_metrics']['f1']
-        delta_f1 = result['deltas']['delta_f1']
-        is_sig = result['is_significant'].get('accuracy', False)
+        full_acc = result["full_metrics"]["accuracy"]
+        delta_acc = result["deltas"]["delta_accuracy"]
+        full_f1 = result["full_metrics"]["f1"]
+        delta_f1 = result["deltas"]["delta_f1"]
+        is_sig = result["is_significant"].get("accuracy", False)
         sig_str = "Yes*" if is_sig else "No"
 
-        print(f"{component:<20} {full_acc:<12.4f} {delta_acc:<+12.4f} {full_f1:<12.4f} {delta_f1:<+12.4f} {sig_str:<12}")
+        print(
+            f"{component:<20} {full_acc:<12.4f} {delta_acc:<+12.4f} {full_f1:<12.4f} {delta_f1:<+12.4f} {sig_str:<12}"
+        )
 
     print("=" * 80)
     print("* indicates statistically significant (p < 0.05)")
@@ -529,9 +510,13 @@ def main():
         print("MULTI-SEED STATISTICAL ANALYSIS")
         print("=" * 80)
         print(f"Mean Accuracy: {multi_seed_results['mean_accuracy']:.4f}")
-        print(f"  95% CI: [{multi_seed_results['ci_accuracy'][0]:.4f}, {multi_seed_results['ci_accuracy'][1]:.4f}]")
+        print(
+            f"  95% CI: [{multi_seed_results['ci_accuracy'][0]:.4f}, {multi_seed_results['ci_accuracy'][1]:.4f}]"
+        )
         print(f"Mean F1: {multi_seed_results['mean_f1']:.4f}")
-        print(f"  95% CI: [{multi_seed_results['ci_f1'][0]:.4f}, {multi_seed_results['ci_f1'][1]:.4f}]")
+        print(
+            f"  95% CI: [{multi_seed_results['ci_f1'][0]:.4f}, {multi_seed_results['ci_f1'][1]:.4f}]"
+        )
         print("=" * 80)
     else:
         multi_seed_results = None
@@ -539,22 +524,22 @@ def main():
     # Compile final results
     timestamp = datetime.now().isoformat()
     final_results = {
-        'timestamp': timestamp,
-        'config': {
-            'n_bootstrap': args.n_bootstrap,
-            'n_seeds': args.n_seeds,
-            'num_samples': args.num_samples,
-            'embed_dim': args.embed_dim,
-            'seed': args.seed
+        "timestamp": timestamp,
+        "config": {
+            "n_bootstrap": args.n_bootstrap,
+            "n_seeds": args.n_seeds,
+            "num_samples": args.num_samples,
+            "embed_dim": args.embed_dim,
+            "seed": args.seed,
         },
-        'full_model_metrics': full_metrics,
-        'ablation_results': ablation_results,
-        'multi_seed_results': multi_seed_results
+        "full_model_metrics": full_metrics,
+        "ablation_results": ablation_results,
+        "multi_seed_results": multi_seed_results,
     }
 
     # Save results
-    output_path = output_dir / 'statistical_analysis_results.json'
-    with open(output_path, 'w') as f:
+    output_path = output_dir / "statistical_analysis_results.json"
+    with open(output_path, "w") as f:
         json.dump(final_results, f, indent=2)
 
     logger.info(f"\nResults saved to: {output_path}")
@@ -566,7 +551,7 @@ def main():
 
     significant_components = []
     for component, result in ablation_results.items():
-        if result['is_significant'].get('accuracy', False):
+        if result["is_significant"].get("accuracy", False):
             significant_components.append(component)
 
     if significant_components:
@@ -578,5 +563,5 @@ def main():
     print("=" * 80)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

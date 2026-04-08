@@ -35,16 +35,12 @@ class TestResNetFeatureExtractor:
 
     def test_custom_feature_dim_override(self):
         """Test custom feature dimension override."""
-        extractor = ResNetFeatureExtractor(
-            model_name="resnet18", pretrained=False, feature_dim=256
-        )
+        extractor = ResNetFeatureExtractor(model_name="resnet18", pretrained=False, feature_dim=256)
         assert extractor.feature_dim == 256
 
     def test_feature_dim_projection_forward(self):
         """Test that feature_dim actually changes the forward output shape."""
-        extractor = ResNetFeatureExtractor(
-            model_name="resnet18", pretrained=False, feature_dim=256
-        )
+        extractor = ResNetFeatureExtractor(model_name="resnet18", pretrained=False, feature_dim=256)
         images = torch.randn(4, 3, 96, 96)
         features = extractor(images)
         assert features.shape == (4, 256), f"Expected (4, 256), got {features.shape}"
@@ -112,7 +108,7 @@ class TestResNetFeatureExtractor:
         # Note: ResNet doesn't have dropout, only BatchNorm
         with torch.no_grad():
             outputs = [extractor(images) for _ in range(5)]
-        
+
         # Just verify training mode works - BN will use batch statistics
         # We can't reliably test for variation due to BN behavior
         assert all(o.shape == (8, 512) for o in outputs)

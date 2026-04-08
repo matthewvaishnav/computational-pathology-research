@@ -37,12 +37,12 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 # Device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Paths
-MODEL_PATH = 'models/quick_demo_model.pth'
-OUTPUT_DIR = 'results/interpretability'
+MODEL_PATH = "models/quick_demo_model.pth"
+OUTPUT_DIR = "results/interpretability"
 
 
 class SyntheticMultimodalDataset(Dataset):
@@ -83,20 +83,20 @@ class SyntheticMultimodalDataset(Dataset):
             clinical_text = None
 
         return {
-            'wsi_features': wsi_features,
-            'genomic': genomic,
-            'clinical_text': clinical_text,
-            'label': self.labels[idx]
+            "wsi_features": wsi_features,
+            "genomic": genomic,
+            "clinical_text": clinical_text,
+            "label": self.labels[idx],
         }
 
 
 def collate_fn(batch):
     """Custom collate function."""
     batch_size = len(batch)
-    labels = torch.stack([item['label'] for item in batch])
+    labels = torch.stack([item["label"] for item in batch])
 
     # WSI
-    wsi_list = [item['wsi_features'] for item in batch]
+    wsi_list = [item["wsi_features"] for item in batch]
     max_patches = max((wsi.shape[0] for wsi in wsi_list if wsi is not None), default=0)
 
     if max_patches > 0:
@@ -112,37 +112,37 @@ def collate_fn(batch):
         wsi_mask = None
 
     # Genomic
-    genomic_list = [item['genomic'] for item in batch if item['genomic'] is not None]
+    genomic_list = [item["genomic"] for item in batch if item["genomic"] is not None]
     if len(genomic_list) > 0:
         genomic = torch.zeros(batch_size, 2000)
         for i, item in enumerate(batch):
-            if item['genomic'] is not None:
-                genomic[i] = item['genomic']
+            if item["genomic"] is not None:
+                genomic[i] = item["genomic"]
     else:
         genomic = None
 
     # Clinical text
-    clinical_list = [item['clinical_text'] for item in batch if item['clinical_text'] is not None]
+    clinical_list = [item["clinical_text"] for item in batch if item["clinical_text"] is not None]
     if len(clinical_list) > 0:
         max_len = max(text.shape[0] for text in clinical_list)
         clinical_text = torch.zeros(batch_size, max_len, dtype=torch.long)
         clinical_mask = torch.zeros(batch_size, max_len, dtype=torch.bool)
         for i, item in enumerate(batch):
-            if item['clinical_text'] is not None:
-                length = item['clinical_text'].shape[0]
-                clinical_text[i, :length] = item['clinical_text']
+            if item["clinical_text"] is not None:
+                length = item["clinical_text"].shape[0]
+                clinical_text[i, :length] = item["clinical_text"]
                 clinical_mask[i, :length] = True
     else:
         clinical_text = None
         clinical_mask = None
 
     return {
-        'wsi_features': wsi_padded,
-        'wsi_mask': wsi_mask,
-        'genomic': genomic,
-        'clinical_text': clinical_text,
-        'clinical_mask': clinical_mask,
-        'label': labels
+        "wsi_features": wsi_padded,
+        "wsi_mask": wsi_mask,
+        "genomic": genomic,
+        "clinical_text": clinical_text,
+        "clinical_mask": clinical_mask,
+        "label": labels,
     }
 
 
@@ -257,7 +257,7 @@ def generate_summary_html(visualizations: dict, output_path: str) -> None:
 """
 
     # Add attention visualizations
-    for viz_name in ['modality_attention', 'temporal_attention']:
+    for viz_name in ["modality_attention", "temporal_attention"]:
         if viz_name in visualizations:
             html_content += f"""
             <div class="card">
@@ -274,7 +274,7 @@ def generate_summary_html(visualizations: dict, output_path: str) -> None:
 """
 
     # Add saliency visualizations
-    for viz_name in ['saliency_wsi', 'saliency_genomic', 'saliency_clinical']:
+    for viz_name in ["saliency_wsi", "saliency_genomic", "saliency_clinical"]:
         if viz_name in visualizations:
             html_content += f"""
             <div class="card">
@@ -291,7 +291,7 @@ def generate_summary_html(visualizations: dict, output_path: str) -> None:
 """
 
     # Add embedding visualizations
-    for viz_name in ['tsne', 'pca']:
+    for viz_name in ["tsne", "pca"]:
         if viz_name in visualizations:
             html_content += f"""
             <div class="card">
@@ -306,7 +306,7 @@ def generate_summary_html(visualizations: dict, output_path: str) -> None:
         <h2>Modality Correlation</h2>
 """
 
-    if 'modality_correlation' in visualizations:
+    if "modality_correlation" in visualizations:
         html_content += """
         <div class="visualization">
             <img src="modality_correlation.png" alt="Modality Correlation">
@@ -322,7 +322,7 @@ def generate_summary_html(visualizations: dict, output_path: str) -> None:
 </html>
 """
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write(html_content)
 
 
@@ -348,8 +348,8 @@ def main():
     model = MultimodalFusionModel(embed_dim=128).to(device)
     classifier = ClassificationHead(input_dim=128, num_classes=3).to(device)
 
-    model.load_state_dict(checkpoint['model_state_dict'])
-    classifier.load_state_dict(checkpoint['classifier_state_dict'])
+    model.load_state_dict(checkpoint["model_state_dict"])
+    classifier.load_state_dict(checkpoint["classifier_state_dict"])
     model.eval()
     classifier.eval()
 
@@ -377,11 +377,10 @@ def main():
 
     for batch_idx, batch in enumerate(dataloader):
         # Move batch to device
-        batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v
-                 for k, v in batch.items()}
+        batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()}
 
-        labels = batch['label']
-        batch.pop('label')
+        labels = batch["label"]
+        batch.pop("label")
 
         with torch.no_grad():
             fused_emb, mod_emb = model(batch, return_modality_embeddings=True)
@@ -397,9 +396,9 @@ def main():
                 all_modality_embeddings[mod_name].append(mod_emb.cpu())
 
         # Collect slide embeddings for temporal attention
-        if batch.get('wsi_features') is not None:
+        if batch.get("wsi_features") is not None:
             wsi_encoder = model.wsi_encoder
-            wsi_emb = wsi_encoder(batch['wsi_features'], mask=batch.get('wsi_mask'))
+            wsi_emb = wsi_encoder(batch["wsi_features"], mask=batch.get("wsi_mask"))
             all_slide_embeddings.append(wsi_emb.cpu())
 
     # Concatenate all embeddings
@@ -414,11 +413,7 @@ def main():
     print(f"  Collected embeddings: {all_embeddings.shape}")
 
     # Store visualization paths
-    visualizations = {
-        'num_samples': len(all_embeddings),
-        'num_classes': 3,
-        'visualizations': []
-    }
+    visualizations = {"num_samples": len(all_embeddings), "num_classes": 3, "visualizations": []}
 
     # 1. Attention Visualization
     print("\n[4/6] Generating attention visualizations...")
@@ -427,8 +422,8 @@ def main():
     if modality_emb_dict:
         viz_path = attention_viz.plot_modality_attention(modality_emb_dict)
         print(f"  Saved: {viz_path}")
-        visualizations['visualizations'].append('modality_attention')
-        visualizations['modality_attention'] = 'modality_attention.png'
+        visualizations["visualizations"].append("modality_attention")
+        visualizations["modality_attention"] = "modality_attention.png"
 
     # Temporal attention
     if all_slide_embeddings:
@@ -436,19 +431,20 @@ def main():
         # Take subset for visualization
         if slide_emb.shape[0] > 0:
             # Use first batch's slide embeddings
-            sample_slide_emb = slide_emb[:min(8, slide_emb.shape[0])]
+            sample_slide_emb = slide_emb[: min(8, slide_emb.shape[0])]
             viz_path = attention_viz.plot_temporal_attention(sample_slide_emb)
             print(f"  Saved: {viz_path}")
-            visualizations['visualizations'].append('temporal_attention')
-            visualizations['temporal_attention'] = 'temporal_attention.png'
+            visualizations["visualizations"].append("temporal_attention")
+            visualizations["temporal_attention"] = "temporal_attention.png"
 
     # 2. Saliency Maps
     print("\n[5/6] Computing saliency maps...")
 
     # Get a batch for saliency computation
     saliency_batch = next(iter(dataloader))
-    saliency_batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v
-                      for k, v in saliency_batch.items()}
+    saliency_batch = {
+        k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in saliency_batch.items()
+    }
 
     # Gradient-based saliency
     try:
@@ -457,17 +453,17 @@ def main():
             fig, ax = plt.subplots(figsize=(10, 4))
             ax.plot(saliency.mean(axis=0), linewidth=2)
             ax.fill_between(range(len(saliency.mean(axis=0))), saliency.mean(axis=0), alpha=0.3)
-            ax.set_xlabel('Feature Index')
-            ax.set_ylabel('Saliency Magnitude')
-            ax.set_title(f'{mod_name.capitalize()} Saliency Profile')
+            ax.set_xlabel("Feature Index")
+            ax.set_ylabel("Saliency Magnitude")
+            ax.set_title(f"{mod_name.capitalize()} Saliency Profile")
             ax.grid(True, alpha=0.3)
             plt.tight_layout()
-            filepath = os.path.join(OUTPUT_DIR, f'saliency_{mod_name}.png')
-            plt.savefig(filepath, dpi=300, bbox_inches='tight')
+            filepath = os.path.join(OUTPUT_DIR, f"saliency_{mod_name}.png")
+            plt.savefig(filepath, dpi=300, bbox_inches="tight")
             plt.close()
             print(f"  Saved: {filepath}")
-            visualizations['visualizations'].append(f'saliency_{mod_name}')
-            visualizations[f'saliency_{mod_name}'] = f'saliency_{mod_name}.png'
+            visualizations["visualizations"].append(f"saliency_{mod_name}")
+            visualizations[f"saliency_{mod_name}"] = f"saliency_{mod_name}.png"
     except Exception as e:
         print(f"  Warning: Saliency computation failed: {e}")
 
@@ -481,38 +477,40 @@ def main():
 
     # t-SNE
     viz_path = embedding_analyzer.plot_tsne(
-        all_embeddings, all_labels,
-        title='t-SNE of Multimodal Embeddings',
-        filename='tsne_visualization.png'
+        all_embeddings,
+        all_labels,
+        title="t-SNE of Multimodal Embeddings",
+        filename="tsne_visualization.png",
     )
     print(f"  Saved: {viz_path}")
-    visualizations['visualizations'].append('tsne')
-    visualizations['tsne'] = 'tsne_visualization.png'
+    visualizations["visualizations"].append("tsne")
+    visualizations["tsne"] = "tsne_visualization.png"
 
     # PCA
     viz_path, variance = embedding_analyzer.plot_pca(
-        all_embeddings, all_labels,
-        title='PCA of Multimodal Embeddings',
-        filename='pca_visualization.png'
+        all_embeddings,
+        all_labels,
+        title="PCA of Multimodal Embeddings",
+        filename="pca_visualization.png",
     )
     print(f"  Saved: {viz_path}")
     print(f"  Explained variance: PC1={variance['PC1']:.2%}, PC2={variance['PC2']:.2%}")
-    visualizations['visualizations'].append('pca')
-    visualizations['pca'] = 'pca_visualization.png'
+    visualizations["visualizations"].append("pca")
+    visualizations["pca"] = "pca_visualization.png"
 
     # Modality correlation
     if len(modality_emb_dict) > 1:
         viz_path, corr_matrix = embedding_analyzer.compute_modality_correlation(modality_emb_dict)
         print(f"  Saved: {viz_path}")
         print(f"  Correlation matrix:\n{corr_matrix}")
-        visualizations['visualizations'].append('modality_correlation')
-        visualizations['modality_correlation'] = 'modality_correlation.png'
+        visualizations["visualizations"].append("modality_correlation")
+        visualizations["modality_correlation"] = "modality_correlation.png"
 
     # Generate HTML summary
     print("\n[Summary] Generating HTML report...")
-    visualizations['timestamp'] = str(np.datetime64('now'))
+    visualizations["timestamp"] = str(np.datetime64("now"))
 
-    html_path = os.path.join(OUTPUT_DIR, 'summary.html')
+    html_path = os.path.join(OUTPUT_DIR, "summary.html")
     generate_summary_html(visualizations, html_path)
     print(f"  Saved: {html_path}")
 
@@ -521,14 +519,16 @@ def main():
     print("=" * 60)
     print(f"\nOutput directory: {OUTPUT_DIR}")
     print(f"\nGenerated visualizations:")
-    for viz in visualizations.get('visualizations', []):
+    for viz in visualizations.get("visualizations", []):
         print(f"  - {viz}")
     print(f"\nHTML summary: {html_path}")
     print("=" * 60)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import matplotlib
-    matplotlib.use('Agg')
+
+    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+
     main()
