@@ -207,6 +207,39 @@ def test_render_slide_heatmaps_from_exported_tile_scores(tmp_path):
     assert Path(payload["artifacts"]["heatmap"]).exists()
 
 
+def test_render_slide_heatmaps_skips_slides_without_dimensions(tmp_path):
+    """Slides missing width/height should be skipped cleanly for rendering."""
+    slide = SlideMetadata(
+        slide_id="tumor_001",
+        patient_id="patient_001",
+        file_path="/data/tumor_001.tif",
+        label=1,
+        split="test",
+    )
+    slide_index = CAMELYONSlideIndex([slide])
+    tile_scores_path = tmp_path / "tumor_001_tile_scores.json"
+    tile_scores_path.write_text(
+        json.dumps(
+            {
+                "slide_id": "tumor_001",
+                "num_tiles": 1,
+                "tiles": [{"x": 0, "y": 0, "score": 0.75}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    heatmap_summary_paths = render_slide_heatmaps(
+        slide_index=slide_index,
+        split="test",
+        tile_score_paths={"tumor_001": tile_scores_path.as_posix()},
+        output_dir=tmp_path / "heatmaps",
+        patch_size=256,
+    )
+
+    assert heatmap_summary_paths == {}
+
+
 def test_evaluate_camelyon_on_quick_test_checkpoint():
     """Test evaluation on the quick test checkpoint."""
     checkpoint_path = Path("checkpoints/camelyon_quick_test/best_model.pth")
