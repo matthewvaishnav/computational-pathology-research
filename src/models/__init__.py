@@ -5,6 +5,12 @@ from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .fusion import CrossModalAttention, MultiModalFusionLayer
 from .heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
 from .multimodal import MultimodalFusionModel
+from .pretrained import (
+    PretrainedFeatureExtractor,
+    create_wsi_encoder_with_pretrained,
+    get_recommended_model,
+    list_pretrained_models,
+)
 from .stain_normalization import (
     ColorFeatureEncoder,
     PatchEmbedding,
@@ -46,4 +52,8 @@ __all__ = [
     "AttentionBaseline",
     "get_baseline_model",
     "ResNetFeatureExtractor",
+    "PretrainedFeatureExtractor",
+    "create_wsi_encoder_with_pretrained",
+    "get_recommended_model",
+    "list_pretrained_models",
 ]
