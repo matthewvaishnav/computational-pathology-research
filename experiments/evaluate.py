@@ -46,7 +46,8 @@ from tqdm import tqdm
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data import MultimodalDataset
-from src.models import ClassificationHead, MultimodalFusionModel, SurvivalHead
+from src.data.loaders import collate_multimodal
+from src.models import ClassificationHead, MultimodalFusionModel, SurvivalPredictionHead
 
 # Configure logging
 logging.basicConfig(
@@ -193,26 +194,28 @@ class ModelEvaluator:
         metrics = {}
 
         if self.config.get("task_type", "classification") == "classification":
-            metrics["accuracy"] = accuracy_score(all_labels, all_preds)
+            metrics["accuracy"] = accuracy_score(self.all_labels, self.all_preds)
             metrics["precision"] = precision_score(
-                all_labels, all_preds, average="weighted", zero_division=0
+                self.all_labels, self.all_preds, average="weighted", zero_division=0
             )
             metrics["recall"] = recall_score(
-                all_labels, all_preds, average="weighted", zero_division=0
+                self.all_labels, self.all_preds, average="weighted", zero_division=0
             )
-            metrics["f1"] = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
+            metrics["f1"] = f1_score(
+                self.all_labels, self.all_preds, average="weighted", zero_division=0
+            )
 
             # AUC for binary classification
             if self.config.get("num_classes", 2) in {1, 2} and self.all_probs is not None:
-                metrics["auc"] = roc_auc_score(all_labels, self.all_probs)
+                metrics["auc"] = roc_auc_score(self.all_labels, self.all_probs)
 
             # Per-class metrics
             num_classes = self.config.get("num_classes", 2)
             per_class_count = 2 if num_classes == 1 else num_classes
             for i in range(per_class_count):
-                class_mask = all_labels == i
+                class_mask = self.all_labels == i
                 if class_mask.sum() > 0:
-                    class_acc = (all_preds[class_mask] == i).mean()
+                    class_acc = (self.all_preds[class_mask] == i).mean()
                     metrics[f"class_{i}_accuracy"] = class_acc
 
         return metrics
@@ -612,7 +615,7 @@ def main():
     if args.task_type == "classification":
         task_head = ClassificationHead(input_dim=args.embed_dim, num_classes=args.num_classes)
     else:
-        task_head = SurvivalHead(input_dim=args.embed_dim)
+        task_head = SurvivalPredictionHead(input_dim=args.embed_dim)
 
     task_head.load_state_dict(checkpoint["task_head_state_dict"])
 
@@ -631,6 +634,7 @@ def main():
             shuffle=False,
             num_workers=args.num_workers,
             pin_memory=True,
+            collate_fn=collate_multimodal,
         )
 
         logger.info(f"Loaded {len(test_dataset)} samples")

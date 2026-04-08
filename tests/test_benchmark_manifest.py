@@ -569,3 +569,147 @@ class TestManifestIsolation:
         entry_names = [e.experiment_name for e in default_entries]
         assert "test_isolation_entry" not in entry_names, \
             "Test entry polluted the committed benchmark manifest!"
+
+
+class TestUpdateOrAddEntry:
+    """Test update_or_add_entry() duplicate prevention."""
+
+    @pytest.fixture
+    def manifest(self, tmp_path):
+        """Create a temporary manifest."""
+        manifest_path = tmp_path / "manifest.jsonl"
+        return BenchmarkManifest(str(manifest_path))
+
+    @pytest.fixture
+    def sample_entry(self):
+        """Create a sample benchmark entry."""
+        return BenchmarkEntry(
+            experiment_name="test_experiment",
+            dataset_name="TestDataset",
+            dataset_subset_size=1000,
+            config_path="configs/test.yaml",
+            train_command="python train.py",
+            eval_command="python eval.py",
+            final_metrics={"accuracy": 0.95},
+            artifact_paths={},
+            caveats=[],
+            notes="",
+            date="2026-04-07",
+            status="COMPLETE",
+        )
+
+    def test_adds_new_entry_when_empty(self, manifest, sample_entry):
+        """update_or_add_entry adds entry when manifest is empty."""
+        result = manifest.update_or_add_entry(sample_entry)
+
+        assert result is False  # Indicates new entry was added
+        entries = manifest.read_all()
+        assert len(entries) == 1
+        assert entries[0].experiment_name == "test_experiment"
+
+    def test_updates_existing_entry(self, manifest, sample_entry):
+        """update_or_add_entry updates existing entry instead of duplicating."""
+        # Add initial entry
+        manifest.add_entry(sample_entry)
+
+        # Create updated version with different metrics
+        updated_entry = BenchmarkEntry(
+            experiment_name="test_experiment",  # Same name
+            dataset_name="TestDataset",
+            dataset_subset_size=1000,
+            config_path="configs/test.yaml",
+            train_command="python train.py",
+            eval_command="python eval.py",
+            final_metrics={"accuracy": 0.97},  # Updated metric
+            artifact_paths={"new": "path"},
+            caveats=["updated"],
+            notes="updated notes",
+            date="2026-04-08",
+            status="COMPLETE",
+        )
+
+        result = manifest.update_or_add_entry(updated_entry)
+
+        assert result is True  # Indicates existing entry was updated
+        entries = manifest.read_all()
+        assert len(entries) == 1  # No duplicate!
+        assert entries[0].final_metrics["accuracy"] == 0.97
+        assert entries[0].notes == "updated notes"
+
+    def test_prevents_multiple_duplicates(self, manifest, sample_entry):
+        """Multiple updates keep only one entry."""
+        # Add initial entry
+        manifest.add_entry(sample_entry)
+
+        # Update 3 times
+        for i in range(3):
+            updated = BenchmarkEntry(
+                experiment_name="test_experiment",
+                dataset_name="TestDataset",
+                dataset_subset_size=1000,
+                config_path="configs/test.yaml",
+                train_command="python train.py",
+                eval_command="python eval.py",
+                final_metrics={"accuracy": 0.90 + i * 0.01},
+                artifact_paths={},
+                caveats=[],
+                notes=f"update {i}",
+                date="2026-04-07",
+                status="COMPLETE",
+            )
+            manifest.update_or_add_entry(updated)
+
+        entries = manifest.read_all()
+        assert len(entries) == 1  # Still only one entry
+        assert entries[0].notes == "update 2"  # Last update wins
+
+    def test_handles_multiple_different_experiments(self, manifest):
+        """update_or_add_entry handles multiple distinct experiments."""
+        entries = []
+        for i in range(3):
+            entry = BenchmarkEntry(
+                experiment_name=f"experiment_{i}",
+                dataset_name="TestDataset",
+                dataset_subset_size=1000,
+                config_path="configs/test.yaml",
+                train_command="python train.py",
+                eval_command="python eval.py",
+                final_metrics={"id": i},
+                artifact_paths={},
+                caveats=[],
+                notes="",
+                date="2026-04-07",
+                status="COMPLETE",
+            )
+            entries.append(entry)
+            manifest.update_or_add_entry(entry)
+
+        # Should have 3 entries
+        all_entries = manifest.read_all()
+        assert len(all_entries) == 3
+
+        # Update middle one
+        updated = BenchmarkEntry(
+            experiment_name="experiment_1",  # Same name as middle
+            dataset_name="UpdatedDataset",
+            dataset_subset_size=1000,
+            config_path="configs/test.yaml",
+            train_command="python train.py",
+            eval_command="python eval.py",
+            final_metrics={"id": 99},
+            artifact_paths={},
+            caveats=[],
+            notes="",
+            date="2026-04-07",
+            status="COMPLETE",
+        )
+        result = manifest.update_or_add_entry(updated)
+
+        assert result is True  # Updated existing
+        all_entries = manifest.read_all()
+        assert len(all_entries) == 3  # Still 3, no new entry added
+
+        # Verify the update
+        exp1 = [e for e in all_entries if e.experiment_name == "experiment_1"][0]
+        assert exp1.dataset_name == "UpdatedDataset"
+        assert exp1.final_metrics["id"] == 99
