@@ -134,7 +134,7 @@ class MultimodalFusionModel(nn.Module):
             If return_modality_embeddings is False:
                 Fused embedding [batch_size, embed_dim]
             If return_modality_embeddings is True:
-                Tuple of (fused_embedding [batch_size, embed_dim], 
+                Tuple of (fused_embedding [batch_size, embed_dim],
                          modality_embeddings_dict {str: Optional[Tensor]})
         """
         device = next(self.parameters()).device
