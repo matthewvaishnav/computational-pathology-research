@@ -248,3 +248,43 @@ def test_ablation_study_supports_logits_returning_wrapper():
 
     assert metrics["accuracy"] == pytest.approx(1.0)
     assert metrics["f1"] == pytest.approx(1.0)
+
+
+def test_prediction_from_logits_binary_edge_cases():
+    """_prediction_from_logits must handle binary classification correctly.
+
+    Regression test: argmax(dim=1) on shape [batch, 1] returns all zeros.
+    Should use sigmoid + threshold instead.
+    """
+    from experiments.statistical_analysis import _prediction_from_logits
+
+    # Test 1: Single-logit binary (shape [batch, 1])
+    single_logit = torch.tensor([[2.0], [-2.0], [0.5], [-0.5]])
+    preds, probs = _prediction_from_logits(single_logit)
+
+    # Should predict class 1 for positive logits, class 0 for negative
+    assert preds[0] == 1, f"Expected 1 for logit 2.0, got {preds[0]}"
+    assert preds[1] == 0, f"Expected 0 for logit -2.0, got {preds[1]}"
+    assert preds[2] == 1, f"Expected 1 for logit 0.5, got {preds[2]}"
+    assert preds[3] == 0, f"Expected 0 for logit -0.5, got {preds[3]}"
+
+    # Probabilities should be in [0, 1]
+    assert all(0 <= p <= 1 for p in probs), f"Probs out of range: {probs}"
+
+    # Test 2: 1D logits (shape [batch])
+    logits_1d = torch.tensor([2.0, -2.0, 0.5, -0.5])
+    preds, probs = _prediction_from_logits(logits_1d)
+
+    assert preds[0] == 1, f"Expected 1 for logit 2.0, got {preds[0]}"
+    assert preds[1] == 0, f"Expected 0 for logit -2.0, got {preds[1]}"
+    assert len(probs) == 4, "Should return probabilities for 1D case"
+
+    # Test 3: 2-logit binary (shape [batch, 2]) - typical multiclass format for binary
+    two_logits = torch.tensor([[2.0, -1.0], [-1.0, 2.0], [0.5, -0.5], [-0.5, 0.5]])
+    preds, probs = _prediction_from_logits(two_logits)
+
+    # argmax should work correctly here
+    assert preds[0] == 0, f"Expected 0 for logits [2.0, -1.0], got {preds[0]}"
+    assert preds[1] == 1, f"Expected 1 for logits [-1.0, 2.0], got {preds[1]}"
+    assert probs.shape == (4, 2), f"Expected probs shape (4, 2), got {probs.shape}"
+    assert all(abs(p.sum() - 1.0) < 1e-6 for p in probs), "Probs should sum to 1 for 2-logit case"
