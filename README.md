@@ -98,7 +98,44 @@ See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for det
 
 ## Key Features
 
-### 1. Slide-Level Predictions CSV Export
+### 1. Pretrained Model Loading
+
+Load pretrained models from torchvision and timm with automatic feature extraction:
+
+```python
+from src.models.pretrained import load_pretrained_encoder
+
+# Load ResNet50 from torchvision
+encoder = load_pretrained_encoder(
+    model_name='resnet50',
+    source='torchvision',
+    pretrained=True,
+    num_classes=2
+)
+
+# Load EfficientNet from timm
+encoder = load_pretrained_encoder(
+    model_name='efficientnet_b0',
+    source='timm',
+    pretrained=True,
+    num_classes=2
+)
+
+# Get feature dimension
+feature_dim = encoder.feature_dim  # e.g., 2048 for ResNet50
+```
+
+**Supported Sources**:
+- `torchvision`: ResNet, DenseNet, EfficientNet, VGG, MobileNet, etc.
+- `timm`: 1000+ models including Vision Transformers, ConvNeXt, etc.
+
+**Features**:
+- Automatic feature extraction layer detection
+- Preserves pretrained weights
+- Returns feature dimension for downstream tasks
+- Handles both torchvision and timm model APIs
+
+### 2. Slide-Level Predictions CSV Export
 
 Export slide-level predictions to CSV for easy analysis:
 
@@ -116,7 +153,7 @@ python experiments/evaluate_camelyon.py \
 - `probability`: Prediction probability
 - `correct`: Whether prediction matches ground truth
 
-### 2. Model Profiling
+### 3. Model Profiling
 
 Profile model performance and export to ONNX:
 
@@ -132,7 +169,7 @@ python scripts/export_onnx.py \
   --output models/model.onnx
 ```
 
-### 3. Baseline Comparisons
+### 4. Baseline Comparisons
 
 Compare multiple model variants:
 
