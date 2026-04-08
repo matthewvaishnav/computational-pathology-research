@@ -33,14 +33,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import yaml
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.camelyon_dataset import CAMELYONSlideIndex, CAMELYONPatchDataset
+from src.data.camelyon_dataset import CAMELYONPatchDataset, CAMELYONSlideIndex
 
 # Configure logging
 logging.basicConfig(
