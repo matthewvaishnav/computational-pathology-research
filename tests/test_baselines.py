@@ -299,9 +299,7 @@ class TestGetBaselineModel:
     def test_factory_passes_config(self):
         """Test that factory passes config to models."""
         config = {"wsi_config": {"input_dim": 512}}
-        model = get_baseline_model(
-            "single_modality", modality="wsi", config=config, embed_dim=128
-        )
+        model = get_baseline_model("single_modality", modality="wsi", config=config, embed_dim=128)
         # Verify config was applied (would fail if input_dim mismatch)
         batch = {
             "wsi_features": torch.randn(2, 50, 512),
