@@ -21,6 +21,11 @@ class CrossModalAttention(nn.Module):
     and keys/values come from another, enabling cross-modal information flow.
     Supports missing modalities through masking.
 
+    NOTE: This implementation is designed for single-embedding cross-attention
+    (one embedding per modality per sample), not sequence-to-sequence attention.
+    Each modality is represented by a single vector [batch_size, embed_dim],
+    and attention computes similarity between these single vectors.
+
     Args:
         embed_dim: Dimension of input embeddings (default: 256)
         num_heads: Number of attention heads (default: 8)
@@ -152,6 +157,14 @@ class MultiModalFusionLayer(nn.Module):
 
     Performs all-pairs cross-modal attention between modalities and
     combines the results through concatenation and projection.
+
+    NOTE: This implementation creates n*(n-1) cross-attention modules for n modalities,
+    which scales quadratically. For 3 modalities: 6 modules, for 4 modalities: 12 modules.
+    
+    ARCHITECTURE: Cross-attention is applied sequentially for each query modality.
+    For example, WSI attends to genomic, then the result attends to clinical.
+    This creates a chain of attention operations: wsi -> (wsi+genomic) -> (wsi+genomic+clinical).
+    The gradient path is longer than parallel attention but allows iterative refinement.
 
     Args:
         embed_dim: Dimension of embeddings (default: 256)
