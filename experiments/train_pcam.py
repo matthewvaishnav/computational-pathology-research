@@ -31,17 +31,17 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
-from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.encoders import WSIEncoder
+from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.heads import ClassificationHead
 
 # Configure logging
