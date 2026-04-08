@@ -134,11 +134,11 @@ def test_evaluate_camelyon_on_quick_test_checkpoint():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-                [
-                    sys.executable,
-                    "experiments/evaluate_camelyon.py",
-                    "--checkpoint",
-                    str(checkpoint_path),
+            [
+                sys.executable,
+                "experiments/evaluate_camelyon.py",
+                "--checkpoint",
+                str(checkpoint_path),
                 "--split",
                 "test",
                 "--output-dir",
@@ -204,11 +204,11 @@ def test_evaluate_camelyon_creates_plots():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-                [
-                    sys.executable,
-                    "experiments/evaluate_camelyon.py",
-                    "--checkpoint",
-                    str(checkpoint_path),
+            [
+                sys.executable,
+                "experiments/evaluate_camelyon.py",
+                "--checkpoint",
+                str(checkpoint_path),
                 "--split",
                 "test",
                 "--output-dir",
@@ -242,11 +242,11 @@ def test_evaluate_camelyon_on_val_split():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-                [
-                    sys.executable,
-                    "experiments/evaluate_camelyon.py",
-                    "--checkpoint",
-                    str(checkpoint_path),
+            [
+                sys.executable,
+                "experiments/evaluate_camelyon.py",
+                "--checkpoint",
+                str(checkpoint_path),
                 "--split",
                 "val",
                 "--output-dir",
@@ -283,11 +283,11 @@ def test_evaluate_camelyon_aggregation_from_checkpoint():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-                [
-                    sys.executable,
-                    "experiments/evaluate_camelyon.py",
-                    "--checkpoint",
-                    str(checkpoint_path),
+            [
+                sys.executable,
+                "experiments/evaluate_camelyon.py",
+                "--checkpoint",
+                str(checkpoint_path),
                 "--split",
                 "test",
                 "--output-dir",
