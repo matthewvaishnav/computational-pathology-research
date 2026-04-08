@@ -27,11 +27,52 @@ from scipy import stats
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
+from src.data.loaders import MultimodalDataset, collate_multimodal
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+
+def _resolve_logits(model: nn.Module, batch: Dict, output: Optional[torch.Tensor] = None) -> torch.Tensor:
+    """Resolve classification logits from models that may return embeddings or logits.
+
+    Supports two common patterns:
+    - model(batch) -> embeddings, then use `classification_head` or `task_head`
+    - model(batch) -> logits directly, even if a head attribute also exists
+    """
+    if output is None:
+        output = model(batch)
+
+    classification_head = getattr(model, "classification_head", None)
+    if classification_head is not None:
+        head_input_dim = getattr(classification_head, "input_dim", None)
+        if output.ndim >= 2 and head_input_dim is not None and output.shape[-1] == head_input_dim:
+            return classification_head(output)
+        return output
+
+    task_head = getattr(model, "task_head", None)
+    if task_head is not None:
+        head_input_dim = getattr(task_head, "input_dim", None)
+        if output.ndim >= 2 and head_input_dim is not None and output.shape[-1] == head_input_dim:
+            return task_head(output)
+        return output
+
+    return output
+
+
+def _prediction_from_logits(logits: torch.Tensor) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    """Convert logits to class predictions and optional probability array."""
+    if logits.ndim == 1 or (logits.ndim == 2 and logits.shape[1] == 1):
+        positive_probs = torch.sigmoid(logits.view(-1)).detach().cpu().numpy()
+        preds = (positive_probs > 0.5).astype(int)
+        return preds, positive_probs
+
+    probs = torch.softmax(logits, dim=1).detach().cpu().numpy()
+    preds = torch.argmax(logits, dim=1).detach().cpu().numpy()
+    return preds, probs
 
 
 def compute_bootstrap_ci(
@@ -238,20 +279,13 @@ class AblationStudy:
 
                 # Forward pass
                 try:
-                    embeddings = model(batch)
-                    logits = model(batch) if hasattr(model, "classification_head") else None
-
-                    if logits is None:
-                        # Get logits from task head if available
-                        if hasattr(model, "task_head"):
-                            logits = model.task_head(embeddings)
-                        elif hasattr(model, "classification_head"):
-                            logits = model.classification_head(embeddings)
+                    output = model(batch)
+                    logits = _resolve_logits(model, batch, output)
 
                     if logits is not None:
-                        probs = torch.softmax(logits, dim=1).cpu().numpy()
-                        preds = torch.argmax(logits, dim=1).cpu().numpy()
-                        all_probs.extend(probs)
+                        preds, probs = _prediction_from_logits(logits)
+                        if probs is not None:
+                            all_probs.extend(probs)
                         all_preds.extend(preds)
                     else:
                         all_preds.extend([0] * len(labels))
@@ -518,6 +552,7 @@ def run_cross_validation(
     device: str = "cuda",
     n_bootstrap: int = 1000,
     metric_func: Callable = np.mean,
+    collate_fn: Optional[Callable] = None,
 ) -> Dict[str, Any]:
     """
     Run k-fold cross-validation with proper fold separation.
@@ -531,6 +566,7 @@ def run_cross_validation(
         device: Device to run on
         n_bootstrap: Number of bootstrap samples for CI
         metric_func: Function to aggregate fold metrics (default: np.mean)
+        collate_fn: Optional collation function for variable-length batches
 
     Returns:
         Dictionary with per-fold metrics, bootstrap CIs, and summary statistics
@@ -585,8 +621,21 @@ def run_cross_validation(
         train_subset = Subset(dataset, train_indices)
         val_subset = Subset(dataset, val_indices)
 
-        train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
+        effective_collate_fn = collate_fn or _infer_collate_fn(dataset)
+
+        train_loader = DataLoader(
+            train_subset,
+            batch_size=batch_size,
+            shuffle=True,
+            collate_fn=effective_collate_fn,
+            drop_last=len(train_subset) > 1,
+        )
+        val_loader = DataLoader(
+            val_subset,
+            batch_size=batch_size,
+            shuffle=False,
+            collate_fn=effective_collate_fn,
+        )
 
         # Initialize model
         model = model_factory()
@@ -608,15 +657,8 @@ def run_cross_validation(
                 labels = batch.pop("label")
 
                 optimizer.zero_grad()
-                embeddings = model(batch)
-
-                # Get logits from task head if available
-                if hasattr(model, "classification_head"):
-                    logits = model.classification_head(embeddings)
-                elif hasattr(model, "task_head"):
-                    logits = model.task_head(embeddings)
-                else:
-                    logits = embeddings  # Use embeddings directly
+                output = model(batch)
+                logits = _resolve_logits(model, batch, output)
 
                 loss = criterion(logits, labels)
                 loss.backward()
@@ -635,14 +677,8 @@ def run_cross_validation(
                 }
                 labels = batch.pop("label")
 
-                embeddings = model(batch)
-
-                if hasattr(model, "classification_head"):
-                    logits = model.classification_head(embeddings)
-                elif hasattr(model, "task_head"):
-                    logits = model.task_head(embeddings)
-                else:
-                    logits = embeddings
+                output = model(batch)
+                logits = _resolve_logits(model, batch, output)
 
                 preds = torch.argmax(logits, dim=1).cpu().numpy()
                 all_preds.extend(preds)
@@ -703,3 +739,15 @@ def run_cross_validation(
     logger.info(f"Std F1: {np.std(f1_scores):.4f}")
 
     return results
+
+
+def _infer_collate_fn(dataset: torch.utils.data.Dataset) -> Optional[Callable]:
+    """Infer an appropriate collate function for known variable-length datasets."""
+    base_dataset = dataset
+    while isinstance(base_dataset, Subset):
+        base_dataset = base_dataset.dataset
+
+    if isinstance(base_dataset, MultimodalDataset):
+        return collate_multimodal
+
+    return None
