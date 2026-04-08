@@ -51,7 +51,7 @@ class _ToyEncoder(nn.Module):
         super().__init__()
         self.linear = nn.Linear(input_dim, output_dim)
 
-    def forward(self, features: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         del mask
         if features.dim() == 3:
             features = features.mean(dim=1)
