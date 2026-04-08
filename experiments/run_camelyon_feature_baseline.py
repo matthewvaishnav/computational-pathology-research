@@ -15,7 +15,7 @@ import json
 import pickle
 import sys
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -42,11 +42,11 @@ AggregationMethod = Literal["mean", "max"]
 
 
 def collect_slide_level_features(
-    slide_index_path: str | Path,
-    features_dir: str | Path,
+    slide_index_path: Union[str, Path],
+    features_dir: Union[str, Path],
     split: str,
     aggregation: AggregationMethod = "mean",
-) -> tuple[np.ndarray, np.ndarray, list[str]]:
+) -> Tuple[np.ndarray, np.ndarray, List[str]]:
     """Load aggregated slide features, labels, and slide IDs for one split."""
     slide_index = CAMELYONSlideIndex.load(slide_index_path)
     dataset = CAMELYONPatchDataset(
@@ -55,9 +55,9 @@ def collect_slide_level_features(
         split=split,
     )
 
-    slide_features: list[np.ndarray] = []
-    labels: list[int] = []
-    slide_ids: list[str] = []
+    slide_features: List[np.ndarray] = []
+    labels: List[int] = []
+    slide_ids: List[str] = []
 
     for slide in dataset.slides:
         aggregated = dataset.aggregate_slide_features(slide.slide_id, method=aggregation)
@@ -105,8 +105,8 @@ def evaluate_slide_classifier(
     model: LogisticRegression,
     features: np.ndarray,
     labels: np.ndarray,
-    slide_ids: list[str],
-) -> dict[str, Any]:
+    slide_ids: List[str],
+) -> Dict[str, Any]:
     """Evaluate a binary slide-level classifier."""
     probabilities = model.predict_proba(features)[:, 1]
     predictions = (probabilities >= 0.5).astype(np.int64)
@@ -129,7 +129,7 @@ def evaluate_slide_classifier(
     }
 
 
-def save_slide_predictions_csv(metrics: dict[str, Any], output_path: str | Path) -> None:
+def save_slide_predictions_csv(metrics: Dict[str, Any], output_path: Union[str, Path]) -> None:
     """Save per-slide evaluation predictions to a CSV file."""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -156,7 +156,7 @@ def save_slide_predictions_csv(metrics: dict[str, Any], output_path: str | Path)
             )
 
 
-def plot_confusion_matrix(cm: np.ndarray, output_path: str | Path) -> bool:
+def plot_confusion_matrix(cm: np.ndarray, output_path: Union[str, Path]) -> bool:
     """Render a binary confusion matrix plot if plotting dependencies exist."""
     if not PLOT_AVAILABLE:
         return False
@@ -183,7 +183,7 @@ def plot_confusion_matrix(cm: np.ndarray, output_path: str | Path) -> bool:
     return True
 
 
-def plot_roc_curve_for_metrics(metrics: dict[str, Any], output_path: str | Path) -> bool:
+def plot_roc_curve_for_metrics(metrics: Dict[str, Any], output_path: Union[str, Path]) -> bool:
     """Render an ROC curve for evaluation metrics when AUC is defined."""
     if not PLOT_AVAILABLE or metrics["auc"] is None:
         return False
@@ -215,10 +215,10 @@ def plot_roc_curve_for_metrics(metrics: dict[str, Any], output_path: str | Path)
 
 
 def export_model_tile_scores(
-    feature_file: str | Path,
+    feature_file: Union[str, Path],
     model: LogisticRegression,
-    output_path: str | Path,
-) -> dict[str, Any]:
+    output_path: Union[str, Path],
+) -> Dict[str, Any]:
     """Export per-tile scores from a trained linear slide baseline."""
     feature_file = Path(feature_file)
     output_path = Path(output_path)
@@ -253,22 +253,22 @@ def export_model_tile_scores(
 
 
 def run_camelyon_feature_baseline(
-    slide_index_path: str | Path,
-    features_dir: str | Path,
-    output_dir: str | Path,
+    slide_index_path: Union[str, Path],
+    features_dir: Union[str, Path],
+    output_dir: Union[str, Path],
     *,
     train_split: str = "train",
     eval_split: str = "val",
     aggregation: AggregationMethod = "mean",
-    export_tile_scores_for_slide: str | None = None,
-    heatmap_slide_width: int | None = None,
-    heatmap_slide_height: int | None = None,
-    heatmap_patch_size: int | None = None,
-    heatmap_thumbnail_path: str | Path | None = None,
-    heatmap_annotation_xml_path: str | Path | None = None,
+    export_tile_scores_for_slide: Union[str, None] = None,
+    heatmap_slide_width: Union[int, None] = None,
+    heatmap_slide_height: Union[int, None] = None,
+    heatmap_patch_size: Union[int, None] = None,
+    heatmap_thumbnail_path: Union[Union[str, Path], None] = None,
+    heatmap_annotation_xml_path: Union[Union[str, Path], None] = None,
     heatmap_downsample: int = 1,
     random_state: int = 42,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Train and evaluate the CAMELYON feature baseline."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
