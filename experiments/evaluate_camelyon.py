@@ -37,14 +37,14 @@ from sklearn.metrics import (
 )
 
 try:
-    import seaborn as sns
     import matplotlib.pyplot as plt
+    import seaborn as sns
 
     PLOT_AVAILABLE = True
 except ImportError:
     PLOT_AVAILABLE = False
 
-from src.data.camelyon_dataset import CAMELYONSlideIndex, CAMELYONPatchDataset
+from src.data.camelyon_dataset import CAMELYONPatchDataset, CAMELYONSlideIndex
 
 # Configure logging
 logging.basicConfig(

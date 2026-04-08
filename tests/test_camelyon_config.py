@@ -4,9 +4,10 @@ Tests for CAMELYON experiment configuration.
 These tests verify that the CAMELYON config scaffold is valid and can be loaded.
 """
 
+from pathlib import Path
+
 import pytest
 import yaml
-from pathlib import Path
 
 
 def test_camelyon_config_exists():

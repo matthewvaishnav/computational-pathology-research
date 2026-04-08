@@ -9,10 +9,10 @@ CAMELYON-style experiments:
 - score tiles against annotation masks
 """
 
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, Optional, Iterable, Literal, Sequence, List, Tuple
-import xml.etree.ElementTree as ET
+from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
 
 import numpy as np
 from matplotlib import colormaps

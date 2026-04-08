@@ -18,19 +18,20 @@ Output:
     - results/interpretability/summary.html: HTML report with all visualizations
 """
 
+import json
 import os
 import sys
-import json
-import torch
-import numpy as np
-from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
+
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, Dataset
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.models import MultimodalFusionModel, ClassificationHead
-from src.utils.interpretability import AttentionVisualizer, SaliencyMap, EmbeddingAnalyzer
+from src.models import ClassificationHead, MultimodalFusionModel
+from src.utils.interpretability import AttentionVisualizer, EmbeddingAnalyzer, SaliencyMap
 
 # Set random seeds
 torch.manual_seed(42)
