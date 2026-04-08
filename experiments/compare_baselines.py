@@ -26,8 +26,12 @@ import torch
 import torch.nn as nn
 import numpy as np
 from sklearn.metrics import (
-    accuracy_score, f1_score, precision_score, recall_score,
-    confusion_matrix, classification_report
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    confusion_matrix,
+    classification_report,
 )
 from tqdm import tqdm
 
@@ -39,14 +43,13 @@ from src.models import (
     SingleModalityModel,
     LateFusionModel,
     AttentionBaseline,
-    ClassificationHead
+    ClassificationHead,
 )
 from src.models.baselines import get_baseline_model
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -64,7 +67,7 @@ def generate_synthetic_data(
     num_samples: int = 500,
     num_classes: int = 4,
     embed_dim: int = 256,
-    device: str = 'cuda'
+    device: str = "cuda",
 ) -> List[Dict]:
     """
     Generate synthetic multimodal data for baseline comparison.
@@ -87,12 +90,12 @@ def generate_synthetic_data(
 
     for _ in range(num_batches):
         batch = {
-            'wsi_features': torch.randn(batch_size, 100, 1024, device=device),
-            'wsi_mask': torch.ones(batch_size, 100, dtype=torch.bool, device=device),
-            'genomic': torch.randn(batch_size, 2000, device=device),
-            'clinical_text': torch.randint(0, 30000, (batch_size, 128), device=device),
-            'clinical_mask': torch.ones(batch_size, 128, dtype=torch.bool, device=device),
-            'label': torch.randint(0, num_classes, (batch_size,), device=device)
+            "wsi_features": torch.randn(batch_size, 100, 1024, device=device),
+            "wsi_mask": torch.ones(batch_size, 100, dtype=torch.bool, device=device),
+            "genomic": torch.randn(batch_size, 2000, device=device),
+            "clinical_text": torch.randint(0, 30000, (batch_size, 128), device=device),
+            "clinical_mask": torch.ones(batch_size, 128, dtype=torch.bool, device=device),
+            "label": torch.randint(0, num_classes, (batch_size,), device=device),
         }
         batches.append(batch)
 
@@ -100,10 +103,7 @@ def generate_synthetic_data(
 
 
 def evaluate_model(
-    model: nn.Module,
-    task_head: nn.Module,
-    batches: List[Dict],
-    device: str = 'cuda'
+    model: nn.Module, task_head: nn.Module, batches: List[Dict], device: str = "cuda"
 ) -> Dict[str, float]:
     """
     Evaluate a model on given batches and compute metrics.
@@ -127,9 +127,10 @@ def evaluate_model(
     with torch.no_grad():
         for batch in batches:
             # Move batch to device
-            batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v
-                     for k, v in batch.items()}
-            labels = batch.pop('label')
+            batch = {
+                k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
+            }
+            labels = batch.pop("label")
 
             # Forward pass
             embeddings = model(batch)
@@ -149,11 +150,11 @@ def evaluate_model(
 
     # Compute metrics
     metrics = {
-        'accuracy': accuracy_score(all_labels, all_preds),
-        'precision': precision_score(all_labels, all_preds, average='weighted', zero_division=0),
-        'recall': recall_score(all_labels, all_preds, average='weighted', zero_division=0),
-        'f1': f1_score(all_labels, all_preds, average='weighted', zero_division=0),
-        'macro_f1': f1_score(all_labels, all_preds, average='macro', zero_division=0)
+        "accuracy": accuracy_score(all_labels, all_preds),
+        "precision": precision_score(all_labels, all_preds, average="weighted", zero_division=0),
+        "recall": recall_score(all_labels, all_preds, average="weighted", zero_division=0),
+        "f1": f1_score(all_labels, all_preds, average="weighted", zero_division=0),
+        "macro_f1": f1_score(all_labels, all_preds, average="macro", zero_division=0),
     }
 
     # Per-class metrics
@@ -162,9 +163,11 @@ def evaluate_model(
         class_mask = all_labels == i
         if class_mask.sum() > 0:
             class_acc = accuracy_score(all_labels[class_mask], all_preds[class_mask])
-            class_f1 = f1_score(all_labels[class_mask], all_preds[class_mask], average='binary', zero_division=0)
-            metrics[f'class_{i}_accuracy'] = class_acc
-            metrics[f'class_{i}_f1'] = class_f1
+            class_f1 = f1_score(
+                all_labels[class_mask], all_preds[class_mask], average="binary", zero_division=0
+            )
+            metrics[f"class_{i}_accuracy"] = class_acc
+            metrics[f"class_{i}_f1"] = class_f1
 
     return metrics
 
@@ -176,12 +179,14 @@ def print_metrics_table(results: Dict[str, Dict[str, float]], metrics_to_show: L
         all_metrics = set()
         for model_results in results.values():
             all_metrics.update(model_results.keys())
-        all_metrics = sorted([m for m in all_metrics if m.startswith('class_')])
-        metrics_to_show = ['accuracy', 'precision', 'recall', 'f1', 'macro_f1'] + all_metrics
+        all_metrics = sorted([m for m in all_metrics if m.startswith("class_")])
+        metrics_to_show = ["accuracy", "precision", "recall", "f1", "macro_f1"] + all_metrics
 
     # Header
     print("\n" + "=" * 100)
-    print(f"{'Model':<30} | {'Accuracy':>10} | {'Precision':>10} | {'Recall':>10} | {'F1':>10} | {'Macro F1':>10}")
+    print(
+        f"{'Model':<30} | {'Accuracy':>10} | {'Precision':>10} | {'Recall':>10} | {'F1':>10} | {'Macro F1':>10}"
+    )
     print("-" * 100)
 
     # Rows
@@ -206,52 +211,51 @@ def print_detailed_results(results: Dict[str, Dict[str, float]]):
 
         # Overall metrics
         print("\nOverall Metrics:")
-        for key in ['accuracy', 'precision', 'recall', 'f1', 'macro_f1']:
+        for key in ["accuracy", "precision", "recall", "f1", "macro_f1"]:
             if key in metrics:
                 print(f"  {key}: {metrics[key]:.4f}")
 
         # Per-class metrics
         print("\nPer-Class Metrics:")
-        class_keys = [k for k in metrics.keys() if k.startswith('class_')]
+        class_keys = [k for k in metrics.keys() if k.startswith("class_")]
         if class_keys:
             for key in sorted(class_keys):
                 print(f"  {key}: {metrics[key]:.4f}")
 
 
-def save_results(
-    results: Dict[str, Dict[str, float]],
-    output_dir: Path
-):
+def save_results(results: Dict[str, Dict[str, float]], output_dir: Path):
     """Save comparison results to JSON file."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Save full results
-    results_path = output_dir / 'baseline_comparison.json'
-    with open(results_path, 'w') as f:
+    results_path = output_dir / "baseline_comparison.json"
+    with open(results_path, "w") as f:
         json.dump(results, f, indent=2)
     logger.info(f"Saved results to {results_path}")
 
     # Save summary table as CSV
-    csv_path = output_dir / 'baseline_summary.csv'
-    with open(csv_path, 'w') as f:
+    csv_path = output_dir / "baseline_summary.csv"
+    with open(csv_path, "w") as f:
         f.write("model,accuracy,precision,recall,f1,macro_f1\n")
         for model_name, metrics in results.items():
-            f.write(f"{model_name},{metrics.get('accuracy', 0):.4f},"
-                    f"{metrics.get('precision', 0):.4f},"
-                    f"{metrics.get('recall', 0):.4f},"
-                    f"{metrics.get('f1', 0):.4f},"
-                    f"{metrics.get('macro_f1', 0):.4f}\n")
+            f.write(
+                f"{model_name},{metrics.get('accuracy', 0):.4f},"
+                f"{metrics.get('precision', 0):.4f},"
+                f"{metrics.get('recall', 0):.4f},"
+                f"{metrics.get('f1', 0):.4f},"
+                f"{metrics.get('macro_f1', 0):.4f}\n"
+            )
     logger.info(f"Saved CSV summary to {csv_path}")
 
 
 def run_baseline_comparison(
     config: Optional[Dict] = None,
-    output_dir: str = 'results/baseline_comparison',
+    output_dir: str = "results/baseline_comparison",
     num_samples: int = 500,
     batch_size: int = 32,
     embed_dim: int = 256,
     num_classes: int = 4,
-    device: str = 'cuda'
+    device: str = "cuda",
 ) -> Dict[str, Dict[str, float]]:
     """
     Run complete baseline comparison experiment.
@@ -268,11 +272,13 @@ def run_baseline_comparison(
     Returns:
         Dictionary mapping model names to their metrics
     """
-    logger.info("="*60)
+    logger.info("=" * 60)
     logger.info("Starting Baseline Comparison Experiment")
-    logger.info("="*60)
-    logger.info(f"Configuration: {num_samples} samples, batch_size={batch_size}, "
-                f"embed_dim={embed_dim}, num_classes={num_classes}")
+    logger.info("=" * 60)
+    logger.info(
+        f"Configuration: {num_samples} samples, batch_size={batch_size}, "
+        f"embed_dim={embed_dim}, num_classes={num_classes}"
+    )
 
     # Generate synthetic data
     logger.info("Generating synthetic data...")
@@ -281,7 +287,7 @@ def run_baseline_comparison(
         num_samples=num_samples,
         num_classes=num_classes,
         embed_dim=embed_dim,
-        device=device
+        device=device,
     )
     logger.info(f"Generated {len(batches)} batches")
 
@@ -291,79 +297,68 @@ def run_baseline_comparison(
     # =========================================================================
     # 1. MultimodalFusionModel (full model)
     # =========================================================================
-    logger.info("\n" + "-"*60)
+    logger.info("\n" + "-" * 60)
     logger.info("Evaluating: MultimodalFusionModel (Full)")
-    logger.info("-"*60)
+    logger.info("-" * 60)
 
-    model = MultimodalFusionModel(
-        embed_dim=embed_dim,
-        **(config or {})
-    ).to(device)
+    model = MultimodalFusionModel(embed_dim=embed_dim, **(config or {})).to(device)
     task_head = ClassificationHead(input_dim=embed_dim, num_classes=num_classes).to(device)
 
     metrics = evaluate_model(model, task_head, batches, device)
-    results['MultimodalFusionModel'] = metrics
+    results["MultimodalFusionModel"] = metrics
     logger.info(f"Results: Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1']:.4f}")
 
     # =========================================================================
     # 2. SingleModalityModel baselines
     # =========================================================================
-    for modality in ['wsi', 'genomic', 'clinical']:
-        logger.info("\n" + "-"*60)
+    for modality in ["wsi", "genomic", "clinical"]:
+        logger.info("\n" + "-" * 60)
         logger.info(f"Evaluating: SingleModalityModel ({modality})")
-        logger.info("-"*60)
+        logger.info("-" * 60)
 
-        model = SingleModalityModel(
-            modality=modality,
-            config=config,
-            embed_dim=embed_dim
-        ).to(device)
+        model = SingleModalityModel(modality=modality, config=config, embed_dim=embed_dim).to(
+            device
+        )
         task_head = ClassificationHead(input_dim=embed_dim, num_classes=num_classes).to(device)
 
         metrics = evaluate_model(model, task_head, batches, device)
-        results[f'SingleModality_{modality}'] = metrics
+        results[f"SingleModality_{modality}"] = metrics
         logger.info(f"Results: Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1']:.4f}")
 
     # =========================================================================
     # 3. LateFusionModel
     # =========================================================================
-    logger.info("\n" + "-"*60)
+    logger.info("\n" + "-" * 60)
     logger.info("Evaluating: LateFusionModel")
-    logger.info("-"*60)
+    logger.info("-" * 60)
 
-    model = LateFusionModel(
-        config=config,
-        embed_dim=embed_dim
-    ).to(device)
+    model = LateFusionModel(config=config, embed_dim=embed_dim).to(device)
     task_head = ClassificationHead(input_dim=embed_dim, num_classes=num_classes).to(device)
 
     metrics = evaluate_model(model, task_head, batches, device)
-    results['LateFusionModel'] = metrics
+    results["LateFusionModel"] = metrics
     logger.info(f"Results: Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1']:.4f}")
 
     # =========================================================================
     # 4. AttentionBaseline
     # =========================================================================
-    logger.info("\n" + "-"*60)
+    logger.info("\n" + "-" * 60)
     logger.info("Evaluating: AttentionBaseline")
-    logger.info("-"*60)
+    logger.info("-" * 60)
 
-    model = AttentionBaseline(
-        config=config,
-        embed_dim=embed_dim
-    ).to(device)
+    model = AttentionBaseline(config=config, embed_dim=embed_dim).to(device)
     task_head = ClassificationHead(input_dim=embed_dim, num_classes=num_classes).to(device)
 
     metrics = evaluate_model(model, task_head, batches, device)
-    results['AttentionBaseline'] = metrics
+    results["AttentionBaseline"] = metrics
     logger.info(f"Results: Accuracy={metrics['accuracy']:.4f}, F1={metrics['f1']:.4f}")
 
     # =========================================================================
     # Save and summarize results
     # =========================================================================
-    logger.info("\n" + "="*60)
+    logger.info("\n" + "=" * 60)
     logger.info("Baseline Comparison Complete")
-    logger.info("="*60)
+    logger.info("=" * 60)
 
     # Print summary table
     print_metrics_table(results)
@@ -376,24 +371,24 @@ def run_baseline_comparison(
     save_results(results, output_path)
 
     # Calculate and print improvement summary
-    full_model_acc = results['MultimodalFusionModel']['accuracy']
-    full_model_f1 = results['MultimodalFusionModel']['f1']
+    full_model_acc = results["MultimodalFusionModel"]["accuracy"]
+    full_model_f1 = results["MultimodalFusionModel"]["f1"]
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("IMPROVEMENT SUMMARY (vs MultimodalFusionModel)")
-    print("="*60)
+    print("=" * 60)
     print(f"\nFull Model: Accuracy={full_model_acc:.4f}, F1={full_model_f1:.4f}")
     print("\nImprovement over baselines:")
 
     for model_name, metrics in results.items():
-        if model_name != 'MultimodalFusionModel':
-            acc_diff = metrics['accuracy'] - full_model_acc
-            f1_diff = metrics['f1'] - full_model_f1
+        if model_name != "MultimodalFusionModel":
+            acc_diff = metrics["accuracy"] - full_model_acc
+            f1_diff = metrics["f1"] - full_model_f1
             print(f"  {model_name}: Accuracy={acc_diff:+.4f}, F1={f1_diff:+.4f}")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(f"Results saved to: {output_dir}")
-    print("="*60)
+    print("=" * 60)
 
     return results
 
@@ -401,36 +396,37 @@ def run_baseline_comparison(
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Compare baseline models with MultimodalFusionModel'
+        description="Compare baseline models with MultimodalFusionModel"
     )
 
-    parser.add_argument('--output-dir', type=str,
-                       default='results/baseline_comparison',
-                       help='Directory to save results')
-    parser.add_argument('--num-samples', type=int, default=500,
-                       help='Number of synthetic samples to evaluate')
-    parser.add_argument('--batch-size', type=int, default=32,
-                       help='Batch size for evaluation')
-    parser.add_argument('--embed-dim', type=int, default=256,
-                       help='Embedding dimension')
-    parser.add_argument('--num-classes', type=int, default=4,
-                       help='Number of classes for classification')
-    parser.add_argument('--device', type=str, default='cuda',
-                       help='Device to run on')
-    parser.add_argument('--seed', type=int, default=42,
-                       help='Random seed')
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="results/baseline_comparison",
+        help="Directory to save results",
+    )
+    parser.add_argument(
+        "--num-samples", type=int, default=500, help="Number of synthetic samples to evaluate"
+    )
+    parser.add_argument("--batch-size", type=int, default=32, help="Batch size for evaluation")
+    parser.add_argument("--embed-dim", type=int, default=256, help="Embedding dimension")
+    parser.add_argument(
+        "--num-classes", type=int, default=4, help="Number of classes for classification"
+    )
+    parser.add_argument("--device", type=str, default="cuda", help="Device to run on")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
 
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
 
     # Set random seed
     set_seed(args.seed)
 
     # Setup device
-    device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
+    device = torch.device(args.device if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
     # Run comparison
@@ -440,5 +436,5 @@ if __name__ == '__main__':
         batch_size=args.batch_size,
         embed_dim=args.embed_dim,
         num_classes=args.num_classes,
-        device=device
+        device=device,
     )
