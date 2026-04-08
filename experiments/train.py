@@ -162,7 +162,7 @@ class MultimodalTrainer:
 
         if task_type == "classification":
             num_classes = self.config.get("num_classes", 2)
-            if num_classes == 2:
+            if num_classes == 1:
                 return nn.BCEWithLogitsLoss()
             else:
                 return nn.CrossEntropyLoss()
@@ -170,6 +170,29 @@ class MultimodalTrainer:
             return nn.MSELoss()  # Placeholder - use proper survival loss
         else:
             raise ValueError(f"Unknown task type: {task_type}")
+
+    def _compute_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        """Compute task loss for the configured classification mode."""
+        if self.config.get("task_type", "classification") == "classification":
+            if self.config.get("num_classes", 2) == 1:
+                return self.criterion(logits.view(-1), labels.float())
+        return self.criterion(logits, labels)
+
+    def _get_classification_outputs(
+        self, logits: torch.Tensor
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """Return class predictions and positive-class probabilities when available."""
+        num_classes = self.config.get("num_classes", 2)
+
+        if num_classes == 1:
+            positive_probs = torch.sigmoid(logits.view(-1)).detach().cpu().numpy()
+            preds = (positive_probs > 0.5).astype(int)
+            return preds, positive_probs
+
+        probs = torch.softmax(logits, dim=1).detach().cpu().numpy()
+        preds = torch.argmax(logits, dim=1).detach().cpu().numpy()
+        positive_probs = probs[:, 1] if num_classes == 2 else None
+        return preds, positive_probs
 
     def train_epoch(self) -> Dict[str, float]:
         """Train for one epoch."""
@@ -193,7 +216,7 @@ class MultimodalTrainer:
             logits = self.task_head(embeddings)
 
             # Compute loss
-            loss = self.criterion(logits, labels)
+            loss = self._compute_loss(logits, labels)
 
             # Backward pass
             loss.backward()
@@ -219,11 +242,7 @@ class MultimodalTrainer:
 
             # Get predictions
             if self.config.get("task_type") == "classification":
-                if self.config.get("num_classes", 2) == 2:
-                    preds = torch.sigmoid(logits).detach().cpu().numpy()
-                    preds = (preds > 0.5).astype(int)
-                else:
-                    preds = torch.argmax(logits, dim=1).detach().cpu().numpy()
+                preds, _ = self._get_classification_outputs(logits)
             else:
                 preds = logits.detach().cpu().numpy()
 
@@ -272,18 +291,14 @@ class MultimodalTrainer:
                 logits = self.task_head(embeddings)
 
                 # Compute loss
-                loss = self.criterion(logits, labels)
+                loss = self._compute_loss(logits, labels)
                 total_loss += loss.item()
 
                 # Get predictions
                 if self.config.get("task_type") == "classification":
-                    if self.config.get("num_classes", 2) == 2:
-                        probs = torch.sigmoid(logits).cpu().numpy()
-                        preds = (probs > 0.5).astype(int)
-                    else:
-                        probs = torch.softmax(logits, dim=1).cpu().numpy()
-                        preds = torch.argmax(logits, dim=1).cpu().numpy()
-                    all_probs.extend(probs)
+                    preds, positive_probs = self._get_classification_outputs(logits)
+                    if positive_probs is not None:
+                        all_probs.extend(positive_probs)
                 else:
                     preds = logits.cpu().numpy()
 
@@ -299,7 +314,7 @@ class MultimodalTrainer:
             metrics["val_f1"] = f1_score(all_labels, all_preds, average="weighted")
 
             # Compute AUC if binary classification
-            if self.config.get("num_classes", 2) == 2:
+            if self.config.get("num_classes", 2) in {1, 2} and all_probs:
                 metrics["val_auc"] = roc_auc_score(all_labels, all_probs)
 
         return metrics

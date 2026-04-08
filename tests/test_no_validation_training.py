@@ -250,3 +250,49 @@ class TestNoValidationTraining:
         )
         history3 = trainer3.fit(train_loader, 1, val_loader=val_loader)
         assert len(history3["train_loss"]) == 1
+
+    def test_binary_single_logit_training_runs_without_validation(self):
+        """Verify the shared trainer supports single-logit binary heads."""
+        model = MultimodalFusionModel(embed_dim=64)
+        task_head = ClassificationHead(input_dim=64, num_classes=1)
+
+        trainer = SupervisedTrainer(
+            model=model,
+            task_head=task_head,
+            num_classes=1,
+            device="cpu",
+            learning_rate=1e-3,
+            checkpoint_dir=None,
+            log_dir=None,
+        )
+
+        train_loader = self._create_dummy_multimodal_dataloader()
+        history = trainer.fit(train_loader=train_loader, num_epochs=2, val_loader=None)
+
+        assert len(history["train_loss"]) == 2
+        assert all(loss > 0 for loss in history["train_loss"])
+        assert all(v == 0.0 for v in history["val_loss"])
+
+    def test_binary_single_logit_evaluate_returns_binary_metrics(self):
+        """Verify evaluation metrics work for single-logit binary heads."""
+        model = MultimodalFusionModel(embed_dim=64)
+        task_head = ClassificationHead(input_dim=64, num_classes=1)
+
+        trainer = SupervisedTrainer(
+            model=model,
+            task_head=task_head,
+            num_classes=1,
+            device="cpu",
+            checkpoint_dir=None,
+            log_dir=None,
+        )
+
+        test_loader = self._create_dummy_multimodal_dataloader()
+        metrics = trainer.evaluate(test_loader)
+
+        assert metrics["loss"] > 0
+        assert "accuracy" in metrics
+        assert "auc" in metrics
+        assert "f1" in metrics
+        assert "precision" in metrics
+        assert "recall" in metrics

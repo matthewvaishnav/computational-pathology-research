@@ -48,6 +48,20 @@ class TestWSIEncoder:
 
         assert output.shape == (2, 256)
 
+    @pytest.mark.parametrize("pooling", ["attention", "mean", "max"])
+    def test_wsi_encoder_all_masked_row_stays_finite(self, pooling):
+        """Mixed batches with an empty WSI row should not emit NaNs."""
+        encoder = WSIEncoder(input_dim=512, output_dim=128, pooling=pooling)
+        patches = torch.randn(2, 12, 512)
+        mask = torch.zeros(2, 12, dtype=torch.bool)
+        mask[0, :8] = True
+
+        output = encoder(patches, mask=mask)
+
+        assert output.shape == (2, 128)
+        assert not torch.isnan(output).any()
+        assert torch.isfinite(output).all()
+
     def test_wsi_encoder_pooling_strategies(self):
         """Test different pooling strategies."""
         patches = torch.randn(2, 50, 512)
@@ -176,6 +190,21 @@ class TestClinicalTextEncoder:
         output = encoder(token_ids, attention_mask=attention_mask)
 
         assert output.shape == (2, 256)
+
+    @pytest.mark.parametrize("pooling", ["cls", "mean", "max"])
+    def test_clinical_text_encoder_all_masked_row_stays_finite(self, pooling):
+        """Mixed batches with an empty clinical-text row should not emit NaNs."""
+        encoder = ClinicalTextEncoder(vocab_size=10000, output_dim=128, pooling=pooling)
+        token_ids = torch.randint(1, 10000, (2, 32))
+        attention_mask = torch.zeros(2, 32, dtype=torch.bool)
+        attention_mask[0, :20] = True
+        token_ids[1] = 0
+
+        output = encoder(token_ids, attention_mask=attention_mask)
+
+        assert output.shape == (2, 128)
+        assert not torch.isnan(output).any()
+        assert torch.isfinite(output).all()
 
     def test_clinical_text_encoder_pooling_strategies(self):
         """Test different pooling strategies."""
