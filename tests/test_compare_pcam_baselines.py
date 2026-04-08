@@ -11,7 +11,8 @@ Tests cover the bugs fixed in commit 493fb25:
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, mock_open, patch
+
 import pytest
 import yaml
 
@@ -626,8 +627,9 @@ def test_manifest_recording_uses_relative_paths(tmp_path, mock_config):
     Regression test for path portability - absolute paths make manifest
     entries non-portable across machines.
     """
-    from experiments.compare_pcam_baselines import _record_comparison_to_manifest
     import os
+
+    from experiments.compare_pcam_baselines import _record_comparison_to_manifest
 
     # Create config file
     config_path = tmp_path / "test_config.yaml"

@@ -14,24 +14,24 @@ Usage:
     python experiments/compare_baselines.py
 """
 
-import os
-import sys
+import argparse
 import json
 import logging
+import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
-import argparse
 
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 from sklearn.metrics import (
     accuracy_score,
+    classification_report,
+    confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
-    confusion_matrix,
-    classification_report,
 )
 from tqdm import tqdm
 
@@ -39,11 +39,11 @@ from tqdm import tqdm
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.models import (
-    MultimodalFusionModel,
-    SingleModalityModel,
-    LateFusionModel,
     AttentionBaseline,
     ClassificationHead,
+    LateFusionModel,
+    MultimodalFusionModel,
+    SingleModalityModel,
 )
 from src.models.baselines import get_baseline_model
 
