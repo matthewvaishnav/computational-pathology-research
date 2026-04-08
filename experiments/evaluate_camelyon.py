@@ -25,7 +25,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -143,6 +143,7 @@ def evaluate_slide_level(
     features_dir: Path,
     split: str,
     device: str,
+    tile_scores_dir: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Run slide-level inference and compute metrics.
 
@@ -165,6 +166,7 @@ def evaluate_slide_level(
         - 'slide_predictions': dict mapping slide_id to prediction
         - 'slide_probabilities': dict mapping slide_id to probability
         - 'slide_labels': dict mapping slide_id to true label
+        - 'slide_tile_score_paths': dict mapping slide_id to exported tile-score JSON path
     """
     model.eval()
 
@@ -173,6 +175,10 @@ def evaluate_slide_level(
     slide_predictions = {}
     slide_probabilities = {}
     slide_labels = {}
+    slide_tile_score_paths = {}
+
+    if tile_scores_dir is not None:
+        tile_scores_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info(f"Running slide-level inference on {len(slides)} slides...")
 
@@ -191,6 +197,7 @@ def evaluate_slide_level(
 
             with h5py.File(feature_file, "r") as f:
                 features = torch.tensor(f["features"][:], dtype=torch.float32)
+                coordinates = torch.tensor(f["coordinates"][:], dtype=torch.int32)
 
             # Add batch dimension: [num_patches, feature_dim] -> [1, num_patches, feature_dim]
             features = features.unsqueeze(0).to(device)
@@ -207,6 +214,16 @@ def evaluate_slide_level(
             slide_probabilities[slide_id] = prob
             slide_labels[slide_id] = label
 
+            if tile_scores_dir is not None:
+                patch_scores = compute_patch_scores(model, features.squeeze(0))
+                tile_score_path = export_slide_tile_scores(
+                    slide_id=slide_id,
+                    coordinates=coordinates,
+                    scores=patch_scores,
+                    output_dir=tile_scores_dir,
+                )
+                slide_tile_score_paths[slide_id] = tile_score_path.as_posix()
+
     # Convert to arrays for metrics computation
     slide_ids = list(slide_labels.keys())
     predictions = np.array([slide_predictions[sid] for sid in slide_ids])
@@ -221,6 +238,8 @@ def evaluate_slide_level(
     metrics["slide_probabilities"] = slide_probabilities
     metrics["slide_labels"] = slide_labels
     metrics["num_slides"] = len(slide_ids)
+    if slide_tile_score_paths:
+        metrics["slide_tile_score_paths"] = slide_tile_score_paths
 
     return metrics
 
@@ -304,6 +323,42 @@ def compute_metrics(
     return metrics
 
 
+def compute_patch_scores(model: nn.Module, patch_features: torch.Tensor) -> torch.Tensor:
+    """Compute patch-level positive-class scores from a slide model classifier."""
+    logits = model.classifier(patch_features)
+    if logits.ndim == 1 or logits.shape[-1] == 1:
+        return torch.sigmoid(logits.reshape(-1)).detach().cpu()
+    probabilities = torch.softmax(logits, dim=-1)
+    positive_index = 1 if probabilities.shape[-1] > 1 else 0
+    return probabilities[:, positive_index].detach().cpu()
+
+
+def export_slide_tile_scores(
+    slide_id: str,
+    coordinates: torch.Tensor,
+    scores: torch.Tensor,
+    output_dir: Path,
+) -> Path:
+    """Export one slide's tile coordinates and model scores as heatmap-ready JSON."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / f"{slide_id}_tile_scores.json"
+
+    tile_records = []
+    for (x, y), score in zip(coordinates.tolist(), scores.tolist()):
+        tile_records.append({"x": int(x), "y": int(y), "score": float(score)})
+
+    payload = {
+        "slide_id": slide_id,
+        "num_tiles": len(tile_records),
+        "tiles": tile_records,
+    }
+
+    with open(output_path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2)
+
+    return output_path
+
+
 def save_metrics(metrics: Dict, output_path: str) -> None:
     """Save metrics to JSON file with pretty printing.
 
@@ -332,7 +387,7 @@ def save_metrics(metrics: Dict, output_path: str) -> None:
 
     metrics_to_save = convert_to_serializable(metrics)
 
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(metrics_to_save, f, indent=2)
 
     logger.info(f"Metrics saved to: {output_path}")
@@ -447,6 +502,7 @@ def log_evaluation_summary(
     output_dir: Path,
     confusion_matrix_generated: bool,
     roc_curve_generated: bool,
+    tile_scores_dir: Optional[Path] = None,
 ) -> None:
     """Log the final evaluation summary."""
     cm = np.array(test_metrics["confusion_matrix"])
@@ -488,6 +544,8 @@ def log_evaluation_summary(
         logger.info(f"  Confusion matrix: {output_dir / 'confusion_matrix.png'}")
     if roc_curve_generated:
         logger.info(f"  ROC curve: {output_dir / 'roc_curve.png'}")
+    if tile_scores_dir is not None:
+        logger.info(f"  Tile scores: {tile_scores_dir}")
     logger.info("=" * 60)
 
 
@@ -501,6 +559,7 @@ Examples:
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon_quick_test/best_model.pth --split test
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --output-dir results/camelyon
+  python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --tile-scores-dir results/camelyon/tile_scores
         """,
     )
     parser.add_argument(
@@ -531,6 +590,12 @@ Examples:
         default="cuda",
         choices=["cuda", "cpu"],
         help="Device to use for evaluation (default: cuda if available)",
+    )
+    parser.add_argument(
+        "--tile-scores-dir",
+        type=str,
+        default=None,
+        help="Optional directory to export model-driven per-slide tile-score JSON files",
     )
 
     args = parser.parse_args()
@@ -601,6 +666,7 @@ Examples:
         features_dir=features_dir,
         split=args.split,
         device=str(device),
+        tile_scores_dir=Path(args.tile_scores_dir) if args.tile_scores_dir else None,
     )
 
     inference_time = time.time() - start_time
@@ -619,6 +685,8 @@ Examples:
     test_metrics["checkpoint_metrics"] = checkpoint_metrics
     test_metrics["aggregation_method"] = model.pooling
     test_metrics["split"] = args.split
+    if args.tile_scores_dir:
+        test_metrics["tile_scores_dir"] = Path(args.tile_scores_dir).as_posix()
 
     # Create output directory
     output_dir = Path(args.output_dir)
@@ -663,6 +731,7 @@ Examples:
         output_dir=output_dir,
         confusion_matrix_generated=confusion_matrix_generated,
         roc_curve_generated=roc_curve_generated,
+        tile_scores_dir=Path(args.tile_scores_dir) if args.tile_scores_dir else None,
     )
 
 
