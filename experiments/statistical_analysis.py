@@ -680,7 +680,7 @@ def run_cross_validation(
                 output = model(batch)
                 logits = _resolve_logits(model, batch, output)
 
-                preds = torch.argmax(logits, dim=1).cpu().numpy()
+                preds, _ = _prediction_from_logits(logits)
                 all_preds.extend(preds)
                 all_labels.extend(labels.cpu().numpy())
 
