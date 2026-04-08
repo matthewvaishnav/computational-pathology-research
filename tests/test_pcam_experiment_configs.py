@@ -15,9 +15,10 @@ import pytest
 import torch
 import yaml
 
+from experiments.evaluate_pcam import compute_metrics, count_model_parameters
+
 # Import functions under test
 from experiments.train_pcam import create_single_modality_model
-from experiments.evaluate_pcam import compute_metrics, count_model_parameters
 
 
 class TestSimpleHeadConfig:

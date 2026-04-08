@@ -223,8 +223,9 @@ def export_model_tile_scores(
     feature_file = Path(feature_file)
     output_path = Path(output_path)
 
-    from scripts.data.export_camelyon_tile_scores import compute_tile_scores  # local reuse guard
     import h5py
+
+    from scripts.data.export_camelyon_tile_scores import compute_tile_scores  # local reuse guard
 
     with h5py.File(feature_file, "r") as handle:
         features = handle["features"][:].astype(np.float32)

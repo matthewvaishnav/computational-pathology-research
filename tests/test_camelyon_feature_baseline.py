@@ -10,10 +10,10 @@ import pytest
 from PIL import Image
 
 from experiments.run_camelyon_feature_baseline import (
+    PLOT_AVAILABLE,
     collect_slide_level_features,
     evaluate_slide_classifier,
     export_model_tile_scores,
-    PLOT_AVAILABLE,
     run_camelyon_feature_baseline,
     train_logistic_baseline,
 )

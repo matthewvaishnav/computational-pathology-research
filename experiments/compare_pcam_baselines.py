@@ -24,12 +24,13 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 import yaml
 
 # Add benchmark manifest import
 try:
-    from src.utils.benchmark_manifest import BenchmarkManifest, BenchmarkEntry
+    from src.utils.benchmark_manifest import BenchmarkEntry, BenchmarkManifest
 
     MANIFEST_AVAILABLE = True
 except ImportError:

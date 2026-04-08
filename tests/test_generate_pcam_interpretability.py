@@ -1,9 +1,8 @@
 """Targeted tests for the PCam interpretability workflow."""
 
-from typing import Union, Optional
-from pathlib import Path
-
 import json
+from pathlib import Path
+from typing import Optional, Union
 
 import numpy as np
 import pytest
