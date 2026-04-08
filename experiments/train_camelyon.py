@@ -1,15 +1,17 @@
 """
-Training script for CAMELYON16 slide-level classification experiment.
+Training script for CAMELYON16 slide-level classification.
 
-This script implements a minimal training pipeline for CAMELYON16 using
-pre-extracted patch features from HDF5 files. The pipeline includes:
-- Slide-level data loading from HDF5 feature files
-- Simple aggregation (mean/max pooling) of patch features
-- Binary classification for metastasis detection
-- Basic training loop with validation
+This script implements slide-level training using pre-extracted patch features
+from HDF5 files. Each training sample represents a complete slide with all its
+patches, ensuring consistency with the evaluation pipeline.
 
-NOTE: This is a first real training path using pre-extracted features.
-Full WSI processing (OpenSlide, patch extraction) is not yet implemented.
+IMPORTANT: This is a feature-cache baseline that uses pre-extracted HDF5 features,
+not raw WSI files. It does not perform on-the-fly patch extraction from OpenSlide.
+
+Architecture:
+    - Slide-level dataset: CAMELYONSlideDataset
+    - Aggregation: Mean or max pooling of patch features
+    - Classifier: Simple MLP on aggregated features
 
 Usage:
     python experiments/train_camelyon.py --config experiments/configs/camelyon.yaml
@@ -18,6 +20,11 @@ Requirements:
     - Slide index JSON at data/camelyon/slide_index.json
     - Pre-extracted HDF5 features at data/camelyon/features/
     - Each HDF5 file contains 'features' [num_patches, feature_dim] and 'coordinates' [num_patches, 2]
+
+Configuration:
+    - model.wsi.aggregation: "mean" or "max" pooling method
+    - training.batch_size: Number of slides per batch
+    - data.root_dir: Root directory containing slide_index.json and features/
 """
 
 import argparse
@@ -27,7 +34,7 @@ import os
 import random
 import sys
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import torch
@@ -40,7 +47,12 @@ from tqdm import tqdm
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.camelyon_dataset import CAMELYONPatchDataset, CAMELYONSlideIndex
+from src.data.camelyon_dataset import (
+    CAMELYONPatchDataset,
+    CAMELYONSlideDataset,
+    CAMELYONSlideIndex,
+    collate_slide_bags,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -63,6 +75,45 @@ def load_config(config_path: str) -> Dict:
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
     return config
+
+
+def validate_config(config: Dict) -> None:
+    """Validate configuration has required fields.
+    
+    Args:
+        config: Configuration dictionary
+        
+    Raises:
+        ValueError: If required fields are missing or invalid
+    """
+    required_fields = [
+        ("data", "root_dir"),
+        ("training", "batch_size"),
+        ("training", "num_epochs"),
+        ("model", "wsi", "hidden_dim"),
+        ("task", "num_classes"),
+    ]
+    
+    for *path, field in required_fields:
+        obj = config
+        for key in path:
+            if key not in obj:
+                raise ValueError(f"Missing config field: {'.'.join(path + [field])}")
+            obj = obj[key]
+        if field not in obj:
+            raise ValueError(f"Missing config field: {'.'.join(path + [field])}")
+    
+    # Validate aggregation method
+    aggregation = config.get("model", {}).get("wsi", {}).get("aggregation", "mean")
+    if aggregation not in ["mean", "max"]:
+        raise ValueError(f"Invalid aggregation method: {aggregation}. Must be 'mean' or 'max'")
+    
+    # Validate data paths exist
+    root_dir = Path(config["data"]["root_dir"])
+    if not root_dir.exists():
+        raise ValueError(f"Data root directory does not exist: {root_dir}")
+    
+    logger.info("Configuration validation passed")
 
 
 class SimpleSlideClassifier(nn.Module):
@@ -96,18 +147,25 @@ class SimpleSlideClassifier(nn.Module):
             nn.Linear(hidden_dim // 2, num_classes if num_classes > 2 else 1),
         )
 
-    def forward(self, patch_features: torch.Tensor) -> torch.Tensor:
-        """Forward pass.
+    def forward(self, patch_features: torch.Tensor, num_patches: Optional[torch.Tensor] = None) -> torch.Tensor:
+        """Forward pass with optional masking for padded patches.
 
         Args:
-            patch_features: [batch_size, num_patches, feature_dim]
+            patch_features: [batch_size, max_patches, feature_dim]
+            num_patches: [batch_size] - actual patch counts for masking
 
         Returns:
             logits: [batch_size, num_classes] or [batch_size, 1] for binary
         """
         # Aggregate patches
         if self.pooling == "mean":
-            slide_features = patch_features.mean(dim=1)  # [batch_size, feature_dim]
+            if num_patches is not None:
+                # Masked mean: only average over actual patches
+                mask = torch.arange(patch_features.size(1), device=patch_features.device)[None, :] < num_patches[:, None]
+                mask = mask.unsqueeze(-1).float()  # [batch_size, max_patches, 1]
+                slide_features = (patch_features * mask).sum(dim=1) / num_patches.unsqueeze(-1).float()
+            else:
+                slide_features = patch_features.mean(dim=1)
         elif self.pooling == "max":
             slide_features = patch_features.max(dim=1)[0]  # [batch_size, feature_dim]
         else:
@@ -175,22 +233,20 @@ def create_slide_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader]:
     slide_index = CAMELYONSlideIndex.load(index_path)
     logger.info(f"Loaded slide index with {len(slide_index)} slides")
 
-    # Create datasets - using patch-level dataset for now
-    # TODO: Create proper slide-level dataset that returns all patches per slide
-    train_dataset = CAMELYONPatchDataset(
+    # Create slide-level datasets
+    train_dataset = CAMELYONSlideDataset(
         slide_index=slide_index,
         features_dir=features_dir,
         split="train",
     )
 
-    val_dataset = CAMELYONPatchDataset(
+    val_dataset = CAMELYONSlideDataset(
         slide_index=slide_index,
         features_dir=features_dir,
         split="val",
     )
 
-    # For now, we'll use patch-level data
-    # In a real slide-level setup, we'd batch by slide
+    # Create dataloaders with custom collate
     batch_size = config["training"]["batch_size"]
     num_workers = config["data"].get("num_workers", 4)
 
@@ -199,6 +255,7 @@ def create_slide_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader]:
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
+        collate_fn=collate_slide_bags,
         pin_memory=config["data"].get("pin_memory", True),
     )
 
@@ -207,10 +264,11 @@ def create_slide_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader]:
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
+        collate_fn=collate_slide_bags,
         pin_memory=config["data"].get("pin_memory", True),
     )
 
-    logger.info(f"Train: {len(train_dataset)} patches, Val: {len(val_dataset)} patches")
+    logger.info(f"Train: {len(train_dataset)} slides, Val: {len(val_dataset)} slides")
 
     return train_loader, val_loader
 
@@ -243,13 +301,14 @@ def train_epoch(
 
     pbar = tqdm(train_loader, desc=f"Epoch {epoch} [Train]")
     for batch in pbar:
-        # For patch-level data, treat each patch independently for now
-        features = batch["features"].unsqueeze(1).to(device)  # [batch, 1, feature_dim]
-        labels = batch["label"].to(device)
+        # Extract slide-level batch data
+        features = batch["features"].to(device)  # [batch_size, max_patches, feature_dim]
+        labels = batch["labels"].to(device)  # [batch_size]
+        num_patches = batch["num_patches"].to(device)  # [batch_size]
 
         # Forward pass
         optimizer.zero_grad()
-        logits = model(features).squeeze()  # [batch]
+        logits = model(features, num_patches).squeeze()  # [batch_size]
 
         # Compute loss (BCE for binary classification)
         loss = criterion(logits, labels.float())
@@ -302,11 +361,13 @@ def validate(
     with torch.no_grad():
         pbar = tqdm(val_loader, desc="Validation")
         for batch in pbar:
-            features = batch["features"].unsqueeze(1).to(device)
-            labels = batch["label"].to(device)
+            # Extract slide-level batch data
+            features = batch["features"].to(device)  # [batch_size, max_patches, feature_dim]
+            labels = batch["labels"].to(device)  # [batch_size]
+            num_patches = batch["num_patches"].to(device)  # [batch_size]
 
             # Forward pass
-            logits = model(features).squeeze()
+            logits = model(features, num_patches).squeeze()
             loss = criterion(logits, labels.float())
 
             # Track metrics
@@ -351,6 +412,9 @@ def main():
 
     # Load config
     config = load_config(args.config)
+    
+    # Validate config
+    validate_config(config)
 
     # Set seed
     set_seed(config.get("seed", 42))
@@ -394,15 +458,17 @@ def main():
 
     # Create model
     logger.info("Creating model...")
+    aggregation = config.get("model", {}).get("wsi", {}).get("aggregation", "mean")
     model = SimpleSlideClassifier(
         feature_dim=feature_dim,
         hidden_dim=config["model"]["wsi"]["hidden_dim"],
         num_classes=config["task"]["num_classes"],
-        pooling="mean",  # Simple mean pooling for now
+        pooling=aggregation,
         dropout=config["task"]["classification"]["dropout"],
     ).to(device)
 
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+    logger.info(f"Aggregation method: {aggregation}")
 
     # Create optimizer and loss
     optimizer = optim.AdamW(
