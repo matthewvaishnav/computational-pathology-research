@@ -4,6 +4,7 @@ Tests for CAMELYON evaluation script.
 
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -133,11 +134,11 @@ def test_evaluate_camelyon_on_quick_test_checkpoint():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-            [
-                "python",
-                "experiments/evaluate_camelyon.py",
-                "--checkpoint",
-                str(checkpoint_path),
+                [
+                    sys.executable,
+                    "experiments/evaluate_camelyon.py",
+                    "--checkpoint",
+                    str(checkpoint_path),
                 "--split",
                 "test",
                 "--output-dir",
@@ -203,11 +204,11 @@ def test_evaluate_camelyon_creates_plots():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-            [
-                "python",
-                "experiments/evaluate_camelyon.py",
-                "--checkpoint",
-                str(checkpoint_path),
+                [
+                    sys.executable,
+                    "experiments/evaluate_camelyon.py",
+                    "--checkpoint",
+                    str(checkpoint_path),
                 "--split",
                 "test",
                 "--output-dir",
@@ -241,11 +242,11 @@ def test_evaluate_camelyon_on_val_split():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-            [
-                "python",
-                "experiments/evaluate_camelyon.py",
-                "--checkpoint",
-                str(checkpoint_path),
+                [
+                    sys.executable,
+                    "experiments/evaluate_camelyon.py",
+                    "--checkpoint",
+                    str(checkpoint_path),
                 "--split",
                 "val",
                 "--output-dir",
@@ -282,11 +283,11 @@ def test_evaluate_camelyon_aggregation_from_checkpoint():
         output_dir = Path(tmp_dir) / "eval_results"
 
         result = subprocess.run(
-            [
-                "python",
-                "experiments/evaluate_camelyon.py",
-                "--checkpoint",
-                str(checkpoint_path),
+                [
+                    sys.executable,
+                    "experiments/evaluate_camelyon.py",
+                    "--checkpoint",
+                    str(checkpoint_path),
                 "--split",
                 "test",
                 "--output-dir",
@@ -314,7 +315,7 @@ def test_evaluate_camelyon_missing_checkpoint():
     """Test that evaluation fails gracefully with missing checkpoint."""
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "experiments/evaluate_camelyon.py",
             "--checkpoint",
             "nonexistent_checkpoint.pth",

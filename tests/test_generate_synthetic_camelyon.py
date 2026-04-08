@@ -3,6 +3,7 @@ Tests for synthetic CAMELYON data generation.
 """
 
 import json
+import sys
 import tempfile
 from pathlib import Path
 
@@ -25,7 +26,7 @@ def test_generate_synthetic_camelyon_creates_index(tmp_path):
 
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "scripts/generate_synthetic_camelyon.py",
             "--output-dir",
             str(output_dir),
@@ -74,7 +75,7 @@ def test_generate_synthetic_camelyon_creates_features(tmp_path):
 
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             "scripts/generate_synthetic_camelyon.py",
             "--output-dir",
             str(output_dir),
@@ -125,7 +126,7 @@ def test_generate_synthetic_camelyon_labels_alternate():
 
         result = subprocess.run(
             [
-                "python",
+                sys.executable,
                 "scripts/generate_synthetic_camelyon.py",
                 "--output-dir",
                 str(output_dir),
