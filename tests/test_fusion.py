@@ -156,13 +156,13 @@ class TestMultiModalFusionLayer:
         assert not torch.isnan(output).any()
 
     def test_fusion_with_all_missing_modalities(self):
-        """Test fusion with all modalities missing - should raise error."""
+        """Test fusion with all modalities missing - should raise ValueError."""
         fusion = MultiModalFusionLayer(embed_dim=256, num_heads=8)
 
         embeddings = {"wsi": None, "genomic": None, "clinical": None}
 
-        # Should raise StopIteration because next() can't find any non-None embedding
-        with pytest.raises(StopIteration):
+        # Should raise ValueError with descriptive message
+        with pytest.raises(ValueError, match="At least one modality must be present"):
             fusion(embeddings)
 
     def test_fusion_with_modality_masks(self):
