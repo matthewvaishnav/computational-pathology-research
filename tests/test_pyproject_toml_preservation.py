@@ -21,13 +21,7 @@ from typing import Any, Dict
 if sys.version_info >= (3, 11):
     import tomllib
 else:
-    try:
-        import tomli as tomllib
-    except ImportError:
-        import subprocess
-
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "tomli"])
-        import tomli as tomllib
+    import tomli as tomllib
 
 
 def parse_pyproject_toml(file_path: Path) -> Dict[str, Any]:
