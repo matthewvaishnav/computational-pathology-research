@@ -49,11 +49,46 @@ class BenchmarkManifest:
         os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
 
     def add_entry(self, entry: BenchmarkEntry) -> None:
-        """Append a benchmark entry to the manifest."""
+        """Append a benchmark entry to the manifest.
+
+        Note: This blindly appends. To prevent duplicates, use update_or_add_entry().
+        """
         with open(self.manifest_path, "a", encoding="utf-8") as f:
             # Write compact single-line JSON for JSON Lines format
             json.dump(asdict(entry), f, separators=(",", ":"))
             f.write("\n")
+
+    def update_or_add_entry(self, entry: BenchmarkEntry) -> bool:
+        """Update existing entry or append new one to prevent duplicates.
+
+        Args:
+            entry: BenchmarkEntry to add or update.
+
+        Returns:
+            True if existing entry was updated, False if new entry was added.
+        """
+        entries = self.read_all()
+
+        # Check for existing entry with same experiment_name
+        existing_idx = None
+        for idx, existing in enumerate(entries):
+            if existing.experiment_name == entry.experiment_name:
+                existing_idx = idx
+                break
+
+        if existing_idx is not None:
+            # Update existing entry
+            entries[existing_idx] = entry
+            # Rewrite entire manifest
+            with open(self.manifest_path, "w", encoding="utf-8") as f:
+                for e in entries:
+                    json.dump(asdict(e), f, separators=(",", ":"))
+                    f.write("\n")
+            return True
+        else:
+            # Append new entry
+            self.add_entry(entry)
+            return False
 
     def read_all(self) -> list[BenchmarkEntry]:
         """Read all benchmark entries from the manifest.

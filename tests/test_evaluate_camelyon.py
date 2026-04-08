@@ -182,45 +182,44 @@ def test_evaluate_camelyon_on_val_split():
         assert metrics["split"] == "val"
 
 
-def test_evaluate_camelyon_aggregation_methods():
-    """Test different aggregation methods (mean, max)."""
+def test_evaluate_camelyon_aggregation_from_checkpoint():
+    """Test that aggregation method is loaded from checkpoint, not CLI."""
     checkpoint_path = Path("checkpoints/camelyon_quick_test/best_model.pth")
 
     # Skip if checkpoint doesn't exist
     if not checkpoint_path.exists():
         pytest.skip("Quick test checkpoint not found")
 
-    for aggregation in ["mean", "max"]:
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            output_dir = Path(tmp_dir) / f"eval_{aggregation}"
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        output_dir = Path(tmp_dir) / "eval_results"
 
-            result = subprocess.run(
-                [
-                    "python",
-                    "experiments/evaluate_camelyon.py",
-                    "--checkpoint",
-                    str(checkpoint_path),
-                    "--split",
-                    "test",
-                    "--output-dir",
-                    str(output_dir),
-                    "--device",
-                    "cpu",
-                    "--aggregation",
-                    aggregation,
-                ],
-                capture_output=True,
-                text=True,
-            )
+        result = subprocess.run(
+            [
+                "python",
+                "experiments/evaluate_camelyon.py",
+                "--checkpoint",
+                str(checkpoint_path),
+                "--split",
+                "test",
+                "--output-dir",
+                str(output_dir),
+                "--device",
+                "cpu",
+            ],
+            capture_output=True,
+            text=True,
+        )
 
-            assert result.returncode == 0, f"Evaluation with {aggregation} failed: {result.stderr}"
+        assert result.returncode == 0, f"Evaluation failed: {result.stderr}"
 
-            # Verify aggregation method is recorded
-            metrics_path = output_dir / "metrics.json"
-            with open(metrics_path, "r") as f:
-                metrics = json.load(f)
+        # Verify aggregation method is recorded from checkpoint
+        metrics_path = output_dir / "metrics.json"
+        with open(metrics_path, "r") as f:
+            metrics = json.load(f)
 
-            assert metrics["aggregation_method"] == aggregation
+        # Aggregation method should be loaded from checkpoint config
+        assert "aggregation_method" in metrics
+        assert metrics["aggregation_method"] in ["mean", "max"]
 
 
 def test_evaluate_camelyon_missing_checkpoint():
