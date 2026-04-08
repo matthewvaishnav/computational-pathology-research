@@ -1,16 +1,16 @@
 # Contributing to Computational Pathology Research Framework
 
-Thank you for your interest in contributing to this computational pathology research framework! We welcome contributions from researchers, developers, and domain experts. This guide will help you get started.
+Thank you for your interest in contributing to this computational pathology research framework! I welcome contributions from researchers, developers, and domain experts. This guide will help you get started.
 
 ## Welcome
 
-We're building a research framework for multimodal fusion architectures in computational pathology. Whether you're fixing bugs, adding features, improving documentation, or proposing new research directions, your contributions are valued and appreciated.
+I'm building a research framework for multimodal fusion architectures in computational pathology. Whether you're fixing bugs, adding features, improving documentation, or proposing new research directions, your contributions are valued and appreciated.
 
-This is a collaborative research project, and we believe in fostering an inclusive, respectful, and productive environment for all contributors.
+This is a collaborative research project, and I believe in fostering an inclusive, respectful, and productive environment for all contributors.
 
 ## Code of Conduct
 
-We are committed to providing a welcoming and inclusive environment. All contributors are expected to:
+I'm committed to providing a welcoming and inclusive environment. All contributors are expected to:
 
 - Be respectful and considerate in all interactions
 - Welcome diverse perspectives and experiences
@@ -94,11 +94,11 @@ Key documentation to review:
 
 ## Code Style Guidelines
 
-We follow strict code style guidelines to maintain consistency and readability.
+I follow strict code style guidelines to maintain consistency and readability.
 
 ### Python Style
 
-We use **Black** for code formatting with a line length of 100 characters:
+I use **Black** for code formatting with a line length of 100 characters:
 
 ```bash
 # Format your code before committing
@@ -110,7 +110,7 @@ black --check src/ tests/ experiments/
 
 ### Import Sorting
 
-We use **isort** to organize imports, configured to be compatible with Black:
+I use **isort** to organize imports, configured to be compatible with Black:
 
 ```bash
 # Sort imports
@@ -129,7 +129,7 @@ line_length = 100
 
 ### Linting
 
-We use **flake8** for linting:
+I use **flake8** for linting:
 
 ```bash
 # Run flake8
@@ -141,7 +141,7 @@ flake8 src/ tests/ --select=E9,F63,F7,F82 --show-source
 
 ### Type Hints
 
-We strongly encourage type hints for all functions and methods:
+I strongly encourage type hints for all functions and methods:
 
 ```python
 from typing import Dict, List, Optional, Tuple
@@ -233,7 +233,7 @@ Before submitting code, ensure:
 
 ## Testing Requirements
 
-We maintain high testing standards to ensure code reliability.
+I maintain high testing standards to ensure code reliability.
 
 ### Running Tests
 
@@ -253,7 +253,7 @@ pytest tests/ -k "fusion" -v
 
 ### Coverage Requirements
 
-We aim for **80%+ code coverage** for all core modules:
+I aim for **80%+ code coverage** for all core modules:
 
 ```bash
 # Run tests with coverage
@@ -378,7 +378,7 @@ git commit -m "feat: add cross-modal attention mechanism"
 
 ### Commit Message Conventions
 
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+I follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
 **Format**: `<type>(<scope>): <description>`
 
@@ -776,7 +776,7 @@ When making performance claims:
 
 ## Recognition
 
-We value all contributions! Contributors will be:
+I value all contributions! Contributors will be:
 - Listed in the repository contributors page
 - Acknowledged in release notes for significant contributions
 - Credited in academic citations when appropriate
