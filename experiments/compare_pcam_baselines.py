@@ -205,12 +205,15 @@ def run_evaluation(config_path: str, checkpoint_path: str) -> Dict[str, Any]:
         }
 
 
-def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
+def _record_comparison_to_manifest(
+    comparison: Dict, output_path: Path, manifest_path: str = None
+) -> None:
     """Record comparison run to benchmark manifest.
 
     Args:
         comparison: Comparison results dictionary.
         output_path: Path where comparison results were saved.
+        manifest_path: Optional path to manifest file. Uses default if None.
     """
     if not MANIFEST_AVAILABLE:
         logger.warning("Skipping manifest recording: benchmark_manifest module not available")
@@ -304,8 +307,8 @@ def _record_comparison_to_manifest(comparison: Dict, output_path: Path) -> None:
         status="COMPLETE" if len(successful_variants) == len(comparison["variants"]) else "PARTIAL",
     )
 
-    # Write to manifest
-    manifest = BenchmarkManifest()
+    # Write to manifest (uses default path if not specified)
+    manifest = BenchmarkManifest(manifest_path=manifest_path)
     manifest.add_entry(entry)
 
     logger.info(f"\n✓ Recorded comparison to benchmark manifest")
@@ -321,6 +324,7 @@ def aggregate_results(
     evaluation_results: List[Dict],
     output_path: str,
     record_to_manifest: bool = True,
+    manifest_path: str = None,
 ) -> None:
     """Aggregate and save comparison results.
 
@@ -329,6 +333,7 @@ def aggregate_results(
         evaluation_results: List of evaluation result dictionaries.
         output_path: Path to save aggregated results.
         record_to_manifest: If True, record comparison to benchmark manifest.
+        manifest_path: Optional path to manifest file for recording.
     """
     # Build comparison table
     comparison = {"timestamp": time.strftime("%Y-%m-%d %H:%M:%S"), "variants": []}
@@ -399,7 +404,7 @@ def aggregate_results(
 
     # Record to benchmark manifest if requested
     if record_to_manifest:
-        _record_comparison_to_manifest(comparison, output_path)
+        _record_comparison_to_manifest(comparison, output_path, manifest_path=manifest_path)
 
 
 def main():

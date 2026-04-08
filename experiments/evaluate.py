@@ -94,6 +94,22 @@ class ModelEvaluator:
 
         logger.info(f"Evaluator initialized. Output directory: {self.output_dir}")
 
+    def _get_classification_outputs(
+        self, logits: torch.Tensor
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """Return class predictions and positive-class probabilities when available."""
+        num_classes = self.config.get("num_classes", 2)
+
+        if num_classes == 1:
+            positive_probs = torch.sigmoid(logits.view(-1)).cpu().numpy()
+            preds = (positive_probs > 0.5).astype(int)
+            return preds, positive_probs
+
+        probs = torch.softmax(logits, dim=1).cpu().numpy()
+        preds = torch.argmax(logits, dim=1).cpu().numpy()
+        positive_probs = probs[:, 1] if num_classes == 2 else None
+        return preds, positive_probs
+
     def evaluate(self) -> Dict[str, float]:
         """
         Run complete evaluation pipeline.
@@ -159,13 +175,9 @@ class ModelEvaluator:
                 num_classes = self.config.get("num_classes", 2)
 
                 if task_type == "classification":
-                    if num_classes == 2:
-                        probs = torch.sigmoid(logits).cpu().numpy()
-                        preds = (probs > 0.5).astype(int)
-                    else:
-                        probs = torch.softmax(logits, dim=1).cpu().numpy()
-                        preds = torch.argmax(logits, dim=1).cpu().numpy()
-                    all_probs.extend(probs)
+                    preds, positive_probs = self._get_classification_outputs(logits)
+                    if positive_probs is not None:
+                        all_probs.extend(positive_probs)
                 else:
                     preds = logits.cpu().numpy()
 
@@ -191,12 +203,13 @@ class ModelEvaluator:
             metrics["f1"] = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
 
             # AUC for binary classification
-            if self.config.get("num_classes", 2) == 2 and self.all_probs is not None:
+            if self.config.get("num_classes", 2) in {1, 2} and self.all_probs is not None:
                 metrics["auc"] = roc_auc_score(all_labels, self.all_probs)
 
             # Per-class metrics
             num_classes = self.config.get("num_classes", 2)
-            for i in range(num_classes):
+            per_class_count = 2 if num_classes == 1 else num_classes
+            for i in range(per_class_count):
                 class_mask = all_labels == i
                 if class_mask.sum() > 0:
                     class_acc = (all_preds[class_mask] == i).mean()
@@ -228,7 +241,7 @@ class ModelEvaluator:
 
     def plot_roc_curve(self):
         """Plot ROC curve (binary classification only)."""
-        if self.config.get("num_classes", 2) != 2 or self.all_probs is None:
+        if self.config.get("num_classes", 2) not in {1, 2} or self.all_probs is None:
             return
 
         fpr, tpr, thresholds = roc_curve(self.all_labels, self.all_probs)
@@ -250,7 +263,7 @@ class ModelEvaluator:
 
     def plot_precision_recall_curve(self):
         """Plot precision-recall curve (binary classification only)."""
-        if self.config.get("num_classes", 2) != 2 or self.all_probs is None:
+        if self.config.get("num_classes", 2) not in {1, 2} or self.all_probs is None:
             return
 
         precision, recall, thresholds = precision_recall_curve(self.all_labels, self.all_probs)
@@ -382,10 +395,7 @@ class ModelEvaluator:
                     logits = self.task_head(embeddings)
 
                     # Get predictions
-                    if self.config.get("num_classes", 2) == 2:
-                        preds = (torch.sigmoid(logits) > 0.5).cpu().numpy().astype(int)
-                    else:
-                        preds = torch.argmax(logits, dim=1).cpu().numpy()
+                    preds, _ = self._get_classification_outputs(logits)
 
                     all_preds.extend(preds)
                     all_labels.extend(labels.cpu().numpy())
@@ -431,10 +441,7 @@ class ModelEvaluator:
                     logits = self.task_head(embeddings)
 
                     # Get predictions
-                    if self.config.get("num_classes", 2) == 2:
-                        preds = (torch.sigmoid(logits) > 0.5).cpu().numpy().astype(int)
-                    else:
-                        preds = torch.argmax(logits, dim=1).cpu().numpy()
+                    preds, _ = self._get_classification_outputs(logits)
 
                     all_preds.extend(preds)
                     all_labels.extend(labels.cpu().numpy())
