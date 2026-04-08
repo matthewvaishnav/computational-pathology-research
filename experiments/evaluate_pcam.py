@@ -29,6 +29,8 @@ from tqdm import tqdm
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from typing import Any, Dict, Optional
+
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -41,19 +43,17 @@ from experiments.generate_pcam_interpretability import (
     generate_pcam_interpretability_artifacts as build_pcam_interpretability_artifacts,
 )
 
-from typing import Optional, Dict, Any
-
 try:
-    import seaborn as sns
     import matplotlib.pyplot as plt
+    import seaborn as sns
 
     PLOT_AVAILABLE = True
 except ImportError:
     PLOT_AVAILABLE = False
 
 from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
-from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.encoders import WSIEncoder
+from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.heads import ClassificationHead
 
 # Configure logging

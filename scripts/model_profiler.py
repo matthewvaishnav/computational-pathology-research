@@ -30,7 +30,7 @@ from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
-from torch.profiler import profile, record_function, ProfilerActivity
+from torch.profiler import ProfilerActivity, profile, record_function
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
