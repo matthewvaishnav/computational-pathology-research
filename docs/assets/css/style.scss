@@ -3,70 +3,344 @@
 
 @import "{{ site.theme }}";
 
-/* Custom styles */
+/* Harvard-inspired academic styling */
+
+/* Typography */
+body {
+  font-family: 'Crimson Text', 'Georgia', 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #2c2c2c;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  padding: 60px 0 40px;
+  border-bottom: 3px solid #A51C30;
+  margin-bottom: 40px;
+}
+
+.hero-title {
+  font-size: 2.8em;
+  font-weight: 800;
+  margin-bottom: 15px;
+  color: #A51C30;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.3em;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 20px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-author {
+  font-size: 1.1em;
+  color: #777;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Badges */
+.badges {
+  text-align: center;
+  margin: 30px 0;
+  
+  img {
+    margin: 0 5px;
+    vertical-align: middle;
+  }
+}
+
+/* Feature Grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin: 40px 0;
+}
+
+.feature-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 25px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    border-color: #A51C30;
+  }
+  
+  h3 {
+    font-size: 1.3em;
+    margin-bottom: 12px;
+    color: #A51C30;
+  }
+  
+  p {
+    font-size: 0.95em;
+    line-height: 1.6;
+    color: #555;
+    margin: 0;
+  }
+}
+
+/* Callouts */
+.callout {
+  padding: 20px 25px;
+  border-left: 5px solid #A51C30;
+  background: #fef8f8;
+  margin: 30px 0;
+  border-radius: 4px;
+  
+  strong {
+    color: #A51C30;
+    font-weight: 700;
+  }
+}
+
+.callout-warning {
+  border-left-color: #d97706;
+  background: #fffbeb;
+  
+  strong {
+    color: #d97706;
+  }
+}
+
+/* Code Blocks */
+code {
+  background: #f5f5f5;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  color: #c7254e;
+}
+
+pre {
+  background: #2d2d2d;
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  
+  code {
+    background: none;
+    padding: 0;
+    color: #f8f8f2;
+    font-size: 0.85em;
+  }
+}
+
+/* Documentation Links */
+.doc-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.doc-link {
+  display: block;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #A51C30 0%, #8B1628 100%);
+  color: white !important;
+  text-decoration: none;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(165, 28, 48, 0.3);
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(165, 28, 48, 0.4);
+    background: linear-gradient(135deg, #8B1628 0%, #A51C30 100%);
+  }
+}
+
+/* Footer Note */
+.footer-note {
+  margin-top: 60px;
+  padding-top: 30px;
+  border-top: 2px solid #e0e0e0;
+  text-align: center;
+  color: #777;
+  font-size: 0.95em;
+  
+  p {
+    margin: 10px 0;
+  }
+  
+  em {
+    font-style: italic;
+    color: #999;
+  }
+}
+
+/* Header Navigation */
 header {
   nav ul {
     list-style: none;
     padding: 0;
-    margin: 20px 0;
+    margin: 25px 0;
     
     li {
-      margin: 5px 0;
+      margin: 8px 0;
       
       a {
         display: block;
-        padding: 8px 12px;
-        background: #f4f4f4;
+        padding: 12px 16px;
+        background: #f8f8f8;
+        border-left: 4px solid #A51C30;
         border-radius: 4px;
         text-decoration: none;
         color: #333;
-        transition: background 0.2s;
+        font-weight: 600;
+        transition: all 0.2s ease;
         
         &:hover {
-          background: #e8e8e8;
+          background: #A51C30;
+          color: white;
+          padding-left: 24px;
         }
       }
     }
   }
 }
 
+/* Section Styling */
 section {
-  h1, h2, h3 {
-    color: #222;
+  max-width: 900px;
+  margin: 0 auto;
+  
+  h1 {
+    font-size: 2.5em;
+    margin-top: 50px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #A51C30;
   }
   
-  code {
-    background: #f4f4f4;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 90%;
+  h2 {
+    font-size: 2em;
+    margin-top: 45px;
+    margin-bottom: 20px;
+    color: #A51C30;
   }
   
-  pre {
-    background: #f4f4f4;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 15px;
-    overflow-x: auto;
-    
-    code {
-      background: none;
-      padding: 0;
-    }
+  h3 {
+    font-size: 1.5em;
+    margin-top: 30px;
+    margin-bottom: 15px;
   }
   
-  .badges {
+  p {
     margin: 20px 0;
+    text-align: justify;
+  }
+  
+  ul, ol {
+    margin: 20px 0;
+    padding-left: 30px;
     
-    img {
-      margin-right: 5px;
+    li {
+      margin: 10px 0;
+      line-height: 1.7;
     }
   }
   
   blockquote {
-    border-left: 4px solid #0366d6;
-    padding-left: 15px;
-    color: #666;
+    border-left: 5px solid #A51C30;
+    padding-left: 20px;
+    margin: 30px 0;
+    color: #555;
     font-style: italic;
+    background: #fef8f8;
+    padding: 20px 20px 20px 25px;
+    border-radius: 4px;
+  }
+  
+  hr {
+    border: none;
+    border-top: 2px solid #e0e0e0;
+    margin: 50px 0;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 30px 0;
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    th {
+      background: #A51C30;
+      color: white;
+      font-weight: 700;
+    }
+    
+    tr:hover {
+      background: #f9f9f9;
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2em;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1em;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .doc-links {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .hero {
+    border-bottom: 2px solid #000;
+  }
+  
+  .feature-card {
+    break-inside: avoid;
+  }
+  
+  pre {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    
+    code {
+      color: #000;
+    }
   }
 }
