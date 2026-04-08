@@ -1,0 +1,34 @@
+title: Computational Pathology Research Framework
+description: A tested PyTorch framework for computational pathology research with working benchmarks on PatchCamelyon and CAMELYON16
+theme: jekyll-theme-minimal
+logo: /assets/logo.png
+show_downloads: true
+github:
+  repository_url: https://github.com/matthewvaishnav/computational-pathology-research
+  is_project_page: true
+  owner_name: Matthew Vaishnav
+  owner_url: https://github.com/matthewvaishnav
+
+# Navigation
+navigation:
+  - title: Home
+    url: /
+  - title: Documentation
+    url: /DOCS_INDEX.html
+  - title: GitHub
+    url: https://github.com/matthewvaishnav/computational-pathology-research
+
+# Plugins
+plugins:
+  - jekyll-relative-links
+
+# Relative links configuration
+relative_links:
+  enabled: true
+  collections: true
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
