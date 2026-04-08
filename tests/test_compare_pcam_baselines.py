@@ -273,7 +273,9 @@ def test_aggregate_results_uses_config_output_dir(tmp_path, mock_config):
     output_path = tmp_path / "comparison_results.json"
 
     # Run aggregation (disable manifest recording to prevent test pollution)
-    aggregate_results(training_results, evaluation_results, str(output_path), record_to_manifest=False)
+    aggregate_results(
+        training_results, evaluation_results, str(output_path), record_to_manifest=False
+    )
 
     # Load and verify results
     with open(output_path, "r") as f:
@@ -338,7 +340,9 @@ def test_aggregate_results_with_multiple_variants(tmp_path):
     output_path = tmp_path / "comparison_results.json"
 
     # Run aggregation (disable manifest recording to prevent test pollution)
-    aggregate_results(training_results, evaluation_results, str(output_path), record_to_manifest=False)
+    aggregate_results(
+        training_results, evaluation_results, str(output_path), record_to_manifest=False
+    )
 
     # Load and verify results
     with open(output_path, "r") as f:
@@ -426,11 +430,11 @@ def test_manifest_recording(tmp_path, mock_config):
         # Record to manifest
         _record_comparison_to_manifest(comparison, output_path)
 
-        # Verify manifest.add_entry was called
-        assert mock_manifest.add_entry.called
+        # Verify manifest.update_or_add_entry was called
+        assert mock_manifest.update_or_add_entry.called
 
         # Get the entry that was added
-        entry = mock_manifest.add_entry.call_args[0][0]
+        entry = mock_manifest.update_or_add_entry.call_args[0][0]
 
         # Verify entry structure
         assert "pcam_comparison" in entry.experiment_name
@@ -514,7 +518,7 @@ def test_manifest_recording_partial_success(tmp_path, mock_config):
         _record_comparison_to_manifest(comparison, output_path)
 
         # Get the entry
-        entry = mock_manifest.add_entry.call_args[0][0]
+        entry = mock_manifest.update_or_add_entry.call_args[0][0]
 
         # Verify partial success status
         assert entry.status == "PARTIAL"
@@ -603,11 +607,11 @@ def test_manifest_recording_with_missing_metrics(tmp_path, mock_config):
         # Record to manifest - should not crash
         _record_comparison_to_manifest(comparison, output_path)
 
-        # Verify manifest.add_entry was called
-        assert mock_manifest.add_entry.called
+        # Verify manifest.update_or_add_entry was called
+        assert mock_manifest.update_or_add_entry.called
 
         # Get the entry
-        entry = mock_manifest.add_entry.call_args[0][0]
+        entry = mock_manifest.update_or_add_entry.call_args[0][0]
 
         # Verify entry was created with None metrics
         assert entry.final_metrics["best_accuracy"] is None
@@ -667,7 +671,7 @@ def test_manifest_recording_uses_relative_paths(tmp_path, mock_config):
         _record_comparison_to_manifest(comparison, output_path)
 
         # Get the entry
-        entry = mock_manifest.add_entry.call_args[0][0]
+        entry = mock_manifest.update_or_add_entry.call_args[0][0]
 
         # Verify comparison_results path is relative, not absolute
         comparison_results_path = entry.artifact_paths["comparison_results"]

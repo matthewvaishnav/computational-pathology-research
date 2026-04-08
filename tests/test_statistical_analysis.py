@@ -28,9 +28,7 @@ def temp_multimodal_cv_data():
         samples = []
         for i in range(6):
             with h5py.File(data_dir / "wsi_features" / f"patient_{i}_wsi.h5", "w") as f:
-                f.create_dataset(
-                    "features", data=np.random.randn(5 + i, 512).astype(np.float32)
-                )
+                f.create_dataset("features", data=np.random.randn(5 + i, 512).astype(np.float32))
 
             np.save(
                 data_dir / "genomic" / f"patient_{i}_genomic.npy",
@@ -202,6 +200,7 @@ def test_run_cross_validation_supports_logits_returning_wrapper(temp_multimodal_
 
 def test_ablation_study_supports_logits_returning_wrapper():
     """AblationStudy should handle wrapper models that already return logits."""
+
     class TinyLogitWrapper(torch.nn.Module):
         def __init__(self):
             super().__init__()
