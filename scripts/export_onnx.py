@@ -39,7 +39,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.models.heads import ClassificationHead, SurvivalPredictionHead
 from src.models.multimodal import MultimodalFusionModel
 
-
 DEFAULT_WSI_NUM_PATCHES = 100
 
 
@@ -168,7 +167,9 @@ class ONNXExporter:
             return checkpoint["state_dict"]
         return checkpoint
 
-    def _extract_config_from_checkpoint(self, checkpoint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_config_from_checkpoint(
+        self, checkpoint: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         raw_config = checkpoint.get("config")
         if not isinstance(raw_config, dict):
             return None
@@ -179,7 +180,13 @@ class ONNXExporter:
 
         if any(
             key in model_config
-            for key in ("wsi_config", "genomic_config", "clinical_config", "fusion_config", "embed_dim")
+            for key in (
+                "wsi_config",
+                "genomic_config",
+                "clinical_config",
+                "fusion_config",
+                "embed_dim",
+            )
         ):
             return model_config
 
@@ -200,12 +207,16 @@ class ONNXExporter:
         genomic_linear_keys = sorted(
             key
             for key, value in state_dict.items()
-            if key.startswith("genomic_encoder.mlp.") and key.endswith(".weight") and value.dim() == 2
+            if key.startswith("genomic_encoder.mlp.")
+            and key.endswith(".weight")
+            and value.dim() == 2
         )
         if genomic_linear_keys:
             genomic_weights = [state_dict[key] for key in genomic_linear_keys]
             config["genomic_config"]["input_dim"] = genomic_weights[0].shape[1]
-            config["genomic_config"]["hidden_dims"] = [weight.shape[0] for weight in genomic_weights[:-1]]
+            config["genomic_config"]["hidden_dims"] = [
+                weight.shape[0] for weight in genomic_weights[:-1]
+            ]
             config["genomic_config"]["output_dim"] = genomic_weights[-1].shape[0]
             config["embed_dim"] = genomic_weights[-1].shape[0]
 
@@ -298,7 +309,9 @@ class ONNXExporter:
             return None
 
         if any(key.startswith("classifier.") for key in state_dict):
-            use_hidden_layer = "classifier.0.weight" in state_dict and "classifier.4.weight" in state_dict
+            use_hidden_layer = (
+                "classifier.0.weight" in state_dict and "classifier.4.weight" in state_dict
+            )
             if use_hidden_layer:
                 hidden_dim = state_dict["classifier.0.weight"].shape[0]
                 num_classes = state_dict["classifier.4.weight"].shape[0]
@@ -306,7 +319,9 @@ class ONNXExporter:
                 linear_keys = sorted(
                     key
                     for key, value in state_dict.items()
-                    if key.startswith("classifier.") and key.endswith(".weight") and value.dim() == 2
+                    if key.startswith("classifier.")
+                    and key.endswith(".weight")
+                    and value.dim() == 2
                 )
                 final_key = linear_keys[-1]
                 hidden_dim = embed_dim
@@ -322,7 +337,9 @@ class ONNXExporter:
             return head
 
         if any(key.startswith("predictor.") for key in state_dict):
-            use_hidden_layer = "predictor.0.weight" in state_dict and "predictor.4.weight" in state_dict
+            use_hidden_layer = (
+                "predictor.0.weight" in state_dict and "predictor.4.weight" in state_dict
+            )
             if use_hidden_layer:
                 hidden_dim = state_dict["predictor.0.weight"].shape[0]
                 output_dim = state_dict["predictor.4.weight"].shape[0]
@@ -372,8 +389,12 @@ class ONNXExporter:
         if self.model_config is None:
             raise RuntimeError("Model must be loaded before creating dummy inputs")
 
-        clinical_seq_len = self.clinical_seq_len or self.model_config["clinical_config"]["max_seq_length"]
-        clinical_seq_len = min(clinical_seq_len, self.model_config["clinical_config"]["max_seq_length"])
+        clinical_seq_len = (
+            self.clinical_seq_len or self.model_config["clinical_config"]["max_seq_length"]
+        )
+        clinical_seq_len = min(
+            clinical_seq_len, self.model_config["clinical_config"]["max_seq_length"]
+        )
 
         wsi_features = torch.randn(
             self.batch_size,
@@ -449,7 +470,9 @@ class ONNXExporter:
 
             onnx_model = onnx.load(str(self.output_path))
             hidden_size = self.model_config["embed_dim"] if self.model_config is not None else 256
-            num_heads = self.model_config["fusion_config"].get("num_heads", 8) if self.model_config else 8
+            num_heads = (
+                self.model_config["fusion_config"].get("num_heads", 8) if self.model_config else 8
+            )
 
             optimized_model = optimizer.optimize_model(
                 str(self.output_path),
@@ -479,7 +502,9 @@ class ONNXExporter:
             self._log("ONNX model is valid")
 
             ort_session = ort.InferenceSession(str(self.output_path))
-            wsi_features, wsi_mask, genomic, clinical_text, clinical_mask = self.create_dummy_inputs()
+            wsi_features, wsi_mask, genomic, clinical_text, clinical_mask = (
+                self.create_dummy_inputs()
+            )
 
             outputs = ort_session.run(
                 None,
