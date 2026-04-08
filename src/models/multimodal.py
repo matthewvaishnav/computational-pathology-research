@@ -177,6 +177,12 @@ class MultimodalFusionModel(nn.Module):
             modality_embeddings["clinical"] = None
             modality_masks["clinical"] = torch.zeros(batch_size, dtype=torch.bool, device=device)
 
+        if all(embedding is None for embedding in modality_embeddings.values()):
+            fused_embedding = torch.zeros(batch_size, self.embed_dim, device=device)
+            if return_modality_embeddings:
+                return fused_embedding, modality_embeddings
+            return fused_embedding
+
         # Fuse modalities
         fused_embedding = self.fusion_layer(modality_embeddings, modality_masks)
 
@@ -190,6 +196,11 @@ class MultimodalFusionModel(nn.Module):
         for key in ["wsi_features", "genomic", "clinical_text"]:
             if batch.get(key) is not None:
                 return batch[key].shape[0]
+        for key in ["wsi_mask", "genomic_mask", "clinical_mask"]:
+            if batch.get(key) is not None:
+                return batch[key].shape[0]
+        if batch.get("patient_ids") is not None:
+            return len(batch["patient_ids"])
         raise ValueError("At least one modality must be provided")
 
     def get_embedding_dim(self) -> int:

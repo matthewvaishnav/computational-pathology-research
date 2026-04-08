@@ -55,7 +55,12 @@ class MetricsComputer:
     metrics like accuracy, AUC, F1, precision, and recall.
     """
 
-    def __init__(self, num_classes: int, task_type: str = "classification"):
+    def __init__(
+        self,
+        num_classes: int,
+        task_type: str = "classification",
+        binary_single_logit: bool = False,
+    ):
         """
         Initialize metrics computer.
 
@@ -65,6 +70,7 @@ class MetricsComputer:
         """
         self.num_classes = num_classes
         self.task_type = task_type
+        self.binary_single_logit = binary_single_logit
         self.reset()
 
     def reset(self):
@@ -84,11 +90,16 @@ class MetricsComputer:
             labels: Ground truth labels [batch_size]
             loss: Batch loss value
         """
-        probs = torch.softmax(logits, dim=1)
-        preds = torch.argmax(logits, dim=1)
+        if self.binary_single_logit:
+            positive_probs = torch.sigmoid(logits.view(-1))
+            probs = torch.stack([1.0 - positive_probs, positive_probs], dim=1)
+            preds = (positive_probs >= 0.5).long()
+        else:
+            probs = torch.softmax(logits, dim=1)
+            preds = torch.argmax(logits, dim=1)
 
-        self.all_preds.extend(preds.cpu().numpy())
-        self.all_probs.extend(probs.cpu().numpy())
+        self.all_preds.extend(preds.detach().cpu().numpy())
+        self.all_probs.extend(probs.detach().cpu().numpy())
         self.all_labels.extend(labels.cpu().numpy())
 
         batch_size = labels.size(0)
@@ -115,7 +126,7 @@ class MetricsComputer:
         }
 
         # Binary classification metrics
-        if self.num_classes == 2:
+        if self.binary_single_logit or self.num_classes == 2:
             try:
                 metrics["auc"] = roc_auc_score(labels, probs[:, 1])
                 metrics["average_precision"] = average_precision_score(labels, probs[:, 1])
@@ -204,6 +215,8 @@ class SupervisedTrainer:
         self.model = model.to(device)
         self.task_head = task_head.to(device)
         self.num_classes = num_classes
+        self.binary_single_logit = getattr(task_head, "num_classes", num_classes) == 1
+        self.metrics_num_classes = 2 if self.binary_single_logit else num_classes
         self.device = device
         self.use_amp = use_amp and torch.cuda.is_available()
         self.amp_device_type = _get_amp_device_type(device)
@@ -217,11 +230,17 @@ class SupervisedTrainer:
         )
 
         # Loss function
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = (
+            nn.BCEWithLogitsLoss() if self.binary_single_logit else nn.CrossEntropyLoss()
+        )
 
         # Metrics
-        self.train_metrics = MetricsComputer(num_classes)
-        self.val_metrics = MetricsComputer(num_classes)
+        self.train_metrics = MetricsComputer(
+            self.metrics_num_classes, binary_single_logit=self.binary_single_logit
+        )
+        self.val_metrics = MetricsComputer(
+            self.metrics_num_classes, binary_single_logit=self.binary_single_logit
+        )
 
         # AMP scaler
         self.scaler = (
@@ -275,7 +294,7 @@ class SupervisedTrainer:
             with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
-                loss = self.criterion(logits, labels)
+                loss = self._compute_loss(logits, labels)
 
             # Backward pass
             if self.use_amp:
@@ -328,11 +347,17 @@ class SupervisedTrainer:
             with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
-                loss = self.criterion(logits, labels)
+                loss = self._compute_loss(logits, labels)
 
             self.val_metrics.update(logits, labels, loss.item())
 
         return self.val_metrics.compute()
+
+    def _compute_loss(self, logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        """Compute task loss, including single-logit binary classification."""
+        if self.binary_single_logit:
+            return self.criterion(logits.view(-1), labels.float())
+        return self.criterion(logits, labels)
 
     def _move_to_device(self, batch: Dict[str, Any]) -> Dict[str, Any]:
         """Move batch tensors to device."""
@@ -504,7 +529,9 @@ class SupervisedTrainer:
         self.model.eval()
         self.task_head.eval()
 
-        test_metrics = MetricsComputer(self.num_classes)
+        test_metrics = MetricsComputer(
+            self.metrics_num_classes, binary_single_logit=self.binary_single_logit
+        )
 
         for batch in test_loader:
             batch = self._move_to_device(batch)
@@ -513,7 +540,7 @@ class SupervisedTrainer:
             with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
-                loss = self.criterion(logits, labels)
+                loss = self._compute_loss(logits, labels)
 
             test_metrics.update(logits, labels, loss.item())
 

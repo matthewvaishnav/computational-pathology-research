@@ -20,7 +20,8 @@ from src.data.loaders import (
     collate_multimodal,
     collate_temporal,
 )
-from src.models import MultimodalFusionModel
+from src.models import ClassificationHead, MultimodalFusionModel
+from src.training import SupervisedTrainer
 
 
 @pytest.fixture
@@ -349,6 +350,105 @@ def test_collate_multimodal_contract_with_model(temp_data_dir):
         fused = model(model_batch)
 
     assert fused.shape == (2, 32)
+    assert torch.isfinite(fused).all()
+
+
+def test_supervised_trainer_validation_stays_finite_with_fully_missing_sample(temp_data_dir):
+    """Regression test: validation loss should stay finite with fully missing samples."""
+    config = DictConfig(
+        {
+            "wsi_enabled": True,
+            "genomic_enabled": True,
+            "clinical_text_enabled": True,
+            "max_text_length": 100,
+        }
+    )
+
+    dataset = MultimodalDataset(temp_data_dir, "train", config)
+    loader = torch.utils.data.DataLoader(
+        dataset, batch_size=2, shuffle=False, collate_fn=collate_multimodal
+    )
+
+    model = MultimodalFusionModel(
+        wsi_config={
+            "input_dim": 512,
+            "hidden_dim": 64,
+            "output_dim": 32,
+            "num_heads": 4,
+            "num_layers": 1,
+        },
+        genomic_config={
+            "input_dim": 1000,
+            "hidden_dims": [128],
+            "output_dim": 32,
+            "dropout": 0.1,
+            "use_batch_norm": True,
+        },
+        clinical_config={
+            "vocab_size": 1000,
+            "embed_dim": 32,
+            "hidden_dim": 64,
+            "output_dim": 32,
+            "num_heads": 4,
+            "num_layers": 1,
+            "max_seq_length": 100,
+            "dropout": 0.1,
+            "pooling": "mean",
+        },
+        fusion_config={
+            "embed_dim": 32,
+            "num_heads": 4,
+            "dropout": 0.1,
+            "modalities": ["wsi", "genomic", "clinical"],
+        },
+        embed_dim=32,
+    )
+    task_head = ClassificationHead(input_dim=32, num_classes=2)
+    trainer = SupervisedTrainer(
+        model=model,
+        task_head=task_head,
+        num_classes=2,
+        device="cpu",
+        checkpoint_dir=None,
+        log_dir=None,
+    )
+
+    metrics = trainer._validate(loader)
+
+    assert metrics["loss"] == pytest.approx(metrics["loss"], nan_ok=False)
+    assert torch.isfinite(torch.tensor(metrics["loss"]))
+
+
+def test_collate_multimodal_all_missing_batch_returns_zero_embeddings():
+    """All-missing batches should still produce a finite zero embedding batch."""
+    batch = [
+        {
+            "patient_id": "patient_001",
+            "label": torch.tensor(1),
+            "timestamp": None,
+            "wsi_features": None,
+            "genomic": None,
+            "clinical_text": None,
+        },
+        {
+            "patient_id": "patient_002",
+            "label": torch.tensor(0),
+            "timestamp": None,
+            "wsi_features": None,
+            "genomic": None,
+            "clinical_text": None,
+        },
+    ]
+
+    collated = collate_multimodal(batch)
+    model = MultimodalFusionModel(embed_dim=32)
+
+    with torch.no_grad():
+        fused = model({k: v for k, v in collated.items() if k != "label"})
+
+    assert fused.shape == (2, 32)
+    assert torch.isfinite(fused).all()
+    assert torch.count_nonzero(fused) == 0
 
 
 def test_collate_temporal(temp_temporal_data_dir):
