@@ -5,6 +5,14 @@ This script loads a checkpoint from train_camelyon.py and evaluates the model
 on the test set, computing slide-level metrics including accuracy, AUC,
 precision, recall, F1, and generating confusion matrix and ROC curve plots.
 
+The evaluation operates at the slide level, loading complete slides with all
+their patches and using the same aggregation method (mean/max pooling) as
+training. This ensures consistency between training and evaluation.
+
+IMPORTANT: This script is compatible with slide-level checkpoints that use
+pre-extracted HDF5 features. The aggregation method is loaded from the
+checkpoint configuration.
+
 Example usage:
     python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth
     python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --batch-size 32
@@ -44,7 +52,12 @@ try:
 except ImportError:
     PLOT_AVAILABLE = False
 
-from src.data.camelyon_dataset import CAMELYONPatchDataset, CAMELYONSlideIndex
+from src.data.camelyon_dataset import (
+    CAMELYONPatchDataset,
+    CAMELYONSlideDataset,
+    CAMELYONSlideIndex,
+    collate_slide_bags,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -92,12 +105,13 @@ def load_checkpoint(
         hidden_dim = config["model"]["wsi"]["hidden_dim"]
         num_classes = config["task"]["num_classes"]
         dropout = config["task"]["classification"]["dropout"]
+        aggregation = config.get("model", {}).get("wsi", {}).get("aggregation", "mean")
 
         model = SimpleSlideClassifier(
             feature_dim=feature_dim,
             hidden_dim=hidden_dim,
             num_classes=num_classes,
-            pooling="mean",
+            pooling=aggregation,
             dropout=dropout,
         )
 
@@ -182,9 +196,10 @@ def evaluate_slide_level(
 
             # Add batch dimension: [num_patches, feature_dim] -> [1, num_patches, feature_dim]
             features = features.unsqueeze(0).to(device)
+            num_patches = torch.tensor([features.shape[1]], dtype=torch.long).to(device)
 
-            # Forward pass
-            logits = model(features).squeeze()  # [1]
+            # Forward pass with num_patches for masked aggregation
+            logits = model(features, num_patches).squeeze()  # [1]
 
             # Get prediction
             prob = torch.sigmoid(logits).item()

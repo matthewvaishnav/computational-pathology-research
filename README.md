@@ -581,7 +581,30 @@ python experiments/train_camelyon.py \
 # Full training (50 epochs)
 python experiments/train_camelyon.py \
   --config experiments/configs/camelyon.yaml
+
+# Evaluation
+python experiments/evaluate_camelyon.py \
+  --checkpoint checkpoints/camelyon/best_model.pth \
+  --data-root data/camelyon \
+  --output-dir results/camelyon
 ```
+
+**Data Requirements:**
+- Slide index JSON at `data/camelyon/slide_index.json`
+- Pre-extracted HDF5 features at `data/camelyon/features/`
+- Each HDF5 file contains `features` [num_patches, feature_dim] and `coordinates` [num_patches, 2]
+
+**Aggregation Methods:**
+- **Mean Pooling**: Average patch features across the slide (default)
+- **Max Pooling**: Take maximum activation across patches
+
+Configure via `model.wsi.aggregation` in the YAML config.
+
+**Limitations:**
+- This is a feature-cache baseline using pre-extracted features
+- Does not perform on-the-fly patch extraction from raw WSI files
+- Requires pre-processing step to generate HDF5 feature caches
+- Simple mean/max pooling aggregation (no attention mechanism)
 
 See [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.md) for complete status and usage details.
 
