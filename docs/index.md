@@ -34,22 +34,22 @@ The codebase emphasizes research reproducibility with comprehensive unit testing
 
 <div class="features-grid">
   <div class="feature-card">
-    <h3>🔬 Benchmark Implementations</h3>
+    <h3>Benchmark Implementations</h3>
     <p>Complete training and evaluation pipelines for PatchCamelyon (94% accuracy) and CAMELYON16 slide-level classification with mean/max pooling aggregation.</p>
   </div>
   
   <div class="feature-card">
-    <h3>🧠 Pretrained Models</h3>
+    <h3>Pretrained Models</h3>
     <p>Seamless integration with 1000+ pretrained models from torchvision and timm, with automatic feature extraction and dimension detection.</p>
   </div>
   
   <div class="feature-card">
-    <h3>📊 Analysis Tools</h3>
+    <h3>Analysis Tools</h3>
     <p>Model profiling, ONNX export, slide-level prediction CSV generation, and comprehensive visualization utilities for research publication.</p>
   </div>
   
   <div class="feature-card">
-    <h3>✅ Tested & Documented</h3>
+    <h3>Tested and Documented</h3>
     <p>62% code coverage with 500+ unit tests, extensive documentation, and reproducible experiment configurations.</p>
   </div>
 </div>
@@ -177,11 +177,11 @@ python scripts/export_onnx.py \
 ## Documentation
 
 <div class="doc-links">
-  <a href="DOCS_INDEX.html" class="doc-link">📚 Documentation Index</a>
-  <a href="PCAM_BENCHMARK_RESULTS.html" class="doc-link">📊 PCam Results</a>
-  <a href="CAMELYON_TRAINING_STATUS.html" class="doc-link">🔬 CAMELYON Guide</a>
-  <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
-  <a href="DOCKER.html" class="doc-link">🐳 Docker Deployment</a>
+  <a href="DOCS_INDEX.html" class="doc-link">Documentation Index</a>
+  <a href="PCAM_BENCHMARK_RESULTS.html" class="doc-link">PCam Results</a>
+  <a href="CAMELYON_TRAINING_STATUS.html" class="doc-link">CAMELYON Guide</a>
+  <a href="ARCHITECTURE.html" class="doc-link">Architecture</a>
+  <a href="DOCKER.html" class="doc-link">Docker Deployment</a>
 </div>
 
 ---
