@@ -2,6 +2,11 @@
 Quick demo with minimal training - proves the architecture works fast.
 """
 import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
