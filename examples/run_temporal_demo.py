@@ -3,6 +3,11 @@ Demo testing temporal reasoning across multiple slides.
 Tests the CrossSlideTemporalReasoner for disease progression modeling.
 """
 import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
