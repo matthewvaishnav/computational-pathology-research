@@ -383,17 +383,17 @@ class SlideAggregator:
 
 class CAMELYONSlideDataset(Dataset):
     """Dataset that returns complete slides with all patch features.
-    
+
     This dataset loads all patches for a slide from HDF5 feature files,
     enabling true slide-level training where each sample represents a
     complete whole-slide image with all its patches.
-    
+
     Args:
         slide_index: CAMELYONSlideIndex with slide metadata
         features_dir: Directory containing HDF5 feature files
         split: Which split to load ('train', 'val', 'test')
         transform: Optional transform for features
-        
+
     Returns:
         Dictionary containing:
             - 'slide_id': str
@@ -402,7 +402,7 @@ class CAMELYONSlideDataset(Dataset):
             - 'features': Tensor [num_patches, feature_dim]
             - 'coordinates': Tensor [num_patches, 2]
             - 'num_patches': int
-            
+
     Example:
         >>> index = CAMELYONSlideIndex.load('data/camelyon16/slide_index.json')
         >>> dataset = CAMELYONSlideDataset(
@@ -414,7 +414,7 @@ class CAMELYONSlideDataset(Dataset):
         >>> print(sample['features'].shape)  # [num_patches, feature_dim]
         >>> print(sample['num_patches'])  # Number of patches in this slide
     """
-    
+
     def __init__(
         self,
         slide_index: CAMELYONSlideIndex,
@@ -426,10 +426,10 @@ class CAMELYONSlideDataset(Dataset):
         self.features_dir = Path(features_dir)
         self.split = split
         self.transform = transform
-        
+
         # Get slides for this split
         self.slides = slide_index.get_slides_by_split(split)
-        
+
         # Validate feature files exist
         self.valid_slides = []
         for slide in self.slides:
@@ -438,34 +438,32 @@ class CAMELYONSlideDataset(Dataset):
                 self.valid_slides.append(slide)
             else:
                 logger.warning(f"Feature file not found: {feature_file}")
-        
+
         if len(self.valid_slides) == 0:
             raise ValueError(
                 f"No valid feature files found in {self.features_dir} for {split} split. "
                 f"Please ensure HDF5 feature files exist for the slides in the index."
             )
-        
-        logger.info(
-            f"Loaded {len(self.valid_slides)} slides for {split} split"
-        )
-    
+
+        logger.info(f"Loaded {len(self.valid_slides)} slides for {split} split")
+
     def __len__(self) -> int:
         """Return number of slides."""
         return len(self.valid_slides)
-    
+
     def __getitem__(self, idx: int) -> Dict[str, Union[torch.Tensor, str, int]]:
         """Get all patches for a single slide."""
         slide = self.valid_slides[idx]
         feature_file = self.features_dir / f"{slide.slide_id}.h5"
-        
+
         try:
             with h5py.File(feature_file, "r") as f:
                 if "features" not in f or "coordinates" not in f:
                     raise KeyError(f"HDF5 file missing required datasets: {feature_file}")
-                
+
                 features = torch.tensor(f["features"][:], dtype=torch.float32)
                 coordinates = torch.tensor(f["coordinates"][:], dtype=torch.int32)
-                
+
                 if features.shape[0] != coordinates.shape[0]:
                     raise ValueError(
                         f"Mismatched patch counts in {feature_file}: "
@@ -474,10 +472,10 @@ class CAMELYONSlideDataset(Dataset):
         except Exception as e:
             logger.error(f"Error loading slide {slide.slide_id}: {e}")
             raise
-        
+
         if self.transform:
             features = self.transform(features)
-        
+
         return {
             "slide_id": slide.slide_id,
             "patient_id": slide.patient_id,
@@ -661,12 +659,12 @@ class CAMELYONPatchDataset(Dataset):
 
 def collate_slide_bags(batch: List[Dict]) -> Dict[str, Union[torch.Tensor, List]]:
     """Collate function for variable-length slide bags.
-    
+
     Pads all slides to the maximum number of patches in the batch.
-    
+
     Args:
         batch: List of samples from CAMELYONSlideDataset
-        
+
     Returns:
         Dictionary containing:
             - 'features': Tensor [batch_size, max_patches, feature_dim]
@@ -683,20 +681,20 @@ def collate_slide_bags(batch: List[Dict]) -> Dict[str, Union[torch.Tensor, List]
     num_patches = torch.tensor([item["num_patches"] for item in batch], dtype=torch.long)
     slide_ids = [item["slide_id"] for item in batch]
     patient_ids = [item["patient_id"] for item in batch]
-    
+
     # Pad to max length
     max_patches = max(f.shape[0] for f in features_list)
     feature_dim = features_list[0].shape[1]
     batch_size = len(batch)
-    
+
     padded_features = torch.zeros(batch_size, max_patches, feature_dim)
     padded_coordinates = torch.zeros(batch_size, max_patches, 2, dtype=torch.int32)
-    
+
     for i, (features, coordinates) in enumerate(zip(features_list, coordinates_list)):
         n_patches = features.shape[0]
         padded_features[i, :n_patches, :] = features
         padded_coordinates[i, :n_patches, :] = coordinates
-    
+
     return {
         "features": padded_features,
         "coordinates": padded_coordinates,
