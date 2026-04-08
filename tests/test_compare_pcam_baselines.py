@@ -272,8 +272,8 @@ def test_aggregate_results_uses_config_output_dir(tmp_path, mock_config):
 
     output_path = tmp_path / "comparison_results.json"
 
-    # Run aggregation
-    aggregate_results(training_results, evaluation_results, str(output_path))
+    # Run aggregation (disable manifest recording to prevent test pollution)
+    aggregate_results(training_results, evaluation_results, str(output_path), record_to_manifest=False)
 
     # Load and verify results
     with open(output_path, "r") as f:
@@ -337,8 +337,8 @@ def test_aggregate_results_with_multiple_variants(tmp_path):
 
     output_path = tmp_path / "comparison_results.json"
 
-    # Run aggregation
-    aggregate_results(training_results, evaluation_results, str(output_path))
+    # Run aggregation (disable manifest recording to prevent test pollution)
+    aggregate_results(training_results, evaluation_results, str(output_path), record_to_manifest=False)
 
     # Load and verify results
     with open(output_path, "r") as f:

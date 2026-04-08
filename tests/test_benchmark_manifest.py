@@ -517,3 +517,55 @@ class TestManifestEdgeCases:
         assert len(entries) == 1
         assert entries[0].experiment_name == "test_日本語"
         assert entries[0].dataset_name == "Dataset with 🎉 emoji"
+
+
+class TestManifestIsolation:
+    """Regression tests to prevent test pollution of committed manifest."""
+
+    def test_default_manifest_path_constant(self):
+        """DEFAULT_MANIFEST_PATH points to committed manifest location."""
+        assert BenchmarkManifest.DEFAULT_MANIFEST_PATH == "benchmarks/manifest.jsonl"
+
+    def test_manifest_path_injectability(self, tmp_path):
+        """BenchmarkManifest accepts injectable manifest path."""
+        custom_path = tmp_path / "custom_manifest.jsonl"
+        manifest = BenchmarkManifest(manifest_path=str(custom_path))
+
+        # Verify the path was set correctly
+        assert manifest.manifest_path == str(custom_path)
+
+    def test_default_path_when_none_provided(self):
+        """BenchmarkManifest uses default path when manifest_path is None."""
+        manifest = BenchmarkManifest(manifest_path=None)
+        assert manifest.manifest_path == BenchmarkManifest.DEFAULT_MANIFEST_PATH
+
+    def test_test_entries_dont_pollute_committed_manifest(self, tmp_path):
+        """Test entries written to temp path do not appear in default manifest."""
+        # Create a test entry
+        entry = BenchmarkEntry(
+            experiment_name="test_isolation_entry",
+            dataset_name="TestDataset",
+            dataset_subset_size=100,
+            config_path="test.yaml",
+            train_command="train.py",
+            eval_command="eval.py",
+            final_metrics={},
+            artifact_paths={},
+            caveats=[],
+            notes="",
+            date="2026-04-07",
+            status="COMPLETE",
+        )
+
+        # Write to temp manifest
+        temp_manifest = BenchmarkManifest(manifest_path=str(tmp_path / "temp.jsonl"))
+        temp_manifest.add_entry(entry)
+
+        # Verify default manifest does NOT contain this entry
+        default_manifest = BenchmarkManifest()
+        default_entries = default_manifest.read_all()
+
+        # None of the default entries should have our test experiment name
+        entry_names = [e.experiment_name for e in default_entries]
+        assert "test_isolation_entry" not in entry_names, \
+            "Test entry polluted the committed benchmark manifest!"
