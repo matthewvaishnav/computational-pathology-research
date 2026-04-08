@@ -309,7 +309,12 @@ def _record_comparison_to_manifest(
 
     # Write to manifest (uses default path if not specified)
     manifest = BenchmarkManifest(manifest_path=manifest_path)
-    manifest.add_entry(entry)
+    if hasattr(manifest, "update_or_add_entry"):
+        updated = manifest.update_or_add_entry(entry)
+        manifest_action = "updated" if updated else "added"
+    else:
+        manifest.add_entry(entry)
+        manifest_action = "added"
 
     logger.info(f"\n✓ Recorded comparison to benchmark manifest")
     logger.info(f"  Experiment: {entry.experiment_name}")
