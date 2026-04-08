@@ -12,7 +12,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -25,13 +25,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.models.stain_normalization import StainNormalizationTransformer
 
 
-def load_stain_normalization_config(config_path: str | Path) -> dict[str, Any]:
+def load_stain_normalization_config(config_path: Union[str, Path]) -> Dict[str, Any]:
     """Load stain-normalization YAML config."""
     with open(config_path, "r", encoding="utf-8") as handle:
         return yaml.safe_load(handle)
 
 
-def build_stain_normalization_model(config: dict[str, Any]) -> StainNormalizationTransformer:
+def build_stain_normalization_model(config: Dict[str, Any]) -> StainNormalizationTransformer:
     """Construct a stain-normalization model from config."""
     model_cfg = config["model"]
     encoder_cfg = model_cfg.get("encoder", {})
@@ -50,9 +50,9 @@ def build_stain_normalization_model(config: dict[str, Any]) -> StainNormalizatio
 
 
 def load_stain_normalization_model(
-    checkpoint_path: str | Path,
-    config_path: str | Path,
-    device: str | torch.device = "cpu",
+    checkpoint_path: Union[str, Path],
+    config_path: Union[str, Path],
+    device: Union[str, torch].device = "cpu",
 ) -> StainNormalizationTransformer:
     """Load a stain-normalization checkpoint into eval mode."""
     config = load_stain_normalization_config(config_path)
@@ -65,8 +65,8 @@ def load_stain_normalization_model(
 
 
 def load_preview_image(
-    image_path: str | Path, image_size: int
-) -> tuple[torch.Tensor, tuple[int, int]]:
+    image_path: Union[str, Path], image_size: int
+) -> Tuple[torch.Tensor, Tuple[int, int]]:
     """Load an RGB image, resize for preview inference, and convert to [-1, 1]."""
     image = Image.open(image_path).convert("RGB")
     original_size = image.size
@@ -113,13 +113,13 @@ def build_comparison_panel(
 
 def generate_stain_normalization_preview(
     *,
-    checkpoint_path: str | Path,
-    config_path: str | Path,
-    input_image_path: str | Path,
-    output_dir: str | Path,
-    reference_image_path: str | Path | None = None,
-    device: str | torch.device = "cpu",
-) -> dict[str, Any]:
+    checkpoint_path: Union[str, Path],
+    config_path: Union[str, Path],
+    input_image_path: Union[str, Path],
+    output_dir: Union[str, Path],
+    reference_image_path: Union[Union[str, Path], None] = None,
+    device: Union[str, torch].device = "cpu",
+) -> Dict[str, Any]:
     """Generate normalized preview images plus summary metadata."""
     config = load_stain_normalization_config(config_path)
     image_size = int(config["model"].get("image_size", config["data"].get("image_size", 256)))
