@@ -159,9 +159,7 @@ def test_pytest_config_preservation():
     assert pytest_config["testpaths"] == ["tests"], "pytest.testpaths changed"
     assert pytest_config["python_files"] == ["test_*.py"], "pytest.python_files changed"
     assert pytest_config["python_classes"] == ["Test*"], "pytest.python_classes changed"
-    assert (
-        pytest_config["python_functions"] == ["test_*"]
-    ), "pytest.python_functions changed"
+    assert pytest_config["python_functions"] == ["test_*"], "pytest.python_functions changed"
     assert (
         "-v --cov=src --cov-report=html --cov-report=term" in pytest_config["addopts"]
     ), "pytest.addopts changed"
@@ -193,9 +191,7 @@ def test_mypy_config_preservation():
     assert mypy_config["python_version"] == "3.9", "mypy.python_version changed"
     assert mypy_config["warn_return_any"] is True, "mypy.warn_return_any changed"
     assert mypy_config["warn_unused_configs"] is True, "mypy.warn_unused_configs changed"
-    assert (
-        mypy_config["disallow_untyped_defs"] is False
-    ), "mypy.disallow_untyped_defs changed"
+    assert mypy_config["disallow_untyped_defs"] is False, "mypy.disallow_untyped_defs changed"
 
 
 def test_black_other_settings_preservation():
@@ -249,9 +245,7 @@ def test_setuptools_config_preservation():
 
     assert "tool" in config, "Missing [tool] section"
     assert "setuptools" in config["tool"], "Missing [tool.setuptools]"
-    assert (
-        "packages" in config["tool"]["setuptools"]
-    ), "Missing [tool.setuptools.packages]"
+    assert "packages" in config["tool"]["setuptools"], "Missing [tool.setuptools.packages]"
     assert (
         "find" in config["tool"]["setuptools"]["packages"]
     ), "Missing [tool.setuptools.packages.find]"
@@ -260,9 +254,7 @@ def test_setuptools_config_preservation():
 
     # Verify setuptools configuration
     assert setuptools_config["where"] == ["."], "setuptools.packages.find.where changed"
-    assert setuptools_config["include"] == [
-        "src*"
-    ], "setuptools.packages.find.include changed"
+    assert setuptools_config["include"] == ["src*"], "setuptools.packages.find.include changed"
 
 
 def test_all_sections_parseable():
@@ -291,9 +283,7 @@ def test_all_sections_parseable():
     # Verify all expected tool subsections exist
     expected_tool_sections = ["setuptools", "pytest", "black", "mypy"]
     for tool_section in expected_tool_sections:
-        assert (
-            tool_section in config["tool"]
-        ), f"Missing section: [tool.{tool_section}]"
+        assert tool_section in config["tool"], f"Missing section: [tool.{tool_section}]"
 
     # Verify the config is a valid dictionary with no parsing artifacts
     assert isinstance(config, dict), "Parsed config should be a dictionary"
