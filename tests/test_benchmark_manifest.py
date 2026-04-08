@@ -567,8 +567,9 @@ class TestManifestIsolation:
 
         # None of the default entries should have our test experiment name
         entry_names = [e.experiment_name for e in default_entries]
-        assert "test_isolation_entry" not in entry_names, \
-            "Test entry polluted the committed benchmark manifest!"
+        assert (
+            "test_isolation_entry" not in entry_names
+        ), "Test entry polluted the committed benchmark manifest!"
 
 
 class TestUpdateOrAddEntry:
