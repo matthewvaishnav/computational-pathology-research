@@ -11,11 +11,11 @@ training. This ensures consistency between training and evaluation.
 
 IMPORTANT: This script is compatible with slide-level checkpoints that use
 pre-extracted HDF5 features. The aggregation method is loaded from the
-checkpoint configuration.
+checkpoint configuration and cannot be overridden at evaluation time.
 
 Example usage:
     python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth
-    python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --batch-size 32
+    python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --split val
 """
 
 import argparse
@@ -143,7 +143,6 @@ def evaluate_slide_level(
     features_dir: Path,
     split: str,
     device: str,
-    aggregation: str = "mean",
 ) -> Dict[str, Any]:
     """Run slide-level inference and compute metrics.
 
@@ -153,7 +152,6 @@ def evaluate_slide_level(
         features_dir: Directory containing HDF5 feature files.
         split: Which split to evaluate ('test', 'val', 'train').
         device: Device to run inference on.
-        aggregation: Aggregation method ('mean' or 'max').
 
     Returns:
         Dictionary containing:
@@ -534,13 +532,6 @@ Examples:
         choices=["cuda", "cpu"],
         help="Device to use for evaluation (default: cuda if available)",
     )
-    parser.add_argument(
-        "--aggregation",
-        type=str,
-        default="mean",
-        choices=["mean", "max"],
-        help="Patch aggregation method (default: mean)",
-    )
 
     args = parser.parse_args()
 
@@ -610,7 +601,6 @@ Examples:
         features_dir=features_dir,
         split=args.split,
         device=str(device),
-        aggregation=args.aggregation,
     )
 
     inference_time = time.time() - start_time
@@ -627,7 +617,7 @@ Examples:
     test_metrics["checkpoint_epoch"] = epoch
     test_metrics["checkpoint_path"] = args.checkpoint
     test_metrics["checkpoint_metrics"] = checkpoint_metrics
-    test_metrics["aggregation_method"] = args.aggregation
+    test_metrics["aggregation_method"] = model.pooling
     test_metrics["split"] = args.split
 
     # Create output directory

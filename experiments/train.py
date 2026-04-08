@@ -31,7 +31,8 @@ from tqdm import tqdm
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data import MultimodalDataset
-from src.models import ClassificationHead, MultimodalFusionModel, SurvivalHead
+from src.data.loaders import collate_multimodal
+from src.models import ClassificationHead, MultimodalFusionModel, SurvivalPredictionHead
 
 # Configure logging
 logging.basicConfig(
@@ -532,7 +533,7 @@ def main():
     if args.task_type == "classification":
         task_head = ClassificationHead(input_dim=args.embed_dim, num_classes=args.num_classes)
     else:
-        task_head = SurvivalHead(input_dim=args.embed_dim)
+        task_head = SurvivalPredictionHead(input_dim=args.embed_dim)
 
     # Create data loaders
     logger.info("Loading data...")
@@ -546,6 +547,7 @@ def main():
             shuffle=True,
             num_workers=args.num_workers,
             pin_memory=True,
+            collate_fn=collate_multimodal,
         )
         val_loader = DataLoader(
             val_dataset,
@@ -553,6 +555,7 @@ def main():
             shuffle=False,
             num_workers=args.num_workers,
             pin_memory=True,
+            collate_fn=collate_multimodal,
         )
     except Exception as e:
         logger.error(f"Failed to load data: {e}")
