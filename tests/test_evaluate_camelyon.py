@@ -3,10 +3,11 @@ Tests for CAMELYON evaluation script.
 """
 
 import json
-import pytest
 import subprocess
 import tempfile
 from pathlib import Path
+
+import pytest
 
 
 def test_evaluate_camelyon_script_exists():

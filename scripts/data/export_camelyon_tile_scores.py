@@ -15,7 +15,7 @@ Supported score methods:
 import argparse
 import json
 from pathlib import Path
-from typing import Union, Optional, Literal
+from typing import Literal, Optional, Union
 
 import h5py
 import numpy as np

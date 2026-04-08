@@ -10,8 +10,8 @@ Usage:
     python experiments/run_statistical_analysis.py [--n-bootstrap N] [--seed S]
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add parent directory to path
@@ -22,18 +22,18 @@ import json
 import logging
 from datetime import datetime
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
+from torch.utils.data import DataLoader, Dataset
 
 from experiments.statistical_analysis import (
-    compute_bootstrap_ci,
-    paired_t_test,
     AblationStudy,
-    run_cross_validation,
+    compute_bootstrap_ci,
     is_significant,
+    paired_t_test,
+    run_cross_validation,
 )
 
 # Configure logging
@@ -147,7 +147,7 @@ def train_model(dataset, num_epochs=5, embed_dim=128, seed=42):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    from src.models import MultimodalFusionModel, ClassificationHead
+    from src.models import ClassificationHead, MultimodalFusionModel
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")

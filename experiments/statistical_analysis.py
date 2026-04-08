@@ -15,18 +15,17 @@ Example:
     >>> t_stat, p_val = paired_t_test(results_a, results_b)
 """
 
+import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Callable, Any
-import json
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
-from scipy import stats
-from tqdm import tqdm
-
 import torch
 import torch.nn as nn
+from scipy import stats
 from torch.utils.data import DataLoader, Subset
+from tqdm import tqdm
 
 # Configure logging
 logging.basicConfig(

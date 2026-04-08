@@ -11,42 +11,42 @@ This script provides comprehensive evaluation capabilities including:
 - Error analysis
 """
 
-import os
-import sys
-import logging
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 import argparse
 import json
+import logging
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
+import matplotlib
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-import numpy as np
-import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.manifold import TSNE
 from sklearn.metrics import (
     accuracy_score,
+    classification_report,
+    confusion_matrix,
     f1_score,
+    precision_recall_curve,
     precision_score,
     recall_score,
     roc_auc_score,
-    confusion_matrix,
-    classification_report,
     roc_curve,
-    precision_recall_curve,
 )
-from sklearn.manifold import TSNE
 from tqdm import tqdm
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.models import MultimodalFusionModel, ClassificationHead, SurvivalHead
 from src.data import MultimodalDataset
+from src.models import ClassificationHead, MultimodalFusionModel, SurvivalHead
 
 # Configure logging
 logging.basicConfig(

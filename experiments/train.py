@@ -11,27 +11,27 @@ fusion model with support for:
 - Multiple task heads (classification, survival)
 """
 
+import argparse
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
 from typing import Dict, Optional, Tuple
-import argparse
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-import numpy as np
 from tqdm import tqdm
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.models import MultimodalFusionModel, ClassificationHead, SurvivalHead
 from src.data import MultimodalDataset
+from src.models import ClassificationHead, MultimodalFusionModel, SurvivalHead
 
 # Configure logging
 logging.basicConfig(
