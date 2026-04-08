@@ -123,7 +123,7 @@ def test_camelyon_config_model_section():
     assert "wsi" in model
     wsi = model["wsi"]
     assert wsi["input_dim"] == fe["feature_dim"]
-    assert wsi["pooling"] in ["mean", "max", "attention"]
+    assert wsi["aggregation"] in ["mean", "max"]
 
 
 def test_camelyon_config_task_section():
