@@ -67,7 +67,7 @@ addopts = "-v --cov=src --cov-report=html --cov-report=term"
 [tool.black]
 line-length = 100
 target-version = ['py39']
-include = '\.pyi?$'
+include = '\.pyi?$'$'
 
 [tool.mypy]
 python_version = "3.9"
