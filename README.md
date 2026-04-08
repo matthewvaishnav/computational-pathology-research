@@ -70,7 +70,7 @@ python experiments/evaluate_pcam.py \
 
 ## Abstract
 
-This repository proposes computational approaches for pathology image analysis through multimodal fusion architectures. We provide implementations of attention-based mechanisms designed to integrate whole-slide images (WSI), genomic features, and clinical text data. The system includes cross-slide temporal reasoning for disease progression modeling, transformer-based stain normalization, and self-supervised pretraining objectives.
+This repository proposes computational approaches for pathology image analysis through multimodal fusion architectures. I provide implementations of attention-based mechanisms designed to integrate whole-slide images (WSI), genomic features, and clinical text data. The system includes cross-slide temporal reasoning for disease progression modeling, transformer-based stain normalization, and self-supervised pretraining objectives.
 
 **Critical Caveat**: These are architectural proposals and code implementations only. Actual effectiveness, computational feasibility, and clinical utility remain unvalidated and would require extensive experimentation.
 
@@ -123,7 +123,7 @@ My architecture consists of modality-specific encoders followed by cross-modal a
 
 ### Cross-Slide Temporal Reasoning
 
-For longitudinal analysis, we implement temporal attention mechanisms that:
+For longitudinal analysis, I implement temporal attention mechanisms that:
 - Encode temporal distances between slides using learnable positional embeddings
 - Apply self-attention over slide sequences to capture progression patterns
 - Extract progression features by computing differences between consecutive slides
@@ -143,7 +143,7 @@ The model is trained with perceptual loss and color consistency objectives to ma
 
 ### Self-Supervised Pretraining
 
-We implement two complementary pretraining objectives:
+I implement two complementary pretraining objectives:
 
 **Contrastive Learning**: SimCLR-style contrastive loss between augmented views of tissue patches. Encourages the encoder to learn representations invariant to staining variations and imaging artifacts while capturing semantic tissue patterns.
 
@@ -218,7 +218,7 @@ To validate these ideas, you would need:
 
 ### Methodological Limitations (Theoretical)
 
-Since this hasn't been tested, we don't actually know:
+Since this hasn't been tested, I don't actually know:
 - Whether the architecture trains stably
 - Whether attention mechanisms help or hurt
 - Whether the model overfits immediately
@@ -773,7 +773,7 @@ If you use this code in your research, please cite:
 
 ## Acknowledgments
 
-This research implementation builds upon foundational work in computational pathology, multimodal learning, and self-supervised representation learning. We acknowledge the open-source community for providing essential tools and frameworks (PyTorch, Hydra, TensorBoard) that made this work possible.
+This research implementation builds upon foundational work in computational pathology, multimodal learning, and self-supervised representation learning. Iacknowledge the open-source community for providing essential tools and frameworks (PyTorch, Hydra, TensorBoard) that made this work possible.
 
 ## Contact
 
