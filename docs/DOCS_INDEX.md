@@ -4,7 +4,7 @@ This file provides a guide to all documentation in this repository.
 
 ## Getting Started
 
-- [README.md](README.md) - Main repository overview and quick start guide
+- [README.md](../README.md) - Main repository overview and quick start guide
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Quick command reference
 
 ## Training and Evaluation
@@ -22,11 +22,11 @@ This file provides a guide to all documentation in this repository.
 ## Deployment
 
 - [DOCKER.md](DOCKER.md) - Docker deployment guide
-- [deploy/README.md](deploy/README.md) - REST API deployment instructions
+- [../deploy/README.md](../deploy/README.md) - REST API deployment instructions
 
 ## Development
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [../CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution guidelines
 - [TESTING_SUMMARY.md](TESTING_SUMMARY.md) - Testing documentation and coverage
 - [MAKEFILE.md](MAKEFILE.md) - Makefile usage guide
 
@@ -38,7 +38,7 @@ This file provides a guide to all documentation in this repository.
 
 ## Archived Documentation
 
-Historical documentation and implementation notes are archived in [docs/archive/](docs/archive/).
+Historical documentation and implementation notes are archived in [archive/](archive/).
 
 ## Quick Navigation
 
@@ -51,4 +51,4 @@ Historical documentation and implementation notes are archived in [docs/archive/
 - **Understand the architecture**: See [ARCHITECTURE.md](ARCHITECTURE.md)
 - **Optimize performance**: See [PERFORMANCE.md](PERFORMANCE.md)
 - **Run tests**: See [TESTING_SUMMARY.md](TESTING_SUMMARY.md)
-- **Contribute**: See [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Contribute**: See [../CONTRIBUTING.md](../CONTRIBUTING.md)
