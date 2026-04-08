@@ -80,9 +80,7 @@ class WSIEncoder(nn.Module):
 
         # Output projection with dropout for regularization
         self.output_proj = nn.Sequential(
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, output_dim),
-            nn.LayerNorm(output_dim)
+            nn.Dropout(dropout), nn.Linear(hidden_dim, output_dim), nn.LayerNorm(output_dim)
         )
 
     def forward(
@@ -147,7 +145,9 @@ class WSIEncoder(nn.Module):
                 x_masked = x.masked_fill(~mask.unsqueeze(-1), float("-inf"))
                 aggregated = x_masked.max(dim=1)[0]
                 # Safety: replace -inf with 0 (can occur if all patches masked)
-                aggregated = torch.where(torch.isinf(aggregated), torch.zeros_like(aggregated), aggregated)
+                aggregated = torch.where(
+                    torch.isinf(aggregated), torch.zeros_like(aggregated), aggregated
+                )
             else:
                 aggregated = x.max(dim=1)[0]
 
