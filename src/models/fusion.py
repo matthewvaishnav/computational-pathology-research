@@ -95,8 +95,8 @@ class CrossModalAttention(nn.Module):
         k = k.view(batch_size, self.num_heads, self.head_dim)
         v = v.view(batch_size, self.num_heads, self.head_dim)
 
-        # Compute attention scores: [B, num_heads, 1]
-        # For single embeddings, we compute similarity between q and k
+        # Compute attention scores for single-embedding cross-attention
+        # Note: This is dot-product attention between single vectors, not sequence attention
         attn_scores = (q * k).sum(dim=-1, keepdim=True) / (self.head_dim**0.5)
 
         # Apply key mask if provided
@@ -111,9 +111,8 @@ class CrossModalAttention(nn.Module):
                 # All samples have all keys masked - return query unchanged
                 return self.norm(query)
             elif all_masked.any():
-                # Some samples have all keys masked - handle them separately
-                # For masked samples, we'll zero out the attention contribution
-                pass  # Will be handled after softmax
+                # Some samples have all keys masked - handled after softmax (lines 122-131)
+                pass
 
         # Softmax to get attention weights
         attn_weights = F.softmax(attn_scores, dim=-1)  # [B, num_heads, 1]
@@ -238,7 +237,13 @@ class MultiModalFusionLayer(nn.Module):
         Returns:
             Fused embedding [batch_size, embed_dim]
         """
-        first_emb = next(emb for emb in embeddings.values() if emb is not None)
+        try:
+            first_emb = next(emb for emb in embeddings.values() if emb is not None)
+        except StopIteration:
+            raise ValueError(
+                "At least one modality must be present (non-None) for fusion. "
+                f"Received all None values for modalities: {list(embeddings.keys())}"
+            )
         batch_size = first_emb.shape[0]
         device = first_emb.device
 
