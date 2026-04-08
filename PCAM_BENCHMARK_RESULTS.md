@@ -62,6 +62,17 @@ python experiments/evaluate_pcam.py \
   --num-workers 0
 ```
 
+### Evaluation with Interpretability Artifacts
+```bash
+python experiments/evaluate_pcam.py \
+  --checkpoint checkpoints/pcam/best_model.pth \
+  --data-root data/pcam \
+  --output-dir results/pcam \
+  --batch-size 64 \
+  --num-workers 0 \
+  --generate-interpretability
+```
+
 ## Artifact Paths
 
 **NOTE**: All artifacts below are gitignored and not committed to the repository. To reproduce, run the commands in the "Commands Used" section.
@@ -74,6 +85,12 @@ python experiments/evaluate_pcam.py \
 - `results/pcam/metrics.json` - Complete evaluation metrics (JSON)
 - `results/pcam/confusion_matrix.png` - Confusion matrix visualization
 - `results/pcam/roc_curve.png` - ROC curve (AUC=1.0)
+- `results/pcam/interpretability/interpretability_summary.json` - Machine-readable interpretability manifest
+- `results/pcam/interpretability/interpretability_report.md` - Human-readable interpretability summary
+- `results/pcam/interpretability/pcam_embeddings_pca.png` - PCA view of learned embeddings
+- `results/pcam/interpretability/pcam_embeddings_tsne.png` - t-SNE view of learned embeddings
+- `results/pcam/interpretability/feature_saliency_topk.png` - Top-k feature saliency plot
+- `results/pcam/interpretability/feature_saliency_topk.json` - Top-k feature saliency values
 
 ### Logs (gitignored)
 - `logs/pcam/` - TensorBoard training logs
@@ -157,6 +174,7 @@ python scripts/generate_synthetic_pcam.py
 5. **Early stopping** prevents overfitting
 6. **Visualization** generates confusion matrix and ROC curves
 7. **Reproducibility** with fixed seeds and saved configs
+8. **Interpretability workflow** can generate embedding plots and feature saliency artifacts during evaluation
 
 ### ✅ Technical Validation
 - ResNet-18 feature extraction works on 96×96 pathology patches

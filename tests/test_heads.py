@@ -141,9 +141,7 @@ class TestSurvivalPredictionHead:
 
     def test_without_hidden_layer(self):
         """Test survival head without hidden layer."""
-        head = SurvivalPredictionHead(
-            input_dim=64, num_time_bins=5, use_hidden_layer=False
-        )
+        head = SurvivalPredictionHead(input_dim=64, num_time_bins=5, use_hidden_layer=False)
         assert len(head.predictor) == 2  # Dropout + Linear
 
     def test_prediction_mode_attribute(self):

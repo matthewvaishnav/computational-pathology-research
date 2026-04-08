@@ -46,10 +46,10 @@ from src.models.heads import ClassificationHead
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def write_training_status(status_path: Path, payload: Dict[str, Any]) -> None:
     """Write current training status atomically for external monitoring."""
@@ -102,36 +102,36 @@ def create_pcam_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader, DataL
     Returns:
         Tuple of (train_loader, val_loader, test_loader).
     """
-    root_dir = config['data']['root_dir']
-    num_workers = config['data'].get('num_workers', 4)
-    pin_memory = config['data'].get('pin_memory', True)
-    batch_size = config['training']['batch_size']
+    root_dir = config["data"]["root_dir"]
+    num_workers = config["data"].get("num_workers", 4)
+    pin_memory = config["data"].get("pin_memory", True)
+    batch_size = config["training"]["batch_size"]
 
     # Get transforms
-    train_transform = get_pcam_transforms(split='train', augmentation=True)
-    val_transform = get_pcam_transforms(split='val', augmentation=False)
-    test_transform = get_pcam_transforms(split='test', augmentation=False)
+    train_transform = get_pcam_transforms(split="train", augmentation=True)
+    val_transform = get_pcam_transforms(split="val", augmentation=False)
+    test_transform = get_pcam_transforms(split="test", augmentation=False)
 
     # Create datasets
     train_dataset = PCamDataset(
         root_dir=root_dir,
-        split='train',
+        split="train",
         transform=train_transform,
-        download=config['data'].get('download', True),
+        download=config["data"].get("download", True),
     )
 
     val_dataset = PCamDataset(
         root_dir=root_dir,
-        split='val',
+        split="val",
         transform=val_transform,
-        download=config['data'].get('download', True),
+        download=config["data"].get("download", True),
     )
 
     test_dataset = PCamDataset(
         root_dir=root_dir,
-        split='test',
+        split="test",
         transform=test_transform,
-        download=config['data'].get('download', True),
+        download=config["data"].get("download", True),
     )
 
     # Create dataloaders
@@ -177,36 +177,36 @@ def create_single_modality_model(config: Dict) -> Tuple[nn.Module, nn.Module, nn
         Tuple of (feature_extractor, encoder, head).
     """
     # Feature extractor - ResNet applied at batch time
-    feature_extractor_config = config['model']['feature_extractor']
+    feature_extractor_config = config["model"]["feature_extractor"]
     feature_extractor = ResNetFeatureExtractor(
-        model_name=feature_extractor_config['model'],
-        pretrained=feature_extractor_config.get('pretrained', True),
-        feature_dim=feature_extractor_config.get('feature_dim', 512),
+        model_name=feature_extractor_config["model"],
+        pretrained=feature_extractor_config.get("pretrained", True),
+        feature_dim=feature_extractor_config.get("feature_dim", 512),
     )
 
     # WSI Encoder for single patch encoding
-    wsi_config = config['model']['wsi']
+    wsi_config = config["model"]["wsi"]
     encoder = WSIEncoder(
-        input_dim=wsi_config['input_dim'],
-        hidden_dim=wsi_config['hidden_dim'],
-        output_dim=config['model']['embed_dim'],
-        num_heads=wsi_config['num_heads'],
-        num_layers=wsi_config['num_layers'],
-        pooling=wsi_config.get('pooling', 'mean'),
-        dropout=config['training'].get('dropout', 0.1),
+        input_dim=wsi_config["input_dim"],
+        hidden_dim=wsi_config["hidden_dim"],
+        output_dim=config["model"]["embed_dim"],
+        num_heads=wsi_config["num_heads"],
+        num_layers=wsi_config["num_layers"],
+        pooling=wsi_config.get("pooling", "mean"),
+        dropout=config["training"].get("dropout", 0.1),
     )
 
     # Classification head - binary classification uses single output logit with BCE loss
-    classification_config = config['task']['classification']
-    hidden_dims = classification_config.get('hidden_dims', [128])
+    classification_config = config["task"]["classification"]
+    hidden_dims = classification_config.get("hidden_dims", [128])
     use_hidden_layer = len(hidden_dims) > 0
     hidden_dim = hidden_dims[0] if use_hidden_layer else 128  # Default if no hidden layer
-    
+
     head = ClassificationHead(
-        input_dim=config['model']['embed_dim'],
+        input_dim=config["model"]["embed_dim"],
         hidden_dim=hidden_dim,
         num_classes=1,  # Binary classification: single logit for BCEWithLogitsLoss
-        dropout=classification_config['dropout'],
+        dropout=classification_config["dropout"],
         use_hidden_layer=use_hidden_layer,
     )
 
@@ -264,14 +264,14 @@ def train_epoch(
     all_labels = []
     all_probs = []
 
-    log_interval = config['logging']['log_interval']
+    log_interval = config["logging"]["log_interval"]
 
     pbar = tqdm(dataloader, desc=f"Epoch {epoch}")
     status_interval = max(1, len(dataloader) // 5)
 
     for batch_idx, batch in enumerate(pbar):
-        images = batch['image'].to(device)
-        labels = batch['label'].to(device).float().unsqueeze(1)
+        images = batch["image"].to(device)
+        labels = batch["label"].to(device).float().unsqueeze(1)
 
         optimizer.zero_grad()
 
@@ -301,13 +301,13 @@ def train_epoch(
             scaler.scale(loss).backward()
 
             # Gradient clipping
-            if config['training'].get('max_grad_norm', 1.0) > 0:
+            if config["training"].get("max_grad_norm", 1.0) > 0:
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(
-                    list(feature_extractor.parameters()) +
-                    list(encoder.parameters()) +
-                    list(head.parameters()),
-                    max_norm=config['training']['max_grad_norm']
+                    list(feature_extractor.parameters())
+                    + list(encoder.parameters())
+                    + list(head.parameters()),
+                    max_norm=config["training"]["max_grad_norm"],
                 )
 
             scaler.step(optimizer)
@@ -326,12 +326,12 @@ def train_epoch(
 
             loss.backward()
 
-            if config['training'].get('max_grad_norm', 1.0) > 0:
+            if config["training"].get("max_grad_norm", 1.0) > 0:
                 torch.nn.utils.clip_grad_norm_(
-                    list(feature_extractor.parameters()) +
-                    list(encoder.parameters()) +
-                    list(head.parameters()),
-                    max_norm=config['training']['max_grad_norm']
+                    list(feature_extractor.parameters())
+                    + list(encoder.parameters())
+                    + list(head.parameters()),
+                    max_norm=config["training"]["max_grad_norm"],
                 )
 
             optimizer.step()
@@ -348,9 +348,11 @@ def train_epoch(
         all_labels.extend(labels.squeeze(1).cpu().numpy())
 
         # Update progress bar
-        pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+        pbar.set_postfix({"loss": f"{loss.item():.4f}"})
 
-        if status_path is not None and (batch_idx % status_interval == 0 or batch_idx == len(dataloader) - 1):
+        if status_path is not None and (
+            batch_idx % status_interval == 0 or batch_idx == len(dataloader) - 1
+        ):
             status_payload = {
                 "state": "training",
                 "epoch": epoch,
@@ -364,15 +366,15 @@ def train_epoch(
         # Log to TensorBoard at interval
         if batch_idx % log_interval == 0 and writer is not None:
             global_step = epoch * len(dataloader) + batch_idx
-            writer.add_scalar('train/loss', loss.item(), global_step)
+            writer.add_scalar("train/loss", loss.item(), global_step)
 
     # Compute epoch metrics
     avg_loss = total_loss / len(dataloader)
     metrics = {
-        'loss': avg_loss,
-        'accuracy': accuracy_score(all_labels, all_preds),
-        'f1': f1_score(all_labels, all_preds, average='binary'),
-        'auc': roc_auc_score(all_labels, all_probs),
+        "loss": avg_loss,
+        "accuracy": accuracy_score(all_labels, all_preds),
+        "f1": f1_score(all_labels, all_preds, average="binary"),
+        "auc": roc_auc_score(all_labels, all_probs),
     }
 
     return metrics
@@ -412,8 +414,8 @@ def validate(
 
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Validation"):
-            images = batch['image'].to(device)
-            labels = batch['label'].to(device).float().unsqueeze(1)
+            images = batch["image"].to(device)
+            labels = batch["label"].to(device).float().unsqueeze(1)
 
             # Mixed precision inference
             if scaler is not None:
@@ -443,10 +445,10 @@ def validate(
     # Compute metrics
     avg_loss = total_loss / len(dataloader)
     metrics = {
-        'val_loss': avg_loss,
-        'val_accuracy': accuracy_score(all_labels, all_preds),
-        'val_f1': f1_score(all_labels, all_preds, average='binary'),
-        'val_auc': roc_auc_score(all_labels, all_probs),
+        "val_loss": avg_loss,
+        "val_accuracy": accuracy_score(all_labels, all_preds),
+        "val_f1": f1_score(all_labels, all_preds, average="binary"),
+        "val_auc": roc_auc_score(all_labels, all_probs),
     }
 
     return metrics
@@ -477,14 +479,14 @@ def save_checkpoint(
         path: Path to save checkpoint.
     """
     checkpoint = {
-        'epoch': epoch,
-        'feature_extractor_state_dict': feature_extractor.state_dict(),
-        'encoder_state_dict': encoder.state_dict(),
-        'head_state_dict': head.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'scheduler_state_dict': scheduler.state_dict() if scheduler else None,
-        'metrics': metrics,
-        'config': config,
+        "epoch": epoch,
+        "feature_extractor_state_dict": feature_extractor.state_dict(),
+        "encoder_state_dict": encoder.state_dict(),
+        "head_state_dict": head.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "scheduler_state_dict": scheduler.state_dict() if scheduler else None,
+        "metrics": metrics,
+        "config": config,
     }
 
     torch.save(checkpoint, path)
@@ -520,18 +522,18 @@ def load_checkpoint(
         raise FileNotFoundError(f"Checkpoint not found at {path}")
 
     try:
-        checkpoint = torch.load(path, map_location='cpu')
+        checkpoint = torch.load(path, map_location="cpu")
 
-        feature_extractor.load_state_dict(checkpoint['feature_extractor_state_dict'])
-        encoder.load_state_dict(checkpoint['encoder_state_dict'])
-        head.load_state_dict(checkpoint['head_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        feature_extractor.load_state_dict(checkpoint["feature_extractor_state_dict"])
+        encoder.load_state_dict(checkpoint["encoder_state_dict"])
+        head.load_state_dict(checkpoint["head_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
-        if scheduler is not None and checkpoint.get('scheduler_state_dict') is not None:
-            scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        if scheduler is not None and checkpoint.get("scheduler_state_dict") is not None:
+            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
 
-        epoch = checkpoint.get('epoch', 0)
-        metrics = checkpoint.get('metrics', {})
+        epoch = checkpoint.get("epoch", 0)
+        metrics = checkpoint.get("metrics", {})
 
         logger.info(f"Loaded checkpoint from {path}")
         logger.info(f"Resuming from epoch {epoch}")
@@ -566,18 +568,18 @@ def validate_dataset(dataset: PCamDataset) -> None:
             sample = dataset[i]
 
             # Check image shape
-            if sample['image'].shape != torch.Size([3, 96, 96]):
+            if sample["image"].shape != torch.Size([3, 96, 96]):
                 errors.append(
                     f"Sample {i}: Expected image shape [3, 96, 96], got {sample['image'].shape}"
                 )
 
             # Check label is valid (0 or 1)
-            label = sample['label'].item()
+            label = sample["label"].item()
             if label not in (0, 1):
                 errors.append(f"Sample {i}: Invalid label {label}, expected 0 or 1")
 
             # Check image_id exists
-            if 'image_id' not in sample:
+            if "image_id" not in sample:
                 errors.append(f"Sample {i}: Missing image_id")
 
         except Exception as e:
@@ -613,14 +615,14 @@ def reduce_batch_size_on_oom(
     Returns:
         Updated configuration with reduced batch size.
     """
-    current_batch_size = config['training']['batch_size']
+    current_batch_size = config["training"]["batch_size"]
     new_batch_size = max(8, current_batch_size // 2)
 
     logger.warning(
         f"GPU out of memory. Reducing batch size from {current_batch_size} to {new_batch_size}"
     )
 
-    config['training']['batch_size'] = new_batch_size
+    config["training"]["batch_size"] = new_batch_size
 
     # Log warning about potential OOM recovery
     logger.warning(
@@ -633,34 +635,35 @@ def reduce_batch_size_on_oom(
 
 def main():
     """Main training loop with full error handling."""
-    parser = argparse.ArgumentParser(description='Train PCam model')
-    parser.add_argument('--config', type=str, required=True,
-                        help='Path to configuration file')
-    parser.add_argument('--resume', type=str, default=None,
-                        help='Path to checkpoint to resume from')
+    parser = argparse.ArgumentParser(description="Train PCam model")
+    parser.add_argument("--config", type=str, required=True, help="Path to configuration file")
+    parser.add_argument(
+        "--resume", type=str, default=None, help="Path to checkpoint to resume from"
+    )
 
     args = parser.parse_args()
 
     # Load configuration
     import yaml
-    with open(args.config, 'r') as f:
+
+    with open(args.config, "r") as f:
         config = yaml.safe_load(f)
     run_id = f"pcam-{int(time.time())}"
     coerce_numeric_training_config(config, run_id)
 
     # Override config with command line args if needed
     if args.resume:
-        config['resume'] = args.resume
+        config["resume"] = args.resume
 
     # Set seed
-    seed = config.get('seed', 42)
+    seed = config.get("seed", 42)
     set_seed(seed)
 
     # Setup device
-    device_str = config.get('device', 'cuda')
-    if device_str == 'cuda' and not torch.cuda.is_available():
+    device_str = config.get("device", "cuda")
+    if device_str == "cuda" and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU")
-        device_str = 'cpu'
+        device_str = "cpu"
 
     device = torch.device(device_str)
 
@@ -681,10 +684,10 @@ def main():
     logger.info("=" * 60)
 
     # Create directories
-    checkpoint_dir = Path(config['checkpoint']['checkpoint_dir'])
+    checkpoint_dir = Path(config["checkpoint"]["checkpoint_dir"])
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-    log_dir = Path(config['logging']['log_dir'])
+    log_dir = Path(config["logging"]["log_dir"])
     log_dir.mkdir(parents=True, exist_ok=True)
     status_path = log_dir / "training_status.json"
     write_training_status(
@@ -724,29 +727,27 @@ def main():
 
     # Setup optimizer
     optimizer = optim.AdamW(
-        list(feature_extractor.parameters()) +
-        list(encoder.parameters()) +
-        list(head.parameters()),
-        lr=config['training']['learning_rate'],
-        weight_decay=config['training']['weight_decay'],
-        betas=config['training']['optimizer'].get('betas', [0.9, 0.999]),
+        list(feature_extractor.parameters()) + list(encoder.parameters()) + list(head.parameters()),
+        lr=config["training"]["learning_rate"],
+        weight_decay=config["training"]["weight_decay"],
+        betas=config["training"]["optimizer"].get("betas", [0.9, 0.999]),
     )
 
     # Setup scheduler
-    num_epochs = config['training']['num_epochs']
+    num_epochs = config["training"]["num_epochs"]
     scheduler = optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=num_epochs,
-        eta_min=config['training']['scheduler'].get('min_lr', 1e-6),
+        eta_min=config["training"]["scheduler"].get("min_lr", 1e-6),
     )
 
     # Setup loss function
     criterion = nn.BCEWithLogitsLoss()
 
     # Setup mixed precision training
-    use_amp = config['training'].get('use_amp', True)
+    use_amp = config["training"].get("use_amp", True)
     scaler = None
-    if use_amp and device.type == 'cuda':
+    if use_amp and device.type == "cuda":
         scaler = torch.cuda.amp.GradScaler()
         logger.info("Mixed precision training enabled")
 
@@ -758,10 +759,10 @@ def main():
     best_val_auc = 0.0
     patience_counter = 0
 
-    if config.get('resume'):
+    if config.get("resume"):
         try:
             start_epoch, metrics = load_checkpoint(
-                config['resume'],
+                config["resume"],
                 feature_extractor,
                 encoder,
                 head,
@@ -769,7 +770,7 @@ def main():
                 scheduler,
             )
             start_epoch += 1  # Start from next epoch
-            best_val_auc = metrics.get('val_auc', 0.0)
+            best_val_auc = metrics.get("val_auc", 0.0)
             logger.info(f"Resuming from epoch {start_epoch}, best val AUC: {best_val_auc:.4f}")
         except Exception as e:
             logger.error(f"Failed to resume from checkpoint: {e}")
@@ -804,10 +805,10 @@ def main():
 
             # Log to TensorBoard
             for key, value in train_metrics.items():
-                writer.add_scalar(f'train/{key}', value, epoch)
+                writer.add_scalar(f"train/{key}", value, epoch)
 
             # Validate
-            val_interval = config['validation']['interval']
+            val_interval = config["validation"]["interval"]
             if epoch % val_interval == 0 or epoch == num_epochs:
                 val_metrics = validate(
                     feature_extractor,
@@ -822,27 +823,28 @@ def main():
                 logger.info(f"Validation metrics: {val_metrics}")
 
                 for key, value in val_metrics.items():
-                    writer.add_scalar(f'epoch/{key}', value, epoch)
+                    writer.add_scalar(f"epoch/{key}", value, epoch)
 
                 # Update scheduler
                 scheduler.step()
                 current_lr = scheduler.get_last_lr()[0]
-                writer.add_scalar('train/lr', current_lr, epoch)
+                writer.add_scalar("train/lr", current_lr, epoch)
 
                 # Check for improvement
-                metric_name = config['validation']['metric']
+                metric_name = config["validation"]["metric"]
                 current_metric = val_metrics.get(metric_name, 0.0)
-                maximize = config['validation'].get('maximize', True)
+                maximize = config["validation"].get("maximize", True)
 
-                improved = (current_metric > best_val_auc) if maximize else \
-                          (current_metric < best_val_auc)
+                improved = (
+                    (current_metric > best_val_auc) if maximize else (current_metric < best_val_auc)
+                )
 
                 if improved:
                     best_val_auc = current_metric
                     patience_counter = 0
 
                     # Save best model
-                    if config['checkpoint'].get('save_best', True):
+                    if config["checkpoint"].get("save_best", True):
                         save_checkpoint(
                             epoch,
                             feature_extractor,
@@ -852,16 +854,16 @@ def main():
                             scheduler,
                             val_metrics,
                             config,
-                            str(checkpoint_dir / 'best_model.pth'),
+                            str(checkpoint_dir / "best_model.pth"),
                         )
                         logger.info(f"✓ New best {metric_name}: {current_metric:.4f}")
                 else:
                     patience_counter += 1
 
                 # Early stopping
-                if config['early_stopping']['enabled']:
-                    patience = config['early_stopping']['patience']
-                    min_delta = config['early_stopping']['min_delta']
+                if config["early_stopping"]["enabled"]:
+                    patience = config["early_stopping"]["patience"]
+                    min_delta = config["early_stopping"]["min_delta"]
 
                     if patience_counter >= patience:
                         logger.info(
@@ -871,7 +873,7 @@ def main():
                         break
 
                 # Save checkpoint at interval
-                save_interval = config['checkpoint']['save_interval']
+                save_interval = config["checkpoint"]["save_interval"]
                 if epoch % save_interval == 0:
                     save_checkpoint(
                         epoch,
@@ -882,12 +884,12 @@ def main():
                         scheduler,
                         val_metrics,
                         config,
-                        str(checkpoint_dir / f'checkpoint_epoch_{epoch}.pth'),
+                        str(checkpoint_dir / f"checkpoint_epoch_{epoch}.pth"),
                     )
 
             # Log learning rate
             current_lr = scheduler.get_last_lr()[0]
-            writer.add_scalar('train/lr', current_lr, epoch)
+            writer.add_scalar("train/lr", current_lr, epoch)
             write_training_status(
                 status_path,
                 {
@@ -934,7 +936,7 @@ def main():
     logger.info(f"Test metrics: {test_metrics}")
 
     for key, value in test_metrics.items():
-        writer.add_scalar(f'test/{key}', value, num_epochs)
+        writer.add_scalar(f"test/{key}", value, num_epochs)
 
     writer.close()
     write_training_status(
@@ -953,5 +955,5 @@ def main():
     logger.info(f"Best validation AUC: {best_val_auc:.4f}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
