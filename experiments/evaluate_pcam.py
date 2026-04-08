@@ -41,6 +41,8 @@ from experiments.generate_pcam_interpretability import (
     generate_pcam_interpretability_artifacts as build_pcam_interpretability_artifacts,
 )
 
+from typing import Optional, Dict, Any
+
 try:
     import seaborn as sns
     import matplotlib.pyplot as plt
