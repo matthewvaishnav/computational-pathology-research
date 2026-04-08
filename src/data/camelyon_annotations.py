@@ -11,7 +11,7 @@ CAMELYON-style experiments:
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Literal, Sequence
+from typing import Union, Optional, Iterable, Literal, Sequence, List, Tuple
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -27,17 +27,17 @@ class AnnotationPolygon:
 
     name: str
     annotation_type: str
-    coordinates: tuple[tuple[float, float], ...]
+    coordinates: Tuple[Tuple[float, float], ...]
 
     @property
-    def bounds(self) -> tuple[float, float, float, float]:
+    def bounds(self) -> Tuple[float, float, float, float]:
         """Return polygon bounds as (min_x, min_y, max_x, max_y)."""
         xs = [point[0] for point in self.coordinates]
         ys = [point[1] for point in self.coordinates]
         return min(xs), min(ys), max(xs), max(ys)
 
 
-def load_camelyon_annotations(annotation_path: str | Path) -> list[AnnotationPolygon]:
+def load_camelyon_annotations(annotation_path: Union[str, Path]) -> List[AnnotationPolygon]:
     """Parse CAMELYON/ASAP XML annotations into polygons.
 
     Args:
@@ -47,14 +47,14 @@ def load_camelyon_annotations(annotation_path: str | Path) -> list[AnnotationPol
         A list of parsed polygons in XML order.
     """
     root = ET.parse(annotation_path).getroot()
-    polygons: list[AnnotationPolygon] = []
+    polygons: List[AnnotationPolygon] = []
 
     for annotation in root.findall(".//Annotation"):
         coordinates_node = annotation.find("Coordinates")
         if coordinates_node is None:
             continue
 
-        ordered_points: list[tuple[int, float, float]] = []
+        ordered_points: List[Tuple[int, float, float]] = []
         for coord in coordinates_node.findall("Coordinate"):
             order = int(coord.attrib.get("Order", len(ordered_points)))
             x = float(coord.attrib["X"])
@@ -120,7 +120,7 @@ def tile_scores_to_heatmap(
     downsample: int = 1,
     coordinate_order: CoordinateOrder = "xy",
     aggregation: Literal["mean", "max"] = "mean",
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Aggregate tile scores into a slide-aligned heatmap.
 
     Args:
@@ -196,7 +196,7 @@ def score_tiles_from_annotation_mask(
     downsample: int = 1,
     coordinate_order: CoordinateOrder = "xy",
     positive_threshold: float = 0.25,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Score tiles against an annotation mask.
 
     Args:
@@ -304,7 +304,7 @@ def overlay_heatmap_on_thumbnail(
 def save_heatmap_overlay(
     thumbnail: np.ndarray,
     heatmap: np.ndarray,
-    output_path: str | Path,
+    output_path: Union[str, Path],
     alpha: float = 0.6,
     cmap_name: str = "inferno",
 ) -> str:
@@ -323,7 +323,7 @@ def save_heatmap_overlay(
 
 def _split_coordinate(
     coordinate: Sequence[float], coordinate_order: CoordinateOrder
-) -> tuple[float, float]:
+) -> Tuple[float, float]:
     """Return coordinate as (x, y)."""
     if coordinate_order == "xy":
         return float(coordinate[0]), float(coordinate[1])
