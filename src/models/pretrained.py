@@ -90,8 +90,7 @@ class PretrainedFeatureExtractor(nn.Module):
 
         if model_name not in PRETRAINED_MODELS:
             raise ValueError(
-                f"Unknown model: {model_name}. "
-                f"Available: {list(PRETRAINED_MODELS.keys())}"
+                f"Unknown model: {model_name}. " f"Available: {list(PRETRAINED_MODELS.keys())}"
             )
 
         self.model_name = model_name
@@ -141,8 +140,7 @@ class PretrainedFeatureExtractor(nn.Module):
             import timm
         except ImportError:
             raise ImportError(
-                "timm is required for HuggingFace models. "
-                "Install: pip install timm"
+                "timm is required for HuggingFace models. " "Install: pip install timm"
             )
 
         model = timm.create_model(

@@ -90,4 +90,3 @@ def test_pretrained_feature_extractor_unfreeze():
     # At least some parameters should be trainable
     trainable = any(p.requires_grad for p in extractor.backbone.parameters())
     assert trainable
-
