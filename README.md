@@ -7,6 +7,8 @@
 
 > **Research Framework**: Tested implementations for computational pathology with working benchmarks on PatchCamelyon and CAMELYON16-style slide-level classification.
 
+> **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
+
 ## Overview
 
 This repository provides a tested PyTorch framework for computational pathology research, with working implementations for:
@@ -60,7 +62,7 @@ python experiments/evaluate_pcam.py \
 - Test AUC: 1.0
 - Training Time: ~40 seconds (8 epochs, CPU)
 
-See [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.md) for details.
+See [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) for details.
 
 ### CAMELYON16 Slide-Level Training
 
@@ -92,7 +94,7 @@ python experiments/evaluate_camelyon.py \
 - CSV export for slide-level predictions
 - Confusion matrix and ROC curve visualization
 
-See [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.md) for details.
+See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for details.
 
 ## Key Features
 
@@ -145,7 +147,7 @@ python experiments/compare_pcam_baselines.py \
   --configs experiments/configs/pcam_comparison/*.yaml
 ```
 
-See [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.md) for details.
+See [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) for details.
 
 ## Repository Structure
 
@@ -166,9 +168,18 @@ See [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.md) for details.
 │   ├── generate_synthetic_camelyon.py
 │   ├── model_profiler.py
 │   └── export_onnx.py
+├── examples/              # Demo and example scripts
 ├── tests/                 # Unit tests (62% coverage)
+├── docs/                  # Documentation
+│   ├── DOCS_INDEX.md     # Documentation index
+│   ├── PCAM_BENCHMARK_RESULTS.md
+│   ├── CAMELYON_TRAINING_STATUS.md
+│   └── ...
 ├── configs/               # Configuration files
-└── data/                  # Dataset directory
+├── data/                  # Dataset directory
+├── deploy/                # Deployment configurations
+├── build/                 # Build scripts (Makefile)
+└── README.md              # This file
 ```
 
 ## Testing
@@ -186,14 +197,14 @@ open htmlcov/index.html
 
 ## Documentation
 
-See [DOCS_INDEX.md](DOCS_INDEX.md) for a complete documentation index.
+See [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for a complete documentation index.
 
 **Key Documents**:
-- [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.md) - PatchCamelyon benchmark results
-- [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.md) - CAMELYON training guide
-- [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.md) - Baseline comparison guide
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture details
-- [DOCKER.md](DOCKER.md) - Docker deployment guide
+- [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) - PatchCamelyon benchmark results
+- [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) - CAMELYON training guide
+- [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) - Baseline comparison guide
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture details
+- [docs/DOCKER.md](docs/DOCKER.md) - Docker deployment guide
 
 ## Requirements
 
