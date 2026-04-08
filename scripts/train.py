@@ -4,13 +4,13 @@ Supervised training script for multimodal and baseline pathology models.
 Usage:
     # Train multimodal model
     python scripts/train.py model=multimodal task=classification
-    
+
     # Train baseline (single modality)
     python scripts/train.py model=baseline model.modality=wsi task=classification
-    
+
     # Train with custom config
     python scripts/train.py model=multimodal task=classification training.num_epochs=100
-    
+
     # Train with specific data directory
     python scripts/train.py data.data_dir=/path/to/data model=multimodal
 """
@@ -152,15 +152,15 @@ def set_seed(seed: int):
 def create_dataloaders(config: DictConfig) -> Dict[str, DataLoader]:
     """
     Create train, validation, and test dataloaders.
-    
+
     Args:
         config: Hydra configuration
-        
+
     Returns:
         Dictionary of dataloaders
     """
     data_dir = Path(config.data.data_dir)
-    
+
     # Dataset configurations
     dataset_configs = {
         "train": {
@@ -182,7 +182,7 @@ def create_dataloaders(config: DictConfig) -> Dict[str, DataLoader]:
             "max_text_length": config.data.max_text_length,
         },
     }
-    
+
     # Create datasets
     datasets = {}
     for split in ["train", "val", "test"]:
@@ -196,7 +196,7 @@ def create_dataloaders(config: DictConfig) -> Dict[str, DataLoader]:
         except FileNotFoundError as e:
             logger.warning(f"Could not load {split} dataset: {e}")
             datasets[split] = None
-    
+
     # Create dataloaders
     dataloaders = {}
     for split in ["train", "val", "test"]:
@@ -212,33 +212,31 @@ def create_dataloaders(config: DictConfig) -> Dict[str, DataLoader]:
             )
         else:
             dataloaders[split] = None
-    
+
     return dataloaders
 
 
 def create_model(config: DictConfig) -> tuple:
     """
     Create model and task head based on configuration.
-    
+
     Args:
         config: Hydra configuration
-        
+
     Returns:
         Tuple of (model, task_head)
     """
     model_type = config.model.name
     num_classes = config.task.num_classes
-    
+
     if model_type == "multimodal":
         # Full multimodal fusion model
         model = MultimodalFusionModel(
             embed_dim=config.model.embed_dim,
             dropout=config.model.dropout,
         )
-        logger.info(
-            f"Created MultimodalFusionModel with embed_dim={config.model.embed_dim}"
-        )
-    
+        logger.info(f"Created MultimodalFusionModel with embed_dim={config.model.embed_dim}")
+
     elif model_type == "baseline":
         # Single modality baseline
         modality = config.model.modality
@@ -251,7 +249,7 @@ def create_model(config: DictConfig) -> tuple:
             f"Created SingleModalityModel (modality={modality}) "
             f"with embed_dim={config.model.embed_dim}"
         )
-    
+
     elif model_type == "late_fusion":
         # Late fusion baseline
         model = get_baseline_model(
@@ -259,10 +257,10 @@ def create_model(config: DictConfig) -> tuple:
             embed_dim=config.model.embed_dim,
         )
         logger.info(f"Created LateFusionModel with embed_dim={config.model.embed_dim}")
-    
+
     else:
         raise ValueError(f"Unknown model type: {model_type}")
-    
+
     # Create task head (classification or survival)
     if config.task.name == "classification":
         task_head = ClassificationHead(
@@ -272,18 +270,19 @@ def create_model(config: DictConfig) -> tuple:
             dropout=config.model.dropout,
         )
         logger.info(f"Created ClassificationHead with {num_classes} classes")
-    
+
     elif config.task.name == "survival":
         from src.models import SurvivalPredictionHead
+
         task_head = SurvivalPredictionHead(
             input_dim=config.model.embed_dim,
             num_time_bins=config.task.num_time_bins,
         )
         logger.info(f"Created SurvivalPredictionHead")
-    
+
     else:
         raise ValueError(f"Unknown task type: {config.task.name}")
-    
+
     return model, task_head
 
 
@@ -293,34 +292,34 @@ def main(cfg: DictConfig):
     # Print configuration
     logger.info("Configuration:")
     logger.info(OmegaConf.to_yaml(cfg))
-    
+
     # Set seed for reproducibility
     set_seed(cfg.training.seed)
-    
+
     # Create output directory
     output_dir = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
     logger.info(f"Output directory: {output_dir}")
-    
+
     # Create dataloaders
     dataloaders = create_dataloaders(cfg)
-    
+
     if dataloaders["train"] is None:
         logger.error("No training data found. Please check data directory.")
         return
-    
+
     if dataloaders["val"] is None:
         logger.warning("No validation data found. Training without validation.")
-    
+
     # Create model
     model, task_head = create_model(cfg)
-    
+
     # Count parameters
     model_params = sum(p.numel() for p in model.parameters())
     head_params = sum(p.numel() for p in task_head.parameters())
     logger.info(f"Model parameters: {model_params:,}")
     logger.info(f"Task head parameters: {head_params:,}")
     logger.info(f"Total parameters: {model_params + head_params:,}")
-    
+
     # Create trainer
     trainer = SupervisedTrainer(
         model=model,
@@ -335,24 +334,24 @@ def main(cfg: DictConfig):
         checkpoint_dir=str(output_dir / "checkpoints"),
         log_dir=str(output_dir / "tensorboard"),
     )
-    
+
     # Train
     history = trainer.fit(
         train_loader=dataloaders["train"],
         num_epochs=cfg.training.num_epochs,
         val_loader=dataloaders["val"],  # None if no validation data
     )
-    
+
     # Save training history
     history_path = output_dir / "training_history.json"
     with open(history_path, "w") as f:
         json.dump(history, f, indent=2)
     logger.info(f"Saved training history to {history_path}")
-    
+
     # Evaluate on test set if available
     if dataloaders["test"] is not None:
         logger.info("Evaluating on test set...")
-        
+
         # Load best checkpoint if available (only exists when validation was used)
         best_checkpoint_path = output_dir / "checkpoints" / "checkpoint_best.pth"
         if dataloaders["val"] is not None and best_checkpoint_path.exists():
@@ -360,15 +359,15 @@ def main(cfg: DictConfig):
             logger.info("Loaded best checkpoint for evaluation")
         else:
             logger.info("Using latest checkpoint for evaluation (no validation split)")
-        
+
         test_metrics = trainer.evaluate(dataloaders["test"])
-        
+
         # Save test results
         results_path = output_dir / "test_results.json"
         with open(results_path, "w") as f:
             json.dump(test_metrics, f, indent=2)
         logger.info(f"Saved test results to {results_path}")
-    
+
     logger.info("Training completed successfully!")
 
 

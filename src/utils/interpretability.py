@@ -207,9 +207,7 @@ class SaliencyMap:
     @staticmethod
     def _batch_key_for_modality(modality: str) -> str:
         """Map interpretability modality names to model batch keys."""
-        return {"wsi": "wsi_features", "genomic": "genomic", "clinical": "clinical_text"}[
-            modality
-        ]
+        return {"wsi": "wsi_features", "genomic": "genomic", "clinical": "clinical_text"}[modality]
 
     @staticmethod
     def _select_target_logits(

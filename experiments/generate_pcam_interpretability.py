@@ -28,6 +28,21 @@ from src.utils.interpretability import EmbeddingAnalyzer, SaliencyMap
 logger = logging.getLogger(__name__)
 
 
+def _to_serializable(value: Any) -> Any:
+    """Convert artifact metadata into JSON-serializable Python values."""
+    if isinstance(value, Path):
+        return value.as_posix()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, dict):
+        return {key: _to_serializable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_to_serializable(item) for item in value]
+    return value
+
+
 class _PCamFeatureClassifier(nn.Module):
     """Wrap the PCam encoder/head to expose a batch-based saliency interface."""
 
@@ -48,6 +63,37 @@ class _PCamFeatureClassifier(nn.Module):
             embeddings = self.encoder(features)
 
         return self.head(embeddings)
+
+
+def collect_pcam_saliency_batch(
+    dataloader: DataLoader, device: torch.device, max_samples: int
+) -> Dict[str, torch.Tensor]:
+    """Collect up to ``max_samples`` image/label pairs across dataloader batches."""
+    if max_samples < 1:
+        raise ValueError("max_samples must be at least 1 for saliency reporting.")
+
+    images = []
+    labels = []
+    collected = 0
+
+    for batch in dataloader:
+        remaining = max_samples - collected
+        if remaining <= 0:
+            break
+
+        batch_images = batch["image"][:remaining].to(device)
+        batch_labels = batch["label"][:remaining].to(device)
+        images.append(batch_images)
+        labels.append(batch_labels)
+        collected += batch_images.size(0)
+
+    if not images:
+        raise ValueError("Interpretability dataloader is empty.")
+
+    return {
+        "image": torch.cat(images, dim=0),
+        "label": torch.cat(labels, dim=0),
+    }
 
 
 def load_pcam_models_from_checkpoint(
@@ -166,13 +212,11 @@ def compute_pcam_feature_saliency(
     max_samples: int = 16,
 ) -> Dict[str, Any]:
     """Generate a top-feature saliency plot over extracted PCam image features."""
-    try:
-        batch = next(iter(dataloader))
-    except StopIteration as exc:
-        raise ValueError("Interpretability dataloader is empty.") from exc
-
-    images = batch["image"].to(device)[:max_samples]
-    labels = batch["label"].to(device)[:max_samples]
+    if top_k < 1:
+        raise ValueError("top_k must be at least 1 for saliency reporting.")
+    batch = collect_pcam_saliency_batch(dataloader, device=device, max_samples=max_samples)
+    images = batch["image"]
+    labels = batch["label"]
 
     with torch.no_grad():
         features = feature_extractor(images)
@@ -237,6 +281,11 @@ def generate_pcam_interpretability_artifacts(
     metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Generate PCam interpretability artifacts and a small JSON manifest."""
+    if max_samples < 2:
+        raise ValueError("PCam interpretability requires at least 2 samples for PCA/t-SNE.")
+    if top_k < 1:
+        raise ValueError("top_k must be at least 1 for saliency reporting.")
+
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -265,6 +314,7 @@ def generate_pcam_interpretability_artifacts(
         device=device,
         output_dir=output_path,
         top_k=top_k,
+        max_samples=max_samples,
     )
 
     unique_labels, counts = np.unique(collected["labels"], return_counts=True)
@@ -281,13 +331,43 @@ def generate_pcam_interpretability_artifacts(
         },
         "explained_variance": explained_variance,
         "top_saliency_features": saliency_artifacts["top_features"],
-        "metadata": metadata or {},
+        "metadata": _to_serializable(metadata or {}),
     }
 
+    report_path = output_path / "interpretability_report.md"
+    top_feature_lines = "\n".join(
+        f"- feature `{item['feature_index']}`: {item['importance']:.6f}"
+        for item in summary["top_saliency_features"]
+    )
+    metadata = summary.get("metadata", {})
+    report = (
+        "# PCam Interpretability Report\n\n"
+        f"- Samples analyzed: {summary['num_samples']}\n"
+        f"- Embedding dimension: {summary['embedding_dim']}\n"
+        f"- Mean predicted probability: {summary['mean_probability']:.6f}\n"
+        f"- Experiment: {metadata.get('experiment_name', 'unknown')}\n"
+        f"- Checkpoint: {metadata.get('checkpoint_path', 'unknown')}\n"
+        f"- Split: {metadata.get('split', 'unknown')}\n\n"
+        "## Artifacts\n\n"
+        f"- PCA plot: `{summary['artifacts']['pca_plot']}`\n"
+        f"- t-SNE plot: `{summary['artifacts']['tsne_plot']}`\n"
+        f"- Saliency plot: `{summary['artifacts']['saliency_plot']}`\n"
+        f"- Saliency JSON: `{summary['artifacts']['saliency_json']}`\n\n"
+        "## Top Saliency Features\n\n"
+        f"{top_feature_lines}\n\n"
+        "## Caveat\n\n"
+        "These artifacts describe model behavior for the selected PCam split only. "
+        "They are interpretability aids, not evidence of clinical validity.\n"
+    )
+    with open(report_path, "w", encoding="utf-8") as handle:
+        handle.write(report)
+    summary["report_path"] = str(report_path)
+    summary["artifacts"]["report"] = str(report_path)
+
     summary_path = output_path / "interpretability_summary.json"
+    summary["summary_path"] = str(summary_path)
     with open(summary_path, "w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2)
-    summary["summary_path"] = str(summary_path)
 
     return summary
 
@@ -306,7 +386,16 @@ def build_pcam_dataloader(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate interpretability artifacts for PCam")
+    parser = argparse.ArgumentParser(
+        description="Generate interpretability artifacts for PCam",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python experiments/generate_pcam_interpretability.py --checkpoint checkpoints/pcam/best_model.pth
+  python experiments/generate_pcam_interpretability.py --checkpoint checkpoints/pcam/best_model.pth --max-samples 64
+  python experiments/generate_pcam_interpretability.py --checkpoint checkpoints/pcam/best_model.pth --output-dir results/pcam/interpretability
+        """,
+    )
     parser.add_argument("--checkpoint", required=True, help="Path to trained PCam checkpoint")
     parser.add_argument(
         "--data-root", default="data/pcam", help="Root directory of the PCam dataset"
@@ -357,6 +446,7 @@ def main() -> None:
             "split": args.split,
             "batch_size": args.batch_size,
             "max_samples": args.max_samples,
+            "top_k": args.top_k,
             "experiment_name": config.get("experiment", {}).get("name"),
         },
     )

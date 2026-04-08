@@ -30,8 +30,7 @@ from torch.utils.data import DataLoader, Subset
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ def compute_bootstrap_ci(
     data: np.ndarray,
     n_bootstrap: int = 1000,
     ci: float = 0.95,
-    metric_func: Callable[[np.ndarray], float] = np.mean
+    metric_func: Callable[[np.ndarray], float] = np.mean,
 ) -> Tuple[float, float, float]:
     """
     Compute bootstrap confidence interval for any metric.
@@ -90,10 +89,7 @@ def compute_bootstrap_ci(
     return observed_metric, ci_lower, ci_upper
 
 
-def paired_t_test(
-    results_a: np.ndarray,
-    results_b: np.ndarray
-) -> Tuple[float, float]:
+def paired_t_test(results_a: np.ndarray, results_b: np.ndarray) -> Tuple[float, float]:
     """
     Perform paired t-test to compare two models across multiple runs/folds.
 
@@ -145,10 +141,7 @@ def paired_t_test(
     return t_stat, p_value
 
 
-def is_significant(
-    p_value: float,
-    alpha: float = 0.05
-) -> bool:
+def is_significant(p_value: float, alpha: float = 0.05) -> bool:
     """Check if p-value indicates statistical significance."""
     return p_value < alpha
 
@@ -185,14 +178,14 @@ class AblationStudy:
         model_factory: Callable[[], nn.Module],
         dataset: torch.utils.data.Dataset,
         ablation_components: List[str],
-        device: str = 'cuda',
+        device: str = "cuda",
         n_bootstrap: int = 1000,
-        seed: int = 42
+        seed: int = 42,
     ):
         self.model_factory = model_factory
         self.dataset = dataset
         self.ablation_components = ablation_components
-        self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
         self.n_bootstrap = n_bootstrap
         self.seed = seed
 
@@ -211,7 +204,7 @@ class AblationStudy:
         self,
         model: nn.Module,
         dataloader: DataLoader,
-        ablation_config: Optional[Dict[str, bool]] = None
+        ablation_config: Optional[Dict[str, bool]] = None,
     ) -> Dict[str, float]:
         """
         Evaluate a model and return metrics.
@@ -238,7 +231,7 @@ class AblationStudy:
                     k: v.to(self.device) if isinstance(v, torch.Tensor) else v
                     for k, v in batch.items()
                 }
-                labels = batch.pop('label')
+                labels = batch.pop("label")
 
                 # Apply ablation if specified
                 if ablation_config:
@@ -247,13 +240,13 @@ class AblationStudy:
                 # Forward pass
                 try:
                     embeddings = model(batch)
-                    logits = model(batch) if hasattr(model, 'classification_head') else None
+                    logits = model(batch) if hasattr(model, "classification_head") else None
 
                     if logits is None:
                         # Get logits from task head if available
-                        if hasattr(model, 'task_head'):
+                        if hasattr(model, "task_head"):
                             logits = model.task_head(embeddings)
-                        elif hasattr(model, 'classification_head'):
+                        elif hasattr(model, "classification_head"):
                             logits = model.classification_head(embeddings)
 
                     if logits is not None:
@@ -276,19 +269,17 @@ class AblationStudy:
         from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
         metrics = {
-            'accuracy': accuracy_score(all_labels, all_preds),
-            'f1': f1_score(all_labels, all_preds, average='weighted', zero_division=0),
-            'precision': precision_score(all_labels, all_preds, average='weighted', zero_division=0),
-            'recall': recall_score(all_labels, all_preds, average='weighted', zero_division=0)
+            "accuracy": accuracy_score(all_labels, all_preds),
+            "f1": f1_score(all_labels, all_preds, average="weighted", zero_division=0),
+            "precision": precision_score(
+                all_labels, all_preds, average="weighted", zero_division=0
+            ),
+            "recall": recall_score(all_labels, all_preds, average="weighted", zero_division=0),
         }
 
         return metrics
 
-    def _apply_ablation(
-        self,
-        batch: Dict,
-        ablation_config: Dict[str, bool]
-    ) -> Dict:
+    def _apply_ablation(self, batch: Dict, ablation_config: Dict[str, bool]) -> Dict:
         """
         Apply ablation to a batch by removing specified components.
 
@@ -302,28 +293,28 @@ class AblationStudy:
         batch = batch.copy()
 
         # Ablate WSI modality
-        if ablation_config.get('no_wsi', False):
-            batch['wsi_features'] = None
-            batch['wsi_mask'] = None
+        if ablation_config.get("no_wsi", False):
+            batch["wsi_features"] = None
+            batch["wsi_mask"] = None
 
         # Ablate genomic modality
-        if ablation_config.get('no_genomic', False):
-            batch['genomic'] = None
+        if ablation_config.get("no_genomic", False):
+            batch["genomic"] = None
 
         # Ablate clinical modality
-        if ablation_config.get('no_clinical', False):
-            batch['clinical_text'] = None
-            batch['clinical_mask'] = None
+        if ablation_config.get("no_clinical", False):
+            batch["clinical_text"] = None
+            batch["clinical_mask"] = None
 
         # Ablate cross-attention (handled in model)
-        if ablation_config.get('no_cross_attention', False):
-            if hasattr(batch.get('model', {}), 'disable_cross_attention'):
-                batch['model'].disable_cross_attention()
+        if ablation_config.get("no_cross_attention", False):
+            if hasattr(batch.get("model", {}), "disable_cross_attention"):
+                batch["model"].disable_cross_attention()
 
         # Ablate temporal reasoning
-        if ablation_config.get('no_temporal', False):
-            if hasattr(batch.get('model', {}), 'disable_temporal'):
-                batch['model'].disable_temporal()
+        if ablation_config.get("no_temporal", False):
+            if hasattr(batch.get("model", {}), "disable_temporal"):
+                batch["model"].disable_temporal()
 
         return batch
 
@@ -332,7 +323,7 @@ class AblationStudy:
         model: nn.Module,
         dataloader: DataLoader,
         component_to_remove: str,
-        full_metrics: Dict[str, float]
+        full_metrics: Dict[str, float],
     ) -> Dict[str, Any]:
         """
         Run a single ablation study for one component.
@@ -348,16 +339,16 @@ class AblationStudy:
         """
         # Create ablation config
         ablation_config = {}
-        if component_to_remove == 'wsi':
-            ablation_config['no_wsi'] = True
-        elif component_to_remove == 'genomic':
-            ablation_config['no_genomic'] = True
-        elif component_to_remove == 'clinical':
-            ablation_config['no_clinical'] = True
-        elif component_to_remove == 'cross_attention':
-            ablation_config['no_cross_attention'] = True
-        elif component_to_remove == 'temporal':
-            ablation_config['no_temporal'] = True
+        if component_to_remove == "wsi":
+            ablation_config["no_wsi"] = True
+        elif component_to_remove == "genomic":
+            ablation_config["no_genomic"] = True
+        elif component_to_remove == "clinical":
+            ablation_config["no_clinical"] = True
+        elif component_to_remove == "cross_attention":
+            ablation_config["no_cross_attention"] = True
+        elif component_to_remove == "temporal":
+            ablation_config["no_temporal"] = True
 
         # Evaluate with ablation
         ablated_metrics = self.evaluate_model(model, dataloader, ablation_config)
@@ -366,19 +357,19 @@ class AblationStudy:
         deltas = {}
         for metric_name in full_metrics:
             delta = ablated_metrics.get(metric_name, 0) - full_metrics[metric_name]
-            deltas[f'delta_{metric_name}'] = delta
+            deltas[f"delta_{metric_name}"] = delta
 
         result = {
-            'component_removed': component_to_remove,
-            'full_metrics': full_metrics,
-            'ablated_metrics': ablated_metrics,
-            'deltas': deltas,
-            'is_significant': {},
-            'p_values': {}
+            "component_removed": component_to_remove,
+            "full_metrics": full_metrics,
+            "ablated_metrics": ablated_metrics,
+            "deltas": deltas,
+            "is_significant": {},
+            "p_values": {},
         }
 
         # Compute statistical significance for accuracy and F1
-        for metric in ['accuracy', 'f1']:
+        for metric in ["accuracy", "f1"]:
             # Get per-sample predictions to compute paired test
             # Note: In practice, you'd want to run multiple seeds for proper statistical test
             # Here we use bootstrap CI on the metric values
@@ -387,26 +378,22 @@ class AblationStudy:
 
             # For proper paired test, we would need multiple runs
             # Using a simplified approach with effect size
-            effect_size = deltas.get(f'delta_{metric}', 0)
+            effect_size = deltas.get(f"delta_{metric}", 0)
 
             # Bootstrap CI for the delta
             # Simulate sampling variability (in practice, use multiple model runs)
             if effect_size != 0:
                 # Compute approximate p-value based on effect size
                 t_stat, p_val = effect_size, 0.05  # Placeholder - would need multiple runs
-                result['p_values'][metric] = p_val
-                result['is_significant'][metric] = is_significant(p_val)
+                result["p_values"][metric] = p_val
+                result["is_significant"][metric] = is_significant(p_val)
             else:
-                result['p_values'][metric] = 1.0
-                result['is_significant'][metric] = False
+                result["p_values"][metric] = 1.0
+                result["is_significant"][metric] = False
 
         return result
 
-    def run_full_ablation(
-        self,
-        trained_model: nn.Module,
-        dataloader: DataLoader
-    ) -> Dict[str, Any]:
+    def run_full_ablation(self, trained_model: nn.Module, dataloader: DataLoader) -> Dict[str, Any]:
         """
         Run complete ablation study on a trained model.
 
@@ -430,23 +417,18 @@ class AblationStudy:
         ablation_results = {}
         for component in tqdm(self.ablation_components, desc="Ablation components"):
             logger.info(f"\nAblating: {component}")
-            result = self.run_single_ablation(
-                trained_model, dataloader, component, full_metrics
-            )
+            result = self.run_single_ablation(trained_model, dataloader, component, full_metrics)
             ablation_results[component] = result
 
-            delta_acc = result['deltas'].get('delta_accuracy', 0)
-            delta_f1 = result['deltas'].get('delta_f1', 0)
+            delta_acc = result["deltas"].get("delta_accuracy", 0)
+            delta_f1 = result["deltas"].get("delta_f1", 0)
             logger.info(f"  Delta accuracy: {delta_acc:+.4f}")
             logger.info(f"  Delta F1: {delta_f1:+.4f}")
 
         self.full_model_results = full_metrics
         self.ablation_results = ablation_results
 
-        return {
-            'full_model_metrics': full_metrics,
-            'ablation_results': ablation_results
-        }
+        return {"full_model_metrics": full_metrics, "ablation_results": ablation_results}
 
     def save_results(self, output_dir: Path):
         """Save ablation results to JSON file."""
@@ -454,20 +436,20 @@ class AblationStudy:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         results = {
-            'full_model_metrics': self.full_model_results,
-            'ablation_results': self.ablation_results,
-            'config': {
-                'n_bootstrap': self.n_bootstrap,
-                'ablation_components': self.ablation_components,
-                'seed': self.seed
-            }
+            "full_model_metrics": self.full_model_results,
+            "ablation_results": self.ablation_results,
+            "config": {
+                "n_bootstrap": self.n_bootstrap,
+                "ablation_components": self.ablation_components,
+                "seed": self.seed,
+            },
         }
 
         # Convert numpy types to Python types for JSON serialization
         results = self._convert_to_serializable(results)
 
-        output_path = output_dir / 'ablation_results.json'
-        with open(output_path, 'w') as f:
+        output_path = output_dir / "ablation_results.json"
+        with open(output_path, "w") as f:
             json.dump(results, f, indent=2)
 
         logger.info(f"Saved ablation results to {output_path}")
@@ -502,22 +484,26 @@ class AblationStudy:
             print(f"  {metric}: {value:.4f}")
 
         print("\n" + "-" * 80)
-        print(f"{'Component Removed':<25} {'Accuracy':<12} {'Delta Acc':<12} {'F1':<12} {'Delta F1':<12} {'Significant':<12}")
+        print(
+            f"{'Component Removed':<25} {'Accuracy':<12} {'Delta Acc':<12} {'F1':<12} {'Delta F1':<12} {'Significant':<12}"
+        )
         print("-" * 80)
 
         for component, result in self.ablation_results.items():
-            full_acc = result['full_metrics']['accuracy']
-            ablated_acc = result['ablated_metrics']['accuracy']
-            delta_acc = result['deltas']['delta_accuracy']
+            full_acc = result["full_metrics"]["accuracy"]
+            ablated_acc = result["ablated_metrics"]["accuracy"]
+            delta_acc = result["deltas"]["delta_accuracy"]
 
-            full_f1 = result['full_metrics']['f1']
-            ablated_f1 = result['ablated_metrics']['f1']
-            delta_f1 = result['deltas']['delta_f1']
+            full_f1 = result["full_metrics"]["f1"]
+            ablated_f1 = result["ablated_metrics"]["f1"]
+            delta_f1 = result["deltas"]["delta_f1"]
 
-            is_sig = result['is_significant'].get('accuracy', False)
+            is_sig = result["is_significant"].get("accuracy", False)
             sig_str = "Yes*" if is_sig else "No"
 
-            print(f"{component:<25} {full_acc:<12.4f} {delta_acc:<+12.4f} {full_f1:<12.4f} {delta_f1:<+12.4f} {sig_str:<12}")
+            print(
+                f"{component:<25} {full_acc:<12.4f} {delta_acc:<+12.4f} {full_f1:<12.4f} {delta_f1:<+12.4f} {sig_str:<12}"
+            )
 
         print("=" * 80)
         print("* indicates statistically significant (p < 0.05)")
@@ -530,9 +516,9 @@ def run_cross_validation(
     n_folds: int = 5,
     seed: int = 42,
     batch_size: int = 16,
-    device: str = 'cuda',
+    device: str = "cuda",
     n_bootstrap: int = 1000,
-    metric_func: Callable = np.mean
+    metric_func: Callable = np.mean,
 ) -> Dict[str, Any]:
     """
     Run k-fold cross-validation with proper fold separation.
@@ -567,7 +553,7 @@ def run_cross_validation(
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    device = torch.device(device if torch.cuda.is_available() else 'cpu')
+    device = torch.device(device if torch.cuda.is_available() else "cpu")
 
     # Get dataset size
     n_samples = len(dataset)
@@ -578,7 +564,7 @@ def run_cross_validation(
 
     # Split into folds
     fold_sizes = np.full(n_folds, n_samples // n_folds, dtype=int)
-    fold_sizes[:n_samples % n_folds] += 1
+    fold_sizes[: n_samples % n_folds] += 1
     fold_starts = np.cumsum(np.concatenate([[0], fold_sizes[:-1]]))
 
     fold_metrics = []
@@ -600,16 +586,8 @@ def run_cross_validation(
         train_subset = Subset(dataset, train_indices)
         val_subset = Subset(dataset, val_indices)
 
-        train_loader = DataLoader(
-            train_subset,
-            batch_size=batch_size,
-            shuffle=True
-        )
-        val_loader = DataLoader(
-            val_subset,
-            batch_size=batch_size,
-            shuffle=False
-        )
+        train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
 
         # Initialize model
         model = model_factory()
@@ -626,18 +604,17 @@ def run_cross_validation(
             epoch_loss = 0
             for batch in train_loader:
                 batch = {
-                    k: v.to(device) if isinstance(v, torch.Tensor) else v
-                    for k, v in batch.items()
+                    k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
                 }
-                labels = batch.pop('label')
+                labels = batch.pop("label")
 
                 optimizer.zero_grad()
                 embeddings = model(batch)
 
                 # Get logits from task head if available
-                if hasattr(model, 'classification_head'):
+                if hasattr(model, "classification_head"):
                     logits = model.classification_head(embeddings)
-                elif hasattr(model, 'task_head'):
+                elif hasattr(model, "task_head"):
                     logits = model.task_head(embeddings)
                 else:
                     logits = embeddings  # Use embeddings directly
@@ -655,16 +632,15 @@ def run_cross_validation(
         with torch.no_grad():
             for batch in val_loader:
                 batch = {
-                    k: v.to(device) if isinstance(v, torch.Tensor) else v
-                    for k, v in batch.items()
+                    k: v.to(device) if isinstance(v, torch.Tensor) else v for k, v in batch.items()
                 }
-                labels = batch.pop('label')
+                labels = batch.pop("label")
 
                 embeddings = model(batch)
 
-                if hasattr(model, 'classification_head'):
+                if hasattr(model, "classification_head"):
                     logits = model.classification_head(embeddings)
-                elif hasattr(model, 'task_head'):
+                elif hasattr(model, "task_head"):
                     logits = model.task_head(embeddings)
                 else:
                     logits = embeddings
@@ -676,23 +652,25 @@ def run_cross_validation(
         from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
         fold_acc = accuracy_score(all_labels, all_preds)
-        fold_f1 = f1_score(all_labels, all_preds, average='weighted', zero_division=0)
-        fold_precision = precision_score(all_labels, all_preds, average='weighted', zero_division=0)
-        fold_recall = recall_score(all_labels, all_preds, average='weighted', zero_division=0)
+        fold_f1 = f1_score(all_labels, all_preds, average="weighted", zero_division=0)
+        fold_precision = precision_score(all_labels, all_preds, average="weighted", zero_division=0)
+        fold_recall = recall_score(all_labels, all_preds, average="weighted", zero_division=0)
 
-        fold_metrics.append({
-            'fold': fold_idx + 1,
-            'accuracy': fold_acc,
-            'f1': fold_f1,
-            'precision': fold_precision,
-            'recall': fold_recall
-        })
+        fold_metrics.append(
+            {
+                "fold": fold_idx + 1,
+                "accuracy": fold_acc,
+                "f1": fold_f1,
+                "precision": fold_precision,
+                "recall": fold_recall,
+            }
+        )
 
         logger.info(f"Fold {fold_idx + 1} - Accuracy: {fold_acc:.4f}, F1: {fold_f1:.4f}")
 
     # Compute aggregate statistics
-    accuracies = np.array([fm['accuracy'] for fm in fold_metrics])
-    f1_scores = np.array([fm['f1'] for fm in fold_metrics])
+    accuracies = np.array([fm["accuracy"] for fm in fold_metrics])
+    f1_scores = np.array([fm["f1"] for fm in fold_metrics])
 
     # Bootstrap CI for accuracy
     mean_acc, ci_lower_acc, ci_upper_acc = compute_bootstrap_ci(
@@ -705,16 +683,16 @@ def run_cross_validation(
     )
 
     results = {
-        'fold_metrics': fold_metrics,
-        'mean_accuracy': float(mean_acc),
-        'mean_f1': float(mean_f1),
-        'std_accuracy': float(np.std(accuracies)),
-        'std_f1': float(np.std(f1_scores)),
-        'ci_accuracy': (float(ci_lower_acc), float(ci_upper_acc)),
-        'ci_f1': (float(ci_lower_f1), float(ci_upper_f1)),
-        'n_folds': n_folds,
-        'n_samples': n_samples,
-        'seed': seed
+        "fold_metrics": fold_metrics,
+        "mean_accuracy": float(mean_acc),
+        "mean_f1": float(mean_f1),
+        "std_accuracy": float(np.std(accuracies)),
+        "std_f1": float(np.std(f1_scores)),
+        "ci_accuracy": (float(ci_lower_acc), float(ci_upper_acc)),
+        "ci_f1": (float(ci_lower_f1), float(ci_upper_f1)),
+        "n_folds": n_folds,
+        "n_samples": n_samples,
+        "seed": seed,
     }
 
     logger.info(f"\n{'='*60}")
