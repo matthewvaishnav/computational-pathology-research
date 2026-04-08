@@ -5,7 +5,7 @@ This module provides the end-to-end multimodal architecture that combines
 WSI, genomic, and clinical text data through attention-based fusion.
 """
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -102,32 +102,40 @@ class MultimodalFusionModel(nn.Module):
         self.genomic_encoder = GenomicEncoder(**genomic_config)
         self.clinical_encoder = ClinicalTextEncoder(**clinical_config)
 
+        # Validate fusion config modalities match expected modalities
+        self.modalities = ["wsi", "genomic", "clinical"]
+        if "modalities" in fusion_config:
+            if set(fusion_config["modalities"]) != set(self.modalities):
+                raise ValueError(
+                    f"Fusion config modalities {fusion_config['modalities']} "
+                    f"do not match expected modalities {self.modalities}"
+                )
+
         # Initialize fusion layer
         self.fusion_layer = MultiModalFusionLayer(**fusion_config)
 
-        # Modality names
-        self.modalities = ["wsi", "genomic", "clinical"]
-
     def forward(
         self, batch: Dict[str, Optional[torch.Tensor]], return_modality_embeddings: bool = False
-    ) -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]]]:
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
         """
         Forward pass through multimodal fusion model.
 
         Args:
             batch: Dictionary containing:
                 - 'wsi_features': WSI patch features [batch_size, num_patches, feature_dim] or None
+                - 'wsi_mask': Optional mask for WSI patches [batch_size, num_patches] (True = valid)
                 - 'genomic': Genomic features [batch_size, num_genes] or None
+                - 'genomic_mask': Optional mask for genomic samples [batch_size] (True = valid)
                 - 'clinical_text': Clinical text token IDs [batch_size, seq_len] or None
-                - 'wsi_mask': Optional mask for WSI patches [batch_size, num_patches]
-                - 'clinical_mask': Optional mask for clinical text [batch_size, seq_len]
+                - 'clinical_mask': Optional mask for clinical text [batch_size, seq_len] (True = valid)
             return_modality_embeddings: If True, return individual modality embeddings
 
         Returns:
             If return_modality_embeddings is False:
                 Fused embedding [batch_size, embed_dim]
             If return_modality_embeddings is True:
-                Tuple of (fused_embedding, modality_embeddings_dict)
+                Tuple of (fused_embedding [batch_size, embed_dim], 
+                         modality_embeddings_dict {str: Optional[Tensor]})
         """
         device = next(self.parameters()).device
         batch_size = self._get_batch_size(batch)
@@ -141,6 +149,7 @@ class MultimodalFusionModel(nn.Module):
             wsi_emb = self.wsi_encoder(batch["wsi_features"], mask=batch.get("wsi_mask"))
             modality_embeddings["wsi"] = wsi_emb
             if batch.get("wsi_mask") is not None:
+                # Mask is [batch_size, num_patches], reduce to [batch_size]
                 modality_masks["wsi"] = batch["wsi_mask"].any(dim=1).to(device)
             else:
                 modality_masks["wsi"] = torch.ones(batch_size, dtype=torch.bool, device=device)
@@ -153,6 +162,7 @@ class MultimodalFusionModel(nn.Module):
             genomic_emb = self.genomic_encoder(batch["genomic"])
             modality_embeddings["genomic"] = genomic_emb
             if batch.get("genomic_mask") is not None:
+                # Mask is [batch_size], use directly
                 modality_masks["genomic"] = batch["genomic_mask"].to(device)
             else:
                 modality_masks["genomic"] = torch.ones(batch_size, dtype=torch.bool, device=device)
@@ -167,6 +177,7 @@ class MultimodalFusionModel(nn.Module):
             )
             modality_embeddings["clinical"] = clinical_emb
             if batch.get("clinical_mask") is not None:
+                # Mask can be [batch_size, seq_len] or [batch_size], standardize to [batch_size]
                 if batch["clinical_mask"].dim() > 1:
                     modality_masks["clinical"] = batch["clinical_mask"].any(dim=1).to(device)
                 else:
