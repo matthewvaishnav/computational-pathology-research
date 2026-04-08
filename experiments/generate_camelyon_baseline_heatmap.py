@@ -14,7 +14,7 @@ import json
 import pickle
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional, Union
 
 from sklearn.linear_model import LogisticRegression
 
@@ -25,7 +25,7 @@ from experiments.run_camelyon_feature_baseline import export_model_tile_scores
 from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifacts
 
 
-def load_baseline_model(model_path: str | Path) -> LogisticRegression:
+def load_baseline_model(model_path: Union[str, Path]) -> LogisticRegression:
     """Load a trained CAMELYON feature baseline pickle."""
     model_path = Path(model_path)
     with open(model_path, "rb") as handle:
@@ -39,16 +39,16 @@ def load_baseline_model(model_path: str | Path) -> LogisticRegression:
 
 def generate_camelyon_baseline_heatmap(
     *,
-    model_path: str | Path,
-    feature_file: str | Path,
-    output_dir: str | Path,
-    slide_width: int | None = None,
-    slide_height: int | None = None,
-    patch_size: int | None = None,
-    thumbnail_path: str | Path | None = None,
-    annotation_xml_path: str | Path | None = None,
+    model_path: Union[str, Path],
+    feature_file: Union[str, Path],
+    output_dir: Union[str, Path],
+    slide_width: Union[int, None] = None,
+    slide_height: Union[int, None] = None,
+    patch_size: Union[int, None] = None,
+    thumbnail_path: Union[Union[str, Path], None] = None,
+    annotation_xml_path: Union[Union[str, Path], None] = None,
     downsample: int = 1,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Export model-driven tile scores and optional heatmap artifacts."""
     model = load_baseline_model(model_path)
     output_dir = Path(output_dir)
@@ -61,7 +61,7 @@ def generate_camelyon_baseline_heatmap(
         output_path=tile_scores_path,
     )
 
-    summary: dict[str, Any] = {
+    summary: Dict[str, Any] = {
         "model_path": Path(model_path).as_posix(),
         "feature_file": Path(feature_file).as_posix(),
         "tile_scores_path": tile_scores_path.as_posix(),

@@ -1,5 +1,6 @@
 """Targeted tests for the PCam interpretability workflow."""
 
+from typing import Union, Optional
 from pathlib import Path
 
 import json

@@ -15,7 +15,7 @@ Supported score methods:
 import argparse
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Union, Optional, Literal
 
 import h5py
 import numpy as np
@@ -26,7 +26,7 @@ ScoreMethod = Literal["l2_norm", "mean_activation", "feature_index"]
 def compute_tile_scores(
     features: np.ndarray,
     method: ScoreMethod = "l2_norm",
-    feature_index: int | None = None,
+    feature_index: Union[int, None] = None,
 ) -> np.ndarray:
     """Compute scalar tile scores from feature vectors."""
     if features.ndim != 2:
@@ -47,10 +47,10 @@ def compute_tile_scores(
 
 
 def export_slide_tile_scores(
-    feature_file: str | Path,
-    output_path: str | Path,
+    feature_file: Union[str, Path],
+    output_path: Union[str, Path],
     method: ScoreMethod = "l2_norm",
-    feature_index: int | None = None,
+    feature_index: Union[int, None] = None,
     normalize: bool = True,
 ) -> dict:
     """Export tile coordinates and scores for one CAMELYON feature file."""

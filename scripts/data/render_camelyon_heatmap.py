@@ -15,7 +15,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from PIL import Image
@@ -30,9 +30,9 @@ from src.data.camelyon_annotations import (
 
 
 def load_tile_scores(
-    input_path: str | Path,
+    input_path: Union[str, Path],
     coordinate_order: str = "xy",
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Load tile coordinates and scores from JSON or CSV."""
     input_path = Path(input_path)
     suffix = input_path.suffix.lower()
@@ -46,19 +46,19 @@ def load_tile_scores(
 
 
 def build_camelyon_heatmap_artifacts(
-    tile_scores_path: str | Path,
+    tile_scores_path: Union[str, Path],
     slide_width: int,
     slide_height: int,
     patch_size: int,
-    output_dir: str | Path,
+    output_dir: Union[str, Path],
     *,
-    thumbnail_path: str | Path | None = None,
-    annotation_xml_path: str | Path | None = None,
+    thumbnail_path: Union[Union[str, Path], None] = None,
+    annotation_xml_path: Union[Union[str, Path], None] = None,
     downsample: int = 1,
     coordinate_order: str = "xy",
     positive_threshold: float = 0.25,
     alpha: float = 0.6,
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """Generate CAMELYON heatmap artifacts and summary metadata."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -79,7 +79,7 @@ def build_camelyon_heatmap_artifacts(
     np.save(heatmap_path, heatmap)
     np.save(counts_path, counts)
 
-    summary: dict[str, Any] = {
+    summary: Dict[str, Any] = {
         "tile_scores_path": Path(tile_scores_path).as_posix(),
         "slide_width": int(slide_width),
         "slide_height": int(slide_height),
@@ -158,7 +158,7 @@ def build_camelyon_heatmap_artifacts(
 def _load_tile_scores_json(
     input_path: Path,
     coordinate_order: str,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Load tile scores from JSON or JSONL."""
     if input_path.suffix.lower() == ".jsonl":
         with open(input_path, "r", encoding="utf-8") as handle:
@@ -174,7 +174,7 @@ def _load_tile_scores_json(
 def _load_tile_scores_csv(
     input_path: Path,
     coordinate_order: str,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Load tile scores from CSV."""
     with open(input_path, "r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -183,9 +183,9 @@ def _load_tile_scores_csv(
 
 
 def _records_to_arrays(
-    records: list[dict[str, Any]],
+    records: List[Dict[str, Any]],
     coordinate_order: str,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Convert score records into coordinate and score arrays."""
     coordinates = []
     scores = []
