@@ -16,6 +16,8 @@ import torch
 from experiments.evaluate_camelyon import (
     compute_patch_scores,
     evaluate_slide_level,
+    render_slide_heatmaps,
+    save_predictions_csv,
 )
 from src.data.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
 
@@ -120,6 +122,89 @@ def test_evaluate_slide_level_exports_tile_scores(tmp_path):
     assert payload["tiles"][1]["x"] == 256
     assert payload["tiles"][2]["y"] == 256
     assert 0.0 <= payload["tiles"][0]["score"] <= 1.0
+
+
+def test_save_predictions_csv_includes_tile_score_paths(tmp_path):
+    """Prediction exports should include tile-score column when tile scores exist."""
+    csv_path = tmp_path / "slide_predictions.csv"
+    metrics = {
+        "slide_labels": {"slide_a": 1, "slide_b": 0},
+        "slide_predictions": {"slide_a": 1, "slide_b": 1},
+        "slide_probabilities": {"slide_a": 0.875, "slide_b": 0.625},
+        "slide_tile_score_paths": {"slide_a": "results/camelyon/tile_scores/slide_a.json"},
+    }
+
+    save_predictions_csv(metrics, str(csv_path))
+
+    import csv
+
+    with open(csv_path, "r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    assert len(rows) == 2
+
+    # Verify tile_score_path column exists when tile scores are present
+    assert "tile_score_path" in rows[0].keys()
+
+    assert rows[0]["slide_id"] == "slide_a"
+    assert rows[0]["tile_score_path"] == "results/camelyon/tile_scores/slide_a.json"
+    assert rows[1]["slide_id"] == "slide_b"
+    assert rows[1]["tile_score_path"] == ""
+
+
+def test_render_slide_heatmaps_from_exported_tile_scores(tmp_path):
+    """Rendered heatmaps should be producible from exported eval tile scores."""
+    slide = SlideMetadata(
+        slide_id="tumor_001",
+        patient_id="patient_001",
+        file_path="/data/tumor_001.tif",
+        label=1,
+        split="test",
+        width=1024,
+        height=512,
+    )
+    slide_index = CAMELYONSlideIndex([slide])
+    features_dir = tmp_path / "features"
+    features_dir.mkdir()
+
+    with h5py.File(features_dir / "tumor_001.h5", "w") as handle:
+        handle.create_dataset(
+            "features",
+            data=np.asarray([[0.0, 1.0], [2.0, 3.0], [4.0, 5.0]], dtype=np.float32),
+        )
+        handle.create_dataset(
+            "coordinates",
+            data=np.asarray([[0, 0], [256, 0], [512, 256]], dtype=np.int32),
+        )
+
+    tile_scores_dir = tmp_path / "tile_scores"
+    metrics = evaluate_slide_level(
+        model=DummySlideModel(),
+        slide_index=slide_index,
+        features_dir=features_dir,
+        split="test",
+        device="cpu",
+        tile_scores_dir=tile_scores_dir,
+    )
+
+    heatmap_summary_paths = render_slide_heatmaps(
+        slide_index=slide_index,
+        split="test",
+        tile_score_paths=metrics["slide_tile_score_paths"],
+        output_dir=tmp_path / "heatmaps",
+        patch_size=256,
+        downsample=2,
+    )
+
+    assert "tumor_001" in heatmap_summary_paths
+    summary_path = Path(heatmap_summary_paths["tumor_001"])
+    assert summary_path.exists()
+
+    payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert payload["tile_scores_path"].endswith("tumor_001_tile_scores.json")
+    assert payload["slide_width"] == 1024
+    assert payload["slide_height"] == 512
+    assert Path(payload["artifacts"]["heatmap"]).exists()
 
 
 def test_evaluate_camelyon_on_quick_test_checkpoint():
@@ -328,6 +413,81 @@ def test_evaluate_camelyon_missing_checkpoint():
 
     assert result.returncode != 0, "Should fail with missing checkpoint"
     assert "not found" in result.stderr.lower() or "not found" in result.stdout.lower()
+
+
+def test_evaluate_camelyon_saves_predictions_csv():
+    """Test that evaluation can save predictions to CSV file."""
+    checkpoint_path = Path("checkpoints/camelyon_quick_test/best_model.pth")
+
+    # Skip if checkpoint doesn't exist
+    if not checkpoint_path.exists():
+        pytest.skip("Quick test checkpoint not found")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        output_dir = Path(tmp_dir) / "eval_results"
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "experiments/evaluate_camelyon.py",
+                "--checkpoint",
+                str(checkpoint_path),
+                "--split",
+                "test",
+                "--output-dir",
+                str(output_dir),
+                "--device",
+                "cpu",
+                "--save-predictions-csv",
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+        assert result.returncode == 0, f"Evaluation failed: {result.stderr}"
+
+        # Check that CSV file was created
+        csv_path = output_dir / "slide_predictions.csv"
+        assert csv_path.exists(), "Predictions CSV file not created"
+
+        # Load and verify CSV structure
+        import csv
+
+        with open(csv_path, "r") as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+
+        # Check CSV has expected columns (no tile_score_path without --tile-scores-dir)
+        assert len(rows) > 0, "CSV should have at least one row"
+        expected_columns = {
+            "slide_id",
+            "true_label",
+            "predicted_label",
+            "probability",
+            "correct",
+            "tile_score_path",
+        }
+        assert set(rows[0].keys()) == expected_columns, f"CSV columns mismatch"
+
+        # Verify data types and values
+        for row in rows:
+            assert row["slide_id"], "slide_id should not be empty"
+            assert row["true_label"] in ["0", "1"], "true_label should be 0 or 1"
+            assert row["predicted_label"] in ["0", "1"], "predicted_label should be 0 or 1"
+
+            # Check probability is a valid float between 0 and 1
+            prob = float(row["probability"])
+            assert 0.0 <= prob <= 1.0, f"Probability {prob} out of range"
+
+            # Check correct is a boolean string
+            assert row["correct"] in ["True", "False"], "correct should be True or False"
+            assert row["tile_score_path"] == "", "tile_score_path should be empty without export"
+
+        metrics_path = output_dir / "metrics.json"
+        with open(metrics_path, "r", encoding="utf-8") as f:
+            metrics = json.load(f)
+
+        assert metrics["predictions_csv_path"].endswith("slide_predictions.csv")
 
 
 if __name__ == "__main__":
