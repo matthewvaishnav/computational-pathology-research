@@ -8,8 +8,8 @@ import h5py
 import numpy as np
 import pytest
 import torch
-from torch.utils.data import DataLoader
 from omegaconf import DictConfig
+from torch.utils.data import DataLoader
 
 from experiments.statistical_analysis import AblationStudy, run_cross_validation
 from src.data.loaders import MultimodalDataset
