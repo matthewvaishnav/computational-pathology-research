@@ -2,41 +2,36 @@
 Experiment tracking module.
 Records experiment metadata (git hash, timestamp, config, metrics) to results/experiments/.
 """
+
 import json
 import os
 import subprocess
 from datetime import datetime
 from typing import Any, Optional
 
-_EXPERIMENTS_DIR = 'results/experiments'
+_EXPERIMENTS_DIR = "results/experiments"
 
 
 def _get_git_hash() -> str:
     """Get the current git commit hash."""
     try:
         result = subprocess.run(
-            ['git', 'rev-parse', 'HEAD'],
-            capture_output=True,
-            text=True,
-            check=True
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return 'unknown'
+        return "unknown"
 
 
 def _get_git_branch() -> str:
     """Get the current git branch."""
     try:
         result = subprocess.run(
-            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-            capture_output=True,
-            text=True,
-            check=True
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return 'unknown'
+        return "unknown"
 
 
 def _ensure_experiments_dir() -> None:
@@ -63,21 +58,21 @@ def log_experiment(name: str, config: dict[str, Any], metrics: dict[str, Any]) -
     git_branch = _get_git_branch()
 
     experiment = {
-        'name': name,
-        'timestamp': timestamp,
-        'git_hash': git_hash,
-        'git_branch': git_branch,
-        'config': config,
-        'metrics': metrics
+        "name": name,
+        "timestamp": timestamp,
+        "git_hash": git_hash,
+        "git_branch": git_branch,
+        "config": config,
+        "metrics": metrics,
     }
 
     # Create safe filename from name and timestamp
-    safe_name = name.replace(' ', '_').replace('/', '_').replace('\\', '_')
-    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'{safe_name}_{timestamp_str}.json'
+    safe_name = name.replace(" ", "_").replace("/", "_").replace("\\", "_")
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{safe_name}_{timestamp_str}.json"
     filepath = os.path.join(_EXPERIMENTS_DIR, filename)
 
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         json.dump(experiment, f, indent=2)
 
     return filepath
@@ -94,16 +89,16 @@ def get_experiment_history() -> list[dict[str, Any]]:
 
     experiments = []
     for filename in os.listdir(_EXPERIMENTS_DIR):
-        if filename.endswith('.json'):
+        if filename.endswith(".json"):
             filepath = os.path.join(_EXPERIMENTS_DIR, filename)
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     experiments.append(json.load(f))
             except (json.JSONDecodeError, IOError):
                 continue
 
     # Sort by timestamp, newest first
-    experiments.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    experiments.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
     return experiments
 
 
@@ -118,7 +113,7 @@ def get_experiment_by_name(name: str) -> list[dict[str, Any]]:
         List of experiment dictionaries matching the name
     """
     history = get_experiment_history()
-    return [exp for exp in history if exp.get('name') == name]
+    return [exp for exp in history if exp.get("name") == name]
 
 
 def get_latest_experiment(name: str) -> Optional[dict[str, Any]]:
