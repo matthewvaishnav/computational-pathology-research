@@ -3,6 +3,11 @@ Run the working demo to generate actual training results.
 This proves the architecture works and generates portfolio-worthy outputs.
 """
 import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
