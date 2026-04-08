@@ -186,6 +186,9 @@ open htmlcov/index.html
 
 ## Documentation
 
+See [DOCS_INDEX.md](DOCS_INDEX.md) for a complete documentation index.
+
+**Key Documents**:
 - [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.md) - PatchCamelyon benchmark results
 - [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.md) - CAMELYON training guide
 - [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.md) - Baseline comparison guide

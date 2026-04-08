@@ -663,6 +663,7 @@ Examples:
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --output-dir results/camelyon
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --tile-scores-dir results/camelyon/tile_scores
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --heatmaps-dir results/camelyon/heatmaps
+  python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --save-predictions-csv --heatmaps-dir results/camelyon/heatmaps
         """,
     )
     parser.add_argument(
@@ -698,13 +699,19 @@ Examples:
         "--tile-scores-dir",
         type=str,
         default=None,
-        help="Optional directory to export model-driven per-slide tile-score JSON files",
+        help=(
+            "Optional directory to export model-driven per-slide tile-score JSON files "
+            "(auto-set to <output-dir>/tile_scores when --heatmaps-dir is used)"
+        ),
     )
     parser.add_argument(
         "--heatmaps-dir",
         type=str,
         default=None,
-        help="Optional directory to render heatmaps from exported tile scores",
+        help=(
+            "Optional directory to render heatmaps from exported tile scores "
+            "using slide width/height metadata from the slide index"
+        ),
     )
     parser.add_argument(
         "--heatmap-downsample",
