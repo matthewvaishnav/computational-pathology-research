@@ -107,13 +107,14 @@ class TestSurvivalPredictionHead:
     def test_logits_vs_hazards(self):
         """Test that logits can be any value but hazards are sigmoid-activated."""
         head = SurvivalPredictionHead(input_dim=64, num_time_bins=3)
+        head.eval()
         embeddings = torch.randn(2, 64)
 
         logits = head(embeddings, return_hazards=False)
         hazards = head(embeddings, return_hazards=True)
 
-        # Logits should not be bounded to [0, 1]
-        assert not torch.all((logits >= 0) & (logits <= 1))
+        # Hazards should be the sigmoid-activated form of logits
+        assert torch.allclose(hazards, torch.sigmoid(logits))
         # Hazards should be in [0, 1]
         assert torch.all((hazards >= 0) & (hazards <= 1))
 
