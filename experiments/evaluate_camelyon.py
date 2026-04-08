@@ -16,6 +16,7 @@ checkpoint configuration and cannot be overridden at evaluation time.
 Example usage:
     python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth
     python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --split val
+    python evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --save-predictions-csv
 """
 
 import argparse
@@ -58,6 +59,7 @@ from src.data.camelyon_dataset import (
     CAMELYONSlideIndex,
     collate_slide_bags,
 )
+from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifacts
 
 # Configure logging
 logging.basicConfig(
@@ -359,6 +361,47 @@ def export_slide_tile_scores(
     return output_path
 
 
+def render_slide_heatmaps(
+    slide_index: CAMELYONSlideIndex,
+    split: str,
+    tile_score_paths: Dict[str, str],
+    output_dir: Path,
+    patch_size: int,
+    downsample: int = 1,
+) -> Dict[str, str]:
+    """Render heatmap artifacts for exported slide tile scores.
+
+    Slides missing width/height metadata are skipped because the heatmap grid
+    cannot be aligned without base-level dimensions.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    heatmap_summary_paths: Dict[str, str] = {}
+
+    for slide in slide_index.get_slides_by_split(split):
+        tile_score_path = tile_score_paths.get(slide.slide_id)
+        if tile_score_path is None:
+            continue
+        if slide.width is None or slide.height is None:
+            logger.warning(
+                "Skipping heatmap rendering for %s because width/height metadata is missing.",
+                slide.slide_id,
+            )
+            continue
+
+        summary = build_camelyon_heatmap_artifacts(
+            tile_scores_path=tile_score_path,
+            slide_width=slide.width,
+            slide_height=slide.height,
+            patch_size=patch_size,
+            output_dir=output_dir / slide.slide_id,
+            annotation_xml_path=slide.annotation_path,
+            downsample=downsample,
+        )
+        heatmap_summary_paths[slide.slide_id] = summary["summary_path"]
+
+    return heatmap_summary_paths
+
+
 def save_metrics(metrics: Dict, output_path: str) -> None:
     """Save metrics to JSON file with pretty printing.
 
@@ -391,6 +434,59 @@ def save_metrics(metrics: Dict, output_path: str) -> None:
         json.dump(metrics_to_save, f, indent=2)
 
     logger.info(f"Metrics saved to: {output_path}")
+
+
+def save_predictions_csv(metrics: Dict, output_path: str) -> None:
+    """Save slide-level predictions to CSV file for easy analysis.
+
+    Args:
+        metrics: Dictionary containing slide predictions, probabilities, and labels.
+        output_path: Path to save the CSV file.
+    """
+    import csv
+
+    # Create output directory if needed
+    output_dir = Path(output_path).parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Extract slide-level data
+    slide_ids = sorted(metrics["slide_labels"].keys())
+    slide_tile_score_paths = metrics.get("slide_tile_score_paths", {})
+
+    # Write CSV with a stable schema so downstream tools do not need to
+    # branch on whether tile-score export happened for this run.
+    with open(output_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            [
+                "slide_id",
+                "true_label",
+                "predicted_label",
+                "probability",
+                "correct",
+                "tile_score_path",
+            ]
+        )
+
+        for slide_id in slide_ids:
+            true_label = metrics["slide_labels"][slide_id]
+            predicted_label = metrics["slide_predictions"][slide_id]
+            probability = metrics["slide_probabilities"][slide_id]
+            correct = true_label == predicted_label
+            tile_score_path = slide_tile_score_paths.get(slide_id, "")
+
+            writer.writerow(
+                [
+                    slide_id,
+                    true_label,
+                    predicted_label,
+                    f"{probability:.6f}",
+                    correct,
+                    tile_score_path,
+                ]
+            )
+
+    logger.info(f"Slide predictions CSV saved to: {output_path}")
 
 
 def plot_confusion_matrix(cm: np.ndarray, output_path: str) -> None:
@@ -503,6 +599,8 @@ def log_evaluation_summary(
     confusion_matrix_generated: bool,
     roc_curve_generated: bool,
     tile_scores_dir: Optional[Path] = None,
+    heatmaps_dir: Optional[Path] = None,
+    predictions_csv_generated: bool = False,
 ) -> None:
     """Log the final evaluation summary."""
     cm = np.array(test_metrics["confusion_matrix"])
@@ -540,12 +638,16 @@ def log_evaluation_summary(
     logger.info("-" * 60)
     logger.info("Output files:")
     logger.info(f"  Metrics: {output_dir / 'metrics.json'}")
+    if predictions_csv_generated:
+        logger.info(f"  Predictions CSV: {output_dir / 'slide_predictions.csv'}")
     if confusion_matrix_generated:
         logger.info(f"  Confusion matrix: {output_dir / 'confusion_matrix.png'}")
     if roc_curve_generated:
         logger.info(f"  ROC curve: {output_dir / 'roc_curve.png'}")
     if tile_scores_dir is not None:
         logger.info(f"  Tile scores: {tile_scores_dir}")
+    if heatmaps_dir is not None:
+        logger.info(f"  Heatmaps: {heatmaps_dir}")
     logger.info("=" * 60)
 
 
@@ -560,6 +662,7 @@ Examples:
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon_quick_test/best_model.pth --split test
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --output-dir results/camelyon
   python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --tile-scores-dir results/camelyon/tile_scores
+  python experiments/evaluate_camelyon.py --checkpoint checkpoints/camelyon/best_model.pth --heatmaps-dir results/camelyon/heatmaps
         """,
     )
     parser.add_argument(
@@ -596,6 +699,23 @@ Examples:
         type=str,
         default=None,
         help="Optional directory to export model-driven per-slide tile-score JSON files",
+    )
+    parser.add_argument(
+        "--heatmaps-dir",
+        type=str,
+        default=None,
+        help="Optional directory to render heatmaps from exported tile scores",
+    )
+    parser.add_argument(
+        "--heatmap-downsample",
+        type=int,
+        default=1,
+        help="Downsample factor to use when rendering evaluation heatmaps",
+    )
+    parser.add_argument(
+        "--save-predictions-csv",
+        action="store_true",
+        help="Save slide-level predictions to CSV file for easy analysis",
     )
 
     args = parser.parse_args()
@@ -656,6 +776,12 @@ Examples:
     total_params = count_model_parameters(model)
     logger.info(f"Model parameters: {total_params:,}")
 
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    tile_scores_dir = Path(args.tile_scores_dir) if args.tile_scores_dir else None
+    if args.heatmaps_dir and tile_scores_dir is None:
+        tile_scores_dir = output_dir / "tile_scores"
+
     # Run evaluation
     logger.info(f"Starting evaluation on {args.split} split...")
     start_time = time.time()
@@ -666,7 +792,7 @@ Examples:
         features_dir=features_dir,
         split=args.split,
         device=str(device),
-        tile_scores_dir=Path(args.tile_scores_dir) if args.tile_scores_dir else None,
+        tile_scores_dir=tile_scores_dir,
     )
 
     inference_time = time.time() - start_time
@@ -685,16 +811,21 @@ Examples:
     test_metrics["checkpoint_metrics"] = checkpoint_metrics
     test_metrics["aggregation_method"] = model.pooling
     test_metrics["split"] = args.split
-    if args.tile_scores_dir:
-        test_metrics["tile_scores_dir"] = Path(args.tile_scores_dir).as_posix()
 
-    # Create output directory
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    predictions_csv_path = output_dir / "slide_predictions.csv"
+    if args.save_predictions_csv:
+        test_metrics["predictions_csv_path"] = predictions_csv_path.as_posix()
+    if tile_scores_dir is not None:
+        test_metrics["tile_scores_dir"] = tile_scores_dir.as_posix()
+    heatmaps_dir = Path(args.heatmaps_dir) if args.heatmaps_dir else None
+    if heatmaps_dir is not None:
+        test_metrics["heatmaps_dir"] = heatmaps_dir.as_posix()
 
-    # Save metrics JSON
-    metrics_path = output_dir / "metrics.json"
-    save_metrics(test_metrics, str(metrics_path))
+    # Save predictions CSV if requested
+    predictions_csv_generated = False
+    if args.save_predictions_csv:
+        save_predictions_csv(test_metrics, str(predictions_csv_path))
+        predictions_csv_generated = True
 
     cm = np.array(test_metrics["confusion_matrix"])
 
@@ -722,6 +853,22 @@ Examples:
     else:
         logger.warning("matplotlib/seaborn not available - skipping plot generation")
 
+    if heatmaps_dir is not None:
+        heatmap_summary_paths = render_slide_heatmaps(
+            slide_index=slide_index,
+            split=args.split,
+            tile_score_paths=test_metrics.get("slide_tile_score_paths", {}),
+            output_dir=heatmaps_dir,
+            patch_size=config["data"]["slide"]["patch_size"],
+            downsample=args.heatmap_downsample,
+        )
+        if heatmap_summary_paths:
+            test_metrics["heatmap_summary_paths"] = heatmap_summary_paths
+
+    # Save metrics JSON after artifact generation so it includes all output paths
+    metrics_path = output_dir / "metrics.json"
+    save_metrics(test_metrics, str(metrics_path))
+
     log_evaluation_summary(
         checkpoint_path=args.checkpoint,
         epoch=epoch,
@@ -731,7 +878,9 @@ Examples:
         output_dir=output_dir,
         confusion_matrix_generated=confusion_matrix_generated,
         roc_curve_generated=roc_curve_generated,
-        tile_scores_dir=Path(args.tile_scores_dir) if args.tile_scores_dir else None,
+        tile_scores_dir=tile_scores_dir,
+        heatmaps_dir=heatmaps_dir,
+        predictions_csv_generated=predictions_csv_generated,
     )
 
 
