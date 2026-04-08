@@ -160,7 +160,7 @@ class MultiModalFusionLayer(nn.Module):
 
     NOTE: This implementation creates n*(n-1) cross-attention modules for n modalities,
     which scales quadratically. For 3 modalities: 6 modules, for 4 modalities: 12 modules.
-    
+
     ARCHITECTURE: Cross-attention is applied sequentially for each query modality.
     For example, WSI attends to genomic, then the result attends to clinical.
     This creates a chain of attention operations: wsi -> (wsi+genomic) -> (wsi+genomic+clinical).
