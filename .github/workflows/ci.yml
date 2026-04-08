@@ -215,7 +215,7 @@ jobs:
     
     - name: Run quick demo
       run: |
-        python run_quick_demo.py
+        python examples/run_quick_demo.py
       timeout-minutes: 10
     
     - name: Check demo outputs
