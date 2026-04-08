@@ -78,9 +78,11 @@ class WSIEncoder(nn.Module):
         if pooling == "attention":
             self.attention_pool = nn.Sequential(nn.Linear(hidden_dim, 1), nn.Softmax(dim=1))
 
-        # Output projection
+        # Output projection with dropout for regularization
         self.output_proj = nn.Sequential(
-            nn.Linear(hidden_dim, output_dim), nn.LayerNorm(output_dim)
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, output_dim),
+            nn.LayerNorm(output_dim)
         )
 
     def forward(
@@ -101,16 +103,16 @@ class WSIEncoder(nn.Module):
 
         # Apply transformer encoder
         # Create attention mask for transformer (inverted: True = ignore)
+        # Detect samples with no valid patches
         all_masked = None
         if mask is not None:
-            all_masked = ~mask.any(dim=1)
+            all_masked = ~mask.any(dim=1)  # True where NO valid patches
             safe_mask = mask
             if all_masked.any():
-                # Keep one placeholder token visible so the transformer does not emit NaNs
-                # for samples that have no valid patches in a mixed batch. We zero these rows
-                # back out after pooling so they do not contribute signal.
+                # Keep one placeholder token visible to prevent transformer NaN
+                # We'll zero out these samples after pooling (line 152)
                 safe_mask = mask.clone()
-                safe_mask[all_masked, 0] = True
+                safe_mask[all_masked, 0] = True  # Mark position 0 as valid (placeholder)
             attn_mask = ~safe_mask  # Invert: True means ignore in transformer
         else:
             attn_mask = None
@@ -144,6 +146,8 @@ class WSIEncoder(nn.Module):
             if mask is not None:
                 x_masked = x.masked_fill(~mask.unsqueeze(-1), float("-inf"))
                 aggregated = x_masked.max(dim=1)[0]
+                # Safety: replace -inf with 0 (can occur if all patches masked)
+                aggregated = torch.where(torch.isinf(aggregated), torch.zeros_like(aggregated), aggregated)
             else:
                 aggregated = x.max(dim=1)[0]
 
@@ -223,11 +227,8 @@ class GenomicEncoder(nn.Module):
         # Output layer
         layers.append(nn.Linear(prev_dim, output_dim))
 
-        # Final normalization
-        if use_batch_norm:
-            layers.append(nn.BatchNorm1d(output_dim))
-        else:
-            layers.append(nn.LayerNorm(output_dim))
+        # Final normalization - always use LayerNorm for consistency with other encoders
+        layers.append(nn.LayerNorm(output_dim))
 
         self.mlp = nn.Sequential(*layers)
 
@@ -403,6 +404,8 @@ class ClinicalTextEncoder(nn.Module):
             # Max pooling over valid tokens
             x_masked = x.masked_fill(~attention_mask.unsqueeze(-1), float("-inf"))
             pooled = x_masked.max(dim=1)[0]
+            # Safety: replace -inf with 0 (can occur if all tokens masked)
+            pooled = torch.where(torch.isinf(pooled), torch.zeros_like(pooled), pooled)
 
         else:
             raise ValueError(f"Unknown pooling strategy: {self.pooling}")
