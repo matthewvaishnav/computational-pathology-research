@@ -4,15 +4,6 @@
       "command": "C:\\Users\\matth\\Desktop\\computational-pathology-research\\.venv\\Scripts\\python.exe",
       "args": [
         "C:\\Users\\matth\\Desktop\\computational-pathology-research\\scripts\\project_mcp_server.py"
-      ],
-      "autoApprove": [
-        "project_overview",
-        "read_text_file",
-        "read_text_file",
-        "read_text_file",
-        "search_repository",
-        "run_pytest",
-        "run_pytest"
       ]
     }
   }
