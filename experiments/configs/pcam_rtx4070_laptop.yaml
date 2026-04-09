@@ -28,6 +28,11 @@ training:
   save_best: true
   early_stopping_patience: 10
 
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_real"
+  save_every: 5
+  save_best: true
+
 device: "cuda"  # Use CUDA for GPU training
 cudnn_benchmark: true  # 10-20% speedup
   
