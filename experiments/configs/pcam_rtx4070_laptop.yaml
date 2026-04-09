@@ -1,0 +1,43 @@
+# PatchCamelyon training configuration for RTX 4070 Laptop (8GB VRAM)
+# Optimized batch sizes and settings for this hardware
+
+data:
+  root_dir: "data/pcam_real"
+  batch_size: 64  # Optimized for 8GB VRAM
+  num_workers: 12  # Utilize 16-core CPU
+  pin_memory: true
+  prefetch_factor: 2
+
+model:
+  architecture: "resnet18"
+  num_classes: 2
+  dropout: 0.5
+  pretrained: true
+
+training:
+  epochs: 20
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  mixed_precision: true  # Critical for 8GB VRAM - provides 2-3x speedup
+  gradient_clip: 1.0
+  
+  # Checkpoint settings
+  save_every: 5
+  save_best: true
+  early_stopping_patience: 10
+
+device: "cuda"  # Use CUDA for GPU training
+cudnn_benchmark: true  # 10-20% speedup
+  
+logging:
+  log_every: 100
+  tensorboard: true
+  save_dir: "checkpoints/pcam_real"
+  
+augmentation:
+  horizontal_flip: true
+  vertical_flip: true
+  rotation: 90
+  color_jitter: 0.1
