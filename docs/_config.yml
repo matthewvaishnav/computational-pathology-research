@@ -1,7 +1,7 @@
 title: Computational Pathology Research Framework
 description: A tested PyTorch framework for computational pathology research with working benchmarks on PatchCamelyon and CAMELYON16
 theme: jekyll-theme-minimal
-logo: /assets/logo.png
+logo: /assets/logo.svg
 show_downloads: true
 github:
   repository_url: https://github.com/matthewvaishnav/computational-pathology-research
