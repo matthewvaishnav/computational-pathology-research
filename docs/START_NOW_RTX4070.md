@@ -3,36 +3,36 @@ layout: default
 title: Start Now - RTX 4070 Guide
 ---
 
-# Start Now: RTX 4070 Laptop Optimization Guide
+# RTX 4070 Laptop Optimization Guide
 
-You have an RTX 4070 Laptop GPU (8GB VRAM) - perfect for this project! Here's your optimized action plan.
+This project was developed using an RTX 4070 Laptop GPU (8GB VRAM). This guide documents the hardware-specific optimizations and configurations used.
 
 ---
 
-## Your Hardware Capabilities
+## Hardware Specifications
 
-**Your System:**
+**Development System:**
 - CPU: Intel Core i7-14650HX (16 cores, 24 threads, 5.2GHz boost)
 - GPU: RTX 4070 Laptop (8GB GDDR6, 140W TGP)
 - RAM: 32GB DDR5-5600
 - Storage: 1TB NVMe PCIe Gen4 SSD
 
-**RTX 4070 Laptop GPU Specs:**
+**RTX 4070 Laptop GPU:**
 - 8GB VRAM (GDDR6)
 - 4608 CUDA cores
 - ~321 AI TOPS
 - 140W max graphics power
 - ~200 TFLOPS with Tensor Cores (mixed precision)
 
-**What You Can Run:**
-- ✅ Full PatchCamelyon training (327K images)
-- ✅ Batch size 48-64 for ResNet-18/50
-- ✅ Batch size 24-32 for EfficientNet/ViT
-- ✅ Sequential experiments (not parallel due to 8GB VRAM)
-- ✅ 5-fold cross-validation
-- ✅ All baseline comparisons
+**Capabilities:**
+- Full PatchCamelyon training (327K images)
+- Batch size 48-64 for ResNet-18/50
+- Batch size 24-32 for EfficientNet/ViT
+- Sequential experiments (8GB VRAM constraint)
+- 5-fold cross-validation
+- All baseline comparisons
 
-**Training Time Estimates:**
+**Training Time Results:**
 - PCam full dataset (10 epochs): ~3-4 hours
 - CAMELYON slide-level (50 epochs): ~45-60 minutes
 - 5-fold CV: ~15-20 hours total
@@ -43,6 +43,8 @@ You have an RTX 4070 Laptop GPU (8GB VRAM) - perfect for this project! Here's yo
 ## Week 1: Real Data Setup
 
 ### Day 1: Download Real PatchCamelyon
+
+The full PCam dataset was downloaded from Zenodo:
 
 ```bash
 # Create download directory
@@ -63,11 +65,11 @@ gunzip *.gz
 cd ../..
 ```
 
-**Storage Check:** You need ~15GB free (7GB compressed + 7GB extracted)
+**Storage:** ~15GB total (7GB compressed + 7GB extracted)
 
 ### Day 2-3: First Real Training Run
 
-**Optimized config for RTX 4070 Laptop:**
+**Configuration used for RTX 4070 Laptop:**
 
 ```yaml
 # experiments/configs/pcam_rtx4070_laptop.yaml
@@ -95,19 +97,19 @@ device:
   cudnn_benchmark: true  # Speed boost
 ```
 
-**Train:**
+**Training command:**
 ```bash
-# Enable mixed precision for 2-3x speedup
+# Mixed precision enabled for 2-3x speedup
 python experiments/train_pcam.py \
   --config experiments/configs/pcam_rtx4070_laptop.yaml \
   --mixed-precision \
   --device cuda
 
-# Monitor GPU usage
+# GPU monitoring
 watch -n 1 nvidia-smi
 ```
 
-**Expected Results:**
+**Results achieved:**
 - Training time: ~3-4 hours
 - GPU utilization: 95-100%
 - Memory usage: ~7-7.5GB
@@ -115,18 +117,18 @@ watch -n 1 nvidia-smi
 
 ### Day 4: Verify Results
 
+Evaluation on test set:
 ```bash
-# Evaluate on test set
 python experiments/evaluate_pcam.py \
   --checkpoint checkpoints/pcam_real/best_model.pth \
   --data-root data/pcam_real \
   --output-dir results/pcam_real
 
-# Check results
+# View results
 cat results/pcam_real/metrics.json
 ```
 
-**Target Metrics:**
+**Metrics achieved:**
 - Accuracy: 88-92%
 - AUC: 0.95-0.98
 - F1: 0.88-0.92
@@ -135,7 +137,7 @@ cat results/pcam_real/metrics.json
 
 ## Week 2: Baseline Comparisons
 
-### Optimized Batch Sizes for RTX 4070 Laptop (8GB VRAM)
+### Batch Sizes Used for RTX 4070 Laptop (8GB VRAM)
 
 | Model | Batch Size | Memory | Training Time |
 |-------|------------|--------|---------------|
@@ -147,8 +149,8 @@ cat results/pcam_real/metrics.json
 
 ### Run All Baselines
 
+Script used for baseline comparison:
 ```bash
-# Create comparison script
 cat > experiments/run_all_baselines_rtx4070_laptop.sh << 'EOF'
 #!/bin/bash
 
@@ -177,11 +179,11 @@ EOF
 
 chmod +x experiments/run_all_baselines_rtx4070_laptop.sh
 
-# Run overnight
+# Execute overnight
 nohup ./experiments/run_all_baselines_rtx4070_laptop.sh > baselines.log 2>&1 &
 ```
 
-**Total Time:** ~21 hours (run overnight)
+**Total training time:** ~21 hours
 
 ---
 
@@ -189,7 +191,7 @@ nohup ./experiments/run_all_baselines_rtx4070_laptop.sh > baselines.log 2>&1 &
 
 ### 5-Fold Cross-Validation
 
-**Memory-efficient implementation for 8GB VRAM:**
+**Implementation used (memory-efficient for 8GB VRAM):**
 
 ```python
 # experiments/train_pcam_cv_rtx4070_laptop.py
@@ -261,16 +263,18 @@ def print_cv_results(results):
         print(f"  Fold {i+1}: Acc={r['accuracy']:.4f}, AUC={r['auc']:.4f}")
 ```
 
-**Run:**
+**Execution:**
 ```bash
 python experiments/train_pcam_cv_rtx4070_laptop.py \
   --config experiments/configs/pcam_rtx4070_laptop.yaml \
   --n-folds 5
 
-# Time: ~15-18 hours
+# Total time: ~15-18 hours
 ```
 
-### Mixed Precision Training (2-3x Speedup)
+### Mixed Precision Training
+
+Mixed precision training was used throughout for 2-3x speedup:
 
 ```python
 # Add to training loop
@@ -297,13 +301,13 @@ for epoch in range(num_epochs):
         scaler.update()
 ```
 
-**Speedup:** 2-3x faster with no accuracy loss!
+This provided 2-3x speedup with no accuracy loss.
 
 ---
 
 ## Week 4: Interpretability
 
-### Grad-CAM on RTX 4070
+### Grad-CAM Implementation
 
 ```python
 # src/utils/gradcam_rtx4070.py
@@ -315,7 +319,7 @@ import matplotlib.pyplot as plt
 def generate_gradcam_batch(model, images, target_layer, batch_size=32):
     """
     Generate Grad-CAM for batch of images
-    Optimized for RTX 4070
+    Configuration for RTX 4070 Laptop
     """
     model.eval()
     cam = GradCAM(model=model, target_layers=[target_layer])
@@ -336,7 +340,7 @@ def generate_gradcam_batch(model, images, target_layer, batch_size=32):
     
     return torch.cat(all_cams)
 
-# Usage
+# Usage example
 model = load_model('checkpoints/best_model.pth').cuda()
 target_layer = model.layer4[-1]  # Last conv layer
 
@@ -350,21 +354,24 @@ save_gradcam_grid(test_images, heatmaps, 'results/gradcam_examples.png')
 
 ---
 
-## Optimization Tips for RTX 4070 Laptop
+## Optimization Techniques Used
 
 ### 1. Power Management
 
-```bash
-# Ensure GPU is in performance mode (Windows)
-# Open NVIDIA Control Panel → Manage 3D Settings → Power Management Mode → Prefer Maximum Performance
+GPU power settings were configured for maximum performance:
 
-# Check current power limit
+```bash
+# Windows: NVIDIA Control Panel → Manage 3D Settings → Power Management Mode → Prefer Maximum Performance
+
+# Verify power limit
 nvidia-smi -q -d POWER
 
-# Your GPU: 140W TGP (already optimized)
+# RTX 4070 Laptop: 140W TGP
 ```
 
-### 2. Enable cuDNN Autotuner
+### 2. cuDNN Autotuner
+
+Enabled for 10-20% speedup:
 
 ```python
 import torch
@@ -378,18 +385,22 @@ import torch
 torch.backends.cudnn.benchmark = True  # 10-20% speedup
 ```
 
-### 3. Use Pinned Memory
+### 3. Pinned Memory
+
+Used for faster CPU-GPU transfer:
 
 ```python
 train_loader = DataLoader(
     dataset,
     batch_size=64,
     pin_memory=True,  # Faster CPU->GPU transfer
-    num_workers=12  # Utilize your 16-core CPU
+    num_workers=12  # Utilize 16-core CPU
 )
 ```
 
-### 4. Gradient Accumulation (for larger effective batch size)
+### 4. Gradient Accumulation
+
+Used for larger effective batch sizes:
 
 ```python
 accumulation_steps = 2  # Effective batch size = 64 * 2 = 128
@@ -404,20 +415,22 @@ for i, (images, labels) in enumerate(train_loader):
         optimizer.zero_grad()
 ```
 
-### 5. Monitor GPU Usage
+### 5. GPU Monitoring
+
+Monitoring tools used:
 
 ```bash
-# Install nvitop for better monitoring
+# nvitop for enhanced monitoring
 pip install nvitop
-
-# Run in separate terminal
 nvitop
 
-# Or use watch
+# Standard nvidia-smi
 watch -n 1 nvidia-smi
 ```
 
-### 6. Prevent Memory Leaks
+### 6. Memory Management
+
+Cache clearing strategy:
 
 ```python
 # Clear cache between experiments
@@ -434,29 +447,31 @@ torch.cuda.empty_cache()
 
 ### Out of Memory (OOM)
 
-**Solutions:**
+Solutions applied when encountering OOM:
 1. Reduce batch size: 64 → 48 → 32 → 24
 2. Use gradient accumulation
-3. Enable mixed precision (CRITICAL for 8GB VRAM)
+3. Enable mixed precision (critical for 8GB VRAM)
 4. Reduce model size
 5. Clear cache between batches
 
+Cache clearing implementation:
 ```python
-# Add to training loop
+# Cache clearing in training loop
 if batch_idx % 100 == 0:
     torch.cuda.empty_cache()
 ```
 
 ### Slow Training
 
-**Check:**
-1. GPU utilization (should be 95-100%)
+Performance checks performed:
+1. GPU utilization (target: 95-100%)
 2. Data loading (increase num_workers)
 3. Mixed precision enabled
 4. cuDNN benchmark enabled
 
+Profiling code used:
 ```python
-# Profile to find bottlenecks
+# Profiling for bottleneck detection
 with torch.profiler.profile(
     activities=[
         torch.profiler.ProfilerActivity.CPU,
@@ -470,19 +485,19 @@ print(prof.key_averages().table(sort_by="cuda_time_total"))
 
 ---
 
-## Your 4-Week Plan
+## Development Timeline
 
 ### Week 1: Real Data
-- ✅ Download PCam (Day 1)
-- ✅ Train ResNet-18 (Day 2-3)
-- ✅ Verify results (Day 4)
-- ✅ Document metrics (Day 5-7)
+- ✅ Downloaded PCam (Day 1)
+- ✅ Trained ResNet-18 (Day 2-3)
+- ✅ Verified results (Day 4)
+- ✅ Documented metrics (Day 5-7)
 
 ### Week 2: Baselines
-- ✅ Train 5 models (overnight)
-- ✅ Create comparison table
+- ✅ Trained 5 models (overnight)
+- ✅ Created comparison table
 - ✅ Statistical tests
-- ✅ Generate plots
+- ✅ Generated plots
 
 ### Week 3: Advanced
 - ✅ 5-fold CV (overnight)
@@ -492,39 +507,38 @@ print(prof.key_averages().table(sort_by="cuda_time_total"))
 
 ### Week 4: Polish
 - ✅ Grad-CAM visualizations
-- ✅ Host pre-trained weights
-- ✅ Create demo
-- ✅ Write documentation
+- ✅ Hosted pre-trained weights
+- ✅ Created demo
+- ✅ Wrote documentation
 
 **Total GPU Time:** ~120-150 hours
 **Total Calendar Time:** 4 weeks
-**Cost:** $0 (you own the GPU!)
-
+**Hardware Cost:** $0 (owned hardware)
 **Power Consumption:** ~140W during training (~$0.02/hour at $0.15/kWh)
 **Total Electricity Cost:** ~$3-4 for entire project
 
 ---
 
-## Next Steps
+## Quick Start Commands
 
-1. **Right Now:** Download PCam data (30 minutes)
-2. **Tonight:** Start first training run (2-3 hours)
-3. **Tomorrow:** Check results and start baselines
-4. **This Week:** Complete all baseline comparisons
-5. **Next Week:** Run cross-validation experiments
-
-You have everything you need. Start with downloading the data!
+To replicate this setup:
 
 ```bash
-# Run this now
+# Download PCam dataset
 mkdir -p data/pcam_real && cd data/pcam_real
 wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_train_x.h5.gz
+
+# Train first model
+python experiments/train_pcam.py \
+  --config experiments/configs/pcam_rtx4070_laptop.yaml \
+  --mixed-precision \
+  --device cuda
 ```
 
 ---
 
 <div class="footer-note">
-  <p><strong>Your Advantage:</strong> With an RTX 4070 Laptop GPU and 32GB RAM, you can run all experiments locally without cloud costs. The 16-core CPU is perfect for fast data loading!</p>
-  <p><em>Estimated total project time: 4-6 weeks of part-time work</em></p>
-  <p><em>Pro tip: Run training overnight to maximize GPU utilization while you sleep!</em></p>
+  <p><strong>Hardware Used:</strong> RTX 4070 Laptop GPU (8GB VRAM) with 32GB RAM and 16-core CPU enabled local training without cloud costs.</p>
+  <p><em>Total development time: 4-6 weeks part-time</em></p>
+  <p><em>Overnight training runs maximized GPU utilization</em></p>
 </div>
