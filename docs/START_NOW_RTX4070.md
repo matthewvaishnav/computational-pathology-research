@@ -75,45 +75,105 @@ cd ../..
 # experiments/configs/pcam_rtx4070_laptop.yaml
 data:
   root_dir: "data/pcam_real"
-  batch_size: 64  # Optimized for 8GB VRAM
-  num_workers: 12  # Utilize 16-core CPU
+  num_workers: 0  # Start with 0, increase to 4-8 after testing
   pin_memory: true
+  prefetch_factor: 2
+  download: false  # Data already downloaded
 
 model:
-  architecture: "resnet18"
-  num_classes: 2
-  dropout: 0.5
+  embed_dim: 256  # Embedding dimension for encoder output
+  
+  feature_extractor:
+    model: "resnet18"
+    pretrained: true
+    feature_dim: 512  # ResNet18 output dimension
+  
+  wsi:
+    input_dim: 512  # Must match feature_extractor.feature_dim
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: "mean"
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: [128]
+    dropout: 0.3
 
 training:
-  epochs: 20
+  batch_size: 64  # Optimized for 8GB VRAM
+  num_epochs: 20
   learning_rate: 0.001
   weight_decay: 0.0001
-  optimizer: "adamw"
-  scheduler: "cosine"
-  mixed_precision: true  # Use Tensor Cores!
+  max_grad_norm: 1.0
+  use_amp: true  # Critical for 8GB VRAM - provides 2-3x speedup
+  dropout: 0.1
   
-device:
-  cuda: true
-  cudnn_benchmark: true  # Speed boost
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-6
+
+validation:
+  interval: 1  # Validate every epoch
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_real"
+  save_interval: 5
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+
+device: "cuda"  # Use CUDA for GPU training
+cudnn_benchmark: true  # 10-20% speedup
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_real"
+  log_interval: 100
+  use_tensorboard: true
+  use_wandb: false
 ```
 
 **Training command:**
 ```bash
+# Activate Python 3.11 environment with CUDA support
+# (Python 3.14 doesn't have CUDA wheels yet)
+source venv311/bin/activate  # Linux/Mac
+# or
+.\venv311\Scripts\activate  # Windows
+
 # Mixed precision enabled for 2-3x speedup
 python experiments/train_pcam.py \
-  --config experiments/configs/pcam_rtx4070_laptop.yaml \
-  --mixed-precision \
-  --device cuda
+  --config experiments/configs/pcam_rtx4070_laptop.yaml
 
-# GPU monitoring
+# GPU monitoring (separate terminal)
 watch -n 1 nvidia-smi
 ```
 
-**Results achieved:**
-- Training time: ~3-4 hours
+**Dataset Format:**
+The PCamDataset class now supports both custom format and Zenodo format files directly:
+- Zenodo files: `camelyonpatch_level_2_split_train_x.h5`, `train_y.h5`, etc.
+- Custom format: `train/images.h5py`, `train/labels.h5py`, etc.
+- Lazy h5 file loading for multiprocessing compatibility
+
+**Actual Results (Verified):**
+- Training speed: ~3.8 iterations/second
+- Epoch time: ~18 minutes per epoch
 - GPU utilization: 95-100%
 - Memory usage: ~7-7.5GB
-- Test accuracy: 88-92%
+- Dataset: 262,144 training samples, 32,768 val samples, 32,768 test samples
+- Model parameters: 17.9M total (11.2M feature extractor + 6.7M encoder + 33K head)
 
 ### Day 4: Verify Results
 
@@ -378,13 +438,6 @@ import torch
 torch.backends.cudnn.benchmark = True  # 10-20% speedup
 ```
 
-### 2. Enable cuDNN Autotuner
-
-```python
-import torch
-torch.backends.cudnn.benchmark = True  # 10-20% speedup
-```
-
 ### 3. Pinned Memory
 
 Used for faster CPU-GPU transfer:
@@ -394,11 +447,53 @@ train_loader = DataLoader(
     dataset,
     batch_size=64,
     pin_memory=True,  # Faster CPU->GPU transfer
-    num_workers=12  # Utilize 16-core CPU
+    num_workers=12  # Utilize 16-core CPU (start with 0, increase gradually)
 )
 ```
 
-### 4. Gradient Accumulation
+### 4. Lazy H5 File Loading
+
+Implemented for multiprocessing compatibility:
+
+```python
+# PCamDataset now opens h5 files lazily in each worker process
+# This avoids pickling errors with multiprocessing
+def __getitem__(self, idx):
+    # Open h5 files lazily if not already open
+    if self._images_h5 is None or self._labels_h5 is None:
+        self._open_h5_files()
+    
+    # Load data...
+```
+
+### 5. Mixed Precision Training (Critical for 8GB VRAM)
+
+```python
+# Add to training loop
+from torch.cuda.amp import autocast, GradScaler
+
+scaler = GradScaler()
+
+for epoch in range(num_epochs):
+    for batch in train_loader:
+        images, labels = batch
+        images = images.cuda()
+        labels = labels.cuda()
+        
+        optimizer.zero_grad()
+        
+        # Mixed precision forward pass
+        with autocast():
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+        
+        # Mixed precision backward pass
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+```
+
+### 6. Gradient Accumulation
 
 Used for larger effective batch sizes:
 
@@ -415,7 +510,7 @@ for i, (images, labels) in enumerate(train_loader):
         optimizer.zero_grad()
 ```
 
-### 5. GPU Monitoring
+### 7. GPU Monitoring
 
 Monitoring tools used:
 
@@ -428,7 +523,7 @@ nvitop
 watch -n 1 nvidia-smi
 ```
 
-### 6. Memory Management
+### 8. Memory Management
 
 Cache clearing strategy:
 
@@ -461,12 +556,20 @@ if batch_idx % 100 == 0:
     torch.cuda.empty_cache()
 ```
 
+### Multiprocessing Issues
+
+If you encounter h5py pickling errors with num_workers > 0:
+1. Start with `num_workers: 0` to verify training works
+2. The PCamDataset class now uses lazy h5 file loading to support multiprocessing
+3. Gradually increase num_workers: 0 → 2 → 4 → 8 → 12
+4. Monitor CPU usage to find optimal value
+
 ### Slow Training
 
 Performance checks performed:
 1. GPU utilization (target: 95-100%)
-2. Data loading (increase num_workers)
-3. Mixed precision enabled
+2. Data loading (increase num_workers gradually)
+3. Mixed precision enabled (critical!)
 4. cuDNN benchmark enabled
 
 Profiling code used:
@@ -488,34 +591,36 @@ print(prof.key_averages().table(sort_by="cuda_time_total"))
 ## Development Timeline
 
 ### Week 1: Real Data
-- ✅ Downloaded PCam (Day 1)
-- ✅ Trained ResNet-18 (Day 2-3)
-- ✅ Verified results (Day 4)
-- ✅ Documented metrics (Day 5-7)
+- ✅ Downloaded PCam from Zenodo (Day 1)
+- ✅ Fixed dataset loading for Zenodo format (Day 1-2)
+- ✅ Trained ResNet-18 with real data (Day 2-3)
+- ✅ Verified training works (Day 3)
+- ✅ Documented setup (Day 4-7)
 
 ### Week 2: Baselines
-- ✅ Trained 5 models (overnight)
-- ✅ Created comparison table
-- ✅ Statistical tests
-- ✅ Generated plots
+- ⏳ Train 5 models (overnight)
+- ⏳ Create comparison table
+- ⏳ Statistical tests
+- ⏳ Generate plots
 
 ### Week 3: Advanced
-- ✅ 5-fold CV (overnight)
-- ✅ Multiple seeds
-- ✅ Ablation studies
-- ✅ Robustness tests
+- ⏳ 5-fold CV (overnight)
+- ⏳ Multiple seeds
+- ⏳ Ablation studies
+- ⏳ Robustness tests
 
 ### Week 4: Polish
-- ✅ Grad-CAM visualizations
-- ✅ Hosted pre-trained weights
-- ✅ Created demo
-- ✅ Wrote documentation
+- ⏳ Grad-CAM visualizations
+- ⏳ Host pre-trained weights
+- ⏳ Create demo
+- ⏳ Write documentation
 
-**Total GPU Time:** ~120-150 hours
-**Total Calendar Time:** 4 weeks
+**Current Status:** Week 1 complete, training successfully running
+**Estimated Total GPU Time:** ~120-150 hours
+**Estimated Total Calendar Time:** 4 weeks
 **Hardware Cost:** $0 (owned hardware)
 **Power Consumption:** ~140W during training (~$0.02/hour at $0.15/kWh)
-**Total Electricity Cost:** ~$3-4 for entire project
+**Estimated Total Electricity Cost:** ~$3-4 for entire project
 
 ---
 
@@ -524,15 +629,37 @@ print(prof.key_averages().table(sort_by="cuda_time_total"))
 To replicate this setup:
 
 ```bash
-# Download PCam dataset
+# 1. Create Python 3.11 environment (for CUDA support)
+python3.11 -m venv venv311
+source venv311/bin/activate  # Linux/Mac
+# or
+.\venv311\Scripts\activate  # Windows
+
+# 2. Install PyTorch with CUDA 12.1
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# 3. Install project dependencies
+pip install -e .
+
+# 4. Download PCam dataset from Zenodo
 mkdir -p data/pcam_real && cd data/pcam_real
 wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_train_x.h5.gz
+wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_train_y.h5.gz
+wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_valid_x.h5.gz
+wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_valid_y.h5.gz
+wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_test_x.h5.gz
+wget https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_test_y.h5.gz
 
-# Train first model
+# Extract files
+gunzip *.gz
+cd ../..
+
+# 5. Train first model
 python experiments/train_pcam.py \
-  --config experiments/configs/pcam_rtx4070_laptop.yaml \
-  --mixed-precision \
-  --device cuda
+  --config experiments/configs/pcam_rtx4070_laptop.yaml
+
+# 6. Monitor GPU (separate terminal)
+watch -n 1 nvidia-smi
 ```
 
 ---
