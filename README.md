@@ -98,6 +98,58 @@ See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for det
 
 ## Key Features
 
+### Analysis Tools
+
+**NEW**: Comprehensive analysis and comparison tools:
+
+```bash
+# Analyze training metrics
+python experiments/analyze_metrics.py \
+  --log-dir logs/pcam_real \
+  --checkpoint checkpoints/pcam_real/best_model.pth \
+  --output-dir results/metrics_analysis
+
+# Compare baseline models
+python experiments/compare_baselines.py \
+  --results-dir results/baselines \
+  --output-dir results/baseline_comparison
+```
+
+**Features**:
+- Training curve visualization (loss, accuracy, AUC)
+- Confusion matrix and ROC curves
+- Baseline model comparison tables
+- Efficiency analysis (accuracy vs parameters)
+- Comprehensive markdown reports
+
+See [experiments/README_ANALYSIS.md](experiments/README_ANALYSIS.md) for details.
+
+### OpenSlide Integration
+
+**NEW**: Whole-slide image reading support:
+
+```python
+from src.data.openslide_utils import WSIReader
+
+# Read WSI file
+with WSIReader("slide.svs") as reader:
+    # Get thumbnail
+    thumbnail = reader.get_thumbnail((512, 512))
+    
+    # Extract patches
+    patches = reader.extract_patches(
+        patch_size=256,
+        level=1,
+        tissue_threshold=0.5
+    )
+```
+
+**Supported formats**: .svs, .tiff, .ndpi, and other OpenSlide-compatible formats
+
+**Note**: Requires `openslide-python`: `pip install openslide-python`
+
+### Core Features
+
 ### 1. Pretrained Model Loading
 
 Load pretrained models from torchvision and timm with automatic feature extraction:
