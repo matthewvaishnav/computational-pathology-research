@@ -135,7 +135,7 @@ class PCamDataset(Dataset):
         self.images_file = self.split_dir / "images.h5py"
         self.labels_file = self.split_dir / "labels.h5py"
         self.metadata_file = self.root_dir / "metadata.json"
-        
+
         # Zenodo format files (alternative)
         zenodo_split_map = {"train": "train", "val": "valid", "test": "test"}
         zenodo_split = zenodo_split_map[self.split]
@@ -163,21 +163,21 @@ class PCamDataset(Dataset):
 
     def _check_exists(self) -> bool:
         """Check if the dataset files exist for the current split.
-        
+
         Supports both custom format and Zenodo format.
         """
         # Check custom format first
         if self.images_file.exists() and self.labels_file.exists():
             return True
-        
+
         # Check Zenodo format
         if self.zenodo_images_file.exists() and self.zenodo_labels_file.exists():
             self.use_zenodo_format = True
             logger.info(f"Found Zenodo format files for {self.split} split")
             return True
-        
+
         return False
-    
+
     def _get_dataset_size(self) -> None:
         """Get dataset size without keeping files open (for multiprocessing compatibility)."""
         if self.use_zenodo_format:
@@ -190,7 +190,7 @@ class PCamDataset(Dataset):
                 self._num_images = f["images"].shape[0]
             with h5py.File(str(self.labels_file), "r") as f:
                 self._num_labels = f["labels"].shape[0]
-        
+
         if self._num_images != self._num_labels:
             raise RuntimeError(
                 f"Number of images ({self._num_images}) does not match "
@@ -204,11 +204,11 @@ class PCamDataset(Dataset):
                 # Open Zenodo format files
                 self._images_h5 = h5py.File(str(self.zenodo_images_file), "r")
                 self._labels_h5 = h5py.File(str(self.zenodo_labels_file), "r")
-                
+
                 # Zenodo files use 'x' and 'y' as dataset names
                 self._num_images = self._images_h5["x"].shape[0]
                 self._num_labels = self._labels_h5["y"].shape[0]
-                
+
                 logger.info(f"Using Zenodo format files for {self.split} split")
             else:
                 # Open custom format files
@@ -506,7 +506,7 @@ class PCamDataset(Dataset):
         # Open h5 files lazily if not already open (for multiprocessing compatibility)
         if self._images_h5 is None or self._labels_h5 is None:
             self._open_h5_files()
-        
+
         if idx < 0 or idx >= self._num_images:
             raise IndexError(
                 f"Index {idx} out of bounds for dataset with {self._num_images} samples"
