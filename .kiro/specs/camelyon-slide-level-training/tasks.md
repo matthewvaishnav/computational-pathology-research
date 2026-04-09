@@ -22,7 +22,7 @@ This implementation plan converts the CAMELYON training pipeline from patch-leve
     - Return batch dictionary with padded tensors and metadata lists
     - _Requirements: 1.4, 2.2_
 
-  - [ ]* 1.3 Write unit tests for CAMELYONSlideDataset
+  - [ ] 1.3 Write unit tests for CAMELYONSlideDataset
     - Test dataset length matches number of slides in split
     - Test `__getitem__` returns correct dictionary structure
     - Test split filtering (train/val/test)
@@ -30,7 +30,7 @@ This implementation plan converts the CAMELYON training pipeline from patch-leve
     - Test transform application if provided
     - _Requirements: 5.1_
 
-  - [ ]* 1.4 Write unit tests for collate_slide_bags
+  - [ ] 1.4 Write unit tests for collate_slide_bags
     - Test padding to max length in batch
     - Test batch structure correctness
     - Test single-slide batch handling
@@ -78,7 +78,7 @@ This implementation plan converts the CAMELYON training pipeline from patch-leve
     - Ensure backward compatibility with existing checkpoints
     - _Requirements: 2.4, 2.5_
 
-  - [ ]* 4.2 Write unit tests for masked aggregation
+  - [ ] 4.2 Write unit tests for masked aggregation
     - Test mean pooling with num_patches masking
     - Test max pooling ignores padding
     - Test forward pass with variable-length inputs
@@ -102,7 +102,7 @@ This implementation plan converts the CAMELYON training pipeline from patch-leve
     - Generate confusion matrix and ROC curve visualizations
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ]* 6.2 Write integration test for evaluation script
+  - [ ] 6.2 Write integration test for evaluation script
     - Create synthetic checkpoint and slide data
     - Run evaluation script
     - Verify metrics JSON is generated
@@ -113,21 +113,21 @@ This implementation plan converts the CAMELYON training pipeline from patch-leve
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Add comprehensive testing
-  - [ ]* 8.1 Create synthetic CAMELYON data generator for testing
+  - [ ] 8.1 Create synthetic CAMELYON data generator for testing
     - Generate synthetic slide_index.json with train/val/test splits
     - Generate synthetic HDF5 feature files with random features
     - Include variable numbers of patches per slide
     - Save to temporary directory for test isolation
     - _Requirements: 5.5_
 
-  - [ ]* 8.2 Write end-to-end training integration test
+  - [ ] 8.2 Write end-to-end training integration test
     - Use synthetic data generator
     - Run training for 2 epochs
     - Verify checkpoint is saved with correct structure
     - Verify metrics are logged
     - _Requirements: 5.3, 5.5_
 
-  - [ ]* 8.3 Write end-to-end evaluation integration test
+  - [ ] 8.3 Write end-to-end evaluation integration test
     - Load checkpoint from training test
     - Run evaluation on synthetic test split
     - Verify metrics JSON is generated
