@@ -60,6 +60,7 @@ The codebase emphasizes research reproducibility with comprehensive unit testing
 
 <div class="doc-links">
   <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
+  <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
   <a href="API_REFERENCE.html" class="doc-link">API Reference</a>
   <a href="DOCS_INDEX.html" class="doc-link">Documentation</a>
