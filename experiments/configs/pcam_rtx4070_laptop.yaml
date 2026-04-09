@@ -3,7 +3,6 @@
 
 data:
   root_dir: "data/pcam_real"
-  batch_size: 64  # Optimized for 8GB VRAM
   num_workers: 12  # Utilize 16-core CPU
   pin_memory: true
   prefetch_factor: 2
@@ -15,6 +14,7 @@ model:
   pretrained: true
 
 training:
+  batch_size: 64  # Optimized for 8GB VRAM
   epochs: 20
   learning_rate: 0.001
   weight_decay: 0.0001
