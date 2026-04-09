@@ -249,7 +249,9 @@ def test_setuptools_config_preservation():
     # Verify setuptools configuration
     # Note: Changed from ["."] to ["src"] to fix package discovery issue
     assert setuptools_config["where"] == ["src"], "setuptools.packages.find.where changed"
-    assert "include" not in setuptools_config, "setuptools.packages.find.include should not be present"
+    assert (
+        "include" not in setuptools_config
+    ), "setuptools.packages.find.include should not be present"
 
 
 def test_all_sections_parseable():
