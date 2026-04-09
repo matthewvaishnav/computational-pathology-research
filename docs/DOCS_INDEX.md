@@ -12,14 +12,14 @@ Comprehensive documentation for the Computational Pathology Research Framework.
 ## Getting Started
 
 ### Installation and Setup
-- [Quick Start Guide](#quick-start) - Installation and first steps
-- [System Requirements](#requirements) - Hardware and software prerequisites
-- [Configuration Guide](#configuration) - Setting up experiments
+- [Getting Started Guide](GETTING_STARTED.html) - Complete installation and setup guide
+- [System Requirements](GETTING_STARTED.html#system-requirements) - Hardware and software prerequisites
+- [Installation](GETTING_STARTED.html#installation) - Step-by-step installation instructions
 
 ### Tutorials
-- [Training Your First Model](#first-model) - Step-by-step PCam tutorial
-- [Working with Slide-Level Data](#slide-level) - CAMELYON16 workflow
-- [Using Pretrained Models](#pretrained) - Leveraging torchvision and timm
+- [Your First Model](GETTING_STARTED.html#your-first-model) - Step-by-step PCam tutorial
+- [Working with Real Data](GETTING_STARTED.html#working-with-real-data) - PatchCamelyon and CAMELYON16 workflows
+- [API Reference](API_REFERENCE.html) - Complete API documentation
 
 ---
 
