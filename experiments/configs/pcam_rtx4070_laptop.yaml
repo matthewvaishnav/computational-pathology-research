@@ -3,7 +3,7 @@
 
 data:
   root_dir: "data/pcam_real"
-  num_workers: 12  # Utilize 16-core CPU
+  num_workers: 0  # Set to 0 for testing without multiprocessing
   pin_memory: true
   prefetch_factor: 2
   download: false  # Data already downloaded
