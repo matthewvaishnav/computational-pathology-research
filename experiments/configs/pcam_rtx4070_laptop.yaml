@@ -6,44 +6,68 @@ data:
   num_workers: 12  # Utilize 16-core CPU
   pin_memory: true
   prefetch_factor: 2
+  download: false  # Data already downloaded
 
 model:
-  architecture: "resnet18"
-  num_classes: 2
-  dropout: 0.5
-  pretrained: true
+  embed_dim: 256  # Embedding dimension for encoder output
+  
+  feature_extractor:
+    model: "resnet18"
+    pretrained: true
+    feature_dim: 512  # ResNet18 output dimension
+  
+  wsi:
+    input_dim: 512  # Must match feature_extractor.feature_dim
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: "mean"
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: [128]
+    dropout: 0.3
 
 training:
   batch_size: 64  # Optimized for 8GB VRAM
-  epochs: 20
+  num_epochs: 20
   learning_rate: 0.001
   weight_decay: 0.0001
-  optimizer: "adamw"
-  scheduler: "cosine"
-  mixed_precision: true  # Critical for 8GB VRAM - provides 2-3x speedup
-  gradient_clip: 1.0
+  max_grad_norm: 1.0
+  use_amp: true  # Critical for 8GB VRAM - provides 2-3x speedup
+  dropout: 0.1
   
-  # Checkpoint settings
-  save_every: 5
-  save_best: true
-  early_stopping_patience: 10
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-6
+
+validation:
+  interval: 1  # Validate every epoch
+  metric: "val_auc"
+  maximize: true
 
 checkpoint:
   checkpoint_dir: "checkpoints/pcam_real"
-  save_every: 5
+  save_interval: 5
   save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
 
 device: "cuda"  # Use CUDA for GPU training
 cudnn_benchmark: true  # 10-20% speedup
+seed: 42
   
 logging:
-  log_every: 100
-  tensorboard: true
-  save_dir: "checkpoints/pcam_real"
   log_dir: "logs/pcam_real"
-  
-augmentation:
-  horizontal_flip: true
-  vertical_flip: true
-  rotation: 90
-  color_jitter: 0.1
+  log_interval: 100
+  use_tensorboard: true
+  use_wandb: false
