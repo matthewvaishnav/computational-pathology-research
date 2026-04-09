@@ -247,8 +247,8 @@ def test_setuptools_config_preservation():
     setuptools_config = config["tool"]["setuptools"]["packages"]["find"]
 
     # Verify setuptools configuration
-    assert setuptools_config["where"] == ["."], "setuptools.packages.find.where changed"
-    assert setuptools_config["include"] == ["src*"], "setuptools.packages.find.include changed"
+    assert setuptools_config["where"] == ["src"], "setuptools.packages.find.where changed"
+    assert "include" not in setuptools_config, "setuptools.packages.find.include should not be present"
 
 
 def test_all_sections_parseable():
