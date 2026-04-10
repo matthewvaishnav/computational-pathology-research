@@ -38,6 +38,16 @@ except ImportError:
     logger = logging.getLogger(__name__)
     logger.warning("Benchmark manifest utilities not available")
 
+# Add benchmark report generator import
+try:
+    from src.utils.benchmark_report import generate_benchmark_report
+
+    REPORT_GENERATOR_AVAILABLE = True
+except ImportError:
+    REPORT_GENERATOR_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Benchmark report generator not available")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -134,12 +144,15 @@ def run_training(config_path: str, quick_test: bool = False) -> Dict[str, Any]:
             Path(temp_config_path).unlink()
 
 
-def run_evaluation(config_path: str, checkpoint_path: str) -> Dict[str, Any]:
+def run_evaluation(
+    config_path: str, checkpoint_path: str, compute_bootstrap_ci: bool = False
+) -> Dict[str, Any]:
     """Run evaluation for a trained model.
 
     Args:
         config_path: Path to configuration file.
         checkpoint_path: Path to model checkpoint.
+        compute_bootstrap_ci: Whether to compute bootstrap confidence intervals.
 
     Returns:
         Dictionary with evaluation results.
@@ -168,6 +181,18 @@ def run_evaluation(config_path: str, checkpoint_path: str) -> Dict[str, Any]:
         "--num-workers",
         str(config["data"].get("num_workers", 0)),
     ]
+
+    # Add bootstrap CI flags if requested
+    if compute_bootstrap_ci:
+        cmd.extend(
+            [
+                "--compute-bootstrap-ci",
+                "--bootstrap-samples",
+                str(config["evaluation"].get("bootstrap_samples", 1000)),
+                "--confidence-level",
+                str(config["evaluation"].get("confidence_level", 0.95)),
+            ]
+        )
 
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -324,12 +349,131 @@ def _record_comparison_to_manifest(
     )
 
 
+def _generate_comparison_report(
+    comparison: Dict, output_dir: Path, config_paths: List[str]
+) -> None:
+    """Generate benchmark report from comparison results.
+
+    Args:
+        comparison: Comparison results dictionary.
+        output_dir: Directory to save the report.
+        config_paths: List of configuration file paths used in comparison.
+    """
+    if not REPORT_GENERATOR_AVAILABLE:
+        logger.warning("Skipping report generation: benchmark_report module not available")
+        return
+
+    # Extract successful variants
+    successful_variants = [
+        v
+        for v in comparison["variants"]
+        if v["training_status"] == "success" and v["evaluation_status"] == "success"
+    ]
+
+    if not successful_variants:
+        logger.warning("No successful variants to generate report")
+        return
+
+    # Find best performing variant
+    best_variant = max(successful_variants, key=lambda v: v["test_accuracy"] or 0)
+
+    # Load config from best variant to get dataset and model info
+    best_config = load_config(best_variant["config_path"])
+
+    # Prepare dataset info
+    dataset_info = {
+        "name": "PatchCamelyon",
+        "train_samples": 262144,  # Full dataset size
+        "val_samples": 32768,
+        "test_samples": 32768,
+        "image_size": "96×96 RGB",
+        "num_classes": 2,
+        "task": "Metastatic tissue detection",
+        "data_root": best_config["data"]["root_dir"],
+    }
+
+    # Prepare model info from best variant
+    model_config = best_config["model"]
+    feature_extractor_config = model_config.get("feature_extractor", {})
+
+    model_info = {
+        "feature_extractor": f"{feature_extractor_config.get('model', 'N/A')} (pretrained on ImageNet)",
+        "feature_dim": feature_extractor_config.get("feature_dim", "N/A"),
+        "encoder": f"Transformer ({model_config.get('wsi', {}).get('num_layers', 'N/A')} layers, "
+        f"{model_config.get('wsi', {}).get('num_heads', 'N/A')} heads)",
+        "hidden_dim": model_config.get("wsi", {}).get("hidden_dim", "N/A"),
+        "total_params": best_variant.get("model_parameters", {}).get("total", "N/A"),
+        "pretrained": "Yes" if feature_extractor_config.get("pretrained", True) else "No",
+    }
+
+    # Prepare training config
+    training_config = {
+        "num_epochs": best_config["training"]["num_epochs"],
+        "batch_size": best_config["training"]["batch_size"],
+        "learning_rate": best_config["training"]["learning_rate"],
+        "weight_decay": best_config["training"]["weight_decay"],
+        "optimizer": best_config["training"].get("optimizer", "AdamW"),
+        "use_amp": str(best_config["training"].get("use_amp", True)).lower(),
+        "early_stopping_patience": best_config["early_stopping"].get("patience", "N/A"),
+        "config_file": best_variant["config_path"],
+        "checkpoint_path": best_variant.get("checkpoint_path", "N/A"),
+    }
+
+    # Prepare test metrics from best variant
+    test_metrics = {
+        "accuracy": best_variant.get("test_accuracy", 0.0),
+        "auc": best_variant.get("test_auc", 0.0),
+        "f1": best_variant.get("test_f1", 0.0),
+        "precision": best_variant.get("test_precision", 0.0),
+        "recall": best_variant.get("test_recall", 0.0),
+    }
+
+    # Prepare comparison results
+    comparison_results = {
+        "baselines": [
+            {
+                "model_name": v["name"],
+                "test_metrics": {
+                    "accuracy": v.get("test_accuracy", 0.0),
+                    "auc": v.get("test_auc", 0.0),
+                    "f1": v.get("test_f1", 0.0),
+                },
+                "model_parameters": v.get("model_parameters", {}).get("total", 0),
+            }
+            for v in successful_variants
+        ]
+    }
+
+    # Generate report
+    report_path = output_dir / "PCAM_BENCHMARK_RESULTS.md"
+
+    try:
+        generate_benchmark_report(
+            experiment_name="PatchCamelyon Baseline Comparison",
+            dataset_info=dataset_info,
+            model_info=model_info,
+            training_config=training_config,
+            test_metrics=test_metrics,
+            comparison_results=comparison_results,
+            output_path=str(report_path),
+        )
+
+        logger.info(f"\n✓ Generated benchmark report")
+        logger.info(f"  Report: {report_path}")
+
+    except Exception as e:
+        logger.error(f"Failed to generate benchmark report: {e}")
+        logger.exception(e)
+
+
 def aggregate_results(
     training_results: List[Dict],
     evaluation_results: List[Dict],
     output_path: str,
     record_to_manifest: bool = True,
     manifest_path: str = None,
+    generate_report: bool = True,
+    config_paths: List[str] = None,
 ) -> None:
     """Aggregate and save comparison results.
 
@@ -339,6 +483,8 @@ def aggregate_results(
         output_path: Path to save aggregated results.
         record_to_manifest: If True, record comparison to benchmark manifest.
         manifest_path: Optional path to manifest file for recording.
+        generate_report: If True, generate benchmark report.
+        config_paths: List of configuration file paths (required for report generation).
     """
     # Build comparison table
     comparison = {"timestamp": time.strftime("%Y-%m-%d %H:%M:%S"), "variants": []}
@@ -407,6 +553,10 @@ def aggregate_results(
 
     logger.info("-" * 100)
 
+    # Generate benchmark report if requested
+    if generate_report and config_paths:
+        _generate_comparison_report(comparison, output_path.parent, config_paths)
+
     # Record to benchmark manifest if requested
     if record_to_manifest:
         _record_comparison_to_manifest(comparison, output_path, manifest_path=manifest_path)
@@ -454,6 +604,11 @@ Examples:
     )
     parser.add_argument(
         "--no-manifest", action="store_true", help="Skip recording comparison to benchmark manifest"
+    )
+    parser.add_argument(
+        "--compute-bootstrap-ci",
+        action="store_true",
+        help="Compute bootstrap confidence intervals for all metrics (default: False)",
     )
 
     args = parser.parse_args()
@@ -523,7 +678,9 @@ Examples:
         checkpoint_path = checkpoint_dir / "best_model.pth"
 
         if checkpoint_path.exists():
-            result = run_evaluation(config_path, str(checkpoint_path))
+            result = run_evaluation(
+                config_path, str(checkpoint_path), compute_bootstrap_ci=args.compute_bootstrap_ci
+            )
             evaluation_results.append(result)
         else:
             logger.error(f"Checkpoint not found: {checkpoint_path}")
@@ -538,7 +695,11 @@ Examples:
 
     # Aggregate and save results
     aggregate_results(
-        training_results, evaluation_results, args.output, record_to_manifest=not args.no_manifest
+        training_results,
+        evaluation_results,
+        args.output,
+        record_to_manifest=not args.no_manifest,
+        config_paths=config_paths,
     )
 
     logger.info("\n✓ Comparison complete!")

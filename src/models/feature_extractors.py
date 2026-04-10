@@ -9,17 +9,16 @@ from torchvision import models
 
 class ResNetFeatureExtractor(nn.Module):
     """
-    ResNet-based feature extractor for histopathology patches.
+    Feature extractor for histopathology patches using torchvision models.
 
-    Uses pretrained ResNet-18 or ResNet-50 from torchvision, removing the final
+    Supports multiple architectures from torchvision, removing the final
     classification layer to extract features before the FC layer.
 
     Args:
-        model_name: ResNet variant ('resnet18', 'resnet50')
+        model_name: Model variant ('resnet18', 'resnet50', 'densenet121', 'efficientnet_b0')
         pretrained: Whether to use ImageNet pretrained weights (default: True)
-        feature_dim: Output feature dimension. If None, uses native backbone dimension
-                     (512 for resnet18, 2048 for resnet50). If specified, adds a
-                     linear projection to match the desired dimension.
+        feature_dim: Output feature dimension. If None, uses native backbone dimension.
+                     If specified, adds a linear projection to match the desired dimension.
     """
 
     def __init__(
@@ -30,17 +29,32 @@ class ResNetFeatureExtractor(nn.Module):
     ):
         super().__init__()
 
-        if model_name == "resnet18":
-            self.model = models.resnet18(weights="IMAGENET1K_V1" if pretrained else None)
-            self._native_feature_dim = 512
-        elif model_name == "resnet50":
-            self.model = models.resnet50(weights="IMAGENET1K_V1" if pretrained else None)
-            self._native_feature_dim = 2048
-        else:
-            raise ValueError(f"Unknown model_name: {model_name}. Use 'resnet18' or 'resnet50'.")
+        # Model registry with native feature dimensions
+        model_registry = {
+            "resnet18": (models.resnet18, 512, "IMAGENET1K_V1"),
+            "resnet50": (models.resnet50, 2048, "IMAGENET1K_V1"),
+            "densenet121": (models.densenet121, 1024, "IMAGENET1K_V1"),
+            "efficientnet_b0": (models.efficientnet_b0, 1280, "IMAGENET1K_V1"),
+        }
 
-        # Remove the final classification layer (fc)
-        self.model.fc = nn.Identity()
+        if model_name not in model_registry:
+            raise ValueError(
+                f"Unknown model_name: {model_name}. "
+                f"Supported models: {list(model_registry.keys())}"
+            )
+
+        model_fn, native_dim, weights_name = model_registry[model_name]
+        self.model = model_fn(weights=weights_name if pretrained else None)
+        self._native_feature_dim = native_dim
+
+        # Remove the final classification layer
+        # Different architectures have different final layer names
+        if model_name.startswith("resnet"):
+            self.model.fc = nn.Identity()
+        elif model_name.startswith("densenet"):
+            self.model.classifier = nn.Identity()
+        elif model_name.startswith("efficientnet"):
+            self.model.classifier = nn.Identity()
 
         # Set output dimension and add projection if needed
         if feature_dim is not None:

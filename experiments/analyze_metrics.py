@@ -55,7 +55,12 @@ def load_training_log(log_dir: Path) -> Optional[pd.DataFrame]:
             events = ea.Scalars(tag)
             for event in events:
                 data.append(
-                    {"step": event.step, "metric": tag, "value": event.value, "wall_time": event.wall_time}
+                    {
+                        "step": event.step,
+                        "metric": tag,
+                        "value": event.value,
+                        "wall_time": event.wall_time,
+                    }
                 )
 
         if data:
@@ -111,7 +116,9 @@ def plot_training_curves(log_df: pd.DataFrame, output_dir: Path):
     val_auc = log_df[log_df["metric"] == "epoch/val_auc"]
 
     if not val_loss.empty:
-        axes[0, 1].plot(val_loss["step"], val_loss["value"], label="Val Loss", color="orange", alpha=0.7)
+        axes[0, 1].plot(
+            val_loss["step"], val_loss["value"], label="Val Loss", color="orange", alpha=0.7
+        )
         axes[0, 1].set_xlabel("Epoch")
         axes[0, 1].set_ylabel("Loss")
         axes[0, 1].set_title("Validation Loss")
@@ -119,7 +126,9 @@ def plot_training_curves(log_df: pd.DataFrame, output_dir: Path):
         axes[0, 1].grid(alpha=0.3)
 
     if not val_acc.empty:
-        axes[1, 0].plot(val_acc["step"], val_acc["value"], label="Val Accuracy", color="green", alpha=0.7)
+        axes[1, 0].plot(
+            val_acc["step"], val_acc["value"], label="Val Accuracy", color="green", alpha=0.7
+        )
         axes[1, 0].set_xlabel("Epoch")
         axes[1, 0].set_ylabel("Accuracy")
         axes[1, 0].set_title("Validation Accuracy")
@@ -127,7 +136,9 @@ def plot_training_curves(log_df: pd.DataFrame, output_dir: Path):
         axes[1, 0].grid(alpha=0.3)
 
     if not val_auc.empty:
-        axes[1, 1].plot(val_auc["step"], val_auc["value"], label="Val AUC", color="purple", alpha=0.7)
+        axes[1, 1].plot(
+            val_auc["step"], val_auc["value"], label="Val AUC", color="purple", alpha=0.7
+        )
         axes[1, 1].set_xlabel("Epoch")
         axes[1, 1].set_ylabel("AUC")
         axes[1, 1].set_title("Validation AUC")
