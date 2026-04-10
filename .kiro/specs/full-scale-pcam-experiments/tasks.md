@@ -62,7 +62,7 @@ The implementation follows a phased approach:
     - Verify CI bounds in output JSON
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [-] 4. Create baseline model configuration files
+- [x] 4. Create baseline model configuration files
   - [x] 4.1 Create ResNet-50 baseline config
     - Create `experiments/configs/pcam_fullscale/baseline_resnet50.yaml`
     - Set feature_extractor.model=resnet50, feature_dim=2048
@@ -75,26 +75,26 @@ The implementation follows a phased approach:
     - Use gpu_16gb settings as base
     - _Requirements: 5.2, 5.4_
 
-  - [ ] 4.3 Create EfficientNet-B0 baseline config
+  - [x] 4.3 Create EfficientNet-B0 baseline config
     - Create `experiments/configs/pcam_fullscale/baseline_efficientnet_b0.yaml`
     - Set feature_extractor.model=efficientnet_b0, feature_dim=1280
     - Use gpu_16gb settings as base
     - _Requirements: 5.3, 5.4_
 
-- [ ] 5. Checkpoint - Verify configurations load correctly
+- [x] 5. Checkpoint - Verify configurations load correctly
   - Ensure all YAML configs parse without errors
   - Verify feature extractor models are supported
   - Test loading configs with train_pcam.py --config flag
   - Ask the user if questions arise
 
-- [ ] 6. Implement benchmark report generator
-  - [ ] 6.1 Create `src/utils/benchmark_report.py` module
+- [x] 6. Implement benchmark report generator
+  - [x] 6.1 Create `src/utils/benchmark_report.py` module
     - Implement `generate_benchmark_report()` function
     - Accept experiment_name, dataset_info, model_info, training_config, test_metrics
     - Accept optional comparison_results and hardware_info
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.8_
 
-  - [ ] 6.2 Generate markdown sections in benchmark report
+  - [x] 6.2 Generate markdown sections in benchmark report
     - Executive summary with key results
     - Dataset description (262K train, 32K test, image dimensions)
     - Model architecture (parameters, layers, feature dimensions)
@@ -111,32 +111,32 @@ The implementation follows a phased approach:
     - Test with missing optional fields
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 7. Integrate report generation into comparison runner
-  - [ ] 7.1 Import `generate_benchmark_report()` in compare_pcam_baselines.py
+- [x] 7. Integrate report generation into comparison runner
+  - [x] 7.1 Import `generate_benchmark_report()` in compare_pcam_baselines.py
     - Add call to report generator after comparison completes
     - Pass aggregated comparison results
     - Save report as PCAM_BENCHMARK_RESULTS.md
     - _Requirements: 5.7, 7.1, 7.9_
 
-  - [ ] 7.2 Add bootstrap CI to comparison runner
+  - [x] 7.2 Add bootstrap CI to comparison runner
     - Call evaluate_pcam.py with `--compute-bootstrap-ci` flag
     - Include CI results in comparison table
     - _Requirements: 5.6, 6.5, 6.6_
 
-- [ ] 8. Update PCamDataset for full-scale download validation
-  - [ ] 8.1 Enhance dataset validation in PCamDataset
+- [x] 8. Update PCamDataset for full-scale download validation
+  - [x] 8.1 Enhance dataset validation in PCamDataset
     - Verify 262,144 training samples after download
     - Verify 32,768 validation samples after download
     - Verify 32,768 test samples after download
     - Log validation results
     - _Requirements: 1.2, 1.3_
 
-  - [ ] 8.2 Add progress reporting to download
+  - [x] 8.2 Add progress reporting to download
     - Display download speed and estimated time
     - Log download source (TFDS or GitHub)
     - _Requirements: 1.1, 1.5_
 
-  - [ ] 8.3 Improve error handling for download failures
+  - [x] 8.3 Improve error handling for download failures
     - Cleanup partial downloads on failure
     - Provide descriptive error messages
     - _Requirements: 1.6, 12.1, 12.2_

@@ -36,7 +36,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _resolve_logits(model: nn.Module, batch: Dict, output: Optional[torch.Tensor] = None) -> torch.Tensor:
+def _resolve_logits(
+    model: nn.Module, batch: Dict, output: Optional[torch.Tensor] = None
+) -> torch.Tensor:
     """Resolve classification logits from models that may return embeddings or logits.
 
     Supports two common patterns:
