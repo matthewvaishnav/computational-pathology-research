@@ -73,9 +73,7 @@ def verify_pcam_dataset(data_dir: Path):
             # Verify shapes
             expected_samples = split_info["expected_samples"]
             if x_shape[0] != expected_samples:
-                print(
-                    f"  ✗ Wrong number of samples: {x_shape[0]} (expected {expected_samples})"
-                )
+                print(f"  ✗ Wrong number of samples: {x_shape[0]} (expected {expected_samples})")
                 all_valid = False
             elif x_shape != (expected_samples, 96, 96, 3):
                 print(f"  ✗ Wrong x shape: {x_shape} (expected ({expected_samples}, 96, 96, 3))")

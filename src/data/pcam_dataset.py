@@ -265,6 +265,77 @@ class PCamDataset(Dataset):
         with open(self.metadata_file, "w") as f:
             json.dump(metadata, f, indent=2)
 
+    def _validate_dataset(self) -> bool:
+        """
+        Validate dataset integrity after download.
+
+        Verifies that all splits have the correct number of samples:
+        - Train: 262,144 samples
+        - Val: 32,768 samples
+        - Test: 32,768 samples
+
+        Returns:
+            True if validation passes, False otherwise.
+        """
+        expected_sizes = {
+            "train": 262144,
+            "val": 32768,
+            "test": 32768,
+        }
+
+        logger.info("Validating dataset integrity...")
+
+        all_valid = True
+        for split_name, expected_size in expected_sizes.items():
+            split_dir = self.root_dir / split_name
+            images_file = split_dir / "images.h5py"
+            labels_file = split_dir / "labels.h5py"
+
+            # Check Zenodo format as fallback
+            zenodo_images_file = self.root_dir / f"camelyonpatch_level_2_split_{split_name}_x.h5"
+            zenodo_labels_file = self.root_dir / f"camelyonpatch_level_2_split_{split_name}_y.h5"
+
+            # Determine which format to check
+            if images_file.exists() and labels_file.exists():
+                # Custom format
+                try:
+                    with h5py.File(str(images_file), "r") as f:
+                        actual_size = f["images"].shape[0]
+                except Exception as e:
+                    logger.error(f"Failed to read {split_name} images file: {e}")
+                    all_valid = False
+                    continue
+            elif zenodo_images_file.exists() and zenodo_labels_file.exists():
+                # Zenodo format
+                try:
+                    with h5py.File(str(zenodo_images_file), "r") as f:
+                        actual_size = f["x"].shape[0]
+                except Exception as e:
+                    logger.error(f"Failed to read {split_name} Zenodo images file: {e}")
+                    all_valid = False
+                    continue
+            else:
+                logger.error(f"Missing files for {split_name} split")
+                all_valid = False
+                continue
+
+            # Validate size
+            if actual_size == expected_size:
+                logger.info(f"✓ {split_name.capitalize()} split: {actual_size:,} samples (valid)")
+            else:
+                logger.warning(
+                    f"✗ {split_name.capitalize()} split: {actual_size:,} samples "
+                    f"(expected {expected_size:,})"
+                )
+                all_valid = False
+
+        if all_valid:
+            logger.info("✓ Dataset validation passed")
+        else:
+            logger.warning("✗ Dataset validation failed - some splits have incorrect sizes")
+
+        return all_valid
+
     def download(self) -> None:
         """
         Download the PCam dataset.
@@ -276,42 +347,91 @@ class PCamDataset(Dataset):
         random access during training.
 
         Raises:
-            RuntimeError: If download fails.
+            RuntimeError: If download fails or validation fails.
         """
         self.root_dir.mkdir(parents=True, exist_ok=True)
 
-        if TFDS_AVAILABLE:
-            self._download_via_tfds()
-        else:
-            logger.warning(
-                "TensorFlow Datasets not available. " "Falling back to direct download from GitHub."
-            )
-            self._download_direct()
+        try:
+            if TFDS_AVAILABLE:
+                self._download_via_tfds()
+            else:
+                logger.warning(
+                    "TensorFlow Datasets not available. "
+                    "Falling back to direct download from GitHub."
+                )
+                self._download_direct()
 
-        # Convert extracted data to HDF5 format
-        self._process_downloaded_data()
+            # Convert extracted data to HDF5 format
+            self._process_downloaded_data()
 
-        # Save metadata
-        metadata = {
-            "dataset": "PCam",
-            "version": "1.0",
-            "splits": {
-                split: {
-                    "num_samples": self._get_split_size(split),
-                }
-                for split in ("train", "val", "test")
-            },
-            "image_shape": [96, 96, 3],
-            "num_classes": 2,
-            "class_names": ["normal", "metastatic"],
-        }
-        self._save_metadata(metadata)
+            # Validate dataset integrity
+            validation_passed = self._validate_dataset()
 
-        logger.info("PCam dataset download complete!")
+            # Save metadata
+            metadata = {
+                "dataset": "PCam",
+                "version": "1.0",
+                "splits": {
+                    split: {
+                        "num_samples": self._get_split_size(split),
+                    }
+                    for split in ("train", "val", "test")
+                },
+                "image_shape": [96, 96, 3],
+                "num_classes": 2,
+                "class_names": ["normal", "metastatic"],
+                "validation_passed": validation_passed,
+            }
+            self._save_metadata(metadata)
+
+            if not validation_passed:
+                logger.warning(
+                    "Dataset validation failed. The dataset may be incomplete or corrupted. "
+                    "Consider re-downloading the dataset."
+                )
+
+            logger.info("PCam dataset download complete!")
+
+        except Exception as e:
+            # Cleanup partial downloads on failure
+            logger.error(f"Download failed: {e}")
+            logger.info("Cleaning up partial downloads...")
+
+            try:
+                # Remove temp directory if it exists
+                temp_dir = self.root_dir / "temp"
+                if temp_dir.exists():
+                    shutil.rmtree(temp_dir)
+                    logger.info("Removed temporary files")
+
+                # Optionally remove incomplete split directories
+                for split_name in ("train", "val", "test"):
+                    split_dir = self.root_dir / split_name
+                    if split_dir.exists():
+                        # Check if split is incomplete (missing files)
+                        images_file = split_dir / "images.h5py"
+                        labels_file = split_dir / "labels.h5py"
+                        if not (images_file.exists() and labels_file.exists()):
+                            shutil.rmtree(split_dir)
+                            logger.info(f"Removed incomplete {split_name} split")
+
+            except Exception as cleanup_error:
+                logger.warning(f"Failed to cleanup partial downloads: {cleanup_error}")
+
+            # Re-raise with descriptive error message
+            raise RuntimeError(
+                f"Failed to download PCam dataset: {e}\n\n"
+                "Possible solutions:\n"
+                "1. Check your internet connection\n"
+                "2. Verify you have sufficient disk space (~7GB required)\n"
+                "3. Try downloading manually from: https://github.com/basveeling/pcam\n"
+                "4. If using TFDS, ensure tensorflow-datasets is installed: pip install tensorflow-datasets"
+            ) from e
 
     def _download_via_tfds(self) -> None:
         """Download PCam using TensorFlow Datasets."""
         logger.info("Downloading PCam via TensorFlow Datasets...")
+        logger.info("Download source: TensorFlow Datasets (TFDS)")
 
         try:
             # Download and process each split
@@ -334,12 +454,19 @@ class PCamDataset(Dataset):
                 images_list = []
                 labels_list = []
 
-                for example in tfds.as_numpy(dataset):
+                logger.info(f"Loading {split_name} samples...")
+                for i, example in enumerate(tfds.as_numpy(dataset)):
                     images_list.append(example["image"])
                     labels_list.append(example["label"])
 
+                    # Progress reporting every 10000 samples
+                    if (i + 1) % 10000 == 0:
+                        logger.info(f"  Loaded {i + 1:,} samples...")
+
                 images = np.array(images_list, dtype=np.uint8)
                 labels = np.array(labels_list, dtype=np.int32)
+
+                logger.info(f"Saving {split_name} split to HDF5...")
 
                 # Save as HDF5
                 split_dir = self.root_dir / split_name
@@ -351,7 +478,7 @@ class PCamDataset(Dataset):
                 with h5py.File(split_dir / "labels.h5py", "w") as f:
                     f.create_dataset("labels", data=labels, compression="gzip")
 
-                logger.info(f"Saved {split_name} split: {len(images)} samples")
+                logger.info(f"✓ Saved {split_name} split: {len(images):,} samples")
 
         except Exception as e:
             raise RuntimeError(f"Failed to download via TFDS: {e}")
@@ -359,6 +486,8 @@ class PCamDataset(Dataset):
     def _download_direct(self) -> None:
         """Download PCam directly from GitHub release."""
         import urllib.request
+
+        logger.info("Download source: GitHub release (direct download)")
 
         for split_name, url in self.PCAM_URLS.items():
             logger.info(f"Downloading {split_name} split from {url}")
@@ -368,9 +497,23 @@ class PCamDataset(Dataset):
                 temp_dir = self.root_dir / "temp"
                 temp_dir.mkdir(parents=True, exist_ok=True)
 
-                # Download tarball
+                # Download tarball with progress reporting
                 tarball_path = temp_dir / f"{split_name}.tar.gz"
-                urllib.request.urlretrieve(url, str(tarball_path))
+
+                def _report_progress(block_num, block_size, total_size):
+                    """Report download progress."""
+                    downloaded = block_num * block_size
+                    if total_size > 0:
+                        percent = min(100, downloaded * 100 / total_size)
+                        downloaded_mb = downloaded / (1024 * 1024)
+                        total_mb = total_size / (1024 * 1024)
+                        if block_num % 100 == 0:  # Report every 100 blocks
+                            logger.info(
+                                f"  Progress: {percent:.1f}% ({downloaded_mb:.1f} MB / {total_mb:.1f} MB)"
+                            )
+
+                urllib.request.urlretrieve(url, str(tarball_path), reporthook=_report_progress)
+                logger.info(f"✓ Download complete for {split_name} split")
 
                 # Extract tarball
                 logger.info(f"Extracting {split_name} split...")
@@ -391,7 +534,7 @@ class PCamDataset(Dataset):
                 # Clean up temp
                 shutil.rmtree(temp_dir)
 
-                logger.info(f"Downloaded and extracted {split_name} split")
+                logger.info(f"✓ Downloaded and extracted {split_name} split")
 
             except Exception as e:
                 raise RuntimeError(f"Failed to download {split_name} split: {e}")

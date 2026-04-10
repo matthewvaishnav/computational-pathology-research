@@ -79,10 +79,10 @@ def load_config(config_path: str) -> Dict:
 
 def validate_config(config: Dict) -> None:
     """Validate configuration has required fields.
-    
+
     Args:
         config: Configuration dictionary
-        
+
     Raises:
         ValueError: If required fields are missing or invalid
     """
@@ -93,7 +93,7 @@ def validate_config(config: Dict) -> None:
         ("model", "wsi", "hidden_dim"),
         ("task", "num_classes"),
     ]
-    
+
     for *path, field in required_fields:
         obj = config
         for key in path:
@@ -102,17 +102,17 @@ def validate_config(config: Dict) -> None:
             obj = obj[key]
         if field not in obj:
             raise ValueError(f"Missing config field: {'.'.join(path + [field])}")
-    
+
     # Validate aggregation method
     aggregation = config.get("model", {}).get("wsi", {}).get("aggregation", "mean")
     if aggregation not in ["mean", "max"]:
         raise ValueError(f"Invalid aggregation method: {aggregation}. Must be 'mean' or 'max'")
-    
+
     # Validate data paths exist
     root_dir = Path(config["data"]["root_dir"])
     if not root_dir.exists():
         raise ValueError(f"Data root directory does not exist: {root_dir}")
-    
+
     logger.info("Configuration validation passed")
 
 
@@ -147,7 +147,9 @@ class SimpleSlideClassifier(nn.Module):
             nn.Linear(hidden_dim // 2, num_classes if num_classes > 2 else 1),
         )
 
-    def forward(self, patch_features: torch.Tensor, num_patches: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(
+        self, patch_features: torch.Tensor, num_patches: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """Forward pass with optional masking for padded patches.
 
         Args:
@@ -161,9 +163,14 @@ class SimpleSlideClassifier(nn.Module):
         if self.pooling == "mean":
             if num_patches is not None:
                 # Masked mean: only average over actual patches
-                mask = torch.arange(patch_features.size(1), device=patch_features.device)[None, :] < num_patches[:, None]
+                mask = (
+                    torch.arange(patch_features.size(1), device=patch_features.device)[None, :]
+                    < num_patches[:, None]
+                )
                 mask = mask.unsqueeze(-1).float()  # [batch_size, max_patches, 1]
-                slide_features = (patch_features * mask).sum(dim=1) / num_patches.unsqueeze(-1).float()
+                slide_features = (patch_features * mask).sum(dim=1) / num_patches.unsqueeze(
+                    -1
+                ).float()
             else:
                 slide_features = patch_features.mean(dim=1)
         elif self.pooling == "max":
@@ -412,7 +419,7 @@ def main():
 
     # Load config
     config = load_config(args.config)
-    
+
     # Validate config
     validate_config(config)
 
