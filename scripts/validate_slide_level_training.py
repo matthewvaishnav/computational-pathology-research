@@ -128,7 +128,9 @@ def main():
         print("  - Training/evaluation consistency is maintained")
         print("\nNext steps:")
         print("  1. Generate real CAMELYON data or use synthetic data")
-        print("  2. Run: python experiments/train_camelyon.py --config experiments/configs/camelyon.yaml")
+        print(
+            "  2. Run: python experiments/train_camelyon.py --config experiments/configs/camelyon.yaml"
+        )
         print("  3. Evaluate: python experiments/evaluate_camelyon.py --checkpoint <path>")
 
 
