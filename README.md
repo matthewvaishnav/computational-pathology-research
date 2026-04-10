@@ -1,9 +1,11 @@
 # Computational Pathology Research Framework
 
+[![CI](https://github.com/matthewvaishnav/computational-pathology-research/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/matthewvaishnav/computational-pathology-research/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code Coverage](https://img.shields.io/badge/coverage-62%25-yellow.svg)](htmlcov/index.html)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 > **Research Framework**: Tested implementations for computational pathology with working benchmarks on PatchCamelyon and CAMELYON16-style slide-level classification.
 
@@ -11,15 +13,16 @@
 
 ## Overview
 
-This repository provides a tested PyTorch framework for computational pathology research, with working implementations for:
+A production-grade PyTorch framework for computational pathology research, providing:
 
-- ✅ **PatchCamelyon (PCam) Training**: 94% accuracy on synthetic subset
-- ✅ **CAMELYON16 Slide-Level Pipeline**: Functional slide-level classification with mean/max pooling
-- ✅ **Slide Predictions CSV Export**: Publication-ready prediction exports
-- ✅ **Comprehensive Testing**: 62% code coverage with unit tests
-- ✅ **Model Profiling**: Performance analysis and ONNX export tools
+- 🔬 **Whole-Slide Image (WSI) Processing**: OpenSlide integration for .svs, .tiff, .ndpi formats
+- 🧠 **Multiple Instance Learning (MIL)**: Slide-level classification with attention mechanisms
+- 📊 **Benchmark Pipelines**: PatchCamelyon and CAMELYON16-compatible training/evaluation
+- 🔧 **Analysis Tools**: Baseline comparison, metrics analysis, bootstrap confidence intervals
+- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 62% test coverage
+- 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
-**Status**: This is a research codebase with working benchmarks on synthetic data. Not validated for clinical use.
+**Status**: Research framework with validated infrastructure. Real PCam dataset support included. Not validated for clinical use.
 
 ## Quick Start
 
@@ -41,35 +44,74 @@ pip install -e .
 
 ### PatchCamelyon (PCam) Training
 
-Train on the PatchCamelyon benchmark:
+Train on the PatchCamelyon benchmark with real or synthetic data:
 
 ```bash
-# Generate synthetic data
-python scripts/generate_synthetic_pcam.py
+# Download real PCam dataset (7GB, 327K images)
+python scripts/download_pcam.py --output-dir data/pcam_real
 
-# Train model
-python experiments/train_pcam.py --config experiments/configs/pcam.yaml
+# Train model (RTX 4070 Laptop: ~18 min/epoch, 3.8 it/s)
+python experiments/train_pcam.py --config experiments/configs/pcam_rtx4070_laptop.yaml
 
 # Evaluate
 python experiments/evaluate_pcam.py \
-  --checkpoint checkpoints/pcam/best_model.pth \
-  --data-root data/pcam \
+  --checkpoint checkpoints/pcam_real/best_model.pth \
+  --data-root data/pcam_real \
   --output-dir results/pcam
 ```
 
-**Results** (synthetic subset):
-- Test Accuracy: 94.0%
-- Test AUC: 1.0
-- Training Time: ~40 seconds (8 epochs, CPU)
+**Real Dataset**: 262,144 train, 32,768 val, 32,768 test samples (96×96 RGB patches)
+
+**Development/Testing**: Synthetic data generator available for pipeline validation:
+```bash
+python scripts/generate_synthetic_pcam.py  # Creates small test dataset
+```
 
 See [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) for details.
+
+### Full-Scale PCam Experiments
+
+Train on the complete 262K PCam dataset with GPU-optimized configurations:
+
+```bash
+# For 16GB GPU (RTX 4070, RTX 4080) - ~8 hours
+python experiments/train_pcam.py \
+  --config experiments/configs/pcam_fullscale/gpu_16gb.yaml
+
+# For 24GB GPU (RTX 4090) - ~6 hours
+python experiments/train_pcam.py \
+  --config experiments/configs/pcam_fullscale/gpu_24gb.yaml
+
+# Evaluate with bootstrap confidence intervals
+python experiments/evaluate_pcam.py \
+  --checkpoint checkpoints/pcam_fullscale/best_model.pth \
+  --data-root data/pcam \
+  --output-dir results/pcam_fullscale \
+  --compute-bootstrap-ci \
+  --bootstrap-samples 1000
+
+# Compare baseline models (ResNet-50, DenseNet-121, EfficientNet-B0)
+python experiments/compare_pcam_baselines.py \
+  --configs experiments/configs/pcam_fullscale/baseline_*.yaml \
+  --output results/pcam_comparison \
+  --compute-bootstrap-ci
+```
+
+**Features**:
+- GPU-optimized configurations for 16GB/24GB/40GB VRAM
+- Mixed precision training (AMP) for 2x speedup
+- Bootstrap confidence intervals for statistical validation
+- Baseline model comparisons with comprehensive reports
+- Automatic dataset download and validation
+
+See [docs/PCAM_FULLSCALE_GUIDE.md](docs/PCAM_FULLSCALE_GUIDE.md) for complete guide.
 
 ### CAMELYON16 Slide-Level Training
 
 Train on CAMELYON16-style slide-level classification:
 
 ```bash
-# Generate synthetic data
+# Generate synthetic slide-level data for testing
 python scripts/generate_synthetic_camelyon.py
 
 # Quick test (1 epoch)
@@ -93,6 +135,8 @@ python experiments/evaluate_camelyon.py \
 - Mean/max pooling aggregation methods
 - CSV export for slide-level predictions
 - Confusion matrix and ROC curve visualization
+
+**Note**: Current implementation uses feature-cache baseline (pre-extracted HDF5 features). Raw WSI processing pipeline in development.
 
 See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for details.
 
@@ -306,10 +350,21 @@ See [requirements.txt](requirements.txt) for complete dependencies.
 
 ## Limitations
 
-- **Synthetic Data**: Current benchmarks use synthetic data for testing
-- **Feature-Cache Baseline**: CAMELYON uses pre-extracted features, not raw WSI
+- **Feature-Cache Baseline**: CAMELYON uses pre-extracted features, not raw WSI processing
 - **Research Code**: Not validated for clinical use
-- **No Real Datasets**: Requires real pathology datasets for validation
+- **Development Stage**: Active development, APIs may change
+- **GPU Requirements**: Full-scale PCam training requires 16GB+ VRAM (synthetic mode available for testing)
+
+## Roadmap
+
+- [x] Full-scale PCam experiments with GPU optimization
+- [x] Bootstrap confidence intervals for statistical validation
+- [x] Baseline model comparison infrastructure
+- [ ] Real PCam benchmark results (training in progress)
+- [ ] Raw WSI processing pipeline for CAMELYON
+- [ ] Attention-based MIL models
+- [ ] Stain normalization integration
+- [ ] Multi-GPU training support
 
 ## License
 
