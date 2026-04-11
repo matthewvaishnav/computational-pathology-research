@@ -120,39 +120,94 @@ See [docs/PCAM_FULLSCALE_GUIDE.md](docs/PCAM_FULLSCALE_GUIDE.md) for complete gu
 
 ### CAMELYON16 Slide-Level Training
 
-Train on CAMELYON16-style slide-level classification:
+Train on CAMELYON16-style slide-level classification with attention-based MIL models:
 
 ```bash
 # Generate synthetic slide-level data for testing
 python scripts/generate_synthetic_camelyon.py
 
-# Quick test (1 epoch)
+# Train with AttentionMIL (gated attention)
 python experiments/train_camelyon.py \
-  --config experiments/configs/camelyon_quick_test.yaml
+  --config experiments/configs/attention_mil.yaml
 
-# Full training (50 epochs)
+# Train with CLAM (clustering-constrained attention)
 python experiments/train_camelyon.py \
-  --config experiments/configs/camelyon.yaml
+  --config experiments/configs/clam.yaml
 
-# Evaluate with CSV export
+# Train with TransMIL (transformer-based MIL)
+python experiments/train_camelyon.py \
+  --config experiments/configs/transmil.yaml
+
+# Evaluate with CSV export and attention visualization
 python experiments/evaluate_camelyon.py \
   --checkpoint checkpoints/camelyon/best_model.pth \
   --data-root data/camelyon \
   --output-dir results/camelyon \
-  --save-predictions-csv
+  --save-predictions-csv \
+  --generate-attention-heatmaps
 ```
 
 **Features**:
-- Slide-level classification using pre-extracted HDF5 features
-- Mean/max pooling aggregation methods
-- CSV export for slide-level predictions
-- Confusion matrix and ROC curve visualization
+- **Attention-Based MIL Models**: AttentionMIL, CLAM, TransMIL architectures
+- **Attention Visualization**: Generate heatmaps showing which patches the model focuses on
+- **Attention Weight Storage**: Save attention weights to HDF5 for analysis
+- **Baseline Models**: Mean/max pooling aggregation methods for comparison
+- **CSV Export**: Slide-level predictions with probabilities
+- **Visualization**: Confusion matrix, ROC curves, and attention heatmaps
+
+**Attention Models**:
+- **AttentionMIL**: Gated attention mechanism for weighted patch aggregation
+- **CLAM**: Clustering-constrained attention with instance-level predictions
+- **TransMIL**: Transformer encoder with CLS token aggregation
 
 **Note**: Current implementation uses feature-cache baseline (pre-extracted HDF5 features). Raw WSI processing pipeline in development.
 
 See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for details.
 
 ## Key Features
+
+### Attention-Based MIL Models
+
+**NEW**: State-of-the-art attention mechanisms for slide-level classification:
+
+```python
+from src.models.attention_mil import AttentionMIL, CLAM, TransMIL
+from src.visualization.attention_heatmap import AttentionHeatmapGenerator
+
+# Create attention model
+model = AttentionMIL(
+    feature_dim=2048,
+    hidden_dim=256,
+    num_classes=2,
+    gated=True,
+    attention_mode='instance'
+)
+
+# Train and get attention weights
+logits, attention_weights = model(features, num_patches, return_attention=True)
+
+# Visualize attention heatmaps
+generator = AttentionHeatmapGenerator(
+    attention_dir='outputs/attention_weights',
+    output_dir='outputs/heatmaps',
+    colormap='jet'
+)
+heatmap_path = generator.generate_heatmap('slide_001')
+```
+
+**Available Models**:
+- **AttentionMIL**: Gated attention mechanism with instance/bag-level modes
+- **CLAM**: Clustering-constrained attention with multi-branch support
+- **TransMIL**: Transformer encoder with positional encoding and CLS token
+
+**Features**:
+- Attention weight extraction and HDF5 storage
+- Heatmap visualization with configurable colormaps
+- Batch processing for multiple slides
+- Integration with existing training pipeline
+- Comprehensive unit tests (24 tests, all passing)
+
+See [src/models/attention_mil.py](src/models/attention_mil.py) and [src/visualization/attention_heatmap.py](src/visualization/attention_heatmap.py) for implementation details.
 
 ### Analysis Tools
 
@@ -301,8 +356,12 @@ See [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) for details.
 ├── src/                    # Source code
 │   ├── data/              # Data loading (PCam, CAMELYON)
 │   ├── models/            # Model architectures
+│   │   └── attention_mil.py  # Attention-based MIL models
 │   ├── training/          # Training infrastructure
-│   └── utils/             # Utilities
+│   ├── utils/             # Utilities
+│   │   └── attention_utils.py  # Attention weight storage
+│   └── visualization/     # Visualization tools
+│       └── attention_heatmap.py  # Attention heatmap generation
 ├── experiments/           # Training and evaluation scripts
 │   ├── train_pcam.py     # PCam training
 │   ├── evaluate_pcam.py  # PCam evaluation
@@ -314,7 +373,9 @@ See [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) for details.
 │   ├── model_profiler.py
 │   └── export_onnx.py
 ├── examples/              # Demo and example scripts
-├── tests/                 # Unit tests (62% coverage)
+├── tests/                 # Unit tests (68% coverage)
+│   ├── test_attention_utils.py  # Attention storage tests
+│   └── test_attention_heatmap.py  # Visualization tests
 ├── docs/                  # Documentation
 │   ├── DOCS_INDEX.md     # Documentation index
 │   ├── PCAM_BENCHMARK_RESULTS.md
@@ -413,9 +474,11 @@ The framework includes comprehensive ablation studies demonstrating:
 - [x] Full-scale PCam experiments with GPU optimization
 - [x] Bootstrap confidence intervals for statistical validation
 - [x] Baseline model comparison infrastructure
+- [x] Attention-based MIL models (AttentionMIL, CLAM, TransMIL)
+- [x] Attention weight visualization and heatmap generation
 - [ ] Real PCam benchmark results (training in progress)
 - [ ] Raw WSI processing pipeline for CAMELYON
-- [ ] Attention-based MIL models
+- [ ] Model comparison infrastructure for attention models
 - [ ] Stain normalization integration
 - [ ] Multi-GPU training support
 
