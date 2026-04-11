@@ -33,8 +33,8 @@ task:
 training:
   batch_size: 64  # Optimized for 8GB VRAM
   num_epochs: 20
-  learning_rate: 0.001
-  weight_decay: 0.0001
+  learning_rate: 0.0001  # Reduced from 0.001 to prevent numerical instability
+  weight_decay: 0.001  # Increased from 0.0001 to prevent overfitting
   max_grad_norm: 1.0
   use_amp: true  # Critical for 8GB VRAM - provides 2-3x speedup
   dropout: 0.1
@@ -45,7 +45,7 @@ training:
   
   scheduler:
     name: "cosine"
-    min_lr: 1e-6
+    min_lr: 1e-7  # Reduced from 1e-6 for better stability
 
 validation:
   interval: 1  # Validate every epoch
