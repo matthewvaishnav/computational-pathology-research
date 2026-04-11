@@ -1,0 +1,274 @@
+name: "Tissue Type Classification"
+version: "1.0"
+description: "Basic tissue type taxonomy for general pathological analysis"
+
+diseases:
+  # Primary tissue types
+  - id: "epithelial"
+    name: "Epithelial Tissue"
+    description: "Tissue that lines surfaces and cavities"
+    parent: null
+    children: ["squamous_epithelium", "glandular_epithelium", "transitional_epithelium"]
+    metadata:
+      color: "#FF6600"
+      tissue_origin: "ectoderm_endoderm"
+  
+  - id: "connective"
+    name: "Connective Tissue"
+    description: "Tissue that supports and connects other tissues"
+    parent: null
+    children: ["loose_connective", "dense_connective", "specialized_connective"]
+    metadata:
+      color: "#00FF66"
+      tissue_origin: "mesoderm"
+  
+  - id: "muscle"
+    name: "Muscle Tissue"
+    description: "Contractile tissue responsible for movement"
+    parent: null
+    children: ["skeletal_muscle", "cardiac_muscle", "smooth_muscle"]
+    metadata:
+      color: "#6600FF"
+      tissue_origin: "mesoderm"
+  
+  - id: "nervous"
+    name: "Nervous Tissue"
+    description: "Tissue that transmits electrical signals"
+    parent: null
+    children: ["neurons", "glial_cells"]
+    metadata:
+      color: "#FF0066"
+      tissue_origin: "ectoderm"
+  
+  # Epithelial subtypes
+  - id: "squamous_epithelium"
+    name: "Squamous Epithelium"
+    description: "Flat, scale-like epithelial cells"
+    parent: "epithelial"
+    children: ["simple_squamous", "stratified_squamous"]
+    metadata:
+      color: "#FF9933"
+      cell_shape: "flat"
+  
+  - id: "glandular_epithelium"
+    name: "Glandular Epithelium"
+    description: "Epithelial tissue specialized for secretion"
+    parent: "epithelial"
+    children: ["exocrine_glands", "endocrine_glands"]
+    metadata:
+      color: "#FFCC33"
+      function: "secretion"
+  
+  - id: "transitional_epithelium"
+    name: "Transitional Epithelium"
+    description: "Epithelium that can stretch and change shape"
+    parent: "epithelial"
+    children: []
+    metadata:
+      color: "#FF6633"
+      function: "stretch"
+  
+  # Squamous epithelium subtypes
+  - id: "simple_squamous"
+    name: "Simple Squamous Epithelium"
+    description: "Single layer of flat epithelial cells"
+    parent: "squamous_epithelium"
+    children: []
+    metadata:
+      color: "#FFAA33"
+      layers: "single"
+      location: "alveoli_blood_vessels"
+  
+  - id: "stratified_squamous"
+    name: "Stratified Squamous Epithelium"
+    description: "Multiple layers of flat epithelial cells"
+    parent: "squamous_epithelium"
+    children: []
+    metadata:
+      color: "#FF7733"
+      layers: "multiple"
+      location: "skin_oral_cavity"
+  
+  # Glandular epithelium subtypes
+  - id: "exocrine_glands"
+    name: "Exocrine Glands"
+    description: "Glands that secrete through ducts"
+    parent: "glandular_epithelium"
+    children: []
+    metadata:
+      color: "#FFDD33"
+      secretion_type: "ducted"
+      examples: "salivary_sweat_mammary"
+  
+  - id: "endocrine_glands"
+    name: "Endocrine Glands"
+    description: "Glands that secrete hormones into bloodstream"
+    parent: "glandular_epithelium"
+    children: []
+    metadata:
+      color: "#FFBB33"
+      secretion_type: "ductless"
+      examples: "thyroid_adrenal_pituitary"
+  
+  # Connective tissue subtypes
+  - id: "loose_connective"
+    name: "Loose Connective Tissue"
+    description: "Connective tissue with loosely arranged fibers"
+    parent: "connective"
+    children: ["areolar", "adipose", "reticular"]
+    metadata:
+      color: "#33FF66"
+      fiber_arrangement: "loose"
+  
+  - id: "dense_connective"
+    name: "Dense Connective Tissue"
+    description: "Connective tissue with tightly packed fibers"
+    parent: "connective"
+    children: ["dense_regular", "dense_irregular"]
+    metadata:
+      color: "#00FF33"
+      fiber_arrangement: "dense"
+  
+  - id: "specialized_connective"
+    name: "Specialized Connective Tissue"
+    description: "Connective tissue with specialized functions"
+    parent: "connective"
+    children: ["cartilage", "bone", "blood"]
+    metadata:
+      color: "#66FF33"
+      specialization: "high"
+  
+  # Loose connective subtypes
+  - id: "areolar"
+    name: "Areolar Tissue"
+    description: "Loose connective tissue with mixed fiber types"
+    parent: "loose_connective"
+    children: []
+    metadata:
+      color: "#66FF99"
+      location: "beneath_skin"
+  
+  - id: "adipose"
+    name: "Adipose Tissue"
+    description: "Connective tissue specialized for fat storage"
+    parent: "loose_connective"
+    children: []
+    metadata:
+      color: "#99FF66"
+      function: "energy_storage"
+  
+  - id: "reticular"
+    name: "Reticular Tissue"
+    description: "Connective tissue forming supportive networks"
+    parent: "loose_connective"
+    children: []
+    metadata:
+      color: "#33FF99"
+      location: "lymphoid_organs"
+  
+  # Dense connective subtypes
+  - id: "dense_regular"
+    name: "Dense Regular Connective Tissue"
+    description: "Dense connective tissue with parallel fibers"
+    parent: "dense_connective"
+    children: []
+    metadata:
+      color: "#00FF66"
+      fiber_orientation: "parallel"
+      location: "tendons_ligaments"
+  
+  - id: "dense_irregular"
+    name: "Dense Irregular Connective Tissue"
+    description: "Dense connective tissue with randomly oriented fibers"
+    parent: "dense_connective"
+    children: []
+    metadata:
+      color: "#33FF33"
+      fiber_orientation: "random"
+      location: "dermis_organ_capsules"
+  
+  # Specialized connective subtypes
+  - id: "cartilage"
+    name: "Cartilage"
+    description: "Firm but flexible connective tissue"
+    parent: "specialized_connective"
+    children: []
+    metadata:
+      color: "#99FF33"
+      consistency: "firm_flexible"
+      location: "joints_nose_ears"
+  
+  - id: "bone"
+    name: "Bone Tissue"
+    description: "Hard, mineralized connective tissue"
+    parent: "specialized_connective"
+    children: []
+    metadata:
+      color: "#66FF00"
+      consistency: "hard_mineralized"
+      function: "support_protection"
+  
+  - id: "blood"
+    name: "Blood Tissue"
+    description: "Liquid connective tissue"
+    parent: "specialized_connective"
+    children: []
+    metadata:
+      color: "#CCFF33"
+      consistency: "liquid"
+      function: "transport"
+  
+  # Muscle tissue subtypes
+  - id: "skeletal_muscle"
+    name: "Skeletal Muscle"
+    description: "Voluntary striated muscle attached to bones"
+    parent: "muscle"
+    children: []
+    metadata:
+      color: "#9933FF"
+      control: "voluntary"
+      striation: "striated"
+      location: "attached_to_skeleton"
+  
+  - id: "cardiac_muscle"
+    name: "Cardiac Muscle"
+    description: "Involuntary striated muscle of the heart"
+    parent: "muscle"
+    children: []
+    metadata:
+      color: "#6600CC"
+      control: "involuntary"
+      striation: "striated"
+      location: "heart"
+  
+  - id: "smooth_muscle"
+    name: "Smooth Muscle"
+    description: "Involuntary non-striated muscle"
+    parent: "muscle"
+    children: []
+    metadata:
+      color: "#3300FF"
+      control: "involuntary"
+      striation: "non_striated"
+      location: "organs_blood_vessels"
+  
+  # Nervous tissue subtypes
+  - id: "neurons"
+    name: "Neurons"
+    description: "Nerve cells that transmit electrical signals"
+    parent: "nervous"
+    children: []
+    metadata:
+      color: "#FF3399"
+      function: "signal_transmission"
+      cell_type: "excitable"
+  
+  - id: "glial_cells"
+    name: "Glial Cells"
+    description: "Support cells of the nervous system"
+    parent: "nervous"
+    children: []
+    metadata:
+      color: "#FF6699"
+      function: "support_protection"
+      cell_type: "non_excitable"

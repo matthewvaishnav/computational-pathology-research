@@ -22,6 +22,7 @@ wheels/
 
 # Virtual Environments
 venv/
+venv311/
 env/
 ENV/
 .venv
