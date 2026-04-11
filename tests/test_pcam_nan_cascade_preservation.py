@@ -12,21 +12,22 @@ This test follows observation-first methodology:
 These tests MUST PASS on unfixed code to confirm baseline behavior to preserve.
 """
 
+import logging
+import random
+import tempfile
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+from unittest.mock import MagicMock, patch
+
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-import numpy as np
-from pathlib import Path
-import tempfile
-import logging
-from unittest.mock import patch, MagicMock
-import random
-from typing import Dict, List, Tuple, Any
 
 # Import the training function under test
-from experiments.train_pcam import train_epoch, validate, create_single_modality_model
+from experiments.train_pcam import create_single_modality_model, train_epoch, validate
 from src.models.encoders import WSIEncoder
 from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.heads import ClassificationHead
@@ -423,7 +424,7 @@ class TestPCamNaNCascadePreservation:
         )
 
         # Import checkpoint functions
-        from experiments.train_pcam import save_checkpoint, load_checkpoint
+        from experiments.train_pcam import load_checkpoint, save_checkpoint
 
         # Create a temporary directory for checkpoint testing
         with tempfile.TemporaryDirectory() as temp_dir:
