@@ -3,7 +3,7 @@
 
 data:
   root_dir: "data/pcam_real"
-  num_workers: 0  # Set to 0 for testing without multiprocessing
+  num_workers: 0  # Must be 0 due to h5py pickling limitations
   pin_memory: true
   prefetch_factor: 2
   download: false  # Data already downloaded
