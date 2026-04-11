@@ -109,9 +109,7 @@ class TestSaveAttentionWeights(unittest.TestCase):
             output_dir = Path(tmpdir)
 
             with self.assertRaises(ValueError) as context:
-                save_attention_weights(
-                    attention_weights, coordinates, slide_id, output_dir
-                )
+                save_attention_weights(attention_weights, coordinates, slide_id, output_dir)
 
             self.assertIn("must have same length", str(context.exception))
 
@@ -127,9 +125,7 @@ class TestSaveAttentionWeights(unittest.TestCase):
                 coordinates = torch.randint(0, 1000, (num_patches, 2))
                 slide_id = f"test_slide_{num_patches}"
 
-                save_attention_weights(
-                    attention_weights, coordinates, slide_id, output_dir
-                )
+                save_attention_weights(attention_weights, coordinates, slide_id, output_dir)
 
                 # Verify file exists and has correct size
                 output_path = output_dir / f"{slide_id}.h5"
@@ -161,9 +157,7 @@ class TestLoadAttentionWeights(unittest.TestCase):
                 f.attrs["slide_id"] = slide_id
 
             # Load and verify
-            loaded_weights, loaded_coords = load_attention_weights(
-                slide_id, attention_dir
-            )
+            loaded_weights, loaded_coords = load_attention_weights(slide_id, attention_dir)
 
             self.assertIsNotNone(loaded_weights, "Failed to load attention weights")
             self.assertIsNotNone(loaded_coords, "Failed to load coordinates")
@@ -204,9 +198,7 @@ class TestLoadAttentionWeights(unittest.TestCase):
                     f.create_dataset("coordinates", data=coordinates)
 
                 # Load and verify
-                loaded_weights, loaded_coords = load_attention_weights(
-                    slide_id, attention_dir
-                )
+                loaded_weights, loaded_coords = load_attention_weights(slide_id, attention_dir)
 
                 self.assertEqual(
                     len(loaded_weights),
@@ -236,9 +228,7 @@ class TestRoundTripPreservation(unittest.TestCase):
             save_attention_weights(attention_weights, coordinates, slide_id, output_dir)
 
             # Load
-            loaded_weights, loaded_coords = load_attention_weights(
-                slide_id, output_dir
-            )
+            loaded_weights, loaded_coords = load_attention_weights(slide_id, output_dir)
 
             # Verify
             np.testing.assert_allclose(
@@ -266,9 +256,7 @@ class TestRoundTripPreservation(unittest.TestCase):
             save_attention_weights(attention_weights, coordinates, slide_id, output_dir)
 
             # Load
-            loaded_weights, loaded_coords = load_attention_weights(
-                slide_id, output_dir
-            )
+            loaded_weights, loaded_coords = load_attention_weights(slide_id, output_dir)
 
             # Verify
             np.testing.assert_allclose(
@@ -297,9 +285,7 @@ class TestRoundTripPreservation(unittest.TestCase):
             save_attention_weights(attention_weights, coordinates, slide_id, output_dir)
 
             # Load
-            loaded_weights, loaded_coords = load_attention_weights(
-                slide_id, output_dir
-            )
+            loaded_weights, loaded_coords = load_attention_weights(slide_id, output_dir)
 
             # Verify extreme values preserved
             np.testing.assert_allclose(
@@ -324,9 +310,7 @@ class TestRoundTripPreservation(unittest.TestCase):
                 coordinates = torch.randint(0, 1000, (100, 2))
                 slide_id = f"test_slide_{i:03d}"
 
-                save_attention_weights(
-                    attention_weights, coordinates, slide_id, output_dir
-                )
+                save_attention_weights(attention_weights, coordinates, slide_id, output_dir)
                 original_data[slide_id] = (
                     attention_weights.numpy(),
                     coordinates.numpy(),
@@ -334,9 +318,7 @@ class TestRoundTripPreservation(unittest.TestCase):
 
             # Load and verify all slides
             for slide_id, (orig_weights, orig_coords) in original_data.items():
-                loaded_weights, loaded_coords = load_attention_weights(
-                    slide_id, output_dir
-                )
+                loaded_weights, loaded_coords = load_attention_weights(slide_id, output_dir)
 
                 np.testing.assert_allclose(
                     loaded_weights,
