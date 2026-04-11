@@ -1,0 +1,210 @@
+name: "Cardiac Pathology Classification"
+version: "1.0"
+description: "Disease taxonomy for cardiac pathology based on clinical requirements from cardiology team"
+
+diseases:
+  # Root categories
+  - id: "normal_cardiac"
+    name: "Normal Cardiac Tissue"
+    description: "Healthy cardiac tissue with normal morphology"
+    parent: null
+    children: []
+    metadata:
+      color: "#00FF00"
+      risk_level: "none"
+      urgency: "routine"
+  
+  - id: "ischemic"
+    name: "Ischemic Heart Disease"
+    description: "Cardiac tissue damage due to reduced blood supply"
+    parent: null
+    children: ["acute_mi", "chronic_ischemia", "ischemic_cardiomyopathy"]
+    metadata:
+      color: "#FF6600"
+      risk_level: "high"
+      urgency: "urgent"
+  
+  - id: "inflammatory"
+    name: "Inflammatory Cardiac Disease"
+    description: "Cardiac tissue inflammation from various causes"
+    parent: null
+    children: ["myocarditis", "pericarditis", "endocarditis"]
+    metadata:
+      color: "#FF0066"
+      risk_level: "moderate"
+      urgency: "semi_urgent"
+  
+  - id: "structural"
+    name: "Structural Heart Disease"
+    description: "Abnormalities in cardiac structure and morphology"
+    parent: null
+    children: ["hypertrophy", "fibrosis", "valve_disease"]
+    metadata:
+      color: "#6600FF"
+      risk_level: "moderate"
+      urgency: "routine"
+  
+  # Ischemic subtypes
+  - id: "acute_mi"
+    name: "Acute Myocardial Infarction"
+    description: "Recent cardiac tissue death due to acute ischemia"
+    parent: "ischemic"
+    children: ["stemi", "nstemi"]
+    metadata:
+      color: "#FF3300"
+      risk_level: "critical"
+      urgency: "emergency"
+      time_horizon: "hours"
+  
+  - id: "chronic_ischemia"
+    name: "Chronic Ischemic Changes"
+    description: "Long-term cardiac changes from chronic ischemia"
+    parent: "ischemic"
+    children: []
+    metadata:
+      color: "#FF6633"
+      risk_level: "high"
+      urgency: "urgent"
+      time_horizon: "months"
+  
+  - id: "ischemic_cardiomyopathy"
+    name: "Ischemic Cardiomyopathy"
+    description: "Heart muscle disease due to ischemic damage"
+    parent: "ischemic"
+    children: []
+    metadata:
+      color: "#FF9933"
+      risk_level: "high"
+      urgency: "urgent"
+      time_horizon: "years"
+  
+  # Acute MI subtypes
+  - id: "stemi"
+    name: "ST-Elevation MI"
+    description: "Myocardial infarction with ST elevation"
+    parent: "acute_mi"
+    children: []
+    metadata:
+      color: "#FF0000"
+      risk_level: "critical"
+      urgency: "emergency"
+      ecg_changes: "st_elevation"
+  
+  - id: "nstemi"
+    name: "Non-ST-Elevation MI"
+    description: "Myocardial infarction without ST elevation"
+    parent: "acute_mi"
+    children: []
+    metadata:
+      color: "#FF3333"
+      risk_level: "critical"
+      urgency: "emergency"
+      ecg_changes: "no_st_elevation"
+  
+  # Inflammatory subtypes
+  - id: "myocarditis"
+    name: "Myocarditis"
+    description: "Inflammation of the heart muscle"
+    parent: "inflammatory"
+    children: ["viral_myocarditis", "autoimmune_myocarditis"]
+    metadata:
+      color: "#FF0099"
+      risk_level: "moderate"
+      urgency: "semi_urgent"
+  
+  - id: "pericarditis"
+    name: "Pericarditis"
+    description: "Inflammation of the pericardium"
+    parent: "inflammatory"
+    children: []
+    metadata:
+      color: "#FF3399"
+      risk_level: "moderate"
+      urgency: "semi_urgent"
+  
+  - id: "endocarditis"
+    name: "Endocarditis"
+    description: "Inflammation of the heart valves and endocardium"
+    parent: "inflammatory"
+    children: []
+    metadata:
+      color: "#FF6699"
+      risk_level: "high"
+      urgency: "urgent"
+  
+  # Myocarditis subtypes
+  - id: "viral_myocarditis"
+    name: "Viral Myocarditis"
+    description: "Myocarditis caused by viral infection"
+    parent: "myocarditis"
+    children: []
+    metadata:
+      color: "#FF0066"
+      risk_level: "moderate"
+      urgency: "semi_urgent"
+      etiology: "viral"
+  
+  - id: "autoimmune_myocarditis"
+    name: "Autoimmune Myocarditis"
+    description: "Myocarditis caused by autoimmune processes"
+    parent: "myocarditis"
+    children: []
+    metadata:
+      color: "#FF3366"
+      risk_level: "moderate"
+      urgency: "semi_urgent"
+      etiology: "autoimmune"
+  
+  # Structural subtypes
+  - id: "hypertrophy"
+    name: "Cardiac Hypertrophy"
+    description: "Enlargement of cardiac muscle cells"
+    parent: "structural"
+    children: ["concentric_hypertrophy", "eccentric_hypertrophy"]
+    metadata:
+      color: "#9900FF"
+      risk_level: "moderate"
+      urgency: "routine"
+  
+  - id: "fibrosis"
+    name: "Cardiac Fibrosis"
+    description: "Excessive fibrous tissue in the heart"
+    parent: "structural"
+    children: []
+    metadata:
+      color: "#6633FF"
+      risk_level: "moderate"
+      urgency: "routine"
+  
+  - id: "valve_disease"
+    name: "Valvular Disease"
+    description: "Abnormalities of cardiac valves"
+    parent: "structural"
+    children: []
+    metadata:
+      color: "#3366FF"
+      risk_level: "moderate"
+      urgency: "routine"
+  
+  # Hypertrophy subtypes
+  - id: "concentric_hypertrophy"
+    name: "Concentric Hypertrophy"
+    description: "Uniform thickening of ventricular walls"
+    parent: "hypertrophy"
+    children: []
+    metadata:
+      color: "#CC00FF"
+      risk_level: "moderate"
+      urgency: "routine"
+      pattern: "concentric"
+  
+  - id: "eccentric_hypertrophy"
+    name: "Eccentric Hypertrophy"
+    description: "Ventricular dilation with wall thinning"
+    parent: "hypertrophy"
+    children: []
+    metadata:
+      color: "#9933FF"
+      risk_level: "moderate"
+      urgency: "routine"
+      pattern: "eccentric"
