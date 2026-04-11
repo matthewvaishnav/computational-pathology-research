@@ -2,11 +2,11 @@
 Tests for SimpleSlideClassifier model.
 """
 
-import pytest
-import torch
-
 import sys
 from pathlib import Path
+
+import pytest
+import torch
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
