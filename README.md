@@ -7,7 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-> **Research Framework**: Tested implementations for computational pathology with working benchmarks on PatchCamelyon and CAMELYON16-style slide-level classification.
+> **Production-Grade ML Research Framework** for computational pathology research
+
+Provides tested infrastructure for whole-slide image analysis, multiple instance learning, and benchmark pipelines with comprehensive tooling for model development, evaluation, and deployment.
 
 > **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
 
@@ -19,7 +21,7 @@ A production-grade PyTorch framework for computational pathology research, provi
 - 🧠 **Multiple Instance Learning (MIL)**: Slide-level classification with attention mechanisms
 - 📊 **Benchmark Pipelines**: PatchCamelyon and CAMELYON16-compatible training/evaluation
 - 🔧 **Analysis Tools**: Baseline comparison, metrics analysis, bootstrap confidence intervals
-- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 62% test coverage
+- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 68% test coverage
 - 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
 **Status**: Research framework with validated infrastructure. Real PCam dataset support included. Not validated for clinical use.
@@ -44,7 +46,7 @@ pip install -e .
 
 ### PatchCamelyon (PCam) Training
 
-Train on the PatchCamelyon benchmark with real or synthetic data:
+Train on the PatchCamelyon benchmark (262K train, 32K val, 32K test samples):
 
 ```bash
 # Download real PCam dataset (7GB, 327K images)
@@ -53,18 +55,25 @@ python scripts/download_pcam.py --output-dir data/pcam_real
 # Train model (RTX 4070 Laptop: ~18 min/epoch, 3.8 it/s)
 python experiments/train_pcam.py --config experiments/configs/pcam_rtx4070_laptop.yaml
 
-# Evaluate
+# Evaluate with bootstrap confidence intervals
 python experiments/evaluate_pcam.py \
   --checkpoint checkpoints/pcam_real/best_model.pth \
   --data-root data/pcam_real \
-  --output-dir results/pcam
+  --output-dir results/pcam \
+  --compute-bootstrap-ci \
+  --bootstrap-samples 1000
 ```
 
-**Real Dataset**: 262,144 train, 32,768 val, 32,768 test samples (96×96 RGB patches)
+**Real Benchmark Results** (coming soon - training in progress):
+- Dataset: 262,144 train, 32,768 val, 32,768 test (96×96 RGB patches)
+- Hardware: RTX 4070 Laptop (8GB VRAM)
+- Training Time: ~6 hours (20 epochs)
+- Expected Accuracy: 85-90% (based on literature)
 
 **Development/Testing**: Synthetic data generator available for pipeline validation:
 ```bash
 python scripts/generate_synthetic_pcam.py  # Creates small test dataset
+python experiments/train_pcam.py --config experiments/configs/pcam_synthetic.yaml
 ```
 
 See [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) for details.
