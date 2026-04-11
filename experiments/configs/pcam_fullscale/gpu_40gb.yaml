@@ -7,6 +7,8 @@ data:
   dataset: pcam
   root_dir: ./data/pcam
   download: true  # Enable automatic download of full dataset
+  # NOTE: This config is for FULL-SCALE training on 262K samples
+  # For quick testing with synthetic data, use configs in parent directory
   num_workers: 8  # Parallel data loading
   pin_memory: true  # Fast CPU-to-GPU transfer
 
