@@ -263,8 +263,8 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
 - [ ] 10. Checkpoint - Ensure visualization works
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Implement model comparison infrastructure
-  - [ ] 11.1 Create train_single_model function in experiments/compare_attention_models.py
+- [x] 11. Implement model comparison infrastructure
+  - [x] 11.1 Create train_single_model function in experiments/compare_attention_models.py
     - Accept model_type, config, output_dir parameters
     - Update config with model_type and checkpoint_dir
     - Call training function from train_camelyon.py
@@ -272,7 +272,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Return dictionary with test metrics (accuracy, auc, f1, inference_time)
     - _Requirements: 6.1, 6.2, 6.7_
 
-  - [ ] 11.2 Create compare_models function in experiments/compare_attention_models.py
+  - [x] 11.2 Create compare_models function in experiments/compare_attention_models.py
     - Accept list of model_types, base config, output_dir
     - Iterate over model_types and call train_single_model
     - Collect results into list of dictionaries
@@ -281,7 +281,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Return DataFrame
     - _Requirements: 6.1, 6.2, 6.6_
 
-  - [ ] 11.3 Create plot_roc_curves function in experiments/compare_attention_models.py
+  - [x] 11.3 Create plot_roc_curves function in experiments/compare_attention_models.py
     - Accept model_types, predictions dict, output_dir
     - Create matplotlib figure
     - For each model, compute ROC curve and AUC
@@ -291,14 +291,14 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Save figure to output_dir
     - _Requirements: 6.5, 6.6_
 
-  - [ ] 11.4 Create statistical_significance_test function in experiments/compare_attention_models.py
+  - [x] 11.4 Create statistical_significance_test function in experiments/compare_attention_models.py
     - Accept results DataFrame and baseline model name
     - Extract baseline AUC
     - For each model, compute p-value vs baseline (placeholder using simple comparison)
     - Return DataFrame with model_type and p_value columns
     - _Requirements: 6.3_
 
-  - [ ] 11.5 Implement main function in experiments/compare_attention_models.py
+  - [x] 11.5 Implement main function in experiments/compare_attention_models.py
     - Parse command-line arguments (config, models list)
     - Load and validate config
     - Set random seed
@@ -317,8 +317,8 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Verify all models complete training
     - _Requirements: 6.1, 6.2, 6.4_
 
-- [ ] 12. Create YAML configuration files
-  - [ ] 12.1 Create experiments/configs/attention_mil.yaml
+- [x] 12. Create YAML configuration files
+  - [x] 12.1 Create experiments/configs/attention_mil.yaml
     - Set model.wsi.model_type to "attention_mil"
     - Configure attention_mil section (gated=true, attention_mode="instance")
     - Set training parameters (batch_size=8, num_epochs=50, learning_rate=1e-4)
@@ -326,21 +326,21 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Configure visualization (generate_heatmaps=true, colormap="jet")
     - _Requirements: 7.1, 7.2, 7.4, 7.5_
 
-  - [ ] 12.2 Create experiments/configs/clam.yaml
+  - [x] 12.2 Create experiments/configs/clam.yaml
     - Set model.wsi.model_type to "clam"
     - Configure clam section (num_clusters=10, multi_branch=true, instance_loss_weight=0.3)
     - Set training parameters matching attention_mil.yaml
     - Configure attention weight saving and visualization
     - _Requirements: 7.1, 7.2, 7.4, 7.5_
 
-  - [ ] 12.3 Create experiments/configs/transmil.yaml
+  - [x] 12.3 Create experiments/configs/transmil.yaml
     - Set model.wsi.model_type to "transmil"
     - Configure transmil section (num_layers=2, num_heads=8, use_pos_encoding=true)
     - Set training parameters matching attention_mil.yaml
     - Configure attention weight saving and visualization
     - _Requirements: 7.1, 7.2, 7.4, 7.5_
 
-  - [ ] 12.4 Create experiments/configs/comparison.yaml
+  - [x] 12.4 Create experiments/configs/comparison.yaml
     - Set base configuration for model comparison
     - Configure data paths and training parameters
     - Set models list to compare (mean, max, attention_mil, clam, transmil)
@@ -380,8 +380,8 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
 - [ ] 14. Checkpoint - Ensure multi-scale support works
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 15. Create comprehensive documentation
-  - [ ] 15.1 Add attention models section to README.md
+- [-] 15. Create comprehensive documentation
+  - [x] 15.1 Add attention models section to README.md
     - Document overview of three architectures
     - Provide quick start examples for training each model
     - Document configuration options for each model type
@@ -392,7 +392,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Document limitations and future enhancements
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
 
-  - [ ] 15.2 Add API documentation to src/models/attention_mil.py
+  - [x] 15.2 Add API documentation to src/models/attention_mil.py
     - Add comprehensive module docstring
     - Document AttentionMILBase interface with examples
     - Document AttentionMIL class with usage examples
@@ -411,14 +411,14 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Interpret attention heatmaps for tumor detection
     - _Requirements: 11.2, 11.3, 11.5_
 
-  - [ ] 15.4 Add docstrings to visualization module
+  - [x] 15.4 Add docstrings to visualization module
     - Document AttentionHeatmapGenerator class
     - Document all methods with parameter descriptions
     - Add usage examples in docstrings
     - Document colormap options and their effects
     - _Requirements: 11.4, 11.5_
 
-  - [ ] 15.5 Add docstrings to comparison script
+  - [x] 15.5 Add docstrings to comparison script
     - Document compare_attention_models.py module
     - Document all functions with parameter descriptions
     - Add usage examples in module docstring
