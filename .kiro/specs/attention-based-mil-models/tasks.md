@@ -57,7 +57,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Test both instance and bag attention modes
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 3. Checkpoint - Ensure AttentionMIL works
+- [x] 3. Checkpoint - Ensure AttentionMIL works
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 4. Implement CLAM architecture
@@ -137,7 +137,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Test with different num_layers and num_heads configurations
     - _Requirements: 10.1, 10.2, 10.3_
 
-- [ ] 6. Checkpoint - Ensure all three models work
+- [x] 6. Checkpoint - Ensure all three models work
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 7. Integrate attention models with training pipeline
@@ -260,7 +260,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Verify output files are created
     - _Requirements: 10.5_
 
-- [ ] 10. Checkpoint - Ensure visualization works
+- [x] 10. Checkpoint - Ensure visualization works
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 11. Implement model comparison infrastructure
@@ -442,7 +442,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Verify split distribution
     - _Requirements: 10.7_
 
-- [ ] 17. Final checkpoint - Verify complete implementation
+- [x] 17. Final checkpoint - Verify complete implementation
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
