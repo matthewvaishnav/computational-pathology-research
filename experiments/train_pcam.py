@@ -613,49 +613,45 @@ def train_epoch(
 
                     # Check for cascading NaN condition
                     if consecutive_nan_count >= cascading_nan_threshold:
-                        # Check if model parameters contain NaN
-                        if check_model_parameters_for_nan(feature_extractor, encoder, head):
-                            logger.error(
-                                f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
-                                f"with corrupted model parameters at batch {batch_idx}. "
-                                f"Model parameter corruption detected - attempting recovery."
-                            )
+                        # Trigger recovery regardless of parameter state
+                        # Cascading NaN indicates fundamental training instability
+                        params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                        logger.error(
+                            f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
+                            f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
+                            f"Attempting recovery from checkpoint."
+                        )
 
-                            # Attempt recovery from checkpoint
-                            recovery_successful, recovery_attempts = perform_recovery(
-                                feature_extractor,
-                                encoder,
-                                head,
-                                optimizer,
-                                scheduler,
-                                scaler,
-                                config,
-                                run_id,
-                                epoch,
-                                batch_idx,
-                                recovery_attempts,
-                                max_recovery_attempts,
-                            )
+                        # Attempt recovery from checkpoint
+                        recovery_successful, recovery_attempts = perform_recovery(
+                            feature_extractor,
+                            encoder,
+                            head,
+                            optimizer,
+                            scheduler,
+                            scaler,
+                            config,
+                            run_id,
+                            epoch,
+                            batch_idx,
+                            recovery_attempts,
+                            max_recovery_attempts,
+                        )
 
-                            if recovery_successful:
-                                logger.info(
-                                    "Recovery successful. Resetting consecutive NaN count and continuing training."
-                                )
-                                consecutive_nan_count = 0
-                                recovery_attempted = True
-                                continue
-                            else:
-                                logger.error("Recovery failed. Training cannot continue.")
-                                raise RuntimeError(
-                                    f"Cascading NaN losses detected with model parameter corruption. "
-                                    f"Recovery failed after {recovery_attempts} attempts. "
-                                    f"Consecutive NaN count: {consecutive_nan_count}, "
-                                    f"Batch: {batch_idx}, Epoch: {epoch}"
-                                )
+                        if recovery_successful:
+                            logger.info(
+                                "Recovery successful. Resetting consecutive NaN count and continuing training."
+                            )
+                            consecutive_nan_count = 0
+                            recovery_attempted = True
+                            continue
                         else:
-                            logger.warning(
-                                f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
-                                f"at batch {batch_idx}, Model parameters do not contain NaN. Attempting recovery anyway."
+                            logger.error("Recovery failed. Training cannot continue.")
+                            raise RuntimeError(
+                                f"Cascading NaN losses detected. "
+                                f"Recovery failed after {recovery_attempts} attempts. "
+                                f"Consecutive NaN count: {consecutive_nan_count}, "
+                                f"Batch: {batch_idx}, Epoch: {epoch}"
                             )
 
                     # Reset gradients and update scaler to maintain proper state
@@ -809,49 +805,45 @@ def train_epoch(
 
                     # Check for cascading NaN condition
                     if consecutive_nan_count >= cascading_nan_threshold:
-                        # Check if model parameters contain NaN
-                        if check_model_parameters_for_nan(feature_extractor, encoder, head):
-                            logger.error(
-                                f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
-                                f"with corrupted model parameters at batch {batch_idx}. "
-                                f"Model parameter corruption detected - attempting recovery."
-                            )
+                        # Trigger recovery regardless of parameter state
+                        # Cascading NaN indicates fundamental training instability
+                        params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                        logger.error(
+                            f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
+                            f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
+                            f"Attempting recovery from checkpoint."
+                        )
 
-                            # Attempt recovery from checkpoint
-                            recovery_successful, recovery_attempts = perform_recovery(
-                                feature_extractor,
-                                encoder,
-                                head,
-                                optimizer,
-                                scheduler,
-                                scaler,
-                                config,
-                                run_id,
-                                epoch,
-                                batch_idx,
-                                recovery_attempts,
-                                max_recovery_attempts,
-                            )
+                        # Attempt recovery from checkpoint
+                        recovery_successful, recovery_attempts = perform_recovery(
+                            feature_extractor,
+                            encoder,
+                            head,
+                            optimizer,
+                            scheduler,
+                            scaler,
+                            config,
+                            run_id,
+                            epoch,
+                            batch_idx,
+                            recovery_attempts,
+                            max_recovery_attempts,
+                        )
 
-                            if recovery_successful:
-                                logger.info(
-                                    "Recovery successful. Resetting consecutive NaN count and continuing training."
-                                )
-                                consecutive_nan_count = 0
-                                recovery_attempted = True
-                                continue
-                            else:
-                                logger.error("Recovery failed. Training cannot continue.")
-                                raise RuntimeError(
-                                    f"Cascading NaN losses detected with model parameter corruption. "
-                                    f"Recovery failed after {recovery_attempts} attempts. "
-                                    f"Consecutive NaN count: {consecutive_nan_count}, "
-                                    f"Batch: {batch_idx}, Epoch: {epoch}"
-                                )
+                        if recovery_successful:
+                            logger.info(
+                                "Recovery successful. Resetting consecutive NaN count and continuing training."
+                            )
+                            consecutive_nan_count = 0
+                            recovery_attempted = True
+                            continue
                         else:
-                            logger.warning(
-                                f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
-                                f"at batch {batch_idx}, Model parameters do not contain NaN. Attempting recovery anyway."
+                            logger.error("Recovery failed. Training cannot continue.")
+                            raise RuntimeError(
+                                f"Cascading NaN losses detected. "
+                                f"Recovery failed after {recovery_attempts} attempts. "
+                                f"Consecutive NaN count: {consecutive_nan_count}, "
+                                f"Batch: {batch_idx}, Epoch: {epoch}"
                             )
 
                     optimizer.zero_grad()
@@ -931,49 +923,45 @@ def train_epoch(
 
             # Check for cascading NaN condition
             if consecutive_nan_count >= cascading_nan_threshold:
-                # Check if model parameters contain NaN
-                if check_model_parameters_for_nan(feature_extractor, encoder, head):
-                    logger.error(
-                        f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
-                        f"with corrupted model parameters at batch {batch_idx}. "
-                        f"Model parameter corruption detected - attempting recovery."
-                    )
+                # Trigger recovery regardless of parameter state
+                # Cascading NaN indicates fundamental training instability
+                params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                logger.error(
+                    f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
+                    f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
+                    f"Attempting recovery from checkpoint."
+                )
 
-                    # Attempt recovery from checkpoint
-                    recovery_successful, recovery_attempts = perform_recovery(
-                        feature_extractor,
-                        encoder,
-                        head,
-                        optimizer,
-                        scheduler,
-                        scaler,
-                        config,
-                        run_id,
-                        epoch,
-                        batch_idx,
-                        recovery_attempts,
-                        max_recovery_attempts,
-                    )
+                # Attempt recovery from checkpoint
+                recovery_successful, recovery_attempts = perform_recovery(
+                    feature_extractor,
+                    encoder,
+                    head,
+                    optimizer,
+                    scheduler,
+                    scaler,
+                    config,
+                    run_id,
+                    epoch,
+                    batch_idx,
+                    recovery_attempts,
+                    max_recovery_attempts,
+                )
 
-                    if recovery_successful:
-                        logger.info(
-                            "Recovery successful. Resetting consecutive NaN count and continuing training."
-                        )
-                        consecutive_nan_count = 0
-                        recovery_attempted = True
-                        continue
-                    else:
-                        logger.error("Recovery failed. Training cannot continue.")
-                        raise RuntimeError(
-                            f"Cascading NaN losses detected with model parameter corruption. "
-                            f"Recovery failed after {recovery_attempts} attempts. "
-                            f"Consecutive NaN count: {consecutive_nan_count}, "
-                            f"Batch: {batch_idx}, Epoch: {epoch}"
-                        )
+                if recovery_successful:
+                    logger.info(
+                        "Recovery successful. Resetting consecutive NaN count and continuing training."
+                    )
+                    consecutive_nan_count = 0
+                    recovery_attempted = True
+                    continue
                 else:
-                    logger.warning(
-                        f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
-                        f"at batch {batch_idx}, Model parameters do not contain NaN. Attempting recovery anyway."
+                    logger.error("Recovery failed. Training cannot continue.")
+                    raise RuntimeError(
+                        f"Cascading NaN losses detected. "
+                        f"Recovery failed after {recovery_attempts} attempts. "
+                        f"Consecutive NaN count: {consecutive_nan_count}, "
+                        f"Batch: {batch_idx}, Epoch: {epoch}"
                     )
 
             continue
@@ -1642,10 +1630,10 @@ def restore_from_checkpoint(
         # Reset gradient scaler to clean state if using mixed precision
         if scaler is not None:
             logger.info("Resetting gradient scaler to clean state during recovery")
-            scaler._scale = torch.tensor(2.0**16).cuda()  # Reset to default scale
-            scaler._growth_tracker = 0
-            scaler._per_optimizer_states = {}  # Clear optimizer states
-            scaler._enabled = True
+            # Recreate scaler with default settings instead of accessing internals
+            device = next(feature_extractor.parameters()).device
+            if device.type == 'cuda':
+                scaler.__init__()  # Reinitialize with defaults
 
         logger.info(f"Successfully restored model state from epoch {epoch}")
         logger.info(f"Recovery metrics: {metrics}")
