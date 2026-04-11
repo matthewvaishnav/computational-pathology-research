@@ -263,6 +263,8 @@ def train_epoch(
     all_preds = []
     all_labels = []
     all_probs = []
+    num_valid_batches = 0
+    num_skipped_batches = 0
 
     log_interval = config["logging"]["log_interval"]
 
@@ -296,6 +298,7 @@ def train_epoch(
             # Check for NaN loss
             if torch.isnan(loss):
                 logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
+                num_skipped_batches += 1
                 continue
 
             scaler.scale(loss).backward()
@@ -322,6 +325,7 @@ def train_epoch(
 
             if torch.isnan(loss):
                 logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
+                num_skipped_batches += 1
                 continue
 
             loss.backward()
@@ -336,16 +340,22 @@ def train_epoch(
 
             optimizer.step()
 
-        # Accumulate metrics
-        total_loss += loss.item()
-
         # Get predictions
         probs = torch.sigmoid(logits).detach().cpu().numpy().flatten()
         preds = (probs > 0.5).astype(int)
 
+        # Check for NaN in predictions
+        if np.isnan(probs).any():
+            logger.warning(f"NaN predictions detected at batch {batch_idx}. Skipping batch.")
+            num_skipped_batches += 1
+            continue
+
+        # Only accumulate metrics if batch is valid
+        total_loss += loss.item()
         all_probs.extend(probs)
         all_preds.extend(preds)
         all_labels.extend(labels.squeeze(1).cpu().numpy())
+        num_valid_batches += 1
 
         # Update progress bar
         pbar.set_postfix({"loss": f"{loss.item():.4f}"})
@@ -368,8 +378,18 @@ def train_epoch(
             global_step = epoch * len(dataloader) + batch_idx
             writer.add_scalar("train/loss", loss.item(), global_step)
 
+    # Check if we have any valid batches
+    if num_valid_batches == 0:
+        logger.error("All training batches had NaN values. Cannot compute metrics.")
+        raise RuntimeError("Training failed: all batches contained NaN values")
+
+    if num_skipped_batches > 0:
+        logger.warning(
+            f"Skipped {num_skipped_batches}/{len(dataloader)} training batches due to NaN"
+        )
+
     # Compute epoch metrics
-    avg_loss = total_loss / len(dataloader)
+    avg_loss = total_loss / num_valid_batches
     metrics = {
         "loss": avg_loss,
         "accuracy": accuracy_score(all_labels, all_preds),
@@ -411,6 +431,8 @@ def validate(
     all_preds = []
     all_labels = []
     all_probs = []
+    num_valid_batches = 0
+    num_skipped_batches = 0
 
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Validation"):
@@ -435,9 +457,8 @@ def validate(
             # Check for NaN loss
             if torch.isnan(loss):
                 logger.warning("NaN loss detected during validation. Skipping batch.")
+                num_skipped_batches += 1
                 continue
-
-            total_loss += loss.item()
 
             # Get predictions
             probs = torch.sigmoid(logits).cpu().numpy().flatten()
@@ -446,14 +467,28 @@ def validate(
             # Check for NaN in predictions
             if np.isnan(probs).any():
                 logger.warning("NaN predictions detected during validation. Skipping batch.")
+                num_skipped_batches += 1
                 continue
 
+            # Only accumulate if batch is valid
+            total_loss += loss.item()
             all_probs.extend(probs)
             all_preds.extend(preds)
             all_labels.extend(labels.squeeze(1).cpu().numpy())
+            num_valid_batches += 1
+
+    # Check if we have any valid batches
+    if num_valid_batches == 0:
+        logger.error("All validation batches had NaN values. Cannot compute metrics.")
+        raise RuntimeError("Validation failed: all batches contained NaN values")
+
+    if num_skipped_batches > 0:
+        logger.warning(
+            f"Skipped {num_skipped_batches}/{len(dataloader)} validation batches due to NaN"
+        )
 
     # Compute metrics
-    avg_loss = total_loss / len(dataloader)
+    avg_loss = total_loss / num_valid_batches
     metrics = {
         "val_loss": avg_loss,
         "val_accuracy": accuracy_score(all_labels, all_preds),
