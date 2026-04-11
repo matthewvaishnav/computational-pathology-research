@@ -1,5 +1,6 @@
 """Utility modules for monitoring, logging, and helper functions."""
 
+from .attention_utils import load_attention_weights, save_attention_weights
 from .interpretability import AttentionVisualizer, EmbeddingAnalyzer, SaliencyMap
 from .monitoring import (
     MetricsTracker,
@@ -48,4 +49,6 @@ __all__ = [
     "is_validation_enabled",
     "set_validation_enabled",
     "get_validation_summary",
+    "save_attention_weights",
+    "load_attention_weights",
 ]
