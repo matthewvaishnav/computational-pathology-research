@@ -2,17 +2,18 @@
 
 ## Current Status: 🟢 TRAINING IN PROGRESS
 
-**Started**: April 9, 2026, 5:00 PM
-**Hardware**: RTX 4070 Laptop (8GB VRAM)
+**Started**: April 11, 2026, 11:14 AM
+**Hardware**: RTX 4070 Laptop (8GB VRAM), Intel i7-14650HX, 32GB DDR5
 **Dataset**: Real PatchCamelyon (262,144 train, 32,768 val, 32,768 test)
 
 ## Progress
 
-- **Current Epoch**: 3/20
-- **Completion**: 15% (3/20 epochs)
+- **Current Epoch**: 3/20 (35% through epoch 3)
+- **Completion**: 15% overall (3/20 epochs)
 - **Best Val AUC**: 95.02% (from epoch 2)
 - **Best Val Accuracy**: 83.80% (from epoch 2)
-- **Estimated Time Remaining**: ~5-6 hours (17 epochs × 18 min/epoch)
+- **Training Speed**: ~4.5 it/s average (~15 min/epoch)
+- **Estimated Time Remaining**: ~4 hours (17 epochs remaining)
 
 ## Training Configuration
 
@@ -107,5 +108,5 @@ This will provide **real benchmark results** to replace the synthetic data resul
 
 ---
 
-**Last Updated**: April 9, 2026, 5:01 PM
-**Status**: Training epoch 3/20
+**Last Updated**: April 11, 2026, 3:00 PM
+**Status**: Training epoch 3/20 (35% through epoch 3, batch 1440/4096)
