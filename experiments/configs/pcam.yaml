@@ -10,6 +10,8 @@ data:
   dataset: pcam
   root_dir: ./data/pcam
   download: false  # Dataset already exists
+  # NOTE: This config uses existing data (synthetic or real)
+  # For full-scale training on 262K samples, use configs in pcam_fullscale/
   num_workers: 0  # Set to 0 for Windows compatibility
   pin_memory: false  # Disable since running on CPU
 
