@@ -326,8 +326,10 @@ def train_epoch(
                 if has_nan_grad:
                     logger.warning(f"NaN gradients detected at batch {batch_idx}. Skipping batch.")
                     num_skipped_batches += 1
-                    optimizer.zero_grad()
-                    scaler.update()  # Must call update() after unscale_() before continuing
+                    # Must call step() before update() to maintain scaler state
+                    # The step will be skipped internally due to NaN gradients
+                    scaler.step(optimizer)
+                    scaler.update()
                     continue
 
                 torch.nn.utils.clip_grad_norm_(
