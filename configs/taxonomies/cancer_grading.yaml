@@ -1,0 +1,105 @@
+name: "Cancer Grading System"
+version: "1.0"
+description: "Hierarchical cancer grading taxonomy for pathological diagnosis"
+
+diseases:
+  # Root categories
+  - id: "normal"
+    name: "Normal Tissue"
+    description: "Healthy tissue with no pathological changes"
+    parent: null
+    children: []
+    metadata:
+      color: "#00FF00"
+      priority: 0
+  
+  - id: "benign"
+    name: "Benign"
+    description: "Non-cancerous tissue with abnormal but non-malignant changes"
+    parent: null
+    children: ["benign_adenoma", "benign_hyperplasia", "benign_cyst"]
+    metadata:
+      color: "#FFFF00"
+      priority: 1
+  
+  - id: "malignant"
+    name: "Malignant"
+    description: "Cancerous tissue with potential for invasion and metastasis"
+    parent: null
+    children: ["grade_1", "grade_2", "grade_3", "grade_4"]
+    metadata:
+      color: "#FF0000"
+      priority: 3
+  
+  # Benign subtypes
+  - id: "benign_adenoma"
+    name: "Benign Adenoma"
+    description: "Non-cancerous glandular tumor"
+    parent: "benign"
+    children: []
+    metadata:
+      color: "#FFFF80"
+      priority: 1
+  
+  - id: "benign_hyperplasia"
+    name: "Benign Hyperplasia"
+    description: "Excessive cell proliferation without malignant features"
+    parent: "benign"
+    children: []
+    metadata:
+      color: "#FFFF80"
+      priority: 1
+  
+  - id: "benign_cyst"
+    name: "Benign Cyst"
+    description: "Fluid-filled sac without malignant potential"
+    parent: "benign"
+    children: []
+    metadata:
+      color: "#FFFF80"
+      priority: 1
+  
+  # Malignant grades
+  - id: "grade_1"
+    name: "Grade 1 Cancer"
+    description: "Well-differentiated cancer with low proliferation rate"
+    parent: "malignant"
+    children: []
+    metadata:
+      color: "#FF8080"
+      priority: 2
+      grade: 1
+      differentiation: "well"
+  
+  - id: "grade_2"
+    name: "Grade 2 Cancer"
+    description: "Moderately differentiated cancer with intermediate features"
+    parent: "malignant"
+    children: []
+    metadata:
+      color: "#FF4040"
+      priority: 3
+      grade: 2
+      differentiation: "moderate"
+  
+  - id: "grade_3"
+    name: "Grade 3 Cancer"
+    description: "Poorly differentiated cancer with high proliferation rate"
+    parent: "malignant"
+    children: []
+    metadata:
+      color: "#FF0000"
+      priority: 4
+      grade: 3
+      differentiation: "poor"
+  
+  - id: "grade_4"
+    name: "Grade 4 Cancer"
+    description: "Undifferentiated cancer with very aggressive features"
+    parent: "malignant"
+    children: []
+    metadata:
+      color: "#800000"
+      priority: 5
+      grade: 4
+      differentiation: "undifferentiated"
