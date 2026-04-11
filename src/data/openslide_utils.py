@@ -26,9 +26,7 @@ logger = logging.getLogger(__name__)
 def check_openslide_available() -> bool:
     """Check if OpenSlide is available."""
     if not OPENSLIDE_AVAILABLE:
-        logger.warning(
-            "OpenSlide is not installed. Install with: pip install openslide-python"
-        )
+        logger.warning("OpenSlide is not installed. Install with: pip install openslide-python")
     return OPENSLIDE_AVAILABLE
 
 
@@ -182,9 +180,7 @@ class WSIReader:
                 y0 = int(y * downsample)
 
                 # Read patch
-                patch = self.read_region_rgb(
-                    (x0, y0), level=level, size=(patch_size, patch_size)
-                )
+                patch = self.read_region_rgb((x0, y0), level=level, size=(patch_size, patch_size))
 
                 # Check tissue content
                 if self._has_tissue(patch, tissue_threshold):

@@ -13,9 +13,11 @@ import torch
 
 from src.data.camelyon_dataset import (
     CAMELYONPatchDataset,
+    CAMELYONSlideDataset,
     CAMELYONSlideIndex,
     SlideAggregator,
     SlideMetadata,
+    collate_slide_bags,
     create_patch_index,
     validate_feature_file,
 )
@@ -571,3 +573,420 @@ class TestCreatePatchIndex:
         assert "patch_idx" in entry
         assert "patient_id" in entry
         assert "label" in entry
+
+
+
+class TestCAMELYONSlideDataset:
+    """Test CAMELYONSlideDataset functionality."""
+
+    @pytest.fixture
+    def mock_features_dir(self, tmp_path):
+        """Create mock HDF5 feature files."""
+        features_dir = tmp_path / "features"
+        features_dir.mkdir()
+
+        # Create feature files for 3 slides with different patch counts
+        for slide_id, num_patches in [("slide_001", 10), ("slide_002", 15), ("slide_003", 8)]:
+            with h5py.File(features_dir / f"{slide_id}.h5", "w") as f:
+                # Features: [num_patches, 2048]
+                f.create_dataset(
+                    "features", data=np.random.randn(num_patches, 2048).astype(np.float32)
+                )
+                # Coordinates: [num_patches, 2]
+                f.create_dataset(
+                    "coordinates",
+                    data=np.random.randint(0, 10000, (num_patches, 2)).astype(np.int32),
+                )
+
+        return features_dir
+
+    @pytest.fixture
+    def slide_index(self):
+        """Create slide index for testing."""
+        slides = [
+            SlideMetadata("slide_001", "patient_001", "/path/1.tif", 1, "train"),
+            SlideMetadata("slide_002", "patient_001", "/path/2.tif", 0, "train"),
+            SlideMetadata("slide_003", "patient_002", "/path/3.tif", 1, "val"),
+        ]
+        return CAMELYONSlideIndex(slides)
+
+    def test_dataset_length_matches_slides(self, slide_index, mock_features_dir):
+        """Dataset length matches number of slides in split."""
+        train_dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="train",
+        )
+        # Should have 2 slides in train split
+        assert len(train_dataset) == 2
+
+        val_dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="val",
+        )
+        # Should have 1 slide in val split
+        assert len(val_dataset) == 1
+
+    def test_getitem_returns_correct_structure(self, slide_index, mock_features_dir):
+        """__getitem__ returns sample with expected structure."""
+        dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="train",
+        )
+
+        sample = dataset[0]
+
+        # Check all required keys are present
+        assert "slide_id" in sample
+        assert "patient_id" in sample
+        assert "label" in sample
+        assert "features" in sample
+        assert "coordinates" in sample
+        assert "num_patches" in sample
+
+        # Check types and shapes
+        assert isinstance(sample["slide_id"], str)
+        assert isinstance(sample["patient_id"], str)
+        assert isinstance(sample["label"], int)
+        assert isinstance(sample["num_patches"], int)
+        assert isinstance(sample["features"], torch.Tensor)
+        assert isinstance(sample["coordinates"], torch.Tensor)
+
+        # Check feature dimensions
+        assert sample["features"].ndim == 2  # [num_patches, feature_dim]
+        assert sample["coordinates"].ndim == 2  # [num_patches, 2]
+        assert sample["features"].shape[0] == sample["num_patches"]
+        assert sample["coordinates"].shape[0] == sample["num_patches"]
+        assert sample["features"].shape[1] == 2048  # feature_dim
+        assert sample["coordinates"].shape[1] == 2  # (x, y)
+
+    def test_split_filtering_works(self, slide_index, mock_features_dir):
+        """Dataset correctly filters slides by split."""
+        train_dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="train",
+        )
+
+        # Get all samples from train split
+        train_slide_ids = [train_dataset[i]["slide_id"] for i in range(len(train_dataset))]
+
+        # Should only contain train slides
+        assert "slide_001" in train_slide_ids
+        assert "slide_002" in train_slide_ids
+        assert "slide_003" not in train_slide_ids
+
+        val_dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="val",
+        )
+
+        # Get all samples from val split
+        val_slide_ids = [val_dataset[i]["slide_id"] for i in range(len(val_dataset))]
+
+        # Should only contain val slides
+        assert "slide_003" in val_slide_ids
+        assert "slide_001" not in val_slide_ids
+        assert "slide_002" not in val_slide_ids
+
+    def test_handles_missing_feature_files(self, slide_index, tmp_path):
+        """Dataset handles missing feature files with warning."""
+        # Create features_dir but don't populate it
+        features_dir = tmp_path / "empty_features"
+        features_dir.mkdir()
+
+        # Should raise ValueError when no valid feature files exist
+        with pytest.raises(ValueError, match="No valid feature files found"):
+            CAMELYONSlideDataset(
+                slide_index=slide_index,
+                features_dir=str(features_dir),
+                split="train",
+            )
+
+    def test_handles_partially_missing_files(self, slide_index, tmp_path):
+        """Dataset skips slides with missing feature files."""
+        features_dir = tmp_path / "partial_features"
+        features_dir.mkdir()
+
+        # Create feature file for only one slide
+        with h5py.File(features_dir / "slide_001.h5", "w") as f:
+            f.create_dataset("features", data=np.random.randn(10, 2048).astype(np.float32))
+            f.create_dataset(
+                "coordinates", data=np.random.randint(0, 10000, (10, 2)).astype(np.int32)
+            )
+
+        dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(features_dir),
+            split="train",
+        )
+
+        # Should only have 1 slide (slide_001), not 2
+        assert len(dataset) == 1
+        assert dataset[0]["slide_id"] == "slide_001"
+
+    def test_transform_application(self, slide_index, mock_features_dir):
+        """Transform is applied to features if provided."""
+
+        def dummy_transform(features):
+            """Multiply features by 2."""
+            return features * 2.0
+
+        dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="train",
+            transform=dummy_transform,
+        )
+
+        # Get sample with transform
+        sample_with_transform = dataset[0]
+
+        # Create dataset without transform to compare
+        dataset_no_transform = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="train",
+            transform=None,
+        )
+        sample_no_transform = dataset_no_transform[0]
+
+        # Features should be doubled
+        assert torch.allclose(
+            sample_with_transform["features"], sample_no_transform["features"] * 2.0, atol=1e-5
+        )
+
+    def test_variable_patch_counts(self, slide_index, mock_features_dir):
+        """Dataset handles slides with different numbers of patches."""
+        dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(mock_features_dir),
+            split="train",
+        )
+
+        # Get samples
+        sample_0 = dataset[0]  # slide_001 has 10 patches
+        sample_1 = dataset[1]  # slide_002 has 15 patches
+
+        # Check patch counts are different
+        assert sample_0["num_patches"] != sample_1["num_patches"]
+        assert sample_0["features"].shape[0] == 10
+        assert sample_1["features"].shape[0] == 15
+
+    def test_invalid_hdf5_structure_raises_error(self, slide_index, tmp_path):
+        """Dataset raises error for invalid HDF5 structure."""
+        features_dir = tmp_path / "invalid_features"
+        features_dir.mkdir()
+
+        # Create HDF5 file missing 'coordinates' dataset
+        with h5py.File(features_dir / "slide_001.h5", "w") as f:
+            f.create_dataset("features", data=np.random.randn(10, 2048).astype(np.float32))
+            # Missing 'coordinates' dataset
+
+        dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(features_dir),
+            split="train",
+        )
+
+        # Should raise KeyError when trying to access the sample
+        with pytest.raises(KeyError, match="missing required datasets"):
+            _ = dataset[0]
+
+    def test_mismatched_patch_counts_raises_error(self, slide_index, tmp_path):
+        """Dataset raises error when features and coordinates have different lengths."""
+        features_dir = tmp_path / "mismatched_features"
+        features_dir.mkdir()
+
+        # Create HDF5 file with mismatched shapes
+        with h5py.File(features_dir / "slide_001.h5", "w") as f:
+            f.create_dataset("features", data=np.random.randn(10, 2048).astype(np.float32))
+            f.create_dataset(
+                "coordinates", data=np.random.randint(0, 10000, (8, 2)).astype(np.int32)
+            )  # Different length
+
+        dataset = CAMELYONSlideDataset(
+            slide_index=slide_index,
+            features_dir=str(features_dir),
+            split="train",
+        )
+
+        # Should raise ValueError when trying to access the sample
+        with pytest.raises(ValueError, match="Mismatched patch counts"):
+            _ = dataset[0]
+
+
+class TestCollateSlideBags:
+    """Test collate_slide_bags function."""
+
+    def test_padding_to_max_length(self):
+        """Collate function pads all slides to max length in batch."""
+        # Create mock batch with variable-length slides
+        batch = [
+            {
+                "slide_id": "slide_001",
+                "patient_id": "patient_001",
+                "label": 1,
+                "features": torch.randn(5, 2048),
+                "coordinates": torch.randint(0, 1000, (5, 2)),
+                "num_patches": 5,
+            },
+            {
+                "slide_id": "slide_002",
+                "patient_id": "patient_001",
+                "label": 0,
+                "features": torch.randn(10, 2048),
+                "coordinates": torch.randint(0, 1000, (10, 2)),
+                "num_patches": 10,
+            },
+            {
+                "slide_id": "slide_003",
+                "patient_id": "patient_002",
+                "label": 1,
+                "features": torch.randn(3, 2048),
+                "coordinates": torch.randint(0, 1000, (3, 2)),
+                "num_patches": 3,
+            },
+        ]
+
+        collated = collate_slide_bags(batch)
+
+        # Check output structure
+        assert "features" in collated
+        assert "coordinates" in collated
+        assert "labels" in collated
+        assert "num_patches" in collated
+        assert "slide_ids" in collated
+        assert "patient_ids" in collated
+
+        # Check shapes - should be padded to max_patches=10
+        assert collated["features"].shape == (3, 10, 2048)  # [batch_size, max_patches, feature_dim]
+        assert collated["coordinates"].shape == (3, 10, 2)  # [batch_size, max_patches, 2]
+        assert collated["labels"].shape == (3,)  # [batch_size]
+        assert collated["num_patches"].shape == (3,)  # [batch_size]
+
+        # Check num_patches values
+        assert collated["num_patches"][0] == 5
+        assert collated["num_patches"][1] == 10
+        assert collated["num_patches"][2] == 3
+
+    def test_batch_structure_correctness(self):
+        """Collate function returns correct batch structure."""
+        batch = [
+            {
+                "slide_id": "slide_001",
+                "patient_id": "patient_001",
+                "label": 1,
+                "features": torch.randn(5, 2048),
+                "coordinates": torch.randint(0, 1000, (5, 2)),
+                "num_patches": 5,
+            },
+        ]
+
+        collated = collate_slide_bags(batch)
+
+        # Check types
+        assert isinstance(collated["features"], torch.Tensor)
+        assert isinstance(collated["coordinates"], torch.Tensor)
+        assert isinstance(collated["labels"], torch.Tensor)
+        assert isinstance(collated["num_patches"], torch.Tensor)
+        assert isinstance(collated["slide_ids"], list)
+        assert isinstance(collated["patient_ids"], list)
+
+        # Check list contents
+        assert collated["slide_ids"] == ["slide_001"]
+        assert collated["patient_ids"] == ["patient_001"]
+
+        # Check tensor dtypes
+        assert collated["features"].dtype == torch.float32
+        assert collated["coordinates"].dtype == torch.int32
+        assert collated["labels"].dtype == torch.long
+        assert collated["num_patches"].dtype == torch.long
+
+    def test_single_slide_batch(self):
+        """Collate function handles single-slide batches."""
+        batch = [
+            {
+                "slide_id": "slide_001",
+                "patient_id": "patient_001",
+                "label": 1,
+                "features": torch.randn(7, 2048),
+                "coordinates": torch.randint(0, 1000, (7, 2)),
+                "num_patches": 7,
+            },
+        ]
+
+        collated = collate_slide_bags(batch)
+
+        # Should have batch_size=1, max_patches=7
+        assert collated["features"].shape == (1, 7, 2048)
+        assert collated["coordinates"].shape == (1, 7, 2)
+        assert collated["labels"].shape == (1,)
+        assert collated["num_patches"].shape == (1,)
+        assert len(collated["slide_ids"]) == 1
+        assert len(collated["patient_ids"]) == 1
+
+    def test_metadata_preservation(self):
+        """Collate function preserves slide and patient IDs."""
+        batch = [
+            {
+                "slide_id": "slide_A",
+                "patient_id": "patient_X",
+                "label": 1,
+                "features": torch.randn(5, 2048),
+                "coordinates": torch.randint(0, 1000, (5, 2)),
+                "num_patches": 5,
+            },
+            {
+                "slide_id": "slide_B",
+                "patient_id": "patient_Y",
+                "label": 0,
+                "features": torch.randn(3, 2048),
+                "coordinates": torch.randint(0, 1000, (3, 2)),
+                "num_patches": 3,
+            },
+        ]
+
+        collated = collate_slide_bags(batch)
+
+        # Check metadata is preserved in order
+        assert collated["slide_ids"] == ["slide_A", "slide_B"]
+        assert collated["patient_ids"] == ["patient_X", "patient_Y"]
+        assert collated["labels"].tolist() == [1, 0]
+
+    def test_padding_is_zeros(self):
+        """Padded regions are filled with zeros."""
+        batch = [
+            {
+                "slide_id": "slide_001",
+                "patient_id": "patient_001",
+                "label": 1,
+                "features": torch.ones(3, 2048),  # All ones
+                "coordinates": torch.ones(3, 2, dtype=torch.int32),  # All ones
+                "num_patches": 3,
+            },
+            {
+                "slide_id": "slide_002",
+                "patient_id": "patient_001",
+                "label": 0,
+                "features": torch.ones(5, 2048),  # All ones
+                "coordinates": torch.ones(5, 2, dtype=torch.int32),  # All ones
+                "num_patches": 5,
+            },
+        ]
+
+        collated = collate_slide_bags(batch)
+
+        # First slide should have zeros in positions 3:5
+        assert torch.all(collated["features"][0, :3, :] == 1.0)  # Original data
+        assert torch.all(collated["features"][0, 3:, :] == 0.0)  # Padding
+
+        # Second slide should have no padding (all ones)
+        assert torch.all(collated["features"][1, :5, :] == 1.0)
+
+        # Check coordinates padding
+        assert torch.all(collated["coordinates"][0, :3, :] == 1)  # Original data
+        assert torch.all(collated["coordinates"][0, 3:, :] == 0)  # Padding

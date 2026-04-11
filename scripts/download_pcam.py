@@ -1,85 +1,83 @@
 #!/usr/bin/env python3
-"""
-Download the real PatchCamelyon dataset from Zenodo.
-
-Dataset: 327,680 color images (96x96px) extracted from histopathologic scans
-Source: https://zenodo.org/record/2546921
-Total size: ~7GB compressed, ~7GB extracted
-
-Usage:
-    python scripts/download_pcam.py
-    python scripts/download_pcam.py --output-dir data/pcam_real
-"""
+"""Download the real PatchCamelyon dataset from Zenodo."""
 
 import argparse
 import gzip
-import hashlib
 import shutil
 from pathlib import Path
 from urllib.request import urlretrieve
 
-# Zenodo URLs for PCam dataset
+BASE_URL = "https://zenodo.org/record/2546921/files"
 PCAM_FILES = {
     "train_x": {
-        "url": "https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_train_x.h5.gz",
+        "filename": "camelyonpatch_level_2_split_train_x.h5.gz",
         "size_gb": 2.0,
     },
     "train_y": {
-        "url": "https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_train_y.h5.gz",
+        "filename": "camelyonpatch_level_2_split_train_y.h5.gz",
         "size_gb": 0.01,
     },
     "valid_x": {
-        "url": "https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_valid_x.h5.gz",
+        "filename": "camelyonpatch_level_2_split_valid_x.h5.gz",
         "size_gb": 0.25,
     },
     "valid_y": {
-        "url": "https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_valid_y.h5.gz",
+        "filename": "camelyonpatch_level_2_split_valid_y.h5.gz",
         "size_gb": 0.001,
     },
     "test_x": {
-        "url": "https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_test_x.h5.gz",
+        "filename": "camelyonpatch_level_2_split_test_x.h5.gz",
         "size_gb": 0.25,
     },
     "test_y": {
-        "url": "https://zenodo.org/record/2546921/files/camelyonpatch_level_2_split_test_y.h5.gz",
+        "filename": "camelyonpatch_level_2_split_test_y.h5.gz",
         "size_gb": 0.001,
     },
 }
 
 
-def download_with_progress(url: str, output_path: Path):
-    """Download file with progress bar."""
+def build_download_url(filename: str) -> str:
+    """Build a Zenodo download URL."""
+    return f"{BASE_URL}/{filename}"
+
+
+def download_with_progress(url: str, output_path: Path) -> None:
+    """Download file with progress output."""
     print(f"Downloading {url}")
     print(f"  -> {output_path}")
 
-    def progress_hook(block_num, block_size, total_size):
+    def progress_hook(
+        block_num: int,
+        block_size: int,
+        total_size: int,
+    ) -> None:
         downloaded = block_num * block_size
-        if total_size > 0:
-            percent = min(100, downloaded * 100 / total_size)
-            mb_downloaded = downloaded / (1024 * 1024)
-            mb_total = total_size / (1024 * 1024)
-            print(
-                f"\r  Progress: {percent:.1f}% ({mb_downloaded:.1f}/{mb_total:.1f} MB)",
-                end="",
-            )
+        if total_size <= 0:
+            return
+        percent = min(100, downloaded * 100 / total_size)
+        mb_downloaded = downloaded / (1024 * 1024)
+        mb_total = total_size / (1024 * 1024)
+        progress = f"\r  Progress: {percent:.1f}% " f"({mb_downloaded:.1f}/{mb_total:.1f} MB)"
+        print(progress, end="")
 
     urlretrieve(url, output_path, reporthook=progress_hook)
-    print()  # New line after progress
+    print()
 
 
-def extract_gz(gz_path: Path, output_path: Path):
-    """Extract .gz file."""
+def extract_gz(gz_path: Path, output_path: Path) -> None:
+    """Extract a .gz archive."""
     print(f"Extracting {gz_path.name}")
     print(f"  -> {output_path}")
 
-    with gzip.open(gz_path, "rb") as f_in:
-        with open(output_path, "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out)
+    with gzip.open(gz_path, "rb") as compressed:
+        with open(output_path, "wb") as output:
+            shutil.copyfileobj(compressed, output)
 
-    print(f"  Extracted successfully")
+    print("  Extracted successfully")
 
 
-def main():
+def main() -> None:
+    """Download and extract the dataset."""
     parser = argparse.ArgumentParser(description="Download PatchCamelyon dataset")
     parser.add_argument(
         "--output-dir",
@@ -102,42 +100,38 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    total_size = sum(file_info["size_gb"] for file_info in PCAM_FILES.values())
+
     print("=" * 80)
     print("PatchCamelyon Dataset Download")
     print("=" * 80)
     print(f"Output directory: {output_dir.absolute()}")
     print(f"Total files: {len(PCAM_FILES)}")
-    print(
-        f"Total size: ~{sum(f['size_gb'] for f in PCAM_FILES.values()):.2f} GB compressed"
-    )
+    print(f"Total size: ~{total_size:.2f} GB compressed")
     print("=" * 80)
     print()
 
     for name, info in PCAM_FILES.items():
-        url = info["url"]
-        filename = url.split("/")[-1]
+        filename = info["filename"]
+        url = build_download_url(filename)
         gz_path = output_dir / filename
         h5_path = output_dir / filename.replace(".gz", "")
 
-        # Check if already extracted
         if args.skip_existing and h5_path.exists():
-            print(f"✓ {name}: Already exists, skipping")
+            print(f"[OK] {name}: Already exists, skipping")
             print()
             continue
 
-        # Download
         if not gz_path.exists():
             download_with_progress(url, gz_path)
         else:
-            print(f"✓ {name}: Compressed file already downloaded")
+            print(f"[OK] {name}: Compressed file already downloaded")
 
-        # Extract
         if not h5_path.exists():
             extract_gz(gz_path, h5_path)
         else:
-            print(f"✓ {name}: Already extracted")
+            print(f"[OK] {name}: Already extracted")
 
-        # Clean up compressed file
         if not args.keep_compressed and gz_path.exists():
             print(f"  Removing {gz_path.name}")
             gz_path.unlink()
