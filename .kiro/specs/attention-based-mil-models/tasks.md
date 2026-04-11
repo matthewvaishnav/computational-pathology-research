@@ -425,8 +425,8 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Document command-line arguments
     - _Requirements: 11.2, 11.6_
 
-- [ ] 16. Create synthetic data generator for testing
-  - [ ] 16.1 Create create_synthetic_camelyon_data function in tests/utils.py
+- [x] 16. Create synthetic data generator for testing
+  - [x] 16.1 Create create_synthetic_camelyon_data function in tests/utils.py
     - Accept data_dir, num_slides, num_patches, feature_dim parameters
     - Generate slide metadata with alternating labels
     - Create slide_index.json with train/val/test splits
