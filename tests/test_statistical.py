@@ -127,12 +127,24 @@ class TestComputeBootstrapCI:
 
         # 90% CI
         _, ci_lower_90, ci_upper_90 = compute_bootstrap_ci(
-            y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, confidence_level=0.90, random_state=42
+            y_true,
+            y_pred,
+            y_prob,
+            metric_fn,
+            n_bootstrap=100,
+            confidence_level=0.90,
+            random_state=42,
         )
 
         # 95% CI
         _, ci_lower_95, ci_upper_95 = compute_bootstrap_ci(
-            y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, confidence_level=0.95, random_state=42
+            y_true,
+            y_pred,
+            y_prob,
+            metric_fn,
+            n_bootstrap=100,
+            confidence_level=0.95,
+            random_state=42,
         )
 
         # 95% CI should be wider than 90% CI
@@ -387,12 +399,8 @@ class TestComputeAllMetricsWithCI:
 
         # 95% CI should be wider than 90% CI
         for metric_name in ["accuracy", "f1", "precision", "recall"]:
-            width_90 = (
-                results_90[metric_name]["ci_upper"] - results_90[metric_name]["ci_lower"]
-            )
-            width_95 = (
-                results_95[metric_name]["ci_upper"] - results_95[metric_name]["ci_lower"]
-            )
+            width_90 = results_90[metric_name]["ci_upper"] - results_90[metric_name]["ci_lower"]
+            width_95 = results_95[metric_name]["ci_upper"] - results_95[metric_name]["ci_lower"]
             assert width_95 >= width_90 - 1e-6  # Allow small numerical differences
 
 
