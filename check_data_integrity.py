@@ -1,74 +1,91 @@
 """Check PCam data integrity."""
 
-import h5py
-import numpy as np
 from pathlib import Path
 
-data_dir = Path("data/pcam_real")
+import h5py
+import numpy as np
 
-print("=" * 60)
-print("PCam Data Integrity Check")
-print("=" * 60)
+DATA_DIR = Path("data/pcam_real")
+SPLITS = ["train", "valid", "test"]
+TEST_INDICES = [0, 100, 1000, 10000]
 
-splits = ["train", "valid", "test"]
 
-for split in splits:
-    print(f"\n📁 Checking {split} split...")
+def check_split(split: str) -> None:
+    """Validate one PCam split."""
+    print(f"\n[DIR] Checking {split} split...")
 
-    # Check x (images)
-    x_file = data_dir / f"camelyonpatch_level_2_split_{split}_x.h5"
-    y_file = data_dir / f"camelyonpatch_level_2_split_{split}_y.h5"
+    x_file = DATA_DIR / f"camelyonpatch_level_2_split_{split}_x.h5"
+    y_file = DATA_DIR / f"camelyonpatch_level_2_split_{split}_y.h5"
 
     if not x_file.exists():
-        print(f"  ❌ Missing: {x_file.name}")
-        continue
+        print(f"  [MISSING] {x_file.name}")
+        return
     if not y_file.exists():
-        print(f"  ❌ Missing: {y_file.name}")
-        continue
+        print(f"  [MISSING] {y_file.name}")
+        return
 
     try:
-        with h5py.File(x_file, "r") as f:
-            x_data = f["x"]
-            print(f"  ✅ Images: {x_data.shape} ({x_data.dtype})")
-            print(f"     Size: {x_file.stat().st_size / (1024**3):.2f} GB")
+        with h5py.File(x_file, "r") as x_handle:
+            x_data = x_handle["x"]
+            print(f"  [OK] Images: {x_data.shape} ({x_data.dtype})")
+            size_gb = x_file.stat().st_size / (1024**3)
+            print(f"     Size: {size_gb:.2f} GB")
+            print("     Testing sample reads...")
 
-            # Try to read a few samples
-            print(f"     Testing sample reads...")
-            test_indices = [0, 100, 1000, 10000]
             failed = 0
-            for idx in test_indices:
-                if idx < x_data.shape[0]:
-                    try:
-                        sample = x_data[idx]
-                        if np.all(sample == 0):
-                            print(f"       ⚠️  Sample {idx}: All zeros")
-                            failed += 1
-                    except Exception as e:
-                        print(f"       ❌ Sample {idx}: {str(e)[:50]}")
+            for idx in TEST_INDICES:
+                if idx >= x_data.shape[0]:
+                    continue
+                try:
+                    sample = x_data[idx]
+                    if np.all(sample == 0):
+                        print(f"       [WARN] Sample {idx}: all zeros")
                         failed += 1
+                except Exception as exc:  # pragma: no cover
+                    message = f"       [ERROR] Sample {idx}: {str(exc)[:50]}"
+                    print(message)
+                    failed += 1
 
             if failed == 0:
-                print(f"     ✅ All test samples readable")
+                print("     [OK] All test samples readable")
             else:
-                print(f"     ⚠️  {failed}/{len(test_indices)} samples failed")
+                total = len(TEST_INDICES)
+                print(f"     [WARN] {failed}/{total} samples failed")
 
-        with h5py.File(y_file, "r") as f:
-            y_data = f["y"]
-            print(f"  ✅ Labels: {y_data.shape} ({y_data.dtype})")
-            print(f"     Size: {y_file.stat().st_size / (1024**2):.2f} MB")
+        with h5py.File(y_file, "r") as y_handle:
+            y_data = y_handle["y"]
+            print(f"  [OK] Labels: {y_data.shape} ({y_data.dtype})")
+            size_mb = y_file.stat().st_size / (1024**2)
+            print(f"     Size: {size_mb:.2f} MB")
 
-            # Check label distribution
-            labels = y_data[: min(10000, y_data.shape[0])]
+            labels = y_data[: min(10_000, y_data.shape[0])]
             unique, counts = np.unique(labels, return_counts=True)
-            print(f"     Label distribution (first 10k):")
+            print("     Label distribution (first 10k):")
             for label, count in zip(unique, counts):
-                print(f"       Class {label[0]}: {count} ({count/len(labels)*100:.1f}%)")
+                pct = count / len(labels) * 100
+                print(f"       Class {label[0]}: {count} ({pct:.1f}%)")
+    except Exception as exc:  # pragma: no cover
+        print(f"  [ERROR] {exc}")
 
-    except Exception as e:
-        print(f"  ❌ Error: {str(e)}")
 
-print("\n" + "=" * 60)
-print("Summary:")
-print("  If you see many 'All zeros' or read errors, the data may be corrupted.")
-print("  Consider re-downloading with: python scripts/download_pcam.py")
-print("=" * 60)
+def main() -> None:
+    """Run the integrity check."""
+    print("=" * 60)
+    print("PCam Data Integrity Check")
+    print("=" * 60)
+
+    for split in SPLITS:
+        check_split(split)
+
+    summary = "  If you see many 'all zeros' or read errors, the data may be " "corrupted."
+    redownload = "  Consider re-downloading with: " "python scripts/download_pcam.py"
+
+    print("\n" + "=" * 60)
+    print("Summary:")
+    print(summary)
+    print(redownload)
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    main()
