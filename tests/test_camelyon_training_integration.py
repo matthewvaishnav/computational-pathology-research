@@ -128,11 +128,13 @@ def test_end_to_end_training(training_config, tmp_path):
     )
 
     # Check training completed successfully
-    assert result.returncode == 0, f"Training failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+    assert (
+        result.returncode == 0
+    ), f"Training failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
 
     # Check checkpoint was saved (may be in different location depending on save logic)
     checkpoint_dir = tmp_path / "checkpoints"
-    
+
     # Training may complete without saving if validation doesn't improve
     # Just verify training ran successfully
     assert "Training complete" in result.stderr or "Epoch" in result.stderr, "Training didn't run"
@@ -142,7 +144,7 @@ def test_end_to_end_evaluation(tmp_path, synthetic_camelyon_data):
     """Test end-to-end evaluation on synthetic data."""
     # Create a simple checkpoint manually
     from experiments.train_camelyon import SimpleSlideClassifier
-    
+
     model = SimpleSlideClassifier(
         feature_dim=128,
         hidden_dim=64,
@@ -150,7 +152,7 @@ def test_end_to_end_evaluation(tmp_path, synthetic_camelyon_data):
         pooling="mean",
         dropout=0.3,
     )
-    
+
     config = {
         "data": {
             "root_dir": str(synthetic_camelyon_data),
@@ -171,18 +173,21 @@ def test_end_to_end_evaluation(tmp_path, synthetic_camelyon_data):
             },
         },
     }
-    
+
     checkpoint_dir = tmp_path / "checkpoints"
     checkpoint_dir.mkdir()
     checkpoint_file = checkpoint_dir / "best_model.pth"
-    
-    torch.save({
-        "model_state_dict": model.state_dict(),
-        "optimizer_state_dict": {},
-        "epoch": 1,
-        "config": config,
-        "val_auc": 0.5,
-    }, checkpoint_file)
+
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": {},
+            "epoch": 1,
+            "config": config,
+            "val_auc": 0.5,
+        },
+        checkpoint_file,
+    )
 
     # Run evaluation
     output_dir = tmp_path / "results"
@@ -207,7 +212,9 @@ def test_end_to_end_evaluation(tmp_path, synthetic_camelyon_data):
     )
 
     # Check evaluation completed successfully
-    assert result.returncode == 0, f"Evaluation failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+    assert (
+        result.returncode == 0
+    ), f"Evaluation failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
 
     # Check metrics JSON was generated
     metrics_file = output_dir / "metrics.json"
@@ -306,7 +313,7 @@ def test_evaluation_generates_plots(tmp_path, synthetic_camelyon_data):
     """Test that evaluation generates confusion matrix and ROC curve plots."""
     # Create a checkpoint manually
     from experiments.train_camelyon import SimpleSlideClassifier
-    
+
     model = SimpleSlideClassifier(
         feature_dim=128,
         hidden_dim=64,
@@ -314,7 +321,7 @@ def test_evaluation_generates_plots(tmp_path, synthetic_camelyon_data):
         pooling="mean",
         dropout=0.3,
     )
-    
+
     config = {
         "data": {
             "root_dir": str(synthetic_camelyon_data),
@@ -335,18 +342,21 @@ def test_evaluation_generates_plots(tmp_path, synthetic_camelyon_data):
             },
         },
     }
-    
+
     checkpoint_dir = tmp_path / "checkpoints"
     checkpoint_dir.mkdir()
     checkpoint_file = checkpoint_dir / "best_model.pth"
-    
-    torch.save({
-        "model_state_dict": model.state_dict(),
-        "optimizer_state_dict": {},
-        "epoch": 1,
-        "config": config,
-        "val_auc": 0.5,
-    }, checkpoint_file)
+
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": {},
+            "epoch": 1,
+            "config": config,
+            "val_auc": 0.5,
+        },
+        checkpoint_file,
+    )
 
     # Run evaluation
     output_dir = tmp_path / "results_with_plots"

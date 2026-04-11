@@ -575,7 +575,6 @@ class TestCreatePatchIndex:
         assert "label" in entry
 
 
-
 class TestCAMELYONSlideDataset:
     """Test CAMELYONSlideDataset functionality."""
 
