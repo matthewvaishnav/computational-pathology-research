@@ -1,0 +1,114 @@
+# TransMIL Configuration
+# Transformer-based Multiple Instance Learning
+
+experiment:
+  name: transmil
+  description: Transformer-based MIL with self-attention and positional encoding
+  tags: [camelyon, attention, mil, transmil, transformer]
+
+data:
+  dataset: camelyon16
+  root_dir: ./data/camelyon
+  download: false
+  num_workers: 4
+  pin_memory: true
+
+  slide:
+    patch_size: 256
+    patch_level: 0
+    stride: 256
+    background_threshold: 0.5
+    max_patches_per_slide: 1000
+
+  augmentation:
+    enabled: false  # Disable for attention model training
+
+model:
+  modalities: [wsi]
+  embed_dim: 512
+
+  feature_extractor:
+    model: resnet50
+    pretrained: true
+    feature_dim: 2048
+    freeze_backbone: false
+
+  wsi:
+    model_type: transmil
+    hidden_dim: 256
+    dropout: 0.3
+
+    # TransMIL-specific configuration
+    transmil:
+      num_layers: 2  # Number of transformer layers
+      num_heads: 8  # Number of attention heads
+      use_pos_encoding: true  # Use learnable positional encoding
+
+task:
+  type: classification
+  num_classes: 2
+
+  classification:
+    hidden_dims: [256, 128]
+    dropout: 0.3
+    activation: relu
+
+training:
+  num_epochs: 50
+  batch_size: 8
+  learning_rate: 1e-4
+  weight_decay: 1e-5
+
+  optimizer:
+    name: adamw
+    betas: [0.9, 0.999]
+    eps: 1e-8
+
+  scheduler:
+    name: cosine
+    min_lr: 1e-6
+    warmup_epochs: 5
+
+  max_grad_norm: 1.0
+  use_amp: true
+  gradient_accumulation_steps: 1
+
+  # Attention weight saving configuration
+  save_attention_weights: true
+  attention_save_frequency: 5  # Save every 5 epochs
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: ./checkpoints/transmil
+  save_frequency: 5
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+
+logging:
+  log_dir: ./logs/transmil
+  log_interval: 10
+  use_tensorboard: true
+
+evaluation:
+  generate_plots: true
+  output_dir: ./results/transmil
+  save_predictions: true
+  compute_slide_metrics: true
+
+# Visualization settings
+visualization:
+  generate_heatmaps: true
+  heatmap_colormap: jet  # Options: jet, viridis, hot, plasma
+  heatmap_output_dir: ./outputs/heatmaps/transmil
+  attention_dir: ./outputs/attention_weights/transmil
+
+seed: 42
+device: cuda
