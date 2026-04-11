@@ -37,7 +37,7 @@ The implementation follows a phased approach:
     - Handle edge cases (single class, all correct/wrong predictions)
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ]* 2.3 Write unit tests for bootstrap CI functions
+  - [x]* 2.3 Write unit tests for bootstrap CI functions
     - Test with known distributions
     - Test edge cases (all correct, all wrong, single class)
     - Verify CI bounds are reasonable
