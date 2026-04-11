@@ -380,7 +380,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
 - [ ] 14. Checkpoint - Ensure multi-scale support works
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 15. Create comprehensive documentation
+- [x] 15. Create comprehensive documentation
   - [x] 15.1 Add attention models section to README.md
     - Document overview of three architectures
     - Provide quick start examples for training each model
@@ -402,7 +402,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Include parameter descriptions and return types for all methods
     - _Requirements: 11.1, 11.2, 11.4_
 
-  - [ ] 15.3 Create example notebook for attention models
+  - [x] 15.3 Create example notebook for attention models
     - Create notebooks/attention_mil_tutorial.ipynb
     - Show how to load pre-trained attention model
     - Demonstrate inference on test slides
