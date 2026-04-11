@@ -295,9 +295,14 @@ def train_epoch(
                 # Compute loss
                 loss = criterion(logits, labels)
 
-            # Check for NaN loss
-            if torch.isnan(loss):
-                logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
+            # Check for NaN loss or extremely small loss (numerical instability)
+            if torch.isnan(loss) or loss.item() < 1e-7:
+                if torch.isnan(loss):
+                    logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
+                else:
+                    logger.warning(
+                        f"Extremely small loss ({loss.item():.2e}) at batch {batch_idx}. Skipping to prevent numerical instability."
+                    )
                 num_skipped_batches += 1
                 continue
 
@@ -306,6 +311,24 @@ def train_epoch(
             # Gradient clipping
             if config["training"].get("max_grad_norm", 1.0) > 0:
                 scaler.unscale_(optimizer)
+
+                # Check for NaN gradients before clipping
+                has_nan_grad = False
+                for param in (
+                    list(feature_extractor.parameters())
+                    + list(encoder.parameters())
+                    + list(head.parameters())
+                ):
+                    if param.grad is not None and torch.isnan(param.grad).any():
+                        has_nan_grad = True
+                        break
+
+                if has_nan_grad:
+                    logger.warning(f"NaN gradients detected at batch {batch_idx}. Skipping batch.")
+                    num_skipped_batches += 1
+                    optimizer.zero_grad()
+                    continue
+
                 torch.nn.utils.clip_grad_norm_(
                     list(feature_extractor.parameters())
                     + list(encoder.parameters())
@@ -323,14 +346,36 @@ def train_epoch(
             logits = head(encoded)
             loss = criterion(logits, labels)
 
-            if torch.isnan(loss):
-                logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
+            if torch.isnan(loss) or loss.item() < 1e-7:
+                if torch.isnan(loss):
+                    logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
+                else:
+                    logger.warning(
+                        f"Extremely small loss ({loss.item():.2e}) at batch {batch_idx}. Skipping to prevent numerical instability."
+                    )
                 num_skipped_batches += 1
                 continue
 
             loss.backward()
 
             if config["training"].get("max_grad_norm", 1.0) > 0:
+                # Check for NaN gradients before clipping
+                has_nan_grad = False
+                for param in (
+                    list(feature_extractor.parameters())
+                    + list(encoder.parameters())
+                    + list(head.parameters())
+                ):
+                    if param.grad is not None and torch.isnan(param.grad).any():
+                        has_nan_grad = True
+                        break
+
+                if has_nan_grad:
+                    logger.warning(f"NaN gradients detected at batch {batch_idx}. Skipping batch.")
+                    num_skipped_batches += 1
+                    optimizer.zero_grad()
+                    continue
+
                 torch.nn.utils.clip_grad_norm_(
                     list(feature_extractor.parameters())
                     + list(encoder.parameters())
