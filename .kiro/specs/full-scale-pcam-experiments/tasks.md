@@ -141,7 +141,7 @@ The implementation follows a phased approach:
     - Provide descriptive error messages
     - _Requirements: 1.6, 12.1, 12.2_
 
-- [ ] 9. Checkpoint - Test full pipeline on synthetic data
+- [x] 9. Checkpoint - Test full pipeline on synthetic data
   - Run training with gpu_16gb.yaml on synthetic subset (500 samples)
   - Run evaluation with bootstrap CI
   - Run comparison with 2 baseline configs

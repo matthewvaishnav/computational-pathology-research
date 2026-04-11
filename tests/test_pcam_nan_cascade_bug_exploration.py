@@ -10,19 +10,20 @@ This test injects NaN values into model parameters during training and verifies
 that consecutive NaN losses occur without recovery on UNFIXED code.
 """
 
+import logging
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-import numpy as np
-from pathlib import Path
-import tempfile
-import logging
-from unittest.mock import patch, MagicMock
 
 # Import the training function under test
-from experiments.train_pcam import train_epoch, create_single_modality_model
+from experiments.train_pcam import create_single_modality_model, train_epoch
 from src.models.encoders import WSIEncoder
 from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.heads import ClassificationHead
