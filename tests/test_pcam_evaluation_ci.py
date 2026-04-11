@@ -79,7 +79,9 @@ def synthetic_pcam_data(tmp_path):
 
         with h5py.File(images_file, "w") as f:
             # Create synthetic images [N, 96, 96, 3]
-            images = np.random.randint(0, 256, size=(n_samples, image_size, image_size, 3), dtype=np.uint8)
+            images = np.random.randint(
+                0, 256, size=(n_samples, image_size, image_size, 3), dtype=np.uint8
+            )
             f.create_dataset("x", data=images)
 
         with h5py.File(labels_file, "w") as f:
@@ -90,7 +92,9 @@ def synthetic_pcam_data(tmp_path):
     return data_dir
 
 
-def test_evaluation_with_bootstrap_ci_generates_metrics(synthetic_pcam_checkpoint, synthetic_pcam_data, tmp_path):
+def test_evaluation_with_bootstrap_ci_generates_metrics(
+    synthetic_pcam_checkpoint, synthetic_pcam_data, tmp_path
+):
     """Test that evaluation with bootstrap CI generates metrics JSON with CI bounds."""
     output_dir = tmp_path / "results"
     output_dir.mkdir()
@@ -115,9 +119,7 @@ def test_evaluation_with_bootstrap_ci_generates_metrics(synthetic_pcam_checkpoin
     # Compute metrics with CI
     from src.utils.statistical import compute_all_metrics_with_ci
 
-    metrics = compute_all_metrics_with_ci(
-        y_true, y_pred, y_prob, n_bootstrap=100, random_state=42
-    )
+    metrics = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
     # Verify CI structure
     assert "accuracy" in metrics
@@ -225,9 +227,7 @@ def test_bootstrap_ci_with_high_accuracy(tmp_path):
 
     from src.utils.statistical import compute_all_metrics_with_ci
 
-    metrics = compute_all_metrics_with_ci(
-        y_true, y_pred, y_prob, n_bootstrap=100, random_state=42
-    )
+    metrics = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
     # Accuracy should be around 95%
     assert 0.90 <= metrics["accuracy"]["value"] <= 1.0
@@ -251,9 +251,7 @@ def test_bootstrap_ci_with_low_accuracy(tmp_path):
 
     from src.utils.statistical import compute_all_metrics_with_ci
 
-    metrics = compute_all_metrics_with_ci(
-        y_true, y_pred, y_prob, n_bootstrap=100, random_state=42
-    )
+    metrics = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
     # Accuracy should be around 40%
     assert 0.30 <= metrics["accuracy"]["value"] <= 0.50
@@ -273,7 +271,12 @@ def test_bootstrap_config_saved_to_metrics(tmp_path):
     confidence_level = 0.90
 
     metrics = compute_all_metrics_with_ci(
-        y_true, y_pred, y_prob, n_bootstrap=n_bootstrap, confidence_level=confidence_level, random_state=42
+        y_true,
+        y_pred,
+        y_prob,
+        n_bootstrap=n_bootstrap,
+        confidence_level=confidence_level,
+        random_state=42,
     )
 
     # Add bootstrap config to metrics (as would be done in evaluate_pcam.py)
@@ -308,14 +311,10 @@ def test_ci_computation_is_deterministic(tmp_path):
     from src.utils.statistical import compute_all_metrics_with_ci
 
     # First run
-    metrics1 = compute_all_metrics_with_ci(
-        y_true, y_pred, y_prob, n_bootstrap=100, random_state=42
-    )
+    metrics1 = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
     # Second run with same seed
-    metrics2 = compute_all_metrics_with_ci(
-        y_true, y_pred, y_prob, n_bootstrap=100, random_state=42
-    )
+    metrics2 = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
     # Should be identical
     for metric_name in ["accuracy", "f1", "precision", "recall"]:
