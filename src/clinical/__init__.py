@@ -11,8 +11,10 @@ This module provides clinical-grade functionality including:
 - Regulatory compliance infrastructure
 """
 
+from .classifier import MultiClassDiseaseClassifier
 from .taxonomy import DiseaseTaxonomy
 
 __all__ = [
     "DiseaseTaxonomy",
+    "MultiClassDiseaseClassifier",
 ]
