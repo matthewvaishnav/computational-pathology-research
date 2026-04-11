@@ -56,7 +56,7 @@ The implementation follows a phased approach:
     - Save bootstrap_config to metrics JSON
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.6_
 
-  - [ ]* 3.3 Write integration test for evaluation with CI
+  - [x]* 3.3 Write integration test for evaluation with CI
     - Load checkpoint from synthetic training
     - Run evaluation with `--compute-bootstrap-ci`
     - Verify CI bounds in output JSON
