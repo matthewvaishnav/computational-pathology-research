@@ -28,6 +28,8 @@ Configuration:
 """
 
 import argparse
+import h5py
+import inspect
 import json
 import logging
 import os
@@ -114,6 +116,69 @@ def validate_config(config: Dict) -> None:
         raise ValueError(f"Data root directory does not exist: {root_dir}")
 
     logger.info("Configuration validation passed")
+
+
+def validate_model_config(config: Dict) -> None:
+    """Validate model-specific configuration parameters.
+    
+    Args:
+        config: Configuration dictionary
+        
+    Raises:
+        ValueError: If model configuration is invalid
+    """
+    model_config = config.get("model", {}).get("wsi", {})
+    model_type = model_config.get("model_type", "mean")
+    
+    # Validate model_type
+    valid_model_types = ["attention_mil", "clam", "transmil", "mean", "max"]
+    if model_type not in valid_model_types:
+        raise ValueError(
+            f"Invalid model_type: {model_type}. Must be one of {valid_model_types}"
+        )
+    
+    # Validate AttentionMIL-specific config
+    if model_type == "attention_mil":
+        attention_config = config.get("model", {}).get("attention_mil", {})
+        attention_mode = attention_config.get("attention_mode", "instance")
+        
+        if attention_mode not in ["instance", "bag"]:
+            raise ValueError(
+                f"Invalid attention_mode for AttentionMIL: {attention_mode}. "
+                f"Must be 'instance' or 'bag'"
+            )
+        
+        logger.info(f"AttentionMIL config validated: attention_mode={attention_mode}")
+    
+    # Validate CLAM-specific config
+    elif model_type == "clam":
+        clam_config = config.get("model", {}).get("clam", {})
+        num_clusters = clam_config.get("num_clusters", 10)
+        
+        if num_clusters < 2:
+            raise ValueError(
+                f"Invalid num_clusters for CLAM: {num_clusters}. Must be >= 2"
+            )
+        
+        logger.info(f"CLAM config validated: num_clusters={num_clusters}")
+    
+    # Validate TransMIL-specific config
+    elif model_type == "transmil":
+        transmil_config = config.get("model", {}).get("transmil", {})
+        hidden_dim = model_config.get("hidden_dim", 256)
+        num_heads = transmil_config.get("num_heads", 8)
+        
+        if hidden_dim % num_heads != 0:
+            raise ValueError(
+                f"Invalid TransMIL config: hidden_dim ({hidden_dim}) must be "
+                f"divisible by num_heads ({num_heads})"
+            )
+        
+        logger.info(
+            f"TransMIL config validated: hidden_dim={hidden_dim}, num_heads={num_heads}"
+        )
+    
+    logger.info(f"Model configuration validated for model_type={model_type}")
 
 
 class SimpleSlideClassifier(nn.Module):
@@ -287,6 +352,8 @@ def train_epoch(
     optimizer: optim.Optimizer,
     device: torch.device,
     epoch: int,
+    save_attention: bool = False,
+    attention_dir: Optional[Path] = None,
 ) -> Dict[str, float]:
     """Train for one epoch.
 
@@ -297,6 +364,8 @@ def train_epoch(
         optimizer: Optimizer
         device: Device to train on
         epoch: Current epoch number
+        save_attention: Whether to save attention weights
+        attention_dir: Directory to save attention weights (required if save_attention=True)
 
     Returns:
         Dictionary with training metrics
@@ -305,6 +374,10 @@ def train_epoch(
     total_loss = 0.0
     all_preds = []
     all_labels = []
+    
+    # Check if model supports return_attention parameter
+    forward_signature = inspect.signature(model.forward)
+    supports_attention = "return_attention" in forward_signature.parameters
 
     pbar = tqdm(train_loader, desc=f"Epoch {epoch} [Train]")
     for batch in pbar:
@@ -312,11 +385,44 @@ def train_epoch(
         features = batch["features"].to(device)  # [batch_size, max_patches, feature_dim]
         labels = batch["labels"].to(device)  # [batch_size]
         num_patches = batch["num_patches"].to(device)  # [batch_size]
+        slide_ids = batch.get("slide_ids", [])
 
         # Forward pass
         optimizer.zero_grad()
-        logits = model(features, num_patches)  # [batch_size, 1]
-        if logits.ndim > 1:
+        
+        # Call model with or without return_attention based on support
+        if supports_attention and save_attention:
+            logits, attention_weights = model(features, num_patches, return_attention=True)
+            
+            # Save attention weights to HDF5 if requested
+            if attention_dir is not None and len(slide_ids) > 0:
+                attention_dir.mkdir(parents=True, exist_ok=True)
+                for i, slide_id in enumerate(slide_ids):
+                    # Only save valid patches (use num_patches to slice)
+                    valid_patches = num_patches[i].item()
+                    attn = attention_weights[i, :valid_patches].detach().cpu().numpy()
+                    
+                    # Save to HDF5
+                    h5_path = attention_dir / f"{slide_id}_epoch{epoch}.h5"
+                    with h5py.File(h5_path, "w") as f:
+                        f.create_dataset("attention_weights", data=attn)
+                        f.attrs["slide_id"] = slide_id
+                        f.attrs["epoch"] = epoch
+                        f.attrs["num_patches"] = valid_patches
+                    
+                # Log attention statistics
+                attn_mean = attention_weights.mean().item()
+                attn_std = attention_weights.std().item()
+                attn_max = attention_weights.max().item()
+                attn_min = attention_weights.min().item()
+                logger.debug(
+                    f"Attention stats - mean: {attn_mean:.4f}, std: {attn_std:.4f}, "
+                    f"max: {attn_max:.4f}, min: {attn_min:.4f}"
+                )
+        else:
+            logits = model(features, num_patches)  # [batch_size, 1] or [batch_size, num_classes]
+        
+        if logits.ndim > 1 and logits.size(-1) == 1:
             logits = logits.squeeze(-1)  # [batch_size]
 
         # Compute loss (BCE for binary classification)
@@ -349,6 +455,9 @@ def validate(
     val_loader: DataLoader,
     criterion: nn.Module,
     device: torch.device,
+    save_attention: bool = False,
+    attention_dir: Optional[Path] = None,
+    epoch: Optional[int] = None,
 ) -> Dict[str, float]:
     """Validate the model.
 
@@ -357,6 +466,9 @@ def validate(
         val_loader: Validation data loader
         criterion: Loss function
         device: Device to validate on
+        save_attention: Whether to save attention weights
+        attention_dir: Directory to save attention weights (required if save_attention=True)
+        epoch: Current epoch number (for attention weight filenames)
 
     Returns:
         Dictionary with validation metrics
@@ -366,6 +478,10 @@ def validate(
     all_preds = []
     all_labels = []
     all_probs = []
+    
+    # Check if model supports return_attention parameter
+    forward_signature = inspect.signature(model.forward)
+    supports_attention = "return_attention" in forward_signature.parameters
 
     with torch.no_grad():
         pbar = tqdm(val_loader, desc="Validation")
@@ -374,10 +490,44 @@ def validate(
             features = batch["features"].to(device)  # [batch_size, max_patches, feature_dim]
             labels = batch["labels"].to(device)  # [batch_size]
             num_patches = batch["num_patches"].to(device)  # [batch_size]
+            slide_ids = batch.get("slide_ids", [])
+            patient_ids = batch.get("patient_ids", [])
 
             # Forward pass
-            logits = model(features, num_patches)  # [batch_size, 1]
-            if logits.ndim > 1:
+            if supports_attention and save_attention:
+                logits, attention_weights = model(features, num_patches, return_attention=True)
+                
+                # Save attention weights to HDF5 if requested
+                if attention_dir is not None and len(slide_ids) > 0:
+                    attention_dir.mkdir(parents=True, exist_ok=True)
+                    for i, slide_id in enumerate(slide_ids):
+                        # Only save valid patches (use num_patches to slice)
+                        valid_patches = num_patches[i].item()
+                        attn = attention_weights[i, :valid_patches].cpu().numpy()
+                        
+                        # Get prediction and label
+                        prob = torch.sigmoid(logits[i]).item()
+                        pred = int(prob > 0.5)
+                        label = labels[i].item()
+                        
+                        # Save to HDF5 with metadata
+                        epoch_str = f"_epoch{epoch}" if epoch is not None else ""
+                        h5_path = attention_dir / f"{slide_id}{epoch_str}_val.h5"
+                        with h5py.File(h5_path, "w") as f:
+                            f.create_dataset("attention_weights", data=attn)
+                            f.attrs["slide_id"] = slide_id
+                            if len(patient_ids) > i:
+                                f.attrs["patient_id"] = patient_ids[i]
+                            f.attrs["label"] = label
+                            f.attrs["prediction"] = pred
+                            f.attrs["probability"] = prob
+                            f.attrs["num_patches"] = valid_patches
+                            if epoch is not None:
+                                f.attrs["epoch"] = epoch
+            else:
+                logits = model(features, num_patches)  # [batch_size, 1] or [batch_size, num_classes]
+            
+            if logits.ndim > 1 and logits.size(-1) == 1:
                 logits = logits.squeeze(-1)  # [batch_size]
             loss = criterion(logits, labels.float())
 
