@@ -315,7 +315,9 @@ def train_epoch(
 
         # Forward pass
         optimizer.zero_grad()
-        logits = model(features, num_patches).squeeze()  # [batch_size]
+        logits = model(features, num_patches)  # [batch_size, 1]
+        if logits.ndim > 1:
+            logits = logits.squeeze(-1)  # [batch_size]
 
         # Compute loss (BCE for binary classification)
         loss = criterion(logits, labels.float())
@@ -374,7 +376,9 @@ def validate(
             num_patches = batch["num_patches"].to(device)  # [batch_size]
 
             # Forward pass
-            logits = model(features, num_patches).squeeze()
+            logits = model(features, num_patches)  # [batch_size, 1]
+            if logits.ndim > 1:
+                logits = logits.squeeze(-1)  # [batch_size]
             loss = criterion(logits, labels.float())
 
             # Track metrics
