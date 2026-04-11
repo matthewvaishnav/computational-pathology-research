@@ -432,11 +432,21 @@ def validate(
                 logits = head(encoded)
                 loss = criterion(logits, labels)
 
+            # Check for NaN loss
+            if torch.isnan(loss):
+                logger.warning("NaN loss detected during validation. Skipping batch.")
+                continue
+
             total_loss += loss.item()
 
             # Get predictions
             probs = torch.sigmoid(logits).cpu().numpy().flatten()
             preds = (probs > 0.5).astype(int)
+
+            # Check for NaN in predictions
+            if np.isnan(probs).any():
+                logger.warning("NaN predictions detected during validation. Skipping batch.")
+                continue
 
             all_probs.extend(probs)
             all_preds.extend(preds)
