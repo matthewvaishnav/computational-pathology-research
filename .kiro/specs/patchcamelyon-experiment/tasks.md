@@ -144,40 +144,40 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Test JSON output file creation
     - _Requirements: 4.3, 4.4, 4.5, 4.6, 4.7_
 
-- [ ] 7. Create visualization notebook
-  - [ ] 7.1 Create experiments/notebooks/pcam_visualization.ipynb
+- [x] 7. Create visualization notebook
+  - [x] 7.1 Create experiments/notebooks/pcam_visualization.ipynb
     - Set up notebook with imports (matplotlib, seaborn, torch, numpy)
     - Add markdown cells explaining each section
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
   
-  - [ ] 7.2 Implement dataset exploration visualizations
+  - [x] 7.2 Implement dataset exploration visualizations
     - Display grid of sample patches (8x8) with labels as titles
     - Plot class distribution bar chart for train/val/test splits
     - Compute and display image statistics (mean, std per channel)
     - _Requirements: 5.1_
   
-  - [ ] 7.3 Implement training curves visualization
+  - [x] 7.3 Implement training curves visualization
     - Load training logs from TensorBoard or checkpoint metrics
     - Plot loss curves (train and val) over epochs
     - Plot accuracy curves (train and val) over epochs
     - Plot learning rate schedule over epochs
     - _Requirements: 5.2, 5.3_
   
-  - [ ] 7.4 Implement model performance visualizations
+  - [x] 7.4 Implement model performance visualizations
     - Load evaluation metrics JSON file
     - Plot confusion matrix as heatmap with annotations
     - Plot ROC curve with AUC value in legend
     - Plot precision-recall curve
     - _Requirements: 5.4, 5.5_
   
-  - [ ] 7.5 Implement prediction analysis visualizations
+  - [x] 7.5 Implement prediction analysis visualizations
     - Load test set predictions from evaluation
     - Display grid of correct predictions with confidence scores
     - Display grid of incorrect predictions with confidence scores
     - Plot histogram of prediction confidence distribution
     - _Requirements: 5.6_
   
-  - [ ] 7.6 Save all plots to results directory
+  - [x] 7.6 Save all plots to results directory
     - Create results/pcam/ directory if not exists
     - Save each plot as high-resolution PNG file
     - Add cell to display saved file paths
