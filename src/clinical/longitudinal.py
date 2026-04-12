@@ -56,7 +56,9 @@ class ScanRecord:
     disease_state: str
     disease_probabilities: Dict[str, float]
     confidence: float
-    risk_scores: Dict[str, Dict[str, float]] = field(default_factory=dict)  # {disease_id: {horizon: score}}
+    risk_scores: Dict[str, Dict[str, float]] = field(
+        default_factory=dict
+    )  # {disease_id: {horizon: score}}
     anomaly_scores: Dict[str, float] = field(default_factory=dict)
     clinical_metadata: Optional[ClinicalMetadata] = None
     treatment_events: List[str] = field(default_factory=list)
@@ -429,7 +431,6 @@ class PatientTimeline:
         )
 
 
-
 class LongitudinalTracker(nn.Module):
     """
     Longitudinal tracker for disease progression monitoring.
@@ -480,9 +481,7 @@ class LongitudinalTracker(nn.Module):
         # Registry of patient timelines
         self.timelines: Dict[str, PatientTimeline] = {}
 
-        logger.info(
-            f"Initialized LongitudinalTracker with taxonomy '{disease_taxonomy.name}'"
-        )
+        logger.info(f"Initialized LongitudinalTracker with taxonomy '{disease_taxonomy.name}'")
 
     def register_timeline(self, timeline: PatientTimeline) -> None:
         """
@@ -510,9 +509,7 @@ class LongitudinalTracker(nn.Module):
         """
         return self.timelines.get(patient_id_hash)
 
-    def compute_progression_metrics(
-        self, timeline: PatientTimeline
-    ) -> Dict[str, Any]:
+    def compute_progression_metrics(self, timeline: PatientTimeline) -> Dict[str, Any]:
         """
         Compute disease progression metrics for a patient timeline.
 
@@ -552,7 +549,7 @@ class LongitudinalTracker(nn.Module):
 
             if i > 0:
                 prev_scan = scans[i - 1]
-                
+
                 # Check for disease state change
                 if scan.disease_state != prev_scan.disease_state:
                     # Calculate probability change
@@ -560,16 +557,18 @@ class LongitudinalTracker(nn.Module):
                     curr_prob = scan.disease_probabilities.get(scan.disease_state, 0.0)
                     prob_change = curr_prob - prev_prob
 
-                    progression_events.append({
-                        "scan_index": i,
-                        "scan_id": scan.scan_id,
-                        "scan_date": scan.scan_date.isoformat(),
-                        "previous_state": prev_scan.disease_state,
-                        "current_state": scan.disease_state,
-                        "probability_change": prob_change,
-                        "confidence": scan.confidence,
-                        "days_since_previous": (scan.scan_date - prev_scan.scan_date).days,
-                    })
+                    progression_events.append(
+                        {
+                            "scan_index": i,
+                            "scan_id": scan.scan_id,
+                            "scan_date": scan.scan_date.isoformat(),
+                            "previous_state": prev_scan.disease_state,
+                            "current_state": scan.disease_state,
+                            "probability_change": prob_change,
+                            "confidence": scan.confidence,
+                            "days_since_previous": (scan.scan_date - prev_scan.scan_date).days,
+                        }
+                    )
 
         # Determine overall trend
         overall_trend = self._determine_overall_trend(scans)
@@ -677,9 +676,7 @@ class LongitudinalTracker(nn.Module):
                     min_days_after = days_after
 
         # Categorize treatment response
-        response_category = self._categorize_treatment_response(
-            baseline_scan, response_scan
-        )
+        response_category = self._categorize_treatment_response(baseline_scan, response_scan)
 
         # Calculate changes
         disease_state_change = None
@@ -799,11 +796,13 @@ class LongitudinalTracker(nn.Module):
             if disease_id in scan.risk_scores:
                 # Get risk scores for all time horizons
                 risk_data = scan.risk_scores[disease_id]
-                risk_trajectory.append({
-                    "scan_id": scan.scan_id,
-                    "scan_date": scan.scan_date.isoformat(),
-                    "risk_scores": risk_data,
-                })
+                risk_trajectory.append(
+                    {
+                        "scan_id": scan.scan_id,
+                        "scan_date": scan.scan_date.isoformat(),
+                        "risk_scores": risk_data,
+                    }
+                )
                 scan_dates.append(scan.scan_date)
 
         if len(risk_trajectory) < 2:
@@ -829,16 +828,18 @@ class LongitudinalTracker(nn.Module):
                     risk_change = curr_risk - prev_risk
 
                     if abs(risk_change) >= self.risk_change_threshold:
-                        significant_changes.append({
-                            "scan_index": i,
-                            "scan_id": risk_trajectory[i]["scan_id"],
-                            "scan_date": risk_trajectory[i]["scan_date"],
-                            "time_horizon": horizon,
-                            "previous_risk": prev_risk,
-                            "current_risk": curr_risk,
-                            "risk_change": risk_change,
-                            "direction": "increasing" if risk_change > 0 else "decreasing",
-                        })
+                        significant_changes.append(
+                            {
+                                "scan_index": i,
+                                "scan_id": risk_trajectory[i]["scan_id"],
+                                "scan_date": risk_trajectory[i]["scan_date"],
+                                "time_horizon": horizon,
+                                "previous_risk": prev_risk,
+                                "current_risk": curr_risk,
+                                "risk_change": risk_change,
+                                "direction": "increasing" if risk_change > 0 else "decreasing",
+                            }
+                        )
 
         # Determine overall risk trend
         risk_trend = self._determine_risk_trend(risk_trajectory)
@@ -951,13 +952,15 @@ class LongitudinalTracker(nn.Module):
                         risk_change = curr_risks[horizon] - prev_risks[horizon]
 
                         if abs(risk_change) >= self.risk_change_threshold:
-                            risk_changes.append({
-                                "disease_id": disease_id,
-                                "time_horizon": horizon,
-                                "previous_risk": prev_risks[horizon],
-                                "current_risk": curr_risks[horizon],
-                                "risk_change": risk_change,
-                            })
+                            risk_changes.append(
+                                {
+                                    "disease_id": disease_id,
+                                    "time_horizon": horizon,
+                                    "previous_risk": prev_risks[horizon],
+                                    "current_risk": curr_risks[horizon],
+                                    "risk_change": risk_change,
+                                }
+                            )
 
         # Generate recommendations
         recommendations = []

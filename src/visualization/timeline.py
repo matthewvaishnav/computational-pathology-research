@@ -9,11 +9,11 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -118,9 +118,7 @@ class TimelineVisualizer:
             num_subplots += 1
 
         # Create figure with subplots
-        fig, axes = plt.subplots(
-            num_subplots, 1, figsize=self.figsize, dpi=self.dpi, sharex=True
-        )
+        fig, axes = plt.subplots(num_subplots, 1, figsize=self.figsize, dpi=self.dpi, sharex=True)
 
         if num_subplots == 1:
             axes = [axes]
@@ -138,7 +136,11 @@ class TimelineVisualizer:
         # Plot 1: Disease state trajectory
         ax_idx = 0
         self._plot_disease_trajectory(
-            axes[ax_idx], scan_dates, disease_states, confidences, treatments if show_treatments else []
+            axes[ax_idx],
+            scan_dates,
+            disease_states,
+            confidences,
+            treatments if show_treatments else [],
         )
 
         # Plot 2: Confidence scores
@@ -253,7 +255,9 @@ class TimelineVisualizer:
 
         # Add confidence threshold lines
         ax.axhline(0.9, color="green", linestyle="--", linewidth=1, alpha=0.5, label="High (0.9)")
-        ax.axhline(0.7, color="orange", linestyle="--", linewidth=1, alpha=0.5, label="Medium (0.7)")
+        ax.axhline(
+            0.7, color="orange", linestyle="--", linewidth=1, alpha=0.5, label="Medium (0.7)"
+        )
         ax.axhline(0.5, color="red", linestyle="--", linewidth=1, alpha=0.5, label="Low (0.5)")
 
         # Add treatment markers
@@ -409,7 +413,9 @@ class TimelineVisualizer:
                 for event in progression_events
             ]
 
-            axes[2].scatter(event_indices, range(len(event_indices)), s=200, alpha=0.7, color="#e74c3c")
+            axes[2].scatter(
+                event_indices, range(len(event_indices)), s=200, alpha=0.7, color="#e74c3c"
+            )
             axes[2].set_yticks(range(len(event_indices)))
             axes[2].set_yticklabels(event_labels, fontsize=9)
             axes[2].set_xlabel("Scan Index")
@@ -545,8 +551,12 @@ class TimelineVisualizer:
         baseline_values = [baseline_probs.get(state, 0.0) for state in all_states]
         response_values = [response_probs.get(state, 0.0) for state in all_states]
 
-        axes[1].bar(x - width / 2, baseline_values, width, label="Baseline", alpha=0.7, color="#3498db")
-        axes[1].bar(x + width / 2, response_values, width, label="Response", alpha=0.7, color="#e74c3c")
+        axes[1].bar(
+            x - width / 2, baseline_values, width, label="Baseline", alpha=0.7, color="#3498db"
+        )
+        axes[1].bar(
+            x + width / 2, response_values, width, label="Response", alpha=0.7, color="#e74c3c"
+        )
 
         axes[1].set_xlabel("Disease State")
         axes[1].set_ylabel("Probability")
