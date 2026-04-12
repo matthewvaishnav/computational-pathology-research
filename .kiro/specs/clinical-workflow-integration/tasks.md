@@ -51,7 +51,7 @@ The implementation builds on existing infrastructure: AttentionMIL/CLAM/TransMIL
     - Test patient representation generation
     - _Requirements: 3.1, 3.4, 3.6, 3.7_
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [-] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Implement risk factor analysis

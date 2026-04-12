@@ -9,13 +9,18 @@ experiment:
 data:
   dataset: pcam
   root_dir: ./data/pcam
-  download: false  # Dataset already exists
-  # NOTE: This config uses existing data (synthetic or real)
-  # For full-scale training on 262K samples, use configs in pcam_fullscale/
-  num_workers: 0  # Set to 0 for Windows compatibility
-  pin_memory: false  # Disable since running on CPU
-
-  # Augmentation - applied at dataset level
+  download: true
+  num_workers: 4
+  pin_memory: true
+  
+  # Feature extraction
+  extract_features: true
+  feature_extractor:
+    model: resnet18
+    pretrained: true
+    feature_dim: 512
+  
+  # Augmentation
   augmentation:
     enabled: true
     random_horizontal_flip: true
@@ -31,7 +36,7 @@ model:
   modalities: [wsi]
   embed_dim: 256
 
-  # Feature extractor (applied batch-time in training script)
+  # Feature extractor configuration
   feature_extractor:
     model: resnet18
     pretrained: true
