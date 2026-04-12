@@ -111,7 +111,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Verify logs are created
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-- [ ] 5. Checkpoint - Verify training works end-to-end
+- [x] 5. Checkpoint - Verify training works end-to-end
   - Run training script for 1 epoch on full dataset
   - Ensure all tests pass, ask the user if questions arise
 
