@@ -12,6 +12,7 @@ This module provides clinical-grade functionality including:
 """
 
 from .classifier import MultiClassDiseaseClassifier
+from .ood_detection import OODDetector
 from .patient_context import (
     AlcoholConsumption,
     ClinicalMetadata,
@@ -21,7 +22,10 @@ from .patient_context import (
     Sex,
     SmokingStatus,
 )
+from .risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
 from .taxonomy import DiseaseTaxonomy
+from .thresholds import ClinicalThresholdSystem, ThresholdConfig
+from .uncertainty import UncertaintyQuantifier
 
 __all__ = [
     "DiseaseTaxonomy",
@@ -33,4 +37,10 @@ __all__ = [
     "AlcoholConsumption",
     "ExerciseFrequency",
     "Sex",
+    "RiskAnalyzer",
+    "ClinicalRiskFactorEncoder",
+    "ClinicalThresholdSystem",
+    "ThresholdConfig",
+    "UncertaintyQuantifier",
+    "OODDetector",
 ]
