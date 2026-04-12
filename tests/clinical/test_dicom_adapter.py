@@ -11,8 +11,8 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import pytest
 import pydicom
+import pytest
 from pydicom.dataset import Dataset, FileDataset
 from pydicom.uid import ExplicitVRLittleEndian, JPEG2000Lossless, generate_uid
 

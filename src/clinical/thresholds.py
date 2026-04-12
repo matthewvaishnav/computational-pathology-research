@@ -56,7 +56,9 @@ class ThresholdConfig:
 
         # Validate confidence_threshold
         if not 0.0 <= self.confidence_threshold <= 1.0:
-            errors.append(f"confidence_threshold must be in [0, 1], got {self.confidence_threshold}")
+            errors.append(
+                f"confidence_threshold must be in [0, 1], got {self.confidence_threshold}"
+            )
 
         # Validate anomaly_threshold
         if not 0.0 <= self.anomaly_threshold <= 1.0:
@@ -286,7 +288,10 @@ class ClinicalThresholdSystem:
 
         # Get thresholds for each sample's primary disease
         thresholds = torch.tensor(
-            [self.get_threshold(disease_id).confidence_threshold for disease_id in primary_disease_ids],
+            [
+                self.get_threshold(disease_id).confidence_threshold
+                for disease_id in primary_disease_ids
+            ],
             dtype=confidence_scores.dtype,
             device=confidence_scores.device,
         )

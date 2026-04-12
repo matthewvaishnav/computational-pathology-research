@@ -101,12 +101,12 @@ class UncertaintyQuantifier(nn.Module):
             ValueError: If logits have incorrect shape
         """
         if logits.dim() != 2:
-            raise ValueError(f"Expected 2D logits [batch_size, num_classes], got shape {logits.shape}")
+            raise ValueError(
+                f"Expected 2D logits [batch_size, num_classes], got shape {logits.shape}"
+            )
 
         if logits.shape[1] != self.num_classes:
-            raise ValueError(
-                f"Expected num_classes={self.num_classes}, got {logits.shape[1]}"
-            )
+            raise ValueError(f"Expected num_classes={self.num_classes}, got {logits.shape[1]}")
 
         batch_size = logits.shape[0]
         device = logits.device
@@ -234,9 +234,7 @@ class UncertaintyQuantifier(nn.Module):
         self.train()
 
         # Optimizer for calibration parameters
-        optimizer = torch.optim.LBFGS(
-            self.parameters(), lr=learning_rate, max_iter=max_iterations
-        )
+        optimizer = torch.optim.LBFGS(self.parameters(), lr=learning_rate, max_iter=max_iterations)
 
         # Negative log-likelihood loss
         def closure():

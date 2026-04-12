@@ -104,9 +104,7 @@ class ParsedDocument:
 
     def get_all_entities(self) -> List[ExtractedEntity]:
         """Get all extracted entities across all categories."""
-        return (
-            self.diagnoses + self.medications + self.procedures + self.observations
-        )
+        return self.diagnoses + self.medications + self.procedures + self.observations
 
     def get_high_confidence_entities(self) -> List[ExtractedEntity]:
         """Get only high-confidence extracted entities."""
@@ -335,13 +333,9 @@ class ClinicalDocumentParser:
 
         # Check medication conflicts
         if "medications" in structured_metadata:
-            structured_meds = set(
-                med.lower() for med in structured_metadata["medications"]
-            )
+            structured_meds = set(med.lower() for med in structured_metadata["medications"])
             extracted_meds = set(
-                med.value.lower()
-                for med in parsed_document.medications
-                if not med.negated
+                med.value.lower() for med in parsed_document.medications if not med.negated
             )
 
             # Find medications in structured but negated in document
@@ -359,9 +353,7 @@ class ClinicalDocumentParser:
         if "diagnoses" in structured_metadata:
             structured_dx = set(dx.lower() for dx in structured_metadata["diagnoses"])
             extracted_dx = set(
-                dx.value.lower()
-                for dx in parsed_document.diagnoses
-                if not dx.negated
+                dx.value.lower() for dx in parsed_document.diagnoses if not dx.negated
             )
 
             # Find diagnoses in structured but negated in document
@@ -466,9 +458,7 @@ class ClinicalDocumentParser:
 
         return normalized
 
-    def _extract_diagnoses(
-        self, normalized_text: str, original_text: str
-    ) -> List[ExtractedEntity]:
+    def _extract_diagnoses(self, normalized_text: str, original_text: str) -> List[ExtractedEntity]:
         """Extract diagnoses from clinical text."""
         entities = []
 
@@ -487,9 +477,7 @@ class ClinicalDocumentParser:
                     uncertain = self._is_uncertain(context, match.start() - start)
 
                     # Calculate confidence (simple heuristic)
-                    confidence = self._calculate_confidence(
-                        value, context, negated, uncertain
-                    )
+                    confidence = self._calculate_confidence(value, context, negated, uncertain)
 
                     entities.append(
                         ExtractedEntity(
@@ -525,9 +513,7 @@ class ClinicalDocumentParser:
                     uncertain = self._is_uncertain(context, match.start() - start)
 
                     # Calculate confidence
-                    confidence = self._calculate_confidence(
-                        value, context, negated, uncertain
-                    )
+                    confidence = self._calculate_confidence(value, context, negated, uncertain)
 
                     entities.append(
                         ExtractedEntity(
@@ -563,9 +549,7 @@ class ClinicalDocumentParser:
                     uncertain = self._is_uncertain(context, match.start() - start)
 
                     # Calculate confidence
-                    confidence = self._calculate_confidence(
-                        value, context, negated, uncertain
-                    )
+                    confidence = self._calculate_confidence(value, context, negated, uncertain)
 
                     entities.append(
                         ExtractedEntity(
@@ -601,9 +585,7 @@ class ClinicalDocumentParser:
                     uncertain = self._is_uncertain(context, match.start() - start)
 
                     # Calculate confidence
-                    confidence = self._calculate_confidence(
-                        value, context, negated, uncertain
-                    )
+                    confidence = self._calculate_confidence(value, context, negated, uncertain)
 
                     entities.append(
                         ExtractedEntity(

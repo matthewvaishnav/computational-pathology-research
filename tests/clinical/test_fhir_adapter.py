@@ -37,7 +37,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_read_patient_metadata(self, mock_session_class):
         """
         Test reading patient clinical metadata from FHIR resources.
-        
+
         Requirement: 7.1
         """
         # Mock session
@@ -176,7 +176,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_write_diagnostic_report(self, mock_session_class):
         """
         Test writing prediction results as FHIR DiagnosticReport.
-        
+
         Requirement: 7.2
         """
         # Mock session
@@ -246,9 +246,7 @@ class TestFHIRAdapter(unittest.TestCase):
             "http://example.org/fhir/StructureDefinition/confidence-score",
             extension_urls,
         )
-        self.assertIn(
-            "http://example.org/fhir/StructureDefinition/model-version", extension_urls
-        )
+        self.assertIn("http://example.org/fhir/StructureDefinition/model-version", extension_urls)
 
         # Verify result
         self.assertEqual(result["id"], "report123")
@@ -257,7 +255,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_query_patient_history(self, mock_session_class):
         """
         Test querying FHIR server for patient historical data.
-        
+
         Requirement: 7.3
         """
         # Mock session
@@ -295,9 +293,7 @@ class TestFHIRAdapter(unittest.TestCase):
         adapter.session = mock_session
 
         # Query patient history
-        history = adapter.query_patient_history(
-            "patient123", FHIRResourceType.DIAGNOSTIC_REPORT
-        )
+        history = adapter.query_patient_history("patient123", FHIRResourceType.DIAGNOSTIC_REPORT)
 
         # Verify results
         self.assertEqual(len(history), 2)
@@ -312,7 +308,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_validate_resource_conformance_patient(self):
         """
         Test FHIR resource validation for Patient resources.
-        
+
         Requirement: 7.5
         """
         # Valid patient resource
@@ -333,7 +329,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_validate_resource_conformance_diagnostic_report(self):
         """
         Test FHIR resource validation for DiagnosticReport resources.
-        
+
         Requirement: 7.5
         """
         # Valid diagnostic report
@@ -362,7 +358,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_validate_resource_conformance_observation(self):
         """
         Test FHIR resource validation for Observation resources.
-        
+
         Requirement: 7.5
         """
         # Valid observation
@@ -391,7 +387,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_subscribe_to_imaging_studies(self, mock_session_class):
         """
         Test FHIR subscription for real-time notifications.
-        
+
         Requirement: 7.7
         """
         # Mock session
@@ -430,9 +426,7 @@ class TestFHIRAdapter(unittest.TestCase):
         self.assertEqual(request_body["status"], "requested")
         self.assertIn("ImagingStudy", request_body["criteria"])
         self.assertIn("patient123", request_body["criteria"])
-        self.assertEqual(
-            request_body["channel"]["endpoint"], "https://example.com/callback"
-        )
+        self.assertEqual(request_body["channel"]["endpoint"], "https://example.com/callback")
 
         # Verify result
         self.assertEqual(result["id"], "sub123")
@@ -442,7 +436,7 @@ class TestFHIRAdapter(unittest.TestCase):
     def test_oauth2_authentication(self, mock_post, mock_session_class):
         """
         Test OAuth 2.0 authentication setup.
-        
+
         Requirement: 7.4
         """
         # Mock token response
@@ -477,15 +471,13 @@ class TestFHIRAdapter(unittest.TestCase):
 
         # Verify authorization header was set
         self.assertIn("Authorization", adapter.session.headers)
-        self.assertEqual(
-            adapter.session.headers["Authorization"], "Bearer test_token_12345"
-        )
+        self.assertEqual(adapter.session.headers["Authorization"], "Bearer test_token_12345")
 
     @patch("src.clinical.fhir_adapter.requests.Session")
     def test_smart_on_fhir_authentication(self, mock_session_class):
         """
         Test SMART on FHIR authentication setup.
-        
+
         Requirement: 7.4
         """
         # Mock session with headers attribute
@@ -505,15 +497,13 @@ class TestFHIRAdapter(unittest.TestCase):
 
         # Verify authorization header was set
         self.assertIn("Authorization", adapter.session.headers)
-        self.assertEqual(
-            adapter.session.headers["Authorization"], "Bearer smart_token_67890"
-        )
+        self.assertEqual(adapter.session.headers["Authorization"], "Bearer smart_token_67890")
 
     @patch("src.clinical.fhir_adapter.requests.Session")
     def test_resource_linking(self, mock_session_class):
         """
         Test linking DiagnosticReport to Patient and ImagingStudy resources.
-        
+
         Requirement: 7.6
         """
         # Mock session
@@ -552,9 +542,7 @@ class TestFHIRAdapter(unittest.TestCase):
 
         # Check ImagingStudy reference
         self.assertIn("imagingStudy", request_body)
-        self.assertEqual(
-            request_body["imagingStudy"][0]["reference"], "ImagingStudy/study456"
-        )
+        self.assertEqual(request_body["imagingStudy"][0]["reference"], "ImagingStudy/study456")
 
     def test_patient_clinical_metadata_dataclass(self):
         """Test PatientClinicalMetadata dataclass structure."""
@@ -729,9 +717,7 @@ class TestFHIRResourceExtraction(unittest.TestCase):
                     ]
                 }
             },
-            {
-                "medicationReference": {"display": "Aspirin 81mg"}
-            },
+            {"medicationReference": {"display": "Aspirin 81mg"}},
         ]
 
         med_list = self.adapter._extract_medications(medications)
