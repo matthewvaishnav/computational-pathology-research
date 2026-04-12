@@ -196,9 +196,7 @@ class TemporalProgressionModel(nn.Module):
             batch_size, num_scans, embed_dim = imaging_features.shape
 
             if embed_dim != self.input_dim:
-                raise ValueError(
-                    f"Expected input_dim={self.input_dim}, got {embed_dim}"
-                )
+                raise ValueError(f"Expected input_dim={self.input_dim}, got {embed_dim}")
 
             # Apply temporal reasoning
             sequence_emb, progression_features = self.temporal_reasoner(
@@ -314,7 +312,9 @@ class TemporalProgressionModel(nn.Module):
         Returns:
             Dictionary with progression predictions incorporating treatment effects
         """
-        batch_size = imaging_features.shape[0] if imaging_features.dim() == 2 else imaging_features.shape[0]
+        batch_size = (
+            imaging_features.shape[0] if imaging_features.dim() == 2 else imaging_features.shape[0]
+        )
 
         # Create augmented treatment history with proposed treatment
         if treatment_history is None:
@@ -569,9 +569,7 @@ class TreatmentEffectEncoder(nn.Module):
         dropout: Dropout rate (default: 0.1)
     """
 
-    def __init__(
-        self, embed_dim: int = 128, num_treatment_types: int = 50, dropout: float = 0.1
-    ):
+    def __init__(self, embed_dim: int = 128, num_treatment_types: int = 50, dropout: float = 0.1):
         super().__init__()
 
         self.embed_dim = embed_dim
@@ -620,9 +618,7 @@ class TreatmentEffectEncoder(nn.Module):
 
         return self.treatment_vocab[treatment_name]
 
-    def forward(
-        self, treatment_history: List[Dict], device: torch.device
-    ) -> torch.Tensor:
+    def forward(self, treatment_history: List[Dict], device: torch.device) -> torch.Tensor:
         """
         Encode treatment history into embeddings.
 
@@ -680,6 +676,8 @@ class TreatmentEffectEncoder(nn.Module):
             treatment_embeddings_list.append(treatment_emb)
 
         # Stack into batch
-        treatment_embeddings = torch.stack(treatment_embeddings_list, dim=0)  # [batch_size, embed_dim]
+        treatment_embeddings = torch.stack(
+            treatment_embeddings_list, dim=0
+        )  # [batch_size, embed_dim]
 
         return treatment_embeddings

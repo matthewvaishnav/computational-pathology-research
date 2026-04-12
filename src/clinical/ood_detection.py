@@ -127,9 +127,7 @@ class OODDetector(nn.Module):
             )
 
         if features.shape[1] != self.feature_dim:
-            raise ValueError(
-                f"Expected feature_dim={self.feature_dim}, got {features.shape[1]}"
-            )
+            raise ValueError(f"Expected feature_dim={self.feature_dim}, got {features.shape[1]}")
 
         batch_size = features.shape[0]
         method_scores_list = []
@@ -185,9 +183,7 @@ class OODDetector(nn.Module):
 
         # Compute Mahalanobis distance: sqrt((x - mu)^T * Sigma^-1 * (x - mu))
         centered = features - self.train_mean
-        mahal_dist = torch.sqrt(
-            torch.sum(centered @ self.train_cov_inv * centered, dim=1)
-        )
+        mahal_dist = torch.sqrt(torch.sum(centered @ self.train_cov_inv * centered, dim=1))
 
         # Normalize to [0, 1] using sigmoid
         # Scale factor chosen empirically (can be tuned)
@@ -350,9 +346,7 @@ class OODDetector(nn.Module):
         self.train_cov_inv.copy_(cov_inv)
         self.mahalanobis_fitted = True
 
-        logger.info(
-            f"Fitted Mahalanobis detector on {train_features.shape[0]} training samples"
-        )
+        logger.info(f"Fitted Mahalanobis detector on {train_features.shape[0]} training samples")
 
     def train_autoencoder(
         self,

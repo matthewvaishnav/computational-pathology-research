@@ -19,6 +19,13 @@ from .dicom_adapter import (
     PredictionResult,
     TransferSyntax,
 )
+from .document_parser import (
+    ClinicalDocumentParser,
+    DocumentFormat,
+    ExtractedEntity,
+    ExtractionConfidence,
+    ParsedDocument,
+)
 from .fhir_adapter import (
     AuthenticationMethod,
     DiagnosticReportData,
@@ -26,13 +33,6 @@ from .fhir_adapter import (
     FHIRResourceType,
     FHIRServerConfig,
     PatientClinicalMetadata,
-)
-from .document_parser import (
-    ClinicalDocumentParser,
-    DocumentFormat,
-    ExtractedEntity,
-    ExtractionConfidence,
-    ParsedDocument,
 )
 from .longitudinal import (
     LongitudinalTracker,
@@ -51,22 +51,6 @@ from .patient_context import (
     Sex,
     SmokingStatus,
 )
-from .risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
-from .taxonomy import DiseaseTaxonomy
-from .temporal_progression import (
-    ClinicalMetadataEncoder as TemporalClinicalMetadataEncoder,
-    TemporalProgressionModel,
-    TreatmentEffectEncoder,
-)
-from .thresholds import ClinicalThresholdSystem, ThresholdConfig
-from .uncertainty import UncertaintyQuantifier
-from .reporting import (
-    ClinicalReportGenerator,
-    DiagnosisResult,
-    ExportFormat,
-    ReportData,
-    ReportSpecialty,
-)
 from .privacy import (
     AES256Encryption,
     ConsentRecord,
@@ -83,6 +67,22 @@ from .privacy import (
     UnauthorizedAccessDetector,
     UserSession,
 )
+from .reporting import (
+    ClinicalReportGenerator,
+    DiagnosisResult,
+    ExportFormat,
+    ReportData,
+    ReportSpecialty,
+)
+from .risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
+from .taxonomy import DiseaseTaxonomy
+from .temporal_progression import ClinicalMetadataEncoder as TemporalClinicalMetadataEncoder
+from .temporal_progression import (
+    TemporalProgressionModel,
+    TreatmentEffectEncoder,
+)
+from .thresholds import ClinicalThresholdSystem, ThresholdConfig
+from .uncertainty import UncertaintyQuantifier
 
 __all__ = [
     "DiseaseTaxonomy",

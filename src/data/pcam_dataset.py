@@ -190,15 +190,20 @@ class PCamDataset(Dataset):
             if (split_dir / "images.npy").exists() and (split_dir / "labels.npy").exists():
                 self.images = np.load(split_dir / "images.npy")
                 self.labels = np.load(split_dir / "labels.npy")
-                logger.info(f"Loaded {len(self.images)} samples from .npy files for {self.split} split")
+                logger.info(
+                    f"Loaded {len(self.images)} samples from .npy files for {self.split} split"
+                )
             # Fall back to .h5py files
             elif (split_dir / "images.h5py").exists() and (split_dir / "labels.h5py").exists():
                 import h5py
+
                 with h5py.File(split_dir / "images.h5py", "r") as f:
                     self.images = f["images"][:]
                 with h5py.File(split_dir / "labels.h5py", "r") as f:
                     self.labels = f["labels"][:]
-                logger.info(f"Loaded {len(self.images)} samples from .h5py files for {self.split} split")
+                logger.info(
+                    f"Loaded {len(self.images)} samples from .h5py files for {self.split} split"
+                )
             else:
                 raise RuntimeError(f"No valid dataset files found in {split_dir}")
 
