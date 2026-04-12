@@ -115,22 +115,22 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
   - Run training script for 1 epoch on full dataset
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 6. Implement evaluation script
-  - [ ] 6.1 Create experiments/evaluate_pcam.py evaluation script
+- [x] 6. Implement evaluation script
+  - [x] 6.1 Create experiments/evaluate_pcam.py evaluation script
     - Implement load_checkpoint() function to load trained model
     - Implement evaluate_model() function to run inference on test set
     - Collect predictions, probabilities, and labels for all test samples
     - Handle evaluation errors gracefully (missing checkpoint, empty test set)
     - _Requirements: 4.1, 4.2, 8.5_
   
-  - [ ] 6.2 Implement metrics computation
+  - [x] 6.2 Implement metrics computation
     - Implement compute_metrics() function using sklearn.metrics
     - Compute accuracy, AUC, precision, recall, F1-score
     - Generate confusion matrix as numpy array
     - Compute per-class metrics (precision, recall, F1 for each class)
     - _Requirements: 4.3, 4.4, 4.5, 4.6_
   
-  - [ ] 6.3 Add metrics saving and reporting
+  - [x] 6.3 Add metrics saving and reporting
     - Implement save_metrics() function to save metrics as JSON
     - Include training time, inference time, model parameters, hardware info in output
     - Log all metrics to console with clear formatting
