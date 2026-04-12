@@ -1,0 +1,165 @@
+# Tissue Classification Taxonomy Configuration
+# For general histopathological tissue type classification
+
+name: "tissue_classification"
+version: "1.0"
+description: "General tissue type classification taxonomy"
+
+diseases:
+  - id: "epithelial"
+    name: "Epithelial Tissue"
+    description: "Covering and lining tissue"
+    parent: null
+    
+  - id: "squamous_epithelium"
+    name: "Squamous Epithelium"
+    description: "Flat, scale-like epithelial cells"
+    parent: "epithelial"
+    
+  - id: "columnar_epithelium"
+    name: "Columnar Epithelium"
+    description: "Column-shaped epithelial cells"
+    parent: "epithelial"
+    
+  - id: "glandular_epithelium"
+    name: "Glandular Epithelium"
+    description: "Secretory epithelial tissue"
+    parent: "epithelial"
+    
+  - id: "connective"
+    name: "Connective Tissue"
+    description: "Supporting and binding tissue"
+    parent: null
+    
+  - id: "adipose"
+    name: "Adipose Tissue"
+    description: "Fat storage tissue"
+    parent: "connective"
+    
+  - id: "fibrous"
+    name: "Fibrous Connective Tissue"
+    description: "Dense collagenous tissue"
+    parent: "connective"
+    
+  - id: "muscle"
+    name: "Muscle Tissue"
+    description: "Contractile tissue"
+    parent: null
+    
+  - id: "smooth_muscle"
+    name: "Smooth Muscle"
+    description: "Involuntary muscle tissue"
+    parent: "muscle"
+    
+  - id: "skeletal_muscle"
+    name: "Skeletal Muscle"
+    description: "Voluntary striated muscle"
+    parent: "muscle"
+    
+  - id: "cardiac_muscle"
+    name: "Cardiac Muscle"
+    description: "Heart muscle tissue"
+    parent: "muscle"
+    
+  - id: "nervous"
+    name: "Nervous Tissue"
+    description: "Neural tissue with neurons and glia"
+    parent: null
+    
+  - id: "lymphoid"
+    name: "Lymphoid Tissue"
+    description: "Immune system tissue"
+    parent: null
+    
+  - id: "necrotic"
+    name: "Necrotic Tissue"
+    description: "Dead or dying tissue"
+    parent: null
+    
+  - id: "inflammatory"
+    name: "Inflammatory Infiltrate"
+    description: "Immune cell infiltration"
+    parent: null
+
+# Clinical decision thresholds
+thresholds:
+  epithelial:
+    risk_threshold: 0.3
+    confidence_threshold: 0.80
+    anomaly_threshold: 0.4
+    
+  squamous_epithelium:
+    risk_threshold: 0.3
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.4
+    
+  columnar_epithelium:
+    risk_threshold: 0.3
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.4
+    
+  glandular_epithelium:
+    risk_threshold: 0.4
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.5
+    
+  connective:
+    risk_threshold: 0.3
+    confidence_threshold: 0.80
+    anomaly_threshold: 0.4
+    
+  adipose:
+    risk_threshold: 0.2
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.3
+    
+  fibrous:
+    risk_threshold: 0.3
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.4
+    
+  muscle:
+    risk_threshold: 0.3
+    confidence_threshold: 0.80
+    anomaly_threshold: 0.4
+    
+  smooth_muscle:
+    risk_threshold: 0.3
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.4
+    
+  skeletal_muscle:
+    risk_threshold: 0.3
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.4
+    
+  cardiac_muscle:
+    risk_threshold: 0.4
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.5
+    
+  nervous:
+    risk_threshold: 0.4
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.5
+    
+  lymphoid:
+    risk_threshold: 0.4
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.5
+    
+  necrotic:
+    risk_threshold: 0.8
+    confidence_threshold: 0.90
+    anomaly_threshold: 0.85
+    
+  inflammatory:
+    risk_threshold: 0.6
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.7
+
+# Time horizon thresholds
+time_horizon_thresholds:
+  "1_year": 0.5
+  "5_year": 0.4
+  "10_year": 0.3

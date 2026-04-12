@@ -397,15 +397,15 @@ The implementation builds on existing infrastructure: AttentionMIL/CLAM/TransMIL
 - [x] 24. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 25. Create configuration files and examples
-  - [ ] 25.1 Create clinical workflow configuration templates
+- [x] 25. Create configuration files and examples
+  - [x] 25.1 Create clinical workflow configuration templates
     - Create example configurations in `configs/clinical/` for different specialties
     - Add disease taxonomy examples (cancer_grading.yaml, cardiac_pathology.yaml, tissue_classification.yaml)
     - Create clinical decision threshold configurations
     - Add example patient metadata schemas
     - _Requirements: 14.1, 14.2, 14.5, 14.6_
   
-  - [ ] 25.2 Create example scripts and documentation
+  - [x] 25.2 Create example scripts and documentation
     - Create example inference script in `examples/clinical_inference.py`
     - Create example longitudinal tracking script in `examples/longitudinal_analysis.py`
     - Add README documentation for clinical workflow usage

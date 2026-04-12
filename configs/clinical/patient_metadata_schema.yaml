@@ -1,0 +1,131 @@
+# Clinical Patient Metadata Schema
+# Schema for structured patient clinical metadata
+
+schema_version: "1.0"
+description: "Schema for structured patient clinical metadata"
+
+required_fields:
+  - patient_id
+  - age
+  - sex
+
+fields:
+  patient_id:
+    type: string
+    description: "Unique patient identifier (anonymized)"
+    
+  age:
+    type: integer
+    minimum: 0
+    maximum: 150
+    description: "Patient age in years"
+    
+  sex:
+    type: string
+    enum: ["M", "F", "O", "U"]
+    description: "Patient sex (M=Male, F=Female, O=Other, U=Unknown)"
+    
+  smoking_status:
+    type: string
+    enum: ["never", "former", "current", "unknown"]
+    description: "Patient smoking history"
+    
+  alcohol_consumption:
+    type: string
+    enum: ["none", "light", "moderate", "heavy", "unknown"]
+    description: "Patient alcohol consumption level"
+    
+  exercise_frequency:
+    type: string
+    enum: ["sedentary", "light", "moderate", "active", "very_active", "unknown"]
+    description: "Patient exercise frequency"
+    
+  medications:
+    type: array
+    description: "List of current medications"
+    item_schema:
+      type: object
+      fields:
+        name:
+          type: string
+          description: "Medication name"
+        dosage:
+          type: string
+          description: "Medication dosage"
+        frequency:
+          type: string
+          description: "Medication frequency"
+        start_date:
+          type: string
+          format: date
+          description: "Medication start date (YYYY-MM-DD)"
+          
+  family_history:
+    type: object
+    description: "Patient family medical history"
+    fields:
+      cancer:
+        type: boolean
+        description: "Family history of cancer"
+      heart_disease:
+        type: boolean
+        description: "Family history of heart disease"
+      diabetes:
+        type: boolean
+        description: "Family history of diabetes"
+      other_conditions:
+        type: array
+        description: "Other family history conditions"
+        
+  comorbidities:
+    type: array
+    description: "List of patient comorbidities"
+    
+  previous_diagnoses:
+    type: array
+    description: "Previous medical diagnoses"
+    item_schema:
+      type: object
+      fields:
+        condition:
+          type: string
+          description: "Diagnosed condition"
+        date:
+          type: string
+          format: date
+          description: "Diagnosis date (YYYY-MM-DD)"
+        status:
+          type: string
+          enum: ["active", "resolved", "chronic"]
+          description: "Current status of diagnosis"
+          
+  bmi:
+    type: number
+    minimum: 10
+    maximum: 100
+    description: "Body Mass Index"
+    
+  blood_pressure:
+    type: object
+    description: "Blood pressure measurements (mmHg)"
+    fields:
+      systolic:
+        type: integer
+        minimum: 50
+        maximum: 300
+      diastolic:
+        type: integer
+        minimum: 30
+        maximum: 200
+        
+  ethnicity:
+    type: string
+    description: "Patient ethnicity"
+    
+  occupation:
+    type: string
+    description: "Patient occupation"
+    
+  environmental_exposures:
+    type: array
+    description: "Known environmental exposures (asbestos, radiation, etc.)"
