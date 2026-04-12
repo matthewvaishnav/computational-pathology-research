@@ -1,0 +1,26 @@
+{
+  "dataset": "PCam",
+  "version": "1.0",
+  "source": "Zenodo",
+  "splits": {
+    "train": {
+      "num_samples": 262144
+    },
+    "val": {
+      "num_samples": 32768
+    },
+    "test": {
+      "num_samples": 32768
+    }
+  },
+  "image_shape": [
+    96,
+    96,
+    3
+  ],
+  "num_classes": 2,
+  "class_names": [
+    "normal",
+    "metastatic"
+  ]
+}
