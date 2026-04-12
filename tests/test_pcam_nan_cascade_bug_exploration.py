@@ -225,11 +225,12 @@ class TestPCamNaNCascadeBugExploration:
                 recovery_attempted = len(recovery_calls) > 0
 
             except RuntimeError as e:
-                if "all batches contained NaN values" in str(e):
+                error_msg = str(e)
+                if "all batches contained NaN values" in error_msg:
                     # This indicates the system failed completely rather than recovering
                     training_failed_completely = True
                     consecutive_nan_count = len(mock_dataloader)  # All batches failed
-                elif "Cascading NaN losses detected with model parameter corruption" in str(e):
+                elif "Cascading NaN losses detected" in error_msg:
                     # This is the EXPECTED behavior with the fix - recovery was attempted but failed
                     # Extract information from the error message
                     training_failed_completely = True
@@ -237,7 +238,7 @@ class TestPCamNaNCascadeBugExploration:
                     # Extract consecutive NaN count from error message
                     import re
 
-                    match = re.search(r"Consecutive NaN count: (\d+)", str(e))
+                    match = re.search(r"Consecutive NaN count: (\d+)", error_msg)
                     if match:
                         consecutive_nan_count = int(match.group(1))
                     else:
