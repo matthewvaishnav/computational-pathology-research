@@ -261,7 +261,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Check test coverage is reasonable
     - _Requirements: All testing requirements_
 
-- [ ] 11. Final checkpoint - Ensure all tests pass
+- [x] 11. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise
 
 ## Notes
