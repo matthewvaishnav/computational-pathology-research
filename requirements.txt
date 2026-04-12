@@ -17,6 +17,7 @@ h5py>=3.8.0
 numpy>=1.24.0
 pandas>=2.0.0
 scikit-learn>=1.2.0
+pydicom>=2.3.0
 
 # Interactive Development
 jupyter>=1.0.0
