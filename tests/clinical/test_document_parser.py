@@ -151,9 +151,7 @@ class TestClinicalDocumentParser:
         parsed = parser.parse_text(text)
 
         # Should extract cancer but mark it as negated
-        cancer_entities = [
-            d for d in parsed.diagnoses if "cancer" in d.value.lower()
-        ]
+        cancer_entities = [d for d in parsed.diagnoses if "cancer" in d.value.lower()]
         if cancer_entities:
             assert cancer_entities[0].negated is True
 
@@ -163,9 +161,7 @@ class TestClinicalDocumentParser:
         parsed = parser.parse_text(text)
 
         # Should extract pneumonia and mark as uncertain
-        pneumonia_entities = [
-            d for d in parsed.diagnoses if "pneumonia" in d.value.lower()
-        ]
+        pneumonia_entities = [d for d in parsed.diagnoses if "pneumonia" in d.value.lower()]
         if pneumonia_entities:
             assert pneumonia_entities[0].uncertain is True
 
@@ -201,9 +197,7 @@ class TestClinicalDocumentParser:
         # Abbreviations should be expanded in normalized text
         diagnosis_values = [d.value.lower() for d in parsed.diagnoses]
         # Should find hypertension or diabetes after expansion
-        assert any(
-            "hypertension" in dv or "diabetes" in dv for dv in diagnosis_values
-        )
+        assert any("hypertension" in dv or "diabetes" in dv for dv in diagnosis_values)
 
     def test_negation_detection(self, parser):
         """Test negation detection in context."""
@@ -230,9 +224,7 @@ class TestClinicalDocumentParser:
         assert conf1 > 0.7
 
         # Lower confidence for uncertain entity
-        conf2 = parser._calculate_confidence(
-            "infection", "possible infection", False, True
-        )
+        conf2 = parser._calculate_confidence("infection", "possible infection", False, True)
         assert conf2 < conf1
 
         # Lower confidence for very short value
