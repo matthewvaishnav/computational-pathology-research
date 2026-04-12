@@ -1,0 +1,95 @@
+# Cardiac Pathology Disease Taxonomy Configuration
+# For cardiovascular tissue classification
+
+name: "cardiac_pathology"
+version: "1.0"
+description: "Cardiac pathology taxonomy for cardiovascular tissue analysis"
+
+diseases:
+  - id: "normal_myocardium"
+    name: "Normal Myocardium"
+    description: "Healthy cardiac muscle tissue"
+    parent: null
+    
+  - id: "ischemic_injury"
+    name: "Ischemic Injury"
+    description: "Tissue damage due to reduced blood flow"
+    parent: null
+    
+  - id: "acute_infarction"
+    name: "Acute Myocardial Infarction"
+    description: "Recent heart attack with necrotic tissue"
+    parent: "ischemic_injury"
+    
+  - id: "chronic_infarction"
+    name: "Chronic Infarction"
+    description: "Old heart attack with scar tissue"
+    parent: "ischemic_injury"
+    
+  - id: "hypertrophy"
+    name: "Cardiac Hypertrophy"
+    description: "Enlarged heart muscle cells"
+    parent: null
+    
+  - id: "fibrosis"
+    name: "Myocardial Fibrosis"
+    description: "Excessive fibrous connective tissue"
+    parent: null
+    
+  - id: "inflammation"
+    name: "Myocarditis"
+    description: "Inflammatory infiltrate in myocardium"
+    parent: null
+    
+  - id: "amyloidosis"
+    name: "Cardiac Amyloidosis"
+    description: "Abnormal protein deposits in heart tissue"
+    parent: null
+
+# Clinical decision thresholds
+thresholds:
+  normal_myocardium:
+    risk_threshold: 0.2
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.3
+    
+  ischemic_injury:
+    risk_threshold: 0.6
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.7
+    
+  acute_infarction:
+    risk_threshold: 0.8
+    confidence_threshold: 0.90
+    anomaly_threshold: 0.85
+    
+  chronic_infarction:
+    risk_threshold: 0.5
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.6
+    
+  hypertrophy:
+    risk_threshold: 0.5
+    confidence_threshold: 0.80
+    anomaly_threshold: 0.6
+    
+  fibrosis:
+    risk_threshold: 0.6
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.7
+    
+  inflammation:
+    risk_threshold: 0.7
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.75
+    
+  amyloidosis:
+    risk_threshold: 0.7
+    confidence_threshold: 0.90
+    anomaly_threshold: 0.8
+
+# Time horizon thresholds
+time_horizon_thresholds:
+  "1_year": 0.7
+  "5_year": 0.6
+  "10_year": 0.5

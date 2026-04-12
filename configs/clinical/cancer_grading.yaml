@@ -1,0 +1,75 @@
+# Cancer Grading Disease Taxonomy Configuration
+# For pathology classification of cancer grades
+
+name: "cancer_grading"
+version: "1.0"
+description: "Cancer grading taxonomy for histopathological classification"
+
+diseases:
+  - id: "normal"
+    name: "Normal Tissue"
+    description: "No malignant cells detected"
+    parent: null
+    
+  - id: "benign"
+    name: "Benign"
+    description: "Non-cancerous abnormal growth"
+    parent: null
+    
+  - id: "grade_1"
+    name: "Grade 1 (Well Differentiated)"
+    description: "Low-grade cancer with cells resembling normal tissue"
+    parent: null
+    
+  - id: "grade_2"
+    name: "Grade 2 (Moderately Differentiated)"
+    description: "Intermediate-grade cancer"
+    parent: null
+    
+  - id: "grade_3"
+    name: "Grade 3 (Poorly Differentiated)"
+    description: "High-grade cancer with abnormal-appearing cells"
+    parent: null
+    
+  - id: "grade_4"
+    name: "Grade 4 (Undifferentiated)"
+    description: "Highest-grade cancer with very abnormal cells"
+    parent: null
+
+# Clinical decision thresholds for each disease state
+thresholds:
+  normal:
+    risk_threshold: 0.3
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.4
+    
+  benign:
+    risk_threshold: 0.4
+    confidence_threshold: 0.80
+    anomaly_threshold: 0.5
+    
+  grade_1:
+    risk_threshold: 0.5
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.6
+    
+  grade_2:
+    risk_threshold: 0.6
+    confidence_threshold: 0.85
+    anomaly_threshold: 0.7
+    
+  grade_3:
+    risk_threshold: 0.7
+    confidence_threshold: 0.90
+    anomaly_threshold: 0.8
+    
+  grade_4:
+    risk_threshold: 0.8
+    confidence_threshold: 0.90
+    anomaly_threshold: 0.9
+
+# Time horizon thresholds for risk prediction
+time_horizon_thresholds:
+  "1_year": 0.6
+  "5_year": 0.5
+  "10_year": 0.4
