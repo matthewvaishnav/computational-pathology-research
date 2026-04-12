@@ -15,37 +15,37 @@ The implementation builds on existing infrastructure: AttentionMIL/CLAM/TransMIL
   - Create example taxonomy configurations in `configs/taxonomies/` (cancer_grading.yaml, tissue_types.yaml, cardiac_pathology.yaml)
   - _Requirements: 1.4, 14.1, 14.2, 14.4, 14.7_
 
-- [ ] 2. Implement multi-class disease state classifier
-  - [ ] 2.1 Create multi-class classification head
+- [x] 2. Implement multi-class disease state classifier
+  - [x] 2.1 Create multi-class classification head
     - Implement `MultiClassDiseaseClassifier` in `src/clinical/classifier.py` extending existing MIL models
     - Support configurable disease taxonomies with dynamic output dimensions
     - Output probability distributions using softmax that sum to 1.0
     - Integrate with existing AttentionMIL/CLAM/TransMIL architectures
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.7, 1.8_
   
-  - [ ]* 2.2 Write unit tests for multi-class classifier
+  - [x]* 2.2 Write unit tests for multi-class classifier
     - Test probability distribution properties (sum to 1.0, values in [0,1])
     - Test primary diagnosis identification (highest probability)
     - Test multiple taxonomy configurations
     - Test integration with existing MIL models
     - _Requirements: 1.1, 1.2, 1.3, 1.7, 1.8_
 
-- [ ] 3. Implement patient context integration
-  - [ ] 3.1 Create clinical metadata data structures
+- [x] 3. Implement patient context integration
+  - [x] 3.1 Create clinical metadata data structures
     - Implement `ClinicalMetadata` dataclass in `src/clinical/patient_context.py` for structured patient data
     - Support fields: smoking_status, alcohol_consumption, medications, exercise_frequency, age, sex, family_history
     - Add validation for required and optional fields
     - Implement serialization/deserialization for storage
     - _Requirements: 3.1, 3.6, 3.7_
   
-  - [ ] 3.2 Implement patient context integrator
+  - [x] 3.2 Implement patient context integrator
     - Create `PatientContextIntegrator` class combining imaging features with clinical metadata
     - Extend existing multimodal fusion to incorporate clinical metadata vectors
     - Handle missing/incomplete metadata gracefully with masking
     - Generate multimodal patient representations for classifier input
     - _Requirements: 3.1, 3.4, 3.5, 3.6, 3.7_
   
-  - [ ]* 3.3 Write unit tests for patient context integration
+  - [x]* 3.3 Write unit tests for patient context integration
     - Test metadata validation and handling
     - Test multimodal fusion with missing modalities
     - Test patient representation generation
