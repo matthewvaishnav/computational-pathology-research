@@ -76,9 +76,7 @@ def synthetic_pcam_data(tmp_path):
     test_dir.mkdir()
 
     # Create synthetic images [N, 96, 96, 3]
-    images = np.random.randint(
-        0, 256, size=(n_samples, image_size, image_size, 3), dtype=np.uint8
-    )
+    images = np.random.randint(0, 256, size=(n_samples, image_size, image_size, 3), dtype=np.uint8)
     np.save(test_dir / "images.npy", images)
 
     # Create synthetic labels [N]
