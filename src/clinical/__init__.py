@@ -76,8 +76,8 @@ from .reporting import (
 )
 from .risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
 from .taxonomy import DiseaseTaxonomy
-from .temporal_progression import ClinicalMetadataEncoder as TemporalClinicalMetadataEncoder
 from .temporal_progression import (
+    ClinicalMetadataEncoder as TemporalClinicalMetadataEncoder,
     TemporalProgressionModel,
     TreatmentEffectEncoder,
 )
