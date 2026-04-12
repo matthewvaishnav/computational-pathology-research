@@ -9,7 +9,7 @@ experiment:
 data:
   dataset: pcam
   root_dir: ./data/pcam
-  download: false  # Dataset should already exist
+  download: true  # Enable download for first run
   num_workers: 0  # Set to 0 to avoid multiprocessing issues on Windows
   pin_memory: false  # Disable since running on CPU
 

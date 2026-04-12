@@ -1,905 +1,291 @@
 """
-PatchCamelyon (PCam) Dataset Implementation.
+PatchCamelyon (PCam) dataset implementation for binary classification.
 
-This module provides a PyTorch Dataset class for the PatchCamelyon dataset,
-a binary classification task for detecting metastatic tissue in histopathology
-images.
-
-Dataset originally from: https://github.com/basveeling/pcam
-Paper: https://arxiv.org/abs/1803.04140
-
-The dataset returns RAW IMAGES - feature extraction is handled separately
-by ResNetFeatureExtractor in the training script to avoid per-sample overhead.
+This module implements a PyTorch Dataset for loading and preprocessing
+PatchCamelyon data with support for data augmentation and feature extraction.
 """
 
-import json
 import logging
 import os
 import shutil
-import tarfile
-import warnings
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional
 
-import h5py
 import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-try:
-    import tensorflow_datasets as tfds
-
-    TFDS_AVAILABLE = True
-except ImportError:
-    TFDS_AVAILABLE = False
-
 logger = logging.getLogger(__name__)
+
+
+def get_pcam_transforms(split: str = "train", augmentation: bool = True) -> transforms.Compose:
+    """
+    Get transforms for PCam dataset.
+    
+    Args:
+        split: Dataset split ('train', 'val', 'test')
+        augmentation: Whether to apply data augmentation (only for train split)
+    
+    Returns:
+        Composed transforms
+    """
+    base_transforms = [
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ]
+    
+    if split == "train" and augmentation:
+        augment_transforms = [
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.05),
+        ]
+        return transforms.Compose(augment_transforms + base_transforms)
+    else:
+        return transforms.Compose(base_transforms)
 
 
 class PCamDataset(Dataset):
     """
-    PatchCamelyon (PCam) dataset for metastatic tissue detection.
-
-    This dataset loads histopathology image patches (96x96 RGB) and returns
-    them as PyTorch tensors ready for training. The dataset supports optional
-    transforms for data augmentation.
-
+    PatchCamelyon dataset for binary classification.
+    
+    The PatchCamelyon dataset contains 96x96 pixel histopathology patches
+    from lymph node sections with binary labels (0=normal, 1=metastatic).
+    
     Args:
-        root_dir: Root directory containing the dataset files. If the dataset
-            is not found, it will be downloaded to this location.
-        split: Which split to load - 'train', 'val', or 'test'.
-        transform: Optional transform to apply to images. Should accept PIL
-            images or tensors and return transformed tensors.
-        download: If True, download the dataset if not found in root_dir.
-
-    Attributes:
-        images: H5py file handle for image data (loaded lazily).
-        labels: H5py file handle for label data (loaded lazily).
-        split: Current data split.
-        transform: Transform pipeline being applied.
-
-    Example:
-        >>> dataset = PCamDataset(
-        ...     root_dir='data/pcam',
-        ...     split='train',
-        ...     transform=transforms.Compose([
-        ...         transforms.RandomHorizontalFlip(),
-        ...         transforms.ColorJitter(0.1, 0.1, 0.1, 0.1),
-        ...     ])
-        ... )
-        >>> sample = dataset[0]
-        >>> print(sample['image'].shape)  # torch.Size([3, 96, 96])
-        >>> print(sample['label'])  # tensor(0) or tensor(1)
+        root_dir: Directory to download/store dataset
+        split: One of 'train', 'val', 'test'
+        transform: Optional torchvision transforms
+        download: Whether to download if not present
+        feature_extractor: Optional pretrained model for feature extraction
     """
-
-    # URLs for direct download from PCam GitHub release
-    PCAM_URLS = {
-        "train": "https://github.com/basveeling/pcam/raw/master/pcam_v1/train.tar.gz",
-        "val": "https://github.com/basveeling/pcam/raw/master/pcam_v1/valid.tar.gz",
-        "test": "https://github.com/basveeling/pcam/raw/master/pcam_v1/test.tar.gz",
-    }
-
-    SPLIT_SIZES = {
-        "train": (262144, 8000),  # (images, samples_for_val)
-        "val": (8000, 8000),
-        "test": (32768, 32768),
-    }
-
+    
     def __init__(
         self,
         root_dir: str,
-        split: str = "train",
+        split: str = 'train',
         transform: Optional[Callable] = None,
         download: bool = True,
+        feature_extractor: Optional[torch.nn.Module] = None
     ):
-        """Initialize the PCam dataset.
-
-        Args:
-            root_dir: Root directory for dataset storage.
-            split: One of 'train', 'val', or 'test'.
-            transform: Optional transform to apply to images.
-            download: Whether to download if dataset is missing.
-
-        Raises:
-            ValueError: If split is not one of 'train', 'val', or 'test'.
-            RuntimeError: If dataset is not found and download is False.
-        """
-        # Initialize cleanup-sensitive attributes early so __del__ is safe
-        # even if construction fails before the dataset is fully configured.
-        self._images_h5 = None
-        self._labels_h5 = None
-        self._num_images = 0
-        self._num_labels = 0
-        self.metadata = {}
-
         self.root_dir = Path(root_dir)
-        self.split = split.lower()
+        self.split = split
         self.transform = transform
-        self.download_flag = download
-
-        if self.split not in ("train", "val", "test"):
-            raise ValueError(f"Invalid split '{split}'. Must be one of 'train', 'val', or 'test'.")
-
-        # Default transform if none provided
-        if self.transform is None:
-            self.transform = transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                ]
-            )
-
-        # Dataset files - support both custom format and Zenodo format
-        self.split_dir = self.root_dir / self.split
-        self.images_file = self.split_dir / "images.h5py"
-        self.labels_file = self.split_dir / "labels.h5py"
-        self.metadata_file = self.root_dir / "metadata.json"
-
-        # Zenodo format files (alternative)
-        zenodo_split_map = {"train": "train", "val": "valid", "test": "test"}
-        zenodo_split = zenodo_split_map[self.split]
-        self.zenodo_images_file = self.root_dir / f"camelyonpatch_level_2_split_{zenodo_split}_x.h5"
-        self.zenodo_labels_file = self.root_dir / f"camelyonpatch_level_2_split_{zenodo_split}_y.h5"
-        self.use_zenodo_format = False
-
-        # Load or download dataset
-        if self._check_exists():
-            logger.info(f"Found PCam dataset at {self.root_dir}")
-            self._load_metadata()
-        elif download:
-            logger.info("Dataset not found. Downloading...")
-            self.download()
-            self._load_metadata()
-        else:
-            raise RuntimeError(
-                f"Dataset not found at {self.root_dir}. " f"Set download=True to download it."
-            )
-
-        # Don't open HDF5 files here - they will be opened lazily in __getitem__
-        # to avoid pickling issues with multiprocessing
-        # But we need to get the dataset size for __len__
-        self._get_dataset_size()
-
-    def _check_exists(self) -> bool:
-        """Check if the dataset files exist for the current split.
-
-        Supports both custom format and Zenodo format.
-        """
-        # Check custom format first
-        if self.images_file.exists() and self.labels_file.exists():
-            return True
-
-        # Check Zenodo format
-        if self.zenodo_images_file.exists() and self.zenodo_labels_file.exists():
-            self.use_zenodo_format = True
-            logger.info(f"Found Zenodo format files for {self.split} split")
-            return True
-
-        return False
-
-    def _get_dataset_size(self) -> None:
-        """Get dataset size without keeping files open (for multiprocessing compatibility)."""
-        if self.use_zenodo_format:
-            with h5py.File(str(self.zenodo_images_file), "r") as f:
-                self._num_images = f["x"].shape[0]
-            with h5py.File(str(self.zenodo_labels_file), "r") as f:
-                self._num_labels = f["y"].shape[0]
-        else:
-            with h5py.File(str(self.images_file), "r") as f:
-                self._num_images = f["images"].shape[0]
-            with h5py.File(str(self.labels_file), "r") as f:
-                self._num_labels = f["labels"].shape[0]
-
-        if self._num_images != self._num_labels:
-            raise RuntimeError(
-                f"Number of images ({self._num_images}) does not match "
-                f"number of labels ({self._num_labels})"
-            )
-
-    def _open_h5_files(self) -> None:
-        """Open HDF5 files for lazy access."""
-        try:
-            if self.use_zenodo_format:
-                # Open Zenodo format files
-                self._images_h5 = h5py.File(str(self.zenodo_images_file), "r")
-                self._labels_h5 = h5py.File(str(self.zenodo_labels_file), "r")
-
-                # Zenodo files use 'x' and 'y' as dataset names
-                self._num_images = self._images_h5["x"].shape[0]
-                self._num_labels = self._labels_h5["y"].shape[0]
-
-                logger.info(f"Using Zenodo format files for {self.split} split")
-            else:
-                # Open custom format files
-                self._images_h5 = h5py.File(str(self.images_file), "r")
-                self._labels_h5 = h5py.File(str(self.labels_file), "r")
-
-                # Get dataset shapes
-                self._num_images = self._images_h5["images"].shape[0]
-                self._num_labels = self._labels_h5["labels"].shape[0]
-
-            if self._num_images != self._num_labels:
-                raise RuntimeError(
-                    f"Number of images ({self._num_images}) does not match "
-                    f"number of labels ({self._num_labels})"
-                )
-
-            logger.debug(
-                f"Opened HDF5 files for split '{self.split}': " f"{self._num_images} samples"
-            )
-
-        except Exception as e:
-            self._close_h5_files()
-            raise RuntimeError(f"Failed to open HDF5 files: {e}")
-
-    def _close_h5_files(self) -> None:
-        """Close HDF5 file handles."""
-        images_h5 = getattr(self, "_images_h5", None)
-        if images_h5 is not None:
-            try:
-                images_h5.close()
-            except Exception:
-                pass
-            self._images_h5 = None
-
-        labels_h5 = getattr(self, "_labels_h5", None)
-        if labels_h5 is not None:
-            try:
-                labels_h5.close()
-            except Exception:
-                pass
-            self._labels_h5 = None
-
-    def _load_metadata(self) -> None:
-        """Load dataset metadata from JSON file."""
-        if self.metadata_file.exists():
-            with open(self.metadata_file, "r") as f:
-                self.metadata = json.load(f)
-        else:
-            self.metadata = {}
-
-    def _save_metadata(self, metadata: Dict[str, Any]) -> None:
-        """Save dataset metadata to JSON file."""
-        self.metadata = metadata
-        with open(self.metadata_file, "w") as f:
-            json.dump(metadata, f, indent=2)
-
-    def _validate_dataset(self) -> bool:
-        """
-        Validate dataset integrity after download.
-
-        Verifies that all splits have the correct number of samples:
-        - Train: 262,144 samples
-        - Val: 32,768 samples
-        - Test: 32,768 samples
-
-        Returns:
-            True if validation passes, False otherwise.
-        """
-        expected_sizes = {
-            "train": 262144,
-            "val": 32768,
-            "test": 32768,
-        }
-
-        logger.info("Validating dataset integrity...")
-
-        all_valid = True
-        for split_name, expected_size in expected_sizes.items():
-            split_dir = self.root_dir / split_name
-            images_file = split_dir / "images.h5py"
-            labels_file = split_dir / "labels.h5py"
-
-            # Check Zenodo format as fallback
-            zenodo_images_file = self.root_dir / f"camelyonpatch_level_2_split_{split_name}_x.h5"
-            zenodo_labels_file = self.root_dir / f"camelyonpatch_level_2_split_{split_name}_y.h5"
-
-            # Determine which format to check
-            if images_file.exists() and labels_file.exists():
-                # Custom format
-                try:
-                    with h5py.File(str(images_file), "r") as f:
-                        actual_size = f["images"].shape[0]
-                except Exception as e:
-                    logger.error(f"Failed to read {split_name} images file: {e}")
-                    all_valid = False
-                    continue
-            elif zenodo_images_file.exists() and zenodo_labels_file.exists():
-                # Zenodo format
-                try:
-                    with h5py.File(str(zenodo_images_file), "r") as f:
-                        actual_size = f["x"].shape[0]
-                except Exception as e:
-                    logger.error(f"Failed to read {split_name} Zenodo images file: {e}")
-                    all_valid = False
-                    continue
-            else:
-                logger.error(f"Missing files for {split_name} split")
-                all_valid = False
-                continue
-
-            # Validate size
-            if actual_size == expected_size:
-                logger.info(f"✓ {split_name.capitalize()} split: {actual_size:,} samples (valid)")
-            else:
-                logger.warning(
-                    f"✗ {split_name.capitalize()} split: {actual_size:,} samples "
-                    f"(expected {expected_size:,})"
-                )
-                all_valid = False
-
-        if all_valid:
-            logger.info("✓ Dataset validation passed")
-        else:
-            logger.warning("✗ Dataset validation failed - some splits have incorrect sizes")
-
-        return all_valid
-
-    def download(self) -> None:
-        """
-        Download the PCam dataset.
-
-        First attempts to use TensorFlow Datasets. If TFDS is not available,
-        falls back to direct download from the PCam GitHub release.
-
-        The dataset is extracted and organized into HDF5 files for efficient
-        random access during training.
-
-        Raises:
-            RuntimeError: If download fails or validation fails.
-        """
+        self.feature_extractor = feature_extractor
+        
+        # Validate split
+        if split not in ['train', 'val', 'test']:
+            raise ValueError(f"Invalid split: {split}. Must be one of 'train', 'val', 'test'")
+        
+        # Create root directory if it doesn't exist
         self.root_dir.mkdir(parents=True, exist_ok=True)
-
+        
+        # Download dataset if requested and not present
+        if download and not self._check_dataset_exists():
+            logger.info(f"Dataset not found in {self.root_dir}. Downloading...")
+            self.download()
+        
+        # Load data
+        self._load_split()
+    
+    def _check_dataset_exists(self) -> bool:
+        """Check if dataset files exist."""
+        split_dir = self.root_dir / self.split
+        return (
+            split_dir.exists() and
+            (split_dir / "images.npy").exists() and
+            (split_dir / "labels.npy").exists()
+        )
+    
+    def download(self):
+        """Download PCam dataset from TensorFlow Datasets."""
         try:
-            if TFDS_AVAILABLE:
-                self._download_via_tfds()
-            else:
-                logger.warning(
-                    "TensorFlow Datasets not available. "
-                    "Falling back to direct download from GitHub."
-                )
-                self._download_direct()
-
-            # Convert extracted data to HDF5 format
-            self._process_downloaded_data()
-
-            # Validate dataset integrity
-            validation_passed = self._validate_dataset()
-
-            # Save metadata
-            metadata = {
-                "dataset": "PCam",
-                "version": "1.0",
-                "splits": {
-                    split: {
-                        "num_samples": self._get_split_size(split),
-                    }
-                    for split in ("train", "val", "test")
-                },
-                "image_shape": [96, 96, 3],
-                "num_classes": 2,
-                "class_names": ["normal", "metastatic"],
-                "validation_passed": validation_passed,
+            import tensorflow_datasets as tfds
+        except ImportError:
+            raise ImportError(
+                "tensorflow_datasets is required for PCam download. "
+                "Install with: pip install tensorflow-datasets"
+            )
+        
+        try:
+            logger.info("Downloading PatchCamelyon dataset...")
+            
+            # Download the dataset
+            ds, info = tfds.load(
+                'patch_camelyon',
+                split=['train', 'validation', 'test'],
+                with_info=True,
+                as_supervised=True,
+                download=True,
+                data_dir=str(self.root_dir / "tfds_cache")
+            )
+            
+            # Map splits
+            split_mapping = {
+                'train': ds[0],
+                'val': ds[1], 
+                'test': ds[2]
             }
-            self._save_metadata(metadata)
-
-            if not validation_passed:
-                logger.warning(
-                    "Dataset validation failed. The dataset may be incomplete or corrupted. "
-                    "Consider re-downloading the dataset."
-                )
-
-            logger.info("PCam dataset download complete!")
-
-        except Exception as e:
-            # Cleanup partial downloads on failure
-            logger.error(f"Download failed: {e}")
-            logger.info("Cleaning up partial downloads...")
-
-            try:
-                # Remove temp directory if it exists
-                temp_dir = self.root_dir / "temp"
-                if temp_dir.exists():
-                    shutil.rmtree(temp_dir)
-                    logger.info("Removed temporary files")
-
-                # Optionally remove incomplete split directories
-                for split_name in ("train", "val", "test"):
-                    split_dir = self.root_dir / split_name
-                    if split_dir.exists():
-                        # Check if split is incomplete (missing files)
-                        images_file = split_dir / "images.h5py"
-                        labels_file = split_dir / "labels.h5py"
-                        if not (images_file.exists() and labels_file.exists()):
-                            shutil.rmtree(split_dir)
-                            logger.info(f"Removed incomplete {split_name} split")
-
-            except Exception as cleanup_error:
-                logger.warning(f"Failed to cleanup partial downloads: {cleanup_error}")
-
-            # Re-raise with descriptive error message
-            raise RuntimeError(
-                f"Failed to download PCam dataset: {e}\n\n"
-                "Possible solutions:\n"
-                "1. Check your internet connection\n"
-                "2. Verify you have sufficient disk space (~7GB required)\n"
-                "3. Try downloading manually from: https://github.com/basveeling/pcam\n"
-                "4. If using TFDS, ensure tensorflow-datasets is installed: pip install tensorflow-datasets"
-            ) from e
-
-    def _download_via_tfds(self) -> None:
-        """Download PCam using TensorFlow Datasets."""
-        logger.info("Downloading PCam via TensorFlow Datasets...")
-        logger.info("Download source: TensorFlow Datasets (TFDS)")
-
-        try:
-            # Download and process each split
-            for split_name, tfds_split in [
-                ("train", "train"),
-                ("val", "validation"),
-                ("test", "test"),
-            ]:
-                logger.info(f"Processing split: {split_name}")
-
-                # Get dataset from TFDS
-                dataset = tfds.load(
-                    "pcam",
-                    split=tfds_split,
-                    data_dir=str(self.root_dir),
-                    download=True,
-                )
-
-                # Convert TFDS dataset to numpy arrays
-                images_list = []
-                labels_list = []
-
-                logger.info(f"Loading {split_name} samples...")
-                for i, example in enumerate(tfds.as_numpy(dataset)):
-                    images_list.append(example["image"])
-                    labels_list.append(example["label"])
-
-                    # Progress reporting every 10000 samples
-                    if (i + 1) % 10000 == 0:
-                        logger.info(f"  Loaded {i + 1:,} samples...")
-
-                images = np.array(images_list, dtype=np.uint8)
-                labels = np.array(labels_list, dtype=np.int32)
-
-                logger.info(f"Saving {split_name} split to HDF5...")
-
-                # Save as HDF5
+            
+            # Process each split
+            for split_name, split_ds in split_mapping.items():
+                logger.info(f"Processing {split_name} split...")
+                
                 split_dir = self.root_dir / split_name
                 split_dir.mkdir(parents=True, exist_ok=True)
-
-                with h5py.File(split_dir / "images.h5py", "w") as f:
-                    f.create_dataset("images", data=images, compression="gzip")
-
-                with h5py.File(split_dir / "labels.h5py", "w") as f:
-                    f.create_dataset("labels", data=labels, compression="gzip")
-
-                logger.info(f"✓ Saved {split_name} split: {len(images):,} samples")
-
+                
+                images = []
+                labels = []
+                
+                # Convert TensorFlow dataset to numpy arrays
+                for image, label in split_ds:
+                    images.append(image.numpy())
+                    labels.append(label.numpy())
+                
+                # Save as numpy arrays
+                images = np.array(images)
+                labels = np.array(labels)
+                
+                np.save(split_dir / "images.npy", images)
+                np.save(split_dir / "labels.npy", labels)
+                
+                logger.info(f"Saved {len(images)} samples for {split_name} split")
+            
+            # Clean up TensorFlow cache
+            tfds_cache = self.root_dir / "tfds_cache"
+            if tfds_cache.exists():
+                shutil.rmtree(tfds_cache)
+            
+            logger.info("Dataset download completed successfully")
+            
         except Exception as e:
-            raise RuntimeError(f"Failed to download via TFDS: {e}")
-
-    def _download_direct(self) -> None:
-        """Download PCam directly from GitHub release."""
-        import urllib.request
-
-        logger.info("Download source: GitHub release (direct download)")
-
-        for split_name, url in self.PCAM_URLS.items():
-            logger.info(f"Downloading {split_name} split from {url}")
-
-            try:
-                # Create temp directory for extraction
-                temp_dir = self.root_dir / "temp"
-                temp_dir.mkdir(parents=True, exist_ok=True)
-
-                # Download tarball with progress reporting
-                tarball_path = temp_dir / f"{split_name}.tar.gz"
-
-                def _report_progress(block_num, block_size, total_size):
-                    """Report download progress."""
-                    downloaded = block_num * block_size
-                    if total_size > 0:
-                        percent = min(100, downloaded * 100 / total_size)
-                        downloaded_mb = downloaded / (1024 * 1024)
-                        total_mb = total_size / (1024 * 1024)
-                        if block_num % 100 == 0:  # Report every 100 blocks
-                            logger.info(
-                                f"  Progress: {percent:.1f}% ({downloaded_mb:.1f} MB / {total_mb:.1f} MB)"
-                            )
-
-                urllib.request.urlretrieve(url, str(tarball_path), reporthook=_report_progress)
-                logger.info(f"✓ Download complete for {split_name} split")
-
-                # Extract tarball
-                logger.info(f"Extracting {split_name} split...")
-                with tarfile.open(str(tarball_path), "r:gz") as tar:
-                    tar.extractall(str(temp_dir))
-
-                # Clean up tarball
-                tarball_path.unlink()
-
-                # Move extracted files to final location
-                extracted_dir = temp_dir / split_name
-                if extracted_dir.exists():
-                    dest_dir = self.root_dir / split_name
-                    if dest_dir.exists():
-                        shutil.rmtree(dest_dir)
-                    shutil.move(str(extracted_dir), str(dest_dir))
-
-                # Clean up temp
-                shutil.rmtree(temp_dir)
-
-                logger.info(f"✓ Downloaded and extracted {split_name} split")
-
-            except Exception as e:
-                raise RuntimeError(f"Failed to download {split_name} split: {e}")
-
-    def _process_downloaded_data(self) -> None:
-        """
-        Process downloaded/extracted data into HDF5 format.
-
-        Converts the downloaded data (in various formats) into standardized
-        HDF5 files for efficient random access.
-        """
-        # Process each split directory
-        for split_name in ("train", "val", "test"):
-            split_dir = self.root_dir / split_name
-
-            # Check if already processed
-            if (split_dir / "images.h5py").exists():
-                continue
-
-            # Find image files
-            image_files = self._find_image_files(split_dir)
-
-            if not image_files:
-                logger.warning(f"No image files found in {split_dir}")
-                continue
-
-            # Load images and labels
-            images = []
-            labels = []
-
-            for img_path in image_files:
-                try:
-                    # Load image
-                    img = Image.open(img_path)
-                    img_array = np.array(img)
-
-                    # Extract label from filename
-                    # PCam naming convention: ID_label.tif (label is 0 or 1)
-                    # or center_XXX.tif for test set
-                    filename = img_path.stem
-
-                    if "_" in filename:
-                        # Training/validation: filename is like "kidney_1010_0_128_128_48"
-                        # or "tumor_1010_0_128_128_48"
-                        label_str = filename.split("_")[-1]
-                        # Check if last element is a valid label
-                        if label_str in ("0", "1"):
-                            label = int(label_str)
-                        else:
-                            # Check for 'tumor' prefix
-                            label = 1 if "tumor" in filename else 0
-                    else:
-                        # Fallback: assume test set has no labels
-                        label = 0
-
-                    images.append(img_array)
-                    labels.append(label)
-
-                except Exception as e:
-                    logger.warning(f"Failed to load {img_path}: {e}")
-                    continue
-
-            if images:
-                # Convert to numpy arrays
-                images = np.array(images, dtype=np.uint8)
-                labels = np.array(labels, dtype=np.int32)
-
-                # Save as HDF5
-                with h5py.File(split_dir / "images.h5py", "w") as f:
-                    f.create_dataset("images", data=images, compression="gzip")
-
-                with h5py.File(split_dir / "labels.h5py", "w") as f:
-                    f.create_dataset("labels", data=labels, compression="gzip")
-
-                logger.info(f"Processed {split_name}: {len(images)} images saved")
-
-    def _find_image_files(self, directory: Path) -> List[Path]:
-        """Find all image files in a directory."""
-        image_extensions = {".tif", ".tiff", ".png", ".jpg", ".jpeg"}
-        image_files = []
-
-        for ext in image_extensions:
-            image_files.extend(directory.glob(f"**/*{ext}"))
-
-        return sorted(image_files)
-
-    def _get_split_size(self, split: str) -> int:
-        """Get the expected size of a split."""
-        return self.SPLIT_SIZES.get(split, (0, 0))[0]
-
+            logger.error(f"Failed to download PCam dataset: {e}")
+            logger.info(
+                "Troubleshooting steps:\n"
+                "1. Check internet connection\n"
+                "2. Verify disk space (need ~2GB)\n"
+                "3. Try manual download from: "
+                "https://github.com/basveeling/pcam\n"
+                f"4. Place files in: {self.root_dir}"
+            )
+            raise
+    
+    def _load_split(self):
+        """Load the specified split into memory."""
+        split_dir = self.root_dir / self.split
+        
+        if not self._check_dataset_exists():
+            raise RuntimeError(
+                f"Dataset files not found in {split_dir}. "
+                "Set download=True to download the dataset."
+            )
+        
+        try:
+            self.images = np.load(split_dir / "images.npy")
+            self.labels = np.load(split_dir / "labels.npy")
+            
+            logger.info(f"Loaded {len(self.images)} samples for {self.split} split")
+            
+        except Exception as e:
+            logger.error(f"Failed to load dataset files: {e}")
+            raise RuntimeError(f"Corrupted dataset files in {split_dir}")
+    
     def __len__(self) -> int:
-        """Return the number of samples in the dataset."""
-        return self._num_images
-
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+        """Returns number of samples in split."""
+        return len(self.images)
+    
+    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         """
-        Get a single sample from the dataset.
-
+        Get a sample from the dataset.
+        
         Args:
-            idx: Index of the sample to retrieve.
-
+            idx: Sample index
+            
         Returns:
             Dictionary containing:
-                - 'image': PyTorch tensor of shape [3, 96, 96]
-                - 'label': PyTorch tensor (scalar, 0 or 1)
-                - 'image_id': String identifier for the image
-
-        Raises:
-            IndexError: If idx is out of bounds.
-            RuntimeError: If there is an error loading the image.
+            - 'image': Tensor [3, 96, 96] (raw image)
+            - 'label': Tensor (scalar)
+            - 'image_id': str
         """
-        # Open h5 files lazily if not already open (for multiprocessing compatibility)
-        if self._images_h5 is None or self._labels_h5 is None:
-            self._open_h5_files()
-
-        if idx < 0 or idx >= self._num_images:
-            raise IndexError(
-                f"Index {idx} out of bounds for dataset with {self._num_images} samples"
-            )
-
         try:
-            # Load image and label from HDF5
-            if self.use_zenodo_format:
-                # Zenodo format uses 'x' and 'y' dataset names
-                image = self._images_h5["x"][idx]
-                label = self._labels_h5["y"][idx]
-                # Zenodo labels might be shape (1, 1, 1) - flatten them
-                if isinstance(label, np.ndarray) and label.ndim > 0:
-                    label = label.flatten()[0]
+            # Load image and label
+            image = self.images[idx]  # [96, 96, 3]
+            label = self.labels[idx]  # scalar
+            
+            # Convert numpy array to PIL Image for transforms
+            image = Image.fromarray(image.astype(np.uint8))
+            
+            # Apply transforms
+            if self.transform is not None:
+                image = self.transform(image)
             else:
-                # Custom format uses 'images' and 'labels' dataset names
-                image = self._images_h5["images"][idx]
-                label = self._labels_h5["labels"][idx]
-
-            # Convert numpy arrays to proper types
-            if isinstance(image, np.ndarray):
-                # Ensure correct dtype and shape
-                if image.dtype != np.uint8:
-                    image = image.astype(np.uint8)
-
-                # Handle grayscale images (expand to 3 channels)
-                if len(image.shape) == 2:
-                    image = np.stack([image] * 3, axis=-1)
-                elif image.shape[-1] != 3:
-                    raise ValueError(f"Expected 3-channel image, got shape {image.shape}")
-
-                # Convert HWC to CHW format for PyTorch
-                image = np.transpose(image, (2, 0, 1))
-
-                # Convert to PIL Image for transform compatibility
-                # Clamp to valid range first
-                image = np.clip(image, 0, 255).astype(np.uint8)
-                image_pil = Image.fromarray(
-                    np.transpose(image, (1, 2, 0)), mode="RGB"  # CHW -> HWC for PIL
-                )
-
-                # Apply transforms
-                if self.transform is not None:
-                    image = self.transform(image_pil)
-                else:
-                    # Default: convert to tensor and normalize to [0, 1]
-                    image = torch.from_numpy(image).float() / 255.0
-
-            # Ensure label is proper type
-            label = int(label) if isinstance(label, (np.integer, np.int32, np.int64)) else label
-            label_tensor = torch.tensor(label, dtype=torch.long)
-
-            # Create image_id
-            image_id = f"{self.split}_{idx:08d}"
-
+                # Default: convert to tensor and normalize
+                image = transforms.ToTensor()(image)
+                image = transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], 
+                    std=[0.229, 0.224, 0.225]
+                )(image)
+            
+            # Convert label to tensor
+            label = torch.tensor(label, dtype=torch.long)
+            
             return {
-                "image": image,
-                "label": label_tensor,
-                "image_id": image_id,
+                'image': image,
+                'label': label,
+                'image_id': f"{self.split}_{idx}"
             }
-
-        except IndexError as e:
-            raise IndexError(f"Error accessing index {idx}: {e}")
+            
         except Exception as e:
-            # Log warning and return a placeholder for corrupted images
-            warnings.warn(
-                f"Error loading sample {idx} from {self.split} split: {e}. "
-                f"Returning zeros as placeholder.",
-                RuntimeWarning,
-            )
-
-            # Return a placeholder sample
+            logger.warning(f"Failed to load sample {idx}: {e}")
+            # Return a dummy sample to avoid breaking the dataloader
+            dummy_image = torch.zeros(3, 96, 96)
+            dummy_label = torch.tensor(0, dtype=torch.long)
             return {
-                "image": torch.zeros(3, 96, 96, dtype=torch.float32),
-                "label": torch.tensor(0, dtype=torch.long),
-                "image_id": f"{self.split}_{idx:08d}_error",
+                'image': dummy_image,
+                'label': dummy_label,
+                'image_id': f"{self.split}_{idx}_dummy"
             }
 
-    def __repr__(self) -> str:
-        """Return a string representation of the dataset."""
-        return (
-            f"PCamDataset(\n"
-            f"    root_dir='{self.root_dir}',\n"
-            f"    split='{self.split}',\n"
-            f"    num_samples={self._num_images},\n"
-            f"    transform={self.transform},\n"
-            f")"
-        )
 
-    def __del__(self) -> None:
-        """Clean up HDF5 file handles when dataset is destroyed."""
-        try:
-            self._close_h5_files()
-        except Exception:
-            pass
-
-
-class PCamDatasetWithFeatures(Dataset):
+def validate_dataset(dataset: PCamDataset):
     """
-    Extended PCam dataset that also provides pre-extracted features.
-
-    This class wraps PCamDataset and adds pre-extracted ResNet features
-    for scenarios where feature extraction should be done once upfront
-    rather than during training.
-
-    Note: Most use cases should use PCamDataset directly and let the
-    training script handle feature extraction to avoid duplication.
-    """
-
-    def __init__(
-        self,
-        root_dir: str,
-        split: str = "train",
-        features_path: Optional[str] = None,
-        transform: Optional[Callable] = None,
-        download: bool = True,
-    ):
-        """
-        Initialize the dataset with optional pre-extracted features.
-
-        Args:
-            root_dir: Root directory containing the dataset files.
-            split: Which split to load.
-            features_path: Optional path to pre-extracted features file.
-            transform: Optional transform to apply to images.
-            download: Whether to download if dataset is missing.
-        """
-        self.base_dataset = PCamDataset(
-            root_dir=root_dir,
-            split=split,
-            transform=transform,
-            download=download,
-        )
-
-        self.features_path = features_path
-        self._features_h5 = None
-
-        if features_path is not None:
-            self._load_features()
-
-    def _load_features(self) -> None:
-        """Load pre-extracted features from HDF5 file."""
-        if self.features_path and Path(self.features_path).exists():
-            self._features_h5 = h5py.File(self.features_path, "r")
-            logger.info(f"Loaded features from {self.features_path}")
-        else:
-            logger.warning(
-                f"Features file not found at {self.features_path}. "
-                f"Set will return raw images only."
-            )
-
-    def __len__(self) -> int:
-        """Return the number of samples in the dataset."""
-        return len(self.base_dataset)
-
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
-        """
-        Get a sample with both image and features (if available).
-
-        Returns:
-            Dictionary containing:
-                - 'image': PyTorch tensor [3, 96, 96] (raw image)
-                - 'wsi_features': PyTorch tensor (pre-extracted features)
-                - 'label': PyTorch tensor
-                - 'image_id': str
-        """
-        sample = self.base_dataset[idx]
-
-        if self._features_h5 is not None:
-            try:
-                features = self._features_h5["features"][idx]
-                sample["wsi_features"] = torch.from_numpy(features).float()
-            except Exception as e:
-                logger.warning(f"Failed to load features for index {idx}: {e}")
-                sample["wsi_features"] = None
-
-        return sample
-
-    def __del__(self) -> None:
-        """Clean up resources."""
-        features_h5 = getattr(self, "_features_h5", None)
-        if features_h5 is not None:
-            try:
-                features_h5.close()
-            except Exception:
-                pass
-
-
-def get_pcam_transforms(
-    split: str = "train",
-    augmentation: bool = True,
-) -> Optional[Callable]:
-    """
-    Get standard transforms for PCam dataset.
-
+    Validate dataset integrity before training.
+    
     Args:
-        split: 'train', 'val', or 'test'.
-        augmentation: If True, apply data augmentation for training.
-
-    Returns:
-        Composed transform pipeline.
+        dataset: PCamDataset instance to validate
+        
+    Raises:
+        ValueError: If dataset validation fails
     """
-    if split == "train" and augmentation:
-        return transforms.Compose(
-            [
-                transforms.RandomHorizontalFlip(p=0.5),
-                transforms.RandomVerticalFlip(p=0.5),
-                transforms.ColorJitter(
-                    brightness=0.1,
-                    contrast=0.1,
-                    saturation=0.1,
-                    hue=0.05,
-                ),
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
-                ),
-            ]
-        )
-    else:
-        # Validation/test: minimal preprocessing
-        return transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
-                ),
-            ]
-        )
-
-
-if __name__ == "__main__":
-    # Simple test
-    logging.basicConfig(level=logging.INFO)
-
-    # Try to load dataset (will download if not present)
-    dataset = PCamDataset(
-        root_dir="data/pcam",
-        split="train",
-        download=True,
-    )
-
-    print(f"Dataset size: {len(dataset)}")
-    print(f"Dataset repr:\n{dataset}")
-
-    # Get a sample
-    sample = dataset[0]
-    print(f"Sample keys: {sample.keys()}")
-    print(f"Image shape: {sample['image'].shape}")
-    print(f"Label: {sample['label']}")
-    print(f"Image ID: {sample['image_id']}")
+    logger.info("Validating dataset...")
+    
+    # Check dataset size
+    if len(dataset) == 0:
+        raise ValueError("Dataset is empty")
+    
+    # Sample a few items to validate
+    num_samples_to_check = min(10, len(dataset))
+    
+    for i in range(num_samples_to_check):
+        try:
+            sample = dataset[i]
+        except Exception as e:
+            logger.warning(f"Failed to load sample {i}: {e}")
+            continue
+        
+        # Validate shapes
+        if sample['image'].shape != (3, 96, 96):
+            raise ValueError(
+                f"Invalid image shape: {sample['image'].shape}, "
+                "expected (3, 96, 96)"
+            )
+        
+        # Validate labels
+        if sample['label'].item() not in [0, 1]:
+            raise ValueError(
+                f"Invalid label: {sample['label'].item()}, expected 0 or 1"
+            )
+    
+    logger.info(f"Dataset validation passed: {len(dataset)} samples")
