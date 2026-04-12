@@ -8,7 +8,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-import h5py
 import numpy as np
 import pytest
 import torch
@@ -72,22 +71,19 @@ def synthetic_pcam_data(tmp_path):
     n_samples = 100
     image_size = 96
 
-    # Create HDF5 files
-    for split in ["test"]:
-        images_file = data_dir / f"camelyonpatch_level_2_split_{split}_x.h5"
-        labels_file = data_dir / f"camelyonpatch_level_2_split_{split}_y.h5"
+    # Create .npy files for test split
+    test_dir = data_dir / "test"
+    test_dir.mkdir()
 
-        with h5py.File(images_file, "w") as f:
-            # Create synthetic images [N, 96, 96, 3]
-            images = np.random.randint(
-                0, 256, size=(n_samples, image_size, image_size, 3), dtype=np.uint8
-            )
-            f.create_dataset("x", data=images)
+    # Create synthetic images [N, 96, 96, 3]
+    images = np.random.randint(
+        0, 256, size=(n_samples, image_size, image_size, 3), dtype=np.uint8
+    )
+    np.save(test_dir / "images.npy", images)
 
-        with h5py.File(labels_file, "w") as f:
-            # Create synthetic labels [N, 1, 1, 1]
-            labels = np.random.randint(0, 2, size=(n_samples, 1, 1, 1), dtype=np.uint8)
-            f.create_dataset("y", data=labels)
+    # Create synthetic labels [N]
+    labels = np.random.randint(0, 2, size=n_samples, dtype=np.int64)
+    np.save(test_dir / "labels.npy", labels)
 
     return data_dir
 
