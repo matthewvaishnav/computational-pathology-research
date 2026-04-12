@@ -412,8 +412,8 @@ The implementation builds on existing infrastructure: AttentionMIL/CLAM/TransMIL
     - Create deployment guide for clinical environments
     - _Requirements: All requirements - usage examples_
 
-- [ ] 26. Integration and end-to-end testing
-  - [ ] 26.1 Wire all components together
+- [x] 26. Integration and end-to-end testing
+  - [x] 26.1 Wire all components together
     - Create `ClinicalWorkflowSystem` class in `src/clinical/workflow.py` integrating all components
     - Connect classifier, risk analyzer, uncertainty quantifier, longitudinal tracker, and reporting
     - Integrate DICOM/FHIR adapters with data pipeline
@@ -428,7 +428,7 @@ The implementation builds on existing infrastructure: AttentionMIL/CLAM/TransMIL
     - Test privacy and audit logging throughout pipeline
     - _Requirements: All requirements - integration validation_
 
-- [ ] 27. Final checkpoint - Ensure all tests pass
+- [x] 27. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
