@@ -18,9 +18,9 @@ import numpy as np
 import pydicom
 from pydicom.dataset import Dataset, FileDataset
 from pydicom.uid import (
+    JPEG2000,
     ExplicitVRLittleEndian,
     ImplicitVRLittleEndian,
-    JPEG2000,
     JPEG2000Lossless,
     JPEGLSLossless,
     JPEGLSNearLossless,
@@ -358,7 +358,9 @@ class DICOMAdapter:
 
         # Reference the source image
         referenced_sop = Dataset()
-        referenced_sop.ReferencedSOPClassUID = "1.2.840.10008.5.1.4.1.1.77.1.6"  # VL Whole Slide Microscopy Image
+        referenced_sop.ReferencedSOPClassUID = (
+            "1.2.840.10008.5.1.4.1.1.77.1.6"  # VL Whole Slide Microscopy Image
+        )
         referenced_sop.ReferencedSOPInstanceUID = source_metadata.sop_instance_uid
 
         ds.ReferencedPerformedProcedureStepSequence = []
@@ -371,7 +373,9 @@ class DICOMAdapter:
         diagnosis_item = Dataset()
         diagnosis_item.RelationshipType = "CONTAINS"
         diagnosis_item.ValueType = "TEXT"
-        diagnosis_item.ConceptNameCodeSequence = [self._create_code_item("121071", "DCM", "Finding")]
+        diagnosis_item.ConceptNameCodeSequence = [
+            self._create_code_item("121071", "DCM", "Finding")
+        ]
         diagnosis_item.TextValue = f"Primary Diagnosis: {prediction.primary_diagnosis}"
         content_seq.append(diagnosis_item)
 
@@ -441,9 +445,7 @@ class DICOMAdapter:
         code_item.CodeMeaning = code_meaning
         return code_item
 
-    def _create_numeric_value(
-        self, value: float, unit_code: str, unit_meaning: str
-    ) -> Dataset:
+    def _create_numeric_value(self, value: float, unit_code: str, unit_meaning: str) -> Dataset:
         """Create a numeric measurement value."""
         numeric_value = Dataset()
         numeric_value.NumericValue = str(value)

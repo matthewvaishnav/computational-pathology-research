@@ -349,12 +349,12 @@ class AttentionHeatmapGenerator:
 
         # Create multi-panel figure
         num_zoom = len(zoom_regions)
-        
+
         # Calculate grid layout: main heatmap takes 2 columns in first row
         # Zoom panels fill remaining space
         ncols = max(3, num_zoom)
         nrows = 2
-        
+
         fig = plt.figure(figsize=(6 * ncols, 6 * nrows))
         gs = fig.add_gridspec(nrows, ncols)
 

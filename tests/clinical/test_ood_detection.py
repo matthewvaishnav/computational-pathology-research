@@ -227,9 +227,7 @@ class TestOODDetector:
         """Test that reconstruction method detects out-of-distribution samples."""
         # Train on in-distribution data
         train_features = torch.randn(100, 256)
-        detector_reconstruction_only.train_autoencoder(
-            train_features, num_epochs=20, batch_size=32
-        )
+        detector_reconstruction_only.train_autoencoder(train_features, num_epochs=20, batch_size=32)
 
         # In-distribution samples (similar to training)
         in_dist_features = torch.randn(16, 256)

@@ -336,9 +336,7 @@ def test_generate_multi_disease_heatmaps(temp_dirs, sample_attention_data):
         "grade_3": np.array([0.1, 0.1, 0.3, 0.3, 0.2]),
     }
 
-    output_path = generator.generate_multi_disease_heatmaps(
-        slide_id, disease_weights, coordinates
-    )
+    output_path = generator.generate_multi_disease_heatmaps(slide_id, disease_weights, coordinates)
 
     assert output_path is not None
     assert output_path.exists()
@@ -360,9 +358,7 @@ def test_multi_disease_attention_weight_normalization(temp_dirs, sample_attentio
         "grade_2": np.array([0.5, 0.5, 1.0, 1.0, 0.5]),  # Sum = 3.5
     }
 
-    output_path = generator.generate_multi_disease_heatmaps(
-        slide_id, disease_weights, coordinates
-    )
+    output_path = generator.generate_multi_disease_heatmaps(slide_id, disease_weights, coordinates)
 
     # Should succeed with normalization
     assert output_path is not None
@@ -495,9 +491,7 @@ def test_multi_disease_single_disease(temp_dirs, sample_attention_data):
     # Single disease
     disease_weights = {"grade_1": attention_weights / attention_weights.sum()}
 
-    output_path = generator.generate_multi_disease_heatmaps(
-        slide_id, disease_weights, coordinates
-    )
+    output_path = generator.generate_multi_disease_heatmaps(slide_id, disease_weights, coordinates)
 
     assert output_path is not None
     assert output_path.exists()
@@ -518,9 +512,7 @@ def test_multi_disease_many_diseases(temp_dirs, sample_attention_data):
         weights = np.random.rand(len(attention_weights))
         disease_weights[f"disease_{i}"] = weights / weights.sum()
 
-    output_path = generator.generate_multi_disease_heatmaps(
-        slide_id, disease_weights, coordinates
-    )
+    output_path = generator.generate_multi_disease_heatmaps(slide_id, disease_weights, coordinates)
 
     assert output_path is not None
     assert output_path.exists()
