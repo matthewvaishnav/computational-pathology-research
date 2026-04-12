@@ -4,18 +4,19 @@ Unit tests for longitudinal patient tracking module.
 Tests PatientTimeline, ScanRecord, TreatmentEvent, and LongitudinalTracker classes.
 """
 
-import pytest
-import torch
 from datetime import datetime, timedelta
 
+import pytest
+import torch
+
 from src.clinical.longitudinal import (
+    LongitudinalTracker,
     PatientTimeline,
     ScanRecord,
     TreatmentEvent,
     TreatmentResponseCategory,
-    LongitudinalTracker,
 )
-from src.clinical.patient_context import ClinicalMetadata, SmokingStatus, Sex
+from src.clinical.patient_context import ClinicalMetadata, Sex, SmokingStatus
 from src.clinical.taxonomy import DiseaseTaxonomy
 
 
@@ -145,7 +146,7 @@ class TestPatientTimeline:
     def test_get_scans_date_range(self):
         """Test getting scans within date range."""
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         base_date = datetime.now()
         scan1 = ScanRecord(
             scan_id="SCAN_001",
@@ -168,11 +169,11 @@ class TestPatientTimeline:
             disease_probabilities={"grade_2": 1.0},
             confidence=0.9,
         )
-        
+
         timeline.add_scan(scan1)
         timeline.add_scan(scan2)
         timeline.add_scan(scan3)
-        
+
         # Get scans in middle range
         scans = timeline.get_scans(
             start_date=base_date + timedelta(days=15),
@@ -184,7 +185,7 @@ class TestPatientTimeline:
     def test_timeline_duration(self):
         """Test calculating timeline duration."""
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         base_date = datetime.now()
         scan1 = ScanRecord(
             scan_id="SCAN_001",
@@ -200,10 +201,10 @@ class TestPatientTimeline:
             disease_probabilities={"grade_2": 1.0},
             confidence=0.8,
         )
-        
+
         timeline.add_scan(scan1)
         timeline.add_scan(scan2)
-        
+
         duration = timeline.get_timeline_duration()
         assert duration == pytest.approx(90.0, abs=0.1)
 
@@ -212,11 +213,11 @@ class TestPatientTimeline:
         timeline = PatientTimeline(patient_id="PATIENT_001")
         timeline.add_scan(sample_scan)
         timeline.add_treatment(sample_treatment)
-        
+
         # Save timeline
         output_path = tmp_path / "timeline.json"
         timeline.save(output_path)
-        
+
         # Load timeline
         loaded_timeline = PatientTimeline.load(output_path)
         assert loaded_timeline.patient_id_hash == timeline.patient_id_hash
@@ -237,10 +238,10 @@ class TestLongitudinalTracker:
         """Test registering a patient timeline."""
         tracker = LongitudinalTracker(sample_taxonomy)
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         tracker.register_timeline(timeline)
         assert tracker.get_num_patients() == 1
-        
+
         retrieved = tracker.get_timeline(timeline.patient_id_hash)
         assert retrieved == timeline
 
@@ -248,7 +249,7 @@ class TestLongitudinalTracker:
         """Test progression metrics with insufficient data."""
         tracker = LongitudinalTracker(sample_taxonomy)
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         # Add only one scan
         scan = ScanRecord(
             scan_id="SCAN_001",
@@ -258,7 +259,7 @@ class TestLongitudinalTracker:
             confidence=0.7,
         )
         timeline.add_scan(scan)
-        
+
         metrics = tracker.compute_progression_metrics(timeline)
         assert metrics["num_scans"] == 1
         assert metrics["overall_trend"] == "insufficient_data"
@@ -268,9 +269,9 @@ class TestLongitudinalTracker:
         """Test progression metrics with disease state changes."""
         tracker = LongitudinalTracker(sample_taxonomy)
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         base_date = datetime.now()
-        
+
         # Add scans showing progression
         scan1 = ScanRecord(
             scan_id="SCAN_001",
@@ -286,10 +287,10 @@ class TestLongitudinalTracker:
             disease_probabilities={"benign": 0.05, "grade_1": 0.2, "grade_2": 0.75},
             confidence=0.75,
         )
-        
+
         timeline.add_scan(scan1)
         timeline.add_scan(scan2)
-        
+
         metrics = tracker.compute_progression_metrics(timeline)
         assert metrics["num_scans"] == 2
         assert len(metrics["progression_events"]) == 1
@@ -300,9 +301,9 @@ class TestLongitudinalTracker:
         """Test identifying treatment response."""
         tracker = LongitudinalTracker(sample_taxonomy)
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         base_date = datetime.now()
-        
+
         # Add baseline scan
         baseline_scan = ScanRecord(
             scan_id="SCAN_001",
@@ -312,7 +313,7 @@ class TestLongitudinalTracker:
             confidence=0.7,
         )
         timeline.add_scan(baseline_scan)
-        
+
         # Add treatment
         treatment = TreatmentEvent(
             treatment_id="TX_001",
@@ -320,7 +321,7 @@ class TestLongitudinalTracker:
             treatment_type="chemotherapy",
         )
         timeline.add_treatment(treatment)
-        
+
         # Add response scan showing improvement
         response_scan = ScanRecord(
             scan_id="SCAN_002",
@@ -330,7 +331,7 @@ class TestLongitudinalTracker:
             confidence=0.8,
         )
         timeline.add_scan(response_scan)
-        
+
         response = tracker.identify_treatment_response(timeline, "TX_001")
         assert response["baseline_scan"] == baseline_scan
         assert response["response_scan"] == response_scan
@@ -340,9 +341,9 @@ class TestLongitudinalTracker:
         """Test calculating risk factor evolution."""
         tracker = LongitudinalTracker(sample_taxonomy)
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         base_date = datetime.now()
-        
+
         # Add scans with risk scores
         scan1 = ScanRecord(
             scan_id="SCAN_001",
@@ -360,10 +361,10 @@ class TestLongitudinalTracker:
             confidence=0.8,
             risk_scores={"grade_2": {"1-year": 0.5, "5-year": 0.7}},
         )
-        
+
         timeline.add_scan(scan1)
         timeline.add_scan(scan2)
-        
+
         risk_evolution = tracker.calculate_risk_evolution(timeline, "grade_2")
         assert risk_evolution["num_scans"] == 2
         assert risk_evolution["risk_trend"] == "increasing"
@@ -373,9 +374,9 @@ class TestLongitudinalTracker:
         """Test highlighting significant changes in new scan."""
         tracker = LongitudinalTracker(sample_taxonomy)
         timeline = PatientTimeline(patient_id="PATIENT_001")
-        
+
         base_date = datetime.now()
-        
+
         # Add previous scan
         prev_scan = ScanRecord(
             scan_id="SCAN_001",
@@ -386,7 +387,7 @@ class TestLongitudinalTracker:
             risk_scores={"grade_2": {"1-year": 0.3}},
         )
         timeline.add_scan(prev_scan)
-        
+
         # Create new scan with significant changes
         new_scan = ScanRecord(
             scan_id="SCAN_002",
@@ -396,7 +397,7 @@ class TestLongitudinalTracker:
             confidence=0.8,
             risk_scores={"grade_2": {"1-year": 0.6}},
         )
-        
+
         changes = tracker.highlight_significant_changes(timeline, new_scan)
         assert changes["has_significant_changes"] is True
         assert changes["disease_state_changed"] is True

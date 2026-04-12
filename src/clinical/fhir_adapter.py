@@ -119,14 +119,8 @@ class FHIRAdapter:
         """
         if self.config.auth_method == AuthenticationMethod.OAUTH2:
             if self.config.access_token:
-                self.session.headers.update(
-                    {"Authorization": f"Bearer {self.config.access_token}"}
-                )
-            elif (
-                self.config.client_id
-                and self.config.client_secret
-                and self.config.token_url
-            ):
+                self.session.headers.update({"Authorization": f"Bearer {self.config.access_token}"})
+            elif self.config.client_id and self.config.client_secret and self.config.token_url:
                 # Request access token
                 token_response = requests.post(
                     self.config.token_url,
@@ -144,17 +138,13 @@ class FHIRAdapter:
         elif self.config.auth_method == AuthenticationMethod.SMART_ON_FHIR:
             # SMART on FHIR uses OAuth 2.0 with specific scopes
             if self.config.access_token:
-                self.session.headers.update(
-                    {"Authorization": f"Bearer {self.config.access_token}"}
-                )
+                self.session.headers.update({"Authorization": f"Bearer {self.config.access_token}"})
 
         elif self.config.auth_method == AuthenticationMethod.BASIC:
             if self.config.client_id and self.config.client_secret:
                 from requests.auth import HTTPBasicAuth
 
-                self.session.auth = HTTPBasicAuth(
-                    self.config.client_id, self.config.client_secret
-                )
+                self.session.auth = HTTPBasicAuth(self.config.client_id, self.config.client_secret)
 
     def read_patient_metadata(self, patient_id: str) -> PatientClinicalMetadata:
         """
@@ -180,17 +170,13 @@ class FHIRAdapter:
             metadata.sex = self._extract_sex(patient)
 
         # Read Observations
-        observations = self._search_resources(
-            FHIRResourceType.OBSERVATION, {"patient": patient_id}
-        )
+        observations = self._search_resources(FHIRResourceType.OBSERVATION, {"patient": patient_id})
         if observations:
             metadata.observations = self._extract_observations(observations)
             metadata.smoking_status = self._extract_smoking_status(observations)
 
         # Read Conditions
-        conditions = self._search_resources(
-            FHIRResourceType.CONDITION, {"patient": patient_id}
-        )
+        conditions = self._search_resources(FHIRResourceType.CONDITION, {"patient": patient_id})
         if conditions:
             metadata.conditions = self._extract_conditions(conditions)
 
@@ -203,9 +189,7 @@ class FHIRAdapter:
 
         return metadata
 
-    def write_diagnostic_report(
-        self, report_data: DiagnosticReportData
-    ) -> Dict[str, Any]:
+    def write_diagnostic_report(self, report_data: DiagnosticReportData) -> Dict[str, Any]:
         """
         Write prediction results as FHIR DiagnosticReport resource.
 
@@ -225,16 +209,12 @@ class FHIRAdapter:
             "resourceType": "DiagnosticReport",
             "status": report_data.status,
             "subject": {"reference": f"Patient/{report_data.patient_id}"},
-            "issued": (
-                report_data.issued_datetime or datetime.now()
-            ).isoformat(),
+            "issued": (report_data.issued_datetime or datetime.now()).isoformat(),
         }
 
         # Link to ImagingStudy if available
         if report_data.imaging_study_id:
-            report["imagingStudy"] = [
-                {"reference": f"ImagingStudy/{report_data.imaging_study_id}"}
-            ]
+            report["imagingStudy"] = [{"reference": f"ImagingStudy/{report_data.imaging_study_id}"}]
 
         # Add diagnostic code
         if report_data.code:
@@ -463,11 +443,7 @@ class FHIRAdapter:
 
             birth = datetime.strptime(birth_date, "%Y-%m-%d").date()
             today = date.today()
-            age = (
-                today.year
-                - birth.year
-                - ((today.month, today.day) < (birth.month, birth.day))
-            )
+            age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
             return age
         return None
 
@@ -475,9 +451,7 @@ class FHIRAdapter:
         """Extract patient sex from Patient resource."""
         return patient.get("gender")
 
-    def _extract_observations(
-        self, observations: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _extract_observations(self, observations: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Extract observation values from Observation resources."""
         obs_dict = {}
         for obs in observations:
@@ -503,9 +477,7 @@ class FHIRAdapter:
 
         return obs_dict
 
-    def _extract_smoking_status(
-        self, observations: List[Dict[str, Any]]
-    ) -> Optional[str]:
+    def _extract_smoking_status(self, observations: List[Dict[str, Any]]) -> Optional[str]:
         """Extract smoking status from Observation resources."""
         for obs in observations:
             code = obs.get("code", {})
@@ -531,9 +503,7 @@ class FHIRAdapter:
                     condition_list.append(display)
         return condition_list
 
-    def _extract_medications(
-        self, medications: List[Dict[str, Any]]
-    ) -> List[str]:
+    def _extract_medications(self, medications: List[Dict[str, Any]]) -> List[str]:
         """Extract medication names from MedicationStatement resources."""
         med_list = []
         for med in medications:
