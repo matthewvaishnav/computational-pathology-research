@@ -7,21 +7,21 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
 ## Tasks
 
 - [ ] 1. Implement PCamDataset class for data loading
-  - [ ] 1.1 Create src/data/pcam_dataset.py with PCamDataset class
+  - [x] 1.1 Create src/data/pcam_dataset.py with PCamDataset class
     - Implement __init__ method with parameters: root_dir, split, transform, download, feature_extractor
     - Implement __len__ method returning number of samples
     - Implement __getitem__ method returning dict with 'wsi_features', 'label', 'image_id'
     - Add proper type hints and docstrings
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.7_
   
-  - [ ] 1.2 Implement dataset download functionality
+  - [x] 1.2 Implement dataset download functionality
     - Add download() method using tensorflow_datasets API
     - Handle ImportError with clear message if tensorflow_datasets not installed
     - Organize downloaded data into train/val/test splits
     - Save data as numpy arrays in root_dir structure
     - _Requirements: 1.1, 1.2, 1.8_
   
-  - [ ] 1.3 Implement data preprocessing and augmentation
+  - [x] 1.3 Implement data preprocessing and augmentation
     - Add _apply_transforms() method for normalization to [0, 1]
     - Support torchvision transforms for augmentation (horizontal flip, vertical flip, color jitter)
     - Convert images to tensors with shape [3, 96, 96]
@@ -37,7 +37,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
 
 - [ ] 2. Implement feature extraction module
-  - [ ] 2.1 Create src/models/feature_extractors.py with ResNetFeatureExtractor class
+  - [x] 2.1 Create src/models/feature_extractors.py with ResNetFeatureExtractor class
     - Implement __init__ with parameters: model_name, pretrained, feature_dim
     - Load ResNet-18 from torchvision.models
     - Remove final classification layer to extract features
@@ -45,7 +45,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Add proper type hints and docstrings
     - _Requirements: 2.3_
   
-  - [ ] 2.2 Integrate feature extraction into PCamDataset
+  - [x] 2.2 Integrate feature extraction into PCamDataset
     - Add optional feature_extractor parameter to PCamDataset.__init__
     - Add _extract_features() method that applies feature extractor if provided
     - Update __getitem__ to return extracted features or raw images based on configuration
@@ -60,7 +60,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - _Requirements: 2.3_
 
 - [ ] 3. Create training configuration and script
-  - [ ] 3.1 Create experiments/configs/pcam.yaml configuration file
+  - [x] 3.1 Create experiments/configs/pcam.yaml configuration file
     - Define experiment metadata (name, description, tags)
     - Configure data parameters (dataset, root_dir, download, num_workers, augmentation)
     - Configure feature extraction (extract_features, feature_extractor settings)
@@ -71,7 +71,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Set seed=42 for reproducibility
     - _Requirements: 2.1, 2.2, 2.6, 7.2, 7.3_
   
-  - [ ] 3.2 Create experiments/train_pcam.py training script
+  - [x] 3.2 Create experiments/train_pcam.py training script
     - Implement create_pcam_dataloaders() function to create train/val/test DataLoaders
     - Implement create_single_modality_model() function to create WSI encoder and classification head
     - Implement train_epoch() function for one epoch of training
@@ -82,14 +82,14 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3.1, 3.2, 3.3, 3.4, 3.5, 3.7, 7.1, 7.6_
 
 - [ ] 4. Implement training loop with error handling
-  - [ ] 4.1 Add checkpoint saving and loading
+  - [x] 4.1 Add checkpoint saving and loading
     - Save checkpoint dict with epoch, global_step, encoder_state_dict, head_state_dict, optimizer_state_dict, scheduler_state_dict, metrics, config
     - Implement save_checkpoint() function called every N epochs
     - Implement load_checkpoint() function for resuming training
     - Save best checkpoint based on validation metric
     - _Requirements: 2.7, 3.5, 7.4, 7.8_
   
-  - [ ] 4.2 Add comprehensive error handling
+  - [x] 4.2 Add comprehensive error handling
     - Catch GPU out of memory errors and suggest reducing batch_size
     - Implement automatic batch size reduction on OOM if auto_batch_size=true
     - Detect NaN loss and terminate with informative error message
@@ -97,7 +97,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Handle missing checkpoint files gracefully
     - _Requirements: 3.8, 8.2, 8.3, 8.7_
   
-  - [ ] 4.3 Add logging and progress tracking
+  - [x] 4.3 Add logging and progress tracking
     - Log training progress every N batches (loss, accuracy, learning rate)
     - Log validation metrics after each epoch
     - Use TensorBoard for logging training curves
