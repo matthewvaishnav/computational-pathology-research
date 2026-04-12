@@ -62,40 +62,40 @@ class ReportData:
     patient_id: str
     scan_id: str
     scan_date: datetime
-    
+
     # Primary diagnosis
     primary_diagnosis: DiagnosisResult
-    
+
     # Alternative diagnoses (top-k)
     alternative_diagnoses: List[DiagnosisResult] = field(default_factory=list)
-    
+
     # Probability distribution across all disease states
     probability_distribution: Dict[str, float] = field(default_factory=dict)
-    
+
     # Uncertainty quantification
     uncertainty_explanation: Optional[str] = None
     ood_detected: bool = False
     ood_explanation: Optional[str] = None
-    
+
     # Risk analysis
     risk_scores: Optional[Dict[str, float]] = None
     risk_time_horizons: Optional[List[str]] = None
-    
+
     # Clinical recommendations
     recommendations: List[str] = field(default_factory=list)
-    
+
     # Attention visualization data
     attention_weights: Optional[np.ndarray] = None
     attention_heatmap_path: Optional[str] = None
-    
+
     # Longitudinal data
     longitudinal_summary: Optional[Dict[str, Any]] = None
     previous_scan_comparison: Optional[Dict[str, Any]] = None
-    
+
     # Metadata
     model_version: str = "1.0.0"
     report_timestamp: datetime = field(default_factory=datetime.now)
-    
+
     # Physician annotations
     physician_notes: Optional[str] = None
     amendments: List[Dict[str, Any]] = field(default_factory=list)
@@ -104,7 +104,7 @@ class ReportData:
 class ClinicalReportGenerator:
     """
     Generate clinical reports from model predictions.
-    
+
     Supports configurable templates for different specialties and multiple
     export formats including PDF, HTML, and structured formats (FHIR, DICOM SR).
     """
@@ -116,13 +116,13 @@ class ClinicalReportGenerator:
     ):
         """
         Initialize the clinical report generator.
-        
+
         Args:
             template_dir: Directory containing Jinja2 templates. If None, uses built-in templates.
             default_specialty: Default specialty for report generation.
         """
         self.default_specialty = default_specialty
-        
+
         # Set up Jinja2 environment
         if template_dir is not None:
             template_dir = Path(template_dir)
@@ -132,13 +132,13 @@ class ClinicalReportGenerator:
         else:
             # Use built-in templates
             self.jinja_env = Environment(loader=FileSystemLoader(searchpath="./"))
-            
+
         # Built-in templates as strings
         self._builtin_templates = self._create_builtin_templates()
-    
+
     def _create_builtin_templates(self) -> Dict[str, str]:
         """Create built-in report templates for different specialties."""
-        
+
         # Base template structure
         base_html = """
 <!DOCTYPE html>
@@ -310,12 +310,10 @@ class ClinicalReportGenerator:
 </body>
 </html>
 """
-        
+
         return {
             ReportSpecialty.PATHOLOGY.value: base_html,
-            ReportSpecialty.ONCOLOGY.value: base_html.replace(
-                "{{ specialty_title }}", "Oncology"
-            ),
+            ReportSpecialty.ONCOLOGY.value: base_html.replace("{{ specialty_title }}", "Oncology"),
             ReportSpecialty.CARDIOLOGY.value: base_html.replace(
                 "{{ specialty_title }}", "Cardiology"
             ),
@@ -326,7 +324,7 @@ class ClinicalReportGenerator:
                 "{{ specialty_title }}", "General Pathology"
             ),
         }
-    
+
     def generate_report(
         self,
         report_data: ReportData,
@@ -334,23 +332,23 @@ class ClinicalReportGenerator:
     ) -> str:
         """
         Generate HTML report from report data.
-        
+
         Args:
             report_data: Complete report data including diagnosis, uncertainty, etc.
             specialty: Medical specialty for template selection. Uses default if None.
-            
+
         Returns:
             HTML report as string.
         """
         if specialty is None:
             specialty = self.default_specialty
-        
+
         # Get template
         template_str = self._builtin_templates.get(
             specialty.value, self._builtin_templates[ReportSpecialty.PATHOLOGY.value]
         )
         template = Template(template_str)
-        
+
         # Prepare template context
         context = {
             "specialty_title": specialty.value.title(),
@@ -374,7 +372,7 @@ class ClinicalReportGenerator:
             "amendments": report_data.amendments,
             "model_version": report_data.model_version,
         }
-        
+
         # Render template
         html_report = template.render(**context)
         return html_report
@@ -388,19 +386,19 @@ class ClinicalReportGenerator:
     ) -> Path:
         """
         Export report to specified format.
-        
+
         Args:
             report_data: Complete report data.
             output_path: Output file path.
             export_format: Export format (PDF, HTML, FHIR, DICOM_SR, JSON).
             specialty: Medical specialty for template selection.
-            
+
         Returns:
             Path to exported report file.
         """
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         if export_format == ExportFormat.HTML:
             return self._export_html(report_data, output_path, specialty)
         elif export_format == ExportFormat.PDF:
@@ -413,7 +411,7 @@ class ClinicalReportGenerator:
             return self._export_dicom_sr(report_data, output_path)
         else:
             raise ValueError(f"Unsupported export format: {export_format}")
-    
+
     def _export_html(
         self,
         report_data: ReportData,
@@ -424,7 +422,7 @@ class ClinicalReportGenerator:
         html_content = self.generate_report(report_data, specialty)
         output_path.write_text(html_content, encoding="utf-8")
         return output_path
-    
+
     def _export_pdf(
         self,
         report_data: ReportData,
@@ -433,7 +431,7 @@ class ClinicalReportGenerator:
     ) -> Path:
         """
         Export report as PDF file.
-        
+
         Uses reportlab for PDF generation.
         """
         try:
@@ -454,12 +452,12 @@ class ClinicalReportGenerator:
             raise ImportError(
                 "reportlab is required for PDF export. Install with: pip install reportlab"
             )
-        
+
         # Create PDF document
         doc = SimpleDocTemplate(str(output_path), pagesize=letter)
         story = []
         styles = getSampleStyleSheet()
-        
+
         # Custom styles
         title_style = ParagraphStyle(
             "CustomTitle",
@@ -475,12 +473,12 @@ class ClinicalReportGenerator:
             textColor=colors.HexColor("#2c3e50"),
             spaceAfter=10,
         )
-        
+
         # Header
         specialty_name = (specialty or self.default_specialty).value.title()
         story.append(Paragraph(f"{specialty_name} - Computational Pathology Report", title_style))
         story.append(Spacer(1, 0.2 * inch))
-        
+
         # Patient information
         patient_info = [
             ["Patient ID:", report_data.patient_id],
@@ -490,36 +488,43 @@ class ClinicalReportGenerator:
         ]
         patient_table = Table(patient_info, colWidths=[2 * inch, 4 * inch])
         patient_table.setStyle(
-            TableStyle([
-                ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-            ])
+            TableStyle(
+                [
+                    ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]
+            )
         )
         story.append(patient_table)
         story.append(Spacer(1, 0.3 * inch))
-        
+
         # OOD warning
         if report_data.ood_detected:
-            warning_text = f"<b>⚠ Out-of-Distribution Detection:</b> {report_data.ood_explanation}<br/>" \
-                          f"<b>Recommendation:</b> Expert pathologist review recommended before clinical use."
+            warning_text = (
+                f"<b>⚠ Out-of-Distribution Detection:</b> {report_data.ood_explanation}<br/>"
+                f"<b>Recommendation:</b> Expert pathologist review recommended before clinical use."
+            )
             warning_para = Paragraph(warning_text, styles["Normal"])
             story.append(warning_para)
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Primary diagnosis
         story.append(Paragraph("Primary Diagnosis", heading_style))
         primary = report_data.primary_diagnosis
-        primary_text = f"<b>{primary.disease_name}</b><br/>" \
-                      f"Probability: {primary.probability * 100:.1f}%"
+        primary_text = (
+            f"<b>{primary.disease_name}</b><br/>" f"Probability: {primary.probability * 100:.1f}%"
+        )
         if primary.confidence_interval:
             ci_low, ci_high = primary.confidence_interval
-            primary_text += f"<br/>95% Confidence Interval: {ci_low * 100:.1f}% - {ci_high * 100:.1f}%"
+            primary_text += (
+                f"<br/>95% Confidence Interval: {ci_low * 100:.1f}% - {ci_high * 100:.1f}%"
+            )
         if primary.uncertainty_score:
             primary_text += f"<br/>Uncertainty Score: {primary.uncertainty_score:.3f}"
         story.append(Paragraph(primary_text, styles["Normal"]))
         story.append(Spacer(1, 0.2 * inch))
-        
+
         # Alternative diagnoses
         if report_data.alternative_diagnoses:
             story.append(Paragraph("Alternative Diagnoses", heading_style))
@@ -528,19 +533,21 @@ class ClinicalReportGenerator:
                 alt_data.append([diag.disease_name, f"{diag.probability * 100:.1f}%"])
             alt_table = Table(alt_data, colWidths=[4 * inch, 2 * inch])
             alt_table.setStyle(
-                TableStyle([
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#34495e")),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.grey),
-                ])
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#34495e")),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                    ]
+                )
             )
             story.append(alt_table)
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Probability distribution
         story.append(Paragraph("Probability Distribution", heading_style))
         prob_data = [["Disease State", "Probability"]]
@@ -548,25 +555,27 @@ class ClinicalReportGenerator:
             prob_data.append([disease, f"{prob * 100:.2f}%"])
         prob_table = Table(prob_data, colWidths=[4 * inch, 2 * inch])
         prob_table.setStyle(
-            TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#34495e")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("GRID", (0, 0), (-1, -1), 1, colors.grey),
-            ])
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#34495e")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                ]
+            )
         )
         story.append(prob_table)
         story.append(Spacer(1, 0.2 * inch))
-        
+
         # Uncertainty explanation
         if report_data.uncertainty_explanation:
             story.append(Paragraph("Uncertainty Quantification", heading_style))
             story.append(Paragraph(report_data.uncertainty_explanation, styles["Normal"]))
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Risk analysis
         if report_data.risk_scores:
             story.append(Paragraph("Risk Analysis", heading_style))
@@ -575,26 +584,28 @@ class ClinicalReportGenerator:
                 risk_data.append([disease, f"{score * 100:.2f}%"])
             risk_table = Table(risk_data, colWidths=[4 * inch, 2 * inch])
             risk_table.setStyle(
-                TableStyle([
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#34495e")),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 10),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                    ("GRID", (0, 0), (-1, -1), 1, colors.grey),
-                ])
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#34495e")),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 10),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+                    ]
+                )
             )
             story.append(risk_table)
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Recommendations
         if report_data.recommendations:
             story.append(Paragraph("Clinical Recommendations", heading_style))
             for rec in report_data.recommendations:
                 story.append(Paragraph(f"• {rec}", styles["Normal"]))
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Attention visualization
         if report_data.attention_heatmap_path:
             story.append(Paragraph("Attention Visualization", heading_style))
@@ -610,52 +621,60 @@ class ClinicalReportGenerator:
             except Exception as e:
                 story.append(Paragraph(f"[Image could not be loaded: {e}]", styles["Normal"]))
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Longitudinal summary
         if report_data.longitudinal_summary:
             story.append(Paragraph("Longitudinal Progression Summary", heading_style))
-            long_text = f"Number of Previous Scans: {report_data.longitudinal_summary.get('num_scans', 'N/A')}<br/>" \
-                       f"Timeline Duration: {report_data.longitudinal_summary.get('duration_days', 'N/A')} days"
+            long_text = (
+                f"Number of Previous Scans: {report_data.longitudinal_summary.get('num_scans', 'N/A')}<br/>"
+                f"Timeline Duration: {report_data.longitudinal_summary.get('duration_days', 'N/A')} days"
+            )
             if report_data.longitudinal_summary.get("progression_trend"):
                 long_text += f"<br/>Progression Trend: {report_data.longitudinal_summary['progression_trend']}"
             story.append(Paragraph(long_text, styles["Normal"]))
-            
+
             if report_data.previous_scan_comparison:
                 comp = report_data.previous_scan_comparison
-                comp_text = f"<b>Change from Previous Scan:</b><br/>" \
-                           f"Previous Diagnosis: {comp.get('previous_diagnosis', 'N/A')}<br/>" \
-                           f"Current Diagnosis: {comp.get('current_diagnosis', 'N/A')}<br/>" \
-                           f"Probability Change: {comp.get('probability_change', 'N/A')}"
+                comp_text = (
+                    f"<b>Change from Previous Scan:</b><br/>"
+                    f"Previous Diagnosis: {comp.get('previous_diagnosis', 'N/A')}<br/>"
+                    f"Current Diagnosis: {comp.get('current_diagnosis', 'N/A')}<br/>"
+                    f"Probability Change: {comp.get('probability_change', 'N/A')}"
+                )
                 story.append(Paragraph(comp_text, styles["Normal"]))
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Physician notes
         if report_data.physician_notes:
             story.append(Paragraph("Physician Notes", heading_style))
             story.append(Paragraph(report_data.physician_notes, styles["Normal"]))
             story.append(Spacer(1, 0.2 * inch))
-        
+
         # Amendments
         if report_data.amendments:
             story.append(Paragraph("Report Amendments", heading_style))
             for amendment in report_data.amendments:
-                amend_text = f"<b>Date:</b> {amendment.get('timestamp', 'N/A')}<br/>" \
-                            f"<b>Amended By:</b> {amendment.get('user', 'N/A')}<br/>" \
-                            f"<b>Note:</b> {amendment.get('note', 'N/A')}"
+                amend_text = (
+                    f"<b>Date:</b> {amendment.get('timestamp', 'N/A')}<br/>"
+                    f"<b>Amended By:</b> {amendment.get('user', 'N/A')}<br/>"
+                    f"<b>Note:</b> {amendment.get('note', 'N/A')}"
+                )
                 story.append(Paragraph(amend_text, styles["Normal"]))
                 story.append(Spacer(1, 0.1 * inch))
-        
+
         # Metadata footer
         story.append(Spacer(1, 0.3 * inch))
-        metadata_text = f"<b>Model Version:</b> {report_data.model_version}<br/>" \
-                       f"<b>Report ID:</b> {report_data.scan_id}_{report_data.report_timestamp.strftime('%Y%m%d%H%M%S')}<br/>" \
-                       f"<i>This report was generated by an AI-assisted diagnostic system and should be reviewed by a qualified pathologist.</i>"
+        metadata_text = (
+            f"<b>Model Version:</b> {report_data.model_version}<br/>"
+            f"<b>Report ID:</b> {report_data.scan_id}_{report_data.report_timestamp.strftime('%Y%m%d%H%M%S')}<br/>"
+            f"<i>This report was generated by an AI-assisted diagnostic system and should be reviewed by a qualified pathologist.</i>"
+        )
         story.append(Paragraph(metadata_text, styles["Normal"]))
-        
+
         # Build PDF
         doc.build(story)
         return output_path
-    
+
     def _export_json(self, report_data: ReportData, output_path: Path) -> Path:
         """Export report as structured JSON."""
         report_dict = {
@@ -694,14 +713,14 @@ class ClinicalReportGenerator:
             "physician_notes": report_data.physician_notes,
             "amendments": report_data.amendments,
         }
-        
+
         output_path.write_text(json.dumps(report_dict, indent=2), encoding="utf-8")
         return output_path
-    
+
     def _export_fhir(self, report_data: ReportData, output_path: Path) -> Path:
         """
         Export report as FHIR DiagnosticReport resource.
-        
+
         Creates a FHIR R4 DiagnosticReport with observations for each diagnosis.
         """
         # Create FHIR DiagnosticReport resource
@@ -734,7 +753,7 @@ class ClinicalReportGenerator:
             "effectiveDateTime": report_data.scan_date.isoformat(),
             "issued": report_data.report_timestamp.isoformat(),
             "conclusion": f"Primary Diagnosis: {report_data.primary_diagnosis.disease_name} "
-                         f"(Probability: {report_data.primary_diagnosis.probability * 100:.1f}%)",
+            f"(Probability: {report_data.primary_diagnosis.probability * 100:.1f}%)",
             "conclusionCode": [
                 {
                     "coding": [
@@ -771,7 +790,7 @@ class ClinicalReportGenerator:
                 },
             ],
         }
-        
+
         # Add alternative diagnoses as observations
         if report_data.alternative_diagnoses:
             observations = []
@@ -797,10 +816,12 @@ class ClinicalReportGenerator:
                     },
                 }
                 observations.append(obs)
-            
-            fhir_report["result"] = [{"reference": f"#alt-diagnosis-{i}"} for i in range(len(observations))]
+
+            fhir_report["result"] = [
+                {"reference": f"#alt-diagnosis-{i}"} for i in range(len(observations))
+            ]
             fhir_report["contained"] = observations
-        
+
         # Add longitudinal summary if available
         if report_data.longitudinal_summary:
             fhir_report["extension"].append(
@@ -809,14 +830,14 @@ class ClinicalReportGenerator:
                     "valueString": json.dumps(report_data.longitudinal_summary),
                 }
             )
-        
+
         output_path.write_text(json.dumps(fhir_report, indent=2), encoding="utf-8")
         return output_path
-    
+
     def _export_dicom_sr(self, report_data: ReportData, output_path: Path) -> Path:
         """
         Export report as DICOM Structured Report (SR).
-        
+
         Creates a simplified DICOM SR representation in JSON format.
         Note: Full DICOM SR generation requires pydicom and proper DICOM tags.
         """
@@ -877,58 +898,62 @@ class ClinicalReportGenerator:
                 },
             ],
         }
-        
+
         # Add alternative diagnoses
         for diag in report_data.alternative_diagnoses:
-            dicom_sr["ContentSequence"].extend([
-                {
-                    "RelationshipType": "CONTAINS",
-                    "ValueType": "CODE",
-                    "ConceptNameCodeSequence": {
-                        "CodeValue": "121071",
-                        "CodingSchemeDesignator": "DCM",
-                        "CodeMeaning": "Alternative Finding",
-                    },
-                    "ConceptCodeSequence": {
-                        "CodeValue": diag.disease_id,
-                        "CodingSchemeDesignator": "SCT",
-                        "CodeMeaning": diag.disease_name,
-                    },
-                },
-                {
-                    "RelationshipType": "CONTAINS",
-                    "ValueType": "NUM",
-                    "ConceptNameCodeSequence": {
-                        "CodeValue": "121401",
-                        "CodingSchemeDesignator": "DCM",
-                        "CodeMeaning": "Probability",
-                    },
-                    "MeasuredValueSequence": {
-                        "NumericValue": diag.probability,
-                        "MeasurementUnitsCodeSequence": {
-                            "CodeValue": "1",
-                            "CodingSchemeDesignator": "UCUM",
-                            "CodeMeaning": "probability",
+            dicom_sr["ContentSequence"].extend(
+                [
+                    {
+                        "RelationshipType": "CONTAINS",
+                        "ValueType": "CODE",
+                        "ConceptNameCodeSequence": {
+                            "CodeValue": "121071",
+                            "CodingSchemeDesignator": "DCM",
+                            "CodeMeaning": "Alternative Finding",
+                        },
+                        "ConceptCodeSequence": {
+                            "CodeValue": diag.disease_id,
+                            "CodingSchemeDesignator": "SCT",
+                            "CodeMeaning": diag.disease_name,
                         },
                     },
-                },
-            ])
-        
+                    {
+                        "RelationshipType": "CONTAINS",
+                        "ValueType": "NUM",
+                        "ConceptNameCodeSequence": {
+                            "CodeValue": "121401",
+                            "CodingSchemeDesignator": "DCM",
+                            "CodeMeaning": "Probability",
+                        },
+                        "MeasuredValueSequence": {
+                            "NumericValue": diag.probability,
+                            "MeasurementUnitsCodeSequence": {
+                                "CodeValue": "1",
+                                "CodingSchemeDesignator": "UCUM",
+                                "CodeMeaning": "probability",
+                            },
+                        },
+                    },
+                ]
+            )
+
         # Add model version
-        dicom_sr["ContentSequence"].append({
-            "RelationshipType": "CONTAINS",
-            "ValueType": "TEXT",
-            "ConceptNameCodeSequence": {
-                "CodeValue": "121106",
-                "CodingSchemeDesignator": "DCM",
-                "CodeMeaning": "Comment",
-            },
-            "TextValue": f"Model Version: {report_data.model_version}",
-        })
-        
+        dicom_sr["ContentSequence"].append(
+            {
+                "RelationshipType": "CONTAINS",
+                "ValueType": "TEXT",
+                "ConceptNameCodeSequence": {
+                    "CodeValue": "121106",
+                    "CodingSchemeDesignator": "DCM",
+                    "CodeMeaning": "Comment",
+                },
+                "TextValue": f"Model Version: {report_data.model_version}",
+            }
+        )
+
         output_path.write_text(json.dumps(dicom_sr, indent=2), encoding="utf-8")
         return output_path
-    
+
     def add_physician_annotation(
         self,
         report_data: ReportData,
@@ -937,12 +962,12 @@ class ClinicalReportGenerator:
     ) -> ReportData:
         """
         Add physician annotation/amendment to report.
-        
+
         Args:
             report_data: Existing report data.
             user: Username or identifier of physician adding annotation.
             note: Annotation text.
-            
+
         Returns:
             Updated report data with new amendment.
         """
