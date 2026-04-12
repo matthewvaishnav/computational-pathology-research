@@ -12,9 +12,25 @@ This module provides clinical-grade functionality including:
 """
 
 from .classifier import MultiClassDiseaseClassifier
+from .patient_context import (
+    AlcoholConsumption,
+    ClinicalMetadata,
+    ClinicalMetadataEncoder,
+    ExerciseFrequency,
+    PatientContextIntegrator,
+    Sex,
+    SmokingStatus,
+)
 from .taxonomy import DiseaseTaxonomy
 
 __all__ = [
     "DiseaseTaxonomy",
     "MultiClassDiseaseClassifier",
+    "ClinicalMetadata",
+    "PatientContextIntegrator",
+    "ClinicalMetadataEncoder",
+    "SmokingStatus",
+    "AlcoholConsumption",
+    "ExerciseFrequency",
+    "Sex",
 ]
