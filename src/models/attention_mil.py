@@ -195,12 +195,14 @@ class AttentionMIL(AttentionMILBase):
         # Feature projection layer(s)
         if multi_scale and num_scales > 1:
             # Scale-specific feature projection layers
-            self.feature_proj = nn.ModuleList([
-                nn.Sequential(
-                    nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
-                )
-                for _ in range(num_scales)
-            ])
+            self.feature_proj = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
+                    )
+                    for _ in range(num_scales)
+                ]
+            )
         else:
             # Single feature projection layer
             self.feature_proj = nn.Sequential(
@@ -211,18 +213,21 @@ class AttentionMIL(AttentionMILBase):
         if gated:
             if multi_scale and num_scales > 1 and fusion_strategy == "late":
                 # Scale-specific attention networks for late fusion
-                self.attention_V = nn.ModuleList([
-                    nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.Tanh())
-                    for _ in range(num_scales)
-                ])
-                self.attention_U = nn.ModuleList([
-                    nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.Sigmoid())
-                    for _ in range(num_scales)
-                ])
-                self.attention_w = nn.ModuleList([
-                    nn.Linear(hidden_dim, 1)
-                    for _ in range(num_scales)
-                ])
+                self.attention_V = nn.ModuleList(
+                    [
+                        nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.Tanh())
+                        for _ in range(num_scales)
+                    ]
+                )
+                self.attention_U = nn.ModuleList(
+                    [
+                        nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.Sigmoid())
+                        for _ in range(num_scales)
+                    ]
+                )
+                self.attention_w = nn.ModuleList(
+                    [nn.Linear(hidden_dim, 1) for _ in range(num_scales)]
+                )
             else:
                 # Single attention network (for early fusion or single scale)
                 self.attention_V = nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.Tanh())
@@ -232,12 +237,16 @@ class AttentionMIL(AttentionMILBase):
             # Simple attention mechanism
             if multi_scale and num_scales > 1 and fusion_strategy == "late":
                 # Scale-specific attention networks for late fusion
-                self.attention_net = nn.ModuleList([
-                    nn.Sequential(
-                        nn.Linear(hidden_dim, hidden_dim // 2), nn.Tanh(), nn.Linear(hidden_dim // 2, 1)
-                    )
-                    for _ in range(num_scales)
-                ])
+                self.attention_net = nn.ModuleList(
+                    [
+                        nn.Sequential(
+                            nn.Linear(hidden_dim, hidden_dim // 2),
+                            nn.Tanh(),
+                            nn.Linear(hidden_dim // 2, 1),
+                        )
+                        for _ in range(num_scales)
+                    ]
+                )
             else:
                 # Single attention network
                 self.attention_net = nn.Sequential(
@@ -246,7 +255,9 @@ class AttentionMIL(AttentionMILBase):
 
         # Classifier head
         # For late fusion, input is concatenated scale representations
-        classifier_input_dim = hidden_dim * num_scales if (multi_scale and fusion_strategy == "late") else hidden_dim
+        classifier_input_dim = (
+            hidden_dim * num_scales if (multi_scale and fusion_strategy == "late") else hidden_dim
+        )
         self.classifier = nn.Sequential(
             nn.Linear(classifier_input_dim, hidden_dim),
             nn.ReLU(),
@@ -255,17 +266,15 @@ class AttentionMIL(AttentionMILBase):
         )
 
     def _early_fusion(
-        self, 
-        multi_scale_features: list, 
-        mask: Optional[torch.Tensor] = None
+        self, multi_scale_features: list, mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Early fusion: concatenate features from all scales before attention.
-        
+
         Args:
             multi_scale_features: List of [batch_size, num_patches, feature_dim] tensors, one per scale
             mask: Boolean mask [batch_size, num_patches], True for valid patches
-            
+
         Returns:
             slide_repr: Aggregated slide representation [batch_size, hidden_dim]
             attention_weights: Attention weights [batch_size, num_patches]
@@ -280,15 +289,17 @@ class AttentionMIL(AttentionMILBase):
                 else:
                     h = self.feature_proj(scale_features)
                 projected_features.append(h)
-        
+
         # Concatenate along feature dimension
         # [batch_size, num_patches, hidden_dim * num_scales]
         h_concat = torch.cat(projected_features, dim=-1)
-        
+
         # Average pooling to get back to hidden_dim
         # [batch_size, num_patches, hidden_dim]
-        h = h_concat.view(h_concat.size(0), h_concat.size(1), len(projected_features), self.hidden_dim).mean(dim=2)
-        
+        h = h_concat.view(
+            h_concat.size(0), h_concat.size(1), len(projected_features), self.hidden_dim
+        ).mean(dim=2)
+
         # Compute attention scores using the unified representation
         if self.gated:
             # Use single attention network (not ModuleList for early fusion)
@@ -305,54 +316,56 @@ class AttentionMIL(AttentionMILBase):
                 a = self.attention_net[0](h)
             else:
                 a = self.attention_net(h)
-        
+
         a = a.squeeze(-1)  # [batch_size, num_patches]
-        
+
         # Apply mask
         if mask is not None:
             a = a.masked_fill(~mask, float("-inf"))
-        
+
         # Normalize with softmax
         attention_weights = torch.softmax(a, dim=1)
-        
+
         # Weighted sum
         slide_repr = torch.bmm(attention_weights.unsqueeze(1), h).squeeze(1)
-        
+
         return slide_repr, attention_weights
-    
+
     def _late_fusion(
-        self, 
-        multi_scale_features: list, 
-        mask: Optional[torch.Tensor] = None
+        self, multi_scale_features: list, mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Late fusion: separate attention per scale, then combine outputs.
-        
+
         Args:
             multi_scale_features: List of [batch_size, num_patches, feature_dim] tensors, one per scale
             mask: Boolean mask [batch_size, num_patches], True for valid patches
-            
+
         Returns:
             slide_repr: Concatenated slide representations [batch_size, hidden_dim * num_scales]
             attention_weights: Average attention weights [batch_size, num_patches]
         """
         scale_representations = []
         scale_attention_weights = []
-        
+
         for scale_idx, scale_features in enumerate(multi_scale_features):
             if scale_features is None:
                 # Handle missing scale: use zeros
-                batch_size = multi_scale_features[0].size(0) if multi_scale_features[0] is not None else 1
+                batch_size = (
+                    multi_scale_features[0].size(0) if multi_scale_features[0] is not None else 1
+                )
                 device = next(self.parameters()).device
-                scale_representations.append(torch.zeros(batch_size, self.hidden_dim, device=device))
+                scale_representations.append(
+                    torch.zeros(batch_size, self.hidden_dim, device=device)
+                )
                 continue
-            
+
             # Project features for this scale
             if isinstance(self.feature_proj, nn.ModuleList):
                 h = self.feature_proj[scale_idx](scale_features)
             else:
                 h = self.feature_proj(scale_features)
-            
+
             # Compute attention scores for this scale
             if self.gated:
                 if isinstance(self.attention_V, nn.ModuleList):
@@ -368,27 +381,27 @@ class AttentionMIL(AttentionMILBase):
                     a = self.attention_net[scale_idx](h)
                 else:
                     a = self.attention_net(h)
-            
+
             a = a.squeeze(-1)  # [batch_size, num_patches]
-            
+
             # Apply mask
             if mask is not None:
                 a = a.masked_fill(~mask, float("-inf"))
-            
+
             # Normalize with softmax
             attention_weights_scale = torch.softmax(a, dim=1)
             scale_attention_weights.append(attention_weights_scale)
-            
+
             # Weighted sum for this scale
             scale_repr = torch.bmm(attention_weights_scale.unsqueeze(1), h).squeeze(1)
             scale_representations.append(scale_repr)
-        
+
         # Concatenate scale representations
         slide_repr = torch.cat(scale_representations, dim=-1)
-        
+
         # Average attention weights across scales for visualization
         attention_weights = torch.stack(scale_attention_weights, dim=0).mean(dim=0)
-        
+
         return slide_repr, attention_weights
 
     def compute_attention(
@@ -475,22 +488,24 @@ class AttentionMIL(AttentionMILBase):
         if isinstance(features, list):
             # Multi-scale input
             if not self.multi_scale:
-                raise ValueError("Model was not initialized with multi_scale=True but received list of features")
-            
+                raise ValueError(
+                    "Model was not initialized with multi_scale=True but received list of features"
+                )
+
             # Get batch size and max patches from first non-None scale
             first_scale = next((f for f in features if f is not None), None)
             if first_scale is None:
                 raise ValueError("All scales are None in multi-scale input")
-            
+
             batch_size, max_patches, _ = first_scale.shape
-            
+
             # Create mask from num_patches
             mask = None
             if num_patches is not None:
                 mask = torch.arange(max_patches, device=first_scale.device).unsqueeze(
                     0
                 ) < num_patches.unsqueeze(1)
-            
+
             # Apply fusion strategy
             if self.fusion_strategy == "early":
                 slide_repr, attention_weights = self._early_fusion(features, mask)
@@ -498,10 +513,10 @@ class AttentionMIL(AttentionMILBase):
                 slide_repr, attention_weights = self._late_fusion(features, mask)
             else:
                 raise ValueError(f"Unknown fusion_strategy: {self.fusion_strategy}")
-            
+
             # Classify
             logits = self.classifier(slide_repr)
-            
+
             if return_attention:
                 return logits, attention_weights
             else:
@@ -573,7 +588,7 @@ class CLAM(AttentionMILBase):
         torch.Size([4, 100])
         >>> instance_preds.shape
         torch.Size([4, 100, 10])
-        
+
         >>> # Multi-scale CLAM with late fusion
         >>> model = CLAM(feature_dim=1024, multi_scale=True, num_scales=3, fusion_strategy='late')
         >>> features_scale1 = torch.randn(4, 100, 1024)
@@ -616,12 +631,14 @@ class CLAM(AttentionMILBase):
         # Feature projection layer(s)
         if multi_scale and num_scales > 1:
             # Scale-specific feature projection layers
-            self.feature_proj = nn.ModuleList([
-                nn.Sequential(
-                    nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
-                )
-                for _ in range(num_scales)
-            ])
+            self.feature_proj = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
+                    )
+                    for _ in range(num_scales)
+                ]
+            )
         else:
             # Single feature projection layer
             self.feature_proj = nn.Sequential(
@@ -631,15 +648,17 @@ class CLAM(AttentionMILBase):
         # Instance-level classifier for clustering
         if multi_scale and num_scales > 1 and fusion_strategy == "late":
             # Scale-specific instance classifiers for late fusion
-            self.instance_classifier = nn.ModuleList([
-                nn.Sequential(
-                    nn.Linear(hidden_dim, hidden_dim // 2),
-                    nn.ReLU(),
-                    nn.Dropout(dropout),
-                    nn.Linear(hidden_dim // 2, num_clusters),
-                )
-                for _ in range(num_scales)
-            ])
+            self.instance_classifier = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.Linear(hidden_dim, hidden_dim // 2),
+                        nn.ReLU(),
+                        nn.Dropout(dropout),
+                        nn.Linear(hidden_dim // 2, num_clusters),
+                    )
+                    for _ in range(num_scales)
+                ]
+            )
         else:
             # Single instance classifier (for early fusion or single scale)
             self.instance_classifier = nn.Sequential(
@@ -653,25 +672,37 @@ class CLAM(AttentionMILBase):
         if multi_scale and num_scales > 1 and fusion_strategy == "late":
             # Scale-specific attention branches for late fusion
             if multi_branch:
-                self.attention_pos = nn.ModuleList([
-                    nn.Sequential(
-                        nn.Linear(hidden_dim, hidden_dim // 2), nn.Tanh(), nn.Linear(hidden_dim // 2, 1)
-                    )
-                    for _ in range(num_scales)
-                ])
-                self.attention_neg = nn.ModuleList([
-                    nn.Sequential(
-                        nn.Linear(hidden_dim, hidden_dim // 2), nn.Tanh(), nn.Linear(hidden_dim // 2, 1)
-                    )
-                    for _ in range(num_scales)
-                ])
+                self.attention_pos = nn.ModuleList(
+                    [
+                        nn.Sequential(
+                            nn.Linear(hidden_dim, hidden_dim // 2),
+                            nn.Tanh(),
+                            nn.Linear(hidden_dim // 2, 1),
+                        )
+                        for _ in range(num_scales)
+                    ]
+                )
+                self.attention_neg = nn.ModuleList(
+                    [
+                        nn.Sequential(
+                            nn.Linear(hidden_dim, hidden_dim // 2),
+                            nn.Tanh(),
+                            nn.Linear(hidden_dim // 2, 1),
+                        )
+                        for _ in range(num_scales)
+                    ]
+                )
             else:
-                self.attention_net = nn.ModuleList([
-                    nn.Sequential(
-                        nn.Linear(hidden_dim, hidden_dim // 2), nn.Tanh(), nn.Linear(hidden_dim // 2, 1)
-                    )
-                    for _ in range(num_scales)
-                ])
+                self.attention_net = nn.ModuleList(
+                    [
+                        nn.Sequential(
+                            nn.Linear(hidden_dim, hidden_dim // 2),
+                            nn.Tanh(),
+                            nn.Linear(hidden_dim // 2, 1),
+                        )
+                        for _ in range(num_scales)
+                    ]
+                )
         else:
             # Single attention branch (for early fusion or single scale)
             if multi_branch:
@@ -695,7 +726,7 @@ class CLAM(AttentionMILBase):
                 bag_input_dim = hidden_dim * num_scales
         else:
             bag_input_dim = hidden_dim * 2 if multi_branch else hidden_dim
-        
+
         self.bag_classifier = nn.Sequential(
             nn.Linear(bag_input_dim, hidden_dim),
             nn.ReLU(),
@@ -710,11 +741,11 @@ class CLAM(AttentionMILBase):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Early fusion: concatenate features from all scales before attention.
-        
+
         Args:
             multi_scale_features: List of [batch_size, num_patches, feature_dim] tensors, one per scale
             mask: Boolean mask [batch_size, num_patches], True for valid patches
-            
+
         Returns:
             slide_repr: Aggregated slide representation [batch_size, hidden_dim * 2] if multi_branch else [batch_size, hidden_dim]
             attention_weights: Attention weights (dict if multi_branch, tensor otherwise)
@@ -730,21 +761,23 @@ class CLAM(AttentionMILBase):
                 else:
                     h = self.feature_proj(scale_features)
                 projected_features.append(h)
-        
+
         # Concatenate along feature dimension
         # [batch_size, num_patches, hidden_dim * num_scales]
         h_concat = torch.cat(projected_features, dim=-1)
-        
+
         # Average pooling to get back to hidden_dim
         # [batch_size, num_patches, hidden_dim]
-        h = h_concat.view(h_concat.size(0), h_concat.size(1), len(projected_features), self.hidden_dim).mean(dim=2)
-        
+        h = h_concat.view(
+            h_concat.size(0), h_concat.size(1), len(projected_features), self.hidden_dim
+        ).mean(dim=2)
+
         # Compute instance predictions using the unified representation
         if isinstance(self.instance_classifier, nn.ModuleList):
             instance_preds = self.instance_classifier[0](h)
         else:
             instance_preds = self.instance_classifier(h)
-        
+
         # Compute attention and aggregate features
         if self.multi_branch:
             # Compute attention scores for positive branch
@@ -753,27 +786,27 @@ class CLAM(AttentionMILBase):
             else:
                 a_pos = self.attention_pos(h)
             a_pos = a_pos.squeeze(-1)
-            
+
             # Compute attention scores for negative branch
             if isinstance(self.attention_neg, nn.ModuleList):
                 a_neg = self.attention_neg[0](h)
             else:
                 a_neg = self.attention_neg(h)
             a_neg = a_neg.squeeze(-1)
-            
+
             # Apply mask
             if mask is not None:
                 a_pos = a_pos.masked_fill(~mask, float("-inf"))
                 a_neg = a_neg.masked_fill(~mask, float("-inf"))
-            
+
             # Normalize with softmax
             attention_pos = torch.softmax(a_pos, dim=1)
             attention_neg = torch.softmax(a_neg, dim=1)
-            
+
             # Weighted sum for both branches
             slide_repr_pos = torch.bmm(attention_pos.unsqueeze(1), h).squeeze(1)
             slide_repr_neg = torch.bmm(attention_neg.unsqueeze(1), h).squeeze(1)
-            
+
             # Concatenate branch features
             slide_repr = torch.cat([slide_repr_pos, slide_repr_neg], dim=1)
             attention_weights = {"positive": attention_pos, "negative": attention_neg}
@@ -784,19 +817,19 @@ class CLAM(AttentionMILBase):
             else:
                 a = self.attention_net(h)
             a = a.squeeze(-1)
-            
+
             # Apply mask
             if mask is not None:
                 a = a.masked_fill(~mask, float("-inf"))
-            
+
             # Normalize with softmax
             attention_weights = torch.softmax(a, dim=1)
-            
+
             # Weighted sum
             slide_repr = torch.bmm(attention_weights.unsqueeze(1), h).squeeze(1)
-        
+
         return slide_repr, attention_weights, instance_preds
-    
+
     def _late_fusion_clam(
         self,
         multi_scale_features: list,
@@ -804,11 +837,11 @@ class CLAM(AttentionMILBase):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Late fusion: separate attention per scale, then combine outputs.
-        
+
         Args:
             multi_scale_features: List of [batch_size, num_patches, feature_dim] tensors, one per scale
             mask: Boolean mask [batch_size, num_patches], True for valid patches
-            
+
         Returns:
             slide_repr: Concatenated slide representations
             attention_weights: Average attention weights (dict if multi_branch, tensor otherwise)
@@ -819,31 +852,37 @@ class CLAM(AttentionMILBase):
         scale_attention_weights_neg = []
         scale_attention_weights_single = []
         scale_instance_preds = []
-        
+
         for scale_idx, scale_features in enumerate(multi_scale_features):
             if scale_features is None:
                 # Handle missing scale: use zeros
-                batch_size = multi_scale_features[0].size(0) if multi_scale_features[0] is not None else 1
+                batch_size = (
+                    multi_scale_features[0].size(0) if multi_scale_features[0] is not None else 1
+                )
                 device = next(self.parameters()).device
                 if self.multi_branch:
-                    scale_representations.append(torch.zeros(batch_size, self.hidden_dim * 2, device=device))
+                    scale_representations.append(
+                        torch.zeros(batch_size, self.hidden_dim * 2, device=device)
+                    )
                 else:
-                    scale_representations.append(torch.zeros(batch_size, self.hidden_dim, device=device))
+                    scale_representations.append(
+                        torch.zeros(batch_size, self.hidden_dim, device=device)
+                    )
                 continue
-            
+
             # Project features for this scale
             if isinstance(self.feature_proj, nn.ModuleList):
                 h = self.feature_proj[scale_idx](scale_features)
             else:
                 h = self.feature_proj(scale_features)
-            
+
             # Compute instance predictions for this scale
             if isinstance(self.instance_classifier, nn.ModuleList):
                 instance_preds_scale = self.instance_classifier[scale_idx](h)
             else:
                 instance_preds_scale = self.instance_classifier(h)
             scale_instance_preds.append(instance_preds_scale)
-            
+
             # Compute attention and aggregate for this scale
             if self.multi_branch:
                 # Positive branch
@@ -852,30 +891,30 @@ class CLAM(AttentionMILBase):
                 else:
                     a_pos = self.attention_pos(h)
                 a_pos = a_pos.squeeze(-1)
-                
+
                 # Negative branch
                 if isinstance(self.attention_neg, nn.ModuleList):
                     a_neg = self.attention_neg[scale_idx](h)
                 else:
                     a_neg = self.attention_neg(h)
                 a_neg = a_neg.squeeze(-1)
-                
+
                 # Apply mask
                 if mask is not None:
                     a_pos = a_pos.masked_fill(~mask, float("-inf"))
                     a_neg = a_neg.masked_fill(~mask, float("-inf"))
-                
+
                 # Normalize with softmax
                 attention_pos = torch.softmax(a_pos, dim=1)
                 attention_neg = torch.softmax(a_neg, dim=1)
-                
+
                 scale_attention_weights_pos.append(attention_pos)
                 scale_attention_weights_neg.append(attention_neg)
-                
+
                 # Weighted sum for both branches
                 slide_repr_pos = torch.bmm(attention_pos.unsqueeze(1), h).squeeze(1)
                 slide_repr_neg = torch.bmm(attention_neg.unsqueeze(1), h).squeeze(1)
-                
+
                 # Concatenate branch features for this scale
                 scale_repr = torch.cat([slide_repr_pos, slide_repr_neg], dim=1)
                 scale_representations.append(scale_repr)
@@ -886,22 +925,22 @@ class CLAM(AttentionMILBase):
                 else:
                     a = self.attention_net(h)
                 a = a.squeeze(-1)
-                
+
                 # Apply mask
                 if mask is not None:
                     a = a.masked_fill(~mask, float("-inf"))
-                
+
                 # Normalize with softmax
                 attention_weights_scale = torch.softmax(a, dim=1)
                 scale_attention_weights_single.append(attention_weights_scale)
-                
+
                 # Weighted sum for this scale
                 scale_repr = torch.bmm(attention_weights_scale.unsqueeze(1), h).squeeze(1)
                 scale_representations.append(scale_repr)
-        
+
         # Concatenate scale representations
         slide_repr = torch.cat(scale_representations, dim=-1)
-        
+
         # Average attention weights across scales for visualization
         if self.multi_branch:
             attention_weights = {
@@ -910,10 +949,10 @@ class CLAM(AttentionMILBase):
             }
         else:
             attention_weights = torch.stack(scale_attention_weights_single, dim=0).mean(dim=0)
-        
+
         # Average instance predictions across scales
         instance_preds = torch.stack(scale_instance_preds, dim=0).mean(dim=0)
-        
+
         return slide_repr, attention_weights, instance_preds
 
     def compute_instance_predictions(self, features: torch.Tensor) -> torch.Tensor:
@@ -1019,33 +1058,39 @@ class CLAM(AttentionMILBase):
         if isinstance(features, list):
             # Multi-scale input
             if not self.multi_scale:
-                raise ValueError("Model was not initialized with multi_scale=True but received list of features")
-            
+                raise ValueError(
+                    "Model was not initialized with multi_scale=True but received list of features"
+                )
+
             # Get batch size and max patches from first non-None scale
             first_scale = next((f for f in features if f is not None), None)
             if first_scale is None:
                 raise ValueError("All scales are None in multi-scale input")
-            
+
             batch_size, max_patches, _ = first_scale.shape
-            
+
             # Create mask from num_patches
             mask = None
             if num_patches is not None:
                 mask = torch.arange(max_patches, device=first_scale.device).unsqueeze(
                     0
                 ) < num_patches.unsqueeze(1)
-            
+
             # Apply fusion strategy
             if self.fusion_strategy == "early":
-                slide_repr, attention_weights, instance_preds = self._early_fusion_clam(features, mask)
+                slide_repr, attention_weights, instance_preds = self._early_fusion_clam(
+                    features, mask
+                )
             elif self.fusion_strategy == "late":
-                slide_repr, attention_weights, instance_preds = self._late_fusion_clam(features, mask)
+                slide_repr, attention_weights, instance_preds = self._late_fusion_clam(
+                    features, mask
+                )
             else:
                 raise ValueError(f"Unknown fusion_strategy: {self.fusion_strategy}")
-            
+
             # Bag-level classification
             logits = self.bag_classifier(slide_repr)
-            
+
             if return_attention:
                 return logits, attention_weights, instance_preds
             else:
@@ -1133,7 +1178,7 @@ class TransMIL(AttentionMILBase):
         torch.Size([4, 2])
         >>> attention.shape  # Uniform weights (transformer attention is internal)
         torch.Size([4, 100])
-        
+
         >>> # Multi-scale TransMIL with late fusion
         >>> model = TransMIL(feature_dim=1024, multi_scale=True, num_scales=3, fusion_strategy='late')
         >>> features_scale1 = torch.randn(4, 100, 1024)
@@ -1178,12 +1223,14 @@ class TransMIL(AttentionMILBase):
         # Feature projection layer(s)
         if multi_scale and num_scales > 1:
             # Scale-specific feature projection layers
-            self.feature_proj = nn.ModuleList([
-                nn.Sequential(
-                    nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
-                )
-                for _ in range(num_scales)
-            ])
+            self.feature_proj = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
+                    )
+                    for _ in range(num_scales)
+                ]
+            )
         else:
             # Single feature projection layer
             self.feature_proj = nn.Sequential(
@@ -1194,10 +1241,12 @@ class TransMIL(AttentionMILBase):
         if use_pos_encoding:
             if multi_scale and num_scales > 1:
                 # Scale-specific positional encodings
-                self.pos_encoding = nn.ParameterList([
-                    nn.Parameter(torch.randn(1, 10000, hidden_dim) * 0.02)
-                    for _ in range(num_scales)
-                ])
+                self.pos_encoding = nn.ParameterList(
+                    [
+                        nn.Parameter(torch.randn(1, 10000, hidden_dim) * 0.02)
+                        for _ in range(num_scales)
+                    ]
+                )
             else:
                 # Single positional encoding
                 self.pos_encoding = nn.Parameter(torch.randn(1, 10000, hidden_dim) * 0.02)
@@ -1208,10 +1257,12 @@ class TransMIL(AttentionMILBase):
         # Transformer encoder(s)
         if multi_scale and num_scales > 1 and fusion_strategy == "late":
             # Scale-specific transformers for late fusion
-            self.transformer = nn.ModuleList([
-                self._create_transformer(hidden_dim, num_heads, num_layers, dropout)
-                for _ in range(num_scales)
-            ])
+            self.transformer = nn.ModuleList(
+                [
+                    self._create_transformer(hidden_dim, num_heads, num_layers, dropout)
+                    for _ in range(num_scales)
+                ]
+            )
         else:
             # Single transformer (for early fusion or single scale)
             self.transformer = self._create_transformer(hidden_dim, num_heads, num_layers, dropout)
@@ -1219,17 +1270,16 @@ class TransMIL(AttentionMILBase):
         # Layer normalization
         if multi_scale and num_scales > 1 and fusion_strategy == "late":
             # Scale-specific layer norms for late fusion
-            self.norm = nn.ModuleList([
-                nn.LayerNorm(hidden_dim)
-                for _ in range(num_scales)
-            ])
+            self.norm = nn.ModuleList([nn.LayerNorm(hidden_dim) for _ in range(num_scales)])
         else:
             # Single layer norm
             self.norm = nn.LayerNorm(hidden_dim)
 
         # Classifier head
         # For late fusion, input is concatenated CLS tokens from all scales
-        classifier_input_dim = hidden_dim * num_scales if (multi_scale and fusion_strategy == "late") else hidden_dim
+        classifier_input_dim = (
+            hidden_dim * num_scales if (multi_scale and fusion_strategy == "late") else hidden_dim
+        )
         self.classifier = nn.Sequential(
             nn.Linear(classifier_input_dim, hidden_dim),
             nn.ReLU(),
@@ -1259,11 +1309,11 @@ class TransMIL(AttentionMILBase):
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Early fusion: concatenate features from all scales before transformer.
-        
+
         Args:
             multi_scale_features: List of [batch_size, num_patches, feature_dim] tensors, one per scale
             mask: Boolean mask [batch_size, num_patches], True for valid patches
-            
+
         Returns:
             cls_repr: CLS token representation [batch_size, hidden_dim]
             attention_weights: Uniform attention weights [batch_size, num_patches]
@@ -1271,7 +1321,7 @@ class TransMIL(AttentionMILBase):
         # Get batch size and max patches from first non-None scale
         first_scale = next((f for f in multi_scale_features if f is not None), None)
         batch_size, max_patches, _ = first_scale.shape
-        
+
         # Project features for each scale
         projected_features = []
         for scale_idx, scale_features in enumerate(multi_scale_features):
@@ -1282,12 +1332,14 @@ class TransMIL(AttentionMILBase):
                 else:
                     h = self.feature_proj(scale_features)
                 projected_features.append(h)
-        
+
         # Concatenate along feature dimension and average to get back to hidden_dim
         # [batch_size, num_patches, hidden_dim * num_scales] -> [batch_size, num_patches, hidden_dim]
         h_concat = torch.cat(projected_features, dim=-1)
-        h = h_concat.view(h_concat.size(0), h_concat.size(1), len(projected_features), self.hidden_dim).mean(dim=2)
-        
+        h = h_concat.view(
+            h_concat.size(0), h_concat.size(1), len(projected_features), self.hidden_dim
+        ).mean(dim=2)
+
         # Add positional encoding
         if self.use_pos_encoding:
             # Use first positional encoding (or single one if not ModuleList)
@@ -1295,11 +1347,11 @@ class TransMIL(AttentionMILBase):
                 h = h + self.pos_encoding[0][:, :max_patches, :]
             else:
                 h = h + self.pos_encoding[:, :max_patches, :]
-        
+
         # Prepend CLS token
         cls_tokens = self.cls_token.expand(batch_size, -1, -1)  # [batch_size, 1, hidden_dim]
         h = torch.cat([cls_tokens, h], dim=1)  # [batch_size, num_patches+1, hidden_dim]
-        
+
         # Create attention mask for transformer
         if mask is not None:
             # Create mask: False for valid positions (CLS + valid patches), True for padding
@@ -1309,25 +1361,25 @@ class TransMIL(AttentionMILBase):
             transformer_mask = torch.cat([cls_mask, transformer_mask], dim=1)
         else:
             transformer_mask = None
-        
+
         # Apply transformer (use single transformer for early fusion)
         if isinstance(self.transformer, nn.ModuleList):
             h = self.transformer[0](h, src_key_padding_mask=transformer_mask)
         else:
             h = self.transformer(h, src_key_padding_mask=transformer_mask)
-        
+
         # Extract CLS token representation
         cls_repr = h[:, 0, :]  # [batch_size, hidden_dim]
-        
+
         # Apply layer normalization
         if isinstance(self.norm, nn.ModuleList):
             cls_repr = self.norm[0](cls_repr)
         else:
             cls_repr = self.norm(cls_repr)
-        
+
         # Return uniform attention weights for API compatibility
         attention_weights = self.compute_attention(first_scale, mask)
-        
+
         return cls_repr, attention_weights
 
     def _late_fusion_transmil(
@@ -1337,78 +1389,84 @@ class TransMIL(AttentionMILBase):
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Late fusion: separate transformers per scale, then concatenate CLS tokens.
-        
+
         Args:
             multi_scale_features: List of [batch_size, num_patches, feature_dim] tensors, one per scale
             mask: Boolean mask [batch_size, num_patches], True for valid patches
-            
+
         Returns:
             cls_repr: Concatenated CLS token representations [batch_size, hidden_dim * num_scales]
             attention_weights: Average uniform attention weights [batch_size, num_patches]
         """
         scale_cls_representations = []
-        
+
         for scale_idx, scale_features in enumerate(multi_scale_features):
             if scale_features is None:
                 # Handle missing scale: use zeros
-                batch_size = multi_scale_features[0].size(0) if multi_scale_features[0] is not None else 1
+                batch_size = (
+                    multi_scale_features[0].size(0) if multi_scale_features[0] is not None else 1
+                )
                 device = next(self.parameters()).device
-                scale_cls_representations.append(torch.zeros(batch_size, self.hidden_dim, device=device))
+                scale_cls_representations.append(
+                    torch.zeros(batch_size, self.hidden_dim, device=device)
+                )
                 continue
-            
+
             batch_size, max_patches, _ = scale_features.shape
-            
+
             # Project features for this scale
             if isinstance(self.feature_proj, nn.ModuleList):
                 h = self.feature_proj[scale_idx](scale_features)
             else:
                 h = self.feature_proj(scale_features)
-            
+
             # Add scale-specific positional encoding
             if self.use_pos_encoding:
                 if isinstance(self.pos_encoding, nn.ParameterList):
                     h = h + self.pos_encoding[scale_idx][:, :max_patches, :]
                 else:
                     h = h + self.pos_encoding[:, :max_patches, :]
-            
+
             # Prepend CLS token
             cls_tokens = self.cls_token.expand(batch_size, -1, -1)  # [batch_size, 1, hidden_dim]
             h = torch.cat([cls_tokens, h], dim=1)  # [batch_size, num_patches+1, hidden_dim]
-            
+
             # Create attention mask for transformer
             if mask is not None:
                 # Create mask: False for valid positions (CLS + valid patches), True for padding
                 transformer_mask = ~mask  # Invert: True for padding
                 # Prepend False for CLS token
-                cls_mask = torch.zeros(batch_size, 1, dtype=torch.bool, device=scale_features.device)
+                cls_mask = torch.zeros(
+                    batch_size, 1, dtype=torch.bool, device=scale_features.device
+                )
                 transformer_mask = torch.cat([cls_mask, transformer_mask], dim=1)
             else:
                 transformer_mask = None
-            
+
             # Apply scale-specific transformer
             if isinstance(self.transformer, nn.ModuleList):
                 h = self.transformer[scale_idx](h, src_key_padding_mask=transformer_mask)
             else:
                 h = self.transformer(h, src_key_padding_mask=transformer_mask)
-            
+
             # Extract CLS token representation
             cls_repr = h[:, 0, :]  # [batch_size, hidden_dim]
-            
+
             # Apply scale-specific layer normalization
             if isinstance(self.norm, nn.ModuleList):
                 cls_repr = self.norm[scale_idx](cls_repr)
             else:
                 cls_repr = self.norm(cls_repr)
-            
+
             scale_cls_representations.append(cls_repr)
-        
+
         # Concatenate CLS representations from all scales
         cls_repr = torch.cat(scale_cls_representations, dim=-1)
-        
+
         # Return uniform attention weights for API compatibility
         first_scale = next((f for f in multi_scale_features if f is not None), None)
         attention_weights = self.compute_attention(first_scale, mask)
-        
+
         return cls_repr, attention_weights
 
     def compute_attention(
@@ -1480,22 +1538,24 @@ class TransMIL(AttentionMILBase):
         if isinstance(features, list):
             # Multi-scale input
             if not self.multi_scale:
-                raise ValueError("Model was not initialized with multi_scale=True but received list of features")
-            
+                raise ValueError(
+                    "Model was not initialized with multi_scale=True but received list of features"
+                )
+
             # Get batch size and max patches from first non-None scale
             first_scale = next((f for f in features if f is not None), None)
             if first_scale is None:
                 raise ValueError("All scales are None in multi-scale input")
-            
+
             batch_size, max_patches, _ = first_scale.shape
-            
+
             # Create mask from num_patches
             mask = None
             if num_patches is not None:
                 mask = torch.arange(max_patches, device=first_scale.device).unsqueeze(
                     0
                 ) < num_patches.unsqueeze(1)
-            
+
             # Apply fusion strategy
             if self.fusion_strategy == "early":
                 cls_repr, attention_weights = self._early_fusion_transmil(features, mask)
@@ -1503,10 +1563,10 @@ class TransMIL(AttentionMILBase):
                 cls_repr, attention_weights = self._late_fusion_transmil(features, mask)
             else:
                 raise ValueError(f"Unknown fusion_strategy: {self.fusion_strategy}")
-            
+
             # Classify
             logits = self.classifier(cls_repr)
-            
+
             if return_attention:
                 return logits, attention_weights
             else:
@@ -1541,8 +1601,10 @@ class TransMIL(AttentionMILBase):
                 ) >= num_patches.unsqueeze(1)
                 # Prepend False for CLS token
                 cls_mask = torch.zeros(batch_size, 1, dtype=torch.bool, device=features.device)
-                transformer_mask = torch.cat([cls_mask, transformer_mask], dim=1)  # [batch_size, num_patches+1]
-                
+                transformer_mask = torch.cat(
+                    [cls_mask, transformer_mask], dim=1
+                )  # [batch_size, num_patches+1]
+
                 # Create mask for compute_attention (True for valid patches)
                 patch_mask = torch.arange(max_patches, device=features.device).unsqueeze(
                     0
