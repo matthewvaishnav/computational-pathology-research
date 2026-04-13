@@ -51,15 +51,15 @@ body {
   font-family: 'Crimson Text', 'Georgia', 'Times New Roman', serif;
   font-size: 18px;
   line-height: 1.8;
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
+  color: var(--text-primary) !important;
+  background-color: var(--bg-primary) !important;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
   letter-spacing: -0.02em;
 }
 
@@ -214,6 +214,7 @@ section {
   width: 650px;
   float: right;
   padding-bottom: 50px;
+  background-color: var(--bg-primary);
   
   h1 {
     font-size: 2.5em;
@@ -227,7 +228,7 @@ section {
     font-size: 2em;
     margin-top: 45px;
     margin-bottom: 20px;
-    color: var(--accent-primary);
+    color: var(--accent-primary) !important;
   }
   
   h3 {
@@ -239,6 +240,7 @@ section {
   p {
     margin: 20px 0;
     text-align: justify;
+    color: var(--text-primary);
   }
   
   ul, ol {
@@ -395,27 +397,51 @@ section {
 
 /* Code Blocks */
 code {
-  background: var(--bg-code);
+  background: var(--bg-code) !important;
   padding: 3px 8px;
   border-radius: 4px;
   font-size: 0.9em;
   font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-  color: var(--text-code);
+  color: var(--text-code) !important;
 }
 
 pre {
-  background: var(--bg-pre);
-  border: none;
+  background: var(--bg-pre) !important;
+  border: none !important;
   border-radius: 8px;
   padding: 20px;
   overflow-x: auto;
   box-shadow: 0 4px 12px var(--shadow-sm);
   
   code {
-    background: none;
+    background: none !important;
     padding: 0;
-    color: var(--text-pre);
+    color: var(--text-pre) !important;
     font-size: 0.85em;
+  }
+}
+
+/* Syntax highlighting overrides for dark theme */
+[data-theme="dark"] {
+  .highlight,
+  .highlighter-rouge {
+    background: var(--bg-pre) !important;
+    color: var(--text-pre) !important;
+    
+    pre {
+      background: var(--bg-pre) !important;
+    }
+    
+    code {
+      background: var(--bg-pre) !important;
+      color: var(--text-pre) !important;
+    }
+  }
+  
+  /* Override any inline styles */
+  div[style*="background"],
+  pre[style*="background"] {
+    background: var(--bg-pre) !important;
   }
 }
 
