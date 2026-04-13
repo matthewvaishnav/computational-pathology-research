@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/matthewvaishnav/computational-pathology-research/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/matthewvaishnav/computational-pathology-research/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
-[![Tests](https://img.shields.io/badge/tests-555%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-68%25-green.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
+[![Tests](https://img.shields.io/badge/tests-972%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -23,7 +23,7 @@ A production-grade PyTorch framework for computational pathology research, provi
 - 🧠 **Multiple Instance Learning (MIL)**: Slide-level classification with attention mechanisms
 - 📊 **Benchmark Pipelines**: PatchCamelyon and CAMELYON16-compatible training/evaluation
 - 🔧 **Analysis Tools**: Baseline comparison, metrics analysis, bootstrap confidence intervals
-- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 68% test coverage
+- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 55% test coverage (972 tests)
 - 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
 **Status**: Research framework with validated infrastructure. Real PCam dataset support included. Not validated for clinical use.
