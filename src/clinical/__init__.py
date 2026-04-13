@@ -77,7 +77,6 @@ from .reporting import (
 from .risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
 from .taxonomy import DiseaseTaxonomy
 from .temporal_progression import (
-    ClinicalMetadataEncoder,
     TemporalProgressionModel,
     TreatmentEffectEncoder,
 )
@@ -107,7 +106,6 @@ __all__ = [
     "LongitudinalTracker",
     "TemporalProgressionModel",
     "TreatmentEffectEncoder",
-    "ClinicalMetadataEncoder",
     "ClinicalDocumentParser",
     "DocumentFormat",
     "ExtractedEntity",
