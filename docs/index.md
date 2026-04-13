@@ -13,7 +13,7 @@ title: Home
   <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg" alt="PyTorch">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-  <img src="https://img.shields.io/badge/coverage-62%25-yellow.svg" alt="Coverage">
+  <img src="https://img.shields.io/badge/coverage-55%25-yellow.svg" alt="Coverage">
 </div>
 
 ---
@@ -22,7 +22,7 @@ title: Home
 
 This framework provides tested implementations for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving 94% accuracy on patch-level classification and functional slide-level aggregation with multiple pooling strategies.
 
-The codebase emphasizes research reproducibility with comprehensive unit testing (62% coverage), modular architecture, and extensive documentation.
+The codebase emphasizes research reproducibility with comprehensive unit testing (55% coverage, 972 tests), modular architecture, clinical workflow integration, and extensive documentation.
 
 <div class="callout callout-warning">
   <strong>Research Use Only:</strong> This framework is designed for research purposes and has not been validated for clinical diagnostic use.
@@ -50,7 +50,7 @@ The codebase emphasizes research reproducibility with comprehensive unit testing
   
   <div class="feature-card">
     <h3>Tested and Documented</h3>
-    <p>62% code coverage with 500+ tests, comprehensive documentation, and reproducible configurations.</p>
+    <p>55% code coverage with 972 tests across Ubuntu/macOS/Windows, comprehensive documentation, and reproducible configurations.</p>
   </div>
 </div>
 
