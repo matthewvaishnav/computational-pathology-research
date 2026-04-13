@@ -262,9 +262,9 @@ class ModelValidator:
             auc_score >= self.auc_threshold if num_classes == 2 else True
         )  # Only check AUC for binary
 
-        results["validation_passed"] = accuracy_passed and auc_passed
-        results["accuracy_passed"] = accuracy_passed
-        results["auc_passed"] = auc_passed
+        results["validation_passed"] = bool(accuracy_passed and auc_passed)
+        results["accuracy_passed"] = bool(accuracy_passed)
+        results["auc_passed"] = bool(auc_passed)
 
         # Validate by disease taxonomy if model has taxonomy
         if hasattr(model, "taxonomy") and model.taxonomy is not None:
