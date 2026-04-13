@@ -20,7 +20,8 @@ Provides tested infrastructure for whole-slide image analysis, multiple instance
 A production-grade PyTorch framework for computational pathology research, providing:
 
 - 🔬 **Whole-Slide Image (WSI) Processing**: OpenSlide integration for .svs, .tiff, .ndpi formats
-- 🧠 **Multiple Instance Learning (MIL)**: Slide-level classification with attention mechanisms
+- 🧠 **Multiple Instance Learning (MIL)**: Slide-level classification with attention mechanisms (AttentionMIL, CLAM, TransMIL)
+- 🏥 **Clinical Workflow Integration**: Disease taxonomy, multi-class classification, DICOM/FHIR support, audit logging
 - 📊 **Benchmark Pipelines**: PatchCamelyon and CAMELYON16-compatible training/evaluation
 - 🔧 **Analysis Tools**: Baseline comparison, metrics analysis, bootstrap confidence intervals
 - 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 55% test coverage (972 tests)
