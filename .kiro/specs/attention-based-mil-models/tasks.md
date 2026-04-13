@@ -347,8 +347,8 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Configure output directories for comparison results
     - _Requirements: 7.1, 7.7_
 
-- [ ] 13. Implement multi-scale feature support
-  - [ ] 13.1 Extend AttentionMIL to support multi-scale features
+- [x] 13. Implement multi-scale feature support
+  - [x] 13.1 Extend AttentionMIL to support multi-scale features
     - Add multi_scale parameter to __init__
     - Add scale-specific feature projection layers
     - Implement early fusion (concatenate before attention)
@@ -356,14 +356,14 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Update forward method to handle multi-scale input
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.7_
 
-  - [ ] 13.2 Extend CLAM to support multi-scale features
+  - [x] 13.2 Extend CLAM to support multi-scale features
     - Add multi_scale parameter and fusion strategy
     - Implement scale-specific attention branches
     - Handle missing features at certain scales gracefully
     - Update forward method for multi-scale input
     - _Requirements: 9.1, 9.3, 9.4, 9.5, 9.7_
 
-  - [ ] 13.3 Extend TransMIL to support multi-scale features
+  - [x] 13.3 Extend TransMIL to support multi-scale features
     - Add multi_scale parameter and fusion strategy
     - Implement scale-specific positional encodings
     - Align spatial coordinates across scales
