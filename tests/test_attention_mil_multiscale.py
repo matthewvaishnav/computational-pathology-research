@@ -38,8 +38,9 @@ class TestAttentionMILMultiScale:
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention.sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_early_fusion_two_scales(self):
         """Test early fusion with 2 scales."""
@@ -69,8 +70,9 @@ class TestAttentionMILMultiScale:
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention.sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_late_fusion_three_scales(self):
         """Test late fusion with 3 scales."""
@@ -101,8 +103,9 @@ class TestAttentionMILMultiScale:
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention.sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_missing_scale_handling(self):
         """Test that missing scales are handled gracefully (late fusion)."""
@@ -267,19 +270,26 @@ class TestCLAMMultiScale:
         num_patches_actual = torch.tensor([80, 90, 100, 75])
 
         # Forward pass
-        logits, attention, instance_preds = model(features, num_patches_actual, return_attention=True)
+        logits, attention, instance_preds = model(
+            features, num_patches_actual, return_attention=True
+        )
 
         # Assertions
         assert logits.shape == (batch_size, 2), "Logits shape mismatch"
         assert isinstance(attention, dict), "Multi-branch should return dict"
         assert "positive" in attention and "negative" in attention
         assert attention["positive"].shape == (batch_size, num_patches), "Attention shape mismatch"
-        assert instance_preds.shape == (batch_size, num_patches, 10), "Instance preds shape mismatch"
+        assert instance_preds.shape == (
+            batch_size,
+            num_patches,
+            10,
+        ), "Instance preds shape mismatch"
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention["positive"].sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_early_fusion_two_scales(self):
         """Test early fusion with 2 scales."""
@@ -303,18 +313,25 @@ class TestCLAMMultiScale:
         num_patches_actual = torch.tensor([80, 90, 100, 75])
 
         # Forward pass
-        logits, attention, instance_preds = model(multi_scale_features, num_patches_actual, return_attention=True)
+        logits, attention, instance_preds = model(
+            multi_scale_features, num_patches_actual, return_attention=True
+        )
 
         # Assertions
         assert logits.shape == (batch_size, 2), "Logits shape mismatch"
         assert isinstance(attention, dict), "Multi-branch should return dict"
         assert attention["positive"].shape == (batch_size, num_patches), "Attention shape mismatch"
-        assert instance_preds.shape == (batch_size, num_patches, 10), "Instance preds shape mismatch"
+        assert instance_preds.shape == (
+            batch_size,
+            num_patches,
+            10,
+        ), "Instance preds shape mismatch"
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention["positive"].sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_late_fusion_three_scales(self):
         """Test late fusion with 3 scales."""
@@ -339,18 +356,25 @@ class TestCLAMMultiScale:
         num_patches_actual = torch.tensor([80, 90, 100, 75])
 
         # Forward pass
-        logits, attention, instance_preds = model(multi_scale_features, num_patches_actual, return_attention=True)
+        logits, attention, instance_preds = model(
+            multi_scale_features, num_patches_actual, return_attention=True
+        )
 
         # Assertions
         assert logits.shape == (batch_size, 2), "Logits shape mismatch"
         assert isinstance(attention, dict), "Multi-branch should return dict"
         assert attention["positive"].shape == (batch_size, num_patches), "Attention shape mismatch"
-        assert instance_preds.shape == (batch_size, num_patches, 10), "Instance preds shape mismatch"
+        assert instance_preds.shape == (
+            batch_size,
+            num_patches,
+            10,
+        ), "Instance preds shape mismatch"
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention["positive"].sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_single_branch_multi_scale(self):
         """Test single-branch CLAM with multi-scale features."""
@@ -374,13 +398,19 @@ class TestCLAMMultiScale:
         num_patches_actual = torch.tensor([80, 90, 100, 75])
 
         # Forward pass
-        logits, attention, instance_preds = model(multi_scale_features, num_patches_actual, return_attention=True)
+        logits, attention, instance_preds = model(
+            multi_scale_features, num_patches_actual, return_attention=True
+        )
 
         # Assertions
         assert logits.shape == (batch_size, 2), "Logits shape mismatch"
         assert not isinstance(attention, dict), "Single-branch should return tensor"
         assert attention.shape == (batch_size, num_patches), "Attention shape mismatch"
-        assert instance_preds.shape == (batch_size, num_patches, 10), "Instance preds shape mismatch"
+        assert instance_preds.shape == (
+            batch_size,
+            num_patches,
+            10,
+        ), "Instance preds shape mismatch"
 
     def test_missing_scale_handling(self):
         """Test that missing scales are handled gracefully (late fusion)."""
@@ -405,7 +435,9 @@ class TestCLAMMultiScale:
         num_patches_actual = torch.tensor([80, 90, 100, 75])
 
         # Forward pass should not raise an error
-        logits, attention, instance_preds = model(multi_scale_features, num_patches_actual, return_attention=True)
+        logits, attention, instance_preds = model(
+            multi_scale_features, num_patches_actual, return_attention=True
+        )
 
         # Assertions
         assert logits.shape == (batch_size, 2), "Logits shape mismatch"
@@ -507,7 +539,6 @@ class TestCLAMMultiScale:
         assert attention.shape == (batch_size, num_patches), "Attention shape mismatch"
 
 
-
 class TestTransMILMultiScale:
     """Test multi-scale feature support in TransMIL."""
 
@@ -539,8 +570,9 @@ class TestTransMILMultiScale:
 
         # Attention weights should sum to 1 for each slide (uniform for TransMIL)
         attention_sums = attention.sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_early_fusion_two_scales(self):
         """Test early fusion with 2 scales."""
@@ -574,8 +606,9 @@ class TestTransMILMultiScale:
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention.sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_late_fusion_three_scales(self):
         """Test late fusion with 3 scales."""
@@ -610,8 +643,9 @@ class TestTransMILMultiScale:
 
         # Attention weights should sum to 1 for each slide
         attention_sums = attention.sum(dim=1)
-        assert torch.allclose(attention_sums, torch.ones(batch_size), atol=1e-5), \
-            "Attention weights don't sum to 1"
+        assert torch.allclose(
+            attention_sums, torch.ones(batch_size), atol=1e-5
+        ), "Attention weights don't sum to 1"
 
     def test_missing_scale_handling(self):
         """Test that missing scales are handled gracefully (late fusion)."""
@@ -736,10 +770,10 @@ class TestTransMILMultiScale:
         )
 
         # Check that scale-specific positional encodings exist
-        assert isinstance(model.pos_encoding, torch.nn.ParameterList), \
-            "Late fusion should have scale-specific positional encodings"
-        assert len(model.pos_encoding) == 2, \
-            "Should have 2 positional encodings for 2 scales"
+        assert isinstance(
+            model.pos_encoding, torch.nn.ParameterList
+        ), "Late fusion should have scale-specific positional encodings"
+        assert len(model.pos_encoding) == 2, "Should have 2 positional encodings for 2 scales"
 
         # Multi-scale input
         batch_size, num_patches, feature_dim = 4, 100, 1024
@@ -768,10 +802,10 @@ class TestTransMILMultiScale:
         )
 
         # Check that scale-specific transformers exist
-        assert isinstance(model.transformer, torch.nn.ModuleList), \
-            "Late fusion should have scale-specific transformers"
-        assert len(model.transformer) == 2, \
-            "Should have 2 transformers for 2 scales"
+        assert isinstance(
+            model.transformer, torch.nn.ModuleList
+        ), "Late fusion should have scale-specific transformers"
+        assert len(model.transformer) == 2, "Should have 2 transformers for 2 scales"
 
         # Multi-scale input
         batch_size, num_patches, feature_dim = 4, 100, 1024
@@ -800,8 +834,9 @@ class TestTransMILMultiScale:
         )
 
         # Check that transformer is NOT a ModuleList for early fusion
-        assert not isinstance(model.transformer, torch.nn.ModuleList), \
-            "Early fusion should use a shared transformer"
+        assert not isinstance(
+            model.transformer, torch.nn.ModuleList
+        ), "Early fusion should use a shared transformer"
 
         # Multi-scale input
         batch_size, num_patches, feature_dim = 4, 100, 1024
