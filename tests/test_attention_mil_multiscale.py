@@ -8,7 +8,7 @@ including early fusion and late fusion strategies.
 import pytest
 import torch
 
-from src.models.attention_mil import AttentionMIL, CLAM
+from src.models.attention_mil import CLAM, AttentionMIL
 
 
 class TestAttentionMILMultiScale:
