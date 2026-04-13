@@ -336,15 +336,19 @@ class TestMultiClassDiseaseClassifier:
     def test_gradient_flow(self, classifier):
         """Test gradient flow through classifier."""
         embeddings = torch.randn(8, 256, requires_grad=True)
-        output = classifier(embeddings)
+        output = classifier(embeddings, return_logits=True)
 
-        # Compute loss and backpropagate
-        loss = output["probabilities"].sum()
+        # Compute loss using logits (more stable gradients)
+        # Use a proper loss function instead of sum
+        target = torch.randint(0, 3, (8,))
+        loss_fn = nn.CrossEntropyLoss()
+        loss = loss_fn(output["logits"], target)
         loss.backward()
 
-        # Verify gradients exist
+        # Verify gradients exist and are non-zero
         assert embeddings.grad is not None
-        assert not torch.all(embeddings.grad == 0)
+        # Check that at least some gradients are non-zero (more robust than checking all)
+        assert torch.any(embeddings.grad != 0), "All gradients are zero - no gradient flow"
 
     def test_batch_size_one(self, classifier):
         """Test with batch size of 1."""
