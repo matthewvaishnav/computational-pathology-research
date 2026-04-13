@@ -1089,6 +1089,29 @@ def validate(
     num_valid_batches = 0
     num_skipped_batches = 0
 
+    # Check if dataloader is empty
+    if len(dataloader) == 0:
+        error_msg = (
+            "VALIDATION SET IS EMPTY\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. CHECK DATASET SPLIT:\n"
+            "   - Verify validation split exists and is not empty\n"
+            "   - Check data/pcam/val/ directory\n"
+            "   - Ensure val split was downloaded correctly\n\n"
+            "2. CHECK BATCH SIZE:\n"
+            "   - Validation set size must be >= batch_size\n"
+            "   - Reduce batch_size if validation set is small\n\n"
+            "3. RE-DOWNLOAD DATASET:\n"
+            "   - Delete existing dataset: rm -rf data/pcam\n"
+            "   - Enable download: data.download: true\n"
+            "   - Restart training\n\n"
+            "4. SKIP VALIDATION (NOT RECOMMENDED):\n"
+            "   - Set validation.interval: 0 in config\n"
+            "   - Only use for debugging purposes\n"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Validation"):
             images = batch["image"].to(device)
@@ -1134,8 +1157,26 @@ def validate(
 
     # Check if we have any valid batches
     if num_valid_batches == 0:
-        logger.error("All validation batches had NaN values. Cannot compute metrics.")
-        raise RuntimeError("Validation failed: all batches contained NaN values")
+        error_msg = (
+            "ALL VALIDATION BATCHES CONTAINED NaN VALUES\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. CHECK MODEL STATE:\n"
+            "   - Model may have corrupted parameters\n"
+            "   - Try loading from earlier checkpoint\n"
+            "   - Restart training with lower learning rate\n\n"
+            "2. CHECK VALIDATION DATA:\n"
+            "   - Verify validation images are not corrupted\n"
+            "   - Run validate_dataset() on validation set\n"
+            "   - Check for NaN/Inf values in validation data\n\n"
+            "3. REDUCE LEARNING RATE:\n"
+            "   - Current learning rate may be too high\n"
+            "   - Try reducing by 10x: learning_rate: 1e-4\n\n"
+            "4. ENABLE GRADIENT CLIPPING:\n"
+            "   - Set training.max_grad_norm: 1.0\n"
+            "   - This prevents gradient explosion\n"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
     if num_skipped_batches > 0:
         logger.warning(
@@ -1357,7 +1398,26 @@ def load_checkpoint(
         RuntimeError: If checkpoint is corrupted.
     """
     if not os.path.exists(path):
-        raise FileNotFoundError(f"Checkpoint not found at {path}")
+        error_msg = (
+            f"CHECKPOINT FILE NOT FOUND\n\n"
+            f"Path: {path}\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. VERIFY CHECKPOINT PATH:\n"
+            "   - Check if path is correct\n"
+            "   - Use absolute path or path relative to current directory\n"
+            "   - Example: --resume checkpoints/pcam/best_model.pth\n\n"
+            "2. CHECK CHECKPOINT DIRECTORY:\n"
+            "   - List checkpoints: ls -la checkpoints/pcam/\n"
+            "   - Verify checkpoint files exist (.pth extension)\n\n"
+            "3. CHECK TRAINING COMPLETED:\n"
+            "   - Ensure training ran long enough to save checkpoints\n"
+            "   - Check logs for checkpoint save messages\n\n"
+            "4. USE CORRECT CHECKPOINT:\n"
+            "   - For best model: checkpoints/pcam/best_model.pth\n"
+            "   - For specific epoch: checkpoints/pcam/pcam-{timestamp}_epoch_{N}.pth\n"
+        )
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
 
     try:
         checkpoint = torch.load(path, map_location="cpu")
@@ -1378,8 +1438,48 @@ def load_checkpoint(
 
         return epoch, metrics
 
+    except KeyError as e:
+        error_msg = (
+            f"CORRUPTED CHECKPOINT FILE\n\n"
+            f"Missing key: {str(e)}\n"
+            f"Path: {path}\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. CHECKPOINT STRUCTURE MISMATCH:\n"
+            "   - This checkpoint may be from an incompatible version\n"
+            "   - Required keys: feature_extractor_state_dict, encoder_state_dict, head_state_dict\n\n"
+            "2. USE DIFFERENT CHECKPOINT:\n"
+            "   - Try another checkpoint from the same training run\n"
+            "   - Check for best_model.pth or recent epoch checkpoints\n\n"
+            "3. RETRAIN MODEL:\n"
+            "   - If all checkpoints are corrupted, retrain from scratch\n"
+            "   - Ensure sufficient disk space during training\n"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(error_msg) from e
     except Exception as e:
-        raise RuntimeError(f"Failed to load checkpoint from {path}: {e}")
+        error_type = type(e).__name__
+        error_msg = (
+            f"FAILED TO LOAD CHECKPOINT\n\n"
+            f"Error: {error_type}: {str(e)}\n"
+            f"Path: {path}\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. CHECK FILE INTEGRITY:\n"
+            "   - File may be corrupted or incomplete\n"
+            "   - Check file size: ls -lh {path}\n"
+            "   - Compare with other checkpoints\n\n"
+            "2. CHECK PYTORCH VERSION:\n"
+            "   - Checkpoint may be from different PyTorch version\n"
+            "   - Current version: {torch.__version__}\n"
+            "   - Try loading with map_location='cpu'\n\n"
+            "3. CHECK DISK SPACE:\n"
+            "   - Ensure checkpoint was saved completely\n"
+            "   - Verify no disk full errors during training\n\n"
+            "4. USE DIFFERENT CHECKPOINT:\n"
+            "   - Try loading a different checkpoint\n"
+            "   - Use best_model.pth or recent epoch checkpoint\n"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(error_msg) from e
 
 
 def handle_cascading_nan_recovery(
@@ -1719,17 +1819,39 @@ def reduce_batch_size_on_oom(
     current_batch_size = config["training"]["batch_size"]
     new_batch_size = max(8, current_batch_size // 2)
 
-    logger.warning(
-        f"GPU out of memory. Reducing batch size from {current_batch_size} to {new_batch_size}"
+    error_msg = (
+        f"GPU OUT OF MEMORY ERROR\n\n"
+        f"Current batch size: {current_batch_size}\n"
+        f"Attempting automatic reduction to: {new_batch_size}\n\n"
+        "TROUBLESHOOTING STEPS:\n"
+        "1. REDUCE BATCH SIZE FURTHER:\n"
+        f"   - Current: {new_batch_size}\n"
+        "   - Try: 64, 32, 16, or 8\n"
+        "   - Edit config: training.batch_size: 32\n\n"
+        "2. REDUCE MODEL SIZE:\n"
+        "   - Decrease embed_dim (current: check config)\n"
+        "   - Decrease hidden_dim in WSI encoder\n"
+        "   - Use smaller feature extractor (resnet18 instead of resnet50)\n\n"
+        "3. DISABLE MIXED PRECISION:\n"
+        "   - Set training.use_amp: false in config\n"
+        "   - This may increase memory usage but can help with stability\n\n"
+        "4. USE GRADIENT ACCUMULATION:\n"
+        "   - Simulate larger batch size with smaller batches\n"
+        "   - Add training.gradient_accumulation_steps: 4\n\n"
+        "5. CLEAR GPU CACHE:\n"
+        "   - Run: torch.cuda.empty_cache()\n"
+        "   - Restart training script\n\n"
+        "6. CHECK GPU MEMORY:\n"
+        "   - Run: nvidia-smi\n"
+        "   - Ensure no other processes are using GPU\n"
+        "   - Close other applications using GPU\n\n"
+        "7. USE CPU (SLOWER):\n"
+        "   - Set device: cpu in config\n"
+        "   - Training will be much slower but won't have memory limits\n"
     )
+    logger.warning(error_msg)
 
     config["training"]["batch_size"] = new_batch_size
-
-    # Log warning about potential OOM recovery
-    logger.warning(
-        "Please consider reducing batch size further if OOM persists. "
-        f"Current batch size: {new_batch_size}"
-    )
 
     return config
 
@@ -1806,7 +1928,30 @@ def main():
     try:
         train_loader, val_loader, test_loader = create_pcam_dataloaders(config)
     except Exception as e:
-        logger.error(f"Failed to create dataloaders: {e}")
+        error_type = type(e).__name__
+        error_msg = (
+            f"FAILED TO CREATE DATALOADERS\n\n"
+            f"Error: {error_type}: {str(e)}\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. CHECK DATASET AVAILABILITY:\n"
+            "   - Verify dataset files exist in data.root_dir\n"
+            "   - Enable download: data.download: true in config\n\n"
+            "2. CHECK CONFIGURATION:\n"
+            "   - Verify config file is valid YAML\n"
+            "   - Check required fields: data.root_dir, training.batch_size\n"
+            "   - Validate split names: 'train', 'val', 'test'\n\n"
+            "3. CHECK SYSTEM RESOURCES:\n"
+            "   - Ensure sufficient RAM (need ~4GB)\n"
+            "   - Check disk space for dataset (~2GB)\n\n"
+            "4. CHECK DEPENDENCIES:\n"
+            "   - Verify PyTorch is installed: python -c 'import torch'\n"
+            "   - Verify torchvision: python -c 'import torchvision'\n"
+            "   - Check versions: pip list | grep torch\n\n"
+            "5. REDUCE NUM_WORKERS:\n"
+            "   - Set data.num_workers: 0 in config\n"
+            "   - This disables multiprocessing which can cause issues\n"
+        )
+        logger.error(error_msg)
         return
 
     # Validate dataset
@@ -1814,7 +1959,25 @@ def main():
     try:
         validate_dataset(train_loader.dataset)
     except RuntimeError as e:
-        logger.error(f"Dataset validation failed: {e}")
+        error_msg = (
+            f"DATASET VALIDATION FAILED\n\n"
+            f"Error: {str(e)}\n\n"
+            "TROUBLESHOOTING STEPS:\n"
+            "1. CHECK DATASET INTEGRITY:\n"
+            "   - Verify all dataset files are present and not corrupted\n"
+            "   - Check file sizes match expected values\n\n"
+            "2. RE-DOWNLOAD DATASET:\n"
+            "   - Delete existing dataset: rm -rf data/pcam\n"
+            "   - Enable download: data.download: true in config\n"
+            "   - Restart training\n\n"
+            "3. CHECK VALIDATION SET:\n"
+            "   - Ensure validation split is not empty\n"
+            "   - Verify split names are correct: 'train', 'val', 'test'\n\n"
+            "4. SKIP VALIDATION (NOT RECOMMENDED):\n"
+            "   - Comment out validate_dataset() call\n"
+            "   - Only use if you're certain dataset is correct\n"
+        )
+        logger.error(error_msg)
         return
 
     # Create model
@@ -1873,8 +2036,31 @@ def main():
             start_epoch += 1  # Start from next epoch
             best_val_auc = metrics.get("val_auc", 0.0)
             logger.info(f"Resuming from epoch {start_epoch}, best val AUC: {best_val_auc:.4f}")
+        except FileNotFoundError as e:
+            logger.error(str(e))
+            logger.error("Cannot resume training without valid checkpoint. Exiting.")
+            return
+        except RuntimeError as e:
+            logger.error(str(e))
+            logger.error("Cannot resume training with corrupted checkpoint. Exiting.")
+            return
         except Exception as e:
-            logger.error(f"Failed to resume from checkpoint: {e}")
+            error_msg = (
+                f"UNEXPECTED ERROR LOADING CHECKPOINT\n\n"
+                f"Error: {type(e).__name__}: {str(e)}\n\n"
+                "TROUBLESHOOTING STEPS:\n"
+                "1. VERIFY CHECKPOINT FILE:\n"
+                f"   - Path: {config.get('resume')}\n"
+                "   - Check file exists and is readable\n\n"
+                "2. START FRESH TRAINING:\n"
+                "   - Remove --resume flag to train from scratch\n"
+                "   - Previous checkpoints may be incompatible\n\n"
+                "3. CHECK LOGS:\n"
+                "   - Review error message above for specific issue\n"
+                "   - Check training logs for checkpoint save errors\n"
+            )
+            logger.error(error_msg)
+            return
 
     # Training loop
     logger.info(f"Starting training for {num_epochs} epochs")
