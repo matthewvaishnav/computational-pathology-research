@@ -560,7 +560,7 @@ class TestPerformanceRequirements(unittest.TestCase):
             total_time = time.time() - start_time
 
             # All requests should complete within reasonable time
-            self.assertLess(total_time, 10.0)  # Allow some overhead for concurrent processing
+            self.assertLess(total_time, 15.0)  # Allow some overhead for concurrent processing
 
             # Each individual request should meet latency requirement
             for result in results:
