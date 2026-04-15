@@ -2,7 +2,7 @@
 # Optimized batch sizes and settings for this hardware
 
 data:
-  root_dir: "data/pcam_real"
+  root_dir: "data/pcam_real"  # Use real PCam data (262K samples)
   num_workers: 0  # Must be 0 due to h5py pickling limitations
   pin_memory: true
   prefetch_factor: 2
@@ -31,12 +31,12 @@ task:
     dropout: 0.3
 
 training:
-  batch_size: 64  # Optimized for 8GB VRAM
-  num_epochs: 20
+  batch_size: 16  # Reduced for CPU training
+  num_epochs: 5   # Reduced epochs for CPU demo
   learning_rate: 0.0001  # Reduced from 0.001 to prevent numerical instability
   weight_decay: 0.001  # Increased from 0.0001 to prevent overfitting
   max_grad_norm: 1.0
-  use_amp: true  # Critical for 8GB VRAM - provides 2-3x speedup
+  use_amp: false  # Disable AMP for CPU
   dropout: 0.1
   
   optimizer:
@@ -62,8 +62,8 @@ early_stopping:
   patience: 10
   min_delta: 0.001
 
-device: "cuda"  # Use CUDA for GPU training
-cudnn_benchmark: true  # 10-20% speedup
+device: "cpu"  # Use CPU (Python 3.14 doesn't support CUDA PyTorch yet)
+cudnn_benchmark: false  # Disabled for CPU
 seed: 42
   
 logging:
