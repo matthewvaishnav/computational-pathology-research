@@ -10,7 +10,7 @@ Baselines:
 3. AttentionBaseline - Self-attention only, no cross-modal interaction
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 import torch
 import torch.nn as nn

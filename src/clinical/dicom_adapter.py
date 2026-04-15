@@ -14,7 +14,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import numpy as np
 import pydicom
 from pydicom.dataset import Dataset, FileDataset
 from pydicom.uid import (

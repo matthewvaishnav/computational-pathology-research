@@ -15,15 +15,12 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import torch
-import torch.nn as nn
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
 # Configure logging
 logging.basicConfig(
@@ -171,7 +168,7 @@ def plot_comparison(results: Dict[str, Dict], output_dir: Path):
     params = [results[m].get("num_parameters", 0) / 1e6 for m in models]
     accuracies = [results[m].get("test_accuracy", 0) * 100 for m in models]
 
-    scatter = ax.scatter(params, accuracies, s=200, alpha=0.6, c=range(len(models)), cmap="viridis")
+    ax.scatter(params, accuracies, s=200, alpha=0.6, c=range(len(models)), cmap="viridis")
 
     for i, model in enumerate(models):
         ax.annotate(
@@ -197,7 +194,7 @@ def plot_comparison(results: Dict[str, Dict], output_dir: Path):
 
     training_times = [results[m].get("training_time_hours", 0) for m in models]
 
-    bars = ax.barh(models, training_times, alpha=0.7, color="steelblue")
+    ax.barh(models, training_times, alpha=0.7, color="steelblue")
 
     ax.set_xlabel("Training Time (hours)", fontsize=12)
     ax.set_ylabel("Model", fontsize=12)

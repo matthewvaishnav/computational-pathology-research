@@ -5,7 +5,6 @@ Integration tests for CAMELYON slide-level training and evaluation.
 import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 import h5py
@@ -133,7 +132,7 @@ def test_end_to_end_training(training_config, tmp_path):
     ), f"Training failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
 
     # Check checkpoint was saved (may be in different location depending on save logic)
-    checkpoint_dir = tmp_path / "checkpoints"
+    tmp_path / "checkpoints"
 
     # Training may complete without saving if validation doesn't improve
     # Just verify training ran successfully
@@ -383,8 +382,8 @@ def test_evaluation_generates_plots(tmp_path, synthetic_camelyon_data):
     assert result.returncode == 0, "Evaluation failed"
 
     # Check if plots were generated (may not be available if matplotlib not installed)
-    confusion_matrix_plot = output_dir / "confusion_matrix.png"
-    roc_curve_plot = output_dir / "roc_curve.png"
+    output_dir / "confusion_matrix.png"
+    output_dir / "roc_curve.png"
 
     # Plots are optional depending on matplotlib availability
     # Just check that evaluation completed successfully

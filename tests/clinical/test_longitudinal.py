@@ -7,7 +7,6 @@ Tests PatientTimeline, ScanRecord, TreatmentEvent, and LongitudinalTracker class
 from datetime import datetime, timedelta
 
 import pytest
-import torch
 
 from src.clinical.longitudinal import (
     LongitudinalTracker,
@@ -16,7 +15,6 @@ from src.clinical.longitudinal import (
     TreatmentEvent,
     TreatmentResponseCategory,
 )
-from src.clinical.patient_context import ClinicalMetadata, Sex, SmokingStatus
 from src.clinical.taxonomy import DiseaseTaxonomy
 
 

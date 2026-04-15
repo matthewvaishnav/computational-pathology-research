@@ -6,7 +6,7 @@ clinical workflow components to provide a complete high-performance solution.
 """
 
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional
 
 import torch
 

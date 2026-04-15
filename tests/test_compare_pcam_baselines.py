@@ -9,9 +9,8 @@ Tests cover the bugs fixed in commit 493fb25:
 """
 
 import json
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
@@ -86,7 +85,7 @@ def test_wildcard_expansion_windows_style(tmp_path):
             str(tmp_path / "results.json"),
         ],
     ):
-        with patch("experiments.compare_pcam_baselines.run_training") as mock_train:
+        with patch("experiments.compare_pcam_baselines.run_training"):
             with patch("experiments.compare_pcam_baselines.run_evaluation") as mock_eval:
                 with patch("pathlib.Path.exists", return_value=False):
                     # Mock evaluation to return checkpoint_not_found
@@ -227,7 +226,7 @@ def test_quick_test_cleans_up_temp_config_on_failure(tmp_path, mock_config):
         # Run training in quick-test mode (should handle exception)
         with patch("subprocess.CalledProcessError", Exception):
             try:
-                result = run_training(str(original_config_path), quick_test=True)
+                run_training(str(original_config_path), quick_test=True)
             except Exception:
                 pass  # Expected
 
@@ -420,7 +419,7 @@ def test_manifest_recording(tmp_path, mock_config):
     }
 
     output_path = tmp_path / "comparison_results.json"
-    manifest_path = tmp_path / "manifest.jsonl"
+    tmp_path / "manifest.jsonl"
 
     # Mock BenchmarkManifest to use temp path
     with patch("experiments.compare_pcam_baselines.BenchmarkManifest") as mock_manifest_class:
@@ -527,38 +526,6 @@ def test_manifest_recording_partial_success(tmp_path, mock_config):
         assert entry.final_metrics["best_variant_name"] == "variant1"
 
 
-def test_manifest_recording_disabled(tmp_path, mock_config):
-    """
-    Test that manifest recording can be disabled.
-    """
-    from experiments.compare_pcam_baselines import aggregate_results
-
-    # Create config file
-    config_path = tmp_path / "test_config.yaml"
-    with open(config_path, "w") as f:
-        yaml.dump(mock_config, f)
-
-    training_results = [
-        {
-            "variant_name": "test_variant",
-            "config_path": str(config_path),
-            "status": "success",
-            "training_time_seconds": 100.0,
-        }
-    ]
-
-    evaluation_results = [
-        {
-            "variant_name": "test_variant",
-            "checkpoint_path": "./checkpoints/test/best_model.pth",
-            "status": "success",
-            "metrics": {"accuracy": 0.95, "auc": 0.98, "f1": 0.94},
-        }
-    ]
-
-    output_path = tmp_path / "comparison_results.json"
-
-
 def test_manifest_recording_with_missing_metrics(tmp_path, mock_config):
     """
     Test manifest recording when successful variants have None metrics.
@@ -631,7 +598,6 @@ def test_manifest_recording_uses_relative_paths(tmp_path, mock_config):
     Regression test for path portability - absolute paths make manifest
     entries non-portable across machines.
     """
-    import os
 
     from experiments.compare_pcam_baselines import _record_comparison_to_manifest
 
@@ -692,7 +658,7 @@ def test_manifest_recording_uses_relative_paths(tmp_path, mock_config):
         # Verify notes also use relative path
         assert (
             str(output_path) in entry.notes or str(output_path).replace("\\", "/") in entry.notes
-        ), f"Notes should reference relative path"
+        ), "Notes should reference relative path"
 
 
 def test_manifest_recording_disabled(tmp_path, mock_config):

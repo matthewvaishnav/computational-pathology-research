@@ -6,17 +6,13 @@ and access control enforcement.
 """
 
 import json
-import secrets
-import time
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
 
 import pytest
 
 from .privacy import (
     AES256Encryption,
     ConsentRecord,
-    DataAccessLogger,
     DataExportMonitor,
     EnhancedPrivacyManager,
     PatientIdentifierAnonymizer,
@@ -24,7 +20,6 @@ from .privacy import (
     PrivacyManager,
     RBACManager,
     Role,
-    SecurityAuditEvent,
     SessionTimeoutManager,
     UnauthorizedAccessDetector,
     UserSession,
@@ -639,7 +634,7 @@ class TestEnhancedPrivacyManager:
     def test_generate_security_report(self):
         """Test security report generation."""
         manager = EnhancedPrivacyManager()
-        token = manager.create_user_session("user123", Role.PHYSICIAN)
+        manager.create_user_session("user123", Role.PHYSICIAN)
 
         report = manager.generate_security_report()
 

@@ -7,8 +7,7 @@ feature extractors or encoders.
 """
 
 import logging
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
