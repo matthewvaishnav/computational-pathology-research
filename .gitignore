@@ -46,6 +46,7 @@ ENV/
 # Project-specific
 results/
 data/raw/
+data/pcam_real/
 checkpoints/
 checkpoints_demo/
 demo_output/
@@ -54,6 +55,7 @@ demo_ablation_results/
 *.pt
 *.h5
 *.hdf5
+*.npy
 
 # Logs
 *.log
