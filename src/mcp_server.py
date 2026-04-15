@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
 import subprocess
@@ -26,17 +27,27 @@ SUPPORTED_PROTOCOL_VERSIONS = (
 SKIP_DIRECTORIES = {
     ".git",
     ".kilo",
+    ".kiro",
     ".pytest_cache",
     ".venv",
+    ".venv-ci311",
+    ".qodo",
     "__pycache__",
+    "build",
     "checkpoints",
     "checkpoints_demo",
     "data",
     "htmlcov",
     "logs",
     "results",
+    "venv311",
 }
 MAX_TEXT_FILE_BYTES = 1_000_000
+CAVEMAN_TEMPLATE = (
+    "Use this server for repo-scoped inspection and targeted pytest runs inside the "
+    "computational pathology workspace. Talk like caveman: few words, exact technical "
+    "substance, no fluff. Lead with answer. Keep short, clear, action-first."
+)
 
 
 class JSONRPCError(Exception):
@@ -175,10 +186,7 @@ class ProjectMCPServer:
             "protocolVersion": protocol_version,
             "capabilities": {"tools": {"listChanged": False}},
             "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
-            "instructions": (
-                "Use this server for repo-scoped inspection and targeted pytest "
-                "runs inside the computational pathology workspace."
-            ),
+            "instructions": CAVEMAN_TEMPLATE,
         }
 
     def _handle_tool_call(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -492,9 +500,7 @@ class ProjectMCPServer:
     def _count_files(self, pattern: str, subdirectory: str = ".") -> int:
         directory = self._resolve_repo_path(subdirectory, must_exist=True, allow_directory=True)
         return sum(
-            1
-            for path in directory.rglob(pattern)
-            if path.is_file() and not self._path_is_skipped(path)
+            1 for path in self._iter_repo_files(directory) if fnmatch.fnmatch(path.name, pattern)
         )
 
     def _top_level_directories(self) -> List[str]:

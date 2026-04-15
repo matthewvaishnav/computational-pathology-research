@@ -216,7 +216,7 @@ def test_missing_modality_handling(temp_workspace):
 
     # Test with all modalities
     sample = dataset[0]
-    labels = sample.pop("label")
+    sample.pop("label")
     sample_batched = add_batch_dim(sample)
 
     with torch.no_grad():
@@ -229,7 +229,7 @@ def test_missing_modality_handling(temp_workspace):
     # Test with missing WSI
     sample_no_wsi = dataset[0]
     sample_no_wsi["wsi_features"] = None
-    labels = sample_no_wsi.pop("label")
+    sample_no_wsi.pop("label")
     sample_no_wsi_batched = add_batch_dim(sample_no_wsi)
 
     with torch.no_grad():
@@ -241,7 +241,7 @@ def test_missing_modality_handling(temp_workspace):
     # Test with missing genomic
     sample_no_genomic = dataset[0]
     sample_no_genomic["genomic"] = None
-    labels = sample_no_genomic.pop("label")
+    sample_no_genomic.pop("label")
     sample_no_genomic_batched = add_batch_dim(sample_no_genomic)
 
     with torch.no_grad():
@@ -254,7 +254,7 @@ def test_missing_modality_handling(temp_workspace):
     sample_wsi_only = dataset[0]
     sample_wsi_only["genomic"] = None
     sample_wsi_only["clinical_text"] = None
-    labels = sample_wsi_only.pop("label")
+    sample_wsi_only.pop("label")
     sample_wsi_only_batched = add_batch_dim(sample_wsi_only)
 
     with torch.no_grad():
@@ -266,13 +266,6 @@ def test_missing_modality_handling(temp_workspace):
 
 def test_all_modalities_missing(temp_workspace):
     """Test model raises error when all modalities are missing."""
-    config = {
-        "wsi_enabled": True,
-        "genomic_enabled": True,
-        "clinical_text_enabled": True,
-        "max_text_length": 100,
-    }
-
     # Initialize model
     model = MultimodalFusionModel(embed_dim=128)
     model.eval()

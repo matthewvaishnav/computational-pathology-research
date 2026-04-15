@@ -14,10 +14,9 @@ This script provides comprehensive evaluation capabilities including:
 import argparse
 import json
 import logging
-import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import matplotlib
 import numpy as np
@@ -31,7 +30,6 @@ import seaborn as sns
 from sklearn.manifold import TSNE
 from sklearn.metrics import (
     accuracy_score,
-    classification_report,
     confusion_matrix,
     f1_score,
     precision_recall_curve,
@@ -427,7 +425,7 @@ class ModelEvaluator:
                 for batch in tqdm(self.test_loader, desc=f"Missing rate: {missing_rate}"):
                     batch = self._batch_to_device(batch)
                     labels = batch.pop("label")
-                    batch_size = labels.shape[0]
+                    labels.shape[0]
 
                     # Randomly remove modalities
                     if np.random.rand() < missing_rate:

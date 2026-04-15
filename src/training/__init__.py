@@ -15,10 +15,9 @@ Features:
 - Cross-validation support
 """
 
-import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -26,13 +25,11 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import (
     accuracy_score,
-    auc,
     average_precision_score,
     f1_score,
     precision_score,
     recall_score,
     roc_auc_score,
-    roc_curve,
 )
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter

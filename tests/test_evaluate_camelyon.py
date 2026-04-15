@@ -313,8 +313,7 @@ def test_evaluate_camelyon_creates_plots():
 
     # Skip if matplotlib not available
     try:
-        import matplotlib
-        import seaborn
+        pass
     except ImportError:
         pytest.skip("matplotlib/seaborn not available")
 
@@ -500,7 +499,7 @@ def test_evaluate_camelyon_saves_predictions_csv():
             "correct",
             "tile_score_path",
         }
-        assert set(rows[0].keys()) == expected_columns, f"CSV columns mismatch"
+        assert set(rows[0].keys()) == expected_columns, "CSV columns mismatch"
 
         # Verify data types and values
         for row in rows:

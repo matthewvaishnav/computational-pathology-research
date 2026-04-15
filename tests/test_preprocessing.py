@@ -8,9 +8,7 @@ and HDF5 I/O operations.
 import tempfile
 from pathlib import Path
 
-import h5py
 import numpy as np
-import pytest
 
 from src.data.preprocessing import (  # WSI utilities; Genomic utilities; Clinical text utilities; HDF5 utilities
     aggregate_patch_features,
@@ -387,8 +385,8 @@ def test_hdf5_compression():
         save_features_to_hdf5(features, uncompressed_path, compression=None)
 
         # Check file sizes
-        compressed_size = compressed_path.stat().st_size
-        uncompressed_size = uncompressed_path.stat().st_size
+        compressed_path.stat().st_size
+        uncompressed_path.stat().st_size
 
         # Compressed should be smaller (though not guaranteed for random data)
         # Just check both files exist and can be loaded

@@ -5,7 +5,7 @@ This module implements a transformer-based architecture for normalizing color va
 across different staining protocols while preserving tissue morphology.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 import torch.nn as nn

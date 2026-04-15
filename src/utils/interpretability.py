@@ -22,15 +22,13 @@ Usage:
     analyzer.plot_tsne(embeddings, labels)
 """
 
-import os
-
 import matplotlib
 import numpy as np
 import torch
 
 matplotlib.use("Agg")
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -380,7 +378,7 @@ class SaliencyMap:
                 continue
 
             input_tensor = input_tensor.detach().to(self.device)
-            batch_size = input_tensor.shape[0]
+            input_tensor.shape[0]
 
             # Get baseline
             baseline_tensor = baseline.get(modality)
@@ -501,7 +499,7 @@ class EmbeddingAnalyzer:
         fig, ax = plt.subplots(figsize=(12, 10))
 
         unique_labels = np.unique(labels)
-        n_classes = len(unique_labels)
+        len(unique_labels)
 
         # Use a colormap that works well for discrete labels
         scatter = ax.scatter(

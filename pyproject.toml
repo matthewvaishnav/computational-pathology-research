@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "computational-pathology-research"
 version = "0.1.0"
-description = "Novel multimodal fusion architectures for computational pathology"
+description = "Production-grade PyTorch framework for computational pathology research"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "Research Team"}
+    {name = "Matthew Vaishnav"}
 ]
 keywords = ["computational pathology", "multimodal fusion", "deep learning", "whole-slide imaging"]
 classifiers = [

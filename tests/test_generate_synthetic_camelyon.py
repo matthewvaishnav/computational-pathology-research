@@ -4,11 +4,9 @@ Tests for synthetic CAMELYON data generation.
 
 import json
 import sys
-import tempfile
 from pathlib import Path
 
 import h5py
-import numpy as np
 import pytest
 
 

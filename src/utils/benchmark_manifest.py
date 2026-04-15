@@ -46,7 +46,11 @@ class BenchmarkManifest:
         if manifest_path is None:
             manifest_path = self.DEFAULT_MANIFEST_PATH
         self.manifest_path = manifest_path
-        os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
+
+        # Only create directory if dirname is not empty
+        dir_path = os.path.dirname(manifest_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
 
     def add_entry(self, entry: BenchmarkEntry) -> None:
         """Append a benchmark entry to the manifest.

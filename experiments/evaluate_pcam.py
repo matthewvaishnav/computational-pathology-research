@@ -16,9 +16,8 @@ import logging
 import os
 import sys
 import time
-from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import torch
@@ -28,8 +27,6 @@ from tqdm import tqdm
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from typing import Any, Dict, Optional
 
 from sklearn.metrics import (
     accuracy_score,
@@ -571,8 +568,8 @@ def log_evaluation_summary(
         logger.info(f"    F1:        {cls_metrics['f1']:.4f}")
     logger.info("-" * 60)
     logger.info("Confusion Matrix:")
-    logger.info(f"  [[TN={cm[0,0]}, FP={cm[0,1]}],")
-    logger.info(f"   [FN={cm[1,0]}, TP={cm[1,1]}]]")
+    logger.info(f"  [[TN={cm[0, 0]}, FP={cm[0, 1]}],")
+    logger.info(f"   [FN={cm[1, 0]}, TP={cm[1, 1]}]]")
     logger.info("-" * 60)
     logger.info("Output files:")
     logger.info(f"  Metrics: {output_dir / 'metrics.json'}")

@@ -26,12 +26,11 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 # Add parent directory to path for imports
@@ -54,10 +53,7 @@ except ImportError:
     PLOT_AVAILABLE = False
 
 from src.data.camelyon_dataset import (
-    CAMELYONPatchDataset,
-    CAMELYONSlideDataset,
     CAMELYONSlideIndex,
-    collate_slide_bags,
 )
 from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifacts
 
@@ -633,8 +629,8 @@ def log_evaluation_summary(
         logger.info(f"    F1:        {cls_metrics['f1']:.4f}")
     logger.info("-" * 60)
     logger.info("Confusion Matrix:")
-    logger.info(f"  [[TN={cm[0,0]}, FP={cm[0,1]}],")
-    logger.info(f"   [FN={cm[1,0]}, TP={cm[1,1]}]]")
+    logger.info(f"  [[TN={cm[0, 0]}, FP={cm[0, 1]}],")
+    logger.info(f"   [FN={cm[1, 0]}, TP={cm[1, 1]}]]")
     logger.info("-" * 60)
     logger.info("Output files:")
     logger.info(f"  Metrics: {output_dir / 'metrics.json'}")

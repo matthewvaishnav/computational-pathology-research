@@ -14,12 +14,12 @@ class TestComputeBootstrapCI:
 
     def test_perfect_predictions(self):
         """Test with perfect predictions (all correct)."""
-        n_samples = 100
         y_true = np.array([0] * 50 + [1] * 50)
         y_pred = y_true.copy()
         y_prob = y_pred.astype(float)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, random_state=42
@@ -39,7 +39,8 @@ class TestComputeBootstrapCI:
         y_pred = np.random.randint(0, 2, size=n_samples)
         y_prob = np.random.rand(n_samples)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, random_state=42
@@ -65,7 +66,8 @@ class TestComputeBootstrapCI:
 
         y_prob = y_pred.astype(float)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=200, random_state=42
@@ -85,7 +87,8 @@ class TestComputeBootstrapCI:
         y_pred = np.ones(n_samples)
         y_prob = np.ones(n_samples)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, random_state=42
@@ -98,12 +101,12 @@ class TestComputeBootstrapCI:
 
     def test_all_wrong_predictions(self):
         """Test with all wrong predictions."""
-        n_samples = 100
         y_true = np.array([0] * 50 + [1] * 50)
         y_pred = 1 - y_true  # All predictions wrong
         y_prob = y_pred.astype(float)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, random_state=42
@@ -123,7 +126,8 @@ class TestComputeBootstrapCI:
         y_pred = np.random.randint(0, 2, size=n_samples)
         y_prob = np.random.rand(n_samples)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         # 90% CI
         _, ci_lower_90, ci_upper_90 = compute_bootstrap_ci(
@@ -160,7 +164,8 @@ class TestComputeBootstrapCI:
         y_pred = np.random.randint(0, 2, size=n_samples)
         y_prob = np.random.rand(n_samples)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         # First run
         value1, ci_lower1, ci_upper1 = compute_bootstrap_ci(
@@ -188,7 +193,8 @@ class TestComputeBootstrapCI:
         y_prob[y_true == 0, 0] = 1.0
         y_prob[y_true == 1, 1] = 1.0
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, random_state=42
@@ -200,12 +206,12 @@ class TestComputeBootstrapCI:
 
     def test_small_sample_size(self):
         """Test with small sample size."""
-        n_samples = 20
         y_true = np.array([0] * 10 + [1] * 10)
         y_pred = y_true.copy()
         y_prob = y_pred.astype(float)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=50, random_state=42
@@ -223,7 +229,8 @@ class TestComputeBootstrapCI:
         y_pred = np.random.randint(0, 2, size=n_samples)
         y_prob = np.random.rand(n_samples)
 
-        metric_fn = lambda yt, yp, yprob: accuracy_score(yt, yp)
+        def metric_fn(yt, yp, yprob):
+            return accuracy_score(yt, yp)
 
         value, ci_lower, ci_upper = compute_bootstrap_ci(
             y_true, y_pred, y_prob, metric_fn, n_bootstrap=100, random_state=42
@@ -241,7 +248,6 @@ class TestComputeAllMetricsWithCI:
     def test_all_metrics_computed(self):
         """Test that all metrics are computed."""
         np.random.seed(42)
-        n_samples = 200
         y_true = np.array([0] * 100 + [1] * 100)
         y_pred = y_true.copy()
         y_prob = y_pred.astype(float)
@@ -266,7 +272,6 @@ class TestComputeAllMetricsWithCI:
 
     def test_perfect_predictions_all_metrics(self):
         """Test all metrics with perfect predictions."""
-        n_samples = 100
         y_true = np.array([0] * 50 + [1] * 50)
         y_pred = y_true.copy()
         y_prob = y_pred.astype(float)

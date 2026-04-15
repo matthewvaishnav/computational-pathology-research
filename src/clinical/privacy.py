@@ -18,19 +18,15 @@ import json
 import logging
 import os
 import secrets
-import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Union
 
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives.padding import PKCS7
 
 
 class Role(Enum):
@@ -103,12 +99,10 @@ class EncryptionProvider(ABC):
     @abstractmethod
     def encrypt(self, data: bytes) -> bytes:
         """Encrypt data."""
-        pass
 
     @abstractmethod
     def decrypt(self, encrypted_data: bytes) -> bytes:
         """Decrypt data."""
-        pass
 
 
 class AES256Encryption(EncryptionProvider):

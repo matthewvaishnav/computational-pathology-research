@@ -10,10 +10,9 @@ Tests the TreatmentResponseAnalyzer class and related functionality for:
 - Therapeutic regimen comparison
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import Mock, patch
 
-import numpy as np
 import pytest
 
 from .longitudinal import (

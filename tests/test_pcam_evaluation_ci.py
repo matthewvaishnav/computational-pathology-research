@@ -3,10 +3,6 @@ Integration tests for PCam evaluation with bootstrap confidence intervals.
 """
 
 import json
-import subprocess
-import sys
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest

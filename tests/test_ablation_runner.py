@@ -58,7 +58,7 @@ def test_ablation_runner_output_dir_alignment(tmp_path):
                 )
 
                 # Run experiment
-                result = run_experiment(
+                run_experiment(
                     config=config,
                     data_dir=data_dir,
                     output_dir=output_dir,

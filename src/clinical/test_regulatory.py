@@ -12,14 +12,11 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from regulatory import (
     CybersecurityControlSystem,
-    DeviceMasterRecord,
-    ModelDevelopmentRecord,
     RegulatoryComplianceManager,
     RegulatoryDocumentationSystem,
     RegulatoryStandard,
@@ -547,7 +544,7 @@ class TestRegulatoryComplianceManager(unittest.TestCase):
     def test_generate_regulatory_submission_package(self):
         """Test regulatory submission package generation"""
         # Initialize device compliance
-        dmr = self.compliance_manager.initialize_device_compliance(
+        self.compliance_manager.initialize_device_compliance(
             device_name="PathologyAI",
             device_version="1.0.0",
             manufacturer="TestCorp",

@@ -12,7 +12,6 @@ import numpy as np
 from PIL import Image
 
 try:
-    import openslide
     from openslide import OpenSlide
 
     OPENSLIDE_AVAILABLE = True
@@ -264,7 +263,7 @@ if __name__ == "__main__":
 
     # Get slide info
     info = get_slide_info(wsi_path)
-    print(f"\nSlide Information:")
+    print("\nSlide Information:")
     print(f"  Path: {info['path']}")
     print(f"  Dimensions: {info['dimensions']}")
     print(f"  Levels: {info['level_count']}")
@@ -275,7 +274,7 @@ if __name__ == "__main__":
     with WSIReader(wsi_path) as reader:
         thumbnail = reader.get_thumbnail((512, 512))
         thumbnail.save("thumbnail.png")
-        print(f"\nSaved thumbnail to thumbnail.png")
+        print("\nSaved thumbnail to thumbnail.png")
 
         patches = reader.extract_patches(patch_size=256, level=1, stride=512)
         print(f"Extracted {len(patches)} patches")

@@ -408,8 +408,8 @@ class AblationStudy:
             # Get per-sample predictions to compute paired test
             # Note: In practice, you'd want to run multiple seeds for proper statistical test
             # Here we use bootstrap CI on the metric values
-            full_metric_values = np.array([full_metrics[metric]])
-            ablated_metric_values = np.array([ablated_metrics[metric]])
+            np.array([full_metrics[metric]])
+            np.array([ablated_metrics[metric]])
 
             # For proper paired test, we would need multiple runs
             # Using a simplified approach with effect size
@@ -419,7 +419,7 @@ class AblationStudy:
             # Simulate sampling variability (in practice, use multiple model runs)
             if effect_size != 0:
                 # Compute approximate p-value based on effect size
-                t_stat, p_val = effect_size, 0.05  # Placeholder - would need multiple runs
+                p_val = 0.05  # Placeholder - would need multiple runs
                 result["p_values"][metric] = p_val
                 result["is_significant"][metric] = is_significant(p_val)
             else:
@@ -526,11 +526,11 @@ class AblationStudy:
 
         for component, result in self.ablation_results.items():
             full_acc = result["full_metrics"]["accuracy"]
-            ablated_acc = result["ablated_metrics"]["accuracy"]
+            result["ablated_metrics"]["accuracy"]
             delta_acc = result["deltas"]["delta_accuracy"]
 
             full_f1 = result["full_metrics"]["f1"]
-            ablated_f1 = result["ablated_metrics"]["f1"]
+            result["ablated_metrics"]["f1"]
             delta_f1 = result["deltas"]["delta_f1"]
 
             is_sig = result["is_significant"].get("accuracy", False)
