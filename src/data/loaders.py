@@ -8,7 +8,7 @@ and clinical text with support for missing modalities and temporal sequences.
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import h5py
 import numpy as np
@@ -501,7 +501,7 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
                 text = torch.cat([text, padding])
             clinical_padded.append(text)
 
-        clinical_tensor = torch.stack(clinical_padded)
+        torch.stack(clinical_padded)
         # Create full batch tensor with zeros for missing
         clinical_batch = torch.zeros(batch_size, max_len, dtype=torch.long)
         clinical_mask = torch.zeros(batch_size, max_len, dtype=torch.bool)
@@ -545,7 +545,7 @@ def collate_temporal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
             - 'label': Tensor [batch_size]
             - 'patient_ids': List[str]
     """
-    batch_size = len(batch)
+    len(batch)
 
     # Collect patient IDs and labels
     patient_ids = [sample["patient_id"] for sample in batch]

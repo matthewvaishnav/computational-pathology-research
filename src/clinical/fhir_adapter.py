@@ -10,7 +10,7 @@ Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import requests
 

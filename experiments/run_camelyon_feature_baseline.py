@@ -15,7 +15,7 @@ import json
 import pickle
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Tuple, Union
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression

@@ -6,14 +6,13 @@ Tests for GPU acceleration, batch processing, and latency requirements.
 
 import time
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import torch
 import torch.nn as nn
 
 from src.clinical.batch_inference import (
     ConcurrentInferenceManager,
-    InferenceRequest,
     PerformanceMonitor,
 )
 from src.clinical.performance import (
@@ -506,7 +505,7 @@ class TestPerformanceRequirements(unittest.TestCase):
         patches = torch.randn(2000, 3, 96, 96)  # 2000 patches for faster testing
 
         start_time = time.time()
-        result = self.pipeline.inference_single(patches)
+        self.pipeline.inference_single(patches)
         inference_time = time.time() - start_time
 
         # Should still be reasonable for 2000 patches (relaxed for CI, macOS slower)
@@ -587,7 +586,7 @@ class TestPerformanceRequirements(unittest.TestCase):
         patches = torch.randn(100, 3, 96, 96)
 
         with patch("src.clinical.performance.logger") as mock_logger:
-            result = slow_pipeline.inference_single(patches)
+            slow_pipeline.inference_single(patches)
 
             # Should log warning for slow inference
             mock_logger.warning.assert_called()

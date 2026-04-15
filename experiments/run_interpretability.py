@@ -18,7 +18,6 @@ Output:
     - results/interpretability/summary.html: HTML report with all visualizations
 """
 
-import json
 import os
 import sys
 from pathlib import Path
@@ -519,7 +518,7 @@ def main():
     print("INTERPRETABILITY ANALYSIS COMPLETE")
     print("=" * 60)
     print(f"\nOutput directory: {OUTPUT_DIR}")
-    print(f"\nGenerated visualizations:")
+    print("\nGenerated visualizations:")
     for viz in visualizations.get("visualizations", []):
         print(f"  - {viz}")
     print(f"\nHTML summary: {html_path}")

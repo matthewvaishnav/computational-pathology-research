@@ -8,7 +8,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,10 +16,8 @@ import pandas as pd
 import seaborn as sns
 import torch
 from sklearn.metrics import (
-    accuracy_score,
     classification_report,
     confusion_matrix,
-    f1_score,
     precision_recall_curve,
     roc_auc_score,
     roc_curve,

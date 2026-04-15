@@ -10,23 +10,16 @@ This test injects NaN values into model parameters during training and verifies
 that consecutive NaN losses occur without recovery on UNFIXED code.
 """
 
-import logging
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import numpy as np
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
 # Import the training function under test
 from experiments.train_pcam import create_single_modality_model, train_epoch
-from src.models.encoders import WSIEncoder
-from src.models.feature_extractors import ResNetFeatureExtractor
-from src.models.heads import ClassificationHead
 
 
 class TestPCamNaNCascadeBugExploration:
@@ -193,7 +186,7 @@ class TestPCamNaNCascadeBugExploration:
         # Run training epoch with corrupted parameters
         with patch("experiments.train_pcam.logger") as mock_logger:
             try:
-                metrics = train_epoch(
+                train_epoch(
                     feature_extractor=feature_extractor,
                     encoder=encoder,
                     head=head,
@@ -328,7 +321,7 @@ class TestPCamNaNCascadeBugExploration:
             # Track behavior
             with patch("experiments.train_pcam.logger") as mock_logger:
                 try:
-                    metrics = train_epoch(
+                    train_epoch(
                         feature_extractor=feature_extractor,
                         encoder=encoder,
                         head=head,
@@ -420,7 +413,7 @@ class TestPCamNaNCascadeBugExploration:
 
         with patch("experiments.train_pcam.logger") as mock_logger:
             try:
-                metrics = train_epoch(
+                train_epoch(
                     feature_extractor=feature_extractor,
                     encoder=encoder,
                     head=head,
@@ -441,11 +434,11 @@ class TestPCamNaNCascadeBugExploration:
                     [call for call in mock_logger.warning.call_args_list if "NaN" in str(call)]
                 )
 
-                print(f"\nScaler corruption scenario:")
+                print("\nScaler corruption scenario:")
                 print(f"  NaN warnings: {nan_warnings}")
-                print(f"  Training completed: True")
+                print("  Training completed: True")
 
             except RuntimeError as e:
-                print(f"\nScaler corruption scenario:")
+                print("\nScaler corruption scenario:")
                 print(f"  Training failed with error: {str(e)}")
-                print(f"  This demonstrates scaler state corruption impact")
+                print("  This demonstrates scaler state corruption impact")

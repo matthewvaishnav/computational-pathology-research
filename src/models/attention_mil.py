@@ -1737,7 +1737,7 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
 
     elif model_type in ["mean", "max"]:
         # Baseline pooling models
-        from .baselines import get_baseline_model
+        pass
 
         # Create a simple pooling model
         class SimplePoolingModel(nn.Module):

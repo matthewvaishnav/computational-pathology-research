@@ -11,8 +11,8 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from queue import Empty, Queue
-from typing import Any, Callable, Dict, List, Optional
+from queue import Empty, Full, Queue
+from typing import Callable, Dict, List, Optional
 from uuid import uuid4
 
 import torch
@@ -184,7 +184,7 @@ class ConcurrentInferenceManager:
             logger.debug(f"Submitted request {request_id} with priority {priority}")
             return request_id
 
-        except:
+        except Full:
             raise RuntimeError(f"Request queue full (max_size={self.max_queue_size})")
 
     def get_result(

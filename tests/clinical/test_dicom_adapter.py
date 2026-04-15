@@ -7,9 +7,7 @@ predictions, and multi-series handling.
 Requirements: 6.1, 6.2, 6.3, 6.6
 """
 
-import tempfile
 from datetime import datetime
-from pathlib import Path
 
 import pydicom
 import pytest

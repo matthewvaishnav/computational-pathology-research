@@ -14,10 +14,8 @@ This module provides comprehensive audit logging functionality including:
 
 import base64
 import hashlib
-import hmac
 import json
 import logging
-import os
 import secrets
 import traceback
 from abc import ABC, abstractmethod
@@ -25,9 +23,9 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
@@ -208,7 +206,6 @@ class AuditStorage(ABC):
     @abstractmethod
     def store_record(self, record: SignedAuditRecord) -> bool:
         """Store signed audit record."""
-        pass
 
     @abstractmethod
     def retrieve_records(
@@ -220,7 +217,6 @@ class AuditStorage(ABC):
         limit: Optional[int] = None,
     ) -> List[SignedAuditRecord]:
         """Retrieve audit records with filtering."""
-        pass
 
     @abstractmethod
     def export_records(
@@ -231,17 +227,14 @@ class AuditStorage(ABC):
         format: str = "json",
     ) -> bool:
         """Export audit records for regulatory submissions."""
-        pass
 
     @abstractmethod
     def get_record_count(self) -> int:
         """Get total number of stored records."""
-        pass
 
     @abstractmethod
     def cleanup_old_records(self, retention_days: int) -> int:
         """Clean up records older than retention period."""
-        pass
 
 
 class FileAuditStorage(AuditStorage):
@@ -779,7 +772,7 @@ class AuditContextManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit audit context and log results."""
         end_time = datetime.now()
-        processing_time_ms = (end_time - self.start_time).total_seconds() * 1000
+        (end_time - self.start_time).total_seconds() * 1000
 
         if exc_type is not None:
             # Log error
