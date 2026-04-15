@@ -13,9 +13,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
-import torch
 import torch.nn as nn
 
 from .patient_context import ClinicalMetadata

@@ -24,7 +24,7 @@ Example:
 
 import functools
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import torch
 
@@ -54,8 +54,6 @@ def set_validation_enabled(enabled: bool) -> None:
 
 class ValidationError(Exception):
     """Custom exception for validation errors with helpful messages."""
-
-    pass
 
 
 # ============================================================================
@@ -215,11 +213,11 @@ def validate_no_nan_inf(tensor: torch.Tensor, name: str = "tensor") -> None:
         if has_inf:
             error_msg += f"  Inf values: {inf_count} / {total_elements} ({100*inf_count/total_elements:.2f}%)\n"
         error_msg += (
-            f"Suggestions:\n"
-            f"  - Check for division by zero in preprocessing\n"
-            f"  - Verify data loading pipeline for corrupted data\n"
-            f"  - Add gradient clipping if this occurs during training\n"
-            f"  - Check for numerical instability in model computations"
+            "Suggestions:\n"
+            "  - Check for division by zero in preprocessing\n"
+            "  - Verify data loading pipeline for corrupted data\n"
+            "  - Add gradient clipping if this occurs during training\n"
+            "  - Check for numerical instability in model computations"
         )
         raise ValidationError(error_msg)
 
@@ -456,7 +454,7 @@ def validate_clinical_text(
         )
 
     # Check that tokens are integers
-    if not tokens.dtype in [torch.int32, torch.int64, torch.long]:
+    if tokens.dtype not in [torch.int32, torch.int64, torch.long]:
         raise ValidationError(
             f"Invalid dtype for {name}:\n"
             f"  Expected: integer type (torch.long, torch.int32, torch.int64)\n"

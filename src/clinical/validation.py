@@ -25,27 +25,21 @@ Example:
 
 import logging
 import time
-import warnings
 from collections import defaultdict, deque
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-import torch.nn as nn
 from sklearn.metrics import (
     accuracy_score,
-    auc,
     confusion_matrix,
-    precision_recall_curve,
     roc_auc_score,
-    roc_curve,
 )
 from sklearn.utils import resample
 from torch.utils.data import DataLoader
 
 from src.clinical.classifier import MultiClassDiseaseClassifier
 from src.clinical.taxonomy import DiseaseTaxonomy
-from src.utils.validation import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -282,7 +276,7 @@ class ModelValidator:
         self.performance_history.append(results)
 
         # Log results
-        logger.info(f"Validation Results:")
+        logger.info("Validation Results:")
         logger.info(f"  Accuracy: {accuracy:.4f} (threshold: {self.accuracy_threshold})")
         logger.info(f"  AUC: {auc_score:.4f} (threshold: {self.auc_threshold})")
         logger.info(f"  Validation Passed: {results['validation_passed']}")
@@ -960,7 +954,7 @@ class PerformanceMonitor:
 
         try:
             # Track performance
-            results = self.validator.track_performance(model, data_loader, device)
+            self.validator.track_performance(model, data_loader, device)
 
             # Log summary
             summary = self.validator.get_performance_summary()

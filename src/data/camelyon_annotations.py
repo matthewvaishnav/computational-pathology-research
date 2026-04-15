@@ -12,7 +12,7 @@ CAMELYON-style experiments:
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Literal, Optional, Sequence, Tuple, Union
+from typing import List, Literal, Sequence, Tuple, Union
 
 import numpy as np
 from matplotlib import colormaps

@@ -1,7 +1,5 @@
 """Regression tests for the ONNX exporter."""
 
-from pathlib import Path
-
 import torch
 
 from scripts.export_onnx import ONNXExporter

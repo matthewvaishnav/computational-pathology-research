@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from .patient_context import ClinicalMetadata, SmokingStatus
 from .taxonomy import DiseaseTaxonomy

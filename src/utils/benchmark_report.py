@@ -44,7 +44,7 @@ def generate_benchmark_report(
     report_lines.append(f"# {experiment_name}")
     report_lines.append("")
     report_lines.append(f"**Date**: {datetime.now().strftime('%Y-%m-%d')}")
-    report_lines.append(f"**Status**: ✅ COMPLETE")
+    report_lines.append("**Status**: ✅ COMPLETE")
     report_lines.append("")
 
     # Executive Summary

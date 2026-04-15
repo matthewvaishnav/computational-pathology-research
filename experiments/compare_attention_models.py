@@ -24,10 +24,10 @@ Features:
 Usage:
     # Compare all models (default)
     python experiments/compare_attention_models.py --config experiments/configs/comparison.yaml
-    
+
     # Compare specific models
     python experiments/compare_attention_models.py --config experiments/configs/comparison.yaml --models mean attention_mil clam
-    
+
     # Compare only attention models
     python experiments/compare_attention_models.py --config experiments/configs/comparison.yaml --models attention_mil clam transmil
 
@@ -47,12 +47,11 @@ Example:
 """
 
 import argparse
-import json
 import logging
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,7 +60,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, roc_curve
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 # Add parent directory to path
@@ -89,19 +87,19 @@ def train_single_model(
     output_dir: Path,
 ) -> Dict[str, float]:
     """Train a single model from scratch and evaluate on test set.
-    
+
     This function trains a specified model type using the provided configuration,
     saves the best checkpoint based on validation AUC, and evaluates the final
     model on the test set. It tracks training progress, validation metrics, and
     inference time for comprehensive comparison.
-    
+
     The training loop:
     1. Creates model using create_attention_model factory
     2. Trains for specified number of epochs with AdamW optimizer
     3. Validates after each epoch and saves best model
     4. Evaluates on test set with multiple metrics
     5. Measures inference time for efficiency comparison
-    
+
     Args:
         model_type: Type of model to train. Must be one of:
             - 'mean': Mean pooling baseline
@@ -115,7 +113,7 @@ def train_single_model(
             - data: Dataset paths and preprocessing settings
             - checkpoint: Checkpoint directory settings
         output_dir: Output directory for saving model checkpoints
-        
+
     Returns:
         Dictionary containing test metrics:
             - accuracy: Classification accuracy on test set
@@ -123,11 +121,11 @@ def train_single_model(
             - f1_score: F1 score for binary classification
             - inference_time: Average inference time per batch (seconds)
             - predictions: Dict with 'labels' and 'probs' for ROC curves
-    
+
     Raises:
         ValueError: If model_type is invalid or config is malformed
         RuntimeError: If training fails or model cannot be created
-    
+
     Example:
         >>> config = load_config("experiments/configs/comparison.yaml")
         >>> output_dir = Path("outputs/comparison")
@@ -136,32 +134,32 @@ def train_single_model(
         Test AUC: 0.8542
     """
     logger.info(f"Training {model_type} model...")
-    
+
     # Update config for this model
     model_config = config.copy()
     model_config["model"]["wsi"]["model_type"] = model_type
     model_config["checkpoint"]["checkpoint_dir"] = str(output_dir / model_type)
-    
+
     # Validate model config
     validate_model_config(model_config)
-    
+
     # Set device
     device = torch.device(
         model_config.get("device", "cuda") if torch.cuda.is_available() else "cpu"
     )
     logger.info(f"Using device: {device}")
-    
+
     # Create dataloaders
     train_loader, val_loader = create_slide_dataloaders(model_config)
-    
+
     # Get feature dimension from first batch
     sample_batch = next(iter(train_loader))
     feature_dim = sample_batch["features"].shape[-1]
-    
+
     # Extract model-specific config for create_attention_model
     wsi_config = model_config.get("model", {}).get("wsi", {})
     task_config = model_config.get("task", {})
-    
+
     # Build config dict for create_attention_model
     model_factory_config = {
         "model_type": model_type,
@@ -169,19 +167,23 @@ def train_single_model(
         "num_classes": task_config.get("num_classes", 2),
         "dropout": task_config.get("classification", {}).get("dropout", 0.1),
     }
-    
+
     # Add model-specific configs
     if model_type == "attention_mil":
-        model_factory_config["attention_mil"] = model_config.get("model", {}).get("attention_mil", {})
+        model_factory_config["attention_mil"] = model_config.get("model", {}).get(
+            "attention_mil", {}
+        )
     elif model_type == "clam":
         model_factory_config["clam"] = model_config.get("model", {}).get("clam", {})
     elif model_type == "transmil":
         model_factory_config["transmil"] = model_config.get("model", {}).get("transmil", {})
-    
+
     # Create model
     model = create_attention_model(model_factory_config, feature_dim).to(device)
-    logger.info(f"Created {model_type} model with {sum(p.numel() for p in model.parameters()):,} parameters")
-    
+    logger.info(
+        f"Created {model_type} model with {sum(p.numel() for p in model.parameters()):,} parameters"
+    )
+
     # Create optimizer and loss
     optimizer = optim.AdamW(
         model.parameters(),
@@ -189,67 +191,67 @@ def train_single_model(
         weight_decay=float(model_config["training"]["weight_decay"]),
     )
     criterion = nn.BCEWithLogitsLoss()
-    
+
     # Training loop
     num_epochs = model_config["training"]["num_epochs"]
     best_val_auc = 0.0
-    
+
     for epoch in range(1, num_epochs + 1):
         # Train
         model.train()
         train_loss = 0.0
-        
+
         for batch in tqdm(train_loader, desc=f"Epoch {epoch}/{num_epochs} [Train]"):
             features = batch["features"].to(device)
             labels = batch["labels"].to(device)
             num_patches = batch["num_patches"].to(device)
-            
+
             optimizer.zero_grad()
             logits = model(features, num_patches)
-            
+
             if logits.ndim > 1 and logits.size(-1) == 1:
                 logits = logits.squeeze(-1)
-            
+
             loss = criterion(logits, labels.float())
             loss.backward()
             optimizer.step()
-            
+
             train_loss += loss.item()
-        
+
         avg_train_loss = train_loss / len(train_loader)
-        
+
         # Validate
         model.eval()
         val_loss = 0.0
         all_preds = []
         all_labels = []
         all_probs = []
-        
+
         with torch.no_grad():
             for batch in tqdm(val_loader, desc=f"Epoch {epoch}/{num_epochs} [Val]"):
                 features = batch["features"].to(device)
                 labels = batch["labels"].to(device)
                 num_patches = batch["num_patches"].to(device)
-                
+
                 logits = model(features, num_patches)
-                
+
                 if logits.ndim > 1 and logits.size(-1) == 1:
                     logits = logits.squeeze(-1)
-                
+
                 loss = criterion(logits, labels.float())
                 val_loss += loss.item()
-                
+
                 probs = torch.sigmoid(logits)
                 preds = (probs > 0.5).long()
-                
+
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(labels.cpu().numpy())
                 all_probs.extend(probs.cpu().numpy())
-        
+
         avg_val_loss = val_loss / len(val_loader)
         val_accuracy = accuracy_score(all_labels, all_preds)
         val_auc = roc_auc_score(all_labels, all_probs)
-        
+
         logger.info(
             f"Epoch {epoch}/{num_epochs} - "
             f"Train Loss: {avg_train_loss:.4f}, "
@@ -257,13 +259,13 @@ def train_single_model(
             f"Val Acc: {val_accuracy:.4f}, "
             f"Val AUC: {val_auc:.4f}"
         )
-        
+
         # Save best model
         if val_auc > best_val_auc:
             best_val_auc = val_auc
             checkpoint_dir = Path(model_config["checkpoint"]["checkpoint_dir"])
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            
+
             checkpoint_path = checkpoint_dir / "best_model.pth"
             torch.save(
                 {
@@ -276,44 +278,44 @@ def train_single_model(
                 checkpoint_path,
             )
             logger.info(f"Saved best model (AUC: {best_val_auc:.4f})")
-    
+
     # Evaluate on test set (using validation set as proxy for now)
     logger.info(f"Evaluating {model_type} on test set...")
     model.eval()
-    
+
     test_preds = []
     test_labels = []
     test_probs = []
     inference_times = []
-    
+
     with torch.no_grad():
         for batch in tqdm(val_loader, desc="Testing"):
             features = batch["features"].to(device)
             labels = batch["labels"].to(device)
             num_patches = batch["num_patches"].to(device)
-            
+
             # Measure inference time
             start_time = time.time()
             logits = model(features, num_patches)
             inference_time = time.time() - start_time
             inference_times.append(inference_time)
-            
+
             if logits.ndim > 1 and logits.size(-1) == 1:
                 logits = logits.squeeze(-1)
-            
+
             probs = torch.sigmoid(logits)
             preds = (probs > 0.5).long()
-            
+
             test_preds.extend(preds.cpu().numpy())
             test_labels.extend(labels.cpu().numpy())
             test_probs.extend(probs.cpu().numpy())
-    
+
     # Compute test metrics
     test_accuracy = accuracy_score(test_labels, test_preds)
     test_auc = roc_auc_score(test_labels, test_probs)
     test_f1 = f1_score(test_labels, test_preds)
     avg_inference_time = np.mean(inference_times)
-    
+
     logger.info(
         f"{model_type} Test Results - "
         f"Acc: {test_accuracy:.4f}, "
@@ -321,7 +323,7 @@ def train_single_model(
         f"F1: {test_f1:.4f}, "
         f"Inference Time: {avg_inference_time:.4f}s"
     )
-    
+
     return {
         "accuracy": test_accuracy,
         "auc": test_auc,
@@ -337,19 +339,19 @@ def compare_models(
     output_dir: Path,
 ) -> Tuple[pd.DataFrame, Dict[str, Dict]]:
     """Compare multiple models by training and evaluating each one.
-    
+
     This function orchestrates the comparison of multiple model architectures
     by training each model with the same configuration and collecting their
     test metrics. It handles errors gracefully, continuing with remaining
     models if one fails.
-    
+
     The comparison process:
     1. Iterates through each model type
     2. Trains model using train_single_model
     3. Collects test metrics and predictions
     4. Aggregates results into a pandas DataFrame
     5. Saves comparison table to CSV
-    
+
     Args:
         model_types: List of model types to compare. Each must be one of:
             ['mean', 'max', 'attention_mil', 'clam', 'transmil']
@@ -358,7 +360,7 @@ def compare_models(
         output_dir: Output directory for saving:
             - model_comparison.csv: Comparison table
             - {model_type}/: Individual model checkpoints
-        
+
     Returns:
         Tuple containing:
             - results_df: pandas DataFrame with columns:
@@ -370,7 +372,7 @@ def compare_models(
             - predictions: Dictionary mapping model_type to prediction dict:
                 * labels: Ground truth labels
                 * probs: Predicted probabilities
-    
+
     Example:
         >>> config = load_config("experiments/configs/comparison.yaml")
         >>> output_dir = Path("outputs/comparison")
@@ -387,31 +389,31 @@ def compare_models(
     """
     results = []
     predictions = {}
-    
+
     for model_type in model_types:
         try:
             metrics = train_single_model(model_type, config, output_dir)
-            
+
             # Store predictions for ROC curves
             predictions[model_type] = metrics.pop("predictions")
-            
+
             # Add model type to metrics
             metrics["model_type"] = model_type
             results.append(metrics)
-            
+
         except Exception as e:
             logger.error(f"Failed to train {model_type}: {e}")
             continue
-    
+
     # Create comparison DataFrame
     df = pd.DataFrame(results)
     df = df[["model_type", "accuracy", "auc", "f1_score", "inference_time"]]
-    
+
     # Save to CSV
     csv_path = output_dir / "model_comparison.csv"
     df.to_csv(csv_path, index=False)
     logger.info(f"Saved comparison results to {csv_path}")
-    
+
     return df, predictions
 
 
@@ -421,18 +423,18 @@ def plot_roc_curves(
     output_dir: Path,
 ) -> None:
     """Plot ROC curves for all models on a single figure for comparison.
-    
+
     This function creates a publication-quality ROC curve plot comparing
     multiple models. Each model's curve is labeled with its AUC score,
     and a random baseline (diagonal line) is included for reference.
-    
+
     The plot includes:
     - ROC curve for each model with distinct colors
     - AUC score in legend for each model
     - Random baseline (diagonal line)
     - Grid for easier reading
     - Proper axis labels and title
-    
+
     Args:
         model_types: List of model types to plot. Models without predictions
             are skipped with a warning.
@@ -440,10 +442,10 @@ def plot_roc_curves(
             - labels: Ground truth binary labels [num_samples]
             - probs: Predicted probabilities [num_samples]
         output_dir: Directory to save the plot as 'roc_comparison.png'
-    
+
     Saves:
         {output_dir}/roc_comparison.png: ROC curve comparison plot (300 DPI)
-    
+
     Example:
         >>> predictions = {
         ...     'mean': {'labels': [0, 1, 0, 1], 'probs': [0.3, 0.7, 0.2, 0.8]},
@@ -453,29 +455,29 @@ def plot_roc_curves(
         # Saves outputs/roc_comparison.png
     """
     plt.figure(figsize=(10, 8))
-    
+
     for model_type in model_types:
         if model_type not in predictions:
             logger.warning(f"No predictions found for {model_type}, skipping ROC curve")
             continue
-        
+
         labels = predictions[model_type]["labels"]
         probs = predictions[model_type]["probs"]
-        
+
         fpr, tpr, _ = roc_curve(labels, probs)
         auc = roc_auc_score(labels, probs)
-        
+
         plt.plot(fpr, tpr, label=f"{model_type} (AUC={auc:.3f})", linewidth=2)
-    
+
     # Add random baseline
-    plt.plot([0, 1], [0, 1], 'k--', label="Random", linewidth=1)
-    
+    plt.plot([0, 1], [0, 1], "k--", label="Random", linewidth=1)
+
     plt.xlabel("False Positive Rate", fontsize=12)
     plt.ylabel("True Positive Rate", fontsize=12)
-    plt.title("ROC Curves - Model Comparison", fontsize=14, fontweight='bold')
-    plt.legend(loc='lower right', fontsize=10)
+    plt.title("ROC Curves - Model Comparison", fontsize=14, fontweight="bold")
+    plt.legend(loc="lower right", fontsize=10)
     plt.grid(True, alpha=0.3)
-    
+
     output_path = output_dir / "roc_comparison.png"
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -487,19 +489,19 @@ def statistical_significance_test(
     baseline: str = "mean",
 ) -> pd.DataFrame:
     """Compute statistical significance of model improvements over baseline.
-    
+
     This function performs statistical significance testing to determine if
     model improvements over the baseline are statistically significant. The
     current implementation is a simplified placeholder that uses a simple
     comparison. A proper implementation would use cross-validation folds
     and paired t-tests.
-    
+
     Note: This is a simplified implementation for demonstration. For rigorous
     statistical testing, you should:
     1. Use k-fold cross-validation to get multiple performance estimates
     2. Apply paired t-test or Wilcoxon signed-rank test
     3. Correct for multiple comparisons (e.g., Bonferroni correction)
-    
+
     Args:
         results: DataFrame with model comparison results containing columns:
             - model_type: Name of the model
@@ -507,7 +509,7 @@ def statistical_significance_test(
             Other columns are ignored for significance testing
         baseline: Name of the baseline model to compare against (default: 'mean')
             Must be present in results['model_type']
-        
+
     Returns:
         DataFrame with statistical significance results containing:
             - model_type: Name of the model
@@ -515,7 +517,7 @@ def statistical_significance_test(
                 * 1.0 for baseline model (comparing to itself)
                 * 0.05 if model AUC > baseline AUC (placeholder)
                 * 0.5 if model AUC <= baseline AUC (placeholder)
-    
+
     Example:
         >>> results = pd.DataFrame({
         ...     'model_type': ['mean', 'attention_mil', 'clam'],
@@ -530,13 +532,13 @@ def statistical_significance_test(
     """
     # This is a simplified version - actual implementation would
     # use cross-validation folds for proper statistical testing
-    
+
     if baseline not in results["model_type"].values:
         logger.warning(f"Baseline model '{baseline}' not found in results")
         return pd.DataFrame({"model_type": results["model_type"], "p_value": [1.0] * len(results)})
-    
+
     baseline_auc = results[results["model_type"] == baseline]["auc"].values[0]
-    
+
     significance = []
     for _, row in results.iterrows():
         if row["model_type"] == baseline:
@@ -546,7 +548,7 @@ def statistical_significance_test(
             # For now, use simple comparison
             p_value = 0.05 if row["auc"] > baseline_auc else 0.5
             significance.append({"model_type": row["model_type"], "p_value": p_value})
-    
+
     return pd.DataFrame(significance)
 
 
@@ -613,46 +615,46 @@ def main():
         default=["mean", "max", "attention_mil", "clam", "transmil"],
         help="Models to compare",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Load config
     config = load_config(args.config)
     validate_config(config)
-    
+
     # Set seed
     set_seed(config.get("seed", 42))
-    
+
     # Create output directory
     output_dir = Path("outputs/model_comparison")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     logger.info("=" * 80)
     logger.info("Model Comparison")
     logger.info("=" * 80)
     logger.info(f"Comparing models: {args.models}")
     logger.info(f"Output directory: {output_dir}")
     logger.info("=" * 80)
-    
+
     # Compare models
     results, predictions = compare_models(args.models, config, output_dir)
-    
+
     # Print results
     print("\n" + "=" * 80)
     print("Model Comparison Results")
     print("=" * 80)
     print(results.to_string(index=False))
     print("=" * 80)
-    
+
     # Plot ROC curves
     plot_roc_curves(args.models, predictions, output_dir)
-    
+
     # Statistical significance
     significance = statistical_significance_test(results, baseline="mean")
     print("\nStatistical Significance (vs. mean pooling baseline):")
     print(significance.to_string(index=False))
     print("=" * 80)
-    
+
     logger.info("Comparison complete!")
 
 

@@ -9,8 +9,6 @@ Tests focused on:
 """
 
 import json
-import os
-from pathlib import Path
 
 import pytest
 
@@ -439,7 +437,7 @@ class TestManifestEdgeCases:
     def test_directory_creation(self, tmp_path):
         """BenchmarkManifest creates parent directories if needed."""
         manifest_path = tmp_path / "nested" / "deep" / "manifest.jsonl"
-        manifest = BenchmarkManifest(str(manifest_path))
+        BenchmarkManifest(str(manifest_path))
 
         # Directory should be created
         assert manifest_path.parent.exists()

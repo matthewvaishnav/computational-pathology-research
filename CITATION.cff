@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this framework in your research, please cite it as below."
 type: software
-title: "Computational Pathology Research Framework"
+title: "Production-grade PyTorch framework for computational pathology research"
 abstract: "A production-grade PyTorch framework for computational pathology research. Provides whole-slide image processing with OpenSlide, multiple instance learning (MIL) for slide-level classification, benchmark pipelines for PatchCamelyon and CAMELYON16, comprehensive analysis tools, and deployment-ready infrastructure with Docker/Kubernetes support."
 authors:
   - family-names: "Vaishnav"
@@ -48,7 +48,7 @@ references:
 
 preferred-citation:
   type: software
-  title: "Computational Pathology Research Framework"
+  title: "Production-grade PyTorch framework for computational pathology research"
   authors:
     - family-names: "Vaishnav"
       given-names: "Matthew"

@@ -25,7 +25,7 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import psutil
 import torch
@@ -376,7 +376,7 @@ class ProgressTracker:
 # ============================================================================
 
 try:
-    from prometheus_client import Counter, Gauge, Histogram, Summary
+    from prometheus_client import Counter, Gauge
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
