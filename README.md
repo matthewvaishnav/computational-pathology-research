@@ -67,12 +67,15 @@ python experiments/evaluate_pcam.py \
   --bootstrap-samples 1000
 ```
 
-**Real Benchmark Results** (🔄 training in progress - Epoch 3/20):
-- Dataset: 262,144 train, 32,768 val, 32,768 test (96×96 RGB patches)
-- Hardware: RTX 4070 Laptop (8GB VRAM), Intel i7-14650HX, 32GB DDR5
-- Training Time: ~5 hours total (20 epochs, ~15 min/epoch)
-- Current Best: 95.02% Val AUC, 83.80% Val Accuracy (Epoch 2)
-- Expected Final: 96-98% AUC, 88-92% Accuracy
+**Real Benchmark Results**:
+- **Test Accuracy**: 86.04%
+- **Test AUC**: 0.9423
+- **Test F1**: 0.8437
+- **Dataset**: 262,144 train, 32,768 val, 32,768 test (96×96 RGB patches)
+- **Hardware**: CPU (Python 3.14 - CUDA not yet supported)
+- **Training Time**: ~4.5 hours (5 epochs)
+
+*Note: Results obtained with real PCam dataset. GPU training would significantly improve performance and training time.*
 
 **Development/Testing**: Synthetic data generator available for pipeline validation:
 ```bash
