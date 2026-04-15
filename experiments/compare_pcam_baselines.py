@@ -336,12 +336,11 @@ def _record_comparison_to_manifest(
     manifest = BenchmarkManifest(manifest_path=manifest_path)
     if hasattr(manifest, "update_or_add_entry"):
         updated = manifest.update_or_add_entry(entry)
-        manifest_action = "updated" if updated else "added"
+        "updated" if updated else "added"
     else:
         manifest.add_entry(entry)
-        manifest_action = "added"
 
-    logger.info(f"\n✓ Recorded comparison to benchmark manifest")
+    logger.info("\n✓ Recorded comparison to benchmark manifest")
     logger.info(f"  Experiment: {entry.experiment_name}")
     logger.info(f"  Status: {entry.status}")
     logger.info(
@@ -458,7 +457,7 @@ def _generate_comparison_report(
             output_path=str(report_path),
         )
 
-        logger.info(f"\n✓ Generated benchmark report")
+        logger.info("\n✓ Generated benchmark report")
         logger.info(f"  Report: {report_path}")
 
     except Exception as e:

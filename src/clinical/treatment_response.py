@@ -19,10 +19,10 @@ Requirements addressed:
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1097,19 +1097,19 @@ class TreatmentResponseAnalyzer:
 
         # Rank regimens by effectiveness
         regimen_ranking = []
-        for regimen, stats in regimen_stats.items():
+        for regimen, regimen_stat in regimen_stats.items():
             effectiveness_score = (
-                stats["overall_response_rate"] * 0.5  # Response rate weight
-                + stats["response_magnitude"].get("mean", 0) * 0.3  # Magnitude weight
-                + (1 - stats["unexpected_response_rate"]) * 0.2  # Predictability weight
+                regimen_stat["overall_response_rate"] * 0.5  # Response rate weight
+                + regimen_stat["response_magnitude"].get("mean", 0) * 0.3  # Magnitude weight
+                + (1 - regimen_stat["unexpected_response_rate"]) * 0.2  # Predictability weight
             )
 
             regimen_ranking.append(
                 {
                     "regimen": regimen,
                     "effectiveness_score": effectiveness_score,
-                    "overall_response_rate": stats["overall_response_rate"],
-                    "sample_size": stats["sample_size"],
+                    "overall_response_rate": regimen_stat["overall_response_rate"],
+                    "sample_size": regimen_stat["sample_size"],
                 }
             )
 
@@ -1455,8 +1455,8 @@ class TreatmentResponseAnalyzer:
         time_stds = []
         valid_regimens = []
 
-        for regimen, stats in regimen_stats.items():
-            time_stats = stats.get("time_to_response", {})
+        for regimen, regimen_stat in regimen_stats.items():
+            time_stats = regimen_stat.get("time_to_response", {})
             if time_stats:
                 time_means.append(time_stats["mean"])
                 time_stds.append(time_stats["std"])

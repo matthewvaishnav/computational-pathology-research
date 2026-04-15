@@ -21,7 +21,6 @@ import json
 import logging
 import os
 import random
-import shutil
 import sys
 import time
 from pathlib import Path
@@ -548,7 +547,9 @@ def train_epoch(
                 if consecutive_nan_count >= cascading_nan_threshold:
                     # Trigger recovery regardless of parameter state
                     # Cascading NaN indicates fundamental training instability
-                    params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                    params_have_nan = check_model_parameters_for_nan(
+                        feature_extractor, encoder, head
+                    )
                     logger.error(
                         f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
                         f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
@@ -615,7 +616,9 @@ def train_epoch(
                     if consecutive_nan_count >= cascading_nan_threshold:
                         # Trigger recovery regardless of parameter state
                         # Cascading NaN indicates fundamental training instability
-                        params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                        params_have_nan = check_model_parameters_for_nan(
+                            feature_extractor, encoder, head
+                        )
                         logger.error(
                             f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
                             f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
@@ -743,7 +746,9 @@ def train_epoch(
                 if consecutive_nan_count >= cascading_nan_threshold:
                     # Trigger recovery regardless of parameter state
                     # Cascading NaN indicates fundamental training instability
-                    params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                    params_have_nan = check_model_parameters_for_nan(
+                        feature_extractor, encoder, head
+                    )
                     logger.error(
                         f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
                         f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
@@ -807,7 +812,9 @@ def train_epoch(
                     if consecutive_nan_count >= cascading_nan_threshold:
                         # Trigger recovery regardless of parameter state
                         # Cascading NaN indicates fundamental training instability
-                        params_have_nan = check_model_parameters_for_nan(feature_extractor, encoder, head)
+                        params_have_nan = check_model_parameters_for_nan(
+                            feature_extractor, encoder, head
+                        )
                         logger.error(
                             f"Cascading NaN detected: {consecutive_nan_count} consecutive NaN batches "
                             f"at batch {batch_idx}. Model parameters {'contain' if params_have_nan else 'do not contain'} NaN. "
@@ -1492,6 +1499,7 @@ def handle_cascading_nan_recovery(
     scheduler: Any,
     scaler: Optional[torch.cuda.amp.GradScaler],
     config: Dict,
+    run_id: str,
     epoch: int,
     batch_idx: int,
     recovery_attempts: int,
@@ -1732,7 +1740,7 @@ def restore_from_checkpoint(
             logger.info("Resetting gradient scaler to clean state during recovery")
             # Recreate scaler with default settings instead of accessing internals
             device = next(feature_extractor.parameters()).device
-            if device.type == 'cuda':
+            if device.type == "cuda":
                 scaler.__init__()  # Reinitialize with defaults
 
         logger.info(f"Successfully restored model state from epoch {epoch}")
@@ -1792,7 +1800,7 @@ def validate_dataset(dataset: PCamDataset) -> None:
 
     logger.info("Dataset validation passed!")
     logger.info(f"Dataset size: {len(dataset)} samples")
-    logger.info(f"Sample shape: [3, 96, 96]")
+    logger.info("Sample shape: [3, 96, 96]")
 
 
 def reduce_batch_size_on_oom(
@@ -2159,7 +2167,7 @@ def main():
                 # Early stopping
                 if config["early_stopping"]["enabled"]:
                     patience = config["early_stopping"]["patience"]
-                    min_delta = config["early_stopping"]["min_delta"]
+                    config["early_stopping"]["min_delta"]
 
                     if patience_counter >= patience:
                         logger.info(

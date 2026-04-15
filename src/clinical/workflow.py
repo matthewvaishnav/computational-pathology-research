@@ -9,16 +9,14 @@ Requirements: All clinical workflow requirements - system integration
 
 import logging
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import torch
 
 from src.clinical.audit import AuditLogger
 from src.clinical.classifier import MultiClassDiseaseClassifier
 from src.clinical.dicom_adapter import DICOMAdapter
-from src.clinical.fhir_adapter import FHIRAdapter
-from src.clinical.longitudinal import LongitudinalTracker, PatientTimeline, ScanRecord
+from src.clinical.longitudinal import LongitudinalTracker, ScanRecord
 from src.clinical.ood_detection import OODDetector
 from src.clinical.patient_context import ClinicalMetadata, PatientContextIntegrator
 from src.clinical.privacy import PrivacyManager

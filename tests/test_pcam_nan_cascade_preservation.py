@@ -12,25 +12,19 @@ This test follows observation-first methodology:
 These tests MUST PASS on unfixed code to confirm baseline behavior to preserve.
 """
 
-import logging
-import random
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
 # Import the training function under test
 from experiments.train_pcam import create_single_modality_model, train_epoch, validate
-from src.models.encoders import WSIEncoder
-from src.models.feature_extractors import ResNetFeatureExtractor
-from src.models.heads import ClassificationHead
 
 
 class TestPCamNaNCascadePreservation:
@@ -320,7 +314,7 @@ class TestPCamNaNCascadePreservation:
         assert 0.0 <= metrics["accuracy"] <= 1.0, f"Accuracy should be valid: {metrics['accuracy']}"
 
         # 4. All batches should be processed (no skipped batches)
-        expected_batches = len(dataloader)
+        len(dataloader)
         # We can't directly check processed batches, but we can verify no skip warnings
         skip_warnings = [
             call for call in mock_logger.warning.call_args_list if "skip" in str(call).lower()
@@ -329,7 +323,7 @@ class TestPCamNaNCascadePreservation:
             len(skip_warnings) == 0
         ), f"No batches should be skipped in normal training: {skip_warnings}"
 
-        print(f"✓ Normal training preserved: No NaN warnings, no recovery, valid metrics")
+        print("✓ Normal training preserved: No NaN warnings, no recovery, valid metrics")
 
     def test_validation_nan_handling_preservation(self, mock_config, models_and_optimizer):
         """
@@ -475,7 +469,7 @@ class TestPCamNaNCascadePreservation:
 
             # Verify checkpoint loading worked correctly
             assert loaded_epoch == 1, f"Loaded epoch should be 1, got {loaded_epoch}"
-            assert loaded_metrics == test_metrics, f"Loaded metrics should match saved metrics"
+            assert loaded_metrics == test_metrics, "Loaded metrics should match saved metrics"
 
             # Verify model parameters were loaded (they should be different from initial random values)
             # We can't easily compare exact values, but we can verify the loading process completed

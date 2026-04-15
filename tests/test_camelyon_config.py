@@ -82,7 +82,7 @@ def test_camelyon_config_data_section():
     # Check basic data config
     assert data["dataset"] == "camelyon16"
     assert "root_dir" in data
-    assert data["download"] == False  # Manual download required
+    assert data["download"] is False  # Manual download required
 
     # Check slide-level config
     assert "slide" in data
@@ -116,7 +116,7 @@ def test_camelyon_config_model_section():
     assert "feature_extractor" in model
     fe = model["feature_extractor"]
     assert fe["model"] in ["resnet18", "resnet34", "resnet50", "resnet101"]
-    assert fe["pretrained"] == True
+    assert fe["pretrained"] is True
     assert fe["feature_dim"] > 0
 
     # Check WSI encoder

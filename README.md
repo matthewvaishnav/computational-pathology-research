@@ -145,7 +145,7 @@ python experiments/evaluate_camelyon.py \
   --data-root data/camelyon \
   --output-dir results/camelyon \
   --save-predictions-csv \
-  --generate-attention-heatmaps
+  --heatmaps-dir results/camelyon/heatmaps
 ```
 
 **Features**:

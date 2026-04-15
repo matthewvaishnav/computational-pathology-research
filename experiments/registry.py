@@ -5,7 +5,6 @@ Auto-generated registry of all experiments with links to their results.
 
 import json
 import os
-import re
 from glob import glob
 from typing import Any
 

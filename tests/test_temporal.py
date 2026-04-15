@@ -2,7 +2,6 @@
 Unit tests for temporal reasoning modules.
 """
 
-import pytest
 import torch
 
 from src.models.temporal import CrossSlideTemporalReasoner, TemporalAttention

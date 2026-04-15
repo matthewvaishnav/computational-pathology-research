@@ -7,8 +7,6 @@ Tests focused on:
 - Metrics compatibility with comparison runner
 """
 
-import json
-import tempfile
 from pathlib import Path
 
 import pytest

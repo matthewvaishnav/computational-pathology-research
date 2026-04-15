@@ -262,10 +262,6 @@ class TestAttentionBaseline:
         model = AttentionBaseline(embed_dim=64)
         batch = {"genomic": torch.randn(4, 2000)}  # Only one modality
 
-        # Before forward, all weights are equal
-        raw_weights = torch.softmax(model.fusion_weights, dim=0)
-        expected_equal_weight = raw_weights[1].item()  # Weight for genomic
-
         output = model(batch)
 
         # The output should still be valid
