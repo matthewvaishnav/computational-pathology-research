@@ -6,10 +6,9 @@ PatchCamelyon data with support for data augmentation and feature extraction.
 """
 
 import logging
-import os
 import shutil
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Dict, Optional
 
 import numpy as np
 import torch

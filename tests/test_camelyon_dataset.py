@@ -3,8 +3,6 @@ Tests for CAMELYON dataset and index utilities.
 """
 
 import json
-import tempfile
-from pathlib import Path
 
 import h5py
 import numpy as np

@@ -49,6 +49,7 @@ def test_stdio_round_trip_lists_tools():
     assert completed.returncode == 0
     assert [response["id"] for response in responses] == [1, 2, 3]
     assert responses[0]["result"]["serverInfo"]["name"] == "computational-pathology"
+    assert "Talk like caveman" in responses[0]["result"]["instructions"]
     tool_names = {tool["name"] for tool in responses[1]["result"]["tools"]}
     assert "project_overview" in tool_names
     assert "run_pytest" in tool_names

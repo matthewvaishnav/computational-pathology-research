@@ -5,7 +5,6 @@ PCam uses binary classification with a single output logit and BCEWithLogitsLoss
 unlike the multi-class classification used in other parts of the codebase.
 """
 
-import pytest
 import torch
 import torch.nn as nn
 

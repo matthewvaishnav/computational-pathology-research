@@ -6,7 +6,7 @@ significantly different from training data, flagging them for expert review.
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import torch
 import torch.nn as nn
@@ -129,7 +129,7 @@ class OODDetector(nn.Module):
         if features.shape[1] != self.feature_dim:
             raise ValueError(f"Expected feature_dim={self.feature_dim}, got {features.shape[1]}")
 
-        batch_size = features.shape[0]
+        features.shape[0]
         method_scores_list = []
 
         # Compute scores for each detection method

@@ -22,7 +22,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from src.clinical.classifier import MultiClassDiseaseClassifier
-from src.clinical.taxonomy import DiseaseTaxonomy
 from src.clinical.validation import ModelValidator, PerformanceMonitor
 
 

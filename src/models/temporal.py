@@ -6,12 +6,10 @@ across multiple slides from the same patient over time, incorporating temporal
 distances and extracting progression features.
 """
 
-import math
 from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class TemporalAttention(nn.Module):

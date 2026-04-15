@@ -9,9 +9,7 @@ Tests cover:
 - Error messages and suggestions
 """
 
-import os
 import unittest
-from unittest.mock import Mock
 
 import torch
 import torch.nn as nn

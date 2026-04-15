@@ -7,9 +7,7 @@ and validation.
 Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7
 """
 
-import json
 import unittest
-from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch
 
 from src.clinical.fhir_adapter import (

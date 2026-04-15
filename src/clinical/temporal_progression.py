@@ -632,7 +632,7 @@ class TreatmentEffectEncoder(nn.Module):
         Returns:
             Treatment embeddings [batch_size, embed_dim]
         """
-        batch_size = len(treatment_history)
+        len(treatment_history)
         treatment_embeddings_list = []
 
         for th in treatment_history:

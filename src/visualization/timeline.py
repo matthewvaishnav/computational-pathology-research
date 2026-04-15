@@ -13,7 +13,6 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
 
 logger = logging.getLogger(__name__)
 
@@ -289,7 +288,7 @@ class TimelineVisualizer:
     ) -> None:
         """Plot risk score trajectory over time."""
         # Collect risk data
-        scan_dates = [scan.scan_date for scan in scans]
+        [scan.scan_date for scan in scans]
 
         # Determine which diseases to plot
         if disease_ids is None:
