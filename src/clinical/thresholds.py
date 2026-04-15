@@ -206,7 +206,7 @@ class ClinicalThresholdSystem:
             # Use maximum across time horizons
             risk_scores = risk_scores.max(dim=2)[0]
 
-        batch_size = risk_scores.shape[0]
+        risk_scores.shape[0]
         num_diseases = risk_scores.shape[1]
 
         if len(disease_ids) != num_diseases:
@@ -242,7 +242,7 @@ class ClinicalThresholdSystem:
         Returns:
             Boolean tensor [batch_size] indicating flagged cases
         """
-        batch_size = anomaly_scores.shape[0]
+        anomaly_scores.shape[0]
         num_diseases = anomaly_scores.shape[1]
 
         if len(disease_ids) != num_diseases:

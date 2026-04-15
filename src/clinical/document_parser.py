@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -334,9 +334,6 @@ class ClinicalDocumentParser:
         # Check medication conflicts
         if "medications" in structured_metadata:
             structured_meds = set(med.lower() for med in structured_metadata["medications"])
-            extracted_meds = set(
-                med.value.lower() for med in parsed_document.medications if not med.negated
-            )
 
             # Find medications in structured but negated in document
             for med in structured_meds:
@@ -352,9 +349,6 @@ class ClinicalDocumentParser:
         # Check diagnosis conflicts (if structured metadata has diagnoses)
         if "diagnoses" in structured_metadata:
             structured_dx = set(dx.lower() for dx in structured_metadata["diagnoses"])
-            extracted_dx = set(
-                dx.value.lower() for dx in parsed_document.diagnoses if not dx.negated
-            )
 
             # Find diagnoses in structured but negated in document
             for dx in structured_dx:

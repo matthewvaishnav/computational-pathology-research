@@ -10,7 +10,6 @@ Usage:
     python experiments/run_statistical_analysis.py [--n-bootstrap N] [--seed S]
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -31,9 +30,6 @@ from torch.utils.data import DataLoader, Dataset
 from experiments.statistical_analysis import (
     AblationStudy,
     compute_bootstrap_ci,
-    is_significant,
-    paired_t_test,
-    run_cross_validation,
 )
 
 # Configure logging
@@ -248,7 +244,7 @@ def run_ablations(model, classifier, test_loader, n_bootstrap=500, seed=42):
     ablation_components = ["wsi", "genomic", "clinical"]
 
     # Create ablation study
-    study = AblationStudy(
+    AblationStudy(
         model_factory=lambda: AblationWrapper(
             type(model)(model.embed_dim), type(classifier)(model.embed_dim, 3)
         ),
@@ -475,7 +471,7 @@ def main():
     print("\n" + "=" * 80)
     print("ABLATION STUDY SUMMARY")
     print("=" * 80)
-    print(f"\nFull Model Performance:")
+    print("\nFull Model Performance:")
     for metric, value in full_metrics.items():
         print(f"  {metric}: {value:.4f}")
 

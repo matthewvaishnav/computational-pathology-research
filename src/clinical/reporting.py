@@ -10,7 +10,6 @@ This module provides:
 """
 
 import base64
-import io
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -19,7 +18,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
-import torch
 from jinja2 import Environment, FileSystemLoader, Template
 
 
@@ -441,7 +439,6 @@ class ClinicalReportGenerator:
             from reportlab.lib.units import inch
             from reportlab.platypus import (
                 Image,
-                PageBreak,
                 Paragraph,
                 SimpleDocTemplate,
                 Spacer,
