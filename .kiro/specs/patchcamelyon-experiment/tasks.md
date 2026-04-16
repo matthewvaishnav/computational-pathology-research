@@ -6,7 +6,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
 
 ## Tasks
 
-- [ ] 1. Implement PCamDataset class for data loading
+- [x] 1. Implement PCamDataset class for data loading
   - [x] 1.1 Create src/data/pcam_dataset.py with PCamDataset class
     - Implement __init__ method with parameters: root_dir, split, transform, download, feature_extractor
     - Implement __len__ method returning number of samples
@@ -36,7 +36,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Test error handling for missing files
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
 
-- [ ] 2. Implement feature extraction module
+- [x] 2. Implement feature extraction module
   - [x] 2.1 Create src/models/feature_extractors.py with ResNetFeatureExtractor class
     - Implement __init__ with parameters: model_name, pretrained, feature_dim
     - Load ResNet-18 from torchvision.models
@@ -59,7 +59,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Test integration with PCamDataset
     - _Requirements: 2.3_
 
-- [ ] 3. Create training configuration and script
+- [x] 3. Create training configuration and script
   - [x] 3.1 Create experiments/configs/pcam.yaml configuration file
     - Define experiment metadata (name, description, tags)
     - Configure data parameters (dataset, root_dir, download, num_workers, augmentation)
@@ -81,7 +81,7 @@ This implementation plan breaks down the PatchCamelyon experiment into discrete 
     - Log configuration, PyTorch version, CUDA version, device info at start
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3.1, 3.2, 3.3, 3.4, 3.5, 3.7, 7.1, 7.6_
 
-- [ ] 4. Implement training loop with error handling
+- [x] 4. Implement training loop with error handling
   - [x] 4.1 Add checkpoint saving and loading
     - Save checkpoint dict with epoch, global_step, encoder_state_dict, head_state_dict, optimizer_state_dict, scheduler_state_dict, metrics, config
     - Implement save_checkpoint() function called every N epochs
