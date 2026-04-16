@@ -50,7 +50,7 @@ def extract_wsi_patches(
 
     for i in range(0, height - patch_size + 1, stride):
         for j in range(0, width - patch_size + 1, stride):
-            patch = wsi_image[i : i + patch_size, j : j + patch_size]
+            patch = wsi_image[i: i + patch_size, j: j + patch_size]
 
             # Check tissue content (simple threshold on non-white pixels)
             if _has_sufficient_tissue(patch, tissue_threshold):
