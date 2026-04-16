@@ -8,9 +8,8 @@ import pytest
 import numpy as np
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Magic
 import h5py
-import io
 
 from src.data.preprocessing import (
     load_features_from_hdf5,

@@ -5,15 +5,8 @@ Tests train/val/test splits with no patient leakage, annotation processing,
 and missing slide scenarios.
 """
 
-import json
-import tempfile
-from pathlib import Path
-from typing import Dict, Any, List
 
-import h5py
-import numpy as np
 import pytest
-import torch
 
 from src.data.camelyon_dataset import (
     CAMELYONSlideIndex,
