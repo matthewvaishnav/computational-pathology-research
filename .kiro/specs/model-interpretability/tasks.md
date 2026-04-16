@@ -16,53 +16,53 @@ The tasks are organized to build incrementally: core interpretability components
   - Create `configs/interpretability/` directory for configuration files
   - _Requirements: 9.1, 9.6_
 
-- [ ] 2. Implement Grad-CAM generator for CNN feature extractors
-  - [ ] 2.1 Create GradCAMGenerator class with hook registration
+- [x] 2. Implement Grad-CAM generator for CNN feature extractors
+  - [x] 2.1 Create GradCAMGenerator class with hook registration
     - Implement `__init__` method with model, target_layers, and device parameters
     - Implement forward and backward hook registration for target layers
     - Implement activation and gradient capture logic
     - Support ResNet, DenseNet, and EfficientNet architectures
     - _Requirements: 1.1, 1.2_
 
-  - [ ] 2.2 Implement Grad-CAM heatmap generation
+  - [x] 2.2 Implement Grad-CAM heatmap generation
     - Implement `generate` method computing gradient-weighted activations
     - Implement weighted combination: CAM = ReLU(Σ(α_k * A_k))
     - Implement bilinear upsampling to input resolution
     - Implement normalization to [0, 1] range
     - _Requirements: 1.4, 1.6_
 
-  - [ ]* 2.3 Write property test for Grad-CAM heatmap normalization
+  - [x]* 2.3 Write property test for Grad-CAM heatmap normalization
     - **Property 1: Grad-CAM Heatmap Normalization**
     - **Validates: Requirements 1.6**
     - Test that all heatmap values are in [0, 1] for any input
 
-  - [ ]* 2.4 Write property test for Grad-CAM architecture support
+  - [x]* 2.4 Write property test for Grad-CAM architecture support
     - **Property 2: Grad-CAM Architecture Support**
     - **Validates: Requirements 1.2**
     - Test that all supported architectures produce valid heatmaps
 
-  - [ ]* 2.5 Write property test for Grad-CAM multi-layer output cardinality
+  - [x]* 2.5 Write property test for Grad-CAM multi-layer output cardinality
     - **Property 3: Grad-CAM Multi-Layer Output Cardinality**
     - **Validates: Requirements 1.5**
     - Test that number of heatmaps equals number of target layers
 
-  - [ ] 2.6 Implement heatmap overlay and visualization
+  - [x] 2.6 Implement heatmap overlay and visualization
     - Implement `overlay_heatmap` method with configurable transparency and colormap
     - Implement `save_visualization` method producing 300+ DPI publication-quality figures
     - Support matplotlib colormaps (jet, viridis, plasma)
     - _Requirements: 1.3, 1.7_
 
-  - [ ]* 2.7 Write property test for Grad-CAM overlay validity
+  - [x]* 2.7 Write property test for Grad-CAM overlay validity
     - **Property 4: Grad-CAM Overlay Validity**
     - **Validates: Requirements 1.3**
     - Test that overlay produces valid RGB image with correct shape
 
-  - [ ]* 2.8 Write property test for Grad-CAM visualization round-trip
+  - [x]* 2.8 Write property test for Grad-CAM visualization round-trip
     - **Property 5: Grad-CAM Visualization Round-Trip**
     - **Validates: Requirements 1.8**
     - Test that save/load preserves heatmap values within 1% error
 
-  - [ ]* 2.9 Write unit tests for Grad-CAM generator
+  - [x]* 2.9 Write unit tests for Grad-CAM generator
     - Test each architecture (ResNet18, ResNet50, DenseNet121, EfficientNet-B0)
     - Test edge cases (single pixel heatmap, all-zero gradients)
     - Test GPU and CPU execution
