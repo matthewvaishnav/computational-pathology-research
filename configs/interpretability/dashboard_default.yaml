@@ -1,0 +1,34 @@
+# Default Dashboard Configuration
+# For interactive visualization dashboard
+
+# Server settings
+host: 0.0.0.0
+port: 5000
+debug: false
+
+# Caching settings
+cache_type: memory  # Options: memory, redis
+cache_timeout: 3600  # Cache timeout in seconds (1 hour)
+redis_url: redis://localhost:6379/0  # Redis URL (if cache_type: redis)
+
+# Visualization settings
+max_samples_per_page: 50
+max_comparison_samples: 4
+default_colormap: viridis
+
+# Export settings
+export_formats:
+  - png
+  - pdf
+  - svg
+export_dpi: 300
+
+# Performance settings
+preload_samples: true
+lazy_load_threshold: 100  # Number of samples before lazy loading
+
+# Common use cases:
+# 1. Development mode: debug: true
+# 2. Production with Redis: cache_type: redis
+# 3. High-resolution exports: export_dpi: 600
+# 4. Custom port: port: 8080
