@@ -8,6 +8,7 @@ import pytest
 import torch
 import torch.nn as nn
 import numpy as np
+from pathlib import Path
 from hypothesis import given, strategies as st, settings
 import hypothesis.extra.numpy as npst
 
@@ -180,7 +181,7 @@ def test_property_4_gradcam_overlay_validity(height, width, alpha):
     width=st.integers(min_value=32, max_value=128)
 )
 @settings(max_examples=100, deadline=None)
-def test_property_5_gradcam_visualization_round_trip(height, width, tmp_path):
+def test_property_5_gradcam_visualization_round_trip(height, width):
     """
     Feature: model-interpretability, Property 5: Grad-CAM Visualization Round-Trip
     
@@ -192,6 +193,8 @@ def test_property_5_gradcam_visualization_round_trip(height, width, tmp_path):
     Note: This tests the save operation. Full round-trip would require loading
     the saved image, which is tested in unit tests.
     """
+    import tempfile
+    
     model = SimpleCNN()
     model.eval()
     generator = GradCAMGenerator(model, target_layers=['layer3'], device='cpu')
@@ -200,13 +203,14 @@ def test_property_5_gradcam_visualization_round_trip(height, width, tmp_path):
     image = np.random.rand(height, width, 3).astype(np.float32)
     heatmap = np.random.rand(height, width).astype(np.float32)
     
-    # Save visualization
-    output_path = tmp_path / "test_gradcam.png"
-    saved_path = generator.save_visualization(image, heatmap, output_path, dpi=300)
-    
-    # Verify file was created
-    assert saved_path.exists(), "Visualization file was not created"
-    assert saved_path.stat().st_size > 0, "Visualization file is empty"
-    
-    # Verify it's a valid image file (basic check)
-    assert saved_path.suffix == '.png', "File should be PNG format"
+    # Save visualization using temporary directory
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_path = Path(tmpdir) / "test_gradcam.png"
+        saved_path = generator.save_visualization(image, heatmap, output_path, dpi=300)
+        
+        # Verify file was created
+        assert saved_path.exists(), "Visualization file was not created"
+        assert saved_path.stat().st_size > 0, "Visualization file is empty"
+        
+        # Verify it's a valid image file (basic check)
+        assert saved_path.suffix == '.png', "File should be PNG format"
