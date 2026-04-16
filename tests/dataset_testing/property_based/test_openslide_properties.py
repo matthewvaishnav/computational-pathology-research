@@ -107,7 +107,7 @@ class TestOpenSlideProperties:
                     patch_size,
                     patch_size,
                     3,
-                ), f"Patch at ({x}, {y}) has incorrect shape: {patch.shape}"
+                ), f"Patch at ({x}, {y}) has incorrect shape: {mock_patch.shape}"
 
             # Property 2: Coordinates should be within slide bounds
             for patch, (x, y) in patches:
@@ -192,8 +192,8 @@ class TestOpenSlideProperties:
             level_dimensions = []
             level_downsamples = []
 
-            for l in range(num_levels):
-                downsample = 2**l
+            for level in range(num_levels):
+                downsample = 2**level
                 level_width = slide_width // downsample
                 level_height = slide_height // downsample
                 level_dimensions.append((level_width, level_height))
