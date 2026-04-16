@@ -198,9 +198,9 @@ class TestTissueDetection:
             for i in range(0, 256, 32):
                 for j in range(0, 256, 32):
                     if (i // 32 + j // 32) % 2 == 0:
-                        edge_cases["checkerboard"][i : i + 32, j : j + 32] = [200, 200, 200]
+                        edge_cases["checkerboard"][i: i + 32, j: j + 32] = [200, 200, 200]
                     else:
-                        edge_cases["checkerboard"][i : i + 32, j : j + 32] = [100, 100, 100]
+                        edge_cases["checkerboard"][i: i + 32, j: j + 32] = [100, 100, 100]
 
             mock_slide.read_region = lambda loc, level, size: Image.fromarray(
                 edge_cases["gradient"], "RGB"

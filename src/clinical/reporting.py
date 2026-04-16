@@ -169,22 +169,22 @@ class ClinicalReportGenerator:
         <p><strong>Scan Date:</strong> {{ scan_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
         <p><strong>Report Generated:</strong> {{ report_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
     </div>
-    
+
     {% if ood_detected %}
     <div class="warning">
         <strong>⚠ Out-of-Distribution Detection:</strong> {{ ood_explanation }}
         <br><strong>Recommendation:</strong> Expert pathologist review recommended before clinical use.
     </div>
     {% endif %}
-    
+
     <div class="section">
         <div class="section-title">Primary Diagnosis</div>
         <div class="diagnosis primary">
             <h3>{{ primary_diagnosis.disease_name }}</h3>
             <p><strong>Probability:</strong> {{ "%.1f"|format(primary_diagnosis.probability * 100) }}%</p>
             {% if primary_diagnosis.confidence_interval %}
-            <p><strong>95% Confidence Interval:</strong> 
-               {{ "%.1f"|format(primary_diagnosis.confidence_interval[0] * 100) }}% - 
+            <p><strong>95% Confidence Interval:</strong>
+               {{ "%.1f"|format(primary_diagnosis.confidence_interval[0] * 100) }}% -
                {{ "%.1f"|format(primary_diagnosis.confidence_interval[1] * 100) }}%</p>
             {% endif %}
             {% if primary_diagnosis.uncertainty_score %}
@@ -192,7 +192,7 @@ class ClinicalReportGenerator:
             {% endif %}
         </div>
     </div>
-    
+
     {% if alternative_diagnoses %}
     <div class="section">
         <div class="section-title">Alternative Diagnoses</div>
@@ -206,7 +206,7 @@ class ClinicalReportGenerator:
         {% endfor %}
     </div>
     {% endif %}
-    
+
     <div class="section">
         <div class="section-title">Probability Distribution</div>
         <table>
@@ -219,14 +219,14 @@ class ClinicalReportGenerator:
             {% endfor %}
         </table>
     </div>
-    
+
     {% if uncertainty_explanation %}
     <div class="section">
         <div class="section-title">Uncertainty Quantification</div>
         <p>{{ uncertainty_explanation }}</p>
     </div>
     {% endif %}
-    
+
     {% if risk_scores %}
     <div class="section">
         <div class="section-title">Risk Analysis</div>
@@ -241,7 +241,7 @@ class ClinicalReportGenerator:
         </table>
     </div>
     {% endif %}
-    
+
     {% if recommendations %}
     <div class="section">
         <div class="section-title">Clinical Recommendations</div>
@@ -252,7 +252,7 @@ class ClinicalReportGenerator:
         </ul>
     </div>
     {% endif %}
-    
+
     {% if attention_heatmap_path %}
     <div class="section">
         <div class="section-title">Attention Visualization</div>
@@ -260,7 +260,7 @@ class ClinicalReportGenerator:
         <img src="{{ attention_heatmap_path }}" alt="Attention Heatmap" class="attention-viz">
     </div>
     {% endif %}
-    
+
     {% if longitudinal_summary %}
     <div class="section">
         <div class="section-title">Longitudinal Progression Summary</div>
@@ -279,14 +279,14 @@ class ClinicalReportGenerator:
         {% endif %}
     </div>
     {% endif %}
-    
+
     {% if physician_notes %}
     <div class="section">
         <div class="section-title">Physician Notes</div>
         <p>{{ physician_notes }}</p>
     </div>
     {% endif %}
-    
+
     {% if amendments %}
     <div class="section">
         <div class="section-title">Report Amendments</div>
@@ -299,7 +299,7 @@ class ClinicalReportGenerator:
         {% endfor %}
     </div>
     {% endif %}
-    
+
     <div class="metadata">
         <p><strong>Model Version:</strong> {{ model_version }}</p>
         <p><strong>Report ID:</strong> {{ scan_id }}_{{ report_timestamp.strftime('%Y%m%d%H%M%S') }}</p>
