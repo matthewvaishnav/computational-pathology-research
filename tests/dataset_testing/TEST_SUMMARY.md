@@ -46,10 +46,25 @@
 - Bottleneck ID: I/O, preprocessing, profiling, allocation overhead
 - Cache optimization: LRU eviction, warmup, size tuning
 
+### Task 13: Integration & Regression Tests (32 tests)
+**Files:**
+- `tests/dataset_testing/integration/test_pipeline_integration.py` (19 tests)
+- `tests/dataset_testing/integration/test_training_loop_integration.py` (13 tests)
+
+**Tests:**
+- API compatibility: initialization, indexing, iteration, DataLoader, splits
+- Preprocessing integration: transforms, augmentation, config changes, composition, errors
+- Reproducibility: deterministic loading/augmentation, DataLoader, config hashing, versioning
+- End-to-end pipeline: dataset→preprocessing→DataLoader→model, multiple datasets, error propagation
+- Training loops: basic, validation, early stopping, gradient accumulation
+- Dataset versioning: compatibility, breaking changes, migration paths
+- Failure isolation: dataset loading, preprocessing, model forward, component isolation
+- Checkpoint save/resume
+
 ## Total Stats
-- **139 tests** (138 pass, 1 skip)
+- **171 tests** (170 pass, 1 skip)
 - **72% preprocessing.py coverage** (Task 9)
-- **Execution time:** ~20s total
+- **Execution time:** ~27s total
 
 ## Test Files Created
 1. `test_preprocessing.py` - Core preprocessing unit tests
@@ -58,9 +73,10 @@
 4. `test_network_storage_constraints.py` - Network/storage limits
 5. `test_performance_benchmarks.py` - Loading/memory/parallel perf
 6. `test_caching_optimization.py` - Caching/memory/bottleneck tests
+7. `test_pipeline_integration.py` - API/preprocessing/reproducibility
+8. `test_training_loop_integration.py` - Training loops/versioning/isolation
 
 ## Next Steps
-- Task 13: Integration/regression tests
 - Task 14: Coverage reporting
 - Task 15: Final integration
 
@@ -76,6 +92,9 @@ pytest tests/dataset_testing/unit/test_network_storage_constraints.py -v
 
 # All performance tests
 pytest tests/dataset_testing/performance/ -v
+
+# All integration tests
+pytest tests/dataset_testing/integration/ -v
 
 # All unit tests
 pytest tests/dataset_testing/unit/ -v
