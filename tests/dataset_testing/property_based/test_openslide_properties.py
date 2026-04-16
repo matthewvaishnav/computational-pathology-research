@@ -8,7 +8,6 @@ focusing on coordinate and alignment preservation during patch extraction.
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
-import pytest
 import numpy as np
 from PIL import Image
 from hypothesis import given, strategies as st, settings, assume

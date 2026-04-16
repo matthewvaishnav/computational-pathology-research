@@ -9,11 +9,7 @@ import pytest
 import time
 import torch
 import numpy as np
-from pathlib import Path
-from typing import Dict, Any
 import h5py
-import tempfile
-import shutil
 
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
 

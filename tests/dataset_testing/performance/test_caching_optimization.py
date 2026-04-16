@@ -7,13 +7,8 @@ Tests caching functionality, memory limits, and bottleneck identification
 
 import pytest
 import time
-import torch
 import numpy as np
-from pathlib import Path
 import h5py
-import tempfile
-import shutil
-from typing import Dict, Any
 
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
 
