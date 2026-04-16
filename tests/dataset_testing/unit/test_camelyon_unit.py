@@ -4,10 +4,6 @@ Enhanced CAMELYON unit tests for comprehensive dataset testing.
 Tests slide metadata loading, HDF5 feature file structure, and coordinate-feature alignment.
 """
 
-import json
-import tempfile
-from pathlib import Path
-from typing import Dict, Any
 
 import h5py
 import numpy as np

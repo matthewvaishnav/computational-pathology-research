@@ -17,9 +17,7 @@ import torch
 from pathlib import Path
 import tempfile
 import h5py
-from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, Any
-import torchvision.transforms as transforms
 
 from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
