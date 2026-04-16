@@ -214,8 +214,11 @@ class WSIReader:
     def close(self):
         """Close the slide."""
         if hasattr(self, "slide") and self.slide is not None:
-            self.slide.close()
-            logger.debug(f"Closed WSI: {self.wsi_path.name}")
+            try:
+                self.slide.close()
+                logger.debug(f"Closed WSI: {self.wsi_path.name}")
+            except Exception as e:
+                logger.warning(f"Error closing WSI {self.wsi_path.name}: {e}")
 
     def __enter__(self):
         """Context manager entry."""
