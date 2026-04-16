@@ -5,14 +5,10 @@ Tests dataset usage in training loops, version updates, and failure isolation
 (Requirement 9.5, 9.6, 9.7).
 """
 
-import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from pathlib import Path
-import h5py
-from typing import Dict, Any
 
 
 # Mock components for training loop testing

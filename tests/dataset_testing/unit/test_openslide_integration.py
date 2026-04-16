@@ -8,14 +8,11 @@ tissue detection accuracy, and error handling scenarios.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import pytest
 import numpy as np
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader, get_slide_info, check_openslide_available
-from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator, WSISyntheticSpec
-from tests.dataset_testing.base_interfaces import ErrorSimulator
 
 
 class TestWSIFormatCompatibilityValidation:

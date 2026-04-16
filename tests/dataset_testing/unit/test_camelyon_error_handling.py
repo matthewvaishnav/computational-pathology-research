@@ -4,16 +4,11 @@ CAMELYON error handling unit tests.
 Tests missing slide files, XML parsing errors, and mask generation failures.
 """
 
-import json
-import tempfile
 import xml.etree.ElementTree as ET
-from pathlib import Path
-from typing import Dict, Any
 
 import h5py
 import numpy as np
 import pytest
-import torch
 
 from src.data.camelyon_dataset import (
     CAMELYONPatchDataset,

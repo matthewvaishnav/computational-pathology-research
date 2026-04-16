@@ -5,16 +5,13 @@ This module provides tests for PCam dataset download functionality,
 dataset structure validation, and corruption detection.
 """
 
-import pytest
 import numpy as np
 import h5py
 from pathlib import Path
 import tempfile
 import hashlib
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, Optional
-import requests
-import urllib.error
+from unittest.mock import Magic
+from typing import Dict, Any
 
 from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator

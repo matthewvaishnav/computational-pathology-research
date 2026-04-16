@@ -5,16 +5,12 @@ This module provides property-based tests for PCam dataset functionality
 using Hypothesis to validate universal properties across input ranges.
 """
 
-import pytest
 import numpy as np
-import torch
 from pathlib import Path
 import tempfile
 import h5py
-from typing import Dict, Any
 
 from hypothesis import given, strategies as st, settings, assume
-from hypothesis.extra.numpy import arrays
 
 from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
 from tests.dataset_testing.hypothesis_strategies import (

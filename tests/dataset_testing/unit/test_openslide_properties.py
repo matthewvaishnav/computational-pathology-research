@@ -5,16 +5,14 @@ This module provides comprehensive tests for OpenSlide slide properties,
 metadata access, and WSI file format compatibility validation.
 """
 
-import pytest
-import numpy as np
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, Optional, Tuple, List
+from unittest.mock import Mock, patch
+from typing import Dict, Any
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader, get_slide_info, check_openslide_available
-from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator, WSISyntheticSpec
+from src.data.openslide_utils import WSIReader, get_slide_info
+from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 
 

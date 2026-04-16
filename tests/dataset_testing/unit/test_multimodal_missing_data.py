@@ -7,18 +7,11 @@ mismatch detection for robust multimodal data processing.
 **Validates: Requirements 3.5, 3.6, 3.7**
 """
 
-import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from unittest.mock import patch, MagicMock
 
-import h5py
-import numpy as np
-import pytest
 import torch
-from omegaconf import DictConfig
 
 from src.data.loaders import MultimodalDataset, collate_multimodal
 from tests.dataset_testing.synthetic.multimodal_generator import (

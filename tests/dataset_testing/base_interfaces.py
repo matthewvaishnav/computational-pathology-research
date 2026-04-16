@@ -10,7 +10,6 @@ from typing import Dict, Any, List, Optional, ContextManager
 from pathlib import Path
 import time
 import psutil
-import torch
 from contextlib import contextmanager
 
 
