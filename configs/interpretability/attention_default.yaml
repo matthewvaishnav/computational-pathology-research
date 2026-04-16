@@ -1,0 +1,15 @@
+# Default Attention Visualization Configuration
+# For MIL architectures (AttentionMIL, CLAM, TransMIL)
+
+architecture: AttentionMIL  # Options: AttentionMIL, CLAM, TransMIL
+num_heads: 1  # Number of attention heads (for multi-head attention)
+top_k: 10  # Number of top patches to highlight
+colormap: viridis  # Options: jet, viridis, plasma, inferno, magma, cividis
+dpi: 300  # Resolution for saved figures
+
+# Common use cases:
+# 1. Single-head attention: num_heads: 1
+# 2. Multi-head attention: num_heads: 8
+# 3. Highlight more patches: top_k: 20
+# 4. CLAM architecture: architecture: CLAM
+# 5. TransMIL architecture: architecture: TransMIL
