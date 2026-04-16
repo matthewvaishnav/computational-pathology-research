@@ -6,8 +6,7 @@ for comprehensive testing without requiring large real datasets.
 """
 
 import numpy as np
-import torch
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple
 from pathlib import Path
 import h5py
 from dataclasses import dataclass
