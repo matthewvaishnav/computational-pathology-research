@@ -6,7 +6,6 @@ Tests universal properties that should hold across all valid CAMELYON data.
 
 import tempfile
 from pathlib import Path
-from typing import Dict, Any
 
 import h5py
 import numpy as np
