@@ -145,7 +145,7 @@
     - _Preservation: Loop logic unchanged_
     - _Requirements: 1.11, 2.11, 3.2_
 
-  - [x] 3.12 Verify bug condition exploration test now passes
+  - [ ] 3.12 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** - Zero Flake8 Violations
     - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
     - The test from task 1 encodes the expected behavior

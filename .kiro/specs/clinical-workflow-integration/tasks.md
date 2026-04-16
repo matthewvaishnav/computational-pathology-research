@@ -264,14 +264,14 @@ The implementation builds on existing infrastructure: AttentionMIL/CLAM/TransMIL
     - _Requirements: 12.2, 12.6, 12.7_
 
 - [x] 17. Implement privacy and security infrastructure
-  - [ ] 17.1 Create privacy manager
+  - [x] 17.1 Create privacy manager
     - Implement `PrivacyManager` class in `src/clinical/privacy.py`
     - Encrypt patient data at rest using AES-256
     - Encrypt patient data in transit using TLS 1.3+
     - Anonymize patient identifiers in logs and audit trails
     - _Requirements: 10.1, 10.2, 10.3, 3.8_
   
-  - [ ] 17.2 Implement access control and data protection
+  - [x] 17.2 Implement access control and data protection
     - Enforce role-based access controls (RBAC) limiting data visibility
     - Support patient data deletion requests (right to be forgotten) while preserving audit integrity
     - Detect and prevent unauthorized data export attempts
