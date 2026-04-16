@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-04-16T12:01:10.002419",
+  "categories": {
+    "unit": {
+      "category": "unit",
+      "status": "failed",
+      "tests": 57,
+      "passed": 56,
+      "failed": 1,
+      "duration": 4.704259395599365,
+      "return_code": 1,
+      "stdout": "ta\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\numpy\\_core\\_methods.py:178: RuntimeWarning: invalid value encountered in divide\n    arrmean = um.true_divide(arrmean, div, out=arrmean,\n\ntests/dataset_testing/unit/test_batch_preprocessing.py::TestPreprocessingFailureIsolation::test_empty_array_normalization_failure\n  C:\\Users\\matth\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\numpy\\_core\\_methods.py:208: RuntimeWarning: invalid value encountered in divide\n    ret = um.true_divide(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED tests/dataset_testing/unit/test_camelyon_patient_splits.py::TestCAMELYONPatientSplitValidation::test_single_patient_per_split_edge_case - assert 0 == 1\n +  where 0 = len(set())\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 56 passed, 5 warnings in 1.47s ===================\n",
+      "stderr": ""
+    }
+  },
+  "summary": {
+    "total_categories": 1,
+    "passed_categories": 0,
+    "failed_categories": 1,
+    "total_tests": 57,
+    "total_passed": 56,
+    "total_failed": 1,
+    "total_duration": 4.704259395599365,
+    "success_rate": 98.24561403508771,
+    "overall_success": false
+  }
+}

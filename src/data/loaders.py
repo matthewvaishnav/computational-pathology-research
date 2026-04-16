@@ -436,6 +436,20 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
             - 'timestamps': List[Optional[float]]
     """
     batch_size = len(batch)
+    
+    # Handle empty batch
+    if batch_size == 0:
+        return {
+            "wsi_features": None,
+            "wsi_mask": None,
+            "genomic": None,
+            "genomic_mask": torch.zeros(0, dtype=torch.bool),
+            "clinical_text": None,
+            "clinical_mask": None,
+            "label": torch.zeros(0, dtype=torch.long),
+            "patient_ids": [],
+            "timestamps": [],
+        }
 
     # Collect patient IDs and labels
     patient_ids = [sample["patient_id"] for sample in batch]
