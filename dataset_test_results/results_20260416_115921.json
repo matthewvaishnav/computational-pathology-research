@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-04-16T11:59:16.393205",
+  "categories": {
+    "unit": {
+      "category": "unit",
+      "status": "failed",
+      "tests": 39,
+      "passed": 38,
+      "failed": 1,
+      "duration": 5.125802993774414,
+      "return_code": 1,
+      "stdout": " to open' in 'error reading file: unable to synchronously open file (file signature not found)' or 'not a valid' in 'error reading file: unable to synchronously open file (file signature not found)')\n +  where 'error reading file: unable to synchronously open file (file signature not found)' = <built-in method lower of str object at 0x0000018AD6459330>()\n +    where <built-in method lower of str object at 0x0000018AD6459330> = 'Error reading file: Unable to synchronously open file (file signature not found)'.lower\n +  and   'error reading file: unable to synchronously open file (file signature not found)' = <built-in method lower of str object at 0x0000018AD6459330>()\n +    where <built-in method lower of str object at 0x0000018AD6459330> = 'Error reading file: Unable to synchronously open file (file signature not found)'.lower\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!\n================== 1 failed, 38 passed, 5 warnings in 0.80s ===================\n",
+      "stderr": ""
+    }
+  },
+  "summary": {
+    "total_categories": 1,
+    "passed_categories": 0,
+    "failed_categories": 1,
+    "total_tests": 39,
+    "total_passed": 38,
+    "total_failed": 1,
+    "total_duration": 5.125802993774414,
+    "success_rate": 97.43589743589743,
+    "overall_success": false
+  }
+}
