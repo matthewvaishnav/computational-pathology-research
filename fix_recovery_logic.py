@@ -7,11 +7,11 @@ not requiring parameter corruption.
 import re
 
 # Read the file
-with open('experiments/train_pcam.py', 'r', encoding='utf-8') as f:
+with open("experiments/train_pcam.py", "r", encoding="utf-8") as f:
     content = f.read()
 
 # Pattern to match the buggy recovery logic
-old_pattern = r'''                # Check for cascading NaN condition
+old_pattern = r"""                # Check for cascading NaN condition
                 if consecutive_nan_count >= cascading_nan_threshold:
                     # Check if model parameters contain NaN
                     if check_model_parameters_for_nan\(feature_extractor, encoder, head\):
@@ -56,10 +56,10 @@ old_pattern = r'''                # Check for cascading NaN condition
                         logger\.warning\(
                             f"Cascading NaN detected: \{consecutive_nan_count\} consecutive NaN batches "
                             f"at batch \{batch_idx\}, but model parameters are valid\. Continuing training\."
-                        \)'''
+                        \)"""
 
 # Replacement pattern
-new_pattern = '''                # Check for cascading NaN condition
+new_pattern = """                # Check for cascading NaN condition
                 if consecutive_nan_count >= cascading_nan_threshold:
                     # Trigger recovery regardless of parameter state
                     # Cascading NaN indicates fundamental training instability
@@ -100,17 +100,17 @@ new_pattern = '''                # Check for cascading NaN condition
                             f"Recovery failed after {recovery_attempts} attempts. "
                             f"Consecutive NaN count: {consecutive_nan_count}, "
                             f"Batch: {batch_idx}, Epoch: {epoch}"
-                        )'''
+                        )"""
 
 # Replace all occurrences
 content_fixed = re.sub(old_pattern, new_pattern, content, flags=re.MULTILINE)
 
 # Count replacements
-num_replacements = content.count('but model parameters are valid. Continuing training.')
+num_replacements = content.count("but model parameters are valid. Continuing training.")
 print(f"Found {num_replacements} occurrences to fix")
 
 # Write back
-with open('experiments/train_pcam.py', 'w', encoding='utf-8') as f:
+with open("experiments/train_pcam.py", "w", encoding="utf-8") as f:
     f.write(content_fixed)
 
 print(f"Fixed recovery logic in experiments/train_pcam.py")

@@ -59,10 +59,10 @@ print("\nGenerating feature importance explanation...")
 result = generator.load_attention_weights("slide_001")
 if result is not None:
     attention_weights, coordinates = result
-    
+
     # Normalize to sum to 1.0 (invariant property)
     attention_weights = attention_weights / attention_weights.sum()
-    
+
     # Generate explanation
     explanation = generator.generate_feature_importance_explanation(
         slide_id="slide_001",
@@ -70,19 +70,22 @@ if result is not None:
         feature_names=["texture", "color", "shape", "intensity", "gradient"],
         top_k=10,
     )
-    
+
     print(f"\nFeature Importance Explanation:")
     print(f"  Slide: {explanation['slide_id']}")
     print(f"  Number of patches: {explanation['num_patches']}")
     print(f"  Top patches: {explanation['top_patches'][:5]}")
-    print(f"  Top attention values: {[f'{v:.4f}' for v in explanation['top_attention_values'][:5]]}")
+    print(
+        f"  Top attention values: {[f'{v:.4f}' for v in explanation['top_attention_values'][:5]]}"
+    )
     print(f"\n  Attention Statistics:")
-    for key, value in explanation['attention_statistics'].items():
+    for key, value in explanation["attention_statistics"].items():
         print(f"    {key}: {value:.6f}")
-    
+
     # Verify invariant property: attention weights sum to 1.0
-    assert np.isclose(explanation['attention_statistics']['sum'], 1.0, atol=1e-6), \
-        "Attention weights must sum to 1.0 (invariant property)"
+    assert np.isclose(
+        explanation["attention_statistics"]["sum"], 1.0, atol=1e-6
+    ), "Attention weights must sum to 1.0 (invariant property)"
     print("\n  ✓ Invariant property verified: attention weights sum to 1.0")
 
 print("\nDemo complete!")
