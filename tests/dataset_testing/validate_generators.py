@@ -7,9 +7,7 @@ produce valid samples before proceeding with the full test suite.
 
 import sys
 import tempfile
-import numpy as np
 from pathlib import Path
-from typing import Dict, Any
 
 # Add the tests directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))

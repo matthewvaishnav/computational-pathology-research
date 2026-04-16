@@ -5,16 +5,13 @@ This module provides comprehensive tests for tissue detection algorithms,
 background filtering, thumbnail generation, and WSI image processing.
 """
 
-import pytest
 import numpy as np
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from typing import Dict, Any, Optional, Tuple, List
+from unittest.mock import Mock, patch
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader, get_slide_info, check_openslide_available
-from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator, WSISyntheticSpec
+from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 
 

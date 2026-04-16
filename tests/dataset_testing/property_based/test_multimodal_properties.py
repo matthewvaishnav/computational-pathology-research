@@ -9,9 +9,8 @@ using Hypothesis for comprehensive input coverage.
 
 import tempfile
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
-import numpy as np
 import torch
 from hypothesis import given, settings, strategies as st, assume
 from omegaconf import DictConfig

@@ -6,8 +6,7 @@ WSI features, genomic data, and clinical text for comprehensive testing.
 """
 
 import numpy as np
-import torch
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple List
 from pathlib import Path
 import h5py
 import json

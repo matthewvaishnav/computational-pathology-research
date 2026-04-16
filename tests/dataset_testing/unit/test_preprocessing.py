@@ -4,12 +4,7 @@ Preprocessing pipeline unit tests.
 Tests normalization, stain norm, augmentation, batch processing.
 """
 
-import pytest
 import numpy as np
-import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch
-import h5py
 
 from src.data.preprocessing import (
     normalize_wsi_features,

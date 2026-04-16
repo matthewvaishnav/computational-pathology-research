@@ -11,7 +11,6 @@ from typing import Dict, Any, Tuple, List
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
 import h5py
-import tempfile
 from pathlib import Path
 
 
