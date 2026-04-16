@@ -253,6 +253,7 @@ class TestPreservation:
         Verify that functions with unused variables still return correct results.
         This captures baseline behavior before removing unused variable assignments.
         """
+
         # Test pattern where unused variables will be removed
         def function_with_unused_var(x, y):
             # This pattern has unused variable that was removed
@@ -351,7 +352,9 @@ class TestPreservation:
         print("\n=== BASELINE REPRODUCIBILITY ===")
         print(f"Run 1: {value1:.4f} [{ci_lower1:.4f}, {ci_upper1:.4f}]")
         print(f"Run 2: {value2:.4f} [{ci_lower2:.4f}, {ci_upper2:.4f}]")
-        print(f"Identical: {value1 == value2 and ci_lower1 == ci_lower2 and ci_upper1 == ci_upper2}")
+        print(
+            f"Identical: {value1 == value2 and ci_lower1 == ci_lower2 and ci_upper1 == ci_upper2}"
+        )
 
 
 class TestPreservationPropertyBased:
@@ -391,9 +394,7 @@ class TestPreservationPropertyBased:
             result_lambda = metric_fn_lambda(y_true, y_pred, y_prob)
             result_def = metric_fn_def(y_true, y_pred, y_prob)
 
-            assert (
-                result_lambda == result_def
-            ), f"Lambda and def should be equivalent (seed={seed})"
+            assert result_lambda == result_def, f"Lambda and def should be equivalent (seed={seed})"
 
         print("\n=== PROPERTY-BASED LAMBDA EQUIVALENCE ===")
         print("Tested lambda vs def equivalence across 5 random seeds")
