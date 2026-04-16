@@ -554,7 +554,7 @@ def statistical_significance_test(
 
 def main():
     """Main entry point for model comparison script.
-    
+
     This function orchestrates the complete model comparison workflow:
     1. Parses command-line arguments
     2. Loads and validates configuration
@@ -563,31 +563,31 @@ def main():
     5. Generates comparison visualizations
     6. Performs statistical significance testing
     7. Prints and saves results
-    
+
     Command-line Arguments:
         --config: Path to YAML configuration file (required)
             Must contain model, training, data, and checkpoint settings
         --models: List of model types to compare (optional)
             Default: ['mean', 'max', 'attention_mil', 'clam', 'transmil']
             Each model type must be one of the supported architectures
-    
+
     Outputs:
         Console:
             - Training progress for each model
             - Comparison table with all metrics
             - Statistical significance results
-        
+
         Files:
             - outputs/model_comparison/model_comparison.csv: Metrics table
             - outputs/model_comparison/roc_comparison.png: ROC curves
             - outputs/model_comparison/{model_type}/best_model.pth: Checkpoints
-    
+
     Example:
         # From command line
         $ python experiments/compare_attention_models.py \\
             --config experiments/configs/comparison.yaml \\
             --models mean attention_mil clam
-        
+
         # Output:
         # ================================================================================
         # Model Comparison

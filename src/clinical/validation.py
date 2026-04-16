@@ -559,7 +559,7 @@ class ModelValidator:
             }
 
         # Get recent performance metrics
-        recent_metrics = list(self.performance_history)[-self.drift_detection_window :]
+        recent_metrics = list(self.performance_history)[-self.drift_detection_window:]
         older_metrics = list(self.performance_history)[: -self.drift_detection_window]
 
         if not older_metrics:

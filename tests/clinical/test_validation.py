@@ -76,9 +76,9 @@ class TestModelValidator(unittest.TestCase):
         self.mock_data_loader.__iter__ = lambda self: iter(
             [
                 {
-                    "wsi_features": features[i : i + 16],
-                    "labels": labels[i : i + 16],
-                    "metadata": metadata[i : i + 16],
+                    "wsi_features": features[i: i + 16],
+                    "labels": labels[i: i + 16],
+                    "metadata": metadata[i: i + 16],
                 }
                 for i in range(0, len(features), 16)
             ]
