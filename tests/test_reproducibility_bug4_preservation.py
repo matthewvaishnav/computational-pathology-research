@@ -377,9 +377,9 @@ class TestBug4Preservation(unittest.TestCase):
 
         # Verify expected classifiers
         expected_classifiers = [
-            "Development Status :: 3 - Alpha",
-            "License :: OSI Approved :: MIT License",
-            "Programming Language :: Python :: 3",
+            "Development Status:: 3 - Alpha",
+            "License:: OSI Approved:: MIT License",
+            "Programming Language:: Python:: 3",
         ]
         for classifier in expected_classifiers:
             self.assertIn(classifier, classifiers, f"Missing classifier: {classifier}")

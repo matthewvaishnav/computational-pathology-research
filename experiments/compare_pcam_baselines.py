@@ -570,10 +570,10 @@ def main():
 Examples:
   # Windows/PowerShell - use quotes around wildcard
   python experiments/compare_pcam_baselines.py --configs "experiments/configs/pcam_comparison/*.yaml"
-  
+
   # Quick test with reduced epochs
   python experiments/compare_pcam_baselines.py --configs "experiments/configs/pcam_comparison/*.yaml" --quick-test
-  
+
   # Run specific configs (cross-platform)
   python experiments/compare_pcam_baselines.py --configs experiments/configs/pcam_comparison/baseline_resnet18.yaml experiments/configs/pcam_comparison/resnet50.yaml
         """,

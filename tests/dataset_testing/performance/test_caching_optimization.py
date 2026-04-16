@@ -174,7 +174,7 @@ class TestMemoryLimits:
             with h5py.File(large_file, "r") as f:
                 chunk_size = 100
                 for i in range(0, num_samples, chunk_size):
-                    chunk = f["x"][i : i + chunk_size]
+                    chunk = f["x"][i: i + chunk_size]
                     results.append(chunk.mean())  # Process and discard
             return results
 
