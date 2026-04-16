@@ -345,7 +345,7 @@ class TestFailureIsolation:
 
         # Test loader
         try:
-            batch = next(iter(loader))
+            next(iter(loader))
             components_working["loader"] = True
         except Exception:
             components_working["loader"] = False

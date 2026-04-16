@@ -154,18 +154,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "property: marks tests as property-based tests"
-    )
-    config.addinivalue_line(
-        "markers", "performance: marks tests as performance benchmarks"
-    )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "edge_case: marks tests as edge case tests"
-    )
+    config.addinivalue_line("markers", "property: marks tests as property-based tests")
+    config.addinivalue_line("markers", "performance: marks tests as performance benchmarks")
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "edge_case: marks tests as edge case tests")
 
 
 def pytest_collection_modifyitems(config, items):

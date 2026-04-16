@@ -377,7 +377,7 @@ This implementation plan adds three state-of-the-art attention-based Multiple In
     - Test coordinate alignment across scales
     - _Requirements: 9.5, 9.6_
 
-- [ ] 14. Checkpoint - Ensure multi-scale support works
+- [x] 14. Checkpoint - Ensure multi-scale support works
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 15. Create comprehensive documentation

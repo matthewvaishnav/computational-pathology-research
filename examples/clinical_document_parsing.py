@@ -55,7 +55,9 @@ def main():
         status_str = f" [{', '.join(status)}]" if status else ""
 
         print(f"  • {diagnosis.value}")
-        print(f"    Confidence: {diagnosis.confidence:.2f} ({diagnosis.get_confidence_level().value}){status_str}")
+        print(
+            f"    Confidence: {diagnosis.confidence:.2f} ({diagnosis.get_confidence_level().value}){status_str}"
+        )
         print()
 
     # Display extracted medications
@@ -70,7 +72,9 @@ def main():
         status_str = f" [{', '.join(status)}]" if status else ""
 
         print(f"  • {medication.value}")
-        print(f"    Confidence: {medication.confidence:.2f} ({medication.get_confidence_level().value}){status_str}")
+        print(
+            f"    Confidence: {medication.confidence:.2f} ({medication.get_confidence_level().value}){status_str}"
+        )
         print()
 
     # Display extracted procedures
@@ -85,7 +89,9 @@ def main():
         status_str = f" [{', '.join(status)}]" if status else ""
 
         print(f"  • {procedure.value}")
-        print(f"    Confidence: {procedure.confidence:.2f} ({procedure.get_confidence_level().value}){status_str}")
+        print(
+            f"    Confidence: {procedure.confidence:.2f} ({procedure.get_confidence_level().value}){status_str}"
+        )
         print()
 
     # Display extracted observations
@@ -100,7 +106,9 @@ def main():
         status_str = f" [{', '.join(status)}]" if status else ""
 
         print(f"  • {observation.value}")
-        print(f"    Confidence: {observation.confidence:.2f} ({observation.get_confidence_level().value}){status_str}")
+        print(
+            f"    Confidence: {observation.confidence:.2f} ({observation.get_confidence_level().value}){status_str}"
+        )
         print()
 
     # Check for conflicts with structured metadata
