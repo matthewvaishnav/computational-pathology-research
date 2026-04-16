@@ -68,8 +68,8 @@ The tasks are organized to build incrementally: core interpretability components
     - Test GPU and CPU execution
     - _Requirements: 1.1, 1.2, 8.7_
 
-- [ ] 3. Extend attention visualizer for new MIL architectures
-  - [ ] 3.1 Extend AttentionHeatmapGenerator with multi-architecture support
+- [x] 3. Extend attention visualizer for new MIL architectures
+  - [x] 3.1 Extend AttentionHeatmapGenerator with multi-architecture support
     - Implement `extract_attention_weights` method for AttentionMIL, CLAM, TransMIL
     - Handle multi-branch attention (CLAM positive/negative branches)
     - Implement attention weight normalization with warning logging
@@ -85,7 +85,7 @@ The tasks are organized to build incrementally: core interpretability components
     - **Validates: Requirements 2.8**
     - Test that normalized weights sum to 1.0 within 1e-6 tolerance
 
-  - [ ] 3.4 Implement multi-head attention visualization
+  - [x] 3.4 Implement multi-head attention visualization
     - Implement `visualize_multi_head_attention` method creating grid visualizations
     - Support configurable number of attention heads
     - Generate separate heatmap for each head
@@ -96,7 +96,7 @@ The tasks are organized to build incrementally: core interpretability components
     - **Validates: Requirements 2.5**
     - Test that number of visualizations equals number of heads
 
-  - [ ] 3.6 Implement architecture comparison visualization
+  - [x] 3.6 Implement architecture comparison visualization
     - Implement `compare_architectures` method for side-by-side comparison
     - Support up to 4 architectures in single visualization
     - Map attention weights to slide coordinates and thumbnails
@@ -113,7 +113,7 @@ The tasks are organized to build incrementally: core interpretability components
     - Test architecture comparison with 2, 3, 4 models
     - _Requirements: 2.1, 2.2, 2.5, 2.6_
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [x] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Implement failure analyzer for systematic error analysis
