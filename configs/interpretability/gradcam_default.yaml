@@ -1,0 +1,18 @@
+# Default Grad-CAM Configuration
+# For CNN feature extractors (ResNet, DenseNet, EfficientNet)
+
+target_layers:
+  - layer4  # For ResNet architectures
+  # - features.denseblock4  # For DenseNet architectures
+  # - features.7  # For EfficientNet architectures
+
+colormap: jet  # Options: jet, viridis, plasma, inferno, magma, cividis
+alpha: 0.5  # Transparency for overlay (0=transparent, 1=opaque)
+dpi: 300  # Resolution for saved figures (publication quality)
+device: cuda  # Options: cuda, cpu
+
+# Common use cases:
+# 1. Single layer visualization: target_layers: [layer4]
+# 2. Multi-layer comparison: target_layers: [layer2, layer3, layer4]
+# 3. High-resolution output: dpi: 600
+# 4. CPU-only mode: device: cpu
