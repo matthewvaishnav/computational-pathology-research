@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/matthewvaishnav/computational-pathology-research/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/matthewvaishnav/computational-pathology-research/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
-[![Tests](https://img.shields.io/badge/tests-972%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1083%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
@@ -24,7 +24,7 @@ A production-grade PyTorch framework for computational pathology research, provi
 - 🏥 **Clinical Workflow Integration**: Disease taxonomy, multi-class classification, DICOM/FHIR support, audit logging
 - 📊 **Benchmark Pipelines**: PatchCamelyon and CAMELYON16-compatible training/evaluation
 - 🔧 **Analysis Tools**: Baseline comparison, metrics analysis, bootstrap confidence intervals
-- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 55% test coverage (972 tests)
+- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, 55% test coverage (1083 tests)
 - 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
 **Status**: Research framework with validated infrastructure. Real PCam dataset support included. Not validated for clinical use.
