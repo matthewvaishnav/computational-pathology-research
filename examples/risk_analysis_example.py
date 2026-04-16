@@ -103,7 +103,9 @@ def main():
 
     for i in range(batch_size):
         print(f"\n   Patient {i+1}:")
-        print(f"      Age: {clinical_metadata[i].age}, Smoking: {clinical_metadata[i].smoking_status.value}")
+        print(
+            f"      Age: {clinical_metadata[i].age}, Smoking: {clinical_metadata[i].smoking_status.value}"
+        )
 
         for j, disease_id in enumerate(taxonomy.disease_ids):
             print(f"      {disease_id}:")

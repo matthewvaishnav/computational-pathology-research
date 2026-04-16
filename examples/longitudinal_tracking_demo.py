@@ -77,9 +77,7 @@ def create_sample_timeline():
         disease_state="grade_2",
         disease_probabilities={"benign": 0.05, "grade_1": 0.15, "grade_2": 0.65, "grade_3": 0.15},
         confidence=0.75,
-        risk_scores={
-            "grade_3": {"1-year": 0.4, "5-year": 0.6, "10-year": 0.7}
-        },
+        risk_scores={"grade_3": {"1-year": 0.4, "5-year": 0.6, "10-year": 0.7}},
         anomaly_scores={"grade_3": 0.35},
         clinical_metadata=ClinicalMetadata(
             age=62,
@@ -110,9 +108,7 @@ def create_sample_timeline():
         disease_state="grade_1",
         disease_probabilities={"benign": 0.15, "grade_1": 0.70, "grade_2": 0.12, "grade_3": 0.03},
         confidence=0.82,
-        risk_scores={
-            "grade_3": {"1-year": 0.25, "5-year": 0.40, "10-year": 0.50}
-        },
+        risk_scores={"grade_3": {"1-year": 0.25, "5-year": 0.40, "10-year": 0.50}},
         anomaly_scores={"grade_3": 0.20},
         clinical_metadata=ClinicalMetadata(
             age=62,
@@ -130,9 +126,7 @@ def create_sample_timeline():
         disease_state="benign",
         disease_probabilities={"benign": 0.85, "grade_1": 0.12, "grade_2": 0.02, "grade_3": 0.01},
         confidence=0.90,
-        risk_scores={
-            "grade_3": {"1-year": 0.10, "5-year": 0.20, "10-year": 0.30}
-        },
+        risk_scores={"grade_3": {"1-year": 0.10, "5-year": 0.20, "10-year": 0.30}},
         anomaly_scores={"grade_3": 0.08},
         clinical_metadata=ClinicalMetadata(
             age=62,
@@ -177,12 +171,16 @@ def main():
     progression_metrics = tracker.compute_progression_metrics(timeline)
     print(f"   Overall trend: {progression_metrics['overall_trend']}")
     print(f"   Number of progression events: {len(progression_metrics['progression_events'])}")
-    print(f"   Disease state trajectory: {' → '.join(progression_metrics['disease_state_trajectory'])}")
-    
-    if progression_metrics['progression_events']:
+    print(
+        f"   Disease state trajectory: {' → '.join(progression_metrics['disease_state_trajectory'])}"
+    )
+
+    if progression_metrics["progression_events"]:
         print("\n   Progression events:")
-        for event in progression_metrics['progression_events']:
-            print(f"     - Scan {event['scan_id']}: {event['previous_state']} → {event['current_state']}")
+        for event in progression_metrics["progression_events"]:
+            print(
+                f"     - Scan {event['scan_id']}: {event['previous_state']} → {event['current_state']}"
+            )
             print(f"       Days since previous: {event['days_since_previous']}")
             print(f"       Confidence: {event['confidence']:.2f}")
 
@@ -191,15 +189,15 @@ def main():
     treatment_response = tracker.identify_treatment_response(timeline, "TX_001")
     print(f"   Treatment: {treatment_response['treatment'].treatment_type}")
     print(f"   Response category: {treatment_response['response_category']}")
-    
-    if treatment_response['disease_state_change']:
-        change = treatment_response['disease_state_change']
+
+    if treatment_response["disease_state_change"]:
+        change = treatment_response["disease_state_change"]
         print(f"   Disease state change: {change['from']} → {change['to']}")
-    
-    if treatment_response['probability_change'] is not None:
+
+    if treatment_response["probability_change"] is not None:
         print(f"   Probability change: {treatment_response['probability_change']:+.2f}")
-    
-    if treatment_response['days_to_response'] is not None:
+
+    if treatment_response["days_to_response"] is not None:
         print(f"   Days to response: {treatment_response['days_to_response']}")
 
     # Calculate risk evolution
@@ -208,12 +206,14 @@ def main():
     print(f"   Disease: {risk_evolution['disease_id']}")
     print(f"   Risk trend: {risk_evolution['risk_trend']}")
     print(f"   Number of significant changes: {len(risk_evolution['significant_changes'])}")
-    
-    if risk_evolution['significant_changes']:
+
+    if risk_evolution["significant_changes"]:
         print("\n   Significant risk changes:")
-        for change in risk_evolution['significant_changes']:
+        for change in risk_evolution["significant_changes"]:
             print(f"     - Scan {change['scan_id']} ({change['time_horizon']})")
-            print(f"       Risk change: {change['previous_risk']:.2f} → {change['current_risk']:.2f} ({change['direction']})")
+            print(
+                f"       Risk change: {change['previous_risk']:.2f} → {change['current_risk']:.2f} ({change['direction']})"
+            )
 
     # Highlight significant changes for latest scan
     print("\n7. Highlighting significant changes in latest scan...")
@@ -221,53 +221,51 @@ def main():
     changes = tracker.highlight_significant_changes(timeline, latest_scan)
     print(f"   Has significant changes: {changes['has_significant_changes']}")
     print(f"   Disease state changed: {changes['disease_state_changed']}")
-    
-    if changes['disease_state_change']:
-        change = changes['disease_state_change']
+
+    if changes["disease_state_change"]:
+        change = changes["disease_state_change"]
         print(f"   Disease state: {change['from']} → {change['to']}")
-    
-    if changes['confidence_change'] is not None:
+
+    if changes["confidence_change"] is not None:
         print(f"   Confidence change: {changes['confidence_change']:+.2f}")
-    
+
     print("\n   Clinical recommendations:")
-    for rec in changes['recommendations']:
+    for rec in changes["recommendations"]:
         print(f"     - {rec}")
 
     # Visualize timeline
     print("\n8. Generating timeline visualization...")
     try:
         visualizer = TimelineVisualizer()
-        
+
         # Create comprehensive timeline plot
         fig = visualizer.plot_timeline(
             timeline,
             disease_ids=["grade_3"],
             show_risk_scores=True,
             show_treatments=True,
-            title="Patient Disease Progression Timeline"
+            title="Patient Disease Progression Timeline",
         )
         output_path = "patient_timeline.png"
         fig.savefig(output_path, dpi=150, bbox_inches="tight")
         print(f"   Saved timeline visualization to: {output_path}")
-        
+
         # Create progression summary
         fig2 = visualizer.plot_progression_summary(
-            progression_metrics,
-            title="Disease Progression Summary"
+            progression_metrics, title="Disease Progression Summary"
         )
         output_path2 = "progression_summary.png"
         fig2.savefig(output_path2, dpi=150, bbox_inches="tight")
         print(f"   Saved progression summary to: {output_path2}")
-        
+
         # Create treatment response visualization
         fig3 = visualizer.plot_treatment_response(
-            treatment_response,
-            title="Treatment Response Analysis"
+            treatment_response, title="Treatment Response Analysis"
         )
         output_path3 = "treatment_response.png"
         fig3.savefig(output_path3, dpi=150, bbox_inches="tight")
         print(f"   Saved treatment response visualization to: {output_path3}")
-        
+
     except Exception as e:
         print(f"   Warning: Could not generate visualizations: {e}")
 

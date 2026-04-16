@@ -436,7 +436,7 @@ def collate_multimodal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
             - 'timestamps': List[Optional[float]]
     """
     batch_size = len(batch)
-    
+
     # Handle empty batch
     if batch_size == 0:
         return {

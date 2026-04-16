@@ -12,7 +12,7 @@ from .wsi_generator import WSISyntheticGenerator
 
 __all__ = [
     "PCamSyntheticGenerator",
-    "CAMELYONSyntheticGenerator", 
+    "CAMELYONSyntheticGenerator",
     "MultimodalSyntheticGenerator",
     "WSISyntheticGenerator",
 ]
