@@ -208,8 +208,10 @@ class TestPreprocessingIntegration:
         # Create pipeline
         normalize = lambda x: x.astype(np.float32) / 255.0
         to_tensor = lambda x: torch.from_numpy(x)
-
-        preprocessor = ComposedPreprocessor([normalize, to_tensor])
+ def get_train_size(ds):
+     return len(ds.train_indices)
+        def get_val_size(ds):
+            return len(ds.val_indices)
         dataset = MockPCamDataset(mock_dataset, split="train", transform=preprocessor)
 
         x, y = dataset[0]
