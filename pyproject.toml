@@ -73,9 +73,3 @@ python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
-
-[tool.flake8]
-max-line-length = 100
-max-complexity = 15
-ignore = E402,C901
-exclude = .git,__pycache__,.hypothesis,.kiro
