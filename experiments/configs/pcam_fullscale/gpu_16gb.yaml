@@ -9,7 +9,7 @@ data:
   download: true  # Enable automatic download of full dataset
   # NOTE: This config is for FULL-SCALE training on 262K samples
   # For quick testing with synthetic data, use configs in parent directory
-  num_workers: 6  # Parallel data loading
+  num_workers: 0  # Windows: use 0 to avoid multiprocessing issues
   pin_memory: true  # Fast CPU-to-GPU transfer
 
 model:
