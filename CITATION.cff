@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this framework in your research, please cite it as below. For the associated paper, see repository documentation when available."
 type: software
-title: "Computational Pathology Research Framework"
+title: "HistoCore: Core Infrastructure for Computational Pathology Research"
 abstract: "A production-grade PyTorch framework for computational pathology research. Provides whole-slide image processing with OpenSlide, multiple instance learning (MIL) for slide-level classification, benchmark pipelines for PatchCamelyon and CAMELYON16, comprehensive analysis tools, and deployment-ready infrastructure with Docker/Kubernetes support."
 authors:
   - family-names: "Vaishnav"
     given-names: "Matthew"
-repository-code: "https://github.com/matthewvaishnav/computational-pathology-research"
-url: "https://github.com/matthewvaishnav/computational-pathology-research"
+repository-code: "https://github.com/matthewvaishnav/histocore"
+url: "https://github.com/matthewvaishnav/histocore"
 keywords:
   - computational pathology
   - whole-slide imaging
@@ -48,10 +48,10 @@ references:
 
 preferred-citation:
   type: software
-  title: "Computational Pathology Research Framework"
+  title: "HistoCore: Core Infrastructure for Computational Pathology Research"
   authors:
     - family-names: "Vaishnav"
       given-names: "Matthew"
   year: 2024
   version: 0.1.0
-  url: "https://github.com/matthewvaishnav/computational-pathology-research"
+  url: "https://github.com/matthewvaishnav/histocore"
