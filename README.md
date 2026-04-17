@@ -52,8 +52,12 @@ pip install -e .
 Train on the PatchCamelyon benchmark (262K train, 32K val, 32K test samples):
 
 ```bash
-# Download real PCam dataset (7GB, 327K images)
-python scripts/download_pcam.py --output-dir data/pcam_real
+# Option 1: Automatic download via tensorflow-datasets (requires TensorFlow)
+# Dataset will auto-download on first training run
+python experiments/train_pcam.py --config experiments/configs/pcam_fullscale/gpu_16gb.yaml
+
+# Option 2: Manual download from Zenodo (recommended if tensorflow-datasets fails)
+python scripts/download_pcam_manual.py --root_dir ./data/pcam
 
 # Train model (RTX 4070 Laptop: ~18 min/epoch, 3.8 it/s)
 python experiments/train_pcam.py --config experiments/configs/pcam_rtx4070_laptop.yaml
