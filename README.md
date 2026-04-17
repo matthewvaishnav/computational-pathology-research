@@ -1,17 +1,17 @@
-# Computational Pathology Research Framework
+# HistoCore
 
-[![CI](https://github.com/matthewvaishnav/computational-pathology-research/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/matthewvaishnav/computational-pathology-research/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
-[![Tests](https://img.shields.io/badge/tests-1083%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
+[![CI](https://github.com/matthewvaishnav/histocore/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/matthewvaishnav/histocore/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/histocore)
+[![Tests](https://img.shields.io/badge/tests-1083%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/histocore)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-> **Production-Grade ML Research Framework** for computational pathology research
+> **Core infrastructure for computational pathology research**
 
-Provides tested infrastructure for whole-slide image analysis, multiple instance learning, and benchmark pipelines with comprehensive tooling for model development, evaluation, and deployment.
+Production-grade PyTorch framework providing tested infrastructure for whole-slide image analysis, multiple instance learning, and benchmark pipelines with comprehensive tooling for model development, evaluation, and deployment.
 
 > **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
 
@@ -35,8 +35,8 @@ A production-grade PyTorch framework for computational pathology research, provi
 
 ```bash
 # Clone repository
-git clone https://github.com/matthewvaishnav/computational-pathology-research.git
-cd computational-pathology-research
+git clone https://github.com/matthewvaishnav/histocore.git
+cd histocore
 
 # Create virtual environment
 python -m venv venv
@@ -644,11 +644,11 @@ MIT License - See [LICENSE](LICENSE) for details.
 ## Citation
 
 ```bibtex
-@software{computational_pathology_research,
-  title = {Computational Pathology Research Framework},
+@software{histocore,
+  title = {HistoCore: Core Infrastructure for Computational Pathology Research},
   author = {Matthew Vaishnav},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/computational-pathology-research}
+  url = {https://github.com/matthewvaishnav/histocore}
 }
 ```
 
