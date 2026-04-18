@@ -380,6 +380,72 @@ div code {
   background: #f5f5f5 !important;
 }
 
+/* Override Jekyll highlight styles specifically */
+.highlight .err,
+.highlight .c,
+.highlight .cd,
+.highlight .cm,
+.highlight .cp,
+.highlight .c1,
+.highlight .cs,
+.highlight .k,
+.highlight .kc,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt,
+.highlight .kv,
+.highlight .m,
+.highlight .mb,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .mo,
+.highlight .mx,
+.highlight .il,
+.highlight .s,
+.highlight .sb,
+.highlight .sc,
+.highlight .sd,
+.highlight .s2,
+.highlight .se,
+.highlight .sh,
+.highlight .si,
+.highlight .sx,
+.highlight .sr,
+.highlight .s1,
+.highlight .ss,
+.highlight .na,
+.highlight .nb,
+.highlight .nc,
+.highlight .no,
+.highlight .nd,
+.highlight .ni,
+.highlight .ne,
+.highlight .nf,
+.highlight .nl,
+.highlight .nn,
+.highlight .nt,
+.highlight .nv,
+.highlight .vc,
+.highlight .vg,
+.highlight .vi,
+.highlight .ow,
+.highlight .o,
+.highlight .w,
+.highlight .bp {
+  color: inherit !important;
+}
+
+/* Force all code elements to have proper colors */
+pre,
+pre *,
+code,
+code * {
+  color: inherit !important;
+}
+
 /* Documentation Links */
 .doc-links {
   display: grid;
