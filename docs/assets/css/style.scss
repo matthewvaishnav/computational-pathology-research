@@ -341,7 +341,7 @@ code {
   border-radius: 4px;
   font-size: 0.9em;
   font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-  color: #c7254e;
+  color: #c7254e !important;
 }
 
 pre {
@@ -353,11 +353,31 @@ pre {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   
   code {
-    background: none;
+    background: none !important;
     padding: 0;
-    color: #f8f8f2;
+    color: #f8f8f2 !important;
     font-size: 0.85em;
   }
+}
+
+/* Defensive styling to prevent Jekyll theme conflicts */
+section pre code,
+.wrapper pre code,
+div.highlight pre code,
+.highlight pre code {
+  color: #f8f8f2 !important;
+  background: transparent !important;
+}
+
+section code,
+.wrapper code,
+p code,
+li code,
+td code,
+th code,
+div code {
+  color: #c7254e !important;
+  background: #f5f5f5 !important;
 }
 
 /* Documentation Links */
@@ -449,12 +469,18 @@ pre {
   }
   
   pre {
-    background: #f5f5f5;
+    background: #f5f5f5 !important;
     border: 1px solid #ddd;
     
     code {
-      color: #000;
+      color: #000 !important;
+      background: transparent !important;
     }
+  }
+  
+  code {
+    color: #000 !important;
+    background: #f0f0f0 !important;
   }
   
   header nav {
