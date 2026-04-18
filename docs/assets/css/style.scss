@@ -345,105 +345,54 @@ code {
 }
 
 pre {
-  background: #2d2d2d;
+  background: #2d2d2d !important;
   border: none;
   border-radius: 8px;
   padding: 20px;
   overflow-x: auto;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  
-  code {
-    background: none !important;
-    padding: 0;
-    color: #f8f8f2 !important;
-    font-size: 0.85em;
-  }
 }
 
-/* Defensive styling to prevent Jekyll theme conflicts */
-section pre code,
-.wrapper pre code,
-div.highlight pre code,
-.highlight pre code {
+pre code {
+  background: none !important;
+  padding: 0;
+  color: #f8f8f2 !important;
+  font-size: 0.85em;
+}
+
+/* Maximum specificity overrides for Jekyll theme */
+html body section pre code,
+html body .wrapper pre code,
+html body div.highlight pre code,
+html body .highlight pre code,
+html body pre code {
   color: #f8f8f2 !important;
   background: transparent !important;
 }
 
-section code,
-.wrapper code,
-p code,
-li code,
-td code,
-th code,
-div code {
+html body section code,
+html body .wrapper code,
+html body p code,
+html body li code,
+html body td code,
+html body th code,
+html body div code {
   color: #c7254e !important;
   background: #f5f5f5 !important;
 }
 
-/* Override Jekyll highlight styles specifically */
-.highlight .err,
-.highlight .c,
-.highlight .cd,
-.highlight .cm,
-.highlight .cp,
-.highlight .c1,
-.highlight .cs,
-.highlight .k,
-.highlight .kc,
-.highlight .kd,
-.highlight .kn,
-.highlight .kp,
-.highlight .kr,
-.highlight .kt,
-.highlight .kv,
-.highlight .m,
-.highlight .mb,
-.highlight .mf,
-.highlight .mh,
-.highlight .mi,
-.highlight .mo,
-.highlight .mx,
-.highlight .il,
-.highlight .s,
-.highlight .sb,
-.highlight .sc,
-.highlight .sd,
-.highlight .s2,
-.highlight .se,
-.highlight .sh,
-.highlight .si,
-.highlight .sx,
-.highlight .sr,
-.highlight .s1,
-.highlight .ss,
-.highlight .na,
-.highlight .nb,
-.highlight .nc,
-.highlight .no,
-.highlight .nd,
-.highlight .ni,
-.highlight .ne,
-.highlight .nf,
-.highlight .nl,
-.highlight .nn,
-.highlight .nt,
-.highlight .nv,
-.highlight .vc,
-.highlight .vg,
-.highlight .vi,
-.highlight .ow,
-.highlight .o,
-.highlight .w,
-.highlight .bp {
-  color: inherit !important;
+/* Override any Jekyll highlight background */
+html body .highlight,
+html body div.highlight {
+  background: #2d2d2d !important;
 }
 
-/* Force all code elements to have proper colors */
-pre,
-pre *,
-code,
-code * {
-  color: inherit !important;
+/* Force all text in code blocks to be light colored */
+html body pre,
+html body pre *,
+html body .highlight,
+html body .highlight * {
+  color: #f8f8f2 !important;
 }
 
 /* Documentation Links */
