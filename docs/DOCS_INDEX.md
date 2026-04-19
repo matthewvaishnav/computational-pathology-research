@@ -28,6 +28,7 @@ Comprehensive documentation for the Computational Pathology Research Framework.
 ### PatchCamelyon (PCam)
 - [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.html) - Benchmark results and analysis
 - [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.html) - Comparing model architectures
+- **Real Results**: 96.7% test accuracy, 100% validation accuracy on synthetic demo
 - **Topics**: Patch-level classification, data augmentation, baseline comparisons
 
 ### CAMELYON16 Slide-Level
@@ -35,10 +36,16 @@ Comprehensive documentation for the Computational Pathology Research Framework.
 - [CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.md](CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.html) - Implementation details
 - **Topics**: Slide-level aggregation, attention mechanisms, feature extraction
 
+### Advanced Features
+- [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
+- [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
+- [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 1,448 tests with property-based testing
+
 ### Evaluation Metrics
-- Model performance analysis
+- Model performance analysis with bootstrap confidence intervals
 - ROC curves and confusion matrices
 - CSV export for downstream analysis
+- Attention weight visualization and heatmap generation
 
 ---
 
@@ -49,9 +56,12 @@ Comprehensive documentation for the Computational Pathology Research Framework.
 - **Components**: Data loaders, model architectures, training loops, evaluation pipelines
 
 ### Model Architectures
-- **Baseline Models**: ResNet, DenseNet, EfficientNet
+- **Attention-Based MIL Models**: AttentionMIL, CLAM, TransMIL with attention weight visualization
+- **Multimodal Fusion**: Cross-modal attention for WSI, genomic, and clinical text integration
+- **Temporal Models**: Disease progression prediction with positional encoding
+- **Baseline Models**: ResNet, DenseNet, EfficientNet with pretrained weights
 - **Slide Classifiers**: Attention-based aggregation, pooling strategies
-- **Pretrained Integration**: torchvision and timm model loading
+- **Pretrained Integration**: torchvision and timm model loading (1000+ architectures)
 
 ### Data Pipeline
 - **PCam Dataset**: Patch extraction and preprocessing
@@ -85,8 +95,8 @@ Comprehensive documentation for the Computational Pathology Research Framework.
 
 ### Testing
 - [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Test suite documentation
-- **Coverage**: 62% code coverage, 500+ unit tests
-- **Topics**: Unit tests, integration tests, property-based testing
+- **Coverage**: 55% code coverage, 1,448 unit tests
+- **Topics**: Unit tests, integration tests, property-based testing, edge case handling, performance benchmarks
 
 ### Build System
 - [MAKEFILE.md](MAKEFILE.html) - Makefile usage guide
