@@ -1,0 +1,73 @@
+# PatchCamelyon full training configuration (20 epochs)
+# Based on pcam_rtx4070_laptop.yaml but extended for full training
+
+data:
+  root_dir: "data/pcam_real"  # Use real PCam data (262K samples)
+  num_workers: 0  # Must be 0 due to h5py pickling limitations
+  pin_memory: true
+  prefetch_factor: 2
+  download: false  # Data already downloaded
+
+model:
+  embed_dim: 256  # Embedding dimension for encoder output
+  
+  feature_extractor:
+    model: "resnet18"
+    pretrained: true
+    feature_dim: 512  # ResNet18 output dimension
+  
+  wsi:
+    input_dim: 512  # Must match feature_extractor.feature_dim
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: "mean"
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: [128]
+    dropout: 0.3
+
+training:
+  batch_size: 16  # Reduced for CPU training
+  num_epochs: 20   # Full 20 epochs
+  learning_rate: 0.0001  # Reduced from 0.001 to prevent numerical instability
+  weight_decay: 0.001  # Increased from 0.0001 to prevent overfitting
+  max_grad_norm: 1.0
+  use_amp: false  # Disable AMP for CPU
+  dropout: 0.1
+  
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-7  # Reduced from 1e-6 for better stability
+
+validation:
+  interval: 1  # Validate every epoch
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_full_20_epochs"
+  save_interval: 5
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 15  # Increased patience for longer training
+  min_delta: 0.001
+
+device: "cpu"  # Use CPU (Python 3.14 doesn't support CUDA PyTorch yet)
+cudnn_benchmark: false  # Disabled for CPU
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_full_20_epochs"
+  log_interval: 100
+  use_tensorboard: true
+  use_wandb: false
