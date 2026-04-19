@@ -167,7 +167,7 @@ class TestPatchExtractionAccuracy:
         finally:
             Path(tmp_path).unlink()
 
-    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @patch("src.data.openslide_utils.OpenSlide")
     def test_coordinate_transformation_accuracy(self, mock_openslide):
         """Test coordinate transformation accuracy across pyramid levels."""

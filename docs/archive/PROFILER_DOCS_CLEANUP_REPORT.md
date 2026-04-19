@@ -138,5 +138,5 @@ choices=['all', 'time', 'memory', 'pytorch', 'cprofile', 'size']
 
 ---
 **Fix Date**: 2026-04-07  
-**Investigator**: Kiro AI Assistant  
+**Investigator**: Development Team  
 **Tools Used**: MCP computational-pathology server

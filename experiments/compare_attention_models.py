@@ -190,7 +190,8 @@ def train_single_model(
         lr=float(model_config["training"]["learning_rate"]),
         weight_decay=float(model_config["training"]["weight_decay"]),
     )
-    criterion = nn.BCEWithLogitsLoss()
+    # Use CrossEntropyLoss for 2-class classification (expects [batch, 2] logits)
+    criterion = nn.CrossEntropyLoss()
 
     # Training loop
     num_epochs = model_config["training"]["num_epochs"]
@@ -209,10 +210,8 @@ def train_single_model(
             optimizer.zero_grad()
             logits = model(features, num_patches)
 
-            if logits.ndim > 1 and logits.size(-1) == 1:
-                logits = logits.squeeze(-1)
-
-            loss = criterion(logits, labels.float())
+            # No need to squeeze - CrossEntropyLoss expects [batch, num_classes]
+            loss = criterion(logits, labels.long())
             loss.backward()
             optimizer.step()
 
@@ -235,13 +234,11 @@ def train_single_model(
 
                 logits = model(features, num_patches)
 
-                if logits.ndim > 1 and logits.size(-1) == 1:
-                    logits = logits.squeeze(-1)
-
-                loss = criterion(logits, labels.float())
+                # No need to squeeze - CrossEntropyLoss expects [batch, num_classes]
+                loss = criterion(logits, labels.long())
                 val_loss += loss.item()
 
-                probs = torch.sigmoid(logits)
+                probs = torch.softmax(logits, dim=-1)[:, 1]  # Get probability of class 1
                 preds = (probs > 0.5).long()
 
                 all_preds.extend(preds.cpu().numpy())
@@ -300,10 +297,8 @@ def train_single_model(
             inference_time = time.time() - start_time
             inference_times.append(inference_time)
 
-            if logits.ndim > 1 and logits.size(-1) == 1:
-                logits = logits.squeeze(-1)
-
-            probs = torch.sigmoid(logits)
+            # No need to squeeze - use softmax for 2-class classification
+            probs = torch.softmax(logits, dim=-1)[:, 1]  # Get probability of class 1
             preds = (probs > 0.5).long()
 
             test_preds.extend(preds.cpu().numpy())

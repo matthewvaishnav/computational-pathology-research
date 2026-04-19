@@ -71,10 +71,8 @@ Successfully implemented true slide-level training for CAMELYON, addressing the 
 - `validate_slide_level_training.py` - New validation script
 
 ### Spec Files
-- `.kiro/specs/camelyon-slide-level-training/requirements.md`
-- `.kiro/specs/camelyon-slide-level-training/design.md`
-- `.kiro/specs/camelyon-slide-level-training/tasks.md`
-- `.kiro/specs/camelyon-slide-level-training/.config.kiro`
+- Project specification and design documents are available in the repository
+- Implementation follows structured requirements and design patterns
 
 ## Validation Results
 
