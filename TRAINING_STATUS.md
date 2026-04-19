@@ -64,7 +64,7 @@ cat logs/pcam_real/training_status.json
 tensorboard --logdir logs/pcam_real
 
 # Check process output
-# (Use Kiro's process monitoring or check terminal)
+# (Monitor the terminal or check process logs)
 ```
 
 ## Expected Outcomes

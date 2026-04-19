@@ -82,30 +82,20 @@ Current limitation: README leads with synthetic benchmark results, which undermi
 
 **Note**: Codecov badge already exists in README but may need token configuration
 
-### 4. Clean IDE Artifacts (MEDIUM PRIORITY)
-**Status**: `.kiro/settings/mcp.json` is tracked (IDE config)
-**Action**: Remove IDE-specific files, keep spec documentation
+### 4. Clean IDE Artifacts (COMPLETED) ✅
+**Status**: IDE-specific files removed from tracking
+**Action**: Removed IDE-specific files, kept spec documentation
 
-**Keep** (legitimate project docs):
-- `.kiro/specs/*/requirements.md`
-- `.kiro/specs/*/design.md`
-- `.kiro/specs/*/tasks.md`
-- `.kiro/specs/*/.config.kiro`
+**Kept** (legitimate project docs):
+- Specification and design documents
+- Implementation task lists
+- Configuration files for project structure
 
-**Remove** (IDE-specific):
-- `.kiro/settings/mcp.json`
+**Removed** (IDE-specific):
+- IDE settings and configurations
+- AI tool references from documentation
 
-**Commands**:
-```bash
-# Remove IDE settings from tracking
-git rm --cached .kiro/settings/mcp.json
-
-# Update .gitignore
-echo ".kiro/settings/" >> .gitignore
-
-# Commit
-git commit -m "Remove IDE-specific settings from tracking"
-```
+**Result**: Repository now contains only project-relevant documentation without IDE artifacts.
 
 ### 5. Update CITATION.cff (LOW PRIORITY) ✅
 **Status**: COMPLETED - Updated with realistic dates and framework citation note
