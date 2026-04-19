@@ -388,9 +388,6 @@ pytest tests/dataset_testing/ -k "normalization" -v
 
 ## References
 
-- **Requirements**: `.kiro/specs/comprehensive-dataset-testing/requirements.md`
-- **Design**: `.kiro/specs/comprehensive-dataset-testing/design.md`
-- **Tasks**: `.kiro/specs/comprehensive-dataset-testing/tasks.md`
 - **Test Summary**: `tests/dataset_testing/TEST_SUMMARY.md`
 - **Coverage Reports**: `coverage_reports/`
 - **Execution Logs**: `test_logs/`

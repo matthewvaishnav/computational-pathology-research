@@ -247,7 +247,7 @@ class TestWSIReaderPatchExtraction:
         finally:
             Path(tmp_path).unlink()
 
-    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @patch("src.data.openslide_utils.OpenSlide")
     def test_extract_patches_with_stride(self, mock_openslide):
         """Test patch extraction with custom stride."""
@@ -554,7 +554,7 @@ class TestCoordinateAccuracy:
         finally:
             Path(tmp_path).unlink()
 
-    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @patch("src.data.openslide_utils.OpenSlide")
     def test_coordinate_accuracy_higher_level(self, mock_openslide):
         """Test coordinate accuracy at higher pyramid levels."""
