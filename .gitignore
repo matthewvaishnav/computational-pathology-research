@@ -210,6 +210,11 @@ Thumbs.db
 *.swo
 *~
 
+.cursor/
+.qodo/
+.kilo/
+.kiro/
+
 # AI assistant directories
 .claude/
 .kiro/
