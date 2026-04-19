@@ -2,7 +2,7 @@
 
 This repository now includes a small MCP server that exposes repo-scoped tools
 over the standard `stdio` transport. One server implementation can be used from
-Codex, Cursor, Windsurf, and Kiro.
+various AI code editors that support the Model Context Protocol.
 
 ## Server Entry Point
 
@@ -62,22 +62,6 @@ Windsurf reads user-level MCP config from
       "args": [
         "C:/path/to/computational-pathology-research/scripts/project_mcp_server.py"
       ]
-    }
-  }
-}
-```
-
-### Kiro
-
-Kiro supports workspace-level MCP config in `.kiro/settings/mcp.json`. This
-repo now includes a workspace config:
-
-```json
-{
-  "mcpServers": {
-    "computational-pathology": {
-      "command": "python",
-      "args": ["scripts/project_mcp_server.py"]
     }
   }
 }
