@@ -22,18 +22,18 @@ from tests.dataset_testing.hypothesis_strategies import (
 def is_ci_environment():
     """
     Detect if running in a CI environment.
-    
+
     Returns:
         bool: True if running in CI, False otherwise
     """
     ci_indicators = [
-        os.getenv('CI') == 'true',
-        os.getenv('GITHUB_ACTIONS') == 'true',
-        os.getenv('TRAVIS') == 'true',
-        os.getenv('JENKINS_URL') is not None,
-        os.getenv('BUILDKITE') == 'true',
-        os.getenv('CIRCLECI') == 'true',
-        os.getenv('RUNNER_OS') is not None,  # GitHub Actions specific
+        os.getenv("CI") == "true",
+        os.getenv("GITHUB_ACTIONS") == "true",
+        os.getenv("TRAVIS") == "true",
+        os.getenv("JENKINS_URL") is not None,
+        os.getenv("BUILDKITE") == "true",
+        os.getenv("CIRCLECI") == "true",
+        os.getenv("RUNNER_OS") is not None,  # GitHub Actions specific
     ]
     return any(ci_indicators)
 
@@ -41,41 +41,38 @@ def is_ci_environment():
 def get_test_config():
     """
     Get test configuration based on environment.
-    
+
     Returns:
         dict: Configuration parameters for the current environment
     """
     if is_ci_environment():
         return {
-            'max_examples': 20,
-            'max_slide_dimension': 10000,
-            'deadline': 30000,  # 30 seconds
-            'environment': 'ci'
+            "max_examples": 20,
+            "max_slide_dimension": 10000,
+            "deadline": 30000,  # 30 seconds
+            "environment": "ci",
         }
     else:
         return {
-            'max_examples': 100,
-            'max_slide_dimension': 50000,
-            'deadline': 60000,  # 60 seconds
-            'environment': 'local'
+            "max_examples": 100,
+            "max_slide_dimension": 50000,
+            "deadline": 60000,  # 60 seconds
+            "environment": "local",
         }
 
 
 def ci_aware_settings(func):
     """
     Decorator to apply CI-aware Hypothesis settings to property-based tests.
-    
+
     This decorator automatically configures test parameters based on the
     execution environment to prevent CI timeouts while maintaining
     comprehensive testing in local development.
     """
     config = get_test_config()
-    
+
     # Apply settings with environment-specific parameters
-    return settings(
-        max_examples=config['max_examples'],
-        deadline=config['deadline']
-    )(func)
+    return settings(max_examples=config["max_examples"], deadline=config["deadline"])(func)
 
 
 class TestOpenSlideProperties:
@@ -84,8 +81,10 @@ class TestOpenSlideProperties:
     @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
-        slide_width=st.integers(min_value=1000, max_value=get_test_config()['max_slide_dimension']),
-        slide_height=st.integers(min_value=1000, max_value=get_test_config()['max_slide_dimension']),
+        slide_width=st.integers(min_value=1000, max_value=get_test_config()["max_slide_dimension"]),
+        slide_height=st.integers(
+            min_value=1000, max_value=get_test_config()["max_slide_dimension"]
+        ),
         patch_size=patch_size_strategy(),
         num_levels=st.integers(min_value=1, max_value=5),
     )
@@ -222,8 +221,12 @@ class TestOpenSlideProperties:
     @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
-        slide_width=st.integers(min_value=2000, max_value=min(20000, get_test_config()['max_slide_dimension'])),
-        slide_height=st.integers(min_value=2000, max_value=min(20000, get_test_config()['max_slide_dimension'])),
+        slide_width=st.integers(
+            min_value=2000, max_value=min(20000, get_test_config()["max_slide_dimension"])
+        ),
+        slide_height=st.integers(
+            min_value=2000, max_value=min(20000, get_test_config()["max_slide_dimension"])
+        ),
         patch_size=patch_size_strategy(),
         level=st.integers(min_value=0, max_value=3),
     )
@@ -335,8 +338,12 @@ class TestOpenSlideProperties:
     @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
-        slide_width=st.integers(min_value=1000, max_value=min(10000, get_test_config()['max_slide_dimension'])),
-        slide_height=st.integers(min_value=1000, max_value=min(10000, get_test_config()['max_slide_dimension'])),
+        slide_width=st.integers(
+            min_value=1000, max_value=min(10000, get_test_config()["max_slide_dimension"])
+        ),
+        slide_height=st.integers(
+            min_value=1000, max_value=min(10000, get_test_config()["max_slide_dimension"])
+        ),
         patch_size=patch_size_strategy(),
         stride=st.integers(min_value=64, max_value=512),
     )
@@ -428,9 +435,7 @@ class TestOpenSlideProperties:
                         region2 = patch2[patch2_top:patch2_bottom, patch2_left:patch2_right]
 
                         # Regions should be identical
-                        assert (
-                            region1.shape == region2.shape
-                        ), (
+                        assert region1.shape == region2.shape, (
                             f"Overlapping regions have different shapes: "
                             f"{region1.shape} vs {region2.shape}"
                         )
