@@ -10,7 +10,7 @@ import h5py
 from pathlib import Path
 import tempfile
 import hashlib
-from unittest.mock import Magic
+from unittest.mock import MagicMock
 from typing import Dict, Any
 
 from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator
