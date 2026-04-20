@@ -347,7 +347,7 @@ class ProjectMCPServer:
         if end_line < start_line:
             raise JSONRPCError(-32602, "end_line must be >= start_line")
 
-        selected = lines[start_line - 1: end_line]
+        selected = lines[start_line - 1 : end_line]
         numbered = "\n".join(
             f"{line_number}: {line_text}"
             for line_number, line_text in enumerate(selected, start=start_line)

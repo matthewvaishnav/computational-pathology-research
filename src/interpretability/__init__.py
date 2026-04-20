@@ -21,23 +21,22 @@ from .config import (
     GradCAMParser,
     GradCAMPrettyPrinter,
     AttentionParser,
-    AttentionPrettyPrinter
+    AttentionPrettyPrinter,
 )
 from .dashboard import InterpretabilityDashboard, InMemoryCache, start_dashboard
 
 __all__ = [
-    'GradCAMGenerator',
-    'FailureAnalyzer',
-    'FeatureImportanceCalculator',
-    'GradCAMConfig',
-    'AttentionConfig',
-    'AttentionData',
-    'GradCAMParser',
-    'GradCAMPrettyPrinter',
-    'AttentionParser',
-    'AttentionPrettyPrinter',
-    'InterpretabilityDashboard',
-    'InMemoryCache',
-    'start_dashboard'
+    "GradCAMGenerator",
+    "FailureAnalyzer",
+    "FeatureImportanceCalculator",
+    "GradCAMConfig",
+    "AttentionConfig",
+    "AttentionData",
+    "GradCAMParser",
+    "GradCAMPrettyPrinter",
+    "AttentionParser",
+    "AttentionPrettyPrinter",
+    "InterpretabilityDashboard",
+    "InMemoryCache",
+    "start_dashboard",
 ]
-

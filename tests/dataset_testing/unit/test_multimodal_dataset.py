@@ -373,9 +373,11 @@ class TestMultimodalDatasetIntegration(unittest.TestCase):
         all_missing_batch = []
         for i in range(len(dataset)):
             sample = dataset[i]
-            has_no_modalities = (sample["wsi_features"] is None and
-                                 sample["genomic"] is None and
-                                 sample["clinical_text"] is None)
+            has_no_modalities = (
+                sample["wsi_features"] is None
+                and sample["genomic"] is None
+                and sample["clinical_text"] is None
+            )
             if has_no_modalities:
                 all_missing_batch.append(sample)
                 if len(all_missing_batch) >= 2:

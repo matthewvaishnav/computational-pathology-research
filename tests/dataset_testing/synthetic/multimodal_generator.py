@@ -487,7 +487,9 @@ class MultimodalSyntheticGenerator(DatasetGenerator):
                 if self.rng.random() < 0.15:  # Corrupt 15% of patients
                     # Change label but keep modality data unchanged (creates inconsistency)
                     original_label = patient["label"]
-                    new_label = self.rng.choice([label for label in [0, 1, 2, 3] if label != original_label])
+                    new_label = self.rng.choice(
+                        [label for label in [0, 1, 2, 3] if label != original_label]
+                    )
                     patient["label"] = new_label
 
         elif corruption_type == "invalid_tensor_shapes":
