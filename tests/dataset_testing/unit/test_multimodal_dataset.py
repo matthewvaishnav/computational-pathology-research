@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 import torch
+from omegaconf import DictConfig
 
 from src.data.loaders import MultimodalDataset, collate_multimodal
 from tests.dataset_testing.synthetic.multimodal_generator import (
@@ -372,11 +373,10 @@ class TestMultimodalDatasetIntegration(unittest.TestCase):
         all_missing_batch = []
         for i in range(len(dataset)):
             sample = dataset[i]
-            if (
-                sample["wsi_features"] is None
-                and sample["genomic"] is None
-                and sample["clinical_text"] is None
-            ):
+            has_no_modalities = (sample["wsi_features"] is None and
+                                 sample["genomic"] is None and
+                                 sample["clinical_text"] is None)
+            if has_no_modalities:
                 all_missing_batch.append(sample)
                 if len(all_missing_batch) >= 2:
                     break
