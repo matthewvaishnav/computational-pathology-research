@@ -4,8 +4,8 @@ title: Home
 ---
 
 <div class="hero">
-  <h1 class="hero-title">Computational Pathology Research Framework</h1>
-  <p class="hero-subtitle">A PyTorch-based framework for whole slide image analysis and deep learning in digital pathology</p>
+  <h1 class="hero-title">HistoCore</h1>
+  <p class="hero-subtitle">Production-grade PyTorch framework for computational pathology research and clinical deployment</p>
   <p class="hero-author">Matthew Vaishnav</p>
 </div>
 
@@ -20,7 +20,7 @@ title: Home
 
 ## Abstract
 
-This framework provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving 96.7% accuracy on real datasets with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
+HistoCore provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving **85.26% test accuracy** and **93.94% AUC** on the full 32,768-sample PatchCamelyon test set with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
 
 The framework features advanced model interpretability tools (Grad-CAM, attention visualization, failure analysis), clinical workflow integration with multi-class disease classification and DICOM/FHIR support, comprehensive dataset testing infrastructure (1,448 tests, 55% coverage), regulatory compliance features for clinical deployment, multimodal fusion capabilities, and real-time inference performance (<5 seconds) suitable for production clinical environments.
 
@@ -85,8 +85,8 @@ The framework features advanced model interpretability tools (Grad-CAM, attentio
 ## Installation
 
 ```bash
-git clone https://github.com/matthewvaishnav/computational-pathology-research.git
-cd computational-pathology-research
+git clone https://github.com/matthewvaishnav/histocore.git
+cd histocore
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -102,18 +102,18 @@ See the [Getting Started Guide](GETTING_STARTED.html) for detailed instructions.
 If you use this framework in your research, please cite:
 
 ```bibtex
-@software{vaishnav2026sentinel,
-  title = {Computational Pathology Research Framework},
+@software{vaishnav2026histocore,
+  title = {HistoCore: Core Infrastructure for Computational Pathology Research},
   author = {Vaishnav, Matthew},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/computational-pathology-research},
-  note = {A PyTorch framework for whole slide image analysis}
+  url = {https://github.com/matthewvaishnav/histocore},
+  note = {Production-grade PyTorch framework for computational pathology research}
 }
 ```
 
 ---
 
 <div class="footer-note">
-  <p><strong>Contact:</strong> For questions or collaboration opportunities, please open an issue on <a href="https://github.com/matthewvaishnav/computational-pathology-research/issues">GitHub</a>.</p>
+  <p><strong>Contact:</strong> For questions or collaboration opportunities, please open an issue on <a href="https://github.com/matthewvaishnav/histocore/issues">GitHub</a>.</p>
   <p><em>Last updated: April 2026</em></p>
 </div>
