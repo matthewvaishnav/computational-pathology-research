@@ -4,16 +4,17 @@ Identifies misclassified samples, clusters failures by feature embeddings,
 and analyzes systematic biases across clinical subgroups.
 """
 
-import torch
-import torch.nn as nn
-import numpy as np
-import pandas as pd
+import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-from dataclasses import dataclass
-from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
+
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.preprocessing import StandardScaler
-import logging
 
 logger = logging.getLogger(__name__)
 

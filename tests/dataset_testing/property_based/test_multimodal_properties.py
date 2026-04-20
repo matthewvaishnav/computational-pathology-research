@@ -9,21 +9,22 @@ using Hypothesis for comprehensive input coverage.
 
 import tempfile
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 import torch
-from hypothesis import given, settings, strategies as st, assume
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from omegaconf import DictConfig
 
 from src.data.loaders import MultimodalDataset, collate_multimodal
+from tests.dataset_testing.hypothesis_strategies import (
+    feature_dimension_strategy,
+    multimodal_config_strategy,
+    patient_count_strategy,
+)
 from tests.dataset_testing.synthetic.multimodal_generator import (
     MultimodalSyntheticGenerator,
     MultimodalSyntheticSpec,
-)
-from tests.dataset_testing.hypothesis_strategies import (
-    multimodal_config_strategy,
-    patient_count_strategy,
-    feature_dimension_strategy,
 )
 
 

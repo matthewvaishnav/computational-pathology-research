@@ -7,13 +7,14 @@ metadata access, and WSI file format compatibility validation.
 
 import tempfile
 from pathlib import Path
+from typing import Any, Dict
 from unittest.mock import Mock, patch
-from typing import Dict, Any
+
 from PIL import Image
 
 from src.data.openslide_utils import WSIReader, get_slide_info
-from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator
+from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 
 
 class TestOpenSlideProperties:

@@ -12,11 +12,14 @@ DO NOT attempt to fix the test or the code when it fails.
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch as mock_patch
+from unittest.mock import Mock
+from unittest.mock import patch as mock_patch
+
 import numpy as np
-from PIL import Image
 import pytest
-from hypothesis import given, strategies as st, settings
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from PIL import Image
 
 from src.data.openslide_utils import WSIReader
 from tests.dataset_testing.hypothesis_strategies import patch_size_strategy

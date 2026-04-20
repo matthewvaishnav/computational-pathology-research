@@ -10,20 +10,21 @@ This module provides comprehensive interpretability capabilities including:
 
 __version__ = "0.1.0"
 
-# Core components
-from .gradcam import GradCAMGenerator
-from .failure_analysis import FailureAnalyzer
-from .feature_importance import FeatureImportanceCalculator
 from .config import (
-    GradCAMConfig,
     AttentionConfig,
     AttentionData,
-    GradCAMParser,
-    GradCAMPrettyPrinter,
     AttentionParser,
     AttentionPrettyPrinter,
+    GradCAMConfig,
+    GradCAMParser,
+    GradCAMPrettyPrinter,
 )
-from .dashboard import InterpretabilityDashboard, InMemoryCache, start_dashboard
+from .dashboard import InMemoryCache, InterpretabilityDashboard, start_dashboard
+from .failure_analysis import FailureAnalyzer
+from .feature_importance import FeatureImportanceCalculator
+
+# Core components
+from .gradcam import GradCAMGenerator
 
 __all__ = [
     "GradCAMGenerator",

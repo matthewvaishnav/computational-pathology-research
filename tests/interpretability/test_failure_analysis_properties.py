@@ -1,12 +1,14 @@
 """Property-based tests for failure analysis module."""
 
-import pytest
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from hypothesis import given, strategies as st, settings, assume
+import pytest
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from hypothesis.extra import numpy as npst
-from pathlib import Path
-import tempfile
 
 from src.interpretability.failure_analysis import FailureAnalyzer
 
