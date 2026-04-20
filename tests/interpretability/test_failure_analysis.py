@@ -1,10 +1,11 @@
 """Unit tests for failure analysis module."""
 
-import pytest
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import tempfile
+import pytest
 
 from src.interpretability.failure_analysis import FailureAnalyzer
 

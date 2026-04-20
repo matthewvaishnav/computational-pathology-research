@@ -5,17 +5,18 @@ This module provides comprehensive tests for OpenSlide error handling,
 corrupted WSI file detection, and recovery option suggestions.
 """
 
-import pytest
-import numpy as np
 import tempfile
 from pathlib import Path
+from typing import Any, Dict, List
 from unittest.mock import Mock, patch
-from typing import Dict, Any, List
+
+import numpy as np
+import pytest
 from PIL import Image
 
 from src.data.openslide_utils import WSIReader, check_openslide_available
-from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator
+from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 
 
 class TestOpenSlideErrorHandling:

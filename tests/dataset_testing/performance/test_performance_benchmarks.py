@@ -5,11 +5,12 @@ Tests loading time, memory usage, and parallel loading performance
 against baseline thresholds (Requirement 7.1, 7.2, 7.3).
 """
 
-import pytest
 import time
-import torch
-import numpy as np
+
 import h5py
+import numpy as np
+import pytest
+import torch
 
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
 
@@ -306,7 +307,7 @@ class TestParallelLoading:
 
     def test_dataloader_num_workers_scaling(self, synthetic_pcam_data):
         """Test PyTorch DataLoader performance with multiple workers."""
-        from torch.utils.data import Dataset, DataLoader
+        from torch.utils.data import DataLoader, Dataset
 
         # Define dataset at module level to avoid pickle issues
         class SimpleDataset(Dataset):

@@ -11,17 +11,18 @@ Task 4.1: Create enhanced PCam unit tests
 - Requirements: 1.1, 1.2, 1.3
 """
 
-import pytest
-import numpy as np
-import torch
-from pathlib import Path
 import tempfile
-import h5py
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Dict
 from unittest.mock import Mock
 
-from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
+import h5py
+import numpy as np
+import pytest
+import torch
+
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
+from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
 
 
 class TestPCamDatasetInitialization:

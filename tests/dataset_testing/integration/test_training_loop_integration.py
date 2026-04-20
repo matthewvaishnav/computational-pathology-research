@@ -5,10 +5,10 @@ Tests dataset usage in training loops, version updates, and failure isolation
 (Requirement 9.5, 9.6, 9.7).
 """
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
 
 
 # Mock components for training loop testing
