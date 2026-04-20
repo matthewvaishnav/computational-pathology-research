@@ -5,17 +5,18 @@ Reference:
     Gradient-based Localization" (ICCV 2017)
 """
 
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import cm
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
-import logging
 
-from .utils import get_device, to_numpy, normalize_array
+from .utils import get_device, normalize_array, to_numpy
 
 logger = logging.getLogger(__name__)
 

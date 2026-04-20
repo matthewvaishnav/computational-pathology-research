@@ -7,13 +7,13 @@ Tests normalization, stain norm, augmentation, batch processing.
 import numpy as np
 
 from src.data.preprocessing import (
-    normalize_wsi_features,
-    normalize_genomic_data,
+    build_clinical_vocab,
     filter_low_variance_genes,
     impute_missing_genomic_values,
-    tokenize_clinical_text,
-    build_clinical_vocab,
+    normalize_genomic_data,
+    normalize_wsi_features,
     pad_token_sequences,
+    tokenize_clinical_text,
 )
 
 
