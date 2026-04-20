@@ -239,9 +239,9 @@ class TestWSIReaderPatchExtraction:
             assert len(patches) > 0
 
             # Check patch format
-            for patch, (x, y) in patches:
-                assert isinstance(patch, np.ndarray)
-                assert patch.shape == (256, 256, 3)
+            for patch_data, (x, y) in patches:
+                assert isinstance(patch_data, np.ndarray)
+                assert patch_data.shape == (256, 256, 3)
                 assert isinstance(x, int)
                 assert isinstance(y, int)
         finally:
@@ -545,7 +545,7 @@ class TestCoordinateAccuracy:
             patches = reader.extract_patches(patch_size=256, level=0, stride=256)
 
             # Verify coordinates are correct
-            for i, ((location, level, size), (patch, (x, y))) in enumerate(
+            for i, ((location, level, size), (patch_data, (x, y))) in enumerate(
                 zip(coordinates_called, patches)
             ):
                 assert level == 0
@@ -579,7 +579,7 @@ class TestCoordinateAccuracy:
             patches = reader.extract_patches(patch_size=256, level=1, stride=256)
 
             # Verify coordinate transformation for level 1
-            for (location, level, size), (patch, (x, y)) in zip(coordinates_called, patches):
+            for (location, level, size), (patch_data, (x, y)) in zip(coordinates_called, patches):
                 assert level == 1
                 assert size == (256, 256)
                 # x, y should be level 0 coordinates (transformed by downsample factor)
