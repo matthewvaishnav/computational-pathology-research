@@ -194,7 +194,7 @@ class TestMemoryConstraints:
         chunks = []
 
         for i in range(0, len(large_data), chunk_size):
-            chunk = large_data[i: i + chunk_size]
+            chunk = large_data[i : i + chunk_size]
             normed_chunk = normalize_wsi_features(chunk, method="standardize")
             chunks.append(normed_chunk)
 
