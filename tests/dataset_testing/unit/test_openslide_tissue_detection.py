@@ -8,9 +8,10 @@ background filtering, thumbnail generation, and WSI image processing.
 import numpy as np
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch as mock_patch
 from PIL import Image
 
+from src.data.openslide_utils import WSIReader
 from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 
@@ -31,8 +32,8 @@ class TestTissueDetection:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_tissue_detection_algorithm(self, mock_openslide):
         """Test tissue detection algorithm accuracy."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -99,8 +100,8 @@ class TestTissueDetection:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_background_filtering_accuracy(self, mock_openslide):
         """Test background filtering accuracy with various scenarios."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -163,8 +164,8 @@ class TestTissueDetection:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_tissue_detection_edge_cases(self, mock_openslide):
         """Test tissue detection with edge cases and corner scenarios."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -252,8 +253,6 @@ class TestTissueDetection:
             tmp_path = tmp.name
 
         try:
-            from unittest.mock import patch as mock_patch
-
             with (
                 mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True),
                 mock_patch("src.data.openslide_utils.OpenSlide") as mock_openslide,
@@ -304,8 +303,8 @@ class TestThumbnailGeneration:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_thumbnail_generation_basic(self, mock_openslide):
         """Test basic thumbnail generation functionality."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -334,8 +333,8 @@ class TestThumbnailGeneration:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_thumbnail_aspect_ratio_preservation(self, mock_openslide):
         """Test thumbnail aspect ratio preservation."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -372,8 +371,8 @@ class TestThumbnailGeneration:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_thumbnail_size_variations(self, mock_openslide):
         """Test thumbnail generation with various size requests."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -410,8 +409,8 @@ class TestThumbnailGeneration:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_thumbnail_default_size(self, mock_openslide):
         """Test thumbnail generation with default size."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -453,8 +452,8 @@ class TestWSIImageProcessing:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_region_reading_accuracy(self, mock_openslide):
         """Test accuracy of region reading at different locations."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -506,8 +505,8 @@ class TestWSIImageProcessing:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_rgb_conversion_accuracy(self, mock_openslide):
         """Test RGBA to RGB conversion accuracy."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
@@ -537,8 +536,8 @@ class TestWSIImageProcessing:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     def test_pyramid_level_reading(self, mock_openslide):
         """Test reading from different pyramid levels."""
         with tempfile.NamedTemporaryFile(suffix=".svs", delete=False) as tmp:
