@@ -15,12 +15,13 @@ settings.load_profile("default")
 @pytest.fixture
 def device():
     """Provide device for testing (CPU by default, GPU if available)."""
-    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @pytest.fixture
 def mock_cnn_model():
     """Provide a simple mock CNN model for testing."""
+
     class MockCNN(torch.nn.Module):
         def __init__(self):
             super().__init__()
@@ -30,7 +31,7 @@ def mock_cnn_model():
             self.layer4 = torch.nn.Conv2d(256, 512, kernel_size=3, padding=1)
             self.pool = torch.nn.AdaptiveAvgPool2d((1, 1))
             self.fc = torch.nn.Linear(512, 2)
-        
+
         def forward(self, x):
             x = torch.relu(self.layer1(x))
             x = torch.relu(self.layer2(x))
@@ -40,7 +41,7 @@ def mock_cnn_model():
             x = x.view(x.size(0), -1)
             x = self.fc(x)
             return x
-    
+
     return MockCNN()
 
 
