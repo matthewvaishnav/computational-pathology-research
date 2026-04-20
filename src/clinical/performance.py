@@ -314,7 +314,7 @@ class OptimizedInferencePipeline:
 
             with torch.no_grad():
                 for i in range(0, patches.shape[0], batch_size):
-                    batch_patches = patches[i: i + batch_size]
+                    batch_patches = patches[i : i + batch_size]
 
                     with self.gpu_accelerator.autocast_context():
                         batch_features = self.feature_extractor(batch_patches)

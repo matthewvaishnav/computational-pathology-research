@@ -250,7 +250,7 @@ class TestParallelLoading:
         def load_worker(worker_id):
             try:
                 with h5py.File(synthetic_pcam_data["x_file"], "r") as f:
-                    data = f["x"][worker_id * 10: (worker_id + 1) * 10]
+                    data = f["x"][worker_id * 10 : (worker_id + 1) * 10]
                     results.append((worker_id, data.shape))
             except Exception as e:
                 errors.append((worker_id, str(e)))

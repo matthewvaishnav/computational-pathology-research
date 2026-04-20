@@ -63,7 +63,7 @@ class PCamSyntheticGenerator(DatasetGenerator):
         # Add some structure/nuclei-like spots
         for _ in range(20):
             x, y = self.rng.randint(10, 86, 2)
-            tumor_pattern[x - 5: x + 5, y - 5: y + 5] *= 0.3  # Dark nuclei
+            tumor_pattern[x - 5 : x + 5, y - 5 : y + 5] *= 0.3  # Dark nuclei
         tumor_pattern = np.clip(tumor_pattern, 0, 1)
         patterns["tumor"] = tumor_pattern
 
