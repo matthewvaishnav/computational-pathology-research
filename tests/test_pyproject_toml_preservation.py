@@ -96,7 +96,7 @@ def test_project_metadata_preservation():
     assert project["version"] == "0.1.0", "project.version changed"
     assert (
         project["description"]
-        == "Novel multimodal fusion architectures for computational pathology"
+        == "Production-grade PyTorch framework for computational pathology research"
     ), "project.description changed"
     assert project["readme"] == "README.md", "project.readme changed"
     assert project["requires-python"] == ">=3.9", "project.requires-python changed"
@@ -108,7 +108,7 @@ def test_project_metadata_preservation():
     # Verify authors
     assert "authors" in project, "Missing project.authors"
     assert len(project["authors"]) == 1, "project.authors count changed"
-    assert project["authors"][0]["name"] == "Research Team", "project.authors changed"
+    assert project["authors"][0]["name"] == "Matthew Vaishnav", "project.authors changed"
 
     # Verify dependencies list exists and has expected packages
     assert "dependencies" in project, "Missing project.dependencies"

@@ -8,7 +8,7 @@ import pytest
 import numpy as np
 import tempfile
 from pathlib import Path
-from unittest.mock import Magic
+from unittest.mock import MagicMock
 import h5py
 
 from src.data.preprocessing import (
