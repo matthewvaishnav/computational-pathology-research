@@ -12,7 +12,6 @@ from pathlib import Path
 # Add the tests directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
 from dataset_testing.synthetic.camelyon_generator import (
     CAMELYONSyntheticGenerator,
     CAMELYONSyntheticSpec,
@@ -21,6 +20,7 @@ from dataset_testing.synthetic.multimodal_generator import (
     MultimodalSyntheticGenerator,
     MultimodalSyntheticSpec,
 )
+from dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
 from dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator, WSISyntheticSpec
 
 

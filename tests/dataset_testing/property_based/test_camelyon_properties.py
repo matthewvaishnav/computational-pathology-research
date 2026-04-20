@@ -11,7 +11,8 @@ import h5py
 import numpy as np
 import pytest
 import torch
-from hypothesis import given, strategies as st, settings, assume
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 
 from src.data.camelyon_dataset import (
     CAMELYONPatchDataset,
@@ -20,13 +21,13 @@ from src.data.camelyon_dataset import (
     SlideMetadata,
     validate_feature_file,
 )
-from tests.dataset_testing.synthetic.camelyon_generator import (
-    CAMELYONSyntheticGenerator,
-    CAMELYONSyntheticSpec,
-)
 from tests.dataset_testing.hypothesis_strategies import (
     camelyon_slide_strategy,
     camelyon_spec_strategy,
+)
+from tests.dataset_testing.synthetic.camelyon_generator import (
+    CAMELYONSyntheticGenerator,
+    CAMELYONSyntheticSpec,
 )
 
 
