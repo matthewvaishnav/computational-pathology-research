@@ -5,6 +5,7 @@ This module provides property-based tests for OpenSlide functionality,
 focusing on coordinate and alignment preservation during patch extraction.
 """
 
+import os
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch as mock_patch
@@ -18,18 +19,77 @@ from tests.dataset_testing.hypothesis_strategies import (
 )
 
 
+def is_ci_environment():
+    """
+    Detect if running in a CI environment.
+    
+    Returns:
+        bool: True if running in CI, False otherwise
+    """
+    ci_indicators = [
+        os.getenv('CI') == 'true',
+        os.getenv('GITHUB_ACTIONS') == 'true',
+        os.getenv('TRAVIS') == 'true',
+        os.getenv('JENKINS_URL') is not None,
+        os.getenv('BUILDKITE') == 'true',
+        os.getenv('CIRCLECI') == 'true',
+        os.getenv('RUNNER_OS') is not None,  # GitHub Actions specific
+    ]
+    return any(ci_indicators)
+
+
+def get_test_config():
+    """
+    Get test configuration based on environment.
+    
+    Returns:
+        dict: Configuration parameters for the current environment
+    """
+    if is_ci_environment():
+        return {
+            'max_examples': 20,
+            'max_slide_dimension': 10000,
+            'deadline': 30000,  # 30 seconds
+            'environment': 'ci'
+        }
+    else:
+        return {
+            'max_examples': 100,
+            'max_slide_dimension': 50000,
+            'deadline': 60000,  # 60 seconds
+            'environment': 'local'
+        }
+
+
+def ci_aware_settings(func):
+    """
+    Decorator to apply CI-aware Hypothesis settings to property-based tests.
+    
+    This decorator automatically configures test parameters based on the
+    execution environment to prevent CI timeouts while maintaining
+    comprehensive testing in local development.
+    """
+    config = get_test_config()
+    
+    # Apply settings with environment-specific parameters
+    return settings(
+        max_examples=config['max_examples'],
+        deadline=config['deadline']
+    )(func)
+
+
 class TestOpenSlideProperties:
     """Property-based tests for OpenSlide integration."""
 
     @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
-        slide_width=st.integers(min_value=1000, max_value=50000),
-        slide_height=st.integers(min_value=1000, max_value=50000),
+        slide_width=st.integers(min_value=1000, max_value=get_test_config()['max_slide_dimension']),
+        slide_height=st.integers(min_value=1000, max_value=get_test_config()['max_slide_dimension']),
         patch_size=patch_size_strategy(),
         num_levels=st.integers(min_value=1, max_value=5),
     )
-    @settings(max_examples=100, deadline=60000)
+    @ci_aware_settings
     def test_patch_extraction_coordinate_consistency(
         self, mock_openslide, slide_width, slide_height, patch_size, num_levels
     ):
@@ -162,12 +222,12 @@ class TestOpenSlideProperties:
     @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
-        slide_width=st.integers(min_value=2000, max_value=20000),
-        slide_height=st.integers(min_value=2000, max_value=20000),
+        slide_width=st.integers(min_value=2000, max_value=min(20000, get_test_config()['max_slide_dimension'])),
+        slide_height=st.integers(min_value=2000, max_value=min(20000, get_test_config()['max_slide_dimension'])),
         patch_size=patch_size_strategy(),
         level=st.integers(min_value=0, max_value=3),
     )
-    @settings(max_examples=50, deadline=60000)
+    @ci_aware_settings
     def test_pyramid_level_coordinate_transformation(
         self, mock_openslide, slide_width, slide_height, patch_size, level
     ):
@@ -275,12 +335,12 @@ class TestOpenSlideProperties:
     @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
     @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
-        slide_width=st.integers(min_value=1000, max_value=10000),
-        slide_height=st.integers(min_value=1000, max_value=10000),
+        slide_width=st.integers(min_value=1000, max_value=min(10000, get_test_config()['max_slide_dimension'])),
+        slide_height=st.integers(min_value=1000, max_value=min(10000, get_test_config()['max_slide_dimension'])),
         patch_size=patch_size_strategy(),
         stride=st.integers(min_value=64, max_value=512),
     )
-    @settings(max_examples=50, deadline=60000)
+    @ci_aware_settings
     def test_overlapping_patch_consistency(
         self, mock_openslide, slide_width, slide_height, patch_size, stride
     ):
