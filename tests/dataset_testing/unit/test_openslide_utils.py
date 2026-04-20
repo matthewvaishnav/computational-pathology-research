@@ -8,11 +8,12 @@ pyramid level access, tissue detection, thumbnail generation, and error handling
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
-import pytest
+
 import numpy as np
+import pytest
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader, get_slide_info, check_openslide_available
+from src.data.openslide_utils import WSIReader, check_openslide_available, get_slide_info
 
 
 class TestOpenSlideAvailability:

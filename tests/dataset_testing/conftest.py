@@ -5,14 +5,15 @@ This module provides pytest fixtures, configuration, and utilities
 shared across all dataset tests.
 """
 
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
-from typing import Dict, Any, Generator
+from typing import Any, Dict, Generator
+
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from hypothesis import settings, Verbosity
+from hypothesis import Verbosity, settings
 
 # Configure Hypothesis for pathology data testing
 settings.register_profile(

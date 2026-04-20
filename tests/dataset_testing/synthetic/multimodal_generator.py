@@ -5,12 +5,14 @@ This module provides synthetic multimodal data generation combining
 WSI features, genomic data, and clinical text for comprehensive testing.
 """
 
-import numpy as np
-from typing import Dict, Any, Tuple, List
-from pathlib import Path
-import h5py
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
+import h5py
+import numpy as np
+
 from tests.dataset_testing.base_interfaces import DatasetGenerator
 
 

@@ -1,9 +1,10 @@
 """Shared utility functions for interpretability module."""
 
-import torch
-import numpy as np
-from typing import Optional, Union
 import logging
+from typing import Optional, Union
+
+import numpy as np
+import torch
 
 logger = logging.getLogger(__name__)
 
