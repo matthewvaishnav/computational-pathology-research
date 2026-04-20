@@ -396,13 +396,13 @@ class AttentionHeatmapGenerator:
                 ax_zoom = fig.add_subplot(gs[1, col_idx])
 
             # Extract zoom region from heatmap
-            zoom_heatmap = heatmap[y: y + h, x: x + w]
+            zoom_heatmap = heatmap[y : y + h, x : x + w]
 
             # Display zoomed region
             if thumbnail_path and thumbnail_path.exists():
                 thumbnail = Image.open(thumbnail_path).resize(self.thumbnail_size)
                 thumbnail_array = np.array(thumbnail)
-                zoom_thumbnail = thumbnail_array[y: y + h, x: x + w]
+                zoom_thumbnail = thumbnail_array[y : y + h, x : x + w]
                 ax_zoom.imshow(zoom_thumbnail, aspect="auto")
 
             ax_zoom.imshow(zoom_heatmap, cmap=self.colormap, alpha=alpha, aspect="auto")
