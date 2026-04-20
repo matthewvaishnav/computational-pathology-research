@@ -7,24 +7,22 @@ focusing on coordinate and alignment preservation during patch extraction.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch as mock_patch
 import numpy as np
 from PIL import Image
 from hypothesis import given, strategies as st, settings, assume
 
 from src.data.openslide_utils import WSIReader
 from tests.dataset_testing.hypothesis_strategies import (
-    wsi_coordinates_strategy,
     patch_size_strategy,
-    pyramid_level_strategy,
 )
 
 
 class TestOpenSlideProperties:
     """Property-based tests for OpenSlide integration."""
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
         slide_width=st.integers(min_value=1000, max_value=50000),
         slide_height=st.integers(min_value=1000, max_value=50000),
@@ -107,7 +105,7 @@ class TestOpenSlideProperties:
                     patch_size,
                     patch_size,
                     3,
-                ), f"Patch at ({x}, {y}) has incorrect shape: {mock_patch.shape}"
+                ), f"Patch at ({x}, {y}) has incorrect shape: {patch.shape}"
 
             # Property 2: Coordinates should be within slide bounds
             for patch, (x, y) in patches:
@@ -161,8 +159,8 @@ class TestOpenSlideProperties:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
         slide_width=st.integers(min_value=2000, max_value=20000),
         slide_height=st.integers(min_value=2000, max_value=20000),
@@ -255,7 +253,10 @@ class TestOpenSlideProperties:
                 assert call_location == (
                     patch_x,
                     patch_y,
-                ), f"Coordinate transformation inconsistent: {call_location} vs ({patch_x}, {patch_y})"
+                ), (
+                    f"Coordinate transformation inconsistent: {call_location} "
+                    f"vs ({patch_x}, {patch_y})"
+                )
 
                 # Verify that level coordinates are within level bounds
                 level_x = patch_x / downsample
@@ -271,8 +272,8 @@ class TestOpenSlideProperties:
         finally:
             Path(tmp_path).unlink()
 
-    @patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
-    @patch("src.data.openslide_utils.OpenSlide")
+    @mock_patch("src.data.openslide_utils.OPENSLIDE_AVAILABLE", True)
+    @mock_patch("src.data.openslide_utils.OpenSlide")
     @given(
         slide_width=st.integers(min_value=1000, max_value=10000),
         slide_height=st.integers(min_value=1000, max_value=10000),
@@ -369,7 +370,10 @@ class TestOpenSlideProperties:
                         # Regions should be identical
                         assert (
                             region1.shape == region2.shape
-                        ), f"Overlapping regions have different shapes: {region1.shape} vs {region2.shape}"
+                        ), (
+                            f"Overlapping regions have different shapes: "
+                            f"{region1.shape} vs {region2.shape}"
+                        )
 
                         # Allow small differences due to potential rounding
                         diff = np.abs(region1.astype(np.int16) - region2.astype(np.int16))
