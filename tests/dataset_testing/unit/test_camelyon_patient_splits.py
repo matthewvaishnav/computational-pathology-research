@@ -5,7 +5,6 @@ Tests train/val/test splits with no patient leakage, annotation processing,
 and missing slide scenarios.
 """
 
-
 import pytest
 
 from src.data.camelyon_dataset import (
