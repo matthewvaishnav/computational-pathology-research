@@ -8,7 +8,7 @@ import pytest
 import numpy as np
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, Magic
+from unittest.mock import patch, MagicMock
 import shutil
 
 from src.data.preprocessing import (
