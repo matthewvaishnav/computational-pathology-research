@@ -10,10 +10,10 @@ import numpy as np
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
-from typing import Dict, Any List
+from typing import Dict, Any, List
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader check_openslide_available
+from src.data.openslide_utils import WSIReader, check_openslide_available
 from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 

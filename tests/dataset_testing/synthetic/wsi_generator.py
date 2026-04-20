@@ -6,7 +6,7 @@ for OpenSlide integration testing.
 """
 
 import numpy as np
-from typing import Dict, Any, Tuple List
+from typing import Dict, Any, Tuple, List
 from pathlib import Path
 import json
 from dataclasses import dataclass

@@ -18,6 +18,7 @@ from pathlib import Path
 import tempfile
 import h5py
 from typing import Dict, Any
+from unittest.mock import Mock
 
 from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
