@@ -4,19 +4,20 @@ Network + storage constraint tests.
 Tests network failures, disk space limits, config validation.
 """
 
-import pytest
-import numpy as np
+import shutil
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import shutil
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
 
 from src.data.preprocessing import (
-    save_features_to_hdf5,
-    load_features_from_hdf5,
     batch_save_to_hdf5,
-    normalize_wsi_features,
     build_clinical_vocab,
+    load_features_from_hdf5,
+    normalize_wsi_features,
+    save_features_to_hdf5,
 )
 
 

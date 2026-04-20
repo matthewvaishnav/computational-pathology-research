@@ -4,23 +4,24 @@ Batch preprocessing validation tests.
 Tests consistent transform application, config drift detection, failure isolation.
 """
 
-import pytest
-import numpy as np
 import tempfile
 from pathlib import Path
 
+import numpy as np
+import pytest
+
 from src.data.preprocessing import (
-    normalize_wsi_features,
-    normalize_genomic_data,
+    batch_save_to_hdf5,
+    build_clinical_vocab,
     filter_low_variance_genes,
     impute_missing_genomic_values,
-    tokenize_clinical_text,
-    build_clinical_vocab,
+    load_batch_from_hdf5,
+    load_features_from_hdf5,
+    normalize_genomic_data,
+    normalize_wsi_features,
     pad_token_sequences,
     save_features_to_hdf5,
-    load_features_from_hdf5,
-    batch_save_to_hdf5,
-    load_batch_from_hdf5,
+    tokenize_clinical_text,
 )
 
 

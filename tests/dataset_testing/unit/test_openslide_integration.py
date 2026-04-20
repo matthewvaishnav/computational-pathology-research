@@ -8,9 +8,11 @@ tissue detection accuracy, and error handling scenarios.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch as mock_patch
-import pytest
+from unittest.mock import Mock
+from unittest.mock import patch as mock_patch
+
 import numpy as np
+import pytest
 from PIL import Image
 
 from src.data.openslide_utils import WSIReader

@@ -1,9 +1,9 @@
 """Pytest configuration and fixtures for interpretability tests."""
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from hypothesis import settings, Verbosity
+from hypothesis import Verbosity, settings
 
 # Configure Hypothesis for property-based testing
 settings.register_profile("default", max_examples=100, verbosity=Verbosity.normal)

@@ -5,10 +5,11 @@ Tests caching functionality, memory limits, and bottleneck identification
 (Requirement 7.5, 7.6, 7.7).
 """
 
-import pytest
 import time
-import numpy as np
+
 import h5py
+import numpy as np
+import pytest
 
 from tests.dataset_testing.base_interfaces import PerformanceBenchmark
 

@@ -5,13 +5,14 @@ This module provides custom Hypothesis strategies for generating
 valid test data for computational pathology datasets.
 """
 
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
+import h5py
 import numpy as np
 import torch
-from typing import Dict, Any, Tuple, List
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
-import h5py
-from pathlib import Path
 
 
 # Basic data type strategies

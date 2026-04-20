@@ -1,10 +1,11 @@
 """Unit tests for Grad-CAM generator."""
 
+from pathlib import Path
+
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-import numpy as np
-from pathlib import Path
 
 from src.interpretability.gradcam import GradCAMGenerator
 

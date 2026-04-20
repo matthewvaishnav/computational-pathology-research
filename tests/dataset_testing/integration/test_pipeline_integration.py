@@ -5,12 +5,13 @@ Tests dataset API compatibility, preprocessing integration, and reproducibility
 (Requirement 9.1, 9.2, 9.3).
 """
 
+from pathlib import Path
+from typing import Any, Dict
+
+import h5py
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from pathlib import Path
-import h5py
-from typing import Dict, Any
 
 
 # Mock dataset classes for testing
@@ -377,7 +378,7 @@ class TestEndToEndPipeline:
 
     def test_pipeline_with_multiple_datasets(self, mock_dataset):
         """Test pipeline works with multiple dataset types."""
-        from torch.utils.data import DataLoader, ConcatDataset
+        from torch.utils.data import ConcatDataset, DataLoader
 
         dataset1 = MockPCamDataset(mock_dataset, split="train")
         dataset2 = MockPCamDataset(mock_dataset, split="val")
@@ -403,8 +404,9 @@ class TestEndToEndPipeline:
 
     def test_pipeline_memory_efficiency(self, mock_dataset):
         """Test pipeline doesn't leak memory."""
-        from torch.utils.data import DataLoader
         import gc
+
+        from torch.utils.data import DataLoader
 
         dataset = MockPCamDataset(mock_dataset, split="train")
         loader = DataLoader(dataset, batch_size=8, num_workers=0)

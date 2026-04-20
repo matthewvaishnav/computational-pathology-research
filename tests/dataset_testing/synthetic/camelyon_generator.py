@@ -5,12 +5,14 @@ This module provides synthetic CAMELYON slide-level data generation
 for comprehensive testing without requiring large real datasets.
 """
 
-import numpy as np
-from typing import Dict, Any, Tuple
-from pathlib import Path
-import h5py
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, Tuple
+
+import h5py
+import numpy as np
+
 from tests.dataset_testing.base_interfaces import DatasetGenerator
 
 
