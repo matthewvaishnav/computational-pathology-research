@@ -1,5 +1,5 @@
 [flake8]
 max-line-length = 100
 max-complexity = 15
-ignore = E402,C901
+ignore = E402,C901,W503,W504
 exclude = .git,__pycache__,.hypothesis,.kiro,.kilo
