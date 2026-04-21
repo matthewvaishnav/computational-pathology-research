@@ -235,7 +235,8 @@ def train_fold(
     fold_idx: int,
     train_indices: np.ndarray,
     val_indices: np.ndarray,
-    full_dataset: PCamDataset,
+    full_dataset,  # Can be ConcatDataset or Subset
+    base_datasets: Tuple,  # (train_dataset, val_dataset) for transforms
     args: argparse.Namespace,
     device: torch.device
 ) -> Dict:
@@ -245,13 +246,11 @@ def train_fold(
     logger.info(f"{'='*80}")
     
     # Create data subsets with proper transforms
-    # We need to create new dataset instances with proper transforms for training
     train_transform = get_pcam_transforms(split="train", augmentation=True)
     val_transform = get_pcam_transforms(split="val", augmentation=False)
     
-    # Get the base datasets from the concatenated dataset
-    base_train_dataset = full_dataset.datasets[0]  # Original train dataset
-    base_val_dataset = full_dataset.datasets[1]    # Original val dataset
+    # Get the base datasets
+    base_train_dataset, base_val_dataset = base_datasets
     
     # Create new datasets with proper transforms
     train_dataset_transformed = PCamDataset(
@@ -504,9 +503,11 @@ def main():
     
     # Train each fold
     fold_results = []
+    base_datasets = (train_dataset, val_dataset)  # Pass base datasets for transforms
+    
     for fold_idx, (train_indices, val_indices) in enumerate(skf.split(np.arange(len(all_labels)), all_labels)):
         fold_result = train_fold(
-            fold_idx, train_indices, val_indices, full_dataset, args, device
+            fold_idx, train_indices, val_indices, full_dataset, base_datasets, args, device
         )
         fold_results.append(fold_result)
         
