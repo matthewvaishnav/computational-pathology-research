@@ -398,13 +398,13 @@ def main():
     train_dataset = PCamDataset(
         root_dir=args.data_root,
         split="train",
-        transform=get_pcam_transforms(train=True)
+        transform=get_pcam_transforms(split="train", augmentation=True)
     )
     
     val_dataset = PCamDataset(
         root_dir=args.data_root,
         split="val",
-        transform=get_pcam_transforms(train=False)
+        transform=get_pcam_transforms(split="val", augmentation=False)
     )
     
     # Combine train and val for cross-validation
