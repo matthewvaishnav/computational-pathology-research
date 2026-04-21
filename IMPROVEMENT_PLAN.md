@@ -133,8 +133,9 @@ date-released: "2024-XX-XX"  # Use actual release date
 - [x] Dynamic coverage badge (not hardcoded)
 - [x] Bootstrap confidence intervals documented
 - [x] Test files properly organized (moved from src/ to tests/)
+- [x] README updated with threshold optimization results
 - [ ] No IDE-specific files in git history (pending Java/BFG)
-- [ ] Repository pinned on profile
+- [x] Repository pinned on profile
 
 ## Notes
 
