@@ -1,0 +1,55 @@
+```mermaid
+graph TB
+    subgraph "Input Layer"
+        WSI[🔬 Whole-Slide Images<br/>96×96 patches<br/>N patches per slide]
+        GEN[🧬 Genomic Data<br/>2000 gene expressions<br/>Continuous values]
+        CLI[📋 Clinical Text<br/>Medical notes<br/>Variable length]
+    end
+    
+    subgraph "Feature Extraction"
+        WSI_FE[ResNet-50 Feature Extractor<br/>1024-dim features per patch]
+        GEN_NORM[Gene Expression Normalization<br/>Log-transform + Z-score]
+        CLI_TOK[Clinical Text Tokenization<br/>WordPiece tokenizer]
+    end
+    
+    subgraph "Modality Encoders"
+        WSI_ENC[🎯 WSI Encoder<br/>Transformer + Attention Pooling<br/>8.5M parameters]
+        GEN_ENC[🧮 Genomic Encoder<br/>Deep MLP + BatchNorm<br/>2.1M parameters]
+        CLI_ENC[📝 Clinical Encoder<br/>Transformer + CLS token<br/>12.3M parameters]
+    end
+    
+    subgraph "Cross-Modal Fusion"
+        FUSION[🔗 Cross-Modal Attention<br/>All-to-all modality attention<br/>3.2M parameters]
+        MISSING[❓ Missing Modality Handler<br/>Graceful degradation<br/>Zero-masking]
+    end
+    
+    subgraph "Task-Specific Heads"
+        CLASS[🎯 Classification Head<br/>Multi-class disease prediction<br/>1.5M parameters]
+        SURV[📊 Survival Prediction<br/>Cox proportional hazards<br/>0.8M parameters]
+    end
+    
+    subgraph "Output"
+        PRED[📈 Predictions<br/>Disease probabilities<br/>Survival curves<br/>Attention maps]
+    end
+    
+    WSI --> WSI_FE --> WSI_ENC
+    GEN --> GEN_NORM --> GEN_ENC
+    CLI --> CLI_TOK --> CLI_ENC
+    
+    WSI_ENC --> FUSION
+    GEN_ENC --> FUSION
+    CLI_ENC --> FUSION
+    
+    FUSION --> MISSING
+    MISSING --> CLASS
+    MISSING --> SURV
+    
+    CLASS --> PRED
+    SURV --> PRED
+    
+    style WSI fill:#e1f5fe
+    style GEN fill:#f3e5f5
+    style CLI fill:#e8f5e8
+    style FUSION fill:#fff3e0
+    style PRED fill:#f1f8e9
+```

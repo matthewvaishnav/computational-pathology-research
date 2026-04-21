@@ -1,0 +1,44 @@
+```mermaid
+graph LR
+    subgraph "Input Modalities"
+        WSI_EMB[WSI Embedding<br/>256-dim]
+        GEN_EMB[Genomic Embedding<br/>256-dim]
+        CLI_EMB[Clinical Embedding<br/>256-dim]
+    end
+    
+    subgraph "Pairwise Attention"
+        WSI_TO_GEN[WSI → Genomic<br/>Q: WSI, K,V: Genomic]
+        WSI_TO_CLI[WSI → Clinical<br/>Q: WSI, K,V: Clinical]
+        GEN_TO_WSI[Genomic → WSI<br/>Q: Genomic, K,V: WSI]
+        GEN_TO_CLI[Genomic → Clinical<br/>Q: Genomic, K,V: Clinical]
+        CLI_TO_WSI[Clinical → WSI<br/>Q: Clinical, K,V: WSI]
+        CLI_TO_GEN[Clinical → Genomic<br/>Q: Clinical, K,V: Genomic]
+    end
+    
+    subgraph "Fusion"
+        CONCAT[Concatenate All Outputs<br/>[WSI', GEN', CLI']<br/>768-dim total]
+        PROJ[Linear Projection<br/>768 → 256 dim<br/>+ Layer Normalization]
+    end
+    
+    WSI_EMB --> WSI_TO_GEN
+    WSI_EMB --> WSI_TO_CLI
+    GEN_EMB --> GEN_TO_WSI
+    GEN_EMB --> GEN_TO_CLI
+    CLI_EMB --> CLI_TO_WSI
+    CLI_EMB --> CLI_TO_GEN
+    
+    WSI_TO_GEN --> CONCAT
+    WSI_TO_CLI --> CONCAT
+    GEN_TO_WSI --> CONCAT
+    GEN_TO_CLI --> CONCAT
+    CLI_TO_WSI --> CONCAT
+    CLI_TO_GEN --> CONCAT
+    
+    CONCAT --> PROJ
+    PROJ --> FUSED[Fused Representation<br/>256-dim]
+    
+    style WSI_EMB fill:#e1f5fe
+    style GEN_EMB fill:#f3e5f5
+    style CLI_EMB fill:#e8f5e8
+    style FUSED fill:#f1f8e9
+```
