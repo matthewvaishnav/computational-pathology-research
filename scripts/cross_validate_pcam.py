@@ -67,8 +67,7 @@ def create_model(device: torch.device) -> nn.Module:
     """Create the model architecture."""
     feature_extractor = ResNetFeatureExtractor(
         model_name="resnet18",
-        pretrained=True,
-        freeze_backbone=False
+        pretrained=True
     ).to(device)
     
     encoder = WSIEncoder(
