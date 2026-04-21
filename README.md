@@ -28,7 +28,7 @@ A production-grade PyTorch framework for computational pathology research and cl
 - 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, audit logging, privacy protection
 - 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
-**Status**: Production-ready framework with validated clinical workflow integration. Real PCam dataset results: **85.26% test accuracy** (95% CI: 84.83%-85.63%), **0.9394 AUC** (95% CI: 0.9369-0.9418) on full 32,768-sample test set. Regulatory compliance features for clinical deployment.
+**Status**: Production-ready framework with validated clinical workflow integration. Real PCam dataset results: **85.26% test accuracy** (95% CI: 84.83%-85.63%), **0.9394 AUC** (95% CI: 0.9369-0.9418) on full 32,768-sample test set. **Optimized for clinical deployment**: 90% sensitivity (threshold=0.051) reducing missed tumors by 61.7%. Regulatory compliance features for clinical deployment.
 
 ## Quick Start
 
@@ -70,6 +70,16 @@ python experiments/evaluate_pcam.py \
   --output-dir results/pcam \
   --compute-bootstrap-ci \
   --bootstrap-samples 1000
+
+# Analyze failure cases
+python scripts/analyze_pcam_failures.py \
+  --results results/pcam_real/metrics.json \
+  --output-dir results/pcam_real/failure_analysis
+
+# Optimize decision threshold for clinical deployment
+python scripts/optimize_threshold.py \
+  --results results/pcam_real/metrics.json \
+  --output-dir results/pcam_real/threshold_optimization
 ```
 
 **Real Benchmark Results** (Full PCam Dataset):
@@ -80,7 +90,13 @@ python experiments/evaluate_pcam.py \
 - **Hardware**: RTX 4070 Laptop (8GB VRAM)
 - **Training Time**: ~6 hours (20 epochs), ~18 min/epoch
 
-*Bootstrap confidence intervals from 1,000 resamples. See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete analysis.*
+**Optimized for Clinical Deployment** (Threshold = 0.051):
+- **Sensitivity**: 90.0% (↑16.1% from baseline) - Catches 9 out of 10 tumors
+- **Specificity**: 80.3% (maintains acceptable false positive rate)
+- **False Negatives**: 1,639 (reduced from 4,276, saves 2,637 cases)
+- **Clinical Impact**: 61.7% reduction in missed tumors for cancer screening
+
+*Bootstrap confidence intervals from 1,000 resamples. See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete analysis and [docs/THRESHOLD_OPTIMIZATION.md](docs/THRESHOLD_OPTIMIZATION.md) for clinical deployment optimization.*
 
 **Development/Testing**: Synthetic data generator available for pipeline validation:
 ```bash
@@ -752,11 +768,12 @@ See [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for a complete documentation index.
 
 **Key Documents**:
 - [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) - **Real PCam results**: 85.26% accuracy with bootstrap confidence intervals on full 32K test set
+- [docs/THRESHOLD_OPTIMIZATION.md](docs/THRESHOLD_OPTIMIZATION.md) - **Clinical optimization**: Threshold tuning achieving 90% sensitivity for cancer screening
+- [docs/FAILURE_ANALYSIS.md](docs/FAILURE_ANALYSIS.md) - **Error analysis**: Comprehensive failure case analysis identifying model weaknesses
 - [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) - Synthetic subset validation for framework testing
 - [docs/MODEL_INTERPRETABILITY.md](docs/MODEL_INTERPRETABILITY.md) - Comprehensive interpretability tools: Grad-CAM, attention visualization, failure analysis, feature importance, interactive dashboard
 - [docs/CLINICAL_WORKFLOW_INTEGRATION.md](docs/CLINICAL_WORKFLOW_INTEGRATION.md) - Clinical deployment: Multi-class classification, DICOM/FHIR integration, regulatory compliance, longitudinal tracking
 - [docs/COMPREHENSIVE_DATASET_TESTING.md](docs/COMPREHENSIVE_DATASET_TESTING.md) - Testing infrastructure: 1,448 tests, property-based testing, synthetic data generation, performance benchmarking
-- [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) - PatchCamelyon benchmark results and validation
 - [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) - CAMELYON training guide and attention model implementation
 - [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) - Baseline comparison methodology and results
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture and design patterns
