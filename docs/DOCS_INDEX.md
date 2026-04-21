@@ -29,9 +29,10 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - [PCAM_REAL_RESULTS.md](PCAM_REAL_RESULTS.html) - **Real dataset results**: 85.26% accuracy, 0.9394 AUC with bootstrap CIs
 - [PCAM_FAILURE_ANALYSIS.md](PCAM_FAILURE_ANALYSIS.html) - **Failure analysis**: 26.11% false negative rate, clinical implications
 - [THRESHOLD_OPTIMIZATION.md](THRESHOLD_OPTIMIZATION.html) - **Clinical optimization**: 90% sensitivity for cancer screening
+- [PCAM_CROSS_VALIDATION.md](PCAM_CROSS_VALIDATION.html) - **Cross-validation**: K-fold validation for robustness assessment
 - [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.html) - Synthetic benchmark results and analysis
 - [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.html) - Comparing model architectures
-- **Topics**: Patch-level classification, data augmentation, baseline comparisons, clinical deployment
+- **Topics**: Patch-level classification, data augmentation, baseline comparisons, clinical deployment, robustness validation
 
 ### CAMELYON16 Slide-Level
 - [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.html) - Training guide and best practices

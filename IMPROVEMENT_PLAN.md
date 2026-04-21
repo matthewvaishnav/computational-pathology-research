@@ -198,10 +198,45 @@ date-released: "2024-XX-XX"  # Use actual release date
 
 These are optional enhancements for further research validation:
 
-### 1. Cross-Validation
-- Implement k-fold cross-validation for robustness
-- Multiple train/test splits to assess variance
-- Estimate: 1-2 days of compute time
+### 1. Cross-Validation (IN PROGRESS) 🔄
+**Status**: Script created, ready for execution
+**Location**: `scripts/cross_validate_pcam.py`
+**Documentation**: `docs/PCAM_CROSS_VALIDATION.md`
+**Estimated time**: 30-40 hours for full 5-fold CV on RTX 4070 Laptop
+
+**Purpose**:
+- Assess model robustness across different train/test splits
+- Quantify performance variance (standard deviation)
+- Provide more reliable confidence intervals
+- Validate that single-split results generalize
+
+**Implementation**:
+- Stratified k-fold splitting (maintains class balance)
+- 5 folds (80% train, 20% val per fold)
+- Bootstrap confidence intervals for each fold
+- Aggregated statistics across all folds
+- Checkpoint saving for each fold
+
+**Quick Test Available**:
+```bash
+# Test with small subset (15-20 minutes)
+bash scripts/run_cv_quick_test.sh
+
+# Full cross-validation (30-40 hours)
+bash scripts/run_cv_full.sh
+```
+
+**Expected Results**:
+- Accuracy: 85.20% ± 0.30% (mean ± std across folds)
+- AUC: 0.9390 ± 0.0020
+- Low variance (<0.5%) indicates robust, stable model
+- Results should be consistent with single-split benchmark
+
+**Next Steps**:
+1. Run quick test to verify script works
+2. If successful, launch full 5-fold CV
+3. Analyze variance and compare to single split
+4. Document results in comprehensive report
 
 ### 2. Hyperparameter Tuning
 - Grid search or Bayesian optimization
