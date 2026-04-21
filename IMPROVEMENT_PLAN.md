@@ -20,7 +20,7 @@ Current limitation: README leads with synthetic benchmark results, which undermi
 ## Priority Actions
 
 ### 1. Complete Real PCam Benchmark Run (HIGHEST PRIORITY) ✅
-**Status**: COMPLETED - Real PCam training finished with 86.04% test accuracy, 0.9423 AUC
+**Status**: COMPLETED - Real PCam training finished with 85.26% test accuracy (95% CI: 84.83%-85.63%), 0.9394 AUC (95% CI: 0.9369-0.9418)
 **Action**: Complete the full 20-epoch training run on real PCam data
 **Impact**: Transforms from "framework with fake benchmarks" to "framework with real results"
 **Timeline**: ~6 hours (20 epochs × 18 min/epoch)
@@ -28,8 +28,8 @@ Current limitation: README leads with synthetic benchmark results, which undermi
 **Steps**:
 - [x] Resume or restart training with `experiments/configs/pcam_rtx4070_laptop.yaml`
 - [x] Run full evaluation on test set
-- [ ] Generate metrics with bootstrap confidence intervals
-- [ ] Update `docs/PCAM_BENCHMARK_RESULTS.md` with real results
+- [x] Generate metrics with bootstrap confidence intervals
+- [x] Update `docs/PCAM_BENCHMARK_RESULTS.md` with real results
 - [x] Update README with real benchmark numbers
 
 ### 2. Reframe README Lead (HIGH PRIORITY) ✅
@@ -83,7 +83,7 @@ Current limitation: README leads with synthetic benchmark results, which undermi
 **Note**: Codecov badge already exists in README but may need token configuration
 
 ### 4. Clean IDE Artifacts (COMPLETED) ✅
-**Status**: IDE-specific files removed from tracking
+**Status**: IDE-specific files removed from tracking. Git history cleanup pending (requires Java for BFG)
 **Action**: Removed IDE-specific files, kept spec documentation
 
 **Kept** (legitimate project docs):
@@ -96,6 +96,8 @@ Current limitation: README leads with synthetic benchmark results, which undermi
 - AI tool references from documentation
 
 **Result**: Repository now contains only project-relevant documentation without IDE artifacts.
+
+**Pending**: Git history cleanup with BFG (requires Java installation - low priority)
 
 ### 5. Update CITATION.cff (LOW PRIORITY) ✅
 **Status**: COMPLETED - Updated with realistic dates and framework citation note
@@ -129,7 +131,9 @@ date-released: "2024-XX-XX"  # Use actual release date
 - [x] README leads with framework capabilities
 - [x] Green CI badge showing in README
 - [x] Dynamic coverage badge (not hardcoded)
-- [ ] No IDE-specific files in git history
+- [x] Bootstrap confidence intervals documented
+- [x] Test files properly organized (moved from src/ to tests/)
+- [ ] No IDE-specific files in git history (pending Java/BFG)
 - [ ] Repository pinned on profile
 
 ## Notes
