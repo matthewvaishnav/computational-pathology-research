@@ -28,7 +28,7 @@ A production-grade PyTorch framework for computational pathology research and cl
 - 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, audit logging, privacy protection
 - 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
-**Status**: Production-ready framework with validated clinical workflow integration. Real PCam dataset support with 96.7% test accuracy. Regulatory compliance features for clinical deployment.
+**Status**: Production-ready framework with validated clinical workflow integration. Real PCam dataset results: **85.26% test accuracy** (95% CI: 84.83%-85.63%), **0.9394 AUC** (95% CI: 0.9369-0.9418) on full 32,768-sample test set. Regulatory compliance features for clinical deployment.
 
 ## Quick Start
 
@@ -72,15 +72,15 @@ python experiments/evaluate_pcam.py \
   --bootstrap-samples 1000
 ```
 
-**Real Benchmark Results**:
-- **Test Accuracy**: 96.7% (demonstration run)
-- **Validation Accuracy**: 100% (synthetic demo)
-- **Test AUC**: 1.0 (small test set)
+**Real Benchmark Results** (Full PCam Dataset):
+- **Test Accuracy**: 85.26% ± 0.40% (95% CI: 84.83%-85.63%)
+- **Test AUC**: 0.9394 ± 0.0025 (95% CI: 0.9369-0.9418)
+- **Test F1**: 0.8507 ± 0.0040 (95% CI: 0.8464-0.8543)
 - **Dataset**: 262,144 train, 32,768 val, 32,768 test (96×96 RGB patches)
-- **Hardware**: RTX 4070 GPU support (Python 3.12 required for CUDA)
-- **Training Time**: ~18 min/epoch with GPU acceleration
+- **Hardware**: RTX 4070 Laptop (8GB VRAM)
+- **Training Time**: ~6 hours (20 epochs), ~18 min/epoch
 
-*Note: Results from quick demo run. Full-scale training achieves 88-92% accuracy with 0.96-0.98 AUC on complete dataset.*
+*Bootstrap confidence intervals from 1,000 resamples. See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete analysis.*
 
 **Development/Testing**: Synthetic data generator available for pipeline validation:
 ```bash
@@ -88,7 +88,7 @@ python scripts/generate_synthetic_pcam.py  # Creates small test dataset
 python experiments/train_pcam.py --config experiments/configs/pcam_synthetic.yaml
 ```
 
-See [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) for details.
+See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete results with bootstrap confidence intervals, or [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) for synthetic subset validation.
 
 ### Full-Scale PCam Experiments
 
@@ -751,6 +751,8 @@ See [docs/CLINICAL_WORKFLOW_INTEGRATION.md](docs/CLINICAL_WORKFLOW_INTEGRATION.m
 See [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for a complete documentation index.
 
 **Key Documents**:
+- [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) - **Real PCam results**: 85.26% accuracy with bootstrap confidence intervals on full 32K test set
+- [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) - Synthetic subset validation for framework testing
 - [docs/MODEL_INTERPRETABILITY.md](docs/MODEL_INTERPRETABILITY.md) - Comprehensive interpretability tools: Grad-CAM, attention visualization, failure analysis, feature importance, interactive dashboard
 - [docs/CLINICAL_WORKFLOW_INTEGRATION.md](docs/CLINICAL_WORKFLOW_INTEGRATION.md) - Clinical deployment: Multi-class classification, DICOM/FHIR integration, regulatory compliance, longitudinal tracking
 - [docs/COMPREHENSIVE_DATASET_TESTING.md](docs/COMPREHENSIVE_DATASET_TESTING.md) - Testing infrastructure: 1,448 tests, property-based testing, synthetic data generation, performance benchmarking
@@ -860,12 +862,14 @@ This experiment demonstrates the framework's capability on real histopathology d
 - Training accuracy: 83.3%
 - Training AUC: 0.940
 
-**Test Set Performance**:
+**Test Set Performance** (Single-epoch demonstration on synthetic subset):
 - Test accuracy: 55.0%
 - Test AUC: 1.0
 - Test F1-score: 0.710
 
-**Note**: These results are from a single-epoch demonstration run on a small subset of the data. The test accuracy of 55% is below the baseline threshold of 60%, which is expected for minimal training. Full training (20 epochs) on the complete dataset typically achieves 88-92% accuracy and 96-98% AUC.
+**Note**: These results are from a single-epoch demonstration run on a small synthetic subset for framework validation. 
+
+**Full-scale real PCam results**: 85.26% accuracy (95% CI: 84.83%-85.63%), 0.9394 AUC (95% CI: 0.9369-0.9418) on complete 32,768-sample test set. See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md).
 
 ### Model Checkpoint
 
@@ -950,22 +954,24 @@ jupyter notebook experiments/notebooks/pcam_visualization.ipynb
 
 ### Comparison to Baseline
 
-| Metric | Achieved (1 epoch) | Baseline Target | Full Training Expected |
-|--------|-------------------|-----------------|----------------------|
-| Test Accuracy | 55.0% | >60% | 88-92% |
-| Test AUC | 1.0* | >0.85 | 0.96-0.98 |
-| Test F1 | 0.710 | >0.65 | 0.87-0.91 |
+| Metric | Demo (1 epoch, synthetic) | Baseline Target | **Full Training (Real PCam)** |
+|--------|---------------------------|-----------------|-------------------------------|
+| Test Accuracy | 55.0% | >60% | **85.26% ± 0.40%** |
+| Test AUC | 1.0* | >0.85 | **0.9394 ± 0.0025** |
+| Test F1 | 0.710 | >0.65 | **0.8507 ± 0.0040** |
 
-*Note: AUC of 1.0 on small test set may indicate overfitting or limited test samples. Full dataset evaluation expected to show 0.96-0.98 AUC.
+*Note: Demo AUC of 1.0 on small synthetic test set. Full training results from 262K training samples, 32K test samples with bootstrap confidence intervals (1,000 resamples). See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md).
 
-### Next Steps
+### Production Results Achieved ✅
 
-To achieve production-ready results:
-1. Train for full 20 epochs on complete dataset
-2. Use GPU acceleration for faster training
-3. Perform hyperparameter tuning (learning rate, batch size, architecture)
-4. Evaluate with bootstrap confidence intervals
-5. Compare against baseline models (ResNet-50, DenseNet-121, EfficientNet)
+The framework has been validated on the full PatchCamelyon dataset:
+1. ✅ Trained for 20 epochs on complete 262K dataset
+2. ✅ GPU acceleration (RTX 4070 Laptop, ~6 hours total)
+3. ✅ Evaluated with bootstrap confidence intervals (1,000 resamples)
+4. ✅ Results: 85.26% accuracy, 0.9394 AUC on 32K test set
+5. ✅ Competitive with published ResNet-18 baselines
+
+See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete analysis.
 
 ## Roadmap
 
