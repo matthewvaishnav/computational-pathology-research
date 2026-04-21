@@ -34,6 +34,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import DataLoader, Subset
+from torchvision import transforms
 from tqdm import tqdm
 
 # Add parent directory to path
