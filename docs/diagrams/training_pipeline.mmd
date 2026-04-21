@@ -1,0 +1,32 @@
+```mermaid
+graph TB
+    subgraph "Data Loading"
+        BATCH[📦 Batch Loader<br/>Multi-modal batches<br/>Dynamic padding<br/>Missing data handling]
+        AUG[🔄 Data Augmentation<br/>WSI: rotation, flip, color<br/>Genomic: noise injection<br/>Clinical: synonym replacement]
+    end
+    
+    subgraph "Forward Pass"
+        ENCODE[🧠 Modality Encoding<br/>Parallel processing<br/>GPU acceleration<br/>Mixed precision (FP16)]
+        FUSE[🔗 Cross-Modal Fusion<br/>Attention computation<br/>Gradient checkpointing<br/>Memory optimization]
+        PREDICT[🎯 Task Prediction<br/>Multi-task heads<br/>Shared representations<br/>Task-specific losses]
+    end
+    
+    subgraph "Optimization"
+        BACKWARD[⬅️ Backward Pass<br/>Gradient computation<br/>Automatic differentiation<br/>Memory efficient]
+        CLIP[✂️ Gradient Clipping<br/>Max norm = 1.0<br/>Prevent exploding gradients<br/>Stable training]
+        UPDATE[🔄 Parameter Update<br/>AdamW optimizer<br/>Learning rate scheduling<br/>Weight decay]
+    end
+    
+    BATCH --> AUG
+    AUG --> ENCODE
+    ENCODE --> FUSE
+    FUSE --> PREDICT
+    PREDICT --> BACKWARD
+    BACKWARD --> CLIP
+    CLIP --> UPDATE
+    UPDATE --> BATCH
+    
+    style BATCH fill:#e3f2fd
+    style FUSE fill:#fff3e0
+    style UPDATE fill:#e8f5e8
+```

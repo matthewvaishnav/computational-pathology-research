@@ -1,0 +1,36 @@
+```mermaid
+graph TB
+    subgraph "Clinical Data Sources"
+        PACS[🏥 PACS System<br/>DICOM WSI files<br/>Medical imaging<br/>Metadata]
+        EHR[📋 Electronic Health Records<br/>HL7 FHIR format<br/>Clinical notes<br/>Patient history]
+        LAB[🧪 Laboratory Systems<br/>Genomic sequencing<br/>Biomarker data<br/>Test results]
+    end
+    
+    subgraph "AI Processing Pipeline"
+        PREPROCESS[⚙️ Preprocessing Service<br/>Data validation<br/>Format standardization<br/>Quality control]
+        INFERENCE[🧠 AI Inference Engine<br/>Model serving<br/>Batch processing<br/>Real-time prediction]
+        POSTPROCESS[📊 Post-processing<br/>Result validation<br/>Confidence scoring<br/>Uncertainty quantification]
+    end
+    
+    subgraph "Clinical Decision Support"
+        INTERPRET[🔍 Result Interpretation<br/>Attention visualization<br/>Explainable AI<br/>Clinical relevance]
+        REPORT[📄 Report Generation<br/>Structured reports<br/>PDF generation<br/>DICOM SR creation]
+        ALERT[🚨 Clinical Alerts<br/>Critical findings<br/>Notification system<br/>Workflow integration]
+    end
+    
+    PACS --> PREPROCESS
+    EHR --> PREPROCESS
+    LAB --> PREPROCESS
+    
+    PREPROCESS --> INFERENCE
+    INFERENCE --> POSTPROCESS
+    POSTPROCESS --> INTERPRET
+    INTERPRET --> REPORT
+    REPORT --> ALERT
+    
+    style PACS fill:#e3f2fd
+    style EHR fill:#f3e5f5
+    style LAB fill:#e8f5e8
+    style INFERENCE fill:#fff3e0
+    style REPORT fill:#f1f8e9
+```
