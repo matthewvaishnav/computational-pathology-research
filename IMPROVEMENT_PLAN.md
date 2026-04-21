@@ -167,6 +167,30 @@ date-released: "2024-XX-XX"  # Use actual release date
 2. Explore ensemble methods for better tumor detection
 3. Investigate the 4,276 false negative cases for patterns
 
+### Threshold Optimization (COMPLETED) ✅
+**Status**: Script created, tested, and run successfully on real PCam results
+**Location**: `scripts/optimize_threshold.py`
+**Output**: `results/pcam_real/threshold_optimization/`
+
+**Key Findings**:
+- Recommended threshold: 0.051 (down from default 0.5)
+- Achieves 90% sensitivity (up from 73.9%)
+- Reduces false negatives from 4,276 to 1,639 (saves 2,637 cases)
+- Trade-off: Increases false positives from 554 to 3,226 (2,672 additional)
+- Clinical impact: Better to flag for review than miss cancer
+
+**Generated Artifacts**:
+- `roc_curve_optimal.png` - ROC curve with optimal threshold points
+- `precision_recall_curve.png` - Precision-recall curve analysis
+- `threshold_comparison.png` - Performance comparison across thresholds
+- `threshold_optimization.json` - Complete optimization report
+
+**Recommendations from Analysis**:
+1. Use threshold = 0.051 for clinical screening (90% sensitivity)
+2. Use threshold = 0.102 for research/validation (Youden's J optimal)
+3. Use threshold = 0.023 for high-risk populations (95% sensitivity)
+4. Implement confidence-based routing for uncertain cases
+
 ## Potential Next Steps (Research Enhancements)
 
 These are optional enhancements for further research validation:
@@ -191,7 +215,7 @@ These are optional enhancements for further research validation:
 - Requires implementing slide-level aggregation
 - Estimate: 1 week of development + compute
 
-### 5. Threshold Optimization
+### 5. Threshold Optimization (COMPLETED) ✅
 - Analyze ROC curve to find optimal decision threshold
 - Balance precision/recall based on clinical requirements
 - Estimate: 1 day
