@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from .audit import (
+from src.clinical.audit import (
     AuditContextManager,
     AuditEvent,
     AuditEventType,
