@@ -243,9 +243,34 @@ def train_fold(
     logger.info(f"Training Fold {fold_idx + 1}/{args.n_folds}")
     logger.info(f"{'='*80}")
     
-    # Create data subsets
-    train_dataset = Subset(full_dataset, train_indices)
-    val_dataset = Subset(full_dataset, val_indices)
+    # Create data subsets with proper transforms
+    # We need to create new dataset instances with proper transforms for training
+    train_transform = get_pcam_transforms(split="train", augmentation=True)
+    val_transform = get_pcam_transforms(split="val", augmentation=False)
+    
+    # Get the base datasets from the concatenated dataset
+    base_train_dataset = full_dataset.datasets[0]  # Original train dataset
+    base_val_dataset = full_dataset.datasets[1]    # Original val dataset
+    
+    # Create new datasets with proper transforms
+    train_dataset_transformed = PCamDataset(
+        root_dir=base_train_dataset.root_dir,
+        split="train",
+        transform=train_transform
+    )
+    val_dataset_transformed = PCamDataset(
+        root_dir=base_val_dataset.root_dir,
+        split="val",
+        transform=val_transform
+    )
+    
+    # Combine them
+    from torch.utils.data import ConcatDataset
+    full_dataset_transformed = ConcatDataset([train_dataset_transformed, val_dataset_transformed])
+    
+    # Create subsets
+    train_dataset = Subset(full_dataset_transformed, train_indices)
+    val_dataset = Subset(full_dataset_transformed, val_indices)
     
     train_loader = DataLoader(
         train_dataset,
@@ -405,32 +430,62 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
     
+    if device.type == "cpu":
+        logger.warning("=" * 80)
+        logger.warning("WARNING: CUDA not available! Running on CPU will be VERY slow.")
+        logger.warning("Cross-validation on CPU may take days instead of hours.")
+        logger.warning("Consider:")
+        logger.warning("  1. Install CUDA-enabled PyTorch")
+        logger.warning("  2. Use a machine with GPU")
+        logger.warning("  3. Use a much smaller subset (--subset-size 100)")
+        logger.warning("=" * 80)
+        
+        # Ask user if they want to continue
+        response = input("\nContinue anyway? (y/N): ")
+        if response.lower() != 'y':
+            logger.info("Aborted by user.")
+            return
+    
     # Load full dataset (train + val combined for cross-validation)
     logger.info("Loading PCam dataset...")
+    # Use minimal transforms for label extraction (no augmentation needed)
+    minimal_transform = transforms.Compose([
+        transforms.ToTensor(),
+    ])
+    
     train_dataset = PCamDataset(
         root_dir=args.data_root,
         split="train",
-        transform=get_pcam_transforms(split="train", augmentation=True)
+        transform=minimal_transform
     )
     
     val_dataset = PCamDataset(
         root_dir=args.data_root,
         split="val",
-        transform=get_pcam_transforms(split="val", augmentation=False)
+        transform=minimal_transform
     )
     
     # Combine train and val for cross-validation
     from torch.utils.data import ConcatDataset
     full_dataset = ConcatDataset([train_dataset, val_dataset])
     
-    # Get all labels for stratification
+    # Get all labels for stratification (fast - just read labels, no image processing)
+    logger.info("Extracting labels for stratification...")
     all_labels = []
-    for i in range(len(train_dataset)):
-        _, label, _ = train_dataset[i]  # PCamDataset returns (image, label, index)
-        all_labels.append(label)
-    for i in range(len(val_dataset)):
-        _, label, _ = val_dataset[i]  # PCamDataset returns (image, label, index)
-        all_labels.append(label)
+    
+    # Get labels directly from the dataset's label arrays (much faster)
+    if hasattr(train_dataset, 'labels'):
+        all_labels.extend(train_dataset.labels.tolist())
+        all_labels.extend(val_dataset.labels.tolist())
+    else:
+        # Fallback: iterate through dataset
+        for i in tqdm(range(len(train_dataset)), desc="Loading train labels"):
+            _, label, _ = train_dataset[i]
+            all_labels.append(label)
+        for i in tqdm(range(len(val_dataset)), desc="Loading val labels"):
+            _, label, _ = val_dataset[i]
+            all_labels.append(label)
+    
     all_labels = np.array(all_labels)
     
     # Use subset if specified (for quick testing)
