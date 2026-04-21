@@ -191,6 +191,8 @@ See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for det
 
 ## Key Features
 
+> **📊 Architecture Diagrams**: See [Enhanced Architecture Diagrams](docs/ARCHITECTURE_DIAGRAMS.md) for comprehensive visual system documentation with modern Mermaid diagrams.
+
 ### Model Interpretability Tools
 
 **Comprehensive interpretability** for understanding model decisions and building clinical trust:
