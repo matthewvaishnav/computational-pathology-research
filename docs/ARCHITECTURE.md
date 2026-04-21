@@ -45,6 +45,86 @@ Detailed technical documentation of the multimodal fusion architecture for compu
 
 > **📊 See Enhanced Diagrams**: [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) contains modern, interactive Mermaid diagrams showing the complete system architecture with visual flow and component relationships.
 
+### HistoCore System Architecture
+
+```
+HistoCore System Architecture
+=============================
+┌─────────────────────────────────────────────────────────────────────┐
+│                           INPUT LAYER                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  🔬 WSI Images        🧬 Genomic Data      📋 Clinical Text          │
+│  96×96 patches        2000 gene expr.     Medical notes             │
+│  N patches/slide      Continuous vals     Variable length           │
+└──────┬─────────────────────┬─────────────────────┬───────────────────┘
+       │                     │                     │
+       ▼                     ▼                     ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      FEATURE EXTRACTION                             │
+├─────────────────────────────────────────────────────────────────────┤
+│  ResNet-50 Extractor   Gene Normalization   Text Tokenization      │
+│  1024-dim features     Log + Z-score        WordPiece tokens        │
+└──────┬─────────────────────┬─────────────────────┬───────────────────┘
+       │                     │                     │
+       ▼                     ▼                     ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      MODALITY ENCODERS                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  🎯 WSI Encoder        🧮 Genomic Encoder   📝 Clinical Encoder     │
+│  Transformer +        Deep MLP +           Transformer +            │
+│  Attention Pool       BatchNorm            CLS token                │
+│  8.5M parameters      2.1M parameters      12.3M parameters         │
+└──────┬─────────────────────┬─────────────────────┬───────────────────┘
+       │                     │                     │
+       └─────────────────────┼─────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     CROSS-MODAL FUSION                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  🔗 Cross-Modal Attention (3.2M params)                             │
+│  • All-to-all modality attention                                    │
+│  • Learns cross-modal relationships                                 │
+│  • WSI ↔ Genomic ↔ Clinical interactions                            │
+│                                                                     │
+│  ❓ Missing Modality Handler                                         │
+│  • Graceful degradation when data missing                           │
+│  • Zero-masking for unavailable modalities                          │
+└─────────────────────────┬───────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                 TEMPORAL REASONING (Optional)                        │
+├─────────────────────────────────────────────────────────────────────┤
+│  ⏰ Temporal Attention (467K params)                                │
+│  • Disease progression modeling                                      │
+│  • Multi-visit patient tracking                                     │
+│  • Treatment response analysis                                       │
+└─────────────────────────┬───────────────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          │               │               │
+          ▼               ▼               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    TASK-SPECIFIC HEADS                               │
+├─────────────────────────────────────────────────────────────────────┤
+│  🎯 Classification    📊 Survival         🖼️ Segmentation           │
+│  Multi-class disease  Cox hazards         Tissue regions            │
+│  1.5M parameters      0.8M parameters     2.3M parameters           │
+└──────┬─────────────────────┬─────────────────────┬───────────────────┘
+       │                     │                     │
+       └─────────────────────┼─────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         OUTPUT                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│  📈 Clinical Predictions                                             │
+│  • Disease probabilities & confidence scores                         │
+│  • Survival curves & risk stratification                            │
+│  • Attention maps for interpretability                              │
+│  • Clinical decision support                                        │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ### High-Level Data Flow
 
 ```
