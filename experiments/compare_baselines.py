@@ -104,11 +104,11 @@ def create_comparison_table(results: Dict[str, Dict]) -> pd.DataFrame:
             "Model": model_name,
             "Description": config["description"],
             "Batch Size": config["batch_size"],
-            "Accuracy": metrics.get("test_accuracy", 0.0),
-            "F1 Score": metrics.get("test_f1", 0.0),
-            "AUC": metrics.get("test_auc", 0.0),
+            "Accuracy": metrics.get("test_accuracy", metrics.get("accuracy", 0.0)),
+            "F1 Score": metrics.get("test_f1", metrics.get("f1", 0.0)),
+            "AUC": metrics.get("test_auc", metrics.get("auc", 0.0)),
             "Training Time (h)": metrics.get("training_time_hours", 0.0),
-            "Parameters (M)": metrics.get("num_parameters", 0) / 1e6,
+            "Parameters (M)": metrics.get("num_parameters", metrics.get("model_parameters", {}).get("total", 0)) / 1e6,
         }
         data.append(row)
 
@@ -138,9 +138,9 @@ def plot_comparison(results: Dict[str, Dict], output_dir: Path):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     models = list(results.keys())
-    accuracies = [results[m].get("test_accuracy", 0) * 100 for m in models]
-    f1_scores = [results[m].get("test_f1", 0) * 100 for m in models]
-    aucs = [results[m].get("test_auc", 0) * 100 for m in models]
+    accuracies = [results[m].get("test_accuracy", results[m].get("accuracy", 0)) * 100 for m in models]
+    f1_scores = [results[m].get("test_f1", results[m].get("f1", 0)) * 100 for m in models]
+    aucs = [results[m].get("test_auc", results[m].get("auc", 0)) * 100 for m in models]
 
     x = np.arange(len(models))
     width = 0.25
@@ -250,22 +250,31 @@ Trained and evaluated {len(results)} baseline models on the PCam dataset.
 
     # Calculate efficiency metric
     df["Efficiency"] = df["Accuracy"] / df["Parameters (M)"]
-    most_efficient = df.loc[df["Efficiency"].idxmax()]
-
-    report += f"""- **Model:** {most_efficient['Model']}
+    
+    # Only add efficiency section if we have valid data
+    if df["Efficiency"].notna().any() and (df["Efficiency"] > 0).any():
+        most_efficient = df.loc[df["Efficiency"].idxmax()]
+        report += f"""- **Model:** {most_efficient['Model']}
 - **Accuracy:** {most_efficient['Accuracy']:.4f}
 - **Parameters:** {most_efficient['Parameters (M)']:.2f}M
 - **Efficiency Score:** {most_efficient['Efficiency']:.4f}
-
-### Fastest Training
 """
+    else:
+        report += "- No efficiency data available (missing accuracy or parameter counts)\n"
 
-    fastest = df.loc[df["Training Time (h)"].idxmin()]
+    report += "\n### Fastest Training\n"
 
-    report += f"""- **Model:** {fastest['Model']}
+    # Only add training time section if we have valid data
+    if df["Training Time (h)"].notna().any() and (df["Training Time (h)"] > 0).any():
+        fastest = df.loc[df["Training Time (h)"].idxmin()]
+        report += f"""- **Model:** {fastest['Model']}
 - **Training Time:** {fastest['Training Time (h)']:.2f} hours
 - **Accuracy:** {fastest['Accuracy']:.4f}
+"""
+    else:
+        report += "- No training time data available\n"
 
+    report += """
 ## Visualizations
 
 ![Baseline Comparison](baseline_comparison.png)
