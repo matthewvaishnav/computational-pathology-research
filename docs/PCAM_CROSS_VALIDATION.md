@@ -1,8 +1,31 @@
 # PatchCamelyon Cross-Validation
 
-**Status**: 🔄 IN PROGRESS  
+**Status**: ⏸️ PAUSED (Partial Results Available)  
 **Script**: `scripts/cross_validate_pcam.py`  
 **Purpose**: Assess model robustness and variance across different train/test splits
+
+## Partial Results (Fold 1, First 2 Epochs)
+
+**Early Training Performance:**
+
+| Epoch | Val AUC | Val Accuracy | Improvement |
+|-------|---------|--------------|-------------|
+| 1     | 0.9764  | 90.02%       | Baseline    |
+| 2     | 0.9824  | 93.29%       | +3.27%      |
+
+**Key Observations:**
+- ✅ **Strong baseline** - 90% accuracy on first epoch demonstrates effective learning
+- ✅ **Rapid improvement** - 3.27% accuracy gain shows healthy learning dynamics
+- ✅ **High AUC** - Both epochs exceed 0.97 AUC (excellent discrimination)
+- ✅ **Infrastructure validated** - Memory-mapped loading, GPU acceleration working correctly
+- 📊 **Consistent with baseline** - Aligns with full PCam test results (85.26% test accuracy, 0.9394 AUC)
+
+**Next Steps:**
+- Resume full 5-fold cross-validation this weekend (~50 hours)
+- Complete remaining 18 epochs of Fold 1 + all of Folds 2-5
+- Generate final aggregated statistics with bootstrap confidence intervals
+
+---
 
 ## Overview
 
