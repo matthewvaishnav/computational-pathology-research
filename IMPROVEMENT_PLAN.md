@@ -147,9 +147,10 @@ date-released: "2024-XX-XX"  # Use actual release date
 ## Completed Research Enhancements
 
 ### Failure Analysis (COMPLETED) ✅
-**Status**: Script created, tested, and run successfully on real PCam results
+**Status**: Script created, tested, run successfully, and **documented**
 **Location**: `scripts/analyze_pcam_failures.py`
 **Output**: `results/pcam_real/failure_analysis/`
+**Documentation**: `docs/PCAM_FAILURE_ANALYSIS.md`
 
 **Key Findings**:
 - False Positive Rate: 3.38% (554 normal tissues misclassified as tumor)
@@ -163,10 +164,11 @@ date-released: "2024-XX-XX"  # Use actual release date
 - `error_rates.png` - Visualization of false positive and false negative rates
 - `failure_analysis.json` - Complete analysis with indices of all misclassified samples
 
-**Recommendations from Analysis**:
-1. Consider adjusting decision threshold to improve recall (reduce false negatives)
-2. Explore ensemble methods for better tumor detection
-3. Investigate the 4,276 false negative cases for patterns
+**Documentation**:
+- Comprehensive failure analysis report with clinical implications
+- Comparison to pathologist performance standards
+- Recommendations for improving sensitivity
+- Links added to documentation index
 
 ### Threshold Optimization (COMPLETED) ✅
 **Status**: Script created, tested, and run successfully on real PCam results
