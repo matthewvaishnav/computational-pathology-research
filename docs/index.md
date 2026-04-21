@@ -34,32 +34,32 @@ The framework features advanced model interpretability tools (Grad-CAM, attentio
 
 <div class="features-grid">
   <div class="feature-card">
-    <h3>🧠 Attention-Based MIL Models</h3>
+    <h3>Attention-Based MIL Models</h3>
     <p>State-of-the-art AttentionMIL, CLAM, and TransMIL architectures with attention weight visualization and heatmap generation for slide-level classification.</p>
   </div>
   
   <div class="feature-card">
-    <h3>🏥 Clinical Workflow Integration</h3>
+    <h3>Clinical Workflow Integration</h3>
     <p>Production-ready clinical deployment with multi-class probabilistic disease classification, risk factor analysis and early detection, longitudinal patient tracking, DICOM/FHIR integration, regulatory compliance (FDA/CE), and real-time inference (<5 seconds) for seamless hospital integration.</p>
   </div>
   
   <div class="feature-card">
-    <h3>🔍 Model Interpretability</h3>
+    <h3>Model Interpretability</h3>
     <p>Comprehensive interpretability suite with Grad-CAM visualizations for CNN feature extractors, attention heatmaps for MIL models, automated failure case analysis and clustering, feature importance computation (SHAP, permutation), and interactive visualization dashboard for clinical trust building.</p>
   </div>
   
   <div class="feature-card">
-    <h3>🧪 Comprehensive Testing</h3>
+    <h3>Comprehensive Testing</h3>
     <p>Robust validation infrastructure with 1,448 tests (55% coverage), property-based testing for edge cases, synthetic data generation, performance benchmarking, error handling validation, and automated regression detection ensuring data pipeline reliability.</p>
   </div>
   
   <div class="feature-card">
-    <h3>🔗 Multimodal Fusion</h3>
+    <h3>Multimodal Fusion</h3>
     <p>Cross-modal attention for integrating WSI, genomic, and clinical text data with temporal progression modeling and missing data handling.</p>
   </div>
   
   <div class="feature-card">
-    <h3>📊 Validated Performance</h3>
+    <h3>Validated Performance</h3>
     <p>Real PCam results: 96.7% test accuracy, 100% validation accuracy. Bootstrap confidence intervals and baseline model comparisons included.</p>
   </div>
 </div>
