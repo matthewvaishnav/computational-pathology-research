@@ -8,7 +8,6 @@ Detailed technical documentation of the multimodal fusion architecture for compu
 
 ## Quick Navigation
 
-- 🎯 **[Enhanced Visual Diagrams](ARCHITECTURE_DIAGRAMS.md)** - Modern Mermaid diagrams with full system visualization
 - 🏗️ **[System Overview](#system-overview)** - High-level architecture and data flow
 - 🧠 **[Model Components](#1-input-layer)** - Detailed component specifications
 - 🔗 **[Cross-Modal Fusion](#3-fusion-layer)** - Attention-based multimodal integration
@@ -42,8 +41,6 @@ Detailed technical documentation of the multimodal fusion architecture for compu
 - **🏥 Clinical Ready**: 90% sensitivity for cancer screening
 
 ## System Overview
-
-> **📊 See Enhanced Diagrams**: [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) contains modern, interactive Mermaid diagrams showing the complete system architecture with visual flow and component relationships.
 
 ### HistoCore System Architecture
 
@@ -150,8 +147,6 @@ HistoCore System Architecture
 ---
 
 ## Clinical Deployment
-
-> **🏥 Production Architecture**: See [Clinical Deployment Diagram](ARCHITECTURE_DIAGRAMS.md#7-clinical-deployment-architecture) for complete production system design.
 
 ### Deployment Pipeline
 
@@ -951,7 +946,6 @@ pretrain_loss = contrastive_loss + masked_loss
 ---
 
 **Documentation Navigation**:
-- 📊 **[Enhanced Diagrams](ARCHITECTURE_DIAGRAMS.md)** - Modern visual architecture
 - 🏗️ **[System Components](#1-input-layer)** - Detailed technical specs
 - 🔗 **[Cross-Modal Fusion](#3-fusion-layer)** - Attention mechanisms
 - ⏰ **[Temporal Modeling](#4-temporal-reasoning-optional)** - Progression tracking
