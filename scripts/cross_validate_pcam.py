@@ -112,7 +112,13 @@ def train_epoch(
     total_loss = 0.0
     scaler = torch.cuda.amp.GradScaler() if use_amp else None
     
-    for batch_idx, (images, labels) in enumerate(tqdm(dataloader, desc="Training")):
+    for batch_idx, batch_data in enumerate(tqdm(dataloader, desc="Training")):
+        # Handle both 2-tuple and 3-tuple returns from dataset
+        if len(batch_data) == 3:
+            images, labels, _ = batch_data
+        else:
+            images, labels = batch_data
+        
         images, labels = images.to(device), labels.to(device)
         
         optimizer.zero_grad()
@@ -147,7 +153,13 @@ def evaluate(
     all_probs = []
     
     with torch.no_grad():
-        for images, labels in tqdm(dataloader, desc="Evaluating"):
+        for batch_data in tqdm(dataloader, desc="Evaluating"):
+            # Handle both 2-tuple and 3-tuple returns from dataset
+            if len(batch_data) == 3:
+                images, labels, _ = batch_data
+            else:
+                images, labels = batch_data
+            
             images = images.to(device)
             logits = model(images)
             probs = torch.softmax(logits, dim=1)
@@ -414,10 +426,10 @@ def main():
     # Get all labels for stratification
     all_labels = []
     for i in range(len(train_dataset)):
-        _, label = train_dataset[i]
+        _, label, _ = train_dataset[i]  # PCamDataset returns (image, label, index)
         all_labels.append(label)
     for i in range(len(val_dataset)):
-        _, label = val_dataset[i]
+        _, label, _ = val_dataset[i]  # PCamDataset returns (image, label, index)
         all_labels.append(label)
     all_labels = np.array(all_labels)
     
