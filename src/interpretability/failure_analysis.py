@@ -146,13 +146,15 @@ class FailureAnalyzer:
         )
 
         # Create DataFrame
-        result_df = pd.DataFrame({
-            'slide_id': slide_ids,
-            'prediction': predictions,
-            'ground_truth': ground_truth,
-            'confidence': confidence_scores,
-            'is_failure': is_failure
-        })
+        result_df = pd.DataFrame(
+            {
+                "slide_id": slide_ids,
+                "prediction": predictions,
+                "ground_truth": ground_truth,
+                "confidence": confidence_scores,
+                "is_failure": is_failure,
+            }
+        )
 
         # Store failures as FailureCase objects for internal use
         failures = []
@@ -170,9 +172,7 @@ class FailureAnalyzer:
         self.failures = failures
         return result_df
 
-    def cluster_failures(
-        self, embeddings: np.ndarray, metadata: pd.DataFrame
-    ) -> pd.DataFrame:
+    def cluster_failures(self, embeddings: np.ndarray, metadata: pd.DataFrame) -> pd.DataFrame:
         """Cluster failures by feature embeddings.
 
         Args:
@@ -192,7 +192,7 @@ class FailureAnalyzer:
         if len(embeddings) == 0:
             logger.warning("No failures to cluster")
             result = metadata.copy()
-            result['cluster_id'] = []
+            result["cluster_id"] = []
             return result
 
         # Normalize embeddings
@@ -217,9 +217,11 @@ class FailureAnalyzer:
 
         # Add cluster_id to metadata
         result = metadata.copy()
-        result['cluster_id'] = cluster_labels
+        result["cluster_id"] = cluster_labels
 
-        logger.info(f"Clustered {len(embeddings)} failures into {len(set(cluster_labels))} clusters")
+        logger.info(
+            f"Clustered {len(embeddings)} failures into {len(set(cluster_labels))} clusters"
+        )
 
         return result
 
@@ -239,34 +241,34 @@ class FailureAnalyzer:
             >>> stats = analyzer.analyze_cluster_characteristics(clustered_df)
             >>> print(stats[0]['count'], stats[0]['avg_confidence'])
         """
-        if 'cluster_id' not in clustered_failures.columns:
+        if "cluster_id" not in clustered_failures.columns:
             raise ValueError("clustered_failures must contain 'cluster_id' column")
 
         stats = {}
 
-        for cluster_id in clustered_failures['cluster_id'].unique():
-            cluster_data = clustered_failures[clustered_failures['cluster_id'] == cluster_id]
-            
+        for cluster_id in clustered_failures["cluster_id"].unique():
+            cluster_data = clustered_failures[clustered_failures["cluster_id"] == cluster_id]
+
             if len(cluster_data) == 0:
                 continue
 
             # Basic statistics
             cluster_stats = {
-                'count': len(cluster_data),
-                'avg_confidence': cluster_data['confidence'].mean(),
-                'representative_samples': cluster_data['slide_id'].head(3).tolist()
+                "count": len(cluster_data),
+                "avg_confidence": cluster_data["confidence"].mean(),
+                "representative_samples": cluster_data["slide_id"].head(3).tolist(),
             }
 
             # Add clinical characteristics if provided
             if clinical_features is not None:
-                merged = cluster_data.merge(clinical_features, on='slide_id', how='left')
+                merged = cluster_data.merge(clinical_features, on="slide_id", how="left")
                 common_chars = {}
                 for col in clinical_features.columns:
-                    if col != 'slide_id':
+                    if col != "slide_id":
                         mode_val = merged[col].mode()
                         if len(mode_val) > 0:
                             common_chars[col] = mode_val.iloc[0]
-                cluster_stats['common_characteristics'] = common_chars
+                cluster_stats["common_characteristics"] = common_chars
 
             stats[cluster_id] = cluster_stats
 
@@ -291,18 +293,18 @@ class FailureAnalyzer:
             >>> bias_metrics = analyzer.identify_systematic_biases(failures_df, subgroups)
             >>> print(bias_metrics['group_A'])
         """
-        if 'is_failure' not in failures.columns:
+        if "is_failure" not in failures.columns:
             raise ValueError("failures must contain 'is_failure' column")
 
         bias_metrics = {}
 
         for subgroup_name, slide_ids in clinical_subgroups.items():
-            subgroup_data = failures[failures['slide_id'].isin(slide_ids)]
-            
+            subgroup_data = failures[failures["slide_id"].isin(slide_ids)]
+
             if len(subgroup_data) == 0:
                 bias_metrics[subgroup_name] = 0.0
             else:
-                failure_rate = subgroup_data['is_failure'].mean()
+                failure_rate = subgroup_data["is_failure"].mean()
                 bias_metrics[subgroup_name] = failure_rate
 
         logger.info(f"Analyzed systematic biases across {len(bias_metrics)} subgroups")
@@ -334,21 +336,27 @@ class FailureAnalyzer:
         if len(failures) == 0:
             logger.warning("No failures to export. Creating empty report.")
             df = pd.DataFrame(
-                columns=["slide_id", "prediction", "ground_truth", "confidence", "cluster_assignment"]
+                columns=[
+                    "slide_id",
+                    "prediction",
+                    "ground_truth",
+                    "confidence",
+                    "cluster_assignment",
+                ]
             )
             df.to_csv(output_path, index=False)
             return output_path
 
         # Filter to only failures and add cluster assignment
-        failure_data = failures[failures['is_failure'] == True].copy()
-        
-        if 'cluster_id' in failure_data.columns:
-            failure_data['cluster_assignment'] = failure_data['cluster_id']
+        failure_data = failures[failures["is_failure"] == True].copy()
+
+        if "cluster_id" in failure_data.columns:
+            failure_data["cluster_assignment"] = failure_data["cluster_id"]
         else:
-            failure_data['cluster_assignment'] = -1
+            failure_data["cluster_assignment"] = -1
 
         # Select columns for export
-        export_cols = ['slide_id', 'prediction', 'ground_truth', 'confidence', 'cluster_assignment']
+        export_cols = ["slide_id", "prediction", "ground_truth", "confidence", "cluster_assignment"]
         export_df = failure_data[export_cols]
 
         export_df.to_csv(output_path, index=False)
