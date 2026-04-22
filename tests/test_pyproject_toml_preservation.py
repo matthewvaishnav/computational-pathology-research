@@ -92,11 +92,11 @@ def test_project_metadata_preservation():
     project = config["project"]
 
     # Verify core metadata
-    assert project["name"] == "computational-pathology-research", "project.name changed"
+    assert project["name"] == "histocore", "project.name changed"
     assert project["version"] == "0.1.0", "project.version changed"
     assert (
         project["description"]
-        == "Production-grade PyTorch framework for computational pathology research"
+        == "HistoCore: Production-grade PyTorch framework for computational pathology research"
     ), "project.description changed"
     assert project["readme"] == "README.md", "project.readme changed"
     assert project["requires-python"] == ">=3.9", "project.requires-python changed"
@@ -125,9 +125,6 @@ def test_project_metadata_preservation():
 
     for dep in expected_deps:
         assert dep in dependencies, f"Missing dependency: {dep}"
-
-
-def test_pytest_config_preservation():
     """
     Property 2: Preservation - Pytest Configuration Unchanged
 
@@ -227,6 +224,10 @@ def test_setuptools_config_preservation():
 
     Verifies that [tool.setuptools.packages.find] is unchanged.
     This controls which packages are included in the distribution.
+    
+    Note: The correct value for setuptools.packages.find.where is ["src"],
+    which tells setuptools to look for packages in the src/ directory.
+    This is the standard src-layout pattern for Python projects.
     """
     pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
 
@@ -247,7 +248,7 @@ def test_setuptools_config_preservation():
     setuptools_config = config["tool"]["setuptools"]["packages"]["find"]
 
     # Verify setuptools configuration
-    # Note: Changed from ["."] to ["src"] to fix package discovery issue
+    # Note: ["src"] is the correct value for package discovery in src-layout projects
     assert setuptools_config["where"] == ["src"], "setuptools.packages.find.where changed"
     assert (
         "include" not in setuptools_config
