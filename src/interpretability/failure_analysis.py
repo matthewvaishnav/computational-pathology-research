@@ -57,7 +57,7 @@ class FailureAnalyzer:
         self,
         clustering_method: str = "kmeans",
         n_clusters: int = 5,
-        embedding_dim: int = 512,
+        embedding_dim: int = 256,
         random_state: int = 42,
     ):
         """Initialize failure analyzer.
@@ -96,41 +96,41 @@ class FailureAnalyzer:
         self,
         predictions: np.ndarray,
         ground_truth: np.ndarray,
-        confidences: np.ndarray,
-        embeddings: np.ndarray,
+        confidence_scores: np.ndarray,
         slide_ids: List[str],
+        embeddings: Optional[np.ndarray] = None,
         metadata: Optional[List[Dict]] = None,
-    ) -> List[FailureCase]:
+    ) -> pd.DataFrame:
         """Identify misclassified samples.
 
         Args:
             predictions: Predicted class labels [N]
             ground_truth: True class labels [N]
-            confidences: Prediction confidences [N]
-            embeddings: Feature embeddings [N, embedding_dim]
+            confidence_scores: Prediction confidences [N]
             slide_ids: Slide identifiers [N]
+            embeddings: Feature embeddings [N, embedding_dim] (optional)
             metadata: Optional metadata for each sample [N]
 
         Returns:
-            List of FailureCase objects for misclassified samples
+            DataFrame with columns: slide_id, prediction, ground_truth, confidence, is_failure
 
         Examples:
-            >>> failures = analyzer.identify_failures(
+            >>> failures_df = analyzer.identify_failures(
             ...     predictions=np.array([0, 1, 0, 1]),
             ...     ground_truth=np.array([0, 0, 0, 1]),
-            ...     confidences=np.array([0.9, 0.7, 0.8, 0.95]),
-            ...     embeddings=np.random.randn(4, 512),
+            ...     confidence_scores=np.array([0.9, 0.7, 0.8, 0.95]),
             ...     slide_ids=['slide1', 'slide2', 'slide3', 'slide4']
             ... )
         """
         # Validate inputs
         n_samples = len(predictions)
-        if not (
-            len(ground_truth) == len(confidences) == len(embeddings) == len(slide_ids) == n_samples
-        ):
-            raise ValueError("All input arrays must have same length")
+        if not (len(ground_truth) == len(confidence_scores) == len(slide_ids) == n_samples):
+            raise ValueError("Input arrays must have same length")
 
-        if embeddings.shape[1] != self.embedding_dim:
+        if embeddings is not None and len(embeddings) != n_samples:
+            raise ValueError("Input arrays must have same length")
+
+        if embeddings is not None and embeddings.shape[1] != self.embedding_dim:
             logger.warning(
                 f"Embedding dimension {embeddings.shape[1]} != expected {self.embedding_dim}. "
                 f"Updating embedding_dim."
@@ -138,53 +138,62 @@ class FailureAnalyzer:
             self.embedding_dim = embeddings.shape[1]
 
         # Identify misclassifications
-        misclassified_mask = predictions != ground_truth
-        n_failures = misclassified_mask.sum()
+        is_failure = predictions != ground_truth
+        n_failures = is_failure.sum()
 
         logger.info(
             f"Identified {n_failures}/{n_samples} failures ({100*n_failures/n_samples:.1f}%)"
         )
 
-        # Create FailureCase objects
+        # Create DataFrame
+        result_df = pd.DataFrame({
+            'slide_id': slide_ids,
+            'prediction': predictions,
+            'ground_truth': ground_truth,
+            'confidence': confidence_scores,
+            'is_failure': is_failure
+        })
+
+        # Store failures as FailureCase objects for internal use
         failures = []
-        for idx in np.where(misclassified_mask)[0]:
+        for idx in np.where(is_failure)[0]:
             failure = FailureCase(
                 slide_id=slide_ids[idx],
                 prediction=int(predictions[idx]),
                 ground_truth=int(ground_truth[idx]),
-                confidence=float(confidences[idx]),
-                embedding=embeddings[idx],
+                confidence=float(confidence_scores[idx]),
+                embedding=embeddings[idx] if embeddings is not None else np.array([]),
                 metadata=metadata[idx] if metadata else None,
             )
             failures.append(failure)
 
         self.failures = failures
-        return failures
+        return result_df
 
     def cluster_failures(
-        self, failures: Optional[List[FailureCase]] = None
-    ) -> Dict[int, List[FailureCase]]:
+        self, embeddings: np.ndarray, metadata: pd.DataFrame
+    ) -> pd.DataFrame:
         """Cluster failures by feature embeddings.
 
         Args:
-            failures: List of FailureCase objects (uses self.failures if None)
+            embeddings: Feature embeddings [N, embedding_dim]
+            metadata: DataFrame with failure metadata (must contain is_failure column)
 
         Returns:
-            Dictionary mapping cluster_id to list of FailureCase objects
+            DataFrame with original metadata plus cluster_id column
 
         Examples:
-            >>> clusters = analyzer.cluster_failures(failures)
-            >>> print(f"Cluster 0 has {len(clusters[0])} failures")
+            >>> clustered_df = analyzer.cluster_failures(embeddings, metadata)
+            >>> print(clustered_df['cluster_id'].value_counts())
         """
-        if failures is None:
-            failures = self.failures
+        if len(embeddings) != len(metadata):
+            raise ValueError("Embeddings and metadata must have same length")
 
-        if not failures:
+        if len(embeddings) == 0:
             logger.warning("No failures to cluster")
-            return {}
-
-        # Extract embeddings
-        embeddings = np.array([f.embedding for f in failures])
+            result = metadata.copy()
+            result['cluster_id'] = []
+            return result
 
         # Normalize embeddings
         embeddings_scaled = self.scaler.fit_transform(embeddings)
@@ -192,7 +201,7 @@ class FailureAnalyzer:
         # Fit clustering model
         if self.clustering_method == "kmeans":
             self.cluster_model = KMeans(
-                n_clusters=min(self.n_clusters, len(failures)),
+                n_clusters=min(self.n_clusters, len(embeddings)),
                 random_state=self.random_state,
                 n_init=10,
             )
@@ -200,209 +209,151 @@ class FailureAnalyzer:
             self.cluster_model = DBSCAN(eps=0.5, min_samples=2)
         elif self.clustering_method == "hierarchical":
             self.cluster_model = AgglomerativeClustering(
-                n_clusters=min(self.n_clusters, len(failures)), linkage="ward"
+                n_clusters=min(self.n_clusters, len(embeddings)), linkage="ward"
             )
 
         # Predict cluster assignments
         cluster_labels = self.cluster_model.fit_predict(embeddings_scaled)
 
-        # Assign cluster IDs to failures
-        for failure, cluster_id in zip(failures, cluster_labels):
-            failure.cluster_id = int(cluster_id)
+        # Add cluster_id to metadata
+        result = metadata.copy()
+        result['cluster_id'] = cluster_labels
 
-        # Group failures by cluster
-        clusters = {}
-        for failure in failures:
-            cluster_id = failure.cluster_id
-            if cluster_id not in clusters:
-                clusters[cluster_id] = []
-            clusters[cluster_id].append(failure)
+        logger.info(f"Clustered {len(embeddings)} failures into {len(set(cluster_labels))} clusters")
 
-        logger.info(f"Clustered {len(failures)} failures into {len(clusters)} clusters")
-
-        return clusters
+        return result
 
     def analyze_cluster_characteristics(
-        self, clusters: Dict[int, List[FailureCase]]
-    ) -> pd.DataFrame:
+        self, clustered_failures: pd.DataFrame, clinical_features: Optional[pd.DataFrame] = None
+    ) -> Dict[int, Dict]:
         """Compute statistics for each failure cluster.
 
         Args:
-            clusters: Dictionary mapping cluster_id to list of FailureCase objects
+            clustered_failures: DataFrame with cluster_id column
+            clinical_features: Optional DataFrame with clinical features
 
         Returns:
-            DataFrame with cluster statistics (size, avg_confidence, common_prediction, etc.)
+            Dictionary mapping cluster_id to statistics dict
 
         Examples:
-            >>> stats = analyzer.analyze_cluster_characteristics(clusters)
-            >>> print(stats[['cluster_id', 'size', 'avg_confidence']])
+            >>> stats = analyzer.analyze_cluster_characteristics(clustered_df)
+            >>> print(stats[0]['count'], stats[0]['avg_confidence'])
         """
-        stats = []
+        if 'cluster_id' not in clustered_failures.columns:
+            raise ValueError("clustered_failures must contain 'cluster_id' column")
 
-        for cluster_id, cluster_failures in clusters.items():
-            if not cluster_failures:
+        stats = {}
+
+        for cluster_id in clustered_failures['cluster_id'].unique():
+            cluster_data = clustered_failures[clustered_failures['cluster_id'] == cluster_id]
+            
+            if len(cluster_data) == 0:
                 continue
 
-            # Compute statistics
-            confidences = [f.confidence for f in cluster_failures]
-            predictions = [f.prediction for f in cluster_failures]
-            ground_truths = [f.ground_truth for f in cluster_failures]
-
-            # Most common prediction and ground truth
-            pred_counts = {}
-            gt_counts = {}
-            for p, gt in zip(predictions, ground_truths):
-                pred_counts[p] = pred_counts.get(p, 0) + 1
-                gt_counts[gt] = gt_counts.get(gt, 0) + 1
-
-            most_common_pred = max(pred_counts, key=pred_counts.get)
-            most_common_gt = max(gt_counts, key=gt_counts.get)
-
+            # Basic statistics
             cluster_stats = {
-                "cluster_id": cluster_id,
-                "size": len(cluster_failures),
-                "avg_confidence": np.mean(confidences),
-                "std_confidence": np.std(confidences),
-                "min_confidence": np.min(confidences),
-                "max_confidence": np.max(confidences),
-                "most_common_prediction": most_common_pred,
-                "most_common_ground_truth": most_common_gt,
-                "prediction_entropy": self._compute_entropy(predictions),
+                'count': len(cluster_data),
+                'avg_confidence': cluster_data['confidence'].mean(),
+                'representative_samples': cluster_data['slide_id'].head(3).tolist()
             }
 
-            stats.append(cluster_stats)
+            # Add clinical characteristics if provided
+            if clinical_features is not None:
+                merged = cluster_data.merge(clinical_features, on='slide_id', how='left')
+                common_chars = {}
+                for col in clinical_features.columns:
+                    if col != 'slide_id':
+                        mode_val = merged[col].mode()
+                        if len(mode_val) > 0:
+                            common_chars[col] = mode_val.iloc[0]
+                cluster_stats['common_characteristics'] = common_chars
 
-        df = pd.DataFrame(stats)
-        df = df.sort_values("size", ascending=False).reset_index(drop=True)
+            stats[cluster_id] = cluster_stats
 
-        logger.info(f"Computed statistics for {len(df)} clusters")
+        logger.info(f"Computed statistics for {len(stats)} clusters")
 
-        return df
+        return stats
 
     def identify_systematic_biases(
-        self, failures: Optional[List[FailureCase]] = None, subgroup_key: str = "subgroup"
-    ) -> pd.DataFrame:
+        self, failures: pd.DataFrame, clinical_subgroups: Dict[str, List[str]]
+    ) -> Dict[str, float]:
         """Analyze failure distribution across clinical subgroups.
 
         Args:
-            failures: List of FailureCase objects (uses self.failures if None)
-            subgroup_key: Metadata key for subgroup identification
+            failures: DataFrame with is_failure column
+            clinical_subgroups: Dict mapping subgroup names to slide_id lists
 
         Returns:
-            DataFrame with bias metrics per subgroup
+            Dictionary mapping subgroup names to failure rates
 
         Examples:
-            >>> biases = analyzer.identify_systematic_biases(failures, subgroup_key='tissue_type')
-            >>> print(biases[['subgroup', 'failure_rate', 'avg_confidence']])
+            >>> subgroups = {'group_A': ['slide1', 'slide2'], 'group_B': ['slide3', 'slide4']}
+            >>> bias_metrics = analyzer.identify_systematic_biases(failures_df, subgroups)
+            >>> print(bias_metrics['group_A'])
         """
-        if failures is None:
-            failures = self.failures
+        if 'is_failure' not in failures.columns:
+            raise ValueError("failures must contain 'is_failure' column")
 
-        if not failures:
-            logger.warning("No failures to analyze")
-            return pd.DataFrame()
+        bias_metrics = {}
 
-        # Extract subgroup information
-        subgroup_stats = {}
-
-        for failure in failures:
-            if failure.metadata and subgroup_key in failure.metadata:
-                subgroup = failure.metadata[subgroup_key]
+        for subgroup_name, slide_ids in clinical_subgroups.items():
+            subgroup_data = failures[failures['slide_id'].isin(slide_ids)]
+            
+            if len(subgroup_data) == 0:
+                bias_metrics[subgroup_name] = 0.0
             else:
-                subgroup = "unknown"
+                failure_rate = subgroup_data['is_failure'].mean()
+                bias_metrics[subgroup_name] = failure_rate
 
-            if subgroup not in subgroup_stats:
-                subgroup_stats[subgroup] = {
-                    "count": 0,
-                    "confidences": [],
-                    "predictions": [],
-                    "ground_truths": [],
-                }
+        logger.info(f"Analyzed systematic biases across {len(bias_metrics)} subgroups")
 
-            subgroup_stats[subgroup]["count"] += 1
-            subgroup_stats[subgroup]["confidences"].append(failure.confidence)
-            subgroup_stats[subgroup]["predictions"].append(failure.prediction)
-            subgroup_stats[subgroup]["ground_truths"].append(failure.ground_truth)
-
-        # Compute bias metrics
-        bias_data = []
-        for subgroup, stats in subgroup_stats.items():
-            bias_metrics = {
-                "subgroup": subgroup,
-                "failure_count": stats["count"],
-                "avg_confidence": np.mean(stats["confidences"]),
-                "std_confidence": np.std(stats["confidences"]),
-                "prediction_entropy": self._compute_entropy(stats["predictions"]),
-            }
-            bias_data.append(bias_metrics)
-
-        df = pd.DataFrame(bias_data)
-        df = df.sort_values("failure_count", ascending=False).reset_index(drop=True)
-
-        logger.info(f"Analyzed systematic biases across {len(df)} subgroups")
-
-        return df
+        return bias_metrics
 
     def export_failure_report(
         self,
+        failures: pd.DataFrame,
+        cluster_stats: Dict[int, Dict],
         output_path: Path,
-        failures: Optional[List[FailureCase]] = None,
-        include_embeddings: bool = False,
     ) -> Path:
         """Export failure analysis report to CSV.
 
         Args:
+            failures: DataFrame with failure data
+            cluster_stats: Dictionary with cluster statistics
             output_path: Output CSV file path
-            failures: List of FailureCase objects (uses self.failures if None)
-            include_embeddings: Whether to include embedding vectors in CSV
 
         Returns:
             Path to saved CSV file
 
         Examples:
-            >>> report_path = analyzer.export_failure_report(Path('failures.csv'))
+            >>> report_path = analyzer.export_failure_report(failures_df, stats, Path('failures.csv'))
         """
-        if failures is None:
-            failures = self.failures
-
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        if not failures:
+        if len(failures) == 0:
             logger.warning("No failures to export. Creating empty report.")
             df = pd.DataFrame(
-                columns=["slide_id", "prediction", "ground_truth", "confidence", "cluster_id"]
+                columns=["slide_id", "prediction", "ground_truth", "confidence", "cluster_assignment"]
             )
             df.to_csv(output_path, index=False)
             return output_path
 
-        # Convert failures to DataFrame
-        data = []
-        for failure in failures:
-            row = {
-                "slide_id": failure.slide_id,
-                "prediction": failure.prediction,
-                "ground_truth": failure.ground_truth,
-                "confidence": failure.confidence,
-                "cluster_id": failure.cluster_id if failure.cluster_id is not None else -1,
-            }
+        # Filter to only failures and add cluster assignment
+        failure_data = failures[failures['is_failure'] == True].copy()
+        
+        if 'cluster_id' in failure_data.columns:
+            failure_data['cluster_assignment'] = failure_data['cluster_id']
+        else:
+            failure_data['cluster_assignment'] = -1
 
-            # Add metadata fields
-            if failure.metadata:
-                for key, value in failure.metadata.items():
-                    row[f"metadata_{key}"] = value
+        # Select columns for export
+        export_cols = ['slide_id', 'prediction', 'ground_truth', 'confidence', 'cluster_assignment']
+        export_df = failure_data[export_cols]
 
-            # Add embedding if requested
-            if include_embeddings:
-                for i, val in enumerate(failure.embedding):
-                    row[f"embedding_{i}"] = val
+        export_df.to_csv(output_path, index=False)
 
-            data.append(row)
-
-        df = pd.DataFrame(data)
-        df.to_csv(output_path, index=False)
-
-        logger.info(f"Exported failure report with {len(df)} failures to {output_path}")
+        logger.info(f"Exported failure report with {len(export_df)} failures to {output_path}")
 
         return output_path
 
