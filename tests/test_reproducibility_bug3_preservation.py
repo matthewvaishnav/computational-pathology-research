@@ -300,9 +300,30 @@ class TestBug3PreservationOtherREADMECommands(unittest.TestCase):
         )
 
         # Valid flags for download scripts
+        # Updated to include all flags currently supported by download scripts:
+        # - download_pcam.py: --output-dir, --keep-compressed, --skip-existing
+        # - download_pcam_manual.py: --root_dir
+        # - generate_synthetic_test_data.py: --dataset, --samples
+        # - generate_synthetic_pcam.py: --root_dir, --train_size, --val_size, --test_size, --image_size
+        # - generate_synthetic_camelyon.py: --output-dir, --num-train, --num-val, --num-test, --num-patches, --feature-dim, --seed
         valid_flags = [
             "--output-dir",
             "--data-root",
+            "--root_dir",
+            "--keep-compressed",
+            "--skip-existing",
+            "--dataset",
+            "--samples",
+            "--train_size",
+            "--val_size",
+            "--test_size",
+            "--image_size",
+            "--num-train",
+            "--num-val",
+            "--num-test",
+            "--num-patches",
+            "--feature-dim",
+            "--seed",
         ]
 
         for cmd in download_commands:
