@@ -169,7 +169,7 @@ class TestPCamDownloadFunctionality:
         assert completed_file.exists(), "Completed file should exist"
 
         with h5py.File(completed_file, "r") as f:
-            assert f.attrs["complete"] is True, "File should be marked as complete"
+            assert f.attrs["complete"] == True, "File should be marked as complete"
             assert len(f["y"]) == 10, "File should have expected number of samples"
 
     def test_download_checksum_verification(self):
