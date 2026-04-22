@@ -273,7 +273,8 @@ class TestBug4Preservation(unittest.TestCase):
         self.assertIn("repository-code", self.citation_data, "Missing repository-code")
         self.assertIn("url", self.citation_data, "Missing url")
 
-        expected_repo = "https://github.com/matthewvaishnav/computational-pathology-research"
+        # Fixed: Updated to current correct repository URL
+        expected_repo = "https://github.com/matthewvaishnav/histocore"
         self.assertEqual(
             self.citation_data["repository-code"],
             expected_repo,
@@ -376,10 +377,11 @@ class TestBug4Preservation(unittest.TestCase):
         self.assertGreater(len(classifiers), 0, "classifiers should not be empty")
 
         # Verify expected classifiers
+        # Fixed: Classifiers use single colon with spaces (` :: `), not double colons (`::`)
         expected_classifiers = [
-            "Development Status:: 3 - Alpha",
-            "License:: OSI Approved:: MIT License",
-            "Programming Language:: Python:: 3",
+            "Development Status :: 3 - Alpha",
+            "License :: OSI Approved :: MIT License",
+            "Programming Language :: Python :: 3",
         ]
         for classifier in expected_classifiers:
             self.assertIn(classifier, classifiers, f"Missing classifier: {classifier}")
