@@ -96,8 +96,8 @@ class TestTissueDetection:
             tissue_patch_rgb = np.array(test_patches["tissue_patch"])
             background_patch_rgb = np.array(test_patches["background_patch"])
 
-            assert reader._has_tissue(tissue_patch_rgb, 0.5) is True
-            assert reader._has_tissue(background_patch_rgb, 0.5) is False
+            assert reader._has_tissue(tissue_patch_rgb, 0.5) == True
+            assert reader._has_tissue(background_patch_rgb, 0.5) == False
 
         finally:
             Path(tmp_path).unlink()
@@ -154,14 +154,14 @@ class TestTissueDetection:
             filtering_results = test_background_filtering()
 
             # Verify expected filtering behavior
-            assert filtering_results["pure_white"] is False
-            assert filtering_results["near_white"] is False
-            assert filtering_results["tissue_like"] is True
-            assert filtering_results["dark_tissue"] is True
+            assert filtering_results["pure_white"] == False
+            assert filtering_results["near_white"] == False
+            assert filtering_results["tissue_like"] == True
+            assert filtering_results["dark_tissue"] == True
 
             # Light gray might be borderline depending on threshold
             # Mixed content should be detected as tissue
-            assert filtering_results["mixed_content"] is True
+            assert filtering_results["mixed_content"] == True
 
         finally:
             Path(tmp_path).unlink()
@@ -216,11 +216,11 @@ class TestTissueDetection:
                 edge_case_results[name] = has_tissue
 
             # Verify edge case behavior
-            assert edge_case_results["all_black"] is True  # Dark = tissue
-            assert edge_case_results["single_pixel"] is False  # Mostly white
-            assert edge_case_results["gradient"] is True  # Mixed content
-            assert edge_case_results["checkerboard"] is True  # Structured pattern
-            assert edge_case_results["noise"] is True  # Random noise
+            assert edge_case_results["all_black"] == True  # Dark = tissue
+            assert edge_case_results["single_pixel"] == False  # Mostly white
+            assert edge_case_results["gradient"] == True  # Mixed content
+            assert edge_case_results["checkerboard"] == True  # Structured pattern
+            assert edge_case_results["noise"] == True  # Random noise
 
         finally:
             Path(tmp_path).unlink()
@@ -277,15 +277,15 @@ class TestTissueDetection:
                 # Verify threshold behavior
                 # 90% tissue should pass all thresholds
                 for threshold in thresholds:
-                    assert results[threshold]["90_percent"] is True
+                    assert results[threshold]["90_percent"] == True
 
                 # 30% tissue should only pass low thresholds
-                assert results[0.2]["30_percent"] is True
-                assert results[0.4]["30_percent"] is False
+                assert results[0.2]["30_percent"] == True
+                assert results[0.4]["30_percent"] == False
 
                 # 70% tissue should pass thresholds <= 0.6
-                assert results[0.6]["70_percent"] is True
-                assert results[0.8]["70_percent"] is False
+                assert results[0.6]["70_percent"] == True
+                assert results[0.8]["70_percent"] == False
 
         finally:
             Path(tmp_path).unlink()
