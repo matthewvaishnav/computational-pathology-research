@@ -361,12 +361,14 @@ class TemporalDataset(Dataset):
         if not wsi_path.exists():
             return None
 
+        slide_id = slide_info.get("slide_id", wsi_file)
         try:
             with h5py.File(wsi_path, "r") as f:
                 features = f["features"][:]
                 features = torch.from_numpy(features).float()
             return features
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to load WSI features for slide {slide_id}: {e}", exc_info=True)
             return None
 
     def _load_genomic_features(self, slide_info: Dict) -> Optional[torch.Tensor]:
@@ -379,11 +381,13 @@ class TemporalDataset(Dataset):
         if not genomic_path.exists():
             return None
 
+        slide_id = slide_info.get("slide_id", genomic_file)
         try:
             features = np.load(genomic_path)
             features = torch.from_numpy(features).float()
             return features
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to load genomic features for slide {slide_id}: {e}", exc_info=True)
             return None
 
     def _load_clinical_text(self, slide_info: Dict) -> Optional[torch.Tensor]:
@@ -396,6 +400,7 @@ class TemporalDataset(Dataset):
         if not clinical_path.exists():
             return None
 
+        slide_id = slide_info.get("slide_id", clinical_file)
         try:
             token_ids = np.load(clinical_path)
             token_ids = torch.from_numpy(token_ids).long()
@@ -410,7 +415,8 @@ class TemporalDataset(Dataset):
                     token_ids = torch.cat([token_ids, padding])
 
             return token_ids
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to load clinical text for slide {slide_id}: {e}", exc_info=True)
             return None
 
 
@@ -559,8 +565,6 @@ def collate_temporal(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
             - 'label': Tensor [batch_size]
             - 'patient_ids': List[str]
     """
-    len(batch)
-
     # Collect patient IDs and labels
     patient_ids = [sample["patient_id"] for sample in batch]
     labels = torch.stack([sample["label"] for sample in batch])

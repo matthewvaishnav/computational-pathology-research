@@ -27,6 +27,7 @@ from typing import Any, Dict, List, Optional
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
     NoEncryption,
@@ -176,7 +177,7 @@ class CryptographicSigner:
                 hashes.SHA256(),
             )
             return True
-        except Exception:
+        except (InvalidSignature, ValueError):
             return False
 
     def export_public_key(self) -> str:
