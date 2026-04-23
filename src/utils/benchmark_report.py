@@ -1,8 +1,11 @@
 """Benchmark report generation utilities."""
 
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 
 def generate_benchmark_report(
@@ -100,7 +103,7 @@ def generate_benchmark_report(
     # Write report with UTF-8 encoding
     output_file = Path(output_path)
     output_file.write_text("\n".join(report_lines), encoding="utf-8")
-    print(f"Benchmark report saved to: {output_path}")
+    logger.info(f"Benchmark report saved to: {output_path}")
 
 
 def _add_executive_summary(

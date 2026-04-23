@@ -113,13 +113,9 @@ def train_epoch(
     scaler = torch.cuda.amp.GradScaler() if use_amp else None
     
     for batch_idx, batch_data in enumerate(tqdm(dataloader, desc="Training")):
-        # Handle both 2-tuple and 3-tuple returns from dataset
-        if len(batch_data) == 3:
-            images, labels, _ = batch_data
-        else:
-            images, labels = batch_data
-        
-        images, labels = images.to(device), labels.to(device)
+        # PCamDataset returns a dictionary
+        images = batch_data['image'].to(device)
+        labels = batch_data['label'].to(device)
         
         optimizer.zero_grad()
         
@@ -154,13 +150,10 @@ def evaluate(
     
     with torch.no_grad():
         for batch_data in tqdm(dataloader, desc="Evaluating"):
-            # Handle both 2-tuple and 3-tuple returns from dataset
-            if len(batch_data) == 3:
-                images, labels, _ = batch_data
-            else:
-                images, labels = batch_data
+            # PCamDataset returns a dictionary
+            images = batch_data['image'].to(device)
+            labels = batch_data['label']
             
-            images = images.to(device)
             logits = model(images)
             probs = torch.softmax(logits, dim=1)
             preds = torch.argmax(logits, dim=1)

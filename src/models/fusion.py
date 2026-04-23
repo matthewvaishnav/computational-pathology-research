@@ -51,7 +51,8 @@ class CrossModalAttention(nn.Module):
         self.dropout = dropout
         self.head_dim = embed_dim // num_heads
 
-        assert embed_dim % num_heads == 0, "embed_dim must be divisible by num_heads"
+        if embed_dim % num_heads != 0:
+            raise ValueError(f"embed_dim ({embed_dim}) must be divisible by num_heads ({num_heads})")
 
         # Multi-head attention projections
         self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)

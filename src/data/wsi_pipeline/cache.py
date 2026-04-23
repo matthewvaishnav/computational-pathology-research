@@ -198,7 +198,7 @@ class FeatureCache:
                 # Calculate optimal chunk size - get itemsize properly
                 try:
                     dtype_size = np.dtype(dtype).itemsize
-                except:
+                except TypeError:
                     dtype_size = data.dtype.itemsize
                     
                 chunk_shape = self._calculate_optimal_chunk_size(
