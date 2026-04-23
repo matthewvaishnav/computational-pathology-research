@@ -1,0 +1,36 @@
+# WSI Processing Pipeline Configuration Example
+# This file demonstrates all available configuration parameters
+
+# Patch Extraction Configuration
+patch_extraction:
+  patch_size: 256          # Size of patches to extract (64-2048 pixels)
+  stride: 256              # Stride between patches (null for non-overlapping)
+  level: 0                 # Pyramid level to extract from (0 = highest resolution)
+  target_mpp: null         # Target microns per pixel (null = use native resolution)
+
+# Tissue Detection Configuration
+tissue_detection:
+  tissue_method: otsu      # Method: "otsu", "deep_learning", or "hybrid"
+  tissue_threshold: 0.5    # Minimum tissue percentage to keep patch (0.0-1.0)
+
+# Feature Extraction Configuration
+feature_extraction:
+  encoder_name: resnet50   # Encoder: "resnet50", "densenet121", "efficientnet_b0"
+  encoder_pretrained: true # Use pretrained weights
+  batch_size: 32           # Batch size for feature extraction (1-1024)
+
+# Caching Configuration
+caching:
+  cache_dir: features      # Directory to store cached features
+  compression: gzip        # Compression: "gzip", "lzf", or null
+
+# Batch Processing Configuration
+batch_processing:
+  num_workers: 4           # Number of parallel workers (1-16)
+  gpu_ids: null            # GPU IDs to use (null = all available, e.g., [0, 1])
+  max_retries: 3           # Maximum retry attempts for failed slides (0-5)
+
+# Quality Control Configuration
+quality_control:
+  blur_threshold: 100.0    # Minimum blur score (Laplacian variance)
+  min_tissue_coverage: 0.1 # Minimum tissue coverage for slide (0.0-1.0)
