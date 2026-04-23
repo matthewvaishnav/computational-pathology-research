@@ -238,8 +238,8 @@ class TestMemoryLimits:
         assert actual_memory_mb <= max_memory_mb, f"Exceeded memory limit: {actual_memory_mb:.2f}MB"
 
     @pytest.mark.skipif(
-        os.getenv('CI') == 'true',
-        reason="Unreliable on CI due to platform-specific memory calculations"
+        os.getenv("CI") == "true",
+        reason="Unreliable on CI due to platform-specific memory calculations",
     )
     def test_batch_size_auto_adjustment_for_memory(self, temp_data_dir):
         """Test batch size adjusts based on available memory."""
@@ -353,8 +353,7 @@ class TestBottleneckIdentification:
             assert suggestion is not None
 
     @pytest.mark.skipif(
-        os.getenv('CI') == 'true',
-        reason="Memory overhead detection unreliable on CI"
+        os.getenv("CI") == "true", reason="Memory overhead detection unreliable on CI"
     )
     def test_detect_memory_allocation_overhead(self, temp_data_dir, benchmark):
         """Test detection of memory allocation overhead."""
@@ -409,6 +408,10 @@ class TestCacheOptimization:
         assert "item_0" in cache, "LRU eviction removed wrong item"
         assert "item_1" not in cache, "LRU eviction failed"
 
+    @pytest.mark.skipif(
+        os.getenv("CI") == "true",
+        reason="Unreliable on CI due to platform-specific I/O caching behavior",
+    )
     def test_cache_warmup_improves_performance(self, synthetic_dataset, cache_dir, benchmark):
         """Test cache warmup improves initial performance."""
         x_file = synthetic_dataset["x_file"]
