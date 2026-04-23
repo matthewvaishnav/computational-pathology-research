@@ -1,0 +1,86 @@
+# Development PACS Configuration
+# This configuration is for development and testing environments
+
+profile_name: "development"
+
+pacs_endpoints:
+  local_test:
+    endpoint_id: "local_test_pacs"
+    ae_title: "HISTOCORE_DEV"
+    host: "localhost"
+    port: 11112
+    vendor: "Generic"
+    is_primary: true
+    description: "Local test PACS server"
+    security_config:
+      tls_enabled: false  # Disabled for local development
+      tls_version: "1.3"
+      verify_certificates: false
+      mutual_authentication: false
+    performance_config:
+      max_concurrent_studies: 10
+      connection_pool_size: 3
+      query_timeout: 15
+      retrieval_timeout: 120
+      storage_timeout: 60
+      retry_attempts: 2
+      retry_delay: 0.5
+      max_retry_delay: 10.0
+
+  mock_ge:
+    endpoint_id: "mock_ge_pacs"
+    ae_title: "MOCK_GE"
+    host: "localhost"
+    port: 11113
+    vendor: "GE"
+    is_primary: false
+    description: "Mock GE PACS for testing"
+    security_config:
+      tls_enabled: false
+      verify_certificates: false
+      mutual_authentication: false
+    performance_config:
+      max_concurrent_studies: 5
+      connection_pool_size: 2
+      query_timeout: 10
+      retrieval_timeout: 60
+      storage_timeout: 30
+      retry_attempts: 1
+      retry_delay: 0.1
+      max_retry_delay: 5.0
+
+storage_config:
+  local_cache_path: "./data/cache"
+  max_cache_size_gb: 10
+  cleanup_threshold_gb: 2
+  temp_directory: "./tmp"
+  archive_directory: "./data/archive"
+
+notification_config:
+  enabled: true
+  channels:
+    email:
+      enabled: false  # Disabled for development
+    sms:
+      enabled: false
+    hl7:
+      enabled: false
+  
+  # Log notifications instead of sending them
+  log_notifications: true
+  log_path: "./logs/notifications.log"
+
+audit_config:
+  enabled: true
+  storage_path: "./logs/audit"
+  retention_years: 1
+  encryption_enabled: false  # Disabled for development
+  tamper_evident: false
+  archive_threshold_gb: 1
+  archive_path: "./logs/audit-archive"
+  
+  # Relaxed settings for development
+  hipaa_compliant: false
+  log_phi_access: true
+  include_user_details: true
+  include_network_details: false
