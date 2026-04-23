@@ -224,7 +224,7 @@ def test_setuptools_config_preservation():
 
     Verifies that [tool.setuptools.packages.find] is unchanged.
     This controls which packages are included in the distribution.
-    
+
     Note: The correct value for setuptools.packages.find.where is ["src"],
     which tells setuptools to look for packages in the src/ directory.
     This is the standard src-layout pattern for Python projects.
