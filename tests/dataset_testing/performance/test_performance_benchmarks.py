@@ -113,8 +113,8 @@ class TestLoadingPerformance:
         ), f"Loading time {metrics['loading_time_seconds']:.2f}s exceeds threshold {max_time}s"
 
     @pytest.mark.skipif(
-        os.getenv('CI') == 'true' or sys.platform == 'win32',
-        reason="Loading time scaling measurements unreliable on CI and Windows due to I/O variability"
+        os.getenv("CI") == "true" or sys.platform == "win32",
+        reason="Loading time scaling measurements unreliable on CI and Windows due to I/O variability",
     )
     def test_loading_time_scales_linearly_with_samples(self, benchmark, temp_data_dir):
         """Test loading time scales linearly with dataset size."""
@@ -202,8 +202,8 @@ class TestMemoryUsage:
         ), f"Possible memory leak: {metrics['memory_delta_mb']:.2f}MB retained"
 
     @pytest.mark.skipif(
-        os.getenv('CI') == 'true' or sys.platform == 'win32',
-        reason="Memory scaling measurements unreliable on CI and Windows due to platform variability"
+        os.getenv("CI") == "true" or sys.platform == "win32",
+        reason="Memory scaling measurements unreliable on CI and Windows due to platform variability",
     )
     def test_memory_usage_scales_with_batch_size(self, benchmark, temp_data_dir):
         """Test memory usage scales appropriately with batch size."""
@@ -229,8 +229,8 @@ class TestMemoryUsage:
         assert 1.0 < ratio_2 < 3.0, f"Non-linear memory scaling: {ratio_2:.2f}x"
 
     @pytest.mark.skipif(
-        os.getenv('CI') == 'true' or sys.platform == 'win32',
-        reason="Memory cleanup measurements unreliable on CI and Windows due to GC variability"
+        os.getenv("CI") == "true" or sys.platform == "win32",
+        reason="Memory cleanup measurements unreliable on CI and Windows due to GC variability",
     )
     def test_memory_cleanup_after_dataset_deletion(self, benchmark, synthetic_pcam_data):
         """Test memory is released after dataset deletion."""
