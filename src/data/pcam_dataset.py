@@ -240,10 +240,11 @@ class PCamDataset(Dataset):
         try:
             # Try loading from .npy files first
             if (split_dir / "images.npy").exists() and (split_dir / "labels.npy").exists():
-                self.images = np.load(split_dir / "images.npy")
-                self.labels = np.load(split_dir / "labels.npy")
+                # Use memory-mapped mode to avoid loading entire dataset into RAM
+                self.images = np.load(split_dir / "images.npy", mmap_mode='r')
+                self.labels = np.load(split_dir / "labels.npy", mmap_mode='r')
                 logger.info(
-                    f"Loaded {len(self.images)} samples from .npy files for {self.split} split"
+                    f"Loaded {len(self.images)} samples from .npy files for {self.split} split (memory-mapped)"
                 )
             # Fall back to .h5py files
             elif (split_dir / "images.h5py").exists() and (split_dir / "labels.h5py").exists():
