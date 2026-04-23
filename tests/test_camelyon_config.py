@@ -198,7 +198,7 @@ def test_camelyon_training_script_exists():
 
 def test_camelyon_training_script_is_executable():
     """Test that CAMELYON training script contains required training components.
-    
+
     Note: This test checks file contents instead of attempting module import,
     which avoids import path issues and dependency requirements.
     """
@@ -213,7 +213,9 @@ def test_camelyon_training_script_is_executable():
     assert "argparse" in content
     assert "__main__" in content
     assert "CAMELYONSlideIndex" in content
-    assert "CAMELYONSlideDataset" in content  # Fixed: should be CAMELYONSlideDataset, not CAMELYONPatchDataset
+    assert (
+        "CAMELYONSlideDataset" in content
+    )  # Fixed: should be CAMELYONSlideDataset, not CAMELYONPatchDataset
 
 
 def test_camelyon_training_script_has_real_training_loop():
