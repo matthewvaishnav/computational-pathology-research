@@ -1,7 +1,5 @@
 # Architecture Documentation
 
-> **📊 Enhanced Diagrams**: See [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md) for modern, detailed visual diagrams of all system components.
-
 Detailed technical documentation of the multimodal fusion architecture for computational pathology.
 
 ---
@@ -955,5 +953,5 @@ pretrain_loss = contrastive_loss + masked_loss
 ---
 
 **Last Updated**: 2026-04-21  
-**Version**: 2.0.0 (Enhanced with modern diagrams)  
-**Status**: Production-ready with comprehensive visual documentation ✅
+**Version**: 2.0.0  
+**Status**: Production-ready documentation ✅

@@ -14,7 +14,7 @@ python scripts/cross_validate_pcam.py ^
   --batch-size 128 ^
   --learning-rate 1e-3 ^
   --weight-decay 1e-4 ^
-  --num-workers 4 ^
+  --num-workers 0 ^
   --bootstrap-samples 100 ^
   --use-amp ^
   --seed 42 ^

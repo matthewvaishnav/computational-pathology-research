@@ -86,3 +86,19 @@ tmp_*/
 *.bak
 *.swp
 *~
+
+# Personal / non-project files
+Matthew_Vaishnav_Resume*.md
+*_Cover_Letter.md
+job_search_automation.py
+venv_gpu/
+
+# Auto-generated checkpoint/summary docs
+CHECKPOINT_*.md
+*_CHECKPOINT*.md
+*_CHECKPOINT_*.md
+*_SUMMARY.md
+*_REPORT.md
+*_ANALYSIS.md
+*_EXAMPLE.md
+QC_USAGE_EXAMPLE.md
