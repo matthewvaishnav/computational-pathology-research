@@ -52,5 +52,10 @@ tomli>=2.0.0; python_version < '3.11'
 # Cryptography for privacy and security
 cryptography>=41.0.0
 
+# PACS Integration Dependencies
+pynetdicom>=2.0.0
+pyopenssl>=23.0.0
+certifi>=2023.0.0
+
 # Optional: Additional pretrained models
 timm>=0.9.0

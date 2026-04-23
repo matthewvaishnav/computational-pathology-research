@@ -1006,13 +1006,9 @@ class PerformanceMonitor:
             return f"Unknown alert type: {alert_type}"
 
     def _send_email_alert(self, alert_type: str, message: str):
-        """Send email alert (placeholder implementation)."""
-        # This would integrate with an email service
-        logger.info(f"EMAIL ALERT: {message}")
-        # TODO: Implement actual email sending
+        """Send email alert. Override this method to integrate with an email service."""
+        logger.warning(f"[ALERT:{alert_type}] Email transport not configured — alert not sent: {message}")
 
     def _send_webhook_alert(self, alert_type: str, message: str, data: Dict[str, Any]):
-        """Send webhook alert (placeholder implementation)."""
-        # This would send HTTP POST to webhook URL
-        logger.info(f"WEBHOOK ALERT: {message}")
-        # TODO: Implement actual webhook sending
+        """Send webhook alert. Override this method to integrate with a webhook service."""
+        logger.warning(f"[ALERT:{alert_type}] Webhook transport not configured — alert not sent: {message}")

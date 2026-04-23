@@ -234,6 +234,7 @@ class ConcurrentInferenceManager:
         """Main worker loop for processing inference requests."""
         worker_name = threading.current_thread().name
         logger.info(f"Worker {worker_name} started")
+        consecutive_errors = 0
 
         while self.workers_running:
             try:
@@ -246,10 +247,16 @@ class ConcurrentInferenceManager:
 
                 # Process batch
                 self._process_request_batch(batch_requests)
+                consecutive_errors = 0
 
             except Exception as e:
-                logger.error(f"Worker {worker_name} error: {e}", exc_info=True)
-                time.sleep(0.1)  # Brief pause on error
+                consecutive_errors += 1
+                if consecutive_errors <= 3 or consecutive_errors % 50 == 0:
+                    logger.error(
+                        f"Worker {worker_name} error (#{consecutive_errors}): {e}",
+                        exc_info=True,
+                    )
+                time.sleep(min(0.1 * consecutive_errors, 5.0))  # exponential backoff up to 5s
 
         logger.info(f"Worker {worker_name} stopped")
 
