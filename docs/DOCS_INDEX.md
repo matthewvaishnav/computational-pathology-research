@@ -39,6 +39,10 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - [CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.md](CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.html) - Implementation details
 - **Topics**: Slide-level aggregation, attention mechanisms, feature extraction
 
+### WSI Processing Pipeline
+- [WSI_PROCESSING_PIPELINE.md](WSI_PROCESSING_PIPELINE.html) - **Complete WSI processing pipeline**: OpenSlide integration, CLI tools, production deployment
+- **Topics**: Multi-format WSI support (.svs, .tiff, .ndpi, DICOM), streaming processing, CNN feature extraction, HDF5 caching, clinical deployment
+
 ### Advanced Features
 - [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
 - [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
@@ -67,6 +71,7 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - **Pretrained Integration**: torchvision and timm model loading (1000+ architectures)
 
 ### Data Pipeline
+- **WSI Processing Pipeline**: Complete production-ready pipeline with OpenSlide integration
 - **PCam Dataset**: Patch extraction and preprocessing
 - **CAMELYON Dataset**: HDF5 feature storage, slide-level batching
 - **Augmentation**: Standard transforms, normalization
@@ -143,10 +148,13 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 #### Data Loading
 ```python
 from src.data import PatchCamelyonDataset, CAMELYONSlideDataset
+from src.data.wsi_pipeline import BatchProcessor, ProcessingConfig
 ```
 - `PatchCamelyonDataset`: Patch-level image loading
 - `CAMELYONSlideDataset`: Slide-level feature loading
 - `collate_slide_bags`: Variable-length batch collation
+- `BatchProcessor`: WSI processing pipeline orchestration
+- `ProcessingConfig`: WSI pipeline configuration management
 
 #### Models
 ```python
@@ -177,6 +185,21 @@ from src.utils import set_seed, save_checkpoint, load_checkpoint
 ## Quick Reference
 
 ### Common Commands
+
+#### WSI Processing
+```bash
+# Process WSI files
+python -m src.data.wsi_pipeline.cli process slide.svs --output-dir ./features
+
+# Batch processing
+python -m src.data.wsi_pipeline.cli process *.svs --config config.yaml
+
+# Validate installation
+python -m src.data.wsi_pipeline.cli validate
+
+# Performance benchmarks
+python -m src.data.wsi_pipeline.cli benchmark --quick
+```
 
 #### Training
 ```bash
