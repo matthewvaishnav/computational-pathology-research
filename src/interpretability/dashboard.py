@@ -6,6 +6,7 @@ attention weights, failure cases, and feature importance.
 
 import json
 import logging
+import tempfile
 import time
 from functools import wraps
 from pathlib import Path
@@ -644,8 +645,9 @@ class InterpretabilityDashboard:
 
         logger.info(f"Exporting visualization for {sample_id} as {output_format} (DPI={dpi})")
 
-        # Placeholder: In real implementation, generate and save visualization
-        output_path = Path(f"/tmp/{sample_id}.{output_format}")
+        # Use platform-independent temp directory
+        temp_dir = Path(tempfile.gettempdir())
+        output_path = temp_dir / f"{sample_id}.{output_format}"
 
         # Create a simple placeholder file
         import matplotlib.pyplot as plt
