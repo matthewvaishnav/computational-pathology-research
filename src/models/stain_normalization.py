@@ -221,9 +221,11 @@ class StyleTransferDecoder(nn.Module):
         B, num_patches, _ = pixels.shape
         patch_h = height // self.patch_size
         patch_w = width // self.patch_size
-        assert (
-            patch_h * self.patch_size == height and patch_w * self.patch_size == width
-        ), f"Patch size mismatch: patch_h={patch_h}, patch_w={patch_w}, height={height}, width={width}"
+        if patch_h * self.patch_size != height or patch_w * self.patch_size != width:
+            raise ValueError(
+                f"Patch size mismatch: patch_h={patch_h}, patch_w={patch_w}, "
+                f"height={height}, width={width}"
+            )
 
         # Reshape: [B, num_patches, patch_size^2 * C] -> [B, C, H, W]
         pixels = pixels.reshape(B, patch_h, patch_w, self.patch_size, self.patch_size, -1)
@@ -319,9 +321,10 @@ class StainNormalizationTransformer(nn.Module):
         B, C, H, W = x.shape
 
         # Validate dimensions
-        assert (
-            H % self.patch_size == 0 and W % self.patch_size == 0
-        ), f"Image dimensions ({H}, {W}) must be divisible by patch_size ({self.patch_size})"
+        if H % self.patch_size != 0 or W % self.patch_size != 0:
+            raise ValueError(
+                f"Image dimensions ({H}, {W}) must be divisible by patch_size ({self.patch_size})"
+            )
 
         # Embed patches
         patches = self.patch_embed(x)  # [B, num_patches, embed_dim]
