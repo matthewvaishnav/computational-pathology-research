@@ -30,9 +30,7 @@ class TestPatchExtractorInitialization:
 
     def test_init_custom_parameters(self):
         """Test initialization with custom parameters."""
-        extractor = PatchExtractor(
-            patch_size=512, stride=256, level=1, target_mpp=0.5
-        )
+        extractor = PatchExtractor(patch_size=512, stride=256, level=1, target_mpp=0.5)
         assert extractor.patch_size == 512
         assert extractor.stride == 256
         assert extractor.level == 1

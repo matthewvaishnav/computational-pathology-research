@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 class ConfigValidator:
     """
     Validate and document WSI processing configurations.
-    
+
     Provides comprehensive validation of configuration parameters
     and generates human-readable documentation.
     """
-    
+
     # Valid encoder names and their properties
     SUPPORTED_ENCODERS = {
         "resnet50": {
@@ -44,7 +44,7 @@ class ConfigValidator:
             "speed": "moderate",
         },
     }
-    
+
     # Valid tissue detection methods
     TISSUE_METHODS = {
         "otsu": {
@@ -63,7 +63,7 @@ class ConfigValidator:
             "accuracy": "very good",
         },
     }
-    
+
     # Configuration parameter ranges
     PARAMETER_RANGES = {
         "patch_size": (64, 2048),
@@ -77,37 +77,37 @@ class ConfigValidator:
         "min_tissue_coverage": (0.0, 1.0),
         "max_memory_gb": (0.5, 128.0),
     }
-    
+
     def __init__(self):
         """Initialize configuration validator."""
         logger.debug("Initialized ConfigValidator")
-    
+
     def validate_config(self, config: ProcessingConfig) -> Tuple[bool, List[str]]:
         """
         Validate a processing configuration.
-        
+
         Args:
             config: Configuration to validate
-            
+
         Returns:
             Tuple of (is_valid, list_of_errors)
         """
         errors = []
-        
+
         # Validate encoder
         if config.encoder_name not in self.SUPPORTED_ENCODERS:
             errors.append(
                 f"Unsupported encoder '{config.encoder_name}'. "
                 f"Supported: {list(self.SUPPORTED_ENCODERS.keys())}"
             )
-        
+
         # Validate tissue method
         if config.tissue_method not in self.TISSUE_METHODS:
             errors.append(
                 f"Unsupported tissue method '{config.tissue_method}'. "
                 f"Supported: {list(self.TISSUE_METHODS.keys())}"
             )
-        
+
         # Validate parameter ranges
         for param_name, (min_val, max_val) in self.PARAMETER_RANGES.items():
             if hasattr(config, param_name):
@@ -117,13 +117,13 @@ class ConfigValidator:
                         f"Parameter '{param_name}' value {value} outside valid range "
                         f"[{min_val}, {max_val}]"
                     )
-        
+
         # Validate logical constraints
         if config.stride and config.stride > config.patch_size:
             errors.append(
                 f"Stride ({config.stride}) cannot be larger than patch_size ({config.patch_size})"
             )
-        
+
         # Validate cache directory
         if config.cache_dir:
             cache_path = Path(config.cache_dir)
@@ -131,25 +131,27 @@ class ConfigValidator:
                 cache_path.mkdir(parents=True, exist_ok=True)
             except Exception as e:
                 errors.append(f"Cannot create cache directory '{config.cache_dir}': {e}")
-        
+
         is_valid = len(errors) == 0
         return is_valid, errors
-    
+
     def validate_and_raise(self, config: ProcessingConfig) -> None:
         """
         Validate configuration and raise exception if invalid.
-        
+
         Args:
             config: Configuration to validate
-            
+
         Raises:
             ProcessingError: If configuration is invalid
         """
         is_valid, errors = self.validate_config(config)
         if not is_valid:
-            error_msg = "Configuration validation failed:\n" + "\n".join(f"  - {error}" for error in errors)
+            error_msg = "Configuration validation failed:\n" + "\n".join(
+                f"  - {error}" for error in errors
+            )
             raise ProcessingError(error_msg)
-    
+
     def get_recommended_config(
         self,
         use_case: str = "general",
@@ -157,11 +159,11 @@ class ConfigValidator:
     ) -> ProcessingConfig:
         """
         Get recommended configuration for specific use case.
-        
+
         Args:
             use_case: Use case ("general", "high_throughput", "high_quality", "memory_limited")
             hardware: Hardware type ("auto", "gpu", "cpu", "high_memory", "low_memory")
-            
+
         Returns:
             Recommended configuration
         """
@@ -176,64 +178,78 @@ class ConfigValidator:
             "batch_size": 32,
             "num_workers": 4,
         }
-        
+
         # Adjust for use case
         if use_case == "high_throughput":
-            base_config.update({
-                "patch_size": 224,
-                "encoder_name": "efficientnet_b0",
-                "batch_size": 64,
-                "num_workers": 8,
-            })
+            base_config.update(
+                {
+                    "patch_size": 224,
+                    "encoder_name": "efficientnet_b0",
+                    "batch_size": 64,
+                    "num_workers": 8,
+                }
+            )
         elif use_case == "high_quality":
-            base_config.update({
-                "patch_size": 512,
-                "encoder_name": "resnet50",
-                "tissue_method": "hybrid",
-                "batch_size": 16,
-            })
+            base_config.update(
+                {
+                    "patch_size": 512,
+                    "encoder_name": "resnet50",
+                    "tissue_method": "hybrid",
+                    "batch_size": 16,
+                }
+            )
         elif use_case == "memory_limited":
-            base_config.update({
-                "patch_size": 224,
-                "encoder_name": "densenet121",
-                "batch_size": 8,
-                "num_workers": 2,
-            })
-        
+            base_config.update(
+                {
+                    "patch_size": 224,
+                    "encoder_name": "densenet121",
+                    "batch_size": 8,
+                    "num_workers": 2,
+                }
+            )
+
         # Adjust for hardware
         if hardware == "cpu":
-            base_config.update({
-                "batch_size": min(base_config["batch_size"], 8),
-                "num_workers": min(base_config["num_workers"], 4),
-            })
+            base_config.update(
+                {
+                    "batch_size": min(base_config["batch_size"], 8),
+                    "num_workers": min(base_config["num_workers"], 4),
+                }
+            )
         elif hardware == "gpu":
-            base_config.update({
-                "batch_size": max(base_config["batch_size"], 32),
-            })
+            base_config.update(
+                {
+                    "batch_size": max(base_config["batch_size"], 32),
+                }
+            )
         elif hardware == "low_memory":
-            base_config.update({
-                "batch_size": min(base_config["batch_size"], 16),
-                "max_memory_gb": 4.0,
-            })
+            base_config.update(
+                {
+                    "batch_size": min(base_config["batch_size"], 16),
+                    "max_memory_gb": 4.0,
+                }
+            )
         elif hardware == "high_memory":
-            base_config.update({
-                "batch_size": max(base_config["batch_size"], 64),
-                "max_memory_gb": 16.0,
-            })
-        
+            base_config.update(
+                {
+                    "batch_size": max(base_config["batch_size"], 64),
+                    "max_memory_gb": 16.0,
+                }
+            )
+
         return ProcessingConfig(**base_config)
-    
+
     def generate_documentation(self) -> str:
         """
         Generate comprehensive configuration documentation.
-        
+
         Returns:
             Formatted documentation string
         """
         doc = []
         doc.append("# WSI Processing Pipeline Configuration Guide")
         doc.append("")
-        
+
         # Encoders section
         doc.append("## Supported Encoders")
         doc.append("")
@@ -244,7 +260,7 @@ class ConfigValidator:
             doc.append(f"- **Memory Usage**: {info['memory_usage']}")
             doc.append(f"- **Speed**: {info['speed']}")
             doc.append("")
-        
+
         # Tissue methods section
         doc.append("## Tissue Detection Methods")
         doc.append("")
@@ -254,18 +270,18 @@ class ConfigValidator:
             doc.append(f"- **Speed**: {info['speed']}")
             doc.append(f"- **Accuracy**: {info['accuracy']}")
             doc.append("")
-        
+
         # Parameters section
         doc.append("## Configuration Parameters")
         doc.append("")
         for param, (min_val, max_val) in self.PARAMETER_RANGES.items():
             doc.append(f"- **{param}**: Range [{min_val}, {max_val}]")
         doc.append("")
-        
+
         # Use cases section
         doc.append("## Recommended Configurations")
         doc.append("")
-        
+
         use_cases = ["general", "high_throughput", "high_quality", "memory_limited"]
         for use_case in use_cases:
             config = self.get_recommended_config(use_case=use_case)
@@ -280,32 +296,32 @@ class ConfigValidator:
             doc.append(")")
             doc.append("```")
             doc.append("")
-        
+
         return "\n".join(doc)
-    
+
     def save_documentation(self, output_path: Path) -> None:
         """
         Save configuration documentation to file.
-        
+
         Args:
             output_path: Path to save documentation
         """
         doc = self.generate_documentation()
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(output_path, 'w') as f:
+
+        with open(output_path, "w") as f:
             f.write(doc)
-        
+
         logger.info(f"Configuration documentation saved to {output_path}")
 
 
 def validate_config(config: ProcessingConfig) -> None:
     """
     Convenience function to validate configuration.
-    
+
     Args:
         config: Configuration to validate
-        
+
     Raises:
         ProcessingError: If configuration is invalid
     """
@@ -316,11 +332,11 @@ def validate_config(config: ProcessingConfig) -> None:
 def get_recommended_config(use_case: str = "general", hardware: str = "auto") -> ProcessingConfig:
     """
     Convenience function to get recommended configuration.
-    
+
     Args:
         use_case: Use case type
         hardware: Hardware type
-        
+
     Returns:
         Recommended configuration
     """

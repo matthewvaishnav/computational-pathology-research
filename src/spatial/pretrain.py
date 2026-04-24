@@ -57,7 +57,9 @@ class SpatialPretrainer:
         self.lr = lr
         self.batch_size = batch_size
         self.val_fraction = val_fraction
-        self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else Path("checkpoints/spatial")
+        self.checkpoint_dir = (
+            Path(checkpoint_dir) if checkpoint_dir else Path("checkpoints/spatial")
+        )
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -89,13 +91,15 @@ class SpatialPretrainer:
             slide_id: Unique slide identifier
             gene_names: Gene name list (optional)
         """
-        self._slides.append({
-            "features": features,
-            "expression": expression,
-            "coords": coords,
-            "slide_id": slide_id,
-            "gene_names": gene_names,
-        })
+        self._slides.append(
+            {
+                "features": features,
+                "expression": expression,
+                "coords": coords,
+                "slide_id": slide_id,
+                "gene_names": gene_names,
+            }
+        )
         logger.info(f"Added slide {slide_id}: {features.shape[0]} spots")
 
     def add_slide_from_h5ad(
@@ -105,7 +109,9 @@ class SpatialPretrainer:
         slide_id: Optional[str] = None,
     ) -> None:
         """Load slide from AnnData H5AD file."""
-        dataset = SpatialDataset.from_anndata(h5ad_path, feature_key, n_top_genes=0, normalize=False)
+        dataset = SpatialDataset.from_anndata(
+            h5ad_path, feature_key, n_top_genes=0, normalize=False
+        )
         sid = slide_id or Path(h5ad_path).stem
         self.add_slide(
             features=dataset.features.numpy(),
@@ -125,17 +131,11 @@ class SpatialPretrainer:
         train_indices = set(range(len(self._slides))) - val_indices
 
         def _make_dataset(indices):
-            all_features = np.concatenate(
-                [self._slides[i]["features"] for i in indices], axis=0
-            )
-            all_expr = np.concatenate(
-                [self._slides[i]["expression"] for i in indices], axis=0
-            )
+            all_features = np.concatenate([self._slides[i]["features"] for i in indices], axis=0)
+            all_expr = np.concatenate([self._slides[i]["expression"] for i in indices], axis=0)
             all_coords = None
             if all(self._slides[i]["coords"] is not None for i in indices):
-                all_coords = np.concatenate(
-                    [self._slides[i]["coords"] for i in indices], axis=0
-                )
+                all_coords = np.concatenate([self._slides[i]["coords"] for i in indices], axis=0)
             gene_names = self._slides[list(indices)[0]].get("gene_names")
             return SpatialDataset.from_arrays(
                 all_features, all_expr, all_coords, gene_names, n_top_genes=self.n_genes
@@ -185,7 +185,9 @@ class SpatialPretrainer:
 
                 optimizer.zero_grad()
                 # Predict global expression (per-spot averaged)
-                pred = self.model.predict_global(features.unsqueeze(0), coords.unsqueeze(0) if coords is not None else None)
+                pred = self.model.predict_global(
+                    features.unsqueeze(0), coords.unsqueeze(0) if coords is not None else None
+                )
                 pred = pred.squeeze(0)
                 loss, metrics = loss_fn(pred, expression)
                 loss.backward()
@@ -238,10 +240,14 @@ class SpatialPretrainer:
             coords = batch.get("coords")
             if coords is not None:
                 coords = coords.to(self.device)
-            pred = self.model.predict_global(
-                features.unsqueeze(0),
-                coords.unsqueeze(0) if coords is not None else None
-            ).squeeze(0).cpu().numpy()
+            pred = (
+                self.model.predict_global(
+                    features.unsqueeze(0), coords.unsqueeze(0) if coords is not None else None
+                )
+                .squeeze(0)
+                .cpu()
+                .numpy()
+            )
             all_pred.append(pred)
             all_target.append(expression.numpy())
 
@@ -251,18 +257,23 @@ class SpatialPretrainer:
 
     def _save_checkpoint(self, epoch: int, val_pearson: float) -> None:
         path = self.checkpoint_dir / f"spatial_decoder_ep{epoch}_pearson{val_pearson:.4f}.pt"
-        torch.save({
-            "epoch": epoch,
-            "model_state_dict": self.model.state_dict(),
-            "val_pearson": val_pearson,
-            "n_genes": self.n_genes,
-            "patch_feature_dim": self.patch_feature_dim,
-        }, path)
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state_dict": self.model.state_dict(),
+                "val_pearson": val_pearson,
+                "n_genes": self.n_genes,
+                "patch_feature_dim": self.patch_feature_dim,
+            },
+            path,
+        )
         logger.info(f"Saved checkpoint: {path}")
 
     def load_checkpoint(self, path: str) -> float:
         """Load model from checkpoint. Returns validation Pearson r."""
         ckpt = torch.load(path, map_location=self.device)
         self.model.load_state_dict(ckpt["model_state_dict"])
-        logger.info(f"Loaded checkpoint from {path}, val_pearson={ckpt.get('val_pearson', '?'):.4f}")
+        logger.info(
+            f"Loaded checkpoint from {path}, val_pearson={ckpt.get('val_pearson', '?'):.4f}"
+        )
         return float(ckpt.get("val_pearson", 0.0))

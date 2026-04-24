@@ -35,44 +35,44 @@ logger = logging.getLogger(__name__)
 
 class MemoryMonitor:
     """Monitor and manage memory usage during processing."""
-    
+
     def __init__(self, max_memory_gb: float = 4.0):
         """
         Initialize memory monitor.
-        
+
         Args:
             max_memory_gb: Maximum memory usage in GB before triggering optimizations
         """
         self.max_memory_bytes = max_memory_gb * 1024**3
         self.process = psutil.Process()
-        
+
     def get_memory_usage(self) -> float:
         """Get current memory usage in GB."""
         return self.process.memory_info().rss / 1024**3
-        
+
     def is_memory_critical(self) -> bool:
         """Check if memory usage is approaching limit."""
         return self.get_memory_usage() > self.max_memory_bytes / 1024**3
-        
+
     def cleanup_memory(self) -> None:
         """Force garbage collection and clear caches."""
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-            
+
     def get_optimal_batch_size(self, current_batch_size: int) -> int:
         """
         Calculate optimal batch size based on current memory usage.
-        
+
         Args:
             current_batch_size: Current batch size
-            
+
         Returns:
             Recommended batch size
         """
         memory_usage = self.get_memory_usage()
         memory_ratio = memory_usage / (self.max_memory_bytes / 1024**3)
-        
+
         if memory_ratio > 0.8:
             # Reduce batch size significantly
             return max(1, current_batch_size // 4)
@@ -143,7 +143,7 @@ class BatchProcessor:
 
         self.num_workers = min(num_workers, cpu_count())
         self.gpu_ids = gpu_ids
-        
+
         # Initialize memory monitor
         self.memory_monitor = MemoryMonitor(max_memory_gb)
 
@@ -250,9 +250,7 @@ class BatchProcessor:
                 tissue_mask = self.tissue_detector.generate_tissue_mask(reader)
                 tissue_coverage = tissue_mask.sum() / tissue_mask.size
 
-                logger.info(
-                    f"[{slide_id}] Tissue coverage: {tissue_coverage:.1%}"
-                )
+                logger.info(f"[{slide_id}] Tissue coverage: {tissue_coverage:.1%}")
 
                 # Step 3: Generate coordinates
                 logger.debug(f"[{slide_id}] Generating patch coordinates...")
@@ -270,9 +268,7 @@ class BatchProcessor:
                         processing_time=time.time() - start_time,
                     )
 
-                logger.info(
-                    f"[{slide_id}] Generated {len(coordinates)} patch coordinates"
-                )
+                logger.info(f"[{slide_id}] Generated {len(coordinates)} patch coordinates")
 
                 # Step 4 & 5: Extract patches and generate features (with memory optimization)
                 logger.debug(f"[{slide_id}] Extracting patches and generating features...")
@@ -282,7 +278,7 @@ class BatchProcessor:
 
                 batch_patches = []
                 batch_coords = []
-                
+
                 # Dynamic batch size based on memory usage
                 current_batch_size = self.config.batch_size
                 memory_check_interval = 100  # Check memory every N patches
@@ -310,9 +306,11 @@ class BatchProcessor:
                                 "performing cleanup"
                             )
                             self.memory_monitor.cleanup_memory()
-                            
+
                             # Reduce batch size if needed
-                            new_batch_size = self.memory_monitor.get_optimal_batch_size(current_batch_size)
+                            new_batch_size = self.memory_monitor.get_optimal_batch_size(
+                                current_batch_size
+                            )
                             if new_batch_size != current_batch_size:
                                 logger.info(
                                     f"[{slide_id}] Reducing batch size from "
@@ -323,25 +321,29 @@ class BatchProcessor:
                     # Process batch when full (using dynamic batch size)
                     if len(batch_patches) >= current_batch_size:
                         batch_array = np.stack(batch_patches, axis=0)
-                        
+
                         try:
                             batch_features = self.feature_generator.extract_features(batch_array)
                             features_list.append(batch_features.cpu().numpy())
                             coords_list.extend(batch_coords)
                         except RuntimeError as e:
                             if "out of memory" in str(e).lower():
-                                logger.warning(f"[{slide_id}] GPU OOM, reducing batch size and retrying")
+                                logger.warning(
+                                    f"[{slide_id}] GPU OOM, reducing batch size and retrying"
+                                )
                                 # Clear GPU cache and reduce batch size
                                 self.feature_generator.clear_gpu_cache()
                                 current_batch_size = max(1, current_batch_size // 2)
-                                
+
                                 # Process smaller batches
                                 for j in range(0, len(batch_patches), current_batch_size):
-                                    mini_batch = batch_patches[j:j+current_batch_size]
-                                    mini_coords = batch_coords[j:j+current_batch_size]
-                                    
+                                    mini_batch = batch_patches[j : j + current_batch_size]
+                                    mini_coords = batch_coords[j : j + current_batch_size]
+
                                     mini_array = np.stack(mini_batch, axis=0)
-                                    mini_features = self.feature_generator.extract_features(mini_array)
+                                    mini_features = self.feature_generator.extract_features(
+                                        mini_array
+                                    )
                                     features_list.append(mini_features.cpu().numpy())
                                     coords_list.extend(mini_coords)
                             else:
@@ -350,7 +352,7 @@ class BatchProcessor:
                         # Clear batch and perform cleanup
                         batch_patches = []
                         batch_coords = []
-                        
+
                         # Explicit cleanup every few batches
                         if len(features_list) % 10 == 0:
                             self.memory_monitor.cleanup_memory()
@@ -366,20 +368,24 @@ class BatchProcessor:
                 # Process remaining patches
                 if batch_patches:
                     batch_array = np.stack(batch_patches, axis=0)
-                    
+
                     try:
                         batch_features = self.feature_generator.extract_features(batch_array)
                         features_list.append(batch_features.cpu().numpy())
                         coords_list.extend(batch_coords)
                     except RuntimeError as e:
                         if "out of memory" in str(e).lower():
-                            logger.warning(f"[{slide_id}] GPU OOM on final batch, processing individually")
+                            logger.warning(
+                                f"[{slide_id}] GPU OOM on final batch, processing individually"
+                            )
                             self.feature_generator.clear_gpu_cache()
-                            
+
                             # Process patches individually
                             for patch, coord in zip(batch_patches, batch_coords):
                                 single_array = np.expand_dims(patch, axis=0)
-                                single_features = self.feature_generator.extract_features(single_array)
+                                single_features = self.feature_generator.extract_features(
+                                    single_array
+                                )
                                 features_list.append(single_features.cpu().numpy())
                                 coords_list.append(coord)
                         else:
@@ -402,9 +408,7 @@ class BatchProcessor:
             features = np.vstack(features_list)
             coords = np.array(coords_list, dtype=np.int32)
 
-            logger.info(
-                f"[{slide_id}] Generated features: {features.shape}"
-            )
+            logger.info(f"[{slide_id}] Generated features: {features.shape}")
 
             # Step 6: Cache features
             logger.debug(f"[{slide_id}] Caching features...")
@@ -441,7 +445,7 @@ class BatchProcessor:
 
             # Clear tissue detector cache to free memory
             self.tissue_detector.clear_cache()
-            
+
             # Final memory cleanup
             self.memory_monitor.cleanup_memory()
 
@@ -494,34 +498,34 @@ class BatchProcessor:
     ) -> Dict[str, Any]:
         """
         Verify that memory optimizations work correctly.
-        
+
         Processes a test slide while monitoring memory usage to ensure
         it stays below the target threshold.
-        
+
         Args:
             test_slide_path: Path to test slide
             target_memory_gb: Target memory limit in GB
-            
+
         Returns:
             Dictionary with verification results
         """
         logger.info(f"Verifying memory optimizations with target {target_memory_gb}GB")
-        
+
         # Set memory monitor to target limit
         original_limit = self.memory_monitor.max_memory_bytes
         self.memory_monitor.max_memory_bytes = target_memory_gb * 1024**3
-        
+
         memory_samples = []
         start_memory = self.memory_monitor.get_memory_usage()
-        
+
         try:
             # Process slide while monitoring memory
             result = self.process_slide(test_slide_path)
-            
+
             # Collect final memory stats
             end_memory = self.memory_monitor.get_memory_usage()
             peak_memory = max(memory_samples) if memory_samples else end_memory
-            
+
             verification_result = {
                 "success": result.success,
                 "target_memory_gb": target_memory_gb,
@@ -532,22 +536,19 @@ class BatchProcessor:
                 "num_patches": result.num_patches,
                 "processing_time": result.processing_time,
             }
-            
+
             if verification_result["memory_limit_exceeded"]:
-                logger.warning(
-                    f"Memory limit exceeded: {peak_memory:.1f}GB > {target_memory_gb}GB"
-                )
+                logger.warning(f"Memory limit exceeded: {peak_memory:.1f}GB > {target_memory_gb}GB")
             else:
                 logger.info(
                     f"Memory optimization successful: peak {peak_memory:.1f}GB <= {target_memory_gb}GB"
                 )
-                
+
             return verification_result
-            
+
         finally:
             # Restore original memory limit
             self.memory_monitor.max_memory_bytes = original_limit
-
 
     def process_batch(
         self,
@@ -586,8 +587,7 @@ class BatchProcessor:
         total_slides = len(wsi_paths)
 
         logger.info(
-            f"Starting batch processing: {total_slides} slides, "
-            f"{self.num_workers} workers"
+            f"Starting batch processing: {total_slides} slides, " f"{self.num_workers} workers"
         )
 
         # Prepare metadata mapping
@@ -685,9 +685,7 @@ class BatchProcessor:
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff
                 else:
-                    logger.error(
-                        f"[{slide_id}] Processing failed after {max_retries + 1} attempts"
-                    )
+                    logger.error(f"[{slide_id}] Processing failed after {max_retries + 1} attempts")
                     return result
 
             except Exception as e:
@@ -746,13 +744,15 @@ class BatchProcessor:
             total_patches = sum(r.num_patches for r in successful_results)
             processing_times = [r.processing_time for r in successful_results]
 
-            summary.update({
-                "total_patches": total_patches,
-                "avg_patches_per_slide": total_patches / len(successful_results),
-                "avg_processing_time": np.mean(processing_times),
-                "min_processing_time": np.min(processing_times),
-                "max_processing_time": np.max(processing_times),
-            })
+            summary.update(
+                {
+                    "total_patches": total_patches,
+                    "avg_patches_per_slide": total_patches / len(successful_results),
+                    "avg_processing_time": np.mean(processing_times),
+                    "min_processing_time": np.min(processing_times),
+                    "max_processing_time": np.max(processing_times),
+                }
+            )
 
         if failed_results:
             error_messages = [r.error_message for r in failed_results if r.error_message]
@@ -810,9 +810,7 @@ class BatchProcessor:
 
         # Validate split ratios
         if not np.isclose(sum(split_ratios), 1.0):
-            raise ValueError(
-                f"split_ratios must sum to 1.0, got {sum(split_ratios)}"
-            )
+            raise ValueError(f"split_ratios must sum to 1.0, got {sum(split_ratios)}")
 
         train_ratio, val_ratio, test_ratio = split_ratios
 

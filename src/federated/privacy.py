@@ -45,10 +45,7 @@ class PrivacyAccountant:
         self.max_grad_norm = max_grad_norm
         self.delta = delta
         self.sample_rate = sample_rate
-        self.orders = orders or (
-            [1 + x / 10.0 for x in range(1, 100)]
-            + list(range(12, 64))
-        )
+        self.orders = orders or ([1 + x / 10.0 for x in range(1, 100)] + list(range(12, 64)))
         self._steps = 0
 
     def set_sample_rate(self, batch_size: int, dataset_size: int) -> None:
@@ -70,8 +67,8 @@ class PrivacyAccountant:
         try:
             # Binomial sum approximation — dominant terms
             rdp = math.log(
-                (1 - q) ** (2 * order - 1) + q ** 2 * order * (2 * order - 1) / 2
-                * math.exp((2 * order - 1) / (2 * sigma**2))
+                (1 - q) ** (2 * order - 1)
+                + q**2 * order * (2 * order - 1) / 2 * math.exp((2 * order - 1) / (2 * sigma**2))
             ) / (2 * (order - 1))
         except (ValueError, OverflowError):
             rdp = order / (2 * sigma**2)
@@ -90,9 +87,7 @@ class PrivacyAccountant:
                     continue
                 # Conversion: ε = RDP_ε(α) + log((α-1)/α) - log(δ·α)/(α-1)
                 eps = (
-                    rdp
-                    + math.log((order - 1) / order)
-                    - math.log(self.delta * order) / (order - 1)
+                    rdp + math.log((order - 1) / order) - math.log(self.delta * order) / (order - 1)
                 )
                 if math.isfinite(eps):
                     best_eps = min(best_eps, eps)
@@ -160,9 +155,7 @@ class DifferentialPrivacyEngine:
         Returns actual pre-clip gradient norm.
         """
         # Global gradient clipping
-        total_norm = nn.utils.clip_grad_norm_(
-            self.model.parameters(), self.max_grad_norm
-        )
+        total_norm = nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
 
         # Add calibrated noise: N(0, (σ·C)²·I)
         # Memory-efficient: generate and add noise per-parameter to avoid

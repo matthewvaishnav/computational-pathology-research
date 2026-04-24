@@ -29,20 +29,21 @@ class CellType(IntEnum):
 
 
 class ImmunoePhenotype(IntEnum):
-    INFLAMED = 0      # TILs infiltrating tumour
-    EXCLUDED = 1      # TILs at tumour margin only
-    DESERT = 2        # TILs absent
+    INFLAMED = 0  # TILs infiltrating tumour
+    EXCLUDED = 1  # TILs at tumour margin only
+    DESERT = 2  # TILs absent
 
 
 @dataclass
 class TMEComposition:
     """Tumour Microenvironment composition summary for a tissue region."""
+
     total_cells: int
-    cell_type_counts: dict          # CellType → count
-    cell_type_fractions: dict       # CellType → fraction [0, 1]
-    til_density: float              # TIL fraction (lymphocyte + plasma)
+    cell_type_counts: dict  # CellType → count
+    cell_type_fractions: dict  # CellType → fraction [0, 1]
+    til_density: float  # TIL fraction (lymphocyte + plasma)
     immune_phenotype: ImmunoePhenotype
-    spatial_til_cv: float           # Coeff. of variation of TIL spatial density
+    spatial_til_cv: float  # Coeff. of variation of TIL spatial density
     notes: str = ""
 
     @property
@@ -149,7 +150,9 @@ def compute_tme_composition(
         grid_size: spatial grid for TIL density CV
     """
     total = len(cell_types)
-    counts = {CellType(i): int((cell_types == i).sum()) for i in range(num_types) if i < len(CellType)}
+    counts = {
+        CellType(i): int((cell_types == i).sum()) for i in range(num_types) if i < len(CellType)
+    }
     fractions = {k: v / max(total, 1) for k, v in counts.items()}
 
     til_count = counts.get(CellType.LYMPHOCYTE, 0) + counts.get(CellType.PLASMA, 0)

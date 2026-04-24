@@ -41,11 +41,13 @@ class HypothesisReporter:
         test_results,
     ) -> List[Tuple]:
         pairs = list(zip(hypotheses, test_results))
-        pairs.sort(key=lambda x: (
-            not x[1].supported,
-            x[1].enrichment_pvalue,
-            self._confidence_rank(x[0].confidence),
-        ))
+        pairs.sort(
+            key=lambda x: (
+                not x[1].supported,
+                x[1].enrichment_pvalue,
+                self._confidence_rank(x[0].confidence),
+            )
+        )
         return pairs
 
     def generate_markdown(
@@ -85,8 +87,10 @@ class HypothesisReporter:
             ]
 
             if hyp.affected_genes:
-                lines.append(f"**Affected genes:** {', '.join(hyp.affected_genes[:10])}" +
-                              (" ..." if len(hyp.affected_genes) > 10 else ""))
+                lines.append(
+                    f"**Affected genes:** {', '.join(hyp.affected_genes[:10])}"
+                    + (" ..." if len(hyp.affected_genes) > 10 else "")
+                )
                 lines.append("")
 
             if hyp.affected_pathways:
@@ -174,5 +178,7 @@ class HypothesisReporter:
         for i, (hyp, result) in enumerate(pairs, 1):
             status = "[OK]" if result.supported else "[--]"
             print(f"{status} H{i} ({hyp.confidence}): {hyp.hypothesis_text[:80]}...")
-            print(f"     enrich_p={result.enrichment_pvalue:.4f}  de_genes={result.n_genes_significant}/{result.n_genes_tested}")
+            print(
+                f"     enrich_p={result.enrichment_pvalue:.4f}  de_genes={result.n_genes_significant}/{result.n_genes_tested}"
+            )
         print()

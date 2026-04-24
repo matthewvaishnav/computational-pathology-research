@@ -100,9 +100,7 @@ class SurvivalVAE(nn.Module):
         # Cox risk head: scalar risk score from latent mean
         self.cox_head = nn.Linear(latent_dim, 1, bias=False)
 
-        logger.info(
-            f"SurvivalVAE: input={input_dim}, hidden={hidden_dim}, latent={latent_dim}"
-        )
+        logger.info(f"SurvivalVAE: input={input_dim}, hidden={hidden_dim}, latent={latent_dim}")
 
     def encode(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         h = self.encoder(x)
@@ -117,9 +115,7 @@ class SurvivalVAE(nn.Module):
     def decode(self, z: torch.Tensor) -> torch.Tensor:
         return self.decoder(z)
 
-    def forward(
-        self, x: torch.Tensor
-    ) -> Dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
         x_hat = self.decode(z)

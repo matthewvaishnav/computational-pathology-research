@@ -41,17 +41,14 @@ def log_rank_test(
 
     for t in all_times:
         # At-risk counts at time t
-        at_risk = np.array([
-            np.sum((survival_times >= t) & (labels == g)) for g in groups
-        ])
+        at_risk = np.array([np.sum((survival_times >= t) & (labels == g)) for g in groups])
         n_total = at_risk.sum()
         if n_total == 0:
             continue
         # Events at time t
-        observed = np.array([
-            np.sum((survival_times == t) & (events == 1) & (labels == g))
-            for g in groups
-        ])
+        observed = np.array(
+            [np.sum((survival_times == t) & (events == 1) & (labels == g)) for g in groups]
+        )
         d_total = observed.sum()
         expected = at_risk * d_total / n_total
         O += observed
@@ -62,9 +59,7 @@ def log_rank_test(
     # Variance: sum over time points
     variance = np.zeros(len(groups))
     for t in all_times:
-        at_risk = np.array([
-            np.sum((survival_times >= t) & (labels == g)) for g in groups
-        ])
+        at_risk = np.array([np.sum((survival_times >= t) & (labels == g)) for g in groups])
         n_total = at_risk.sum()
         if n_total <= 1:
             continue
@@ -164,7 +159,8 @@ def bootstrap_stability(
         try:
             clusterer = SurvivalAwareClusterer(
                 input_dim=features.shape[1],
-                k_min=k, k_max=k,  # Fix k to compare
+                k_min=k,
+                k_max=k,  # Fix k to compare
                 n_epochs=n_epochs,
             )
             labels_boot = clusterer.fit(X_boot, T_boot, E_boot)
@@ -178,7 +174,9 @@ def bootstrap_stability(
 
     mean_ari = float(np.mean(ari_scores))
     std_ari = float(np.std(ari_scores))
-    logger.info(f"Bootstrap stability: ARI={mean_ari:.3f} ± {std_ari:.3f} over {len(ari_scores)} resamples")
+    logger.info(
+        f"Bootstrap stability: ARI={mean_ari:.3f} ± {std_ari:.3f} over {len(ari_scores)} resamples"
+    )
     return {
         "mean_ari": mean_ari,
         "std_ari": std_ari,
@@ -209,8 +207,8 @@ def subtype_enrichment(
     for g in groups:
         in_group = labels == g
         # 2x2 contingency table
-        a = np.sum(in_group & (clinical_variable == 1))   # in group, has var
-        b = np.sum(in_group & (clinical_variable == 0))   # in group, no var
+        a = np.sum(in_group & (clinical_variable == 1))  # in group, has var
+        b = np.sum(in_group & (clinical_variable == 0))  # in group, no var
         c = np.sum(~in_group & (clinical_variable == 1))  # not in group, has var
         d = np.sum(~in_group & (clinical_variable == 0))  # not in group, no var
         table = np.array([[a, b], [c, d]])
@@ -223,7 +221,6 @@ def subtype_enrichment(
             "significant": p_value < 0.05,
         }
         logger.info(
-            f"Subtype {g} enrichment for {variable_name}: "
-            f"OR={odds_ratio:.2f}, p={p_value:.4f}"
+            f"Subtype {g} enrichment for {variable_name}: " f"OR={odds_ratio:.2f}, p={p_value:.4f}"
         )
     return results

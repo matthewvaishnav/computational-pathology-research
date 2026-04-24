@@ -107,8 +107,7 @@ class WSIReader:
 
         # Unsupported format
         raise FileFormatError(
-            f"Unsupported file format: {suffix}. "
-            f"Supported formats: .svs, .tiff, .ndpi, .dcm"
+            f"Unsupported file format: {suffix}. " f"Supported formats: .svs, .tiff, .ndpi, .dcm"
         )
 
     def _is_dicom(self) -> bool:

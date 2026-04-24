@@ -30,18 +30,18 @@ Exceptions:
 
 Example Usage:
     >>> from data.wsi_pipeline import BatchProcessor, ProcessingConfig
-    >>> 
+    >>>
     >>> # Configure pipeline
     >>> config = ProcessingConfig(
     ...     patch_size=256,
     ...     encoder_name="resnet50",
     ...     batch_size=32
     ... )
-    >>> 
+    >>>
     >>> # Process slides
     >>> processor = BatchProcessor(config, num_workers=4)
     >>> result = processor.process_slide("slide.svs")
-    >>> 
+    >>>
     >>> # Run validation
     >>> from data.wsi_pipeline.validation import run_comprehensive_validation
     >>> validation_results = run_comprehensive_validation()
@@ -49,10 +49,10 @@ Example Usage:
 CLI Usage:
     # Process WSI files
     python -m data.wsi_pipeline.cli process *.svs --output-dir ./features
-    
+
     # Run benchmarks
     python -m data.wsi_pipeline.cli benchmark --quick
-    
+
     # Validate installation
     python -m data.wsi_pipeline.cli validate
 """
@@ -94,19 +94,16 @@ __all__ = [
     "QualityControl",
     "WSIReader",
     "TissueDetector",
-    
     # Exceptions
     "WSIProcessingError",
     "FileFormatError",
     "ResourceError",
     "ProcessingError",
-    
     # Validation and benchmarking
     "PerformanceBenchmark",
     "run_performance_benchmarks",
     "WSIPipelineValidator",
     "run_comprehensive_validation",
-    
     # Utilities
     "ConfigValidator",
     "validate_config",

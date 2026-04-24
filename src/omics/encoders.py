@@ -74,7 +74,7 @@ class ImageOmicsEncoder(nn.Module):
     def __init__(
         self,
         image_dim: int,
-        omics_dims: dict,   # name → dim
+        omics_dims: dict,  # name → dim
         shared_dim: int = 256,
         dropout: float = 0.2,
     ):
@@ -85,10 +85,12 @@ class ImageOmicsEncoder(nn.Module):
             nn.GELU(),
             nn.Dropout(dropout),
         )
-        self.omics_projs = nn.ModuleDict({
-            name: OmicsEncoder(dim, shared_dim, dropout=dropout)
-            for name, dim in omics_dims.items()
-        })
+        self.omics_projs = nn.ModuleDict(
+            {
+                name: OmicsEncoder(dim, shared_dim, dropout=dropout)
+                for name, dim in omics_dims.items()
+            }
+        )
         self.shared_dim = shared_dim
 
     def forward(

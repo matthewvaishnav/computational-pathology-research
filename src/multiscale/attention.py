@@ -65,8 +65,16 @@ class CrossScaleAttention(nn.Module):
         B, Nq, D = query.shape
         Nk = context.size(1)
 
-        q = self.q_proj(self.norm_q(query)).view(B, Nq, self.num_heads, self.head_dim).transpose(1, 2)
-        k = self.k_proj(self.norm_kv(context)).view(B, Nk, self.num_heads, self.head_dim).transpose(1, 2)
+        q = (
+            self.q_proj(self.norm_q(query))
+            .view(B, Nq, self.num_heads, self.head_dim)
+            .transpose(1, 2)
+        )
+        k = (
+            self.k_proj(self.norm_kv(context))
+            .view(B, Nk, self.num_heads, self.head_dim)
+            .transpose(1, 2)
+        )
         v = self.v_proj(context).view(B, Nk, self.num_heads, self.head_dim).transpose(1, 2)
 
         attn = (q @ k.transpose(-2, -1)) / self.scale
@@ -120,14 +128,14 @@ class HierarchicalAttentionPool(nn.Module):
         scale_tokens = []
         for mag in sorted(scale_features.keys()):
             x = scale_features[mag]  # (B, N, D)
-            w = self.patch_attn(x)   # (B, N, 1)
+            w = self.patch_attn(x)  # (B, N, 1)
             w = torch.softmax(w, dim=1)
             token = (w * x).sum(dim=1)  # (B, D)
             scale_tokens.append(token)
 
         tokens = torch.stack(scale_tokens, dim=1)  # (B, S, D)
-        tokens = tokens + self.scale_pe[:, :tokens.size(1), :]
+        tokens = tokens + self.scale_pe[:, : tokens.size(1), :]
 
-        w = self.scale_attn(tokens)   # (B, S, 1)
+        w = self.scale_attn(tokens)  # (B, S, 1)
         w = torch.softmax(w, dim=1)
         return (w * tokens).sum(dim=1)  # (B, D)

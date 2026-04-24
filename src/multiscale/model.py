@@ -57,13 +57,17 @@ class MultiScaleMIL(nn.Module):
         self.extractor = MultiScaleFeatureExtractor(input_dim, embed_dim, magnifications, dropout)
 
         # Cross-scale attention pairs: each lower scale attends to next higher
-        self.cross_attn_layers = nn.ModuleList([
-            nn.ModuleList([
-                CrossScaleAttention(embed_dim, num_heads, dropout)
-                for _ in range(len(magnifications) - 1)
-            ])
-            for _ in range(num_cross_attn_layers)
-        ])
+        self.cross_attn_layers = nn.ModuleList(
+            [
+                nn.ModuleList(
+                    [
+                        CrossScaleAttention(embed_dim, num_heads, dropout)
+                        for _ in range(len(magnifications) - 1)
+                    ]
+                )
+                for _ in range(num_cross_attn_layers)
+            ]
+        )
 
         self.pool = HierarchicalAttentionPool(embed_dim, len(magnifications), dropout)
 
@@ -73,7 +77,9 @@ class MultiScaleMIL(nn.Module):
             self.head = nn.Linear(embed_dim, num_classes)
         else:
             # Survival: hazard ratio (log-partial-hazard)
-            self.head = nn.Sequential(nn.Linear(embed_dim, embed_dim // 2), nn.ReLU(), nn.Linear(embed_dim // 2, 1))
+            self.head = nn.Sequential(
+                nn.Linear(embed_dim, embed_dim // 2), nn.ReLU(), nn.Linear(embed_dim // 2, 1)
+            )
 
     def forward(self, features: Dict[int, torch.Tensor]) -> dict:
         """
