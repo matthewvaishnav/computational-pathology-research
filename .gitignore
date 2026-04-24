@@ -102,3 +102,8 @@ CHECKPOINT_*.md
 *_ANALYSIS.md
 *_EXAMPLE.md
 QC_USAGE_EXAMPLE.md
+
+# AI assistant configs
+CLAUDE.md
+.claudeignore
+.claude/
