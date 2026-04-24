@@ -98,7 +98,8 @@ class PerformanceBenchmark:
 
         # Calculate throughput if num_samples is available
         if hasattr(result, "__len__"):
-            metrics["throughput_samples_per_second"] = len(result) / metrics["loading_time_seconds"]
+            elapsed = max(metrics["loading_time_seconds"], 1e-9)
+            metrics["throughput_samples_per_second"] = len(result) / elapsed
 
         return metrics
 
