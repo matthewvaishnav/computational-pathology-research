@@ -56,8 +56,7 @@ class QualityControl:
         """
         if not 0.0 <= min_tissue_coverage <= 1.0:
             raise ValueError(
-                f"min_tissue_coverage must be between 0.0 and 1.0, "
-                f"got {min_tissue_coverage}"
+                f"min_tissue_coverage must be between 0.0 and 1.0, " f"got {min_tissue_coverage}"
             )
 
         self.blur_threshold = blur_threshold
@@ -96,8 +95,7 @@ class QualityControl:
                 gray = patch
             else:
                 raise ValueError(
-                    f"Invalid patch shape: {patch.shape}. "
-                    f"Expected (H, W, 3) or (H, W)"
+                    f"Invalid patch shape: {patch.shape}. " f"Expected (H, W, 3) or (H, W)"
                 )
 
             # Calculate Laplacian variance
@@ -136,26 +134,24 @@ class QualityControl:
             ...     print("Pen marks detected in patch")
         """
         artifacts = {
-            'pen_marks': False,
-            'bubbles': False,
-            'folds': False,
+            "pen_marks": False,
+            "bubbles": False,
+            "folds": False,
         }
 
         try:
             if patch.ndim != 3 or patch.shape[2] != 3:
-                logger.warning(
-                    f"Invalid patch shape for artifact detection: {patch.shape}"
-                )
+                logger.warning(f"Invalid patch shape for artifact detection: {patch.shape}")
                 return artifacts
 
             # Detect pen marks: high saturation in specific channels
-            artifacts['pen_marks'] = self._detect_pen_marks(patch)
+            artifacts["pen_marks"] = self._detect_pen_marks(patch)
 
             # Detect bubbles: circular regions with low variation
-            artifacts['bubbles'] = self._detect_bubbles(patch)
+            artifacts["bubbles"] = self._detect_bubbles(patch)
 
             # Detect folds: linear structures with high gradient
-            artifacts['folds'] = self._detect_folds(patch)
+            artifacts["folds"] = self._detect_folds(patch)
 
         except Exception as e:
             logger.warning(f"Failed to detect artifacts: {e}")
@@ -327,19 +323,19 @@ class QualityControl:
             blurry_ratio = num_blurry / len(blur_scores) if blur_scores else 0.0
 
             blur_metrics = {
-                'mean': float(blur_scores_array.mean()) if len(blur_scores_array) > 0 else 0.0,
-                'std': float(blur_scores_array.std()) if len(blur_scores_array) > 0 else 0.0,
-                'min': float(blur_scores_array.min()) if len(blur_scores_array) > 0 else 0.0,
-                'max': float(blur_scores_array.max()) if len(blur_scores_array) > 0 else 0.0,
-                'num_blurry': int(num_blurry),
-                'blurry_ratio': float(blurry_ratio),
+                "mean": float(blur_scores_array.mean()) if len(blur_scores_array) > 0 else 0.0,
+                "std": float(blur_scores_array.std()) if len(blur_scores_array) > 0 else 0.0,
+                "min": float(blur_scores_array.min()) if len(blur_scores_array) > 0 else 0.0,
+                "max": float(blur_scores_array.max()) if len(blur_scores_array) > 0 else 0.0,
+                "num_blurry": int(num_blurry),
+                "blurry_ratio": float(blurry_ratio),
             }
 
             # Detect artifacts in all patches
             artifact_counts = {
-                'pen_marks': 0,
-                'bubbles': 0,
-                'folds': 0,
+                "pen_marks": 0,
+                "bubbles": 0,
+                "folds": 0,
             }
 
             for patch in patches:
@@ -390,36 +386,30 @@ class QualityControl:
 
             # Add blur warning if many patches are blurry
             if blurry_ratio > 0.5:
-                warnings.append(
-                    f"High blur ratio: {blurry_ratio:.1%} of patches are blurry"
-                )
+                warnings.append(f"High blur ratio: {blurry_ratio:.1%} of patches are blurry")
 
             # Add artifact warnings
             for artifact_type, count in artifact_counts.items():
                 if count > len(patches) * 0.1:  # More than 10% of patches
-                    warnings.append(
-                        f"High {artifact_type} count: {count}/{len(patches)} patches"
-                    )
+                    warnings.append(f"High {artifact_type} count: {count}/{len(patches)} patches")
 
             report = {
-                'slide_id': slide_id,
-                'num_patches': len(patches),
-                'blur_scores': blur_metrics,
-                'artifacts': artifact_counts,
-                'tissue_coverage': tissue_coverage,
-                'low_tissue_warning': low_tissue_warning,
-                'dimension_validation': {
-                    'patch_dimensions_valid': patch_dimensions_valid,
-                    'feature_dimensions_valid': feature_dimensions_valid,
+                "slide_id": slide_id,
+                "num_patches": len(patches),
+                "blur_scores": blur_metrics,
+                "artifacts": artifact_counts,
+                "tissue_coverage": tissue_coverage,
+                "low_tissue_warning": low_tissue_warning,
+                "dimension_validation": {
+                    "patch_dimensions_valid": patch_dimensions_valid,
+                    "feature_dimensions_valid": feature_dimensions_valid,
                 },
-                'warnings': warnings,
+                "warnings": warnings,
             }
 
             # Log warnings
             if warnings:
-                logger.warning(
-                    f"QC warnings for {slide_id}: {len(warnings)} issues found"
-                )
+                logger.warning(f"QC warnings for {slide_id}: {len(warnings)} issues found")
                 for warning in warnings:
                     logger.warning(f"  - {warning}")
             else:

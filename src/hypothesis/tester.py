@@ -19,11 +19,11 @@ logger = logging.getLogger(__name__)
 class TestResult:
     hypothesis_text: str
     n_genes_tested: int
-    n_genes_significant: int      # FDR < 0.05
-    enrichment_pvalue: float      # hypergeometric / GSEA-style
-    mean_effect_size: float       # mean |log2FC| for affected genes
-    direction_consistent: bool    # sign of effect matches prediction
-    supported: bool               # True if enrichment p < 0.05 & direction consistent
+    n_genes_significant: int  # FDR < 0.05
+    enrichment_pvalue: float  # hypergeometric / GSEA-style
+    mean_effect_size: float  # mean |log2FC| for affected genes
+    direction_consistent: bool  # sign of effect matches prediction
+    supported: bool  # True if enrichment p < 0.05 & direction consistent
     gene_results: Dict[str, dict] = field(default_factory=dict)  # gene → {pval, fc}
     notes: str = ""
 
@@ -70,11 +70,21 @@ class HypothesisTester:
             a = self.expression[group_a, idx]
             b = self.expression[group_b, idx]
             if a.std() == 0 and b.std() == 0:
-                results[gene] = {"pval": 1.0, "log2fc": 0.0, "mean_a": float(a.mean()), "mean_b": float(b.mean())}
+                results[gene] = {
+                    "pval": 1.0,
+                    "log2fc": 0.0,
+                    "mean_a": float(a.mean()),
+                    "mean_b": float(b.mean()),
+                }
                 continue
             stat, pval = scipy_stats.ttest_ind(a, b, equal_var=False, nan_policy="omit")
             fc = float(a.mean()) - float(b.mean())  # log-space → log2FC difference
-            results[gene] = {"pval": float(pval), "log2fc": float(fc), "mean_a": float(a.mean()), "mean_b": float(b.mean())}
+            results[gene] = {
+                "pval": float(pval),
+                "log2fc": float(fc),
+                "mean_a": float(a.mean()),
+                "mean_b": float(b.mean()),
+            }
         return results
 
     def _fdr_correct(self, pvals: List[float]) -> np.ndarray:
@@ -101,6 +111,7 @@ class HypothesisTester:
         """One-tailed hypergeometric p-value for gene set enrichment."""
         try:
             from scipy.stats import hypergeom
+
             # P(X >= n_affected_sig) under H0
             pval = hypergeom.sf(n_affected_sig - 1, n_total, n_affected, n_sig_total)
             return float(pval)
@@ -114,7 +125,7 @@ class HypothesisTester:
 
     def test(
         self,
-        hypothesis,   # GeneratedHypothesis
+        hypothesis,  # GeneratedHypothesis
         group_a_label: Optional[int] = None,
         group_b_label: Optional[int] = None,
     ) -> TestResult:
@@ -165,7 +176,9 @@ class HypothesisTester:
 
         # Enrichment: are hypothesis genes over-represented among DE genes?
         # Compute genome-wide DE first (simplified: use all genes in matrix)
-        all_gene_results = self._ttest_genes(self.gene_names[:min(5000, len(self.gene_names))], mask_a, mask_b)
+        all_gene_results = self._ttest_genes(
+            self.gene_names[: min(5000, len(self.gene_names))], mask_a, mask_b
+        )
         all_pvals = [r["pval"] for r in all_gene_results.values()]
         all_fdrs = self._fdr_correct(all_pvals)
         n_sig_global = int((all_fdrs < self.fdr_threshold).sum())
@@ -177,7 +190,11 @@ class HypothesisTester:
             n_total=len(all_gene_results),
         )
 
-        mean_fc = float(np.mean([abs(r["log2fc"]) for r in gene_results.values()])) if gene_results else 0.0
+        mean_fc = (
+            float(np.mean([abs(r["log2fc"]) for r in gene_results.values()]))
+            if gene_results
+            else 0.0
+        )
 
         # Direction: most affected genes should be up in group_a (hypothesis typically predicts up)
         n_up = sum(1 for r in gene_results.values() if r["log2fc"] > 0)
@@ -193,7 +210,16 @@ class HypothesisTester:
             mean_effect_size=mean_fc,
             direction_consistent=direction_ok,
             supported=supported,
-            gene_results={g: r for g, r in zip(gene_results.keys(), [dict(zip(gene_results[g].keys(), gene_results[g].values())) for g in gene_results])},
+            gene_results={
+                g: r
+                for g, r in zip(
+                    gene_results.keys(),
+                    [
+                        dict(zip(gene_results[g].keys(), gene_results[g].values()))
+                        for g in gene_results
+                    ],
+                )
+            },
         )
 
     def test_batch(

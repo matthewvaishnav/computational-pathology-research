@@ -50,6 +50,7 @@ def refutation_random_cause(
     z_score = abs(original_ate - mean_new) / (std_new + 1e-8)
     # Two-tailed p-value under normality
     from scipy import stats as scipy_stats
+
     p_value = float(2 * (1 - scipy_stats.norm.cdf(z_score)))
     passed = p_value > significance_level
 

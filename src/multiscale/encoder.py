@@ -72,10 +72,12 @@ class MultiScaleFeatureExtractor(nn.Module):
         if magnifications is None:
             magnifications = MAGNIFICATION_LEVELS
         self.magnifications = magnifications
-        self.encoders = nn.ModuleDict({
-            str(m): MagnificationEncoder(input_dim, output_dim, m, dropout)
-            for m in magnifications
-        })
+        self.encoders = nn.ModuleDict(
+            {
+                str(m): MagnificationEncoder(input_dim, output_dim, m, dropout)
+                for m in magnifications
+            }
+        )
 
     def forward(self, features: Dict[int, torch.Tensor]) -> Dict[int, torch.Tensor]:
         """
@@ -89,6 +91,8 @@ class MultiScaleFeatureExtractor(nn.Module):
         for mag, x in features.items():
             key = str(mag)
             if key not in self.encoders:
-                raise ValueError(f"No encoder for magnification {mag}. Available: {self.magnifications}")
+                raise ValueError(
+                    f"No encoder for magnification {mag}. Available: {self.magnifications}"
+                )
             out[mag] = self.encoders[key](x)
         return out

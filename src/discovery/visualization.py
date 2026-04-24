@@ -31,6 +31,7 @@ def kaplan_meier_plot(
     Adds log-rank p-value annotation.
     """
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from .validation import log_rank_test
@@ -68,21 +69,36 @@ def kaplan_meier_plot(
         surv_arr = np.array(survival)
         se_arr = np.array(se_list)
 
-        ax.step(times_arr, surv_arr, where="post", color=color,
-                label=f"Subtype {g} (n={n})", linewidth=2)
+        ax.step(
+            times_arr,
+            surv_arr,
+            where="post",
+            color=color,
+            label=f"Subtype {g} (n={n})",
+            linewidth=2,
+        )
         ax.fill_between(
             times_arr,
             np.clip(surv_arr - 1.96 * se_arr, 0, 1),
             np.clip(surv_arr + 1.96 * se_arr, 0, 1),
-            alpha=0.15, color=color, step="post"
+            alpha=0.15,
+            color=color,
+            step="post",
         )
 
     # Log-rank p-value
     lr = log_rank_test(survival_times, events, labels)
     p_str = f"p={lr['p_value']:.3e}" if lr["p_value"] < 0.001 else f"p={lr['p_value']:.3f}"
-    ax.text(0.98, 0.98, p_str, transform=ax.transAxes,
-            ha="right", va="top", fontsize=11,
-            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5))
+    ax.text(
+        0.98,
+        0.98,
+        p_str,
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+        fontsize=11,
+        bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+    )
 
     ax.set_xlabel("Time", fontsize=12)
     ax.set_ylabel("Survival Probability", fontsize=12)
@@ -124,6 +140,7 @@ def umap_plot(
         raise ImportError("umap-learn required. pip install umap-learn>=0.5.0")
 
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -142,8 +159,15 @@ def umap_plot(
     cmap = plt.cm.Set1(np.linspace(0, 1, len(groups)))
     for g, color in zip(groups, cmap):
         mask = labels == g
-        ax.scatter(coords[mask, 0], coords[mask, 1], c=[color],
-                   label=f"Subtype {g}", alpha=0.7, s=15, edgecolors="none")
+        ax.scatter(
+            coords[mask, 0],
+            coords[mask, 1],
+            c=[color],
+            label=f"Subtype {g}",
+            alpha=0.7,
+            s=15,
+            edgecolors="none",
+        )
     ax.set_title(title)
     ax.legend(markerscale=2, fontsize=9)
     ax.set_xlabel("UMAP-1")
@@ -154,8 +178,15 @@ def umap_plot(
     if clinical_vars:
         for i, (var_name, var_vals) in enumerate(clinical_vars.items()):
             ax = axes[i + 1]
-            sc = ax.scatter(coords[:, 0], coords[:, 1], c=var_vals,
-                            cmap="coolwarm", alpha=0.7, s=15, edgecolors="none")
+            sc = ax.scatter(
+                coords[:, 0],
+                coords[:, 1],
+                c=var_vals,
+                cmap="coolwarm",
+                alpha=0.7,
+                s=15,
+                edgecolors="none",
+            )
             plt.colorbar(sc, ax=ax)
             ax.set_title(f"Colored by: {var_name}")
             ax.set_xlabel("UMAP-1")
@@ -186,6 +217,7 @@ def subtype_summary_report(
     - Per-subtype event rates
     """
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from .validation import log_rank_test
@@ -206,9 +238,7 @@ def subtype_summary_report(
 
     # Panel 2: Event rates
     ax2 = fig.add_subplot(1, n_panels, 2)
-    event_rates = [
-        events[labels == g].mean() for g in groups
-    ]
+    event_rates = [events[labels == g].mean() for g in groups]
     ax2.bar([f"S{g}" for g in groups], event_rates, color=colors)
     ax2.set_title("Event Rate by Subtype")
     ax2.set_ylabel("Event rate")
@@ -245,13 +275,15 @@ def subtype_summary_report(
     if latent_embeddings is not None and n_panels == 4:
         try:
             from umap import UMAP
+
             ax4 = fig.add_subplot(1, n_panels, 4)
             reducer = UMAP(n_components=2, random_state=42, n_neighbors=15)
             coords = reducer.fit_transform(latent_embeddings)
             for g, color in zip(groups, colors):
                 mask = labels == g
-                ax4.scatter(coords[mask, 0], coords[mask, 1],
-                            c=[color], label=f"S{g}", alpha=0.7, s=10)
+                ax4.scatter(
+                    coords[mask, 0], coords[mask, 1], c=[color], label=f"S{g}", alpha=0.7, s=10
+                )
             ax4.set_title("Latent Space (UMAP)")
             ax4.legend(markerscale=2, fontsize=8)
             ax4.set_xlabel("UMAP-1")
@@ -263,8 +295,7 @@ def subtype_summary_report(
     lr = log_rank_test(survival_times, events, labels)
     p_str = f"p={lr['p_value']:.3e}" if lr["p_value"] < 0.001 else f"p={lr['p_value']:.3f}"
     fig.suptitle(
-        f"Discovered Subtypes (k={len(groups)}, log-rank {p_str})",
-        fontsize=14, fontweight="bold"
+        f"Discovered Subtypes (k={len(groups)}, log-rank {p_str})", fontsize=14, fontweight="bold"
     )
 
     plt.tight_layout()
