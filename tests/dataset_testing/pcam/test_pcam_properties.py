@@ -10,9 +10,9 @@ from pathlib import Path
 
 import h5py
 import numpy as np
+
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-
 from tests.dataset_testing.hypothesis_strategies import (
     PropertyTestBase,
     configuration_strategy,

@@ -15,7 +15,7 @@ import torch.nn.functional as F
 logger = logging.getLogger(__name__)
 
 try:
-    from torch_geometric.nn import GATConv, global_mean_pool, global_max_pool
+    from torch_geometric.nn import GATConv, global_max_pool, global_mean_pool
 
     _HAS_PYG = True
 except ImportError:

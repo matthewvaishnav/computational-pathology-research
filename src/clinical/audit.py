@@ -25,9 +25,9 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
     NoEncryption,

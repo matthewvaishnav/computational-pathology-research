@@ -12,10 +12,10 @@ from unittest.mock import Mock
 from unittest.mock import patch as mock_patch
 
 import numpy as np
-from hypothesis import assume, given, settings
-from hypothesis import strategies as st
 from PIL import Image
 
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.data.openslide_utils import WSIReader
 from tests.dataset_testing.hypothesis_strategies import (
     patch_size_strategy,

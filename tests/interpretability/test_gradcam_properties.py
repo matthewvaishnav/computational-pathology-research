@@ -6,14 +6,14 @@ Each test uses Hypothesis for property-based testing with minimum 100 iterations
 
 from pathlib import Path
 
-import hypothesis.extra.numpy as npst
 import numpy as np
 import pytest
 import torch
 import torch.nn as nn
+
+import hypothesis.extra.numpy as npst
 from hypothesis import given, settings
 from hypothesis import strategies as st
-
 from src.interpretability.gradcam import GradCAMGenerator
 
 
