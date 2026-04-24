@@ -11,9 +11,9 @@ import h5py
 import numpy as np
 import pytest
 import torch
+
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-
 from src.data.camelyon_dataset import (
     CAMELYONPatchDataset,
     CAMELYONSlideDataset,

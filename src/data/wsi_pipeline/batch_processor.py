@@ -10,7 +10,6 @@ error recovery, progress tracking, and memory optimization.
 import gc
 import json
 import logging
-import psutil
 import time
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
@@ -18,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import psutil
 import torch
 
 from .cache import FeatureCache

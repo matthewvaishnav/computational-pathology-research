@@ -6,9 +6,9 @@ TME composition (TIL density, immune phenotype) predicts immunotherapy response
 better than tumor morphology alone.
 """
 
-from .detector import NucleusDetector, DetectionResult
-from .graph import CellGraphBuilder, CellGraph
+from .detector import DetectionResult, NucleusDetector
 from .gnn import CellGraphNet, TMEClassifier
+from .graph import CellGraph, CellGraphBuilder
 from .types import CellTypeClassifier, TMEComposition, classify_immune_phenotype
 
 __all__ = [

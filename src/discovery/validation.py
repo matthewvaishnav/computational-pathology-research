@@ -145,6 +145,7 @@ def bootstrap_stability(
     not artifacts of the specific dataset sample.
     """
     from sklearn.metrics import adjusted_rand_score
+
     from .subtype import SurvivalAwareClusterer
 
     n = len(labels)

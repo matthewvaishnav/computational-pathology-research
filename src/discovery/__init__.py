@@ -9,15 +9,15 @@ learning so discovered clusters maximize prognostic separation.
 from .representation import SurvivalVAE, survival_vae_loss
 from .subtype import SurvivalAwareClusterer, discover_subtypes
 from .validation import (
-    log_rank_test,
-    concordance_index,
     bootstrap_stability,
+    concordance_index,
+    log_rank_test,
     subtype_enrichment,
 )
 from .visualization import (
     kaplan_meier_plot,
-    umap_plot,
     subtype_summary_report,
+    umap_plot,
 )
 
 __all__ = [
