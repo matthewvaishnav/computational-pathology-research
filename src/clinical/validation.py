@@ -1007,8 +1007,12 @@ class PerformanceMonitor:
 
     def _send_email_alert(self, alert_type: str, message: str):
         """Send email alert. Override this method to integrate with an email service."""
-        logger.warning(f"[ALERT:{alert_type}] Email transport not configured — alert not sent: {message}")
+        logger.warning(
+            f"[ALERT:{alert_type}] Email transport not configured — alert not sent: {message}"
+        )
 
     def _send_webhook_alert(self, alert_type: str, message: str, data: Dict[str, Any]):
         """Send webhook alert. Override this method to integrate with a webhook service."""
-        logger.warning(f"[ALERT:{alert_type}] Webhook transport not configured — alert not sent: {message}")
+        logger.warning(
+            f"[ALERT:{alert_type}] Webhook transport not configured — alert not sent: {message}"
+        )

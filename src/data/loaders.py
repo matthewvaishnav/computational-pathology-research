@@ -387,7 +387,9 @@ class TemporalDataset(Dataset):
             features = torch.from_numpy(features).float()
             return features
         except Exception as e:
-            logger.warning(f"Failed to load genomic features for slide {slide_id}: {e}", exc_info=True)
+            logger.warning(
+                f"Failed to load genomic features for slide {slide_id}: {e}", exc_info=True
+            )
             return None
 
     def _load_clinical_text(self, slide_info: Dict) -> Optional[torch.Tensor]:

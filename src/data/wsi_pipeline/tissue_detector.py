@@ -28,6 +28,7 @@ try:
     import torch.nn.functional as F
     import torchvision.transforms as transforms
     from torchvision.models import resnet18
+
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
@@ -43,33 +44,33 @@ logger = logging.getLogger(__name__)
 class SimpleTissueSegmentationModel(nn.Module):
     """
     Simple CNN-based tissue segmentation model.
-    
+
     This is a lightweight model for tissue detection that can be used
     when deep learning tissue detection is enabled. Based on ResNet-18
     with a segmentation head.
     """
-    
+
     def __init__(self, num_classes: int = 2):
         """
         Initialize tissue segmentation model.
-        
+
         Args:
             num_classes: Number of classes (2 for tissue/background)
         """
         super().__init__()
-        
+
         if not TORCH_AVAILABLE:
             raise ImportError(
                 "PyTorch is required for deep learning tissue detection. "
                 "Install with: pip install torch torchvision"
             )
-        
+
         # Use ResNet-18 as backbone
         backbone = resnet18(pretrained=True)
-        
+
         # Remove final layers
         self.features = nn.Sequential(*list(backbone.children())[:-2])
-        
+
         # Add segmentation head
         self.segmentation_head = nn.Sequential(
             nn.Conv2d(512, 256, kernel_size=3, padding=1),
@@ -80,23 +81,18 @@ class SimpleTissueSegmentationModel(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(128, num_classes, kernel_size=1),
         )
-        
+
     def forward(self, x):
         """Forward pass."""
         # Extract features
         features = self.features(x)
-        
+
         # Generate segmentation map
         seg_map = self.segmentation_head(features)
-        
+
         # Upsample to input size
-        seg_map = F.interpolate(
-            seg_map, 
-            size=x.shape[-2:], 
-            mode='bilinear', 
-            align_corners=False
-        )
-        
+        seg_map = F.interpolate(seg_map, size=x.shape[-2:], mode="bilinear", align_corners=False)
+
         return seg_map
 
 
@@ -123,13 +119,13 @@ class TissueDetector:
     Example:
         >>> # Otsu thresholding (fast)
         >>> detector = TissueDetector(method="otsu", tissue_threshold=0.5)
-        >>> 
+        >>>
         >>> # Deep learning (more accurate)
         >>> detector = TissueDetector(
-        ...     method="deep_learning", 
+        ...     method="deep_learning",
         ...     model_path="tissue_model.pth"
         ... )
-        >>> 
+        >>>
         >>> tissue_mask = detector.generate_tissue_mask(reader)
         >>> is_tissue = detector.is_tissue_patch(patch)
     """
@@ -189,7 +185,7 @@ class TissueDetector:
                 self.device = "cuda" if torch.cuda.is_available() else "cpu"
             else:
                 self.device = device
-            
+
             # Load model
             self._load_model()
         else:
@@ -219,23 +215,22 @@ class TissueDetector:
                 # Use default simple model (randomly initialized)
                 logger.info("Using default tissue segmentation model (randomly initialized)")
                 self.model = SimpleTissueSegmentationModel(num_classes=2)
-                
+
             self.model.to(self.device)
             self.model.eval()
-            
+
             # Setup preprocessing transforms
-            self.transform = transforms.Compose([
-                transforms.ToPILImage(),
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225]
-                )
-            ])
-            
+            self.transform = transforms.Compose(
+                [
+                    transforms.ToPILImage(),
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                ]
+            )
+
             logger.info(f"Loaded tissue segmentation model on {self.device}")
-            
+
         except Exception as e:
             logger.error(f"Failed to load tissue segmentation model: {e}")
             # Fallback to Otsu method
@@ -334,8 +329,14 @@ class TissueDetector:
             # If dark (mean < 0.5 after inversion), it's tissue
             # If bright (mean >= 0.5 after inversion), it's background
             mean_val = gray_inverted.mean()
-            tissue_mask = np.ones_like(gray_inverted, dtype=bool) if mean_val > 0.5 else np.zeros_like(gray_inverted, dtype=bool)
-            logger.debug(f"Uniform image detected (std={gray_inverted.std():.6f}), using mean-based classification")
+            tissue_mask = (
+                np.ones_like(gray_inverted, dtype=bool)
+                if mean_val > 0.5
+                else np.zeros_like(gray_inverted, dtype=bool)
+            )
+            logger.debug(
+                f"Uniform image detected (std={gray_inverted.std():.6f}), using mean-based classification"
+            )
             return tissue_mask
 
         # Apply Otsu thresholding
@@ -376,39 +377,36 @@ class TissueDetector:
             # Preprocess image
             if image.dtype != np.uint8:
                 image = (image * 255).astype(np.uint8)
-            
+
             # Apply transforms
             input_tensor = self.transform(image).unsqueeze(0).to(self.device)
-            
+
             # Run inference
             with torch.no_grad():
                 output = self.model(input_tensor)
-                
+
             # Get predictions (class 1 = tissue)
             predictions = torch.softmax(output, dim=1)
             tissue_prob = predictions[0, 1].cpu().numpy()
-            
+
             # Resize back to original size
             original_size = image.shape[:2]
             tissue_prob_resized = resize(
-                tissue_prob, 
-                original_size, 
-                preserve_range=True,
-                anti_aliasing=True
+                tissue_prob, original_size, preserve_range=True, anti_aliasing=True
             )
-            
+
             # Threshold to get binary mask
             tissue_mask = tissue_prob_resized > 0.5
-            
+
             # Apply morphological closing
             try:
                 selem = disk(5)
                 tissue_mask = closing(tissue_mask, selem)
             except Exception as e:
                 logger.warning(f"Morphological closing failed: {e}, skipping")
-            
+
             return tissue_mask
-            
+
         except Exception as e:
             logger.warning(f"DL tissue detection failed: {e}, falling back to Otsu")
             return self._otsu_tissue_detection(image)
@@ -429,30 +427,30 @@ class TissueDetector:
         try:
             # Step 1: Get Otsu mask
             otsu_mask = self._otsu_tissue_detection(image)
-            
+
             # Step 2: Get DL mask
             if self.model is not None:
                 dl_mask = self._dl_tissue_detection(image)
-                
+
                 # Step 3: Combine masks
                 # Use DL mask where Otsu is uncertain (near boundaries)
                 # Create uncertainty map by dilating Otsu boundaries
                 from skimage.morphology import binary_dilation, binary_erosion
-                
+
                 # Find boundary regions
                 dilated = binary_dilation(otsu_mask, disk(10))
                 eroded = binary_erosion(otsu_mask, disk(10))
                 boundary_region = dilated & ~eroded
-                
+
                 # Use DL predictions in boundary regions, Otsu elsewhere
                 combined_mask = otsu_mask.copy()
                 combined_mask[boundary_region] = dl_mask[boundary_region]
-                
+
                 return combined_mask
             else:
                 logger.warning("DL model not available for hybrid mode, using Otsu only")
                 return otsu_mask
-                
+
         except Exception as e:
             logger.warning(f"Hybrid tissue detection failed: {e}, falling back to Otsu")
             return self._otsu_tissue_detection(image)
@@ -483,19 +481,19 @@ class TissueDetector:
                     gray = np.mean(patch, axis=2)  # Fast RGB to grayscale
                 else:
                     gray = patch
-                
+
                 # Normalize to 0-1
                 gray = gray / 255.0 if gray.max() > 1.0 else gray
-                
+
                 # Simple threshold (tissue is darker)
                 # Use a fixed threshold for speed instead of Otsu calculation
                 tissue_mask = gray < 0.8  # Tissue is typically darker than 0.8
-                
+
                 tissue_pixels = tissue_mask.sum()
                 total_pixels = tissue_mask.size
-                
+
                 return tissue_pixels / total_pixels if total_pixels > 0 else 0.0
-            
+
             else:
                 # For DL methods, fall back to full calculation
                 if self.method == "deep_learning":

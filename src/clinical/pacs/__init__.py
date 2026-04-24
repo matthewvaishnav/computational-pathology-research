@@ -43,7 +43,7 @@ from .data_models import (
 
 __all__ = [
     "QueryEngine",
-    "RetrievalEngine", 
+    "RetrievalEngine",
     "StorageEngine",
     "StructuredReportBuilder",
     "SecurityManager",

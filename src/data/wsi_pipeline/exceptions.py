@@ -14,7 +14,7 @@ class WSIProcessingError(Exception):
 
 class FileFormatError(WSIProcessingError):
     """Raised when file format is unsupported or corrupted.
-    
+
     Examples:
         - Unsupported file extension
         - Corrupted WSI file
@@ -26,7 +26,7 @@ class FileFormatError(WSIProcessingError):
 
 class ResourceError(WSIProcessingError):
     """Raised when system resources are insufficient.
-    
+
     Examples:
         - Insufficient disk space
         - GPU memory exhaustion
@@ -38,7 +38,7 @@ class ResourceError(WSIProcessingError):
 
 class ProcessingError(WSIProcessingError):
     """Raised when processing step fails.
-    
+
     Examples:
         - OpenSlide read failure
         - Feature extraction failure

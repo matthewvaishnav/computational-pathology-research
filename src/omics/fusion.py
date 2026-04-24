@@ -82,9 +82,7 @@ class MultiOmicsFusion(nn.Module):
             masks = [
                 ~modality_mask.get(
                     n,
-                    torch.ones(
-                        tokens.size(0), dtype=torch.bool, device=tokens.device
-                    ),
+                    torch.ones(tokens.size(0), dtype=torch.bool, device=tokens.device),
                 )
                 for n in names
             ]
@@ -94,8 +92,7 @@ class MultiOmicsFusion(nn.Module):
             all_masked_samples = key_mask.all(dim=1)  # (N,) bool
             if all_masked_samples.any():
                 logger.warning(
-                    f"{all_masked_samples.sum().item()} samples have "
-                    "all modalities masked"
+                    f"{all_masked_samples.sum().item()} samples have " "all modalities masked"
                 )
                 # For all-masked samples, temporarily unmask to prevent
                 # transformer NaN. We'll handle them specially after
@@ -107,9 +104,7 @@ class MultiOmicsFusion(nn.Module):
         else:
             key_mask_for_transformer = None
 
-        tokens = self.transformer(
-            tokens, src_key_padding_mask=key_mask_for_transformer
-        )
+        tokens = self.transformer(tokens, src_key_padding_mask=key_mask_for_transformer)
 
         attn_w = self.pool_attn(tokens)  # (N, M, 1)
 
