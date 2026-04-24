@@ -107,9 +107,9 @@ class CellGraphBuilder:
             # Shape stats
             area = m.sum()
             try:
-                from skimage.measure import regionprops, label as sk_label
-                lbl = sk_label(m.astype(np.uint8))
-                props = regionprops(lbl)
+                from skimage.measure import regionprops
+                # Mask is already binary, use directly (label 1 = foreground)
+                props = regionprops((m > 0).astype(np.uint8))
                 if props:
                     ecc = props[0].eccentricity
                     sol = props[0].solidity
@@ -154,7 +154,7 @@ class CellGraphBuilder:
         # Delaunay triangulation edges (denser, still spatially meaningful)
         if self.use_delaunay and N >= 4:
             try:
-                from scipy.spatial import Delaunay
+                from scipy.spatial import Delaunay, QhullError
                 tri = Delaunay(centroids)
                 seen = set(zip(src_list, dst_list))
                 for simplex in tri.simplices:
@@ -167,8 +167,10 @@ class CellGraphBuilder:
                                     src_list.append(u)
                                     dst_list.append(v)
                                     seen.add((u, v))
-            except Exception as e:
-                logger.debug("Delaunay failed: %s", e)
+            except (QhullError, ValueError) as e:
+                # QhullError: colinear/degenerate points
+                # ValueError: insufficient points or invalid input
+                logger.debug("Delaunay triangulation failed: %s", e)
 
         return np.array(src_list, dtype=np.int64), np.array(dst_list, dtype=np.int64)
 

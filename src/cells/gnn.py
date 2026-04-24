@@ -46,13 +46,26 @@ class _FallbackGATConv(nn.Module):
 
 
 def _global_mean_pool_fallback(x: torch.Tensor, batch: Optional[torch.Tensor]) -> torch.Tensor:
+    """
+    Fallback global mean pooling when torch_geometric unavailable.
+    Handles non-contiguous batch indices correctly.
+    """
     if batch is None:
         return x.mean(0, keepdim=True)
-    B = int(batch.max().item()) + 1
+    
+    # Get unique batch indices and map to contiguous range
+    unique_batch = torch.unique(batch, sorted=True)
+    B = len(unique_batch)
+    
+    # Create mapping from original batch indices to contiguous indices
+    batch_mapping = torch.zeros(batch.max().item() + 1, dtype=torch.long, device=batch.device)
+    batch_mapping[unique_batch] = torch.arange(B, device=batch.device)
+    contiguous_batch = batch_mapping[batch]
+    
     out = torch.zeros(B, x.size(1), device=x.device)
     count = torch.zeros(B, 1, device=x.device)
-    out.scatter_add_(0, batch.unsqueeze(1).expand(-1, x.size(1)), x)
-    count.scatter_add_(0, batch.unsqueeze(1), torch.ones(batch.size(0), 1, device=x.device))
+    out.scatter_add_(0, contiguous_batch.unsqueeze(1).expand(-1, x.size(1)), x)
+    count.scatter_add_(0, contiguous_batch.unsqueeze(1), torch.ones(batch.size(0), 1, device=x.device))
     return out / (count + 1e-8)
 
 

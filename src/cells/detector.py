@@ -16,6 +16,18 @@ import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
+# Import watershed dependencies at module level
+try:
+    from skimage.segmentation import watershed
+    from skimage.feature import peak_local_max
+    _HAS_WATERSHED = True
+except ImportError:
+    _HAS_WATERSHED = False
+    logger.warning(
+        "skimage not installed — using scipy.ndimage.label fallback. "
+        "Install scikit-image for better instance segmentation: pip install scikit-image"
+    )
+
 
 @dataclass
 class DetectionResult:
@@ -141,17 +153,25 @@ def _hover_to_instances(
     fg_threshold: float = 0.5,
     min_area: int = 10,
 ) -> np.ndarray:
-    """Convert nuclear pixel prob + HoV maps → integer instance map via watershed."""
-    try:
-        from skimage.segmentation import watershed
-        from skimage.feature import peak_local_max
-    except ImportError:
-        logger.warning("skimage not installed — watershed post-processing unavailable")
-        from scipy import ndimage
-        fg = np_prob > fg_threshold
-        return ndimage.label(fg)[0]
-
+    """
+    Convert nuclear pixel prob + HoV maps → integer instance map via watershed.
+    
+    Falls back to simple connected components if skimage unavailable.
+    Note: Fallback produces different results (no watershed refinement).
+    """
     fg = np_prob > fg_threshold
+    
+    if not _HAS_WATERSHED:
+        # Fallback: simple connected components (no watershed refinement)
+        from scipy import ndimage
+        instance_map, _ = ndimage.label(fg)
+        # Remove small objects
+        for lab in np.unique(instance_map):
+            if lab != 0 and (instance_map == lab).sum() < min_area:
+                instance_map[instance_map == lab] = 0
+        return instance_map
+    
+    # Full watershed-based instance segmentation
     h_grad = np.abs(np.gradient(hv_map[0])[1])
     v_grad = np.abs(np.gradient(hv_map[1])[0])
     energy = -(h_grad + v_grad)
@@ -163,6 +183,7 @@ def _hover_to_instances(
 
     instance_map = watershed(-energy, seeds, mask=fg)
 
+    # Remove small objects
     for lab in np.unique(instance_map):
         if lab != 0 and (instance_map == lab).sum() < min_area:
             instance_map[instance_map == lab] = 0
