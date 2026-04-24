@@ -12,10 +12,10 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import torch
-from hypothesis import assume, given, settings
-from hypothesis import strategies as st
 from omegaconf import DictConfig
 
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.data.loaders import MultimodalDataset, collate_multimodal
 from tests.dataset_testing.hypothesis_strategies import (
     feature_dimension_strategy,

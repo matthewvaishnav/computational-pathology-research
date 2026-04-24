@@ -34,6 +34,7 @@ def kaplan_meier_plot(
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+
     from .validation import log_rank_test
 
     fig, ax = plt.subplots(figsize=figsize)
@@ -220,6 +221,7 @@ def subtype_summary_report(
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+
     from .validation import log_rank_test
 
     n_panels = 4 if latent_embeddings is not None else 3

@@ -5,9 +5,9 @@ MOFA-style tensor factorization learns shared latent factors across data modalit
 Shared factors reveal biology invisible to any single modality.
 """
 
-from .factorization import MOFAFactorization, FactorizedRepresentation
-from .encoders import OmicsEncoder, ImageOmicsEncoder
-from .fusion import MultiOmicsFusion, ModalityDropoutFusion
+from .encoders import ImageOmicsEncoder, OmicsEncoder
+from .factorization import FactorizedRepresentation, MOFAFactorization
+from .fusion import ModalityDropoutFusion, MultiOmicsFusion
 
 __all__ = [
     "MOFAFactorization",

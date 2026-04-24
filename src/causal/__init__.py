@@ -6,20 +6,20 @@ counterfactual reasoning about what would happen under different interventions.
 """
 
 from .estimators import (
-    IPWEstimator,
     DoublyRobustEstimator,
+    IPWEstimator,
     TLearner,
     XLearner,
     compute_ate,
     compute_cate,
 )
-from .treatment import CausalTreatmentEffectModel, CFRLoss
 from .graphs import CausalDAG, check_backdoor_criterion
+from .treatment import CausalTreatmentEffectModel, CFRLoss
 from .validation import (
-    refutation_random_cause,
-    refutation_data_subset,
-    compute_evalue,
     check_positivity,
+    compute_evalue,
+    refutation_data_subset,
+    refutation_random_cause,
 )
 
 __all__ = [
