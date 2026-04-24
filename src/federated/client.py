@@ -26,6 +26,7 @@ try:
         ndarrays_to_parameters,
         parameters_to_ndarrays,
     )
+
     HAS_FLWR = True
 except ImportError:
     HAS_FLWR = False
@@ -125,6 +126,7 @@ class LocalTrainer:
 
         try:
             from sklearn.metrics import roc_auc_score
+
             if len(set(all_labels)) > 1:
                 metrics["auc"] = roc_auc_score(all_labels, all_probs)
         except ImportError:
@@ -229,10 +231,14 @@ if HAS_FLWR:
             self.set_parameters(parameters)
             eval_metrics = self._trainer.evaluate()
             loss = eval_metrics.pop("val_loss", 0.0)
-            return float(loss), self._num_examples, {
-                "num_examples": self._num_examples,
-                **{k: float(v) for k, v in eval_metrics.items()},
-            }
+            return (
+                float(loss),
+                self._num_examples,
+                {
+                    "num_examples": self._num_examples,
+                    **{k: float(v) for k, v in eval_metrics.items()},
+                },
+            )
 
 else:
 

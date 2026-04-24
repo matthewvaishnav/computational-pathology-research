@@ -125,35 +125,29 @@ class PatchExtractor:
             coordinates = self._filter_by_tissue_mask_optimized(
                 coordinates, tissue_mask, slide_dimensions
             )
-            logger.debug(
-                f"Filtered to {len(coordinates)} coordinates using tissue mask"
-            )
+            logger.debug(f"Filtered to {len(coordinates)} coordinates using tissue mask")
 
         return coordinates
 
-    def _generate_coordinates_vectorized(
-        self, 
-        width: int, 
-        height: int
-    ) -> List[Tuple[int, int]]:
+    def _generate_coordinates_vectorized(self, width: int, height: int) -> List[Tuple[int, int]]:
         """
         Generate coordinates using vectorized operations for speed.
-        
+
         Args:
             width: Slide width
             height: Slide height
-            
+
         Returns:
             List of (x, y) coordinates
         """
         # Generate x and y ranges
         x_coords = np.arange(0, width - self.patch_size + 1, self.stride)
         y_coords = np.arange(0, height - self.patch_size + 1, self.stride)
-        
+
         # Create meshgrid and flatten
         xx, yy = np.meshgrid(x_coords, y_coords)
         coordinates = list(zip(xx.flatten(), yy.flatten()))
-        
+
         return coordinates
 
     def _filter_by_tissue_mask_optimized(
@@ -175,7 +169,7 @@ class PatchExtractor:
         """
         if not coordinates:
             return coordinates
-            
+
         mask_height, mask_width = tissue_mask.shape
         slide_width, slide_height = slide_dimensions
 
@@ -185,25 +179,24 @@ class PatchExtractor:
 
         # Convert to numpy arrays for vectorized operations
         coords_array = np.array(coordinates)
-        
+
         # Convert coordinates to mask space
         mask_coords = coords_array * np.array([scale_x, scale_y])
-        patch_size_mask = np.array([
-            max(1, int(self.patch_size * scale_x)),
-            max(1, int(self.patch_size * scale_y))
-        ])
-        
+        patch_size_mask = np.array(
+            [max(1, int(self.patch_size * scale_x)), max(1, int(self.patch_size * scale_y))]
+        )
+
         # Calculate patch centers
         centers = mask_coords + patch_size_mask // 2
-        
+
         # Clip to mask bounds
         centers[:, 0] = np.clip(centers[:, 0], 0, mask_width - 1)
         centers[:, 1] = np.clip(centers[:, 1], 0, mask_height - 1)
-        
+
         # Check tissue mask at centers (vectorized)
         center_indices = centers.astype(int)
         tissue_flags = tissue_mask[center_indices[:, 1], center_indices[:, 0]]
-        
+
         # Filter coordinates
         filtered_coords = [
             (int(x), int(y)) for (x, y), flag in zip(coordinates, tissue_flags) if flag
@@ -254,9 +247,7 @@ class PatchExtractor:
         scale_factor = from_downsample / to_downsample
 
         # Convert coordinates
-        converted_coords = [
-            (int(x * scale_factor), int(y * scale_factor)) for x, y in coordinates
-        ]
+        converted_coords = [(int(x * scale_factor), int(y * scale_factor)) for x, y in coordinates]
 
         return converted_coords
 
@@ -284,9 +275,7 @@ class PatchExtractor:
             x, y = location
 
             if x < 0 or y < 0:
-                raise ProcessingError(
-                    f"Coordinates out of bounds: ({x}, {y}) must be non-negative"
-                )
+                raise ProcessingError(f"Coordinates out of bounds: ({x}, {y}) must be non-negative")
 
             if x + self.patch_size > slide_width or y + self.patch_size > slide_height:
                 raise ProcessingError(

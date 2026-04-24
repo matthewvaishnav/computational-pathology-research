@@ -15,6 +15,7 @@ try:
     import flwr as fl
     from flwr.common import Metrics, NDArrays, Parameters
     from flwr.server.strategy import FedAvg, FedProx
+
     HAS_FLWR = True
 except ImportError:
     HAS_FLWR = False

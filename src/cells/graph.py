@@ -18,10 +18,11 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CellGraph:
     """Graph representation of cells in a tissue patch."""
-    node_features: torch.Tensor    # (N, node_dim) per-cell features
-    edge_index: torch.Tensor       # (2, E) COO format
-    edge_features: torch.Tensor    # (E, edge_dim) per-edge features
-    centroids: np.ndarray          # (N, 2) spatial coords for visualisation
+
+    node_features: torch.Tensor  # (N, node_dim) per-cell features
+    edge_index: torch.Tensor  # (2, E) COO format
+    edge_features: torch.Tensor  # (E, edge_dim) per-edge features
+    centroids: np.ndarray  # (N, 2) spatial coords for visualisation
     cell_types: Optional[torch.Tensor] = None  # (N,) class labels
 
     @property
@@ -67,6 +68,7 @@ class CellGraphBuilder:
             CellGraph or None if < 2 nuclei detected
         """
         from .detector import DetectionResult
+
         result: DetectionResult = detection_result
 
         N = result.count
@@ -108,6 +110,7 @@ class CellGraphBuilder:
             area = m.sum()
             try:
                 from skimage.measure import regionprops
+
                 # Mask is already binary, use directly (label 1 = foreground)
                 props = regionprops((m > 0).astype(np.uint8))
                 if props:
@@ -139,6 +142,7 @@ class CellGraphBuilder:
 
         # kNN edges
         from scipy.spatial import KDTree
+
         tree = KDTree(centroids)
         k_query = min(self.k + 1, N)
         dists, idxs = tree.query(centroids, k=k_query)
@@ -155,6 +159,7 @@ class CellGraphBuilder:
         if self.use_delaunay and N >= 4:
             try:
                 from scipy.spatial import Delaunay, QhullError
+
                 tri = Delaunay(centroids)
                 seen = set(zip(src_list, dst_list))
                 for simplex in tri.simplices:

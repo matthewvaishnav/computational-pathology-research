@@ -58,12 +58,12 @@ class TestQualityControl:
         pen_patch = np.zeros((256, 256, 3), dtype=np.uint8)
         pen_patch[:, :, 2] = 255  # Blue channel (pen mark)
         artifacts = qc.detect_artifacts(pen_patch)
-        assert artifacts['pen_marks'] == True
+        assert artifacts["pen_marks"] == True
 
         # Create patch with bubbles (bright regions)
         bubble_patch = np.ones((256, 256, 3), dtype=np.uint8) * 250  # Very bright
         artifacts = qc.detect_artifacts(bubble_patch)
-        assert artifacts['bubbles'] == True
+        assert artifacts["bubbles"] == True
 
         # Create normal tissue patch
         normal_patch = np.random.randint(50, 150, size=(256, 256, 3), dtype=np.uint8)
@@ -101,22 +101,22 @@ class TestQualityControl:
         )
 
         # Verify report structure
-        assert report['slide_id'] == "test_slide_001"
-        assert report['num_patches'] == 10
-        assert 'blur_scores' in report
-        assert 'artifacts' in report
-        assert report['tissue_coverage'] == 0.15
-        assert report['low_tissue_warning'] is False  # Above threshold
-        assert 'dimension_validation' in report
-        assert report['dimension_validation']['patch_dimensions_valid'] is True
-        assert report['dimension_validation']['feature_dimensions_valid'] is True
+        assert report["slide_id"] == "test_slide_001"
+        assert report["num_patches"] == 10
+        assert "blur_scores" in report
+        assert "artifacts" in report
+        assert report["tissue_coverage"] == 0.15
+        assert report["low_tissue_warning"] is False  # Above threshold
+        assert "dimension_validation" in report
+        assert report["dimension_validation"]["patch_dimensions_valid"] is True
+        assert report["dimension_validation"]["feature_dimensions_valid"] is True
 
         # Verify blur scores
-        blur_scores = report['blur_scores']
-        assert 'mean' in blur_scores
-        assert 'std' in blur_scores
-        assert 'num_blurry' in blur_scores
-        assert blur_scores['num_blurry'] == 5  # Half are blurry
+        blur_scores = report["blur_scores"]
+        assert "mean" in blur_scores
+        assert "std" in blur_scores
+        assert "num_blurry" in blur_scores
+        assert blur_scores["num_blurry"] == 5  # Half are blurry
 
     def test_qc_low_tissue_warning(self):
         """Test QC warning for low tissue coverage."""
@@ -132,9 +132,9 @@ class TestQualityControl:
             tissue_coverage=0.05,  # Below threshold
         )
 
-        assert report['low_tissue_warning'] is True
-        assert len(report['warnings']) > 0
-        assert any('Low tissue coverage' in w for w in report['warnings'])
+        assert report["low_tissue_warning"] is True
+        assert len(report["warnings"]) > 0
+        assert any("Low tissue coverage" in w for w in report["warnings"])
 
 
 class TestBatchProcessor:
@@ -168,12 +168,13 @@ class TestBatchProcessor:
             thumb = Image.new("RGB", size, color=(255, 255, 255))  # White background
             # Add tissue region in center
             from PIL import ImageDraw
+
             draw = ImageDraw.Draw(thumb)
             center_x, center_y = size[0] // 2, size[1] // 2
             radius = min(size) // 4
             draw.ellipse(
                 [center_x - radius, center_y - radius, center_x + radius, center_y + radius],
-                fill=(50, 50, 50)
+                fill=(50, 50, 50),
             )
             return thumb
 
@@ -227,13 +228,15 @@ class TestBatchProcessor:
         }
 
         # Mock read_region
-        mock_slide.read_region = lambda loc, lvl, size: Image.new("RGBA", size, color=(50, 50, 50, 255))
-        
+        mock_slide.read_region = lambda loc, lvl, size: Image.new(
+            "RGBA", size, color=(50, 50, 50, 255)
+        )
+
         # Mock get_thumbnail
         def mock_get_thumbnail(size):
             thumb = Image.new("RGB", size, color=(50, 50, 50))  # All tissue
             return thumb
-        
+
         mock_slide.get_thumbnail = mock_get_thumbnail
         mock_openslide_class.return_value = mock_slide
 
@@ -264,23 +267,23 @@ class TestBatchProcessor:
             results = processor.process_batch(slide_paths)
 
             # Verify results
-            assert results['total_slides'] == 3
-            assert results['successful'] == 3
-            assert results['failed'] == 0
-            assert len(results['results']) == 3
+            assert results["total_slides"] == 3
+            assert results["successful"] == 3
+            assert results["failed"] == 0
+            assert len(results["results"]) == 3
 
             # Verify all slides processed successfully
-            for result in results['results']:
+            for result in results["results"]:
                 assert result.success is True
                 assert result.num_patches > 0
 
             # Verify summary
-            summary = results['summary']
-            assert summary['total_slides'] == 3
-            assert summary['successful_slides'] == 3
-            assert summary['failed_slides'] == 0
-            assert 'total_patches' in summary
-            assert 'avg_patches_per_slide' in summary
+            summary = results["summary"]
+            assert summary["total_slides"] == 3
+            assert summary["successful_slides"] == 3
+            assert summary["failed_slides"] == 0
+            assert "total_patches" in summary
+            assert "avg_patches_per_slide" in summary
 
     @patch("src.data.wsi_pipeline.reader.OPENSLIDE_AVAILABLE", True)
     @patch("src.data.wsi_pipeline.reader.OpenSlide")
@@ -346,26 +349,26 @@ class TestBatchProcessor:
                 index = json.load(f)
 
             # Verify index structure matches CAMELYONSlideIndex expectations
-            assert 'dataset_name' in index
-            assert 'creation_date' in index
-            assert 'total_slides' in index
-            assert 'splits' in index
-            assert 'slides' in index
+            assert "dataset_name" in index
+            assert "creation_date" in index
+            assert "total_slides" in index
+            assert "splits" in index
+            assert "slides" in index
 
-            assert index['total_slides'] == 3
-            assert index['splits']['train'] >= 0
-            assert index['splits']['val'] >= 0
-            assert index['splits']['test'] >= 0
-            assert len(index['slides']) == 3
+            assert index["total_slides"] == 3
+            assert index["splits"]["train"] >= 0
+            assert index["splits"]["val"] >= 0
+            assert index["splits"]["test"] >= 0
+            assert len(index["slides"]) == 3
 
             # Verify slide entries
-            for slide in index['slides']:
-                assert 'slide_id' in slide
-                assert 'patient_id' in slide
-                assert 'file_path' in slide
-                assert 'label' in slide
-                assert 'split' in slide
-                assert slide['split'] in ['train', 'val', 'test']
+            for slide in index["slides"]:
+                assert "slide_id" in slide
+                assert "patient_id" in slide
+                assert "file_path" in slide
+                assert "label" in slide
+                assert "split" in slide
+                assert slide["split"] in ["train", "val", "test"]
 
     @patch("src.data.wsi_pipeline.reader.OPENSLIDE_AVAILABLE", True)
     @patch("src.data.wsi_pipeline.reader.OpenSlide")
@@ -429,12 +432,14 @@ class TestBatchProcessor:
         mock_slide.level_dimensions = [(512, 512)]
         mock_slide.level_downsamples = [1.0]
         mock_slide.properties = {}
-        mock_slide.read_region = lambda loc, lvl, size: Image.new("RGBA", size, color=(50, 50, 50, 255))
-        
+        mock_slide.read_region = lambda loc, lvl, size: Image.new(
+            "RGBA", size, color=(50, 50, 50, 255)
+        )
+
         # Mock get_thumbnail
         def mock_get_thumbnail(size):
             return Image.new("RGB", size, color=(50, 50, 50))
-        
+
         mock_slide.get_thumbnail = mock_get_thumbnail
         mock_openslide_class.return_value = mock_slide
 
@@ -461,12 +466,12 @@ class TestBatchProcessor:
             results = processor.process_batch(slide_paths)
 
             # Verify timing information
-            assert results['total_time'] > 0
-            assert results['summary']['total_time_seconds'] > 0
-            assert results['summary']['avg_time_per_slide'] > 0
+            assert results["total_time"] > 0
+            assert results["summary"]["total_time_seconds"] > 0
+            assert results["summary"]["avg_time_per_slide"] > 0
 
             # Verify all slides were processed
-            assert len(results['results']) == 2
+            assert len(results["results"]) == 2
 
 
 if __name__ == "__main__":

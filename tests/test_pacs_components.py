@@ -143,9 +143,11 @@ def test_stop_and_restart_recreates_processing_executor(monkeypatch):
 
 def test_validate_certificate_accepts_leaf_signed_by_ca():
     ca_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    ca_subject = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, "Test CA"),
-    ])
+    ca_subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COMMON_NAME, "Test CA"),
+        ]
+    )
     ca_cert = (
         x509.CertificateBuilder()
         .subject_name(ca_subject)
@@ -159,9 +161,11 @@ def test_validate_certificate_accepts_leaf_signed_by_ca():
     )
 
     leaf_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    leaf_subject = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, "pacs.local"),
-    ])
+    leaf_subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COMMON_NAME, "pacs.local"),
+        ]
+    )
     leaf_cert = (
         x509.CertificateBuilder()
         .subject_name(leaf_subject)

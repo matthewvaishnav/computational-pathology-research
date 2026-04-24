@@ -81,8 +81,7 @@ class CrossAttentionLayer(nn.Module):
             key_value: H&E patch features [batch, n_patches, d_model]
             key_padding_mask: Patch mask [batch, n_patches] (True = padding)
         """
-        attended, _ = self.attn(query, key_value, key_value,
-                                key_padding_mask=key_padding_mask)
+        attended, _ = self.attn(query, key_value, key_value, key_padding_mask=key_padding_mask)
         query = self.norm1(query + self.dropout(attended))
         query = self.norm2(query + self.dropout(self.ff(query)))
         return query
@@ -131,10 +130,9 @@ class SpatialTranscriptomicsDecoder(nn.Module):
         self.gene_queries = nn.Parameter(torch.randn(1, n_genes, d_model) * 0.02)
 
         # Cross-attention layers
-        self.layers = nn.ModuleList([
-            CrossAttentionLayer(d_model, n_heads, dropout)
-            for _ in range(n_layers)
-        ])
+        self.layers = nn.ModuleList(
+            [CrossAttentionLayer(d_model, n_heads, dropout) for _ in range(n_layers)]
+        )
 
         # Output head: project to gene expression space
         self.gene_head = nn.Sequential(
@@ -202,19 +200,19 @@ class SpatialTranscriptomicsDecoder(nn.Module):
         patch_residual = self.patch_proj(patch_features)  # [B, n_patches, d_model]
         # For per-patch gene predictions, use per-patch cross-attention output
         # Stack patches as individual queries
-        all_queries = torch.cat([
-            queries.unsqueeze(1).expand(-1, n_patches, -1, -1),  # [B,N,G,D]
-            patch_emb.unsqueeze(2).expand(-1, -1, self.n_genes, -1),  # [B,N,G,D]
-        ], dim=-1)
+        all_queries = torch.cat(
+            [
+                queries.unsqueeze(1).expand(-1, n_patches, -1, -1),  # [B,N,G,D]
+                patch_emb.unsqueeze(2).expand(-1, -1, self.n_genes, -1),  # [B,N,G,D]
+            ],
+            dim=-1,
+        )
         # Project combined to expression
         per_patch_expr = self.activation(
             nn.functional.linear(
                 all_queries,
-                torch.cat([
-                    self.gene_head[1].weight,
-                    self.gene_head[1].weight
-                ], dim=1),
-                self.gene_head[1].bias
+                torch.cat([self.gene_head[1].weight, self.gene_head[1].weight], dim=1),
+                self.gene_head[1].bias,
             ).squeeze(-1)
         )  # [B, n_patches, n_genes]
 
@@ -260,9 +258,7 @@ class SpatialDecoderLoss(nn.Module):
         self.lambda_sparse = lambda_sparse
         self.eps = eps
 
-    def _pearson_loss(
-        self, pred: torch.Tensor, target: torch.Tensor
-    ) -> torch.Tensor:
+    def _pearson_loss(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """
         1 - mean Pearson r across genes.
 

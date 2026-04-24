@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import anndata as ad
+
     HAS_ANNDATA = True
 except ImportError:
     HAS_ANNDATA = False
@@ -81,11 +82,7 @@ def highly_variable_genes(
         normalized_dispersion[mask] = (bin_disp - bin_mean_disp) / bin_std_disp
 
     # Filter by mean and dispersion thresholds
-    hvg_mask = (
-        (mean >= min_mean)
-        & (mean <= max_mean)
-        & (normalized_dispersion >= min_dispersion)
-    )
+    hvg_mask = (mean >= min_mean) & (mean <= max_mean) & (normalized_dispersion >= min_dispersion)
 
     # Rank by normalized dispersion and keep top-k
     if hvg_mask.sum() > n_top_genes:
@@ -154,22 +151,16 @@ class SpatialDataset(Dataset):
             expression = normalize_counts(expression)
 
         if n_top_genes > 0 and expression.shape[1] > n_top_genes:
-            hvg_mask = highly_variable_genes(
-                expression, n_top_genes=n_top_genes
-            )
+            hvg_mask = highly_variable_genes(expression, n_top_genes=n_top_genes)
             expression = expression[:, hvg_mask]
             if gene_names is not None:
                 gene_names = [g for g, m in zip(gene_names, hvg_mask) if m]
-            logger.info(
-                f"Selected {hvg_mask.sum()} HVGs from {len(hvg_mask)} genes"
-            )
+            logger.info(f"Selected {hvg_mask.sum()} HVGs from {len(hvg_mask)} genes")
 
         self.features = torch.tensor(patch_features, dtype=torch.float32)
         self.expression = torch.tensor(expression, dtype=torch.float32)
         self.coords = (
-            torch.tensor(patch_coords, dtype=torch.long)
-            if patch_coords is not None
-            else None
+            torch.tensor(patch_coords, dtype=torch.long) if patch_coords is not None else None
         )
         self.gene_names = gene_names
         self.n_genes = expression.shape[1]
@@ -232,9 +223,7 @@ class SpatialDataset(Dataset):
                 counts_dense = np.zeros((n_spots, n_genes), dtype=np.float32)
                 for i in range(0, n_spots, chunk_size):
                     end_i = min(i + chunk_size, n_spots)
-                    counts_dense[i:end_i] = (
-                        counts[i:end_i].toarray().astype(np.float32)
-                    )
+                    counts_dense[i:end_i] = counts[i:end_i].toarray().astype(np.float32)
                 counts = counts_dense
             else:
                 counts = counts.toarray().astype(np.float32)

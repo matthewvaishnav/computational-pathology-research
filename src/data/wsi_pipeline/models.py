@@ -12,7 +12,7 @@ from typing import Any, Dict, Optional
 @dataclass
 class SlideMetadata:
     """Metadata for a whole slide image.
-    
+
     Attributes:
         slide_id: Unique identifier for the slide
         patient_id: Patient identifier
@@ -28,7 +28,7 @@ class SlideMetadata:
         scan_date: Date the slide was scanned
         processing_timestamp: Timestamp when slide was processed
     """
-    
+
     slide_id: str
     patient_id: str
     file_path: str
@@ -47,7 +47,7 @@ class SlideMetadata:
 @dataclass
 class ProcessingResult:
     """Result of processing a single slide.
-    
+
     Attributes:
         slide_id: Unique identifier for the slide
         success: Whether processing completed successfully
@@ -57,7 +57,7 @@ class ProcessingResult:
         error_message: Error message if processing failed
         qc_metrics: Quality control metrics dictionary
     """
-    
+
     slide_id: str
     success: bool
     feature_file: Optional[Path] = None

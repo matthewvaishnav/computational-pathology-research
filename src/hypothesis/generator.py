@@ -30,7 +30,7 @@ class GeneratedHypothesis:
     testable_prediction: str
     affected_genes: List[str]
     affected_pathways: List[str]
-    confidence: str   # HIGH / MEDIUM / LOW
+    confidence: str  # HIGH / MEDIUM / LOW
     subtype_context: Optional[str] = None
     factor_context: Optional[str] = None
     raw_response: Optional[str] = None
@@ -94,6 +94,7 @@ or mechanistically novel hypotheses."""
             return self._client
         try:
             import anthropic
+
             self._client = anthropic.Anthropic(api_key=self.api_key)
             return self._client
         except ImportError:
@@ -143,18 +144,20 @@ or mechanistically novel hypotheses."""
             return []
 
         hypotheses = []
-        for item in items[:self.max_per_call]:
-            hypotheses.append(GeneratedHypothesis(
-                hypothesis_text=item.get("hypothesis_text", ""),
-                mechanism=item.get("mechanism", ""),
-                testable_prediction=item.get("testable_prediction", ""),
-                affected_genes=item.get("affected_genes", []),
-                affected_pathways=item.get("affected_pathways", []),
-                confidence=item.get("confidence", "MEDIUM"),
-                subtype_context=context.get("subtype"),
-                factor_context=context.get("factor"),
-                raw_response=text,
-            ))
+        for item in items[: self.max_per_call]:
+            hypotheses.append(
+                GeneratedHypothesis(
+                    hypothesis_text=item.get("hypothesis_text", ""),
+                    mechanism=item.get("mechanism", ""),
+                    testable_prediction=item.get("testable_prediction", ""),
+                    affected_genes=item.get("affected_genes", []),
+                    affected_pathways=item.get("affected_pathways", []),
+                    confidence=item.get("confidence", "MEDIUM"),
+                    subtype_context=context.get("subtype"),
+                    factor_context=context.get("factor"),
+                    raw_response=text,
+                )
+            )
         return hypotheses
 
     def from_subtypes(
@@ -175,8 +178,7 @@ or mechanistically novel hypotheses."""
         """
         n_subtypes = len(np.unique(subtype_labels))
         subtype_sizes = {
-            int(s): int((subtype_labels == s).sum())
-            for s in np.unique(subtype_labels)
+            int(s): int((subtype_labels == s).sum()) for s in np.unique(subtype_labels)
         }
 
         tme_summary = ""

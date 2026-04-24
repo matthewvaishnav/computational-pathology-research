@@ -241,8 +241,8 @@ class PCamDataset(Dataset):
             # Try loading from .npy files first
             if (split_dir / "images.npy").exists() and (split_dir / "labels.npy").exists():
                 # Use memory-mapped mode to avoid loading entire dataset into RAM
-                self.images = np.load(split_dir / "images.npy", mmap_mode='r')
-                self.labels = np.load(split_dir / "labels.npy", mmap_mode='r')
+                self.images = np.load(split_dir / "images.npy", mmap_mode="r")
+                self.labels = np.load(split_dir / "labels.npy", mmap_mode="r")
                 logger.info(
                     f"Loaded {len(self.images)} samples from .npy files for {self.split} split (memory-mapped)"
                 )

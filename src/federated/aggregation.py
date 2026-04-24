@@ -67,10 +67,7 @@ class FedAvgPathology:
         if failures:
             logger.warning(f"Round {server_round}: {len(failures)} client failures")
 
-        weighted_results = [
-            (params, metrics.get("num_examples", 1))
-            for params, metrics in results
-        ]
+        weighted_results = [(params, metrics.get("num_examples", 1)) for params, metrics in results]
         aggregated = _weighted_average(weighted_results)
         client_losses = [m.get("train_loss", float("nan")) for _, m in results]
         metrics = {
@@ -93,9 +90,7 @@ class FedAvgPathology:
         if not results:
             return None, {}
         total_examples = sum(m.get("num_examples", 1) for _, m in results)
-        weighted_loss = sum(
-            loss * m.get("num_examples", 1) / total_examples for loss, m in results
-        )
+        weighted_loss = sum(loss * m.get("num_examples", 1) / total_examples for loss, m in results)
         aucs = [m.get("auc", float("nan")) for _, m in results]
         metrics = {
             "round": server_round,
@@ -171,9 +166,7 @@ class ByzantineRobustAggregation:
         num_layers = len(results[0][0])
         aggregated = []
         for layer_idx in range(num_layers):
-            layer_stack = np.stack(
-                [params[layer_idx] for params, _ in results], axis=0
-            )
+            layer_stack = np.stack([params[layer_idx] for params, _ in results], axis=0)
             aggregated.append(np.median(layer_stack, axis=0))
 
         metrics = {
@@ -181,7 +174,5 @@ class ByzantineRobustAggregation:
             "num_clients": len(results),
             "aggregation": "byzantine_median",
         }
-        logger.info(
-            f"Round {server_round}: Byzantine-robust median over {len(results)} clients"
-        )
+        logger.info(f"Round {server_round}: Byzantine-robust median over {len(results)} clients")
         return aggregated, metrics

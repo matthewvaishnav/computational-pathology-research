@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 try:
     from skimage.segmentation import watershed
     from skimage.feature import peak_local_max
+
     _HAS_WATERSHED = True
 except ImportError:
     _HAS_WATERSHED = False
@@ -32,11 +33,12 @@ except ImportError:
 @dataclass
 class DetectionResult:
     """Nucleus detection output for a single image patch."""
-    centroids: np.ndarray        # (N, 2) float32, (row, col) in patch pixels
-    masks: np.ndarray            # (N, H, W) bool instance masks
-    probabilities: np.ndarray    # (N,) detection confidence
-    cell_types: Optional[np.ndarray] = None   # (N,) int class indices
-    hover_maps: Optional[np.ndarray] = None   # (2, H, W) HoV distance maps
+
+    centroids: np.ndarray  # (N, 2) float32, (row, col) in patch pixels
+    masks: np.ndarray  # (N, H, W) bool instance masks
+    probabilities: np.ndarray  # (N,) detection confidence
+    cell_types: Optional[np.ndarray] = None  # (N,) int class indices
+    hover_maps: Optional[np.ndarray] = None  # (2, H, W) HoV distance maps
 
     @property
     def count(self) -> int:
@@ -164,6 +166,7 @@ def _hover_to_instances(
     if not _HAS_WATERSHED:
         # Fallback: simple connected components (no watershed refinement)
         from scipy import ndimage
+
         instance_map, _ = ndimage.label(fg)
         # Remove small objects
         for nucleus_label in np.unique(instance_map):
