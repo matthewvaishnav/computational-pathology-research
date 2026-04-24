@@ -7,7 +7,7 @@ Handles loading paired (H&E features, gene expression) data from
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -154,11 +154,15 @@ class SpatialDataset(Dataset):
             expression = normalize_counts(expression)
 
         if n_top_genes > 0 and expression.shape[1] > n_top_genes:
-            hvg_mask = highly_variable_genes(expression, n_top_genes=n_top_genes)
+            hvg_mask = highly_variable_genes(
+                expression, n_top_genes=n_top_genes
+            )
             expression = expression[:, hvg_mask]
             if gene_names is not None:
                 gene_names = [g for g, m in zip(gene_names, hvg_mask) if m]
-            logger.info(f"Selected {hvg_mask.sum()} HVGs from {len(hvg_mask)} genes")
+            logger.info(
+                f"Selected {hvg_mask.sum()} HVGs from {len(hvg_mask)} genes"
+            )
 
         self.features = torch.tensor(patch_features, dtype=torch.float32)
         self.expression = torch.tensor(expression, dtype=torch.float32)
@@ -219,13 +223,18 @@ class SpatialDataset(Dataset):
             # Sparse matrix: convert in chunks to avoid OOM
             n_spots, n_genes = counts.shape
             chunk_size = min(10000, n_spots)  # Process 10k spots at a time
-            
+
             if n_spots > chunk_size:
-                logger.info(f"Converting sparse matrix in chunks ({n_spots} spots, chunk_size={chunk_size})")
+                logger.info(
+                    f"Converting sparse matrix in chunks "
+                    f"({n_spots} spots, chunk_size={chunk_size})"
+                )
                 counts_dense = np.zeros((n_spots, n_genes), dtype=np.float32)
                 for i in range(0, n_spots, chunk_size):
                     end_i = min(i + chunk_size, n_spots)
-                    counts_dense[i:end_i] = counts[i:end_i].toarray().astype(np.float32)
+                    counts_dense[i:end_i] = (
+                        counts[i:end_i].toarray().astype(np.float32)
+                    )
                 counts = counts_dense
             else:
                 counts = counts.toarray().astype(np.float32)

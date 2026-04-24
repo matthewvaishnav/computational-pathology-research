@@ -45,27 +45,35 @@ class _FallbackGATConv(nn.Module):
         return self.lin(x + agg).view(N, self.heads * self.out_channels)
 
 
-def _global_mean_pool_fallback(x: torch.Tensor, batch: Optional[torch.Tensor]) -> torch.Tensor:
+def _global_mean_pool_fallback(
+    x: torch.Tensor, batch: Optional[torch.Tensor]
+) -> torch.Tensor:
     """
     Fallback global mean pooling when torch_geometric unavailable.
     Handles non-contiguous batch indices correctly.
     """
     if batch is None:
         return x.mean(0, keepdim=True)
-    
+
     # Get unique batch indices and map to contiguous range
     unique_batch = torch.unique(batch, sorted=True)
     B = len(unique_batch)
-    
+
     # Create mapping from original batch indices to contiguous indices
-    batch_mapping = torch.zeros(batch.max().item() + 1, dtype=torch.long, device=batch.device)
+    batch_mapping = torch.zeros(
+        batch.max().item() + 1, dtype=torch.long, device=batch.device
+    )
     batch_mapping[unique_batch] = torch.arange(B, device=batch.device)
     contiguous_batch = batch_mapping[batch]
-    
+
     out = torch.zeros(B, x.size(1), device=x.device)
     count = torch.zeros(B, 1, device=x.device)
     out.scatter_add_(0, contiguous_batch.unsqueeze(1).expand(-1, x.size(1)), x)
-    count.scatter_add_(0, contiguous_batch.unsqueeze(1), torch.ones(batch.size(0), 1, device=x.device))
+    count.scatter_add_(
+        0,
+        contiguous_batch.unsqueeze(1),
+        torch.ones(batch.size(0), 1, device=x.device),
+    )
     return out / (count + 1e-8)
 
 
@@ -91,9 +99,17 @@ class CellGraphNet(nn.Module):
         self.embed_dim = embed_dim
 
         if _HAS_PYG:
-            self.conv1 = GATConv(node_dim, hidden_dim, heads=heads, dropout=dropout, concat=True)
-            self.conv2 = GATConv(hidden_dim * heads, hidden_dim, heads=heads, dropout=dropout, concat=True)
-            self.conv3 = GATConv(hidden_dim * heads, embed_dim, heads=1, dropout=dropout, concat=False)
+            self.conv1 = GATConv(
+                node_dim, hidden_dim, heads=heads, dropout=dropout, concat=True
+            )
+            self.conv2 = GATConv(
+                hidden_dim * heads, hidden_dim, heads=heads, dropout=dropout,
+                concat=True
+            )
+            self.conv3 = GATConv(
+                hidden_dim * heads, embed_dim, heads=1, dropout=dropout,
+                concat=False
+            )
         else:
             self.conv1 = _FallbackGATConv(node_dim, hidden_dim, heads=heads)
             self.conv2 = _FallbackGATConv(hidden_dim * heads, hidden_dim, heads=heads)
@@ -160,7 +176,10 @@ class TMEClassifier(nn.Module):
             dropout=dropout,
         )
         self.phenotype_head = nn.Linear(embed_dim, num_phenotypes)
-        self.til_head = nn.Sequential(nn.Linear(embed_dim, 64), nn.ReLU(), nn.Linear(64, 1), nn.Sigmoid())
+        self.til_head = nn.Sequential(
+            nn.Linear(embed_dim, 64), nn.ReLU(), nn.Linear(64, 1),
+            nn.Sigmoid()
+        )
 
     def forward(
         self,

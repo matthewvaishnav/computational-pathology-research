@@ -15,7 +15,7 @@ Outputs hypotheses in a structured schema with:
 import json
 import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -102,11 +102,11 @@ or mechanistically novel hypotheses."""
     def _call_api(self, user_prompt: str, timeout: float = 60.0) -> str:
         """
         Call Claude API with timeout.
-        
+
         Args:
             user_prompt: User prompt text
             timeout: Timeout in seconds (default 60s)
-            
+
         Returns:
             API response text
         """
@@ -174,7 +174,10 @@ or mechanistically novel hypotheses."""
             additional_context: any additional findings to include
         """
         n_subtypes = len(np.unique(subtype_labels))
-        subtype_sizes = {int(s): int((subtype_labels == s).sum()) for s in np.unique(subtype_labels)}
+        subtype_sizes = {
+            int(s): int((subtype_labels == s).sum())
+            for s in np.unique(subtype_labels)
+        }
 
         tme_summary = ""
         if tme_compositions:

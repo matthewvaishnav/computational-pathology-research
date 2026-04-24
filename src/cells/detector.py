@@ -155,22 +155,22 @@ def _hover_to_instances(
 ) -> np.ndarray:
     """
     Convert nuclear pixel prob + HoV maps → integer instance map via watershed.
-    
+
     Falls back to simple connected components if skimage unavailable.
     Note: Fallback produces different results (no watershed refinement).
     """
     fg = np_prob > fg_threshold
-    
+
     if not _HAS_WATERSHED:
         # Fallback: simple connected components (no watershed refinement)
         from scipy import ndimage
         instance_map, _ = ndimage.label(fg)
         # Remove small objects
-        for lab in np.unique(instance_map):
-            if lab != 0 and (instance_map == lab).sum() < min_area:
-                instance_map[instance_map == lab] = 0
+        for nucleus_label in np.unique(instance_map):
+            if nucleus_label != 0 and (instance_map == nucleus_label).sum() < min_area:
+                instance_map[instance_map == nucleus_label] = 0
         return instance_map
-    
+
     # Full watershed-based instance segmentation
     h_grad = np.abs(np.gradient(hv_map[0])[1])
     v_grad = np.abs(np.gradient(hv_map[1])[0])
@@ -184,9 +184,9 @@ def _hover_to_instances(
     instance_map = watershed(-energy, seeds, mask=fg)
 
     # Remove small objects
-    for lab in np.unique(instance_map):
-        if lab != 0 and (instance_map == lab).sum() < min_area:
-            instance_map[instance_map == lab] = 0
+    for nucleus_label in np.unique(instance_map):
+        if nucleus_label != 0 and (instance_map == nucleus_label).sum() < min_area:
+            instance_map[instance_map == nucleus_label] = 0
 
     return instance_map
 
@@ -246,7 +246,7 @@ class NucleusDetector:
 
         instance_map = _hover_to_instances(np_prob, hv_map, self.fg_threshold)
 
-        labels = [l for l in np.unique(instance_map) if l != 0]
+        labels = [label_id for label_id in np.unique(instance_map) if label_id != 0]
         if not labels:
             h, w = patch.shape[:2]
             return DetectionResult(
@@ -260,8 +260,8 @@ class NucleusDetector:
             tp_probs = F.softmax(out["tp"], dim=1)[0].cpu().numpy()
 
         centroids, masks, probs, ctypes = [], [], [], []
-        for lab in labels:
-            m = instance_map == lab
+        for nucleus_label in labels:
+            m = instance_map == nucleus_label
             prob = float(np_prob[m].mean())
             if prob < self.confidence_threshold:
                 continue
