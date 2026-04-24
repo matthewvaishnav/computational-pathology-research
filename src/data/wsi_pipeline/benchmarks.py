@@ -305,8 +305,9 @@ class PerformanceBenchmark:
         """
         logger.info(f"Benchmarking HDF5 write speed: {num_patches} patches")
 
-        from .cache import FeatureCache
         import tempfile
+
+        from .cache import FeatureCache
 
         # Create synthetic data
         features = np.random.randn(num_patches, feature_dim).astype(np.float32)

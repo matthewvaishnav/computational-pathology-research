@@ -58,29 +58,29 @@ CLI Usage:
 """
 
 from .batch_processor import BatchProcessor
-from .cache import FeatureCache
-from .config import ProcessingConfig
-from .exceptions import (
-    WSIProcessingError,
-    FileFormatError,
-    ResourceError,
-    ProcessingError,
-)
-from .extractor import PatchExtractor
-from .feature_generator import FeatureGenerator
-from .models import SlideMetadata, ProcessingResult
-from .quality_control import QualityControl
-from .reader import WSIReader
-from .tissue_detector import TissueDetector
 
 # Import validation and benchmarking utilities
 from .benchmarks import PerformanceBenchmark, run_performance_benchmarks
-from .validation import WSIPipelineValidator, run_comprehensive_validation
+from .cache import FeatureCache
+from .config import ProcessingConfig
 
 # Import new utilities
-from .config_validator import ConfigValidator, validate_config, get_recommended_config
-from .progress_tracker import ProgressTracker, BatchProgressMonitor
-from .logging_utils import setup_logging, get_logger
+from .config_validator import ConfigValidator, get_recommended_config, validate_config
+from .exceptions import (
+    FileFormatError,
+    ProcessingError,
+    ResourceError,
+    WSIProcessingError,
+)
+from .extractor import PatchExtractor
+from .feature_generator import FeatureGenerator
+from .logging_utils import get_logger, setup_logging
+from .models import ProcessingResult, SlideMetadata
+from .progress_tracker import BatchProgressMonitor, ProgressTracker
+from .quality_control import QualityControl
+from .reader import WSIReader
+from .tissue_detector import TissueDetector
+from .validation import WSIPipelineValidator, run_comprehensive_validation
 
 __all__ = [
     # Core components

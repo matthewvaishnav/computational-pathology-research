@@ -1,8 +1,10 @@
 """Unit tests for WSI pipeline data models."""
 
-import pytest
 from pathlib import Path
-from src.data.wsi_pipeline.models import SlideMetadata, ProcessingResult
+
+import pytest
+
+from src.data.wsi_pipeline.models import ProcessingResult, SlideMetadata
 
 
 class TestSlideMetadata:

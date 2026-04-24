@@ -13,8 +13,8 @@ Tests cover:
 import numpy as np
 import pytest
 
-from src.data.wsi_pipeline.extractor import PatchExtractor
 from src.data.wsi_pipeline.exceptions import ProcessingError
+from src.data.wsi_pipeline.extractor import PatchExtractor
 
 
 class TestPatchExtractorInitialization:

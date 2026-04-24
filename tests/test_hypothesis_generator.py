@@ -3,7 +3,9 @@ Tests for hypothesis generator API key validation.
 """
 
 import os
+
 import pytest
+
 from src.hypothesis.generator import HypothesisGenerator
 
 

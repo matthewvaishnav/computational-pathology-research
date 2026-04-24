@@ -95,6 +95,7 @@ def start_federated_server(
         raise ImportError("flwr not installed. pip install flwr>=1.5.0")
 
     import torch
+
     from .client import get_model_weights
 
     # Get initial parameters from model

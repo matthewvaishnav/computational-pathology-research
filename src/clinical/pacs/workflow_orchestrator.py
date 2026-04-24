@@ -9,13 +9,13 @@ import asyncio
 import logging
 import threading
 import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 
-from .pacs_adapter import PACSAdapter
-from .data_models import StudyInfo, AnalysisResults, OperationResult, DicomPriority
 from ..workflow import ClinicalWorkflowSystem
+from .data_models import AnalysisResults, DicomPriority, OperationResult, StudyInfo
+from .pacs_adapter import PACSAdapter
 
 logger = logging.getLogger(__name__)
 

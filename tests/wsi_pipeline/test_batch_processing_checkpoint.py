@@ -10,22 +10,23 @@ This test verifies that:
 
 import json
 import tempfile
-import numpy as np
-import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+import numpy as np
+import pytest
 from PIL import Image
 
 from src.data.wsi_pipeline import (
-    WSIReader,
-    PatchExtractor,
-    TissueDetector,
-    FeatureGenerator,
-    FeatureCache,
-    QualityControl,
     BatchProcessor,
+    FeatureCache,
+    FeatureGenerator,
+    PatchExtractor,
     ProcessingConfig,
+    QualityControl,
     SlideMetadata,
+    TissueDetector,
+    WSIReader,
 )
 
 

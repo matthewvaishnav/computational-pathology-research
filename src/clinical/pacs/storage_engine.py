@@ -11,18 +11,18 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pynetdicom import AE
-from pynetdicom.sop_class import BasicTextSRStorage, EnhancedSRStorage, ComprehensiveSRStorage
 from pydicom.dataset import Dataset, FileDataset
-from pydicom.uid import generate_uid, ExplicitVRLittleEndian
+from pydicom.uid import ExplicitVRLittleEndian, generate_uid
+from pynetdicom import AE
+from pynetdicom.sop_class import BasicTextSRStorage, ComprehensiveSRStorage, EnhancedSRStorage
 
 from .data_models import (
-    PACSEndpoint,
     AnalysisResults,
-    OperationResult,
-    ValidationResult,
     DetectedRegion,
     DiagnosticRecommendation,
+    OperationResult,
+    PACSEndpoint,
+    ValidationResult,
 )
 
 logger = logging.getLogger(__name__)

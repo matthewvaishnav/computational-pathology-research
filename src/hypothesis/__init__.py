@@ -5,9 +5,9 @@ Loops over discovered subtypes / latent factors and generates testable
 biological hypotheses via Claude API, then validates them against data.
 """
 
-from .generator import HypothesisGenerator, GeneratedHypothesis
-from .tester import HypothesisTester, TestResult
+from .generator import GeneratedHypothesis, HypothesisGenerator
 from .reporter import HypothesisReporter
+from .tester import HypothesisTester, TestResult
 
 __all__ = [
     "HypothesisGenerator",

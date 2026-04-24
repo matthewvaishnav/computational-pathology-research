@@ -14,8 +14,8 @@ from typing import Dict, List, Optional
 import torch
 import torch.nn as nn
 
-from .encoder import MultiScaleFeatureExtractor
 from .attention import CrossScaleAttention, HierarchicalAttentionPool
+from .encoder import MultiScaleFeatureExtractor
 
 logger = logging.getLogger(__name__)
 

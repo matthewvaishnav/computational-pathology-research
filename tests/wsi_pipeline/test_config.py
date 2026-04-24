@@ -1,8 +1,10 @@
 """Unit tests for WSI pipeline configuration."""
 
-import pytest
 import tempfile
 from pathlib import Path
+
+import pytest
+
 from src.data.wsi_pipeline.config import ProcessingConfig
 
 

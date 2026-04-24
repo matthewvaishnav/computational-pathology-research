@@ -6,19 +6,20 @@ FeatureCache) work together correctly for complete pipeline execution.
 """
 
 import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pytest
 import torch
-from pathlib import Path
-from unittest.mock import Mock, patch
 from PIL import Image
 
 from src.data.wsi_pipeline import (
-    WSIReader,
+    FeatureCache,
+    FeatureGenerator,
     PatchExtractor,
     TissueDetector,
-    FeatureGenerator,
-    FeatureCache,
+    WSIReader,
 )
 
 

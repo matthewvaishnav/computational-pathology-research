@@ -8,8 +8,8 @@ tissue detection using pretrained segmentation models.
 """
 
 import logging
-from typing import Optional, Tuple, Union
 import warnings
+from typing import Optional, Tuple, Union
 
 import numpy as np
 from PIL import Image
