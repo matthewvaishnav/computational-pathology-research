@@ -107,3 +107,4 @@ QC_USAGE_EXAMPLE.md
 CLAUDE.md
 .claudeignore
 .claude/
+.claude/settings/
