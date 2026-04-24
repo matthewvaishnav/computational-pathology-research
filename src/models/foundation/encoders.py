@@ -85,19 +85,19 @@ class PhikonEncoder(FoundationModelEncoder):
         self._build_model()
 
     def _build_model(self) -> None:
-        """Load Phikon model from HuggingFace Hub via timm."""
+        """Load Phikon model from HuggingFace Hub using transformers."""
         try:
-            import timm
+            from transformers import ViTModel
         except ImportError:
             raise ImportError(
-                "timm is required for Phikon. Install with: pip install timm>=0.9.12"
+                "transformers required for Phikon. "
+                "Install with: pip install transformers>=4.37.0"
             )
 
-        # Loads directly from HuggingFace Hub, no authentication required
-        self.model = timm.create_model(
-            "hf-hub:owkin/phikon",
-            pretrained=True,
-            num_classes=0,  # remove classifier head
+        # Load Phikon ViT-B/16 model from HuggingFace
+        self.model = ViTModel.from_pretrained(
+            "owkin/phikon",
+            add_pooling_layer=False,  # We'll use CLS token directly
         )
 
         if self.freeze:
@@ -106,7 +106,10 @@ class PhikonEncoder(FoundationModelEncoder):
 
     def _encode(self, x: torch.Tensor) -> torch.Tensor:
         """Encode patches to 768-dim features."""
-        return self.model(x)  # [B, 768]
+        # HuggingFace ViT returns last_hidden_state [B, num_patches+1, 768]
+        # Extract CLS token (first token) as patch embedding
+        outputs = self.model(x)
+        return outputs.last_hidden_state[:, 0, :]  # [B, 768]
 
 
 class UNIEncoder(FoundationModelEncoder):
