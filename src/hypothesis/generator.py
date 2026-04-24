@@ -78,7 +78,12 @@ or mechanistically novel hypotheses."""
         cancer_type: str = "cancer",
         max_hypotheses_per_call: int = 3,
     ):
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        if not self.api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY must be provided via api_key parameter or "
+                "ANTHROPIC_API_KEY environment variable"
+            )
         self.model = model
         self.cancer_type = cancer_type
         self.max_per_call = max_hypotheses_per_call
