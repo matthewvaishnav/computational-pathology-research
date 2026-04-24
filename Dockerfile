@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 
 # Copy source code
 COPY src/ ./src/
