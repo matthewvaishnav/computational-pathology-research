@@ -213,11 +213,24 @@ class SpatialDataset(Dataset):
         adata = ad.read_h5ad(str(h5ad_path))
         logger.info(f"Loaded AnnData: {adata.shape} from {h5ad_path}")
 
-        # Raw counts matrix
+        # Raw counts matrix - handle sparse matrices efficiently
         counts = adata.X
         if hasattr(counts, "toarray"):
-            counts = counts.toarray()
-        counts = np.asarray(counts, dtype=np.float32)
+            # Sparse matrix: convert in chunks to avoid OOM
+            n_spots, n_genes = counts.shape
+            chunk_size = min(10000, n_spots)  # Process 10k spots at a time
+            
+            if n_spots > chunk_size:
+                logger.info(f"Converting sparse matrix in chunks ({n_spots} spots, chunk_size={chunk_size})")
+                counts_dense = np.zeros((n_spots, n_genes), dtype=np.float32)
+                for i in range(0, n_spots, chunk_size):
+                    end_i = min(i + chunk_size, n_spots)
+                    counts_dense[i:end_i] = counts[i:end_i].toarray().astype(np.float32)
+                counts = counts_dense
+            else:
+                counts = counts.toarray().astype(np.float32)
+        else:
+            counts = np.asarray(counts, dtype=np.float32)
 
         # Patch features from obsm
         if feature_key in adata.obsm:
