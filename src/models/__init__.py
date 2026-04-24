@@ -2,6 +2,14 @@
 
 from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
 from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
+from .foundation import (
+    FeatureProjector,
+    FoundationModelEncoder,
+    PhikonEncoder,
+    UNIEncoder,
+    CONCHEncoder,
+    load_foundation_model,
+)
 from .fusion import CrossModalAttention, MultiModalFusionLayer
 from .heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
 from .multimodal import MultimodalFusionModel
@@ -56,4 +64,10 @@ __all__ = [
     "create_wsi_encoder_with_pretrained",
     "get_recommended_model",
     "list_pretrained_models",
+    "FoundationModelEncoder",
+    "PhikonEncoder",
+    "UNIEncoder",
+    "CONCHEncoder",
+    "load_foundation_model",
+    "FeatureProjector",
 ]
