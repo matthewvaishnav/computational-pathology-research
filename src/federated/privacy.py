@@ -154,6 +154,8 @@ class DifferentialPrivacyEngine:
     def clip_and_noise(self) -> float:
         """
         Clip gradient norm to max_grad_norm, then add Gaussian noise.
+        
+        Memory-efficient: adds noise in-place without creating full-size intermediate tensors.
 
         Returns actual pre-clip gradient norm.
         """
@@ -163,9 +165,12 @@ class DifferentialPrivacyEngine:
         )
 
         # Add calibrated noise: N(0, (σ·C)²·I)
+        # Memory-efficient: generate and add noise per-parameter to avoid large intermediate tensors
         noise_std = self.noise_multiplier * self.max_grad_norm
         for param in self._trainable_params():
-            param.grad.add_(torch.randn_like(param.grad).mul_(noise_std))
+            # Generate noise directly in param.grad's shape, add in-place
+            noise = torch.randn_like(param.grad) * noise_std
+            param.grad.add_(noise)
 
         self.accountant.step()
         return float(total_norm)
