@@ -31,10 +31,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        TORCH_VERSION=$(python -c "import torch; print(torch.__version__.split('+')[0])")
-        echo "Installing PyG extensions for torch $TORCH_VERSION"
-        pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+cpu.html
         pip install -e .
+    
+    - name: Install PyG extensions
+      run: |
+        python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Run tests
       run: |
@@ -98,9 +100,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        TORCH_VERSION=$(python -c "import torch; print(torch.__version__.split('+')[0])")
-        echo "Installing PyG extensions for torch $TORCH_VERSION"
-        pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+cpu.html
+    
+    - name: Install PyG extensions
+      run: |
+        python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
         pip install mypy types-PyYAML
     
     - name: Run mypy
@@ -217,10 +221,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        TORCH_VERSION=$(python -c "import torch; print(torch.__version__.split('+')[0])")
-        echo "Installing PyG extensions for torch $TORCH_VERSION"
-        pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+cpu.html
         pip install -e .
+    
+    - name: Install PyG extensions
+      run: |
+        python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Run quick demo
       run: |
@@ -262,10 +268,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        TORCH_VERSION=$(python -c "import torch; print(torch.__version__.split('+')[0])")
-        echo "Installing PyG extensions for torch $TORCH_VERSION"
-        pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+cpu.html
         pip install -e .
+    
+    - name: Install PyG extensions
+      run: |
+        python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Generate coverage report
       run: |
