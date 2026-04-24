@@ -40,7 +40,7 @@ def predictions_and_labels(draw, min_samples=1, max_samples=100):
         npst.arrays(
             dtype=np.float32,
             shape=n_samples,
-            elements=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False),
+            elements=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False, width=32),
         )
     )
 
@@ -60,7 +60,7 @@ def failure_embeddings_and_metadata(draw, min_failures=1, max_failures=50):
             dtype=np.float32,
             shape=(n_failures, embedding_dim),
             elements=st.floats(
-                min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False
+                min_value=-10.0, max_value=10.0, allow_nan=False, allow_infinity=False, width=32
             ),
         )
     )
