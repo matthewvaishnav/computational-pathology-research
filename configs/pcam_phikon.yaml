@@ -1,0 +1,73 @@
+# PCam training with Phikon foundation model
+# Expected performance: 85.26% (ResNet baseline) → ~91% (Phikon)
+
+seed: 42
+device: cuda
+
+data:
+  root_dir: data/pcam_real
+  download: false
+  num_workers: 0  # Use 0 for CPU testing to avoid multiprocessing issues
+  pin_memory: false
+
+model:
+  # Foundation model configuration
+  use_foundation: true
+  foundation:
+    model_name: phikon  # Options: phikon, uni, conch
+    freeze: true  # Freeze encoder weights (Phase 1)
+    projector:
+      output_dim: 256  # Project to HistoCore standard dimension
+      dropout: 0.1
+  
+  # WSI encoder configuration (unchanged)
+  wsi:
+    input_dim: 256  # Matches projector output
+    hidden_dim: 256
+    num_heads: 8
+    num_layers: 2
+    pooling: mean
+  
+  embed_dim: 256
+
+# Classification task configuration
+task:
+  classification:
+    hidden_dims: [128]
+    dropout: 0.1
+
+training:
+  num_epochs: 20
+  batch_size: 128  # Can increase with frozen encoder
+  learning_rate: 1.0e-3  # Higher LR for projector-only training
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  use_amp: true
+  dropout: 0.1
+  
+  optimizer:
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    min_lr: 1.0e-6
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+early_stopping:
+  enabled: true
+  patience: 5
+  min_delta: 0.001
+
+checkpoint:
+  checkpoint_dir: checkpoints/pcam_phikon
+  save_interval: 5
+  save_best: true
+  rolling_window: 5
+  stability_frequency: 50
+
+logging:
+  log_dir: logs/pcam_phikon
+  log_interval: 50

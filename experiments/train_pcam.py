@@ -42,6 +42,8 @@ from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
 from src.models.encoders import WSIEncoder
 from src.models.feature_extractors import ResNetFeatureExtractor
 from src.models.heads import ClassificationHead
+from src.models.foundation import load_foundation_model
+from src.models.foundation.projector import FeatureProjector
 
 # Configure logging
 logging.basicConfig(
@@ -281,19 +283,74 @@ def create_pcam_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader, DataL
 def create_single_modality_model(config: Dict) -> Tuple[nn.Module, nn.Module, nn.Module]:
     """Create feature extractor, WSI encoder, and classification head.
 
+    Supports both ResNet baseline and foundation models (Phikon/UNI/CONCH).
+
     Args:
         config: Configuration dictionary containing model settings.
 
     Returns:
         Tuple of (feature_extractor, encoder, head).
     """
-    # Feature extractor - ResNet applied at batch time
-    feature_extractor_config = config["model"]["feature_extractor"]
-    feature_extractor = ResNetFeatureExtractor(
-        model_name=feature_extractor_config["model"],
-        pretrained=feature_extractor_config.get("pretrained", True),
-        feature_dim=feature_extractor_config.get("feature_dim", 512),
-    )
+    # Check if using foundation model
+    use_foundation = config["model"].get("use_foundation", False)
+
+    if use_foundation:
+        # Foundation model path
+        foundation_config = config["model"]["foundation"]
+        model_name = foundation_config["model_name"]
+        freeze = foundation_config.get("freeze", True)
+
+        logger.info(f"Using foundation model: {model_name} (freeze={freeze})")
+
+        # Load foundation encoder
+        foundation_encoder = load_foundation_model(
+            model_name=model_name,
+            freeze=freeze,
+        )
+
+        # Create projector to map foundation features to standard dimension
+        projector_config = foundation_config.get("projector", {})
+        projector = FeatureProjector(
+            input_dim=foundation_encoder.feature_dim,
+            output_dim=projector_config.get("output_dim", 256),
+            dropout=projector_config.get("dropout", 0.1),
+        )
+
+        # Combine foundation encoder + projector into a single feature extractor
+        class FoundationFeatureExtractor(nn.Module):
+            """Wrapper combining foundation encoder and projector."""
+
+            def __init__(self, encoder, projector):
+                super().__init__()
+                self.encoder = encoder
+                self.projector = projector
+
+            def forward(self, x):
+                features = self.encoder(x)
+                return self.projector(features)
+
+            def parameters(self, recurse=True):
+                # Return parameters from both encoder and projector
+                return list(self.encoder.parameters(recurse)) + list(
+                    self.projector.parameters(recurse)
+                )
+
+        feature_extractor = FoundationFeatureExtractor(foundation_encoder, projector)
+
+        logger.info(
+            f"Foundation encoder: {foundation_encoder.feature_dim}-dim → "
+            f"Projector: {projector_config.get('output_dim', 256)}-dim"
+        )
+        logger.info(f"Projector parameters: {projector.get_num_params():,}")
+
+    else:
+        # ResNet baseline path
+        feature_extractor_config = config["model"]["feature_extractor"]
+        feature_extractor = ResNetFeatureExtractor(
+            model_name=feature_extractor_config["model"],
+            pretrained=feature_extractor_config.get("pretrained", True),
+            feature_dim=feature_extractor_config.get("feature_dim", 512),
+        )
 
     # WSI Encoder for single patch encoding
     wsi_config = config["model"]["wsi"]
