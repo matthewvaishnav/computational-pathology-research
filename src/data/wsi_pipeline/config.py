@@ -227,6 +227,6 @@ class ProcessingConfig:
 
     def __post_init__(self):
         """Post-initialization validation."""
-        # Set stride to patch_size if not specified (non-overlapping)
-        if self.stride is None:
-            self.stride = self.patch_size
+        # Note: stride defaults to None (non-overlapping patches)
+        # Actual stride value is computed at runtime if needed
+        pass
