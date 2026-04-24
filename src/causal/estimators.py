@@ -5,8 +5,10 @@ Implements ATE (Average Treatment Effect) and CATE (Conditional ATE)
 using propensity score methods and meta-learners.
 
 Reference:
-    Künzel et al. "Metalearners for estimating heterogeneous treatment effects" (PNAS 2019)
-    Robins et al. "Estimation of regression coefficients when some regressors are not always observed" (JASA 1994)
+    Künzel et al. "Metalearners for estimating heterogeneous treatment
+    effects" (PNAS 2019)
+    Robins et al. "Estimation of regression coefficients when some
+    regressors are not always observed" (JASA 1994)
 """
 
 import logging
@@ -58,20 +60,21 @@ class IPWEstimator:
     ) -> Tuple[float, float]:
         """
         Returns (ATE estimate, standard error).
-        
+
         Uses trimming + stabilization to prevent variance explosion.
         """
         if not self._fitted:
             raise RuntimeError("Call fit() before predict_ate()")
         e = self.propensity_model_.predict_proba(X)[:, 1]
-        
+
         # Trim extreme propensity scores to reduce variance
         lo = np.quantile(e, self.trim_quantile)
         hi = np.quantile(e, 1 - self.trim_quantile)
         mask = (e >= lo) & (e <= hi)
         e, T, Y = e[mask], T[mask], Y[mask]
-        
-        # Additional stabilization: clip to [0.05, 0.95] to prevent division by near-zero
+
+        # Additional stabilization: clip to [0.05, 0.95] to prevent
+        # division by near-zero
         e = np.clip(e, 0.05, 0.95)
 
         ipw = T * Y / e - (1 - T) * Y / (1 - e)

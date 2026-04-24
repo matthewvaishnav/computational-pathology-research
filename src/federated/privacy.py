@@ -7,7 +7,7 @@ Implements DP-SGD (Abadi et al. 2016) with Renyi DP accounting
 
 import logging
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Iterator, List, Optional, Tuple
 
 import torch
@@ -68,7 +68,6 @@ class PrivacyAccountant:
             return q * (math.exp(1.0 / sigma**2) - 1)
         # Upper bound using moments amplification (Wang et al. 2019, Thm 8)
         try:
-            log_term1 = math.log(1 - q) * (2 * order - 1) if q < 1 else float("-inf")
             # Binomial sum approximation — dominant terms
             rdp = math.log(
                 (1 - q) ** (2 * order - 1) + q ** 2 * order * (2 * order - 1) / 2
@@ -154,8 +153,9 @@ class DifferentialPrivacyEngine:
     def clip_and_noise(self) -> float:
         """
         Clip gradient norm to max_grad_norm, then add Gaussian noise.
-        
-        Memory-efficient: adds noise in-place without creating full-size intermediate tensors.
+
+        Memory-efficient: adds noise in-place without creating full-size
+        intermediate tensors.
 
         Returns actual pre-clip gradient norm.
         """
@@ -165,7 +165,8 @@ class DifferentialPrivacyEngine:
         )
 
         # Add calibrated noise: N(0, (σ·C)²·I)
-        # Memory-efficient: generate and add noise per-parameter to avoid large intermediate tensors
+        # Memory-efficient: generate and add noise per-parameter to avoid
+        # large intermediate tensors
         noise_std = self.noise_multiplier * self.max_grad_norm
         for param in self._trainable_params():
             # Generate noise directly in param.grad's shape, add in-place
