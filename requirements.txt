@@ -75,3 +75,15 @@ networkx>=3.0
 # Spatial Transcriptomics
 anndata>=0.9.0
 scanpy>=1.9.0
+
+# Cell-level TME modeling (GNN)
+torch-geometric>=2.3.0
+torch-scatter>=2.1.0
+torch-sparse>=0.6.17
+scipy>=1.11.0
+
+# Multi-omics factorization
+# (uses torch + numpy, no extra deps beyond core)
+
+# Hypothesis generation
+anthropic>=0.30.0
