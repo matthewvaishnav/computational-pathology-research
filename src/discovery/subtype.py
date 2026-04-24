@@ -122,13 +122,9 @@ class SurvivalAwareClusterer:
         """Train SurvivalVAE and return per-epoch loss history."""
         self.vae.to(self.device)
         optimizer = torch.optim.Adam(self.vae.parameters(), lr=self.lr)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=self.n_epochs
-        )
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.n_epochs)
         dataset = torch.utils.data.TensorDataset(X, survival_times, events)
-        loader = torch.utils.data.DataLoader(
-            dataset, batch_size=self.batch_size, shuffle=True
-        )
+        loader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
         history = []
         self.vae.train()
         for epoch in range(self.n_epochs):
@@ -139,9 +135,7 @@ class SurvivalAwareClusterer:
                 eb = eb.to(self.device)
                 optimizer.zero_grad()
                 outputs = self.vae(xb)
-                loss, metrics = survival_vae_loss(
-                    outputs, xb, tb, eb, lambda_cox=self.lambda_cox
-                )
+                loss, metrics = survival_vae_loss(outputs, xb, tb, eb, lambda_cox=self.lambda_cox)
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.vae.parameters(), 1.0)
                 optimizer.step()
@@ -174,8 +168,7 @@ class SurvivalAwareClusterer:
             Subtype labels [n_slides] (integers 0..k-1)
         """
         logger.info(
-            f"Discovering subtypes: {features.shape[0]} slides, "
-            f"{(events == 1).sum()} events"
+            f"Discovering subtypes: {features.shape[0]} slides, " f"{(events == 1).sum()} events"
         )
 
         # Normalize features
@@ -207,9 +200,7 @@ class SurvivalAwareClusterer:
         self._labels = self._kmeans.fit_predict(latent)
 
         sil = silhouette_score(latent, self._labels) if self._optimal_k > 1 else 0.0
-        logger.info(
-            f"Clustering complete: k={self._optimal_k}, silhouette={sil:.3f}"
-        )
+        logger.info(f"Clustering complete: k={self._optimal_k}, silhouette={sil:.3f}")
         return self._labels
 
     def predict(self, features: np.ndarray) -> np.ndarray:

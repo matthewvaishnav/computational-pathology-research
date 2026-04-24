@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # Check for mixed precision support
 try:
     from torch.cuda.amp import autocast
+
     AMP_AVAILABLE = True
 except ImportError:
     AMP_AVAILABLE = False
@@ -85,7 +86,7 @@ class FeatureGenerator:
         self.encoder = self._load_encoder()
         self.encoder.eval()  # Set to evaluation mode
         self.encoder.to(self.device)
-        
+
         # Apply optimizations
         self._apply_optimizations()
 
@@ -135,23 +136,24 @@ class FeatureGenerator:
         # Enable mixed precision if available and requested
         if self.use_mixed_precision and self.device.type == "cuda":
             logger.info("Enabled mixed precision (FP16) for faster inference")
-        
+
         # Compile model for optimization (PyTorch 2.0+)
         if self.compile_model:
             try:
-                if hasattr(torch, 'compile'):
+                if hasattr(torch, "compile"):
                     # Check if we're on Windows and skip compilation if compiler issues
                     import platform
+
                     if platform.system() == "Windows":
                         logger.info("Skipping torch.compile on Windows to avoid compiler issues")
                     else:
-                        self.encoder = torch.compile(self.encoder, mode='reduce-overhead')
+                        self.encoder = torch.compile(self.encoder, mode="reduce-overhead")
                         logger.info("Model compiled with torch.compile for optimization")
                 else:
                     logger.debug("torch.compile not available, skipping compilation")
             except Exception as e:
                 logger.warning(f"Model compilation failed: {e}, continuing without compilation")
-        
+
         # Set optimal settings for inference
         if self.device.type == "cuda":
             # Enable cuDNN benchmark for consistent input sizes
@@ -164,17 +166,16 @@ class FeatureGenerator:
     def _setup_transforms(self) -> None:
         """Setup optimized preprocessing transforms."""
         # Use optimized transforms for faster preprocessing
-        self.transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize(224, interpolation=transforms.InterpolationMode.BILINEAR),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            ),
-        ])
-        
+        self.transform = transforms.Compose(
+            [
+                transforms.ToPILImage(),
+                transforms.Resize(224, interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            ]
+        )
+
         # Pre-compute normalization values for faster processing
         self.norm_mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1).to(self.device)
         self.norm_std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1).to(self.device)
@@ -265,9 +266,7 @@ class FeatureGenerator:
                 f"Install timm for additional encoders: pip install timm"
             )
         except Exception as e:
-            raise ValueError(
-                f"Encoder '{self.encoder_name}' not found in torchvision or timm: {e}"
-            )
+            raise ValueError(f"Encoder '{self.encoder_name}' not found in torchvision or timm: {e}")
 
     def _get_feature_dimension(self) -> int:
         """
@@ -468,9 +467,7 @@ class FeatureGenerator:
             ...     features = generator.extract_features(large_batch)
         """
         new_batch_size = max(1, int(self.batch_size * factor))
-        logger.warning(
-            f"Reducing batch size from {self.batch_size} to {new_batch_size}"
-        )
+        logger.warning(f"Reducing batch size from {self.batch_size} to {new_batch_size}")
         self.batch_size = new_batch_size
 
     def fallback_to_cpu(self) -> None:

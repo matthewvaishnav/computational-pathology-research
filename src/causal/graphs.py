@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import networkx as nx
+
     HAS_NX = True
 except ImportError:
     HAS_NX = False
@@ -169,9 +170,7 @@ def check_backdoor_criterion(
     # where all edges OUT of treatment are removed (backdoor graph)
     if not HAS_NX:
         raise ImportError("networkx required")
-    backdoor_graph_edges = [
-        (u, v) for u, v in dag.graph.edges if u != treatment
-    ]
+    backdoor_graph_edges = [(u, v) for u, v in dag.graph.edges if u != treatment]
     backdoor_dag = CausalDAG()
     for node in dag.graph.nodes:
         backdoor_dag.add_node(node, **dag.graph.nodes[node])
@@ -188,9 +187,7 @@ def check_backdoor_criterion(
             f"{treatment} → {outcome}"
         )
     else:
-        logger.warning(
-            f"Backdoor criterion NOT satisfied for adjustment set {adjustment_set}"
-        )
+        logger.warning(f"Backdoor criterion NOT satisfied for adjustment set {adjustment_set}")
     return separated
 
 
@@ -206,24 +203,26 @@ def build_pathology_dag() -> CausalDAG:
     - Clinical outcomes
     """
     dag = CausalDAG()
-    dag.add_edges([
-        # Demographics → confounders
-        ("patient_age", "treatment_assignment"),
-        ("patient_age", "survival"),
-        ("tumor_stage", "treatment_assignment"),
-        ("tumor_stage", "survival"),
-        # Morphology → downstream
-        ("morphology_features", "tumor_grade"),
-        ("morphology_features", "treatment_response"),
-        ("morphology_features", "biomarker_expression"),
-        # Molecular → outcomes
-        ("biomarker_expression", "treatment_response"),
-        ("biomarker_expression", "survival"),
-        # Tumor biology
-        ("tumor_grade", "survival"),
-        ("tumor_grade", "treatment_assignment"),
-        # Treatment pathway
-        ("treatment_assignment", "treatment_response"),
-        ("treatment_response", "survival"),
-    ])
+    dag.add_edges(
+        [
+            # Demographics → confounders
+            ("patient_age", "treatment_assignment"),
+            ("patient_age", "survival"),
+            ("tumor_stage", "treatment_assignment"),
+            ("tumor_stage", "survival"),
+            # Morphology → downstream
+            ("morphology_features", "tumor_grade"),
+            ("morphology_features", "treatment_response"),
+            ("morphology_features", "biomarker_expression"),
+            # Molecular → outcomes
+            ("biomarker_expression", "treatment_response"),
+            ("biomarker_expression", "survival"),
+            # Tumor biology
+            ("tumor_grade", "survival"),
+            ("tumor_grade", "treatment_assignment"),
+            # Treatment pathway
+            ("treatment_assignment", "treatment_response"),
+            ("treatment_response", "survival"),
+        ]
+    )
     return dag

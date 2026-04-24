@@ -23,14 +23,16 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FactorizedRepresentation:
     """Output of MOFA factorization."""
-    factors: torch.Tensor           # (N, K) shared latent factors
-    loadings: Dict[str, torch.Tensor]   # modality → (P_m, K) weight matrix
+
+    factors: torch.Tensor  # (N, K) shared latent factors
+    loadings: Dict[str, torch.Tensor]  # modality → (P_m, K) weight matrix
     reconstruction_loss: Dict[str, float]  # per-modality recon loss
     factor_variance_explained: Optional[np.ndarray] = None  # (K,) R² per factor
 
 
 class _ModalityDecoder(nn.Module):
     """Linear decoder: factors → modality reconstruction."""
+
     def __init__(self, num_factors: int, output_dim: int):
         super().__init__()
         self.W = nn.Linear(num_factors, output_dim, bias=True)
@@ -45,6 +47,7 @@ class _ModalityDecoder(nn.Module):
 
 class _ModalityEncoder(nn.Module):
     """Non-linear encoder: modality → factor contribution."""
+
     def __init__(self, input_dim: int, num_factors: int, hidden_dim: int = 256):
         super().__init__()
         self.net = nn.Sequential(
@@ -57,7 +60,7 @@ class _ModalityEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         h = self.net(x)
-        mu, log_var = h[:, :self.num_factors], h[:, self.num_factors:]
+        mu, log_var = h[:, : self.num_factors], h[:, self.num_factors :]
         return mu, log_var
 
 
@@ -90,14 +93,12 @@ class MOFAFactorization(nn.Module):
         self.num_factors = num_factors
         self.beta = beta
 
-        self.encoders = nn.ModuleDict({
-            m: _ModalityEncoder(d, num_factors, hidden_dim)
-            for m, d in modality_dims.items()
-        })
-        self.decoders = nn.ModuleDict({
-            m: _ModalityDecoder(num_factors, d)
-            for m, d in modality_dims.items()
-        })
+        self.encoders = nn.ModuleDict(
+            {m: _ModalityEncoder(d, num_factors, hidden_dim) for m, d in modality_dims.items()}
+        )
+        self.decoders = nn.ModuleDict(
+            {m: _ModalityDecoder(num_factors, d) for m, d in modality_dims.items()}
+        )
 
         # Prior: N(0, 1) — standard normal
         self._prior_mu = 0.0
@@ -208,7 +209,9 @@ class MOFAFactorization(nn.Module):
             z, losses = self.forward(inputs)
 
         loadings = {m: self.decoders[m].loadings.detach() for m in self.modality_dims}
-        recon_losses = {k.replace("recon_", ""): v for k, v in losses.items() if k.startswith("recon_")}
+        recon_losses = {
+            k.replace("recon_", ""): v for k, v in losses.items() if k.startswith("recon_")
+        }
 
         return FactorizedRepresentation(
             factors=z.detach(),
@@ -234,9 +237,9 @@ class MOFAFactorization(nn.Module):
             z_np = z.cpu().numpy()  # (N, K)
 
             for k in range(self.num_factors):
-                z_k = z_np[:, k:k+1]  # (N, 1)
-                w_k = W[:, k:k+1].T   # (1, P)
-                x_hat_k = z_k @ w_k   # (N, P)
+                z_k = z_np[:, k : k + 1]  # (N, 1)
+                w_k = W[:, k : k + 1].T  # (1, P)
+                x_hat_k = z_k @ w_k  # (N, P)
                 ss_res = np.nansum((x_np - x_hat_k) ** 2)
                 ss_tot = np.nansum((x_np - np.nanmean(x_np, axis=0)) ** 2)
                 r2_per_factor[k] += 1 - ss_res / (ss_tot + 1e-8)
