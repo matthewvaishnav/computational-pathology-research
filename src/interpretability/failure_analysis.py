@@ -195,8 +195,9 @@ class FailureAnalyzer:
             result["cluster_id"] = []
             return result
 
-        # Normalize embeddings
+        # Normalize embeddings (constant columns produce NaN; replace with 0)
         embeddings_scaled = self.scaler.fit_transform(embeddings)
+        embeddings_scaled = np.nan_to_num(embeddings_scaled, nan=0.0, posinf=0.0, neginf=0.0)
 
         # Fit clustering model
         if self.clustering_method == "kmeans":
