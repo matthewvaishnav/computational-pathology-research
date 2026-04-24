@@ -40,7 +40,9 @@ def predictions_and_labels(draw, min_samples=1, max_samples=100):
         npst.arrays(
             dtype=np.float32,
             shape=n_samples,
-            elements=st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False, width=32),
+            elements=st.floats(
+                min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False, width=32
+            ),
         )
     )
 
