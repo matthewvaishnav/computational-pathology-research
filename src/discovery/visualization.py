@@ -6,9 +6,12 @@ for communicating discovered subtypes to clinicians.
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import numpy as np
+
+if TYPE_CHECKING:
+    import matplotlib.figure
 
 logger = logging.getLogger(__name__)
 
