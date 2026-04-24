@@ -55,9 +55,7 @@ class IPWEstimator:
         self._fitted = True
         return self
 
-    def predict_ate(
-        self, X: np.ndarray, T: np.ndarray, Y: np.ndarray
-    ) -> Tuple[float, float]:
+    def predict_ate(self, X: np.ndarray, T: np.ndarray, Y: np.ndarray) -> Tuple[float, float]:
         """
         Returns (ATE estimate, standard error).
 
@@ -126,6 +124,7 @@ class DoublyRobustEstimator:
         mu1 = np.zeros(len(Y))
         mu0 = np.zeros(len(Y))
         from sklearn.model_selection import KFold
+
         kf = KFold(n_splits=self.n_folds)
         for train_idx, test_idx in kf.split(X):
             om1 = clone(self.outcome_model)
@@ -144,11 +143,7 @@ class DoublyRobustEstimator:
         e = np.clip(e, lo, hi)
 
         # AIPW scores
-        aipw = (
-            mu1 - mu0
-            + T * (Y - mu1) / e
-            - (1 - T) * (Y - mu0) / (1 - e)
-        )
+        aipw = mu1 - mu0 + T * (Y - mu1) / e - (1 - T) * (Y - mu0) / (1 - e)
         ate = float(np.mean(aipw))
         se = float(np.std(aipw) / np.sqrt(len(aipw)))
         cate = mu1 - mu0  # Plugin CATE from outcome model difference
