@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title | default: site.github.repository_name }}</title>
     <meta name="description" content="{{ page.description | default: site.description | default: site.github.project_tagline }}"/>
@@ -45,7 +45,10 @@
         </ul>
         {% endif %}
 
-        <nav>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <nav id="main-nav">
           <ul>
             <li><a href="{{ "/" | relative_url }}">Home</a></li>
             <li><a href="{{ "/GETTING_STARTED.html" | relative_url }}">Getting Started</a></li>
@@ -71,5 +74,29 @@
       </section>
     </div>
     <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+    <script>
+      (function() {
+        var toggle = document.querySelector('.nav-toggle');
+        var nav = document.getElementById('main-nav');
+        if (!toggle || !nav) return;
+
+        toggle.addEventListener('click', function() {
+          var open = nav.classList.toggle('nav-open');
+          toggle.classList.toggle('is-open', open);
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        // Close nav when a link is tapped on mobile
+        nav.querySelectorAll('a').forEach(function(link) {
+          link.addEventListener('click', function() {
+            if (window.innerWidth <= 960) {
+              nav.classList.remove('nav-open');
+              toggle.classList.remove('is-open');
+              toggle.setAttribute('aria-expanded', 'false');
+            }
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

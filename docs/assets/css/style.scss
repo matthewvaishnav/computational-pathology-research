@@ -22,8 +22,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Wrapper */
 .wrapper {
-  width: 960px;
+  max-width: 960px;
+  width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -427,42 +429,170 @@ div.highlight pre code {
   }
 }
 
-/* Responsive Design */
+/* ─── Hamburger button (hidden on desktop) ─── */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  margin: 10px auto 0;
+  width: 40px;
+  height: 40px;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+
+  span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #A51C30;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  &.is-open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  &.is-open span:nth-child(2) { opacity: 0; }
+  &.is-open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+}
+
+/* ─── Tablet + mobile (≤960px) ─── */
 @media (max-width: 960px) {
   .wrapper {
-    width: 90%;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
   }
-  
-  header, section, footer {
+
+  header {
     width: 100%;
     float: none;
     position: static;
+    height: auto;
+    overflow-y: visible;
+    padding: 16px 20px 0;
+    box-sizing: border-box;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 0;
+
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    img { max-width: 80px; margin-bottom: 10px; }
+    p { font-size: 13px; margin: 6px 0; }
+    .view { font-size: 13px; }
   }
-  
-  header {
-    padding-right: 0;
+
+  .nav-toggle {
+    display: flex;
   }
-  
+
+  nav#main-nav {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin-top: 0;
+    margin-bottom: 0;
+
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 0 16px;
+      margin: 0;
+      list-style: none;
+    }
+
+    li { margin: 0; }
+
+    a {
+      display: inline-block;
+      padding: 8px 14px;
+      font-size: 13px;
+      border-left-width: 3px;
+      white-space: nowrap;
+    }
+
+    &.nav-open {
+      max-height: 400px;
+    }
+  }
+
+  footer {
+    width: 100%;
+    float: none;
+    position: static;
+    margin-top: 0;
+    padding: 12px 20px;
+  }
+
   section {
-    border: none;
-    padding: 20px 0;
-    margin: 0;
+    width: 100%;
+    float: none;
+    padding: 20px 20px 50px;
+    box-sizing: border-box;
+
+    h1 { font-size: 1.9em; margin-top: 30px; }
+    h2 { font-size: 1.6em; }
+    h3 { font-size: 1.3em; }
   }
-  
-  .hero-title {
-    font-size: 2em;
+
+  /* Tables: horizontal scroll instead of overflow */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    width: 100%;
   }
-  
-  .hero-subtitle {
-    font-size: 1.1em;
+
+  /* Code blocks: don't overflow viewport */
+  pre {
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 6px !important;
   }
-  
-  .features-grid {
-    grid-template-columns: 1fr;
+
+  .hero-title { font-size: 1.9em; }
+  .hero-subtitle { font-size: 1.05em; }
+  .features-grid { grid-template-columns: 1fr; }
+  .doc-links { grid-template-columns: 1fr 1fr; }
+}
+
+/* ─── Phone (≤480px) ─── */
+@media (max-width: 480px) {
+  header {
+    padding: 12px 16px 0;
+    h1 { font-size: 18px; }
+    img { max-width: 60px; }
   }
-  
-  .doc-links {
-    grid-template-columns: 1fr;
+
+  section {
+    padding: 16px 16px 40px;
+    h1 { font-size: 1.6em; }
+    h2 { font-size: 1.35em; }
+    h3 { font-size: 1.15em; }
+  }
+
+  nav#main-nav a {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  .hero { padding: 30px 0 20px; }
+  .hero-title { font-size: 1.5em; }
+  .hero-subtitle { font-size: 0.95em; }
+  .doc-links { grid-template-columns: 1fr; }
+
+  .feature-card { padding: 20px 16px; }
+
+  /* Wider tap targets */
+  nav#main-nav a,
+  .doc-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
