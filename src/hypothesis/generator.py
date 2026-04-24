@@ -99,13 +99,24 @@ or mechanistically novel hypotheses."""
         except ImportError:
             raise ImportError("pip install anthropic to enable hypothesis generation")
 
-    def _call_api(self, user_prompt: str) -> str:
+    def _call_api(self, user_prompt: str, timeout: float = 60.0) -> str:
+        """
+        Call Claude API with timeout.
+        
+        Args:
+            user_prompt: User prompt text
+            timeout: Timeout in seconds (default 60s)
+            
+        Returns:
+            API response text
+        """
         client = self._get_client()
         msg = client.messages.create(
             model=self.model,
             max_tokens=2048,
             system=self.SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_prompt}],
+            timeout=timeout,
         )
         return msg.content[0].text
 
@@ -113,9 +124,16 @@ or mechanistically novel hypotheses."""
         # Strip markdown code fences if present
         text = text.strip()
         if text.startswith("```"):
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
+            # Handle markdown code blocks robustly
+            parts = text.split("```")
+            if len(parts) >= 3:
+                # Standard case: ```json\n...\n```
+                text = parts[1]
+                if text.startswith("json"):
+                    text = text[4:]
+            elif len(parts) == 2:
+                # Edge case: only opening fence
+                text = parts[1]
         text = text.strip()
 
         try:

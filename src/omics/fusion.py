@@ -78,15 +78,37 @@ class MultiOmicsFusion(nn.Module):
 
         # Build key_padding_mask: (N, M) True = IGNORE (missing modality)
         key_mask = None
+        all_masked_samples = None
         if modality_mask is not None:
             masks = [~modality_mask.get(n, torch.ones(tokens.size(0), dtype=torch.bool, device=tokens.device)) for n in names]
             key_mask = torch.stack(masks, dim=1)  # (N, M) True = padding
+            
+            # Detect samples where ALL modalities are masked
+            all_masked_samples = key_mask.all(dim=1)  # (N,) bool
+            if all_masked_samples.any():
+                logger.warning(f"{all_masked_samples.sum().item()} samples have all modalities masked")
+                # For all-masked samples, temporarily unmask to prevent transformer NaN
+                # We'll handle them specially after transformer
+                key_mask_for_transformer = key_mask.clone()
+                key_mask_for_transformer[all_masked_samples] = False
+            else:
+                key_mask_for_transformer = key_mask
+        else:
+            key_mask_for_transformer = None
 
-        tokens = self.transformer(tokens, src_key_padding_mask=key_mask)
+        tokens = self.transformer(tokens, src_key_padding_mask=key_mask_for_transformer)
 
         attn_w = self.pool_attn(tokens)  # (N, M, 1)
+        
         if key_mask is not None:
+            # Mask out missing modalities with -inf
             attn_w = attn_w.masked_fill(key_mask.unsqueeze(-1), float("-inf"))
+            
+            # For all-masked samples, use uniform weights instead of -inf (prevents NaN)
+            if all_masked_samples is not None and all_masked_samples.any():
+                uniform_weight = 1.0 / tokens.size(1)
+                attn_w[all_masked_samples] = uniform_weight
+        
         attn_w = torch.softmax(attn_w, dim=1)
         fused = (attn_w * tokens).sum(dim=1)  # (N, D)
 
