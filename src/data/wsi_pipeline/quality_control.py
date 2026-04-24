@@ -9,8 +9,8 @@ detection, and tissue coverage validation.
 import logging
 from typing import Any, Dict, List, Optional
 
-import numpy as np
 import cv2
+import numpy as np
 
 from .exceptions import ProcessingError
 

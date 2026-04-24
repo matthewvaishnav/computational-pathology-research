@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 # Import watershed dependencies at module level
 try:
-    from skimage.segmentation import watershed
     from skimage.feature import peak_local_max
+    from skimage.segmentation import watershed
 
     _HAS_WATERSHED = True
 except ImportError:
