@@ -6,8 +6,8 @@ via cross-scale attention. Low magnification captures global architecture;
 high magnification resolves cellular detail.
 """
 
-from .encoder import MagnificationEncoder, MultiScaleFeatureExtractor
 from .attention import CrossScaleAttention, HierarchicalAttentionPool
+from .encoder import MagnificationEncoder, MultiScaleFeatureExtractor
 from .model import MultiScaleMIL
 
 __all__ = [
