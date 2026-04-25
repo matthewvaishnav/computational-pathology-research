@@ -6,10 +6,10 @@ ImageNet-pretrained encoders.
 """
 
 from .encoders import (
+    CONCHEncoder,
     FoundationModelEncoder,
     PhikonEncoder,
     UNIEncoder,
-    CONCHEncoder,
     load_foundation_model,
 )
 from .projector import FeatureProjector
