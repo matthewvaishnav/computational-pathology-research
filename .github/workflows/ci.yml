@@ -31,7 +31,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e .
+        pip install -e ".[foundation]"
     
     - name: Install PyG extensions
       run: |
@@ -221,7 +221,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e .
+        pip install -e ".[foundation]"
     
     - name: Install PyG extensions
       run: |
@@ -268,7 +268,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e .
+        pip install -e ".[foundation]"
     
     - name: Install PyG extensions
       run: |
