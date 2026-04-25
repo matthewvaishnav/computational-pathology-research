@@ -6,9 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,
