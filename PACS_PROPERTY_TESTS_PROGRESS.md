@@ -129,14 +129,34 @@ This document tracks the implementation of optional property-based tests for the
 ### 🔄 Remaining Optional Tests
 
 #### Storage Engine (Properties 8-11)
-**File**: `tests/test_pacs_storage_engine.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_storage_engine.py`
+**Status**: ✅ Complete (20/20 tests passing)
+**Commit**: 0edf125
 
 - **Property 8: Structured Report Generation Compliance**
+  - ✅ SRs conform to DICOM TID 1500 template
+  - ✅ SRs include measurement groups for all detected regions
+  - Validates: Requirements 3.1, 3.3, 3.6, 3.7
+
 - **Property 9: DICOM Relationship Association**
+  - ✅ SRs correctly reference source study and series UIDs
+  - ✅ SRs include ReferencedSOPSequence for source images
+  - Validates: Requirements 3.1, 3.3, 3.6, 3.7
+
 - **Property 10: Analysis Result Content Completeness**
+  - ✅ SRs include complete algorithm identification
+  - ✅ SRs include confidence scores for all measurements
+  - Validates: Requirements 3.1, 3.3, 3.6, 3.7
+
 - **Property 11: Multi-Algorithm SR Generation**
-- Validates: Requirements 3.1, 3.3, 3.6, 3.7
+  - ✅ Multiple algorithms generate distinct SRs with unique UIDs
+  - ✅ Each SR contains results from exactly one algorithm
+  - Validates: Requirements 3.1, 3.3, 3.6, 3.7
+
+**Bug Fixes**:
+- Fixed urgency_level validation to use uppercase values ('LOW', 'MEDIUM', 'HIGH', 'URGENT')
+- Updated all build_measurement_report() calls to include required UIDs (original_study_uid, original_series_uid, original_sop_uid)
+- Fixed test assertions to match actual SR behavior (SR generates new series UID, not reusing analysis series UID)
 
 #### Multi-Vendor Support (Properties 12-14)
 **File**: `tests/test_pacs_vendor_adapters.py` (not yet created)
@@ -215,13 +235,13 @@ This document tracks the implementation of optional property-based tests for the
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 17 (35%)
-- **Remaining**: 31 (65%)
+- **Implemented**: 21 (44%)
+- **Remaining**: 27 (56%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
 - ✅ Retrieval Engine: 4/4 (100%)
-- ⏳ Storage Engine: 0/4 (0%)
+- ✅ Storage Engine: 4/4 (100%)
 - ⏳ Multi-Vendor: 0/3 (0%)
 - ⏳ Security: 0/5 (0%)
 - ⏳ Configuration: 0/5 (0%)
@@ -262,4 +282,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: (pending) - Implemented Retrieval Engine property tests (Properties 4-7)*
+*Latest commit: 0edf125 - Implemented Storage Engine property tests (Properties 8-11)*
