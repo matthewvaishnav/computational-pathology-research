@@ -9,13 +9,13 @@ Property 14: Vendor-Specific Optimization Selection
 from typing import List
 
 import pytest
-from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
-from pydicom.dataset import Dataset
 from pydicom.dataelem import DataElement
+from pydicom.dataset import Dataset
 from pydicom.tag import Tag
 from pynetdicom import AE
 
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from src.clinical.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
@@ -163,7 +163,9 @@ def test_property_12_presentation_contexts_include_vendor_preferences(vendor):
 # transparently and normalized to standard representations.
 
 
-@given(vendor=st.sampled_from([PACSVendor.GE, PACSVendor.PHILIPS, PACSVendor.SIEMENS, PACSVendor.AGFA]))
+@given(
+    vendor=st.sampled_from([PACSVendor.GE, PACSVendor.PHILIPS, PACSVendor.SIEMENS, PACSVendor.AGFA])
+)
 @settings(max_examples=50)
 def test_property_13_vendor_tags_are_removed_after_normalization(vendor):
     """Vendor-specific private tags must be removed during normalization."""

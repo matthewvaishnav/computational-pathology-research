@@ -14,9 +14,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 import torch
+
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.data_models import (
     DicomPriority,
     OperationResult,
@@ -54,9 +54,7 @@ def _make_mock_pacs_adapter():
     # Mock query_studies
     mock_adapter.query_studies.return_value = (
         [],
-        OperationResult.success_result(
-            operation_id="query_1", message="Query successful"
-        ),
+        OperationResult.success_result(operation_id="query_1", message="Query successful"),
     )
 
     # Mock retrieve_study
@@ -109,10 +107,7 @@ def test_property_28_new_studies_automatically_queued():
     )
 
     # Create new studies
-    studies = [
-        _make_test_study(study_uid=f"1.2.3.{i}", patient_id=f"PAT{i:03d}")
-        for i in range(3)
-    ]
+    studies = [_make_test_study(study_uid=f"1.2.3.{i}", patient_id=f"PAT{i:03d}") for i in range(3)]
 
     # Process studies (simulates automatic queuing)
     results = orchestrator.process_new_studies(studies)
@@ -233,9 +228,7 @@ def test_property_29_operations_execute_in_correct_sequence():
 
     def track_store(*args, **kwargs):
         call_order.append("store")
-        return OperationResult.success_result(
-            operation_id="store_1", message="Stored"
-        )
+        return OperationResult.success_result(operation_id="store_1", message="Stored")
 
     mock_pacs.retrieve_study.side_effect = track_retrieve
     mock_workflow.process_case.side_effect = track_process
@@ -321,9 +314,7 @@ def test_property_29_analyze_before_store():
     def track_store(*args, **kwargs):
         nonlocal store_time
         store_time = time.time()
-        return OperationResult.success_result(
-            operation_id="store_1", message="Stored"
-        )
+        return OperationResult.success_result(operation_id="store_1", message="Stored")
 
     mock_workflow.process_case.side_effect = track_analyze
     mock_pacs.store_analysis_results.side_effect = track_store
@@ -531,7 +522,9 @@ def test_property_31_urgent_processed_before_low():
 
 @given(
     priorities=st.lists(
-        st.sampled_from([DicomPriority.LOW, DicomPriority.MEDIUM, DicomPriority.HIGH, DicomPriority.URGENT]),
+        st.sampled_from(
+            [DicomPriority.LOW, DicomPriority.MEDIUM, DicomPriority.HIGH, DicomPriority.URGENT]
+        ),
         min_size=3,
         max_size=10,
     )
@@ -579,9 +572,7 @@ def test_property_31_priority_ordering_maintained(priorities):
     }
 
     # Extract priorities from processing order
-    processed_priorities = [
-        priorities[int(uid.split(".")[-1])] for uid in processing_order
-    ]
+    processed_priorities = [priorities[int(uid.split(".")[-1])] for uid in processing_order]
 
     # Check that priorities are non-increasing
     for i in range(len(processed_priorities) - 1):
@@ -855,10 +846,7 @@ def test_concurrent_study_limit():
     )
 
     # Create 5 studies
-    studies = [
-        _make_test_study(study_uid=f"1.2.3.{i}", patient_id=f"PAT{i:03d}")
-        for i in range(5)
-    ]
+    studies = [_make_test_study(study_uid=f"1.2.3.{i}", patient_id=f"PAT{i:03d}") for i in range(5)]
 
     # Process
     results = orchestrator.process_new_studies(studies)

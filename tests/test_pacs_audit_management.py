@@ -11,9 +11,9 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
+
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,
@@ -249,8 +249,7 @@ def test_property_48_search_by_date_range():
     base_date = datetime(2026, 1, 1, 12, 0, 0)
 
     messages = [
-        _make_test_audit_message(event_datetime=base_date + timedelta(days=i))
-        for i in range(10)
+        _make_test_audit_message(event_datetime=base_date + timedelta(days=i)) for i in range(10)
     ]
 
     # Add to index
@@ -380,9 +379,7 @@ def test_property_48_search_limit_respected():
 
     # Create 20 messages
     for i in range(20):
-        msg = _make_test_audit_message(
-            event_datetime=datetime.utcnow() + timedelta(seconds=i)
-        )
+        msg = _make_test_audit_message(event_datetime=datetime.utcnow() + timedelta(seconds=i))
         index.add_entry(msg, f"path/{msg.message_id}.json")
 
     # Search with limit=5
@@ -398,9 +395,7 @@ def test_property_48_search_returns_all_when_limit_zero():
 
     # Create 15 messages
     for i in range(15):
-        msg = _make_test_audit_message(
-            event_datetime=datetime.utcnow() + timedelta(seconds=i)
-        )
+        msg = _make_test_audit_message(event_datetime=datetime.utcnow() + timedelta(seconds=i))
         index.add_entry(msg, f"path/{msg.message_id}.json")
 
     # Search with limit=0

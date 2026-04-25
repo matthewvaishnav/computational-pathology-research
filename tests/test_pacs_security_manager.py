@@ -19,9 +19,9 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
+
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
@@ -203,9 +203,10 @@ def test_property_15_connection_attempt_creates_tls_socket():
     endpoint = _make_endpoint(tls_enabled=True, verify_certificates=False)
 
     # Mock socket creation and SSL wrapping
-    with patch("socket.create_connection") as mock_create_conn, patch(
-        "ssl.SSLContext.wrap_socket"
-    ) as mock_wrap_socket:
+    with (
+        patch("socket.create_connection") as mock_create_conn,
+        patch("ssl.SSLContext.wrap_socket") as mock_wrap_socket,
+    ):
 
         mock_socket = Mock()
         mock_create_conn.return_value = mock_socket
@@ -513,9 +514,10 @@ def test_property_18_connection_attempt_logs_security_event():
     endpoint = _make_endpoint(verify_certificates=False)
 
     # Mock socket operations
-    with patch("socket.create_connection") as mock_create_conn, patch(
-        "ssl.SSLContext.wrap_socket"
-    ) as mock_wrap_socket:
+    with (
+        patch("socket.create_connection") as mock_create_conn,
+        patch("ssl.SSLContext.wrap_socket") as mock_wrap_socket,
+    ):
 
         mock_socket = Mock()
         mock_create_conn.return_value = mock_socket
