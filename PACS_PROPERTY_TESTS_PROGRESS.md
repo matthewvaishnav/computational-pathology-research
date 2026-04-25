@@ -191,15 +191,53 @@ This document tracks the implementation of optional property-based tests for the
 - Fixed Storage SCP AE title truncation to 16 characters max
 
 #### Security Manager (Properties 15-19)
-**File**: `tests/test_pacs_security_manager.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_security_manager.py`
+**Status**: ✅ Complete (28/28 tests passing)
+**Commit**: eb7fe77
 
 - **Property 15: TLS Encryption Enforcement**
+  - ✅ TLS 1.3/1.2 minimum version enforcement
+  - ✅ Secure cipher suite configuration
+  - ✅ TLS socket creation for all connections
+  - Validates: Requirements 5.1
+
 - **Property 16: Certificate Validation Correctness**
+  - ✅ Valid certificates pass validation
+  - ✅ Expired certificates fail validation
+  - ✅ Not-yet-valid certificates fail validation
+  - ✅ Expiring-soon certificates generate warnings
+  - ✅ Certificate chain validation with CA bundle
+  - Validates: Requirements 5.2
+
 - **Property 17: Client Certificate Presentation**
+  - ✅ Mutual auth requires client certificate
+  - ✅ Client certificates loaded correctly
+  - ✅ Mutual auth configuration respected
+  - Validates: Requirements 5.3
+
 - **Property 18: Security Event Logging**
+  - ✅ All security events logged with required fields
+  - ✅ Connection attempts logged
+  - ✅ Certificate validation logged
+  - ✅ Credential rotation logged
+  - Validates: Requirements 5.4
+
 - **Property 19: End-to-End Encryption Maintenance**
-- Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.7
+  - ✅ Secure connections maintain encryption
+  - ✅ Connection closure tracked
+  - ✅ All connections closeable
+  - ✅ Multiple concurrent connections maintain encryption
+  - Validates: Requirements 5.7
+
+**Additional Tests**:
+- SecurityManager initialization
+- CertificateValidationResult error/warning tracking
+- Self-signed certificate generation
+- Security statistics
+- Credential rotation with connection closure
+- Credential rotation with certificate validation
+
+**Coverage**: 75% for security_manager.py (up from 14%)
 
 #### Configuration Manager (Properties 20-24)
 **File**: `tests/test_pacs_configuration_manager.py` (not yet created)
@@ -258,15 +296,15 @@ This document tracks the implementation of optional property-based tests for the
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 24 (50%)
-- **Remaining**: 24 (50%)
+- **Implemented**: 29 (60%)
+- **Remaining**: 19 (40%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
 - ✅ Retrieval Engine: 4/4 (100%)
 - ✅ Storage Engine: 4/4 (100%)
 - ✅ Multi-Vendor: 3/3 (100%)
-- ⏳ Security: 0/5 (0%)
+- ✅ Security: 5/5 (100%)
 - ⏳ Configuration: 0/5 (0%)
 - ✅ Error Handling: 3/3 (100%)
 - ⏳ Workflow: 0/4 (0%)
@@ -279,20 +317,19 @@ This document tracks the implementation of optional property-based tests for the
 
 ## Next Steps
 
-1. **Security Manager Tests** (Properties 15-19)
-   - TLS enforcement
-   - Certificate validation
-   - Security event logging
-
-2. **Configuration Manager Tests** (Properties 20-24)
+1. **Configuration Manager Tests** (Properties 20-24)
    - Configuration loading/decryption
    - Multi-endpoint support
    - Validation completeness
 
-3. **Workflow Orchestration Tests** (Properties 28-31)
+2. **Workflow Orchestration Tests** (Properties 28-31)
    - Automatic study queuing
    - Workflow sequencing
    - Priority-based processing
+
+3. **Performance Tests** (Properties 32-33)
+   - Connection pool utilization
+   - Performance metrics collection
 
 ## Notes
 
@@ -305,4 +342,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: 352dc9e - Implemented Multi-Vendor Support property tests (Properties 12-14)*
+*Latest commit: eb7fe77 - Implemented Security Manager property tests (Properties 15-19)*
