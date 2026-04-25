@@ -8,11 +8,16 @@ supporting PACS integration for query/retrieve operations.
 Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from .pacs.data_models import AnalysisResults
 
 import pydicom
 from pydicom.dataset import Dataset, FileDataset
