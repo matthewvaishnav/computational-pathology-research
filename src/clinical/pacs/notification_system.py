@@ -167,7 +167,7 @@ class EmailNotifier(NotificationChannel):
         at_pos = recipient.find("@")
         if at_pos < 1:
             return False
-        domain = recipient[at_pos + 1:]
+        domain = recipient[at_pos + 1 :]
         return "." in domain
 
 
