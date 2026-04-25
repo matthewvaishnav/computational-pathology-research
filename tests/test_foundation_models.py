@@ -13,6 +13,7 @@ from src.models.foundation import (
 class TestPhikonEncoder:
     """Tests for Phikon encoder."""
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
@@ -22,6 +23,7 @@ class TestPhikonEncoder:
         assert encoder.feature_dim == 768
         assert encoder.freeze is True
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
@@ -37,6 +39,7 @@ class TestPhikonEncoder:
         assert features.shape == (2, 768)
         assert features.requires_grad is False  # frozen
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
@@ -102,6 +105,7 @@ class TestFeatureProjector:
 class TestLoadFoundationModel:
     """Tests for load_foundation_model factory function."""
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
@@ -117,6 +121,7 @@ class TestLoadFoundationModel:
         with pytest.raises(ValueError, match="Unknown model"):
             load_foundation_model("invalid_model")
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
@@ -130,6 +135,7 @@ class TestLoadFoundationModel:
 class TestFoundationModelIntegration:
     """Integration tests for foundation model pipeline."""
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
@@ -155,6 +161,7 @@ class TestFoundationModelIntegration:
         assert raw_features.requires_grad is False
         assert features.requires_grad is True
 
+    @pytest.mark.slow
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
