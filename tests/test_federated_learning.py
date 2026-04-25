@@ -33,7 +33,9 @@ def client_update_strategy(draw, num_params=2):
     """Generate random client update."""
     client_id = draw(
         st.text(
-            min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))
+            min_size=1,
+            max_size=20,
+            alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")),
         )
     )
     dataset_size = draw(st.integers(min_value=1, max_value=10000))
