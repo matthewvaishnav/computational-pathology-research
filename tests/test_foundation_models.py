@@ -14,8 +14,7 @@ class TestPhikonEncoder:
     """Tests for Phikon encoder."""
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_phikon_load(self):
         """Test Phikon model loading."""
@@ -24,8 +23,7 @@ class TestPhikonEncoder:
         assert encoder.freeze is True
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_phikon_forward(self):
         """Test Phikon forward pass."""
@@ -40,8 +38,7 @@ class TestPhikonEncoder:
         assert features.requires_grad is False  # frozen
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_phikon_extract_features(self):
         """Test legacy extract_features interface."""
@@ -90,9 +87,7 @@ class TestFeatureProjector:
         """Test that projector parameters are trainable."""
         projector = FeatureProjector(input_dim=768, output_dim=256)
 
-        trainable_params = sum(
-            p.numel() for p in projector.parameters() if p.requires_grad
-        )
+        trainable_params = sum(p.numel() for p in projector.parameters() if p.requires_grad)
         assert trainable_params > 0
 
     def test_projector_get_num_params(self):
@@ -108,8 +103,7 @@ class TestLoadFoundationModel:
     """Tests for load_foundation_model factory function."""
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_load_phikon(self):
         """Test loading Phikon via factory."""
@@ -124,8 +118,7 @@ class TestLoadFoundationModel:
             load_foundation_model("invalid_model")
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_load_with_freeze_false(self):
         """Test loading with trainable weights."""
@@ -138,8 +131,7 @@ class TestFoundationModelIntegration:
     """Integration tests for foundation model pipeline."""
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_encoder_projector_pipeline(self):
         """Test full encoder + projector pipeline."""
@@ -148,10 +140,7 @@ class TestFoundationModelIntegration:
         encoder.eval()
 
         # Create projector
-        projector = FeatureProjector(
-            input_dim=encoder.feature_dim,
-            output_dim=256
-        )
+        projector = FeatureProjector(input_dim=encoder.feature_dim, output_dim=256)
 
         # Forward pass
         x = torch.randn(4, 3, 224, 224)
@@ -167,8 +156,7 @@ class TestFoundationModelIntegration:
         assert features.requires_grad is True
 
     @pytest.mark.skipif(
-        not torch.cuda.is_available(),
-        reason="Requires GPU for foundation model tests"
+        not torch.cuda.is_available(), reason="Requires GPU for foundation model tests"
     )
     def test_batch_processing(self):
         """Test processing multiple batches."""
