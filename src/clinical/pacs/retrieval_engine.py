@@ -48,7 +48,7 @@ class RetrievalEngine:
 
     def __init__(
         self,
-        ae_title: str = "HISTOCORE_RETRIEVE",
+        ae_title: str = "HISTO_RETRIEVE",
         storage_scp_port: int = 11113,
         max_concurrent_retrievals: int = 5,
     ):
@@ -61,7 +61,7 @@ class RetrievalEngine:
             max_concurrent_retrievals: Maximum concurrent retrieval operations
         """
         self.ae_title = ae_title
-        self.storage_scp_ae_title = f"{ae_title}_SCP"
+        self.storage_scp_ae_title = f"{ae_title}_SCP"[:16]  # Truncate to 16 chars max
         self.storage_scp_port = storage_scp_port
         self.max_concurrent_retrievals = max_concurrent_retrievals
 
