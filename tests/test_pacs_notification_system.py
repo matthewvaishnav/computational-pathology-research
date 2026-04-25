@@ -10,7 +10,6 @@ from types import SimpleNamespace
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.notification_system import (
     DeliveryRecord,
     DeliveryTracker,
