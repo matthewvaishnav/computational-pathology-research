@@ -19,7 +19,7 @@ keywords:
   - benchmark
 license: MIT
 version: 0.1.0
-date-released: 2024-12-15
+date-released: 2026-04-25
 
 references:
   - type: article
@@ -52,6 +52,7 @@ preferred-citation:
   authors:
     - family-names: "Vaishnav"
       given-names: "Matthew"
-  year: 2024
+  year: 2026
   version: 0.1.0
   url: "https://github.com/matthewvaishnav/histocore"
+  notes: "Production-grade PyTorch framework with 141 modules, 150 test files, 1,448 tests, 55% coverage"
