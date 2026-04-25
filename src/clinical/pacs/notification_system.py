@@ -35,7 +35,11 @@ class NotificationEvent:
         return self.priority == "CRITICAL"
 
     def format_subject(self) -> str:
-        uid_short = self.study_instance_uid[:8] if len(self.study_instance_uid) >= 8 else self.study_instance_uid
+        uid_short = (
+            self.study_instance_uid[:8]
+            if len(self.study_instance_uid) >= 8
+            else self.study_instance_uid
+        )
         if self.is_critical():
             return f"[CRITICAL] HistoCore AI: {uid_short}..."
         return f"[AI Result] HistoCore: {uid_short}..."
@@ -150,7 +154,7 @@ class EmailNotifier(NotificationChannel):
         at_pos = recipient.find("@")
         if at_pos < 1:
             return False
-        domain = recipient[at_pos + 1:]
+        domain = recipient[at_pos + 1 :]
         return "." in domain
 
 
@@ -184,13 +188,14 @@ class SMSNotifier(NotificationChannel):
         try:
             import urllib.request
             import json as _json
-            payload = _json.dumps(
-                {"to": recipient, "from": self.sender_id, "body": body}
-            ).encode()
+
+            payload = _json.dumps({"to": recipient, "from": self.sender_id, "body": body}).encode()
             headers = {"Content-Type": "application/json"}
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
-            req = urllib.request.Request(self.gateway_url, data=payload, headers=headers, method="POST")
+            req = urllib.request.Request(
+                self.gateway_url, data=payload, headers=headers, method="POST"
+            )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 success = resp.status < 300
             if success:
@@ -576,18 +581,14 @@ class NotificationSystem:
             self.tracker.mark_failed(record.record_id, "send returned False")
         return ok
 
-    def _broadcast_event(
-        self, event: NotificationEvent, include_admins: bool = False
-    ) -> tuple:
+    def _broadcast_event(self, event: NotificationEvent, include_admins: bool = False) -> tuple:
         """Send event to all pathologist recipients (and optionally admins) on all channels."""
         roles = ["pathologist"]
         if include_admins:
             roles.append("admin")
         return self._broadcast_to_roles(event, roles=roles)
 
-    def _broadcast_to_roles(
-        self, event: NotificationEvent, roles: List[str]
-    ) -> tuple:
+    def _broadcast_to_roles(self, event: NotificationEvent, roles: List[str]) -> tuple:
         sent = 0
         failed = 0
         with self._lock:
@@ -635,14 +636,16 @@ class NotificationSystem:
         )
         if has_urgent or above_threshold:
             priority = "CRITICAL"
-        elif analysis_results.confidence_score is not None and analysis_results.confidence_score >= 0.7:
+        elif (
+            analysis_results.confidence_score is not None
+            and analysis_results.confidence_score >= 0.7
+        ):
             priority = "HIGH"
         else:
             priority = "MEDIUM"
 
         findings = [
-            rec.recommendation_text
-            for rec in (analysis_results.diagnostic_recommendations or [])
+            rec.recommendation_text for rec in (analysis_results.diagnostic_recommendations or [])
         ]
 
         summary_parts = []

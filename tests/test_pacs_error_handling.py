@@ -24,7 +24,6 @@ from src.clinical.pacs.error_handling import (
 )
 from src.clinical.pacs.failover import CircuitBreaker, CircuitState, FailoverManager
 
-
 # ---------------------------------------------------------------------------
 # Shared fixtures / helpers
 # ---------------------------------------------------------------------------
@@ -79,7 +78,9 @@ def _make_failed_op(
 
 
 @given(
-    operation_id=st.text(min_size=1, max_size=64, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))),
+    operation_id=st.text(
+        min_size=1, max_size=64, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))
+    ),
     retry_count=st.integers(min_value=0, max_value=20),
     max_retries=st.integers(min_value=0, max_value=20),
 )
