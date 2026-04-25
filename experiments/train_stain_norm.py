@@ -50,7 +50,7 @@ class PerceptualLoss(nn.Module):
 
         prev_layer = 0
         for layer_idx in layers:
-            self.feature_extractors.append(vgg[prev_layer: layer_idx + 1])
+            self.feature_extractors.append(vgg[prev_layer : layer_idx + 1])
             prev_layer = layer_idx + 1
 
         # Freeze VGG parameters
