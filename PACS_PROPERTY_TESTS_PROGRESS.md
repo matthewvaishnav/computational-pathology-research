@@ -97,17 +97,36 @@ This document tracks the implementation of optional property-based tests for the
 - Added `HealthCheck` import and suppressed `function_scoped_fixture` warnings for property tests
 - Sanitized user_id in test_property_43 for Windows path compatibility
 
-### 🔄 Remaining Optional Tests
-
 #### Retrieval Engine (Properties 4-7)
-**File**: `tests/test_pacs_retrieval_engine.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_retrieval_engine.py`
+**Status**: ✅ Complete (17/17 tests passing)
+**Commit**: (pending)
 
 - **Property 4: Retrieval Operation Completeness**
+  - ✅ All N retrieved files are tracked and accessible
+  - Validates: Requirements 2.1, 2.2, 2.3, 2.5
+
 - **Property 5: File Integrity Validation**
+  - ✅ Valid DICOM files with all required fields pass validation
+  - ✅ Empty files (0 bytes) fail validation
+  - Validates: Requirements 2.1, 2.2, 2.3, 2.5
+
 - **Property 6: File Storage Naming Convention**
+  - ✅ Generated filenames follow StudyUID/SeriesUID/SOPInstanceUID.dcm format
+  - ✅ Filenames without study/series UIDs use flat structure
+  - Validates: Requirements 2.1, 2.2, 2.3, 2.5
+
 - **Property 7: Workflow Notification Completeness**
-- Validates: Requirements 2.1, 2.2, 2.3, 2.5
+  - ✅ Retrieval results include file paths and validation status
+  - Validates: Requirements 2.1, 2.2, 2.3, 2.5
+
+**Bug Fixes**:
+- Fixed UID generation strategy to use only ASCII digits (0-9) instead of Unicode digit characters
+- Changed from `st.characters(whitelist_categories=("Nd",))` to `st.characters(min_codepoint=48, max_codepoint=57)` for DICOM UID compliance
+- Fixed default AE title "HISTOCORE_RETRIEVE" (19 chars) to "HISTO_RETRIEVE" (15 chars) to meet 16-char limit
+- Added truncation for Storage SCP AE title to 16 characters
+
+### 🔄 Remaining Optional Tests
 
 #### Storage Engine (Properties 8-11)
 **File**: `tests/test_pacs_storage_engine.py` (not yet created)
@@ -196,12 +215,12 @@ This document tracks the implementation of optional property-based tests for the
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 13 (27%)
-- **Remaining**: 35 (73%)
+- **Implemented**: 17 (35%)
+- **Remaining**: 31 (65%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
-- ⏳ Retrieval Engine: 0/4 (0%)
+- ✅ Retrieval Engine: 4/4 (100%)
 - ⏳ Storage Engine: 0/4 (0%)
 - ⏳ Multi-Vendor: 0/3 (0%)
 - ⏳ Security: 0/5 (0%)
@@ -217,22 +236,17 @@ This document tracks the implementation of optional property-based tests for the
 
 ## Next Steps
 
-1. **Retrieval Engine Tests** (Properties 4-7)
-   - File integrity validation
-   - Storage naming conventions
-   - Workflow notifications
-
-2. **Storage Engine Tests** (Properties 8-11)
+1. **Storage Engine Tests** (Properties 8-11)
    - Structured Report compliance
    - DICOM relationships
    - Multi-algorithm support
 
-3. **Security Manager Tests** (Properties 15-19)
+2. **Security Manager Tests** (Properties 15-19)
    - TLS enforcement
    - Certificate validation
    - Security event logging
 
-4. **Configuration Manager Tests** (Properties 20-24)
+3. **Configuration Manager Tests** (Properties 20-24)
    - Configuration loading/decryption
    - Multi-endpoint support
    - Validation completeness
@@ -248,4 +262,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: 540a0bb - Fixed 6 failing audit logger tests*
+*Latest commit: (pending) - Implemented Retrieval Engine property tests (Properties 4-7)*
