@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from hypothesis import given, settings
+from hypothesis import given, settings, HealthCheck
 from hypothesis import strategies as st
 from src.clinical.pacs.audit_logger import (
     AuditMessage,
@@ -62,10 +62,12 @@ def _make_study(uid: str = "1.2.3.4.5") -> SimpleNamespace:
     ),
     result_count=st.integers(min_value=0, max_value=10000),
 )
-@settings(max_examples=100)
+@settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_property_43_dicom_query_always_returns_message_id(tmp_path, user_id, result_count):
     """Any C-FIND call produces a non-empty message_id findable in the index."""
-    audit = _make_logger(tmp_path / user_id[:8])
+    # Use a safe path component by replacing invalid characters
+    safe_user_id = "".join(c if c.isalnum() else "_" for c in user_id[:8])
+    audit = _make_logger(tmp_path / safe_user_id)
     endpoint = _make_endpoint()
     mid = audit.log_dicom_query(
         user_id=user_id,
@@ -145,7 +147,7 @@ def test_property_44_hipaa_format_has_required_keys(patient_id, outcome):
         unique=True,
     )
 )
-@settings(max_examples=100)
+@settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_property_45_phi_fields_recorded(tmp_path, phi_fields):
     """log_phi_access stores all specified phi_fields and marks phi_accessed=True."""
     audit = _make_logger(tmp_path)
@@ -173,7 +175,7 @@ def test_property_45_phi_fields_recorded(tmp_path, phi_fields):
 
 
 @given(entries=st.lists(st.text(min_size=1, max_size=128), min_size=1, max_size=20))
-@settings(max_examples=50)
+@settings(max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_property_46_tamper_evident_verify_all_clean(tmp_path, entries):
     """All freshly written entries verify as untampered."""
     storage = TamperEvidentStorage(tmp_path / "te", signing_key=b"x" * 32)
@@ -191,7 +193,7 @@ def test_property_46_tamper_evident_verify_all_clean(tmp_path, entries):
 
 
 @given(entries=st.lists(st.text(min_size=1, max_size=128), min_size=2, max_size=10))
-@settings(max_examples=30)
+@settings(max_examples=30, suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_property_46_tamper_detected_after_modification(tmp_path, entries):
     """Modifying one file's JSON data causes verify_entry to return False for that file only."""
     storage = TamperEvidentStorage(tmp_path / "te2", signing_key=b"y" * 32)

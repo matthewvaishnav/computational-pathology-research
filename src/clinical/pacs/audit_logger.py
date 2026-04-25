@@ -210,6 +210,9 @@ class AuditSearchIndex:
                     continue
                 results.append(entry)
             results.sort(key=lambda e: e["event_datetime"], reverse=True)
+            # If limit is 0 or negative, return all results
+            if limit <= 0:
+                return results
             return results[:limit]
 
     def generate_report(
