@@ -111,6 +111,7 @@ def training_config(tmp_path, synthetic_camelyon_data):
     return config_path
 
 
+@pytest.mark.slow
 def test_end_to_end_training(training_config, tmp_path):
     """Test end-to-end training for 2 epochs on synthetic data."""
     # Run training
@@ -139,6 +140,7 @@ def test_end_to_end_training(training_config, tmp_path):
     assert "Training complete" in result.stderr or "Epoch" in result.stderr, "Training didn't run"
 
 
+@pytest.mark.slow
 def test_end_to_end_evaluation(tmp_path, synthetic_camelyon_data):
     """Test end-to-end evaluation on synthetic data."""
     # Create a simple checkpoint manually
@@ -248,6 +250,7 @@ def test_end_to_end_evaluation(tmp_path, synthetic_camelyon_data):
     assert "slide_labels" in metrics, "Missing slide labels"
 
 
+@pytest.mark.slow
 def test_training_with_max_pooling(tmp_path, synthetic_camelyon_data):
     """Test training with max pooling aggregation."""
     config = {
@@ -308,6 +311,7 @@ def test_training_with_max_pooling(tmp_path, synthetic_camelyon_data):
     assert "Aggregation method: max" in result.stderr, "Max pooling not used"
 
 
+@pytest.mark.slow
 def test_evaluation_generates_plots(tmp_path, synthetic_camelyon_data):
     """Test that evaluation generates confusion matrix and ROC curve plots."""
     # Create a checkpoint manually
@@ -389,6 +393,7 @@ def test_evaluation_generates_plots(tmp_path, synthetic_camelyon_data):
     # Just check that evaluation completed successfully
 
 
+@pytest.mark.slow
 def test_training_validates_config(tmp_path, synthetic_camelyon_data):
     """Test that training validates configuration."""
     # Create invalid config (missing required field)
