@@ -101,7 +101,9 @@ def _create_test_analysis_results(
 
 
 @given(
-    algorithm_name=st.text(min_size=1, max_size=64, alphabet=st.characters(min_codepoint=65, max_codepoint=90)),
+    algorithm_name=st.text(
+        min_size=1, max_size=64, alphabet=st.characters(min_codepoint=65, max_codepoint=90)
+    ),
     confidence_score=st.floats(min_value=0.7, max_value=1.0),
 )
 @settings(max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -114,7 +116,10 @@ def test_property_8_sr_conforms_to_tid1500(algorithm_name, confidence_score):
 
     # Generate SR
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have required DICOM SR attributes
@@ -141,7 +146,10 @@ def test_property_8_sr_includes_measurement_groups(num_regions):
 
     # Generate SR
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence
@@ -201,7 +209,10 @@ def test_property_9_sr_includes_referenced_sop_sequence(confidence_score):
 
     # Generate SR
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have study and series UIDs
@@ -223,7 +234,9 @@ def test_property_9_sr_includes_referenced_sop_sequence(confidence_score):
 
 
 @given(
-    algorithm_name=st.text(min_size=1, max_size=64, alphabet=st.characters(min_codepoint=65, max_codepoint=90)),
+    algorithm_name=st.text(
+        min_size=1, max_size=64, alphabet=st.characters(min_codepoint=65, max_codepoint=90)
+    ),
     algorithm_version=st.text(
         min_size=3,
         max_size=10,
@@ -245,7 +258,10 @@ def test_property_10_sr_includes_algorithm_identification(
 
     # Generate SR
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence with algorithm info
@@ -272,7 +288,10 @@ def test_property_10_sr_includes_confidence_scores(confidence_score, num_regions
 
     # Generate SR
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence
@@ -302,7 +321,10 @@ def test_property_11_multiple_algorithms_generate_distinct_srs(num_algorithms):
             algorithm_name=f"Algorithm{i}", algorithm_version=f"1.{i}.0"
         )
         sr_dataset = builder.build_measurement_report(
-            analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+            analysis,
+            "1.2.840.10008.1.2.3.4.5",
+            "1.2.840.10008.1.2.3.4.5.1",
+            "1.2.840.10008.1.2.3.4.5.1.1",
         )
         sr_datasets.append(sr_dataset)
 
@@ -322,9 +344,7 @@ def test_property_11_multiple_algorithms_generate_distinct_srs(num_algorithms):
     confidence_score=st.floats(min_value=0.7, max_value=1.0),
 )
 @settings(max_examples=30)
-def test_property_11_each_sr_contains_single_algorithm_results(
-    num_algorithms, confidence_score
-):
+def test_property_11_each_sr_contains_single_algorithm_results(num_algorithms, confidence_score):
     """Each SR must contain results from exactly one algorithm."""
     builder = StructuredReportBuilder()
 
@@ -337,7 +357,10 @@ def test_property_11_each_sr_contains_single_algorithm_results(
             confidence_score=confidence_score,
         )
         sr_dataset = builder.build_measurement_report(
-            analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+            analysis,
+            "1.2.840.10008.1.2.3.4.5",
+            "1.2.840.10008.1.2.3.4.5.1",
+            "1.2.840.10008.1.2.3.4.5.1.1",
         )
 
         # SR must be valid
@@ -373,7 +396,10 @@ def test_generate_sr_with_minimal_analysis():
     analysis = _create_test_analysis_results(num_regions=1)
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have required DICOM attributes
@@ -389,7 +415,10 @@ def test_generate_sr_with_multiple_regions():
     analysis = _create_test_analysis_results(num_regions=5)
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence
@@ -403,7 +432,10 @@ def test_generate_sr_with_diagnostic_recommendations():
     analysis = _create_test_analysis_results()
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence
@@ -417,7 +449,10 @@ def test_sr_includes_processing_timestamp():
     analysis = _create_test_analysis_results()
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have series date/time or content date/time
@@ -430,7 +465,10 @@ def test_sr_includes_study_series_uids():
     analysis = _create_test_analysis_results()
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     assert sr_dataset.StudyInstanceUID == "1.2.840.10008.1.2.3.4.5"
@@ -477,7 +515,10 @@ def test_sr_generation_with_probability_distribution():
     analysis.probability_distribution = {"benign": 0.1, "malignant": 0.9}
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence
@@ -492,7 +533,10 @@ def test_sr_generation_with_primary_diagnosis():
     analysis.primary_diagnosis = "Malignant neoplasm"
 
     sr_dataset = builder.build_measurement_report(
-        analysis, "1.2.840.10008.1.2.3.4.5", "1.2.840.10008.1.2.3.4.5.1", "1.2.840.10008.1.2.3.4.5.1.1"
+        analysis,
+        "1.2.840.10008.1.2.3.4.5",
+        "1.2.840.10008.1.2.3.4.5.1",
+        "1.2.840.10008.1.2.3.4.5.1.1",
     )
 
     # Must have content sequence
