@@ -22,7 +22,7 @@ def test_integration_tests_missing_slow_marker():
     """
     Test that integration tests in test_camelyon_training_integration.py
     are missing @pytest.mark.slow decorator.
-    
+
     This test encodes the EXPECTED behavior (tests should have slow marker).
     On UNFIXED code, this test will FAIL (confirming bug exists).
     On FIXED code, this test will PASS (confirming bug is fixed).
@@ -35,7 +35,7 @@ def test_integration_tests_missing_slow_marker():
         "test_evaluation_generates_plots",
         "test_training_validates_config",
     ]
-    
+
     # Collect tests with CI marker expression (what CI uses)
     result = subprocess.run(
         [
@@ -52,15 +52,15 @@ def test_integration_tests_missing_slow_marker():
         text=True,
         timeout=30,
     )
-    
+
     output = result.stdout + result.stderr
-    
+
     # Check which integration tests are collected (would execute in CI)
     collected_integration_tests = []
     for test_name in integration_tests:
         if test_name in output:
             collected_integration_tests.append(test_name)
-    
+
     # EXPECTED BEHAVIOR: No integration tests should be collected
     # (they should all be skipped due to slow marker)
     # On UNFIXED code: This assertion will FAIL (bug exists)
@@ -76,7 +76,7 @@ def test_integration_tests_missing_slow_marker():
 def test_integration_tests_not_collected_with_slow_marker():
     """
     Test that integration tests are collected when using -m slow marker.
-    
+
     On UNFIXED code: No tests collected (they lack slow marker) - FAIL
     On FIXED code: All 5 tests collected (they have slow marker) - PASS
     """
@@ -96,9 +96,9 @@ def test_integration_tests_not_collected_with_slow_marker():
         text=True,
         timeout=30,
     )
-    
+
     output = result.stdout + result.stderr
-    
+
     # Count how many integration tests are collected
     integration_tests = [
         "test_end_to_end_training",
@@ -107,9 +107,9 @@ def test_integration_tests_not_collected_with_slow_marker():
         "test_evaluation_generates_plots",
         "test_training_validates_config",
     ]
-    
+
     collected_count = sum(1 for test in integration_tests if test in output)
-    
+
     # EXPECTED BEHAVIOR: All 5 integration tests should be collected with -m slow
     # On UNFIXED code: This assertion will FAIL (tests lack slow marker)
     # On FIXED code: This assertion will PASS (tests have slow marker)
@@ -122,7 +122,7 @@ def test_integration_tests_not_collected_with_slow_marker():
 def test_ci_marker_expression_skips_integration_tests():
     """
     Test that CI marker expression 'not property and not slow' skips integration tests.
-    
+
     This is the core bug condition test - verifies tests are skipped in CI.
     """
     # Run pytest with CI marker expression
@@ -140,9 +140,9 @@ def test_ci_marker_expression_skips_integration_tests():
         text=True,
         timeout=30,
     )
-    
+
     output = result.stdout + result.stderr
-    
+
     # Check for "SKIPPED" in output for each integration test
     integration_tests = [
         "test_end_to_end_training",
@@ -151,18 +151,18 @@ def test_ci_marker_expression_skips_integration_tests():
         "test_evaluation_generates_plots",
         "test_training_validates_config",
     ]
-    
+
     # Count how many tests were skipped vs executed
     skipped_count = 0
     executed_count = 0
-    
+
     for test_name in integration_tests:
         if f"{test_name}" in output:
             if "SKIPPED" in output or "skipped" in output:
                 skipped_count += 1
             else:
                 executed_count += 1
-    
+
     # EXPECTED BEHAVIOR: All 5 tests should be skipped
     # On UNFIXED code: Tests execute (not skipped) - FAIL
     # On FIXED code: Tests are skipped - PASS
@@ -171,7 +171,7 @@ def test_ci_marker_expression_skips_integration_tests():
         f"(should be SKIPPED). These tests run subprocess calls with 390+ seconds "
         f"cumulative timeout, causing Windows CI to timeout."
     )
-    
+
     assert skipped_count == 5, (
         f"Expected all 5 integration tests to be SKIPPED in CI, "
         f"but only {skipped_count} were skipped."
