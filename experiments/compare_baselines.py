@@ -108,7 +108,10 @@ def create_comparison_table(results: Dict[str, Dict]) -> pd.DataFrame:
             "F1 Score": metrics.get("test_f1", metrics.get("f1", 0.0)),
             "AUC": metrics.get("test_auc", metrics.get("auc", 0.0)),
             "Training Time (h)": metrics.get("training_time_hours", 0.0),
-            "Parameters (M)": metrics.get("num_parameters", metrics.get("model_parameters", {}).get("total", 0)) / 1e6,
+            "Parameters (M)": metrics.get(
+                "num_parameters", metrics.get("model_parameters", {}).get("total", 0)
+            )
+            / 1e6,
         }
         data.append(row)
 
@@ -138,7 +141,9 @@ def plot_comparison(results: Dict[str, Dict], output_dir: Path):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     models = list(results.keys())
-    accuracies = [results[m].get("test_accuracy", results[m].get("accuracy", 0)) * 100 for m in models]
+    accuracies = [
+        results[m].get("test_accuracy", results[m].get("accuracy", 0)) * 100 for m in models
+    ]
     f1_scores = [results[m].get("test_f1", results[m].get("f1", 0)) * 100 for m in models]
     aucs = [results[m].get("test_auc", results[m].get("auc", 0)) * 100 for m in models]
 
@@ -250,7 +255,7 @@ Trained and evaluated {len(results)} baseline models on the PCam dataset.
 
     # Calculate efficiency metric
     df["Efficiency"] = df["Accuracy"] / df["Parameters (M)"]
-    
+
     # Only add efficiency section if we have valid data
     if df["Efficiency"].notna().any() and (df["Efficiency"] > 0).any():
         most_efficient = df.loc[df["Efficiency"].idxmax()]
