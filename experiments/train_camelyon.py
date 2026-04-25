@@ -28,7 +28,6 @@ Configuration:
 """
 
 import argparse
-import h5py
 import inspect
 import logging
 import random
@@ -36,6 +35,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
+import h5py
 import numpy as np
 import torch
 import torch.nn as nn

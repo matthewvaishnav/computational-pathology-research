@@ -2,15 +2,16 @@
 Test dataset visualization functionality.
 """
 
-import numpy as np
 import matplotlib
+import numpy as np
 
 matplotlib.use("Agg")  # Non-interactive backend
+import sys
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
-from pathlib import Path
-import sys
 
 # Add src to path
 sys.path.insert(0, str(Path("src/data").resolve()))
