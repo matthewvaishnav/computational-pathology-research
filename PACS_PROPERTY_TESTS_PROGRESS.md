@@ -159,13 +159,36 @@ This document tracks the implementation of optional property-based tests for the
 - Fixed test assertions to match actual SR behavior (SR generates new series UID, not reusing analysis series UID)
 
 #### Multi-Vendor Support (Properties 12-14)
-**File**: `tests/test_pacs_vendor_adapters.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_vendor_adapters.py`
+**Status**: ✅ Complete (18/18 tests passing)
+**Commit**: 352dc9e
 
 - **Property 12: DICOM Conformance Negotiation**
+  - ✅ Conformance negotiation returns vendor preferences
+  - ✅ Conformance negotiation respects remote capabilities
+  - ✅ Presentation contexts include vendor preferences
+  - Validates: Requirements 4.5
+
 - **Property 13: Vendor Tag Normalization**
+  - ✅ Vendor-specific private tags are removed after normalization
+  - ✅ Vendor tags mapped to standard equivalents when possible
+  - ✅ Generic adapter preserves all tags without modification
+  - Validates: Requirements 4.6
+
 - **Property 14: Vendor-Specific Optimization Selection**
-- Validates: Requirements 4.5, 4.6, 4.7
+  - ✅ Vendor optimizations applied to Application Entity
+  - ✅ Vendor query model selection
+  - ✅ Vendor transfer syntax preferences
+  - Validates: Requirements 4.7
+
+**Additional Tests**:
+- Vendor detection from dataset attributes (GE, Philips, Siemens, Agfa, Unknown)
+- Vendor detection from endpoint configuration
+- Private tag block definitions for each vendor
+- Factory singleton pattern validation
+
+**Bug Fixes**:
+- Fixed Storage SCP AE title truncation to 16 characters max
 
 #### Security Manager (Properties 15-19)
 **File**: `tests/test_pacs_security_manager.py` (not yet created)
@@ -235,14 +258,14 @@ This document tracks the implementation of optional property-based tests for the
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 21 (44%)
-- **Remaining**: 27 (56%)
+- **Implemented**: 24 (50%)
+- **Remaining**: 24 (50%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
 - ✅ Retrieval Engine: 4/4 (100%)
 - ✅ Storage Engine: 4/4 (100%)
-- ⏳ Multi-Vendor: 0/3 (0%)
+- ✅ Multi-Vendor: 3/3 (100%)
 - ⏳ Security: 0/5 (0%)
 - ⏳ Configuration: 0/5 (0%)
 - ✅ Error Handling: 3/3 (100%)
@@ -256,20 +279,20 @@ This document tracks the implementation of optional property-based tests for the
 
 ## Next Steps
 
-1. **Storage Engine Tests** (Properties 8-11)
-   - Structured Report compliance
-   - DICOM relationships
-   - Multi-algorithm support
-
-2. **Security Manager Tests** (Properties 15-19)
+1. **Security Manager Tests** (Properties 15-19)
    - TLS enforcement
    - Certificate validation
    - Security event logging
 
-3. **Configuration Manager Tests** (Properties 20-24)
+2. **Configuration Manager Tests** (Properties 20-24)
    - Configuration loading/decryption
    - Multi-endpoint support
    - Validation completeness
+
+3. **Workflow Orchestration Tests** (Properties 28-31)
+   - Automatic study queuing
+   - Workflow sequencing
+   - Priority-based processing
 
 ## Notes
 
@@ -282,4 +305,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: 0edf125 - Implemented Storage Engine property tests (Properties 8-11)*
+*Latest commit: 352dc9e - Implemented Multi-Vendor Support property tests (Properties 12-14)*
