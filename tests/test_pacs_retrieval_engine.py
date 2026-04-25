@@ -14,11 +14,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import given, settings, HealthCheck
-from hypothesis import strategies as st
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.uid import ExplicitVRLittleEndian
 
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from src.clinical.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
