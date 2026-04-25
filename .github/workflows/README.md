@@ -9,13 +9,14 @@ This directory contains CI/CD workflows for automated testing, building, and dep
 **Purpose**: Main CI pipeline for testing and validation
 
 **Jobs**:
-- **test**: Run tests on multiple OS (Ubuntu, Windows, macOS) and Python versions (3.9, 3.10, 3.11)
+- **test**: Run tests on multiple OS (Ubuntu, Windows, macOS) and Python versions (3.9, 3.10, 3.11) with parallel execution (pytest-xdist)
 - **lint**: Code quality checks (flake8, black, isort)
 - **type-check**: Static type checking with mypy
 - **security**: Security scanning with bandit
 - **docker**: Docker build test
 - **docs**: Documentation validation and link checking
 - **quick-demo**: Run quick demo to ensure end-to-end functionality
+- **pacs-tests**: PACS integration property tests (40/48 properties, 83% coverage)
 - **coverage-report**: Generate and upload coverage reports
 - **all-checks-passed**: Final status check
 
@@ -23,6 +24,7 @@ This directory contains CI/CD workflows for automated testing, building, and dep
 - Coverage reports (XML and HTML)
 - Security scan results
 - Quick demo results
+- PACS test results and Hypothesis statistics
 
 **Status Badge**:
 ```markdown
@@ -129,9 +131,13 @@ All workflows support manual triggering via `workflow_dispatch`:
 # Install dependencies
 pip install -r requirements.txt
 pip install -e .
+pip install pytest-xdist  # For parallel execution
 
-# Run tests
-pytest tests/ -v --cov=src --cov-report=term
+# Run tests (parallel execution like CI)
+pytest tests/ -v -n auto -m "not property and not slow" --cov=src --cov-report=term
+
+# Run PACS tests
+pytest tests/test_pacs_*.py -v --hypothesis-show-statistics -m "not slow"
 
 # Run linting
 flake8 src/ tests/
