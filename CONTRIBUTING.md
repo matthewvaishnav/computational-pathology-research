@@ -279,6 +279,7 @@ All new functionality must include tests. Use pytest for testing:
 # tests/test_new_feature.py
 import pytest
 import torch
+from hypothesis import given, strategies as st
 from src.models import NewFeature
 
 class TestNewFeature:
@@ -315,7 +316,67 @@ class TestNewFeature:
         output = feature(x)
         
         assert output.shape == (batch_size, 128)
+    
+    # Property-based test using Hypothesis
+    @given(
+        batch_size=st.integers(min_value=1, max_value=64),
+        input_dim=st.integers(min_value=128, max_value=512)
+    )
+    def test_property_output_shape(self, batch_size, input_dim):
+        """Property test: output shape always matches expected dimensions."""
+        feature = NewFeature(input_dim=input_dim, output_dim=128)
+        x = torch.randn(batch_size, input_dim)
+        output = feature(x)
+        
+        assert output.shape == (batch_size, 128)
+        assert not torch.isnan(output).any()
 ```
+
+### Property-Based Testing Guidelines
+
+I use **Hypothesis** for property-based testing to validate universal correctness properties:
+
+**When to use property-based tests**:
+- Testing invariants that should hold for all inputs (e.g., output shape, data integrity)
+- Validating complex systems with many edge cases (e.g., PACS integration, DICOM parsing)
+- Ensuring correctness across wide input ranges (e.g., batch sizes, dimensions)
+- Testing error handling and recovery mechanisms
+
+**Example property tests from PACS integration**:
+```python
+from hypothesis import given, strategies as st, settings, HealthCheck
+
+@given(
+    patient_id=st.text(min_size=1, max_size=64),
+    study_date=st.dates(min_value=date(2000, 1, 1), max_value=date(2030, 12, 31))
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_property_query_parameter_translation(self, patient_id, study_date):
+    """Property: DICOM query parameters always translate correctly."""
+    query_params = {
+        'PatientID': patient_id,
+        'StudyDate': study_date.strftime('%Y%m%d')
+    }
+    
+    dicom_query = self.query_engine.build_query(query_params)
+    
+    # Verify DICOM tag translation
+    assert dicom_query.PatientID == patient_id
+    assert dicom_query.StudyDate == study_date.strftime('%Y%m%d')
+```
+
+**Property test best practices**:
+- Use `@given` decorator with Hypothesis strategies for input generation
+- Suppress `function_scoped_fixture` health check when using pytest fixtures
+- Test universal properties (invariants) rather than specific examples
+- Use appropriate strategies: `st.text()`, `st.integers()`, `st.dates()`, `st.lists()`, etc.
+- Set reasonable bounds on generated values (min/max sizes, value ranges)
+- Document what property is being tested in the docstring
+
+**PACS Integration Property Tests**:
+- 40/48 correctness properties validated (83% complete)
+- Categories: Query Engine, Retrieval Engine, Storage Engine, Multi-Vendor, Security, Configuration, Error Handling, Workflow, Notification, Audit Logging
+- See [PACS_PROPERTY_TESTS_PROGRESS.md](../PACS_PROPERTY_TESTS_PROGRESS.md) for details
 
 ### Test Organization
 
