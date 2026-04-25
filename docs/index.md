@@ -22,11 +22,17 @@ title: Home
 
 HistoCore provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving **85.26% test accuracy** and **93.94% AUC** on the full 32,768-sample PatchCamelyon test set with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
 
-The framework features advanced model interpretability tools (Grad-CAM, attention visualization, failure analysis), clinical workflow integration with multi-class disease classification and DICOM/FHIR support, comprehensive dataset testing infrastructure (1,448 tests, 55% coverage), regulatory compliance features for clinical deployment, multimodal fusion capabilities, and real-time inference performance (<5 seconds) suitable for production clinical environments.
+The framework features 141 source modules, 150 test files with 1,448 tests (55% coverage), advanced model interpretability tools (Grad-CAM, attention visualization, failure analysis), clinical workflow integration with DICOM/FHIR/PACS support, regulatory compliance features for clinical deployment, multimodal fusion capabilities, and real-time inference performance (<5 seconds) suitable for production clinical environments.
 
 <div class="callout callout-warning">
   <strong>Research Use Only:</strong> This framework is designed for research purposes and has not been validated for clinical diagnostic use.
 </div>
+
+## About the Author
+
+**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. Creator of HistoCore, featuring attention-based MIL models, complete WSI processing pipelines with OpenSlide integration, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 1,448 tests (55% coverage), and validated performance on real-world benchmarks (85.26% accuracy, 0.9394 AUC on PCam). Focus areas include reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
+
+[Learn more about the project →](ABOUT.html)
 
 ---
 
@@ -69,6 +75,7 @@ The framework features advanced model interpretability tools (Grad-CAM, attentio
 ## Quick Links
 
 <div class="doc-links">
+  <a href="ABOUT.html" class="doc-link">About HistoCore</a>
   <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
   <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
@@ -107,7 +114,7 @@ If you use this framework in your research, please cite:
   author = {Vaishnav, Matthew},
   year = {2026},
   url = {https://github.com/matthewvaishnav/histocore},
-  note = {Production-grade PyTorch framework for computational pathology research}
+  note = {Production-grade PyTorch framework with 141 modules, 1,448 tests, 55\% coverage}
 }
 ```
 
