@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from hypothesis import given, settings, HealthCheck
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from src.clinical.pacs.audit_logger import (
     AuditMessage,
