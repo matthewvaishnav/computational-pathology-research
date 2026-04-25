@@ -191,8 +191,8 @@ class SMSNotifier(NotificationChannel):
             logger.info("SMS (sim) to %s: %s", recipient, body)
             return True
         try:
-            import urllib.request
             import json as _json
+            import urllib.request
 
             payload = _json.dumps({"to": recipient, "from": self.sender_id, "body": body}).encode()
             headers = {"Content-Type": "application/json"}
