@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package federated_learning;
+
+// Federated Learning Service
+service FederatedLearningService {
+  // Client registers with coordinator
+  rpc RegisterClient(ClientRegistration) returns (RegistrationResponse);
+  
+  // Client requests global model for current round
+  rpc GetGlobalModel(ModelRequest) returns (ModelResponse);
+  
+  // Client submits local update
+  rpc SubmitUpdate(ClientUpdateMessage) returns (UpdateAcknowledgment);
+  
+  // Client checks round status
+  rpc GetRoundStatus(RoundStatusRequest) returns (RoundStatusResponse);
+  
+  // Coordinator broadcasts round start
+  rpc StartRound(RoundStartMessage) returns (RoundStartAcknowledgment);
+}
+
+// Client registration
+message ClientRegistration {
+  string client_id = 1;
+  string hostname = 2;
+  int32 port = 3;
+  ClientCapabilities capabilities = 4;
+  string certificate = 5;  // X.509 certificate for mutual TLS
+}
+
+message ClientCapabilities {
+  int64 available_memory_gb = 1;
+  int32 num_gpus = 2;
+  int32 dataset_size = 3;
+  repeated string supported_algorithms = 4;
+}
+
+message RegistrationResponse {
+  bool success = 1;
+  string message = 2;
+  string coordinator_certificate = 3;
+}
+
+// Model request/response
+message ModelRequest {
+  string client_id = 1;
+  int32 round_id = 2;
+}
+
+message ModelResponse {
+  int32 model_version = 1;
+  int32 round_id = 2;
+  bytes model_state_dict = 3;  // Serialized PyTorch state_dict
+  string aggregation_algorithm = 4;
+  int32 local_epochs = 5;
+  float learning_rate = 6;
+}
+
+// Client update submission
+message ClientUpdateMessage {
+  string client_id = 1;
+  int32 round_id = 2;
+  int32 model_version = 3;
+  bytes gradients = 4;  // Serialized gradient dict
+  int32 dataset_size = 5;
+  float training_time_seconds = 6;
+  float privacy_epsilon = 7;
+  UpdateMetadata metadata = 8;
+}
+
+message UpdateMetadata {
+  float train_loss = 1;
+  float train_accuracy = 2;
+  int32 num_batches = 3;
+  bool privacy_applied = 4;
+}
+
+message UpdateAcknowledgment {
+  bool success = 1;
+  string message = 2;
+  int32 next_round_id = 3;
+}
+
+// Round status
+message RoundStatusRequest {
+  string client_id = 1;
+  int32 round_id = 2;
+}
+
+message RoundStatusResponse {
+  int32 round_id = 1;
+  string status = 2;  // "in_progress", "completed", "failed"
+  int32 participants_count = 3;
+  int32 updates_received = 4;
+  float estimated_time_remaining_seconds = 5;
+}
+
+// Round start broadcast
+message RoundStartMessage {
+  int32 round_id = 1;
+  repeated string participant_ids = 2;
+  int32 timeout_seconds = 3;
+}
+
+message RoundStartAcknowledgment {
+  bool success = 1;
+}
