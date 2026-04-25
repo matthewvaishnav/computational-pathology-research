@@ -3,11 +3,11 @@
 from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
 from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .foundation import (
+    CONCHEncoder,
     FeatureProjector,
     FoundationModelEncoder,
     PhikonEncoder,
     UNIEncoder,
-    CONCHEncoder,
     load_foundation_model,
 )
 from .fusion import CrossModalAttention, MultiModalFusionLayer
