@@ -289,14 +289,52 @@ This document tracks the implementation of optional property-based tests for the
 **Coverage**: 77% for configuration_manager.py (up from 10%)
 
 #### Workflow Orchestration (Properties 28-31)
-**File**: `tests/test_pacs_workflow_orchestrator.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_workflow_orchestrator.py`
+**Status**: ✅ Complete (27/27 tests passing)
+**Commit**: 1cfaa69
 
 - **Property 28: Automatic Study Queuing**
+  - ✅ New studies automatically queued without manual intervention
+  - ✅ Multiple studies queued automatically
+  - ✅ Already processed studies skipped
+  - Validates: Requirements 8.2
+
 - **Property 29: Workflow Operation Sequencing**
+  - ✅ Operations execute in correct sequence: query→retrieve→analyze→store
+  - ✅ Retrieve before analyze
+  - ✅ Analyze before store
+  - ✅ Failure stops sequence
+  - Validates: Requirements 8.3
+
 - **Property 30: Status Tracking Completeness**
+  - ✅ Successful processing tracked with accurate state
+  - ✅ Failed processing tracked with error details
+  - ✅ Multiple studies tracked accurately
+  - ✅ Status retrievable via API
+  - Validates: Requirements 8.4
+
 - **Property 31: Priority-Based Processing Order**
-- Validates: Requirements 8.2, 8.3, 8.4, 8.5
+  - ✅ Urgent processed before low priority
+  - ✅ Priority ordering maintained for any priority mix
+  - ✅ High before medium
+  - ✅ Medium before low
+  - Validates: Requirements 8.5
+
+**Additional Tests**:
+- Orchestrator initialization
+- Start/stop automated polling
+- Processing failure handling (network, disk, auth errors)
+- Max retries and dead letter queue
+- Processing status structure
+- Context manager support
+- Force reprocess flag
+- Concurrent study limit
+- Priority order helper
+
+**Coverage**: 83% for workflow_orchestrator.py (up from 13%)
+
+**Bug Fixes**:
+- Fixed concurrent processing race condition in priority ordering test by setting max_concurrent_studies=1 for sequential processing
 
 #### Performance Features (Properties 32-33)
 **File**: `tests/test_pacs_performance.py` (not yet created)
@@ -334,8 +372,8 @@ This document tracks the implementation of optional property-based tests for the
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 34 (71%)
-- **Remaining**: 14 (29%)
+- **Implemented**: 38 (79%)
+- **Remaining**: 10 (21%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
@@ -345,7 +383,7 @@ This document tracks the implementation of optional property-based tests for the
 - ✅ Security: 5/5 (100%)
 - ✅ Configuration: 5/5 (100%)
 - ✅ Error Handling: 3/3 (100%)
-- ⏳ Workflow: 0/4 (0%)
+- ✅ Workflow: 4/4 (100%)
 - ⏳ Performance: 0/2 (0%)
 - ⏳ DICOM Parsing: 0/4 (0%)
 - ⏳ SR Generation: 0/1 (0%)
@@ -355,19 +393,18 @@ This document tracks the implementation of optional property-based tests for the
 
 ## Next Steps
 
-1. **Workflow Orchestration Tests** (Properties 28-31)
-   - Automatic study queuing
-   - Workflow sequencing
-   - Priority-based processing
-
-2. **Performance Tests** (Properties 32-33)
+1. **Performance Tests** (Properties 32-33)
    - Connection pool utilization
    - Performance metrics collection
 
-3. **DICOM Parsing Tests** (Properties 34-37)
+2. **DICOM Parsing Tests** (Properties 34-37)
    - Round-trip integrity
    - Error reporting
    - Transfer syntax handling
+
+3. **Audit Management Tests** (Properties 47-48)
+   - Retention period support
+   - Search and reporting accuracy
 
 ## Notes
 
@@ -380,4 +417,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: 49728f7 - Implemented Configuration Manager property tests (Properties 20-24)*
+*Latest commit: 1cfaa69 - Implemented Workflow Orchestration property tests (Properties 28-31)*
