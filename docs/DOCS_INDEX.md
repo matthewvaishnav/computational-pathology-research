@@ -46,6 +46,7 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 ### Advanced Features
 - [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
 - [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
+- [PACS Integration System](PACS_INTEGRATION.html) - **Production-ready PACS integration**: DICOM C-FIND/C-MOVE/C-STORE, multi-vendor support, TLS 1.3, HIPAA audit logging (40/48 properties tested, 83%)
 - [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 1,448 tests with property-based testing
 
 ### Evaluation Metrics
@@ -185,6 +186,25 @@ from src.utils import set_seed, save_checkpoint, load_checkpoint
 ## Quick Reference
 
 ### Common Commands
+
+#### PACS Integration
+```bash
+# Start PACS service with production config
+python -c "from src.clinical.pacs import PACSService; \
+  with PACSService(config_path='.kiro/pacs/config.production.yaml') as s: \
+    print(s.health_check())"
+
+# Query PACS for studies
+python -c "from src.clinical.pacs import PACSService; \
+  with PACSService(config_path='.kiro/pacs/config.yaml') as s: \
+    studies = s.query_studies(patient_id='12345678', modality='SM'); \
+    print(f'Found {len(studies)} studies')"
+
+# Get PACS statistics
+python -c "from src.clinical.pacs import PACSService; \
+  with PACSService(config_path='.kiro/pacs/config.yaml') as s: \
+    print(s.get_statistics())"
+```
 
 #### WSI Processing
 ```bash
