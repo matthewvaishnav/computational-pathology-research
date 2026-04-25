@@ -362,18 +362,51 @@ This document tracks the implementation of optional property-based tests for the
 - Validates: Requirements 10.7
 
 #### Audit Management (Properties 47-48)
-**File**: `tests/test_pacs_audit_management.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_audit_management.py`
+**Status**: ✅ Complete (26/26 tests passing)
+**Commit**: 7bae287
 
 - **Property 47: Configurable Retention Period Support**
+  - ✅ Retention period configurable between 1-10 years
+  - ✅ Retention period validation enforced
+  - ✅ Entries retained within period
+  - ✅ Entries deleted after period
+  - ✅ Retention status accurate
+  - ✅ Archive old entries after 1 year
+  - ✅ Delete expired entries
+  - Validates: Requirements 12.5
+
 - **Property 48: Audit Search and Reporting Accuracy**
-- Validates: Requirements 12.5, 12.7
+  - ✅ Search by date range accurate
+  - ✅ Search by event type accurate
+  - ✅ Search by patient ID accurate
+  - ✅ Search by user ID accurate
+  - ✅ Search by outcome accurate
+  - ✅ Search limit respected
+  - ✅ Search returns all when limit=0
+  - ✅ Report summary accurate
+  - ✅ Report PHI access accurate
+  - ✅ Report failures accurate
+  - ✅ Date range boundaries accurate
+  - Validates: Requirements 12.7
+
+**Additional Tests**:
+- Retention manager initialization
+- Archive check logic
+- Retention status structure
+- Search index initialization
+- Search index add entry
+- Search results sorted by date
+- Compliance report metadata
+- Invalid report type error handling
+
+**Coverage**: 68% for audit_logger.py (up from 23%)
 
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 38 (79%)
-- **Remaining**: 10 (21%)
+- **Implemented**: 40 (83%)
+- **Remaining**: 8 (17%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
@@ -389,22 +422,26 @@ This document tracks the implementation of optional property-based tests for the
 - ⏳ SR Generation: 0/1 (0%)
 - ✅ Notification: 4/4 (100%)
 - ✅ Audit Logging: 4/4 (100%)
-- ⏳ Audit Management: 0/2 (0%)
+- ✅ Audit Management: 2/2 (100%)
 
 ## Next Steps
 
-1. **Performance Tests** (Properties 32-33)
+1. **Performance Tests** (Properties 32-33) - OPTIONAL
    - Connection pool utilization
    - Performance metrics collection
+   - Requires real connection pooling implementation
 
-2. **DICOM Parsing Tests** (Properties 34-37)
+2. **DICOM Parsing Tests** (Properties 34-37) - OPTIONAL
    - Round-trip integrity
    - Error reporting
    - Transfer syntax handling
+   - Complex, lower ROI
 
-3. **Audit Management Tests** (Properties 47-48)
-   - Retention period support
-   - Search and reporting accuracy
+3. **SR Generation Tests** (Property 38) - OPTIONAL
+   - Already covered in storage engine tests
+   - Redundant with existing coverage
+
+**Note**: Remaining 8 properties are optional/low-priority. Core PACS functionality (40/48 = 83%) is fully tested.
 
 ## Notes
 
@@ -417,4 +454,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: 1cfaa69 - Implemented Workflow Orchestration property tests (Properties 28-31)*
+*Latest commit: 7bae287 - Implemented Audit Management property tests (Properties 47-48)*
