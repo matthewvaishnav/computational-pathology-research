@@ -10,18 +10,18 @@ import torch.nn as nn
 
 class FeatureProjector(nn.Module):
     """Trainable adapter: foundation model dims → 256-dim HistoCore space.
-    
+
     This is the only component that trains in Phase 1 (frozen encoder experiments).
     The two-layer MLP with residual-style normalization avoids representation
     collapse when training on small downstream datasets.
-    
+
     Architecture: Linear → LayerNorm → GELU → Dropout → Linear → LayerNorm
-    
+
     Args:
         input_dim: Foundation model feature dimension (512, 768, or 1024)
         output_dim: Target dimension for downstream MIL (default: 256)
         dropout: Dropout rate (default: 0.1)
-        
+
     Example:
         >>> projector = FeatureProjector(input_dim=768, output_dim=256)
         >>> raw_features = phikon_encoder(patches)  # [B, 768]
@@ -49,10 +49,10 @@ class FeatureProjector(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Project features to target dimension.
-        
+
         Args:
             x: [B, input_dim] foundation model features
-            
+
         Returns:
             [B, output_dim] projected features
         """

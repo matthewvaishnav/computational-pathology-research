@@ -41,9 +41,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
 from src.models.encoders import WSIEncoder
 from src.models.feature_extractors import ResNetFeatureExtractor
-from src.models.heads import ClassificationHead
 from src.models.foundation import load_foundation_model
 from src.models.foundation.projector import FeatureProjector
+from src.models.heads import ClassificationHead
 
 # Configure logging
 logging.basicConfig(
@@ -2135,9 +2135,9 @@ def main():
     logger.info("Recovery statistics initialized for training run")
 
     for epoch in range(start_epoch, num_epochs + 1):
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info(f"Epoch {epoch}/{num_epochs}")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         try:
             # Train
