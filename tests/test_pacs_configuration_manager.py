@@ -15,9 +15,9 @@ from unittest.mock import Mock, patch
 import pytest
 import yaml
 from cryptography.fernet import Fernet
+
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.configuration_manager import ConfigurationManager
 from src.clinical.pacs.data_models import (
     PACSConfiguration,
@@ -71,7 +71,12 @@ def _make_test_config(
     )
 
 
-def _save_config_to_file(config: PACSConfiguration, file_path: Path, encrypted: bool = False, encryption_key: bytes = None):
+def _save_config_to_file(
+    config: PACSConfiguration,
+    file_path: Path,
+    encrypted: bool = False,
+    encryption_key: bytes = None,
+):
     """Save config to YAML file."""
     config_dict = {
         "profile_name": config.profile_name,
@@ -166,7 +171,9 @@ def test_property_20_load_encrypted_configuration():
 
         # Save encrypted
         config_file = config_dir / "encrypted_test.encrypted.yaml"
-        _save_config_to_file(test_config, config_file, encrypted=True, encryption_key=encryption_key)
+        _save_config_to_file(
+            test_config, config_file, encrypted=True, encryption_key=encryption_key
+        )
 
         # Load encrypted config
         loaded_config = config_mgr.load_configuration(profile="encrypted_test", encrypted=True)
@@ -186,7 +193,9 @@ def test_property_20_encrypted_load_fails_without_key():
         test_config = _make_test_config(profile_name="encrypted")
 
         config_file = config_dir / "encrypted.encrypted.yaml"
-        _save_config_to_file(test_config, config_file, encrypted=True, encryption_key=encryption_key)
+        _save_config_to_file(
+            test_config, config_file, encrypted=True, encryption_key=encryption_key
+        )
 
         # Try to load without key
         config_mgr = ConfigurationManager(config_directory=config_dir, encryption_key=None)
@@ -195,7 +204,11 @@ def test_property_20_encrypted_load_fails_without_key():
             config_mgr.load_configuration(profile="encrypted", encrypted=True)
 
 
-@given(profile_name=st.text(min_size=1, max_size=20, alphabet=st.characters(min_codepoint=97, max_codepoint=122)))
+@given(
+    profile_name=st.text(
+        min_size=1, max_size=20, alphabet=st.characters(min_codepoint=97, max_codepoint=122)
+    )
+)
 @settings(max_examples=20, suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_property_20_load_configuration_caches_result(profile_name):
     """Loaded configs must be cached for subsequent access."""
@@ -265,9 +278,7 @@ def test_property_21_primary_and_backup_endpoints_identified():
         config_mgr = ConfigurationManager(config_directory=config_dir)
 
         # Create config with primary and backup
-        test_config = _make_test_config(
-            profile_name="redundant", endpoint_count=3, primary_index=0
-        )
+        test_config = _make_test_config(profile_name="redundant", endpoint_count=3, primary_index=0)
 
         config_file = config_dir / "redundant.yaml"
         _save_config_to_file(test_config, config_file)
@@ -422,8 +433,12 @@ def test_property_22_validation_cache_threshold_relationship(max_cache, cleanup_
 
 
 @given(
-    ae_title=st.text(min_size=1, max_size=16, alphabet=st.characters(min_codepoint=65, max_codepoint=90)),
-    host=st.text(min_size=5, max_size=50, alphabet=st.characters(min_codepoint=97, max_codepoint=122)),
+    ae_title=st.text(
+        min_size=1, max_size=16, alphabet=st.characters(min_codepoint=65, max_codepoint=90)
+    ),
+    host=st.text(
+        min_size=5, max_size=50, alphabet=st.characters(min_codepoint=97, max_codepoint=122)
+    ),
     port=st.integers(min_value=1024, max_value=65535),
 )
 @settings(max_examples=50)
@@ -576,7 +591,9 @@ def test_property_23_performance_settings_stored_completely():
 
 @given(
     profile_names=st.lists(
-        st.text(min_size=3, max_size=15, alphabet=st.characters(min_codepoint=97, max_codepoint=122)),
+        st.text(
+            min_size=3, max_size=15, alphabet=st.characters(min_codepoint=97, max_codepoint=122)
+        ),
         min_size=2,
         max_size=5,
         unique=True,
