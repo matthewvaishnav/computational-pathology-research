@@ -10,9 +10,9 @@ from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
-from hypothesis import given, settings, HealthCheck
-from hypothesis import strategies as st
 
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from src.clinical.pacs.data_models import (
     DicomPriority,
     PACSEndpoint,

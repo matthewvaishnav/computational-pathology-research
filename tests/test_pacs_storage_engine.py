@@ -12,11 +12,11 @@ from pathlib import Path
 from typing import List
 
 import pytest
-from hypothesis import given, settings, HealthCheck
-from hypothesis import strategies as st
 from pydicom.dataset import Dataset
 from pydicom.sequence import Sequence
 
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from src.clinical.pacs.data_models import (
     AnalysisResults,
     DetectedRegion,
