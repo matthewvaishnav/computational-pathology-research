@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 class CircuitState(Enum):
     """States of a circuit-breaker protecting a single PACS endpoint."""
 
-    CLOSED = "closed"       # Normal — requests flow through.
-    OPEN = "open"           # Failing — requests are rejected immediately.
-    HALF_OPEN = "half_open" # Probing — limited requests allowed to test recovery.
+    CLOSED = "closed"  # Normal — requests flow through.
+    OPEN = "open"  # Failing — requests are rejected immediately.
+    HALF_OPEN = "half_open"  # Probing — limited requests allowed to test recovery.
 
 
 class CircuitBreaker:
@@ -85,7 +85,9 @@ class CircuitBreaker:
         if self._state == CircuitState.HALF_OPEN:
             self._success_count += 1
             if self._success_count >= self._success_threshold:
-                logger.info("Circuit breaker closing after %d consecutive successes.", self._success_count)
+                logger.info(
+                    "Circuit breaker closing after %d consecutive successes.", self._success_count
+                )
                 self._transition(CircuitState.CLOSED)
         elif self._state == CircuitState.CLOSED:
             # Reset running failure count so that isolated errors don't accumulate.

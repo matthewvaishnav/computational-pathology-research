@@ -116,7 +116,7 @@ class NetworkErrorHandler:
 
     def calculate_backoff_delay(self, attempt: int) -> float:
         """Return exponential backoff delay for *attempt* (0-indexed), capped at max_delay."""
-        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+        delay = min(self.base_delay * (2**attempt), self.max_delay)
         if self.jitter:
             # Small random offset avoids thundering-herd when many clients retry simultaneously.
             delay += random.uniform(0, delay * 0.1)
@@ -134,8 +134,7 @@ class NetworkErrorHandler:
         """Log the timeout event and return the backoff delay for the next attempt."""
         delay = self.calculate_backoff_delay(attempt)
         logger.warning(
-            "Connection timeout on endpoint %s (host=%s, attempt=%d/%d). "
-            "Retrying in %.1fs.",
+            "Connection timeout on endpoint %s (host=%s, attempt=%d/%d). " "Retrying in %.1fs.",
             endpoint.endpoint_id,
             endpoint.host,
             attempt + 1,
@@ -163,8 +162,7 @@ class NetworkErrorHandler:
             action = "retry"
 
         logger.error(
-            "Association failure on endpoint %s (host=%s): %s. "
-            "Attempt %d/%d → action=%s.",
+            "Association failure on endpoint %s (host=%s): %s. " "Attempt %d/%d → action=%s.",
             endpoint.endpoint_id,
             endpoint.host,
             reason,
