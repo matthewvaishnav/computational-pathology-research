@@ -62,7 +62,7 @@ def _make_endpoint() -> PACSEndpoint:
 def test_property_1_patient_id_translates_to_dicom_tag(patient_id):
     """PatientID query parameter must map to DICOM tag (0010,0020)."""
     engine = QueryEngine()
-    
+
     # Build the DICOM dataset for C-FIND
     dataset = engine._build_study_query_dataset(patient_id=patient_id)
 
@@ -80,11 +80,11 @@ def test_property_1_study_date_range_translates_to_dicom_tag(start_date, days_of
     """StudyDate range query parameter must map to DICOM tag (0008,0020) with range format."""
     engine = QueryEngine()
     end_date = start_date + timedelta(days=days_offset)
-    
+
     # Convert to datetime for the API
     start_dt = datetime.combine(start_date, datetime.min.time())
     end_dt = datetime.combine(end_date, datetime.min.time())
-    
+
     dataset = engine._build_study_query_dataset(study_date_range=(start_dt, end_dt))
 
     assert hasattr(dataset, "StudyDate"), "StudyDate tag not found in dataset"
@@ -93,9 +93,7 @@ def test_property_1_study_date_range_translates_to_dicom_tag(start_date, days_of
     assert dataset.StudyDate == expected
 
 
-@given(
-    modality=st.sampled_from(["SM", "XC", "GM", "MG", "CT", "MR", "US", "CR", "DX"])
-)
+@given(modality=st.sampled_from(["SM", "XC", "GM", "MG", "CT", "MR", "US", "CR", "DX"]))
 @settings(max_examples=50)
 def test_property_1_modality_translates_to_dicom_tag(modality):
     """Modality query parameter must map to DICOM tag (0008,0061)."""

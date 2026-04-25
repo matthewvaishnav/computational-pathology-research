@@ -58,7 +58,9 @@ def _create_test_dicom_file(
     """Create a minimal valid DICOM file for testing."""
     # Create file meta information
     file_meta = FileMetaDataset()
-    file_meta.MediaStorageSOPClassUID = "1.2.840.10008.5.1.4.1.1.77.1.6"  # VL Whole Slide Microscopy Image Storage
+    file_meta.MediaStorageSOPClassUID = (
+        "1.2.840.10008.5.1.4.1.1.77.1.6"  # VL Whole Slide Microscopy Image Storage
+    )
     file_meta.MediaStorageSOPInstanceUID = sop_uid
     file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
 
@@ -149,9 +151,7 @@ def test_property_4_all_retrieved_files_tracked(tmp_path, file_count):
     ),
 )
 @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_5_valid_dicom_files_pass_validation(
-    tmp_path, study_uid, series_uid, sop_uid
-):
+def test_property_5_valid_dicom_files_pass_validation(tmp_path, study_uid, series_uid, sop_uid):
     """Valid DICOM files with all required fields must pass validation."""
     engine = RetrievalEngine()
 
@@ -213,9 +213,7 @@ def test_property_5_empty_files_fail_validation(tmp_path, file_size):
     ),
 )
 @settings(max_examples=100)
-def test_property_6_filename_follows_hierarchical_convention(
-    study_uid, series_uid, sop_uid
-):
+def test_property_6_filename_follows_hierarchical_convention(study_uid, series_uid, sop_uid):
     """Generated filenames must follow StudyUID/SeriesUID/SOPInstanceUID.dcm format."""
     engine = RetrievalEngine()
 
