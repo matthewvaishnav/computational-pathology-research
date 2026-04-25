@@ -240,15 +240,53 @@ This document tracks the implementation of optional property-based tests for the
 **Coverage**: 75% for security_manager.py (up from 14%)
 
 #### Configuration Manager (Properties 20-24)
-**File**: `tests/test_pacs_configuration_manager.py` (not yet created)
-**Status**: ⏳ Pending
+**File**: `tests/test_pacs_configuration_manager.py`
+**Status**: ✅ Complete (27/27 tests passing)
+**Commit**: 49728f7
 
 - **Property 20: Configuration Loading and Decryption**
+  - ✅ Plain config files load successfully
+  - ✅ Encrypted config files load and decrypt
+  - ✅ Encrypted load fails without key
+  - ✅ Loaded configs cached for reuse
+  - Validates: Requirements 6.1
+
 - **Property 21: Multi-Endpoint Configuration Support**
+  - ✅ All configured endpoints loaded
+  - ✅ Primary and backup endpoints identified
+  - ✅ All endpoints accessible after loading
+  - Validates: Requirements 6.2
+
 - **Property 22: Configuration Validation Completeness**
+  - ✅ Missing primary endpoint detected
+  - ✅ Duplicate AE titles detected
+  - ✅ Invalid cache config detected
+  - ✅ Invalid security/performance config detected
+  - ✅ Cache threshold relationship enforced
+  - Validates: Requirements 6.3, 6.6
+
 - **Property 23: Endpoint Configuration Completeness**
+  - ✅ All endpoint fields stored and retrievable
+  - ✅ Security settings stored completely
+  - ✅ Performance settings stored completely
+  - Validates: Requirements 6.4
+
 - **Property 24: Profile-Based Configuration Loading**
-- Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5, 6.6
+  - ✅ Correct profile-specific settings loaded
+  - ✅ Production profile enforces security
+  - ✅ Available profiles listable
+  - ✅ Non-existent profile raises error
+  - Validates: Requirements 6.5
+
+**Additional Tests**:
+- Configuration manager initialization
+- Default configuration creation
+- Configuration save/update
+- Encryption key generation
+- Statistics retrieval
+- Notification/email validation
+
+**Coverage**: 77% for configuration_manager.py (up from 10%)
 
 #### Workflow Orchestration (Properties 28-31)
 **File**: `tests/test_pacs_workflow_orchestrator.py` (not yet created)
@@ -296,8 +334,8 @@ This document tracks the implementation of optional property-based tests for the
 ## Summary Statistics
 
 - **Total Properties**: 48
-- **Implemented**: 29 (60%)
-- **Remaining**: 19 (40%)
+- **Implemented**: 34 (71%)
+- **Remaining**: 14 (29%)
 
 ### By Category
 - ✅ Query Engine: 3/3 (100%)
@@ -305,7 +343,7 @@ This document tracks the implementation of optional property-based tests for the
 - ✅ Storage Engine: 4/4 (100%)
 - ✅ Multi-Vendor: 3/3 (100%)
 - ✅ Security: 5/5 (100%)
-- ⏳ Configuration: 0/5 (0%)
+- ✅ Configuration: 5/5 (100%)
 - ✅ Error Handling: 3/3 (100%)
 - ⏳ Workflow: 0/4 (0%)
 - ⏳ Performance: 0/2 (0%)
@@ -317,19 +355,19 @@ This document tracks the implementation of optional property-based tests for the
 
 ## Next Steps
 
-1. **Configuration Manager Tests** (Properties 20-24)
-   - Configuration loading/decryption
-   - Multi-endpoint support
-   - Validation completeness
-
-2. **Workflow Orchestration Tests** (Properties 28-31)
+1. **Workflow Orchestration Tests** (Properties 28-31)
    - Automatic study queuing
    - Workflow sequencing
    - Priority-based processing
 
-3. **Performance Tests** (Properties 32-33)
+2. **Performance Tests** (Properties 32-33)
    - Connection pool utilization
    - Performance metrics collection
+
+3. **DICOM Parsing Tests** (Properties 34-37)
+   - Round-trip integrity
+   - Error reporting
+   - Transfer syntax handling
 
 ## Notes
 
@@ -342,4 +380,4 @@ This document tracks the implementation of optional property-based tests for the
 ---
 
 *Last updated: April 25, 2026*
-*Latest commit: eb7fe77 - Implemented Security Manager property tests (Properties 15-19)*
+*Latest commit: 49728f7 - Implemented Configuration Manager property tests (Properties 20-24)*
