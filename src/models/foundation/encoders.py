@@ -2,7 +2,7 @@
 
 Provides unified interface for histopathology foundation models:
 - Phikon (Owkin): ViT-B/16, Apache 2.0, 768-dim
-- UNI (Mahmood Lab): ViT-L/16, CC-BY-NC-ND 4.0, 1024-dim  
+- UNI (Mahmood Lab): ViT-L/16, CC-BY-NC-ND 4.0, 1024-dim
 - CONCH (Mahmood Lab): ViT-B/16, CC-BY-NC-ND 4.0, 512-dim
 
 All encoders are drop-in replacements for ResNetFeatureExtractor.
@@ -17,10 +17,10 @@ import torch.nn as nn
 
 class FoundationModelEncoder(ABC, nn.Module):
     """Base class for all foundation model encoders.
-    
+
     Drop-in replacement for ResNetFeatureExtractor with unified interface.
     All subclasses output (batch_size, feature_dim) tensors.
-    
+
     Args:
         freeze: Whether to freeze encoder weights (default: True)
     """
@@ -42,10 +42,10 @@ class FoundationModelEncoder(ABC, nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Extract features from image patches.
-        
+
         Args:
             x: [B, 3, H, W] normalized image patches (ImageNet stats)
-            
+
         Returns:
             [B, feature_dim] patch embeddings
         """
@@ -67,14 +67,14 @@ class FoundationModelEncoder(ABC, nn.Module):
 
 class PhikonEncoder(FoundationModelEncoder):
     """Owkin Phikon encoder.
-    
+
     ViT-B/16 pretrained on 40K TCGA WSIs via iBOT (masked image modeling).
-    
+
     - License: Apache 2.0 (commercial use allowed)
     - Feature dim: 768
     - Input: 224x224 patches @ 20x magnification
     - HuggingFace: owkin/phikon (no access gate)
-    
+
     Args:
         freeze: Whether to freeze encoder weights (default: True)
     """
@@ -114,16 +114,16 @@ class PhikonEncoder(FoundationModelEncoder):
 
 class UNIEncoder(FoundationModelEncoder):
     """UNI (Universal Network for Imaging) encoder.
-    
+
     ViT-L/16 pretrained on 100K+ WSIs via DINOv2.
-    
+
     - License: CC-BY-NC-ND 4.0 (non-commercial only)
     - Feature dim: 1024
     - Input: 224x224 patches @ 20x/40x magnification
     - HuggingFace: MahmoodLab/UNI (gated access - request required)
-    
+
     Requires: huggingface-cli login + access approval
-    
+
     Args:
         freeze: Whether to freeze encoder weights (default: True)
         local_dir: Optional path to cached checkpoint
@@ -184,17 +184,17 @@ class UNIEncoder(FoundationModelEncoder):
 
 class CONCHEncoder(FoundationModelEncoder):
     """CONCH (Contrastive Learning from Captions about Histopathology) encoder.
-    
+
     ViT-B/16 vision encoder trained on 1.17M image-caption pairs.
-    
+
     - License: CC-BY-NC-ND 4.0 (non-commercial only)
     - Feature dim: 512
     - Input: 224x224 patches @ 20x magnification
     - HuggingFace: MahmoodLab/CONCH (gated access - request required)
     - Unique capability: Zero-shot classification via text prompts
-    
+
     Requires: huggingface-cli login + access approval
-    
+
     Args:
         freeze: Whether to freeze encoder weights (default: True)
     """
@@ -210,8 +210,7 @@ class CONCHEncoder(FoundationModelEncoder):
             from transformers import AutoModel
         except ImportError:
             raise ImportError(
-                "transformers required for CONCH. "
-                "Install with: pip install transformers>=4.37.0"
+                "transformers required for CONCH. " "Install with: pip install transformers>=4.37.0"
             )
 
         self.model = AutoModel.from_pretrained(
@@ -230,10 +229,10 @@ class CONCHEncoder(FoundationModelEncoder):
 
     def encode_text(self, texts: list[str]) -> torch.Tensor:
         """Encode diagnostic text prompts for zero-shot classification.
-        
+
         Args:
             texts: List of text prompts (e.g., ["tumor tissue", "normal tissue"])
-            
+
         Returns:
             [len(texts), 512] text embeddings
         """
@@ -261,26 +260,24 @@ def load_foundation_model(
     **kwargs,
 ) -> FoundationModelEncoder:
     """Factory function to load foundation model encoders.
-    
+
     Args:
         model_name: One of 'phikon', 'uni', 'conch'
         freeze: Whether to freeze encoder weights (default: True)
         **kwargs: Model-specific kwargs (e.g., local_dir for UNI)
-        
+
     Returns:
         Configured FoundationModelEncoder ready for feature extraction
-        
+
     Example:
         >>> encoder = load_foundation_model('phikon', freeze=True)
         >>> features = encoder.extract_features(patches)  # [B, 768]
-        
+
     Raises:
         ValueError: If model_name is not recognized
         ImportError: If required dependencies are missing
     """
     if model_name not in _REGISTRY:
-        raise ValueError(
-            f"Unknown model '{model_name}'. Available: {list(_REGISTRY.keys())}"
-        )
+        raise ValueError(f"Unknown model '{model_name}'. Available: {list(_REGISTRY.keys())}")
 
     return _REGISTRY[model_name](freeze=freeze, **kwargs)
