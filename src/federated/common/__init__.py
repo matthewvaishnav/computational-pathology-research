@@ -1,11 +1,11 @@
 """Common utilities and data models for federated learning."""
 
 from src.federated.common.data_models import (
-    TrainingRound,
+    AuditLogEntry,
     ClientUpdate,
     ModelCheckpoint,
     PrivacyBudget,
-    AuditLogEntry,
+    TrainingRound,
 )
 
 __all__ = [

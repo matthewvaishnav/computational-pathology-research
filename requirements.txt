@@ -64,13 +64,13 @@ timm>=0.9.0
 umap-learn>=0.5.0
 lifelines>=0.27.0
 
-# Federated Learning Core
-opacus>=1.4.0  # Differential privacy
-tenseal>=0.3.14  # Homomorphic encryption
+# Federated Learning Core (optional dependencies)
+# opacus>=1.4.0  # Differential privacy - optional
+# tenseal>=0.3.14  # Homomorphic encryption - optional
 grpcio>=1.59.0  # gRPC communication
 grpcio-tools>=1.59.0  # gRPC code generation
 protobuf>=4.24.0  # Protocol buffers
-flwr[simulation]>=1.5.0  # Flower FL framework (optional)
+# flwr[simulation]>=1.5.0  # Flower FL framework (optional)
 
 # Causal Inference
 econml>=0.14.0
