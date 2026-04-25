@@ -1064,9 +1064,15 @@ See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete analysis
 - [x] Model comparison infrastructure for attention models
 - [x] Stain normalization integration
 - [x] Multi-GPU training support
-- [ ] PACS integration for clinical workflow
+- [x] **PACS integration system** with vendor adapters (Orthanc, dcm4chee, Horos)
 - [ ] Clinical validation studies
 - [ ] Production deployment infrastructure
+
+## About
+
+**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. Creator of HistoCore, a PyTorch framework featuring attention-based MIL models, complete WSI processing pipelines with OpenSlide integration, clinical workflow systems with DICOM/FHIR/PACS support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 1,448 tests (55% coverage), and validated performance on real-world benchmarks (85.26% accuracy, 0.9394 AUC on PCam).
+
+For more details, see [docs/ABOUT.md](docs/ABOUT.md).
 
 ## License
 
@@ -1079,10 +1085,12 @@ MIT License - See [LICENSE](LICENSE) for details.
   title = {HistoCore: Core Infrastructure for Computational Pathology Research},
   author = {Matthew Vaishnav},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/histocore}
+  url = {https://github.com/matthewvaishnav/histocore},
+  note = {Production-grade PyTorch framework with 141 modules, 1,448 tests, 55\% coverage}
 }
 ```
 
 ## Contact
 
-For questions or issues, please open an issue on GitHub.
+For questions or issues, please open an issue on GitHub or visit the [documentation](docs/ABOUT.md) for more information.
+
