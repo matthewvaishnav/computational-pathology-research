@@ -52,10 +52,10 @@ try:
 except ImportError:
     PLOT_AVAILABLE = False
 
+from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifacts
 from src.data.camelyon_dataset import (
     CAMELYONSlideIndex,
 )
-from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifacts
 
 # Configure logging
 logging.basicConfig(

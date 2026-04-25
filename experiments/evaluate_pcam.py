@@ -36,11 +36,10 @@ from sklearn.metrics import (
     roc_curve,
 )
 
-from src.utils.statistical import compute_all_metrics_with_ci
-
 from experiments.generate_pcam_interpretability import (
     generate_pcam_interpretability_artifacts as build_pcam_interpretability_artifacts,
 )
+from src.utils.statistical import compute_all_metrics_with_ci
 
 try:
     import matplotlib.pyplot as plt

@@ -4,15 +4,17 @@ This script tests the key functions from the notebook.
 """
 
 import json
-import numpy as np
+
 import matplotlib
+import numpy as np
 
 matplotlib.use("Agg")  # Non-interactive backend
+import sys
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
-from pathlib import Path
-import sys
 
 # Add src to path
 sys.path.insert(0, str(Path("src/data").resolve()))
@@ -199,7 +201,7 @@ print(f'✓ Saved accuracy curves to {OUTPUT_DIR / "accuracy_curves.png"}')
 
 # Test 6: Generate ROC curve
 print("\n[Test 6] Generating ROC curve...")
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import auc, roc_curve
 
 y_true = eval_results["y_true"]
 y_pred_proba = eval_results["y_pred_proba"]
@@ -223,7 +225,7 @@ print(f'✓ Saved ROC curve to {OUTPUT_DIR / "roc_curve.png"}')
 
 # Test 7: Generate precision-recall curve
 print("\n[Test 7] Generating precision-recall curve...")
-from sklearn.metrics import precision_recall_curve, average_precision_score
+from sklearn.metrics import average_precision_score, precision_recall_curve
 
 precision, recall, thresholds = precision_recall_curve(y_true, y_pred_proba)
 avg_precision = average_precision_score(y_true, y_pred_proba)
