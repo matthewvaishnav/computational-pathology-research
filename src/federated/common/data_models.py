@@ -2,14 +2,15 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
 import torch
 
 
 @dataclass
 class TrainingRound:
     """Metadata for a single federated training round."""
-    
+
     round_id: int
     global_model_version: int
     start_time: datetime
@@ -23,7 +24,7 @@ class TrainingRound:
 @dataclass
 class ClientUpdate:
     """Update from a single client after local training."""
-    
+
     client_id: str
     round_id: int
     model_version: int
@@ -38,7 +39,7 @@ class ClientUpdate:
 @dataclass
 class ModelCheckpoint:
     """Versioned global model checkpoint."""
-    
+
     version: int
     round_id: int
     timestamp: datetime
@@ -52,7 +53,7 @@ class ModelCheckpoint:
 @dataclass
 class PrivacyBudget:
     """Privacy budget tracker for differential privacy."""
-    
+
     client_id: str
     total_epsilon: float
     total_delta: float
@@ -64,7 +65,7 @@ class PrivacyBudget:
 @dataclass
 class AuditLogEntry:
     """Tamper-evident audit log entry."""
-    
+
     timestamp: datetime
     event_type: str  # "round_start", "update_received", "aggregation_complete"
     client_id: Optional[str]
