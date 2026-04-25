@@ -40,6 +40,11 @@ The framework features 141 source modules, 150 test files with 1,448 tests (55% 
 
 <div class="features-grid">
   <div class="feature-card">
+    <h3>Federated Learning System</h3>
+    <p>First open-source federated learning framework for digital pathology, enabling privacy-preserving multi-site training across hospitals without centralizing patient data. FedAvg aggregation, training orchestrator with model versioning, 8/8 property tests passing.</p>
+  </div>
+  
+  <div class="feature-card">
     <h3>Attention-Based MIL Models</h3>
     <p>State-of-the-art AttentionMIL, CLAM, and TransMIL architectures with attention weight visualization and heatmap generation for slide-level classification.</p>
   </div>
