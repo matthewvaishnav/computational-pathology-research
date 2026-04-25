@@ -21,17 +21,17 @@ def cache_features(
     desc: str = "Caching features",
 ) -> None:
     """Pre-extract and cache foundation model features.
-    
+
     With frozen Phikon on RTX 4070: ~2min for all 262K PCam train patches.
     Cached features cut each training epoch from ~40min → ~2min.
-    
+
     Args:
         encoder: Foundation model encoder (frozen)
         dataloader: DataLoader providing (images, labels, ids)
         cache_dir: Directory to save cached features
         device: Device for inference (default: 'cuda')
         desc: Progress bar description
-        
+
     Example:
         >>> encoder = load_foundation_model('phikon', freeze=True)
         >>> cache_features(encoder, train_loader, Path('cache/phikon'))
@@ -73,10 +73,10 @@ def cache_features(
 
 class CachedFeatureDataset(torch.utils.data.Dataset):
     """Dataset that loads pre-cached features from disk.
-    
+
     Args:
         cache_dir: Directory containing cached feature files
-        
+
     Example:
         >>> dataset = CachedFeatureDataset('cache/phikon')
         >>> features, labels = dataset[0]
@@ -123,16 +123,16 @@ def get_cache_path(
     model_hash: Optional[str] = None,
 ) -> Path:
     """Generate cache directory path with model versioning.
-    
+
     Args:
         cache_root: Root cache directory
         model_name: Foundation model name ('phikon', 'uni', 'conch')
         split: Dataset split ('train', 'val', 'test')
         model_hash: Optional hash of model weights for versioning
-        
+
     Returns:
         Path to cache directory
-        
+
     Example:
         >>> path = get_cache_path(Path('cache'), 'phikon', 'train')
         >>> # cache/phikon/train/
@@ -147,7 +147,7 @@ def get_cache_path(
 
 def clear_cache(cache_dir: Path) -> None:
     """Remove all cached features in directory.
-    
+
     Args:
         cache_dir: Directory containing cached features
     """
