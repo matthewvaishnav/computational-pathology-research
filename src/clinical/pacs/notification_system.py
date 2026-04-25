@@ -1,5 +1,7 @@
 """Multi-channel clinical notification system for HistoCore PACS integration."""
 
+from __future__ import annotations
+
 import logging
 import re
 import smtplib
@@ -10,7 +12,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from email.mime.text import MIMEText
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from .data_models import AnalysisResults, OperationResult, StudyInfo
 
 logger = logging.getLogger(__name__)
 
