@@ -650,7 +650,7 @@ class StructuredReportBuilder:
 
     def build_measurement_report(
         self,
-        analysis_results: "AnalysisResults",  # type: ignore
+        analysis_results: AnalysisResults,
         source_metadata: DICOMMetadata,
     ) -> Dataset:
         """
@@ -713,7 +713,7 @@ class StructuredReportBuilder:
     def add_ai_algorithm_identification(
         self,
         sr_dataset: Dataset,
-        analysis_results: "AnalysisResults",  # type: ignore
+        analysis_results: AnalysisResults,
     ) -> None:
         """
         Add AI algorithm identification sequence to SR.
@@ -784,7 +784,7 @@ class StructuredReportBuilder:
 
     def _build_content_sequence(
         self,
-        analysis_results: "AnalysisResults",  # type: ignore
+        analysis_results: AnalysisResults,
         source_metadata: DICOMMetadata,
     ) -> List[Dataset]:
         """Build content sequence for SR."""

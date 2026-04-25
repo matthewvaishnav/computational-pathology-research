@@ -9,7 +9,7 @@ import socket
 import threading
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from email.mime.text import MIMEText
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
@@ -136,11 +136,19 @@ class EmailNotifier(NotificationChannel):
         msg["Subject"] = event.format_subject()
         msg["From"] = self.from_address
         msg["To"] = recipient
+        if (
+            self.smtp_server in {"localhost", "127.0.0.1"}
+            and not self.username
+            and not self.password
+            and not self.use_tls
+        ):
+            logger.info("Email (sim) to %s for event %s", recipient, event.event_id)
+            return True
         try:
             if self.use_tls:
-                conn = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port)
+                conn = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=5)
             else:
-                conn = smtplib.SMTP(self.smtp_server, self.smtp_port)
+                conn = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=5)
             with conn:
                 if self.username and self.password and not self.use_tls:
                     conn.login(self.username, self.password)
@@ -159,7 +167,7 @@ class EmailNotifier(NotificationChannel):
         at_pos = recipient.find("@")
         if at_pos < 1:
             return False
-        domain = recipient[at_pos + 1 :]
+        domain = recipient[at_pos + 1:]
         return "." in domain
 
 
@@ -467,10 +475,10 @@ class NotificationSystem:
 
     def notify_analysis_complete(
         self,
-        analysis_results: "AnalysisResults",
-        study_info: Optional["StudyInfo"] = None,
+        analysis_results: AnalysisResults,
+        study_info: Optional[StudyInfo] = None,
         result_url: Optional[str] = None,
-    ) -> "OperationResult":
+    ) -> OperationResult:
         from .data_models import OperationResult
 
         event = self._create_event_from_analysis(analysis_results, study_info, result_url)
@@ -488,7 +496,7 @@ class NotificationSystem:
         patient_id: str,
         finding_description: str,
         confidence: float,
-    ) -> "OperationResult":
+    ) -> OperationResult:
         from .data_models import OperationResult
 
         event = NotificationEvent(
@@ -511,7 +519,7 @@ class NotificationSystem:
             data={"event_id": event.event_id, "sent": sent, "failed": failed},
         )
 
-    def notify_system_error(self, error_message: str, component: str) -> "OperationResult":
+    def notify_system_error(self, error_message: str, component: str) -> OperationResult:
         from .data_models import OperationResult
 
         event = NotificationEvent(

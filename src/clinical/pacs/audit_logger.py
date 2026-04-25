@@ -679,3 +679,7 @@ class PACSAuditLogger:
             self._index.add_entry(message, file_path)
         logger.debug("Audit entry written: %s (%s)", message.message_id, message.event_type)
         return message.message_id
+
+
+# Backward-compatible public name used by PACS package exports and service wiring.
+AuditLogger = PACSAuditLogger
