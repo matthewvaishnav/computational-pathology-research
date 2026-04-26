@@ -1,11 +1,11 @@
 """Privacy-preserving mechanisms for federated learning."""
 
-from src.federated.privacy.budget_tracker import FederatedPrivacyManager
-from src.federated.privacy.dp_sgd import DPSGDEngine
-from src.federated.privacy.secure_aggregation import SecureAggregator
+from .budget_tracker import FederatedPrivacyManager
+from .dp_sgd import DPSGDEngine
+from .secure_aggregation import SecureAggregationProtocol
 
 __all__ = [
     "DPSGDEngine",
-    "SecureAggregator",
+    "SecureAggregationProtocol",
     "FederatedPrivacyManager",
 ]

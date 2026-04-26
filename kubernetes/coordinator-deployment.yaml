@@ -1,0 +1,289 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+  labels:
+    app: fl-coordinator
+    component: coordinator
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: fl-coordinator
+  template:
+    metadata:
+      labels:
+        app: fl-coordinator
+        component: coordinator
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: fl-coordinator
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: coordinator
+        image: fl-coordinator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 50051
+          name: grpc
+          protocol: TCP
+        - containerPort: 8000
+          name: metrics
+          protocol: TCP
+        env:
+        - name: FL_MODE
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: fl-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: fl-secrets
+              key: redis-url
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fl-secrets
+              key: secret-key
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: fl-secrets
+              key: sentry-dsn
+              optional: true
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: METRICS_ENABLED
+          value: "true"
+        - name: KUBERNETES_ENABLED
+          value: "true"
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: tls-certs
+          mountPath: /app/certs
+          readOnly: true
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        - name: logs
+          mountPath: /app/logs
+        - name: checkpoints
+          mountPath: /app/checkpoints
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+      volumes:
+      - name: tls-certs
+        secret:
+          secretName: fl-tls-certs
+      - name: config
+        configMap:
+          name: fl-config
+      - name: logs
+        emptyDir: {}
+      - name: checkpoints
+        persistentVolumeClaim:
+          claimName: fl-checkpoints
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - fl-coordinator
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+  labels:
+    app: fl-coordinator
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:region:account:certificate/cert-id
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: ssl
+spec:
+  type: LoadBalancer
+  ports:
+  - name: https
+    port: 443
+    targetPort: 8080
+    protocol: TCP
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+    protocol: TCP
+  selector:
+    app: fl-coordinator
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: federated-learning
+  name: fl-coordinator
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+subjects:
+- kind: ServiceAccount
+  name: fl-coordinator
+  namespace: federated-learning
+roleRef:
+  kind: Role
+  name: fl-coordinator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fl-checkpoints
+  namespace: federated-learning
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp3
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: fl-coordinator
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fl-coordinator
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60

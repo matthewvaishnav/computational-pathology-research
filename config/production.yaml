@@ -1,0 +1,251 @@
+# Production Configuration for Federated Learning System
+
+# Environment
+environment: production
+debug: false
+
+# Server Configuration
+server:
+  host: "0.0.0.0"
+  port: 8080
+  grpc_port: 50051
+  workers: 4
+  max_connections: 1000
+  keepalive_timeout: 65
+
+# Database Configuration
+database:
+  url: "${DATABASE_URL}"
+  pool_size: 20
+  max_overflow: 30
+  pool_timeout: 30
+  pool_recycle: 3600
+  echo: false
+
+# Redis Configuration
+redis:
+  url: "${REDIS_URL}"
+  max_connections: 100
+  retry_on_timeout: true
+  socket_timeout: 5
+  connection_pool_kwargs:
+    max_connections: 50
+
+# Security Configuration
+security:
+  secret_key: "${SECRET_KEY}"
+  jwt_algorithm: "HS256"
+  jwt_expiration_hours: 24
+  
+  # TLS Configuration
+  tls_cert_path: "/app/certs/server-cert.pem"
+  tls_key_path: "/app/certs/server-key.pem"
+  ca_cert_path: "/app/certs/ca-cert.pem"
+  
+  # HIPAA Compliance
+  audit_log_enabled: true
+  audit_log_path: "/app/logs/audit.log"
+  
+  # Password Policy
+  min_password_length: 12
+  require_special_chars: true
+  password_expiry_days: 90
+  
+  # Rate Limiting
+  rate_limit_enabled: true
+  rate_limit_requests_per_minute: 100
+
+# Federated Learning Configuration
+federated_learning:
+  # Training Parameters
+  max_clients_per_round: 100
+  min_clients_per_round: 3
+  round_timeout_seconds: 3600  # 1 hour
+  max_rounds: 1000
+  
+  # Privacy Parameters
+  default_epsilon: 1.0
+  default_delta: 1e-5
+  max_epsilon_per_client: 10.0
+  privacy_accounting_enabled: true
+  
+  # Byzantine Robustness
+  byzantine_detection_enabled: true
+  max_byzantine_ratio: 0.3
+  byzantine_detection_threshold: 2.0
+  
+  # Model Management
+  checkpoint_interval: 5  # Every 5 rounds
+  max_checkpoints: 50
+  model_compression_enabled: true
+  model_validation_enabled: true
+  
+  # Aggregation
+  default_algorithm: "fedavg"
+  supported_algorithms:
+    - "fedavg"
+    - "fedprox"
+    - "fedadam"
+    - "krum"
+    - "multi_krum"
+    - "trimmed_mean"
+    - "median"
+
+# Monitoring Configuration
+monitoring:
+  metrics_enabled: true
+  metrics_port: 8000
+  
+  # Logging
+  log_level: "INFO"
+  log_format: "json"
+  log_file_path: "/app/logs/app.log"
+  log_rotation_size: "100MB"
+  log_retention_days: 30
+  
+  # Health Checks
+  health_check_interval: 30
+  health_check_timeout: 10
+  
+  # Sentry (Error Tracking)
+  sentry_dsn: "${SENTRY_DSN}"
+  sentry_environment: "production"
+  sentry_sample_rate: 0.1
+  
+  # Prometheus
+  prometheus_enabled: true
+  prometheus_metrics_path: "/metrics"
+  
+  # Custom Metrics
+  custom_metrics:
+    - name: "fl_training_accuracy"
+      type: "gauge"
+      description: "Training accuracy per round"
+    - name: "fl_model_convergence"
+      type: "gauge"
+      description: "Model convergence metric"
+
+# Enterprise Features
+enterprise:
+  # LDAP Integration
+  ldap_enabled: false
+  ldap_server: "${LDAP_SERVER}"
+  ldap_base_dn: "${LDAP_BASE_DN}"
+  ldap_bind_dn: "${LDAP_BIND_DN}"
+  ldap_bind_password: "${LDAP_BIND_PASSWORD}"
+  
+  # Single Sign-On
+  sso_enabled: false
+  sso_provider: "saml"
+  sso_metadata_url: "${SSO_METADATA_URL}"
+  
+  # Backup and Recovery
+  backup_enabled: true
+  backup_schedule: "0 2 * * *"  # Daily at 2 AM
+  backup_retention_days: 30
+  backup_storage_path: "/app/backups"
+  
+  # Disaster Recovery
+  dr_enabled: false
+  dr_replica_url: "${DR_REPLICA_URL}"
+  dr_sync_interval: 300  # 5 minutes
+
+# Kubernetes Integration
+kubernetes:
+  enabled: false
+  namespace: "federated-learning"
+  service_account: "fl-coordinator"
+  
+  # Auto-scaling
+  hpa_enabled: true
+  min_replicas: 2
+  max_replicas: 10
+  target_cpu_utilization: 70
+  target_memory_utilization: 80
+  
+  # Pod Disruption Budget
+  pdb_enabled: true
+  min_available: 1
+
+# Performance Tuning
+performance:
+  # Connection Pooling
+  db_pool_pre_ping: true
+  db_pool_recycle: 3600
+  
+  # Caching
+  cache_enabled: true
+  cache_ttl: 300  # 5 minutes
+  cache_max_size: 1000
+  
+  # Async Processing
+  async_workers: 4
+  task_queue_size: 1000
+  
+  # Memory Management
+  max_memory_usage: "4GB"
+  gc_threshold: 0.8
+
+# Compliance and Governance
+compliance:
+  # HIPAA
+  hipaa_enabled: true
+  phi_encryption_enabled: true
+  access_logging_enabled: true
+  
+  # GDPR
+  gdpr_enabled: true
+  data_retention_days: 2555  # 7 years
+  right_to_erasure_enabled: true
+  
+  # SOC 2
+  soc2_enabled: true
+  security_monitoring_enabled: true
+  incident_response_enabled: true
+
+# Data Management
+data:
+  # Storage
+  storage_backend: "filesystem"  # filesystem, s3, gcs
+  storage_path: "/app/data"
+  storage_encryption_enabled: true
+  
+  # Validation
+  data_validation_enabled: true
+  schema_validation_enabled: true
+  quality_checks_enabled: true
+  
+  # Privacy
+  anonymization_enabled: true
+  pseudonymization_enabled: true
+  differential_privacy_enabled: true
+
+# Network Configuration
+network:
+  # TLS
+  tls_version: "1.3"
+  cipher_suites:
+    - "TLS_AES_256_GCM_SHA384"
+    - "TLS_CHACHA20_POLY1305_SHA256"
+    - "TLS_AES_128_GCM_SHA256"
+  
+  # Timeouts
+  connection_timeout: 30
+  read_timeout: 60
+  write_timeout: 60
+  
+  # Compression
+  compression_enabled: true
+  compression_level: 6
+
+# Development and Testing
+development:
+  # Testing
+  test_mode: false
+  mock_clients_enabled: false
+  synthetic_data_enabled: false
+  
+  # Debugging
+  debug_mode: false
+  profiling_enabled: false
+  trace_enabled: false

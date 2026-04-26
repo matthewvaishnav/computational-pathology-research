@@ -9,6 +9,7 @@ import logging
 from typing import Any, Dict, Optional, Type
 
 from .base import BaseAggregator
+from .byzantine_robust import KrumAggregator, MedianAggregator, TrimmedMeanAggregator
 from .fedadam import FedAdamAggregator
 from .fedavg import FedAvgAggregator
 from .fedprox import FedProxAggregator
@@ -24,6 +25,9 @@ class AggregatorFactory:
         "fedavg": FedAvgAggregator,
         "fedprox": FedProxAggregator,
         "fedadam": FedAdamAggregator,
+        "krum": KrumAggregator,
+        "trimmed_mean": TrimmedMeanAggregator,
+        "median": MedianAggregator,
     }
 
     # Default configurations for each aggregator
@@ -37,6 +41,9 @@ class AggregatorFactory:
             "epsilon": 1e-8,
             "weight_decay": 0.0,
         },
+        "krum": {"num_byzantine": 1, "multi_krum": False},
+        "trimmed_mean": {"trim_ratio": 0.1},
+        "median": {},
     }
 
     @classmethod

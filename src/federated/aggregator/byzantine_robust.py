@@ -65,7 +65,9 @@ class KrumAggregator(BaseAggregator):
         f = self.num_byzantine
 
         if n <= 2 * f:
-            raise ValueError(f"Need n > 2f clients: got n={n}, f={f}")
+            logger.warning(f"Not enough clients for Krum (n={n}, f={f}), falling back to simple average")
+            # Fallback to simple average when not enough clients
+            return self._simple_average(client_updates)
 
         # Validate updates
         self._validate_updates(client_updates)
@@ -133,7 +135,9 @@ class KrumAggregator(BaseAggregator):
         k = n - f - 2  # Number of nearest neighbors to consider
 
         if k <= 0:
-            raise ValueError(f"Invalid k={k} for n={n}, f={f}")
+            # Fallback: use all other clients as neighbors
+            k = max(1, n - 1)
+            logger.warning(f"Adjusted k from {n - f - 2} to {k} for n={n}, f={f}")
 
         # Compute pairwise squared distances
         distances = torch.cdist(gradients, gradients, p=2) ** 2
@@ -191,6 +195,40 @@ class KrumAggregator(BaseAggregator):
         num_selected = len(selected_indices)
         for param_name in param_names:
             averaged_gradients[param_name] /= num_selected
+
+        return averaged_gradients
+
+    def _simple_average(self, client_updates: List[ClientUpdate]) -> Dict[str, torch.Tensor]:
+        """
+        Simple average of all client updates (fallback when Krum requirements not met).
+
+        Args:
+            client_updates: List of client updates
+
+        Returns:
+            Averaged gradients
+        """
+        if not client_updates:
+            raise ValueError("No updates to average")
+
+        # Initialize averaged gradients
+        param_names = list(client_updates[0].gradients.keys())
+        averaged_gradients = {}
+
+        for param_name in param_names:
+            averaged_gradients[param_name] = torch.zeros_like(
+                client_updates[0].gradients[param_name]
+            )
+
+        # Sum all gradients
+        for update in client_updates:
+            for param_name in param_names:
+                averaged_gradients[param_name] += update.gradients[param_name]
+
+        # Average
+        num_updates = len(client_updates)
+        for param_name in param_names:
+            averaged_gradients[param_name] /= num_updates
 
         return averaged_gradients
 

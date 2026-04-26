@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Federated Learning Overview",
+    "tags": ["federated-learning", "production"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "fl_clients_active",
+            "legendFormat": "Active Clients"
+          },
+          {
+            "expr": "fl_rounds_total",
+            "legendFormat": "Total Rounds"
+          },
+          {
+            "expr": "fl_model_parameters_total",
+            "legendFormat": "Model Parameters"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Training Progress",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(fl_rounds_total[5m])",
+            "legendFormat": "Rounds per Minute"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Client Status",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "fl_clients_active",
+            "legendFormat": "{{client_id}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Privacy Budget Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "fl_privacy_budget_used",
+            "legendFormat": "{{client_id}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 5,
+        "title": "Byzantine Detection",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(fl_byzantine_clients_detected_total[5m])",
+            "legendFormat": "Byzantine Clients Detected"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "System Resources",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "fl_system_cpu_usage_percent",
+            "legendFormat": "CPU Usage %"
+          },
+          {
+            "expr": "fl_system_memory_usage_percent",
+            "legendFormat": "Memory Usage %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24}
+      },
+      {
+        "id": 7,
+        "title": "API Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(fl_api_requests_total[5m])",
+            "legendFormat": "{{method}} {{endpoint}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+      },
+      {
+        "id": 8,
+        "title": "Database Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "fl_database_connections_active",
+            "legendFormat": "Active Connections"
+          },
+          {
+            "expr": "rate(fl_database_query_duration_seconds[5m])",
+            "legendFormat": "Query Duration"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}
