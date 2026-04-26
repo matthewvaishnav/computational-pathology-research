@@ -1,0 +1,167 @@
+# HistoCore streaming deployment with GPU support
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: histocore-streaming
+  namespace: histocore
+  labels:
+    app: histocore-streaming
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: histocore-streaming
+  template:
+    metadata:
+      labels:
+        app: histocore-streaming
+    spec:
+      # Node selector for GPU nodes
+      nodeSelector:
+        accelerator: nvidia-tesla-k80
+      
+      containers:
+      - name: streaming
+        image: histocore/streaming:latest
+        ports:
+        - containerPort: 8000
+          name: dashboard
+        - containerPort: 8001
+          name: api
+        - containerPort: 8002
+          name: metrics
+        
+        # Environment from ConfigMap and Secret
+        envFrom:
+        - configMapRef:
+            name: histocore-config
+        - secretRef:
+            name: histocore-secret
+        
+        # Resource limits with GPU
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1000m"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "8Gi"
+            cpu: "2000m"
+            nvidia.com/gpu: 1
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        # Volume mounts
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: logs-volume
+          mountPath: /app/logs
+        - name: cache-volume
+          mountPath: /app/cache
+        - name: model-volume
+          mountPath: /app/checkpoints
+        
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+      
+      # Volumes
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: histocore-data-pvc
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: histocore-logs-pvc
+      - name: cache-volume
+        emptyDir:
+          sizeLimit: 5Gi
+      - name: model-volume
+        persistentVolumeClaim:
+          claimName: histocore-model-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: histocore-streaming
+  namespace: histocore
+  labels:
+    app: histocore-streaming
+spec:
+  selector:
+    app: histocore-streaming
+  ports:
+  - name: dashboard
+    port: 8000
+    targetPort: 8000
+  - name: api
+    port: 8001
+    targetPort: 8001
+  - name: metrics
+    port: 8002
+    targetPort: 8002
+  type: ClusterIP
+
+---
+# PVCs for persistent storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: histocore-data-pvc
+  namespace: histocore
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: histocore-logs-pvc
+  namespace: histocore
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: histocore-model-pvc
+  namespace: histocore
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
