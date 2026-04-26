@@ -38,7 +38,7 @@ from .data_models import (
 )
 from .error_handling import DeadLetterQueue, DicomErrorHandler, NetworkErrorHandler
 from .failover import FailoverManager
-from .notification_system import NotificationSystem
+from .notification_system import ClinicalNotificationSystem
 from .pacs_adapter import PACSAdapter
 from .pacs_service import PACSService
 from .query_engine import QueryEngine
@@ -74,7 +74,7 @@ __all__ = [
     "FailoverManager",
     # Monitoring and compliance
     "AuditLogger",
-    "NotificationSystem",
+    "ClinicalNotificationSystem",
     # Vendor adapters
     "VendorAdapter",
     "GEAdapter",

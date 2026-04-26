@@ -16,8 +16,8 @@ from datetime import datetime, timedelta
 import threading
 from queue import Queue, Empty
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from pynetdicom import AE
 from pynetdicom.status import Status
@@ -499,7 +499,7 @@ class ErrorNotificationManager:
                 return
             
             # Create message
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg['From'] = from_email
             msg['To'] = ', '.join(to_emails)
             msg['Subject'] = f"HistoCore PACS Error: {error_context.severity.value.upper()}"
@@ -527,7 +527,7 @@ Please investigate this issue promptly.
 HistoCore PACS Integration System
             """
             
-            msg.attach(MimeText(body, 'plain'))
+            msg.attach(MIMEText(body, 'plain'))
             
             # Send email
             with smtplib.SMTP(smtp_server, smtp_port) as server:
