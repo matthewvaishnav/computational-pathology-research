@@ -338,7 +338,8 @@ class StreamingAttentionAggregator:
                 'max_confidence': 0.0,
                 'min_confidence': 0.0,
                 'avg_confidence': 0.0,
-                'confidence_std': 0.0
+                'confidence_std': 0.0,
+                'num_updates': 0
             }
         
         return {
