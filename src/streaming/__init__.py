@@ -10,6 +10,16 @@ from .attention_aggregator import (
     ConfidenceCalibrator
 )
 from .progressive_visualizer import ProgressiveVisualizer, VisualizationUpdate
+from .web_dashboard import (
+    app as dashboard_app,
+    ProcessingStatus,
+    HeatmapData,
+    ConfidenceData,
+    ProcessingParameters,
+    update_dashboard_status,
+    update_dashboard_error,
+    update_dashboard_complete
+)
 
 __all__ = [
     'WSIStreamReader',
@@ -24,5 +34,13 @@ __all__ = [
     'AttentionMIL',
     'ConfidenceCalibrator',
     'ProgressiveVisualizer',
-    'VisualizationUpdate'
+    'VisualizationUpdate',
+    'dashboard_app',
+    'ProcessingStatus',
+    'HeatmapData',
+    'ConfidenceData',
+    'ProcessingParameters',
+    'update_dashboard_status',
+    'update_dashboard_error',
+    'update_dashboard_complete'
 ]
