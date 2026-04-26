@@ -142,19 +142,27 @@ class TileBufferPool:
 
 
 class WSIStreamReader:
-    """Progressive WSI tile streaming without loading entire slide into memory."""
+    """Progressive WSI tile streaming without loading entire slide into memory.
     
-    def __init__(self, wsi_path: str, tile_size: int = 1024, buffer_size: int = 16):
-        """Initialize streaming reader with configurable buffer.
+    Implements Iterator[TileBatch] interface for memory-efficient tile iteration.
+    """
+    
+    def __init__(self, wsi_path: str, tile_size: int = 1024, buffer_size: int = 16, 
+                 overlap: int = 0, stride: Optional[int] = None):
+        """Initialize streaming reader with configurable buffer and tiling parameters.
         
         Args:
             wsi_path: Path to WSI file
             tile_size: Size of tiles to extract
             buffer_size: Number of tiles to buffer in memory
+            overlap: Pixel overlap between adjacent tiles (default: 0)
+            stride: Stride for tile extraction (default: tile_size - overlap)
         """
         self.wsi_path = Path(wsi_path)
         self.tile_size = tile_size
         self.buffer_size = buffer_size
+        self.overlap = overlap
+        self.stride = stride if stride is not None else (tile_size - overlap)
         
         # Validate inputs
         if not self.wsi_path.exists():
@@ -162,6 +170,12 @@ class WSIStreamReader:
         
         if not validate_wsi_format(str(self.wsi_path)):
             raise ValueError(f"Unsupported WSI format: {self.wsi_path.suffix}")
+        
+        if self.overlap < 0 or self.overlap >= tile_size:
+            raise ValueError(f"Overlap must be in [0, {tile_size})")
+        
+        if self.stride <= 0 or self.stride > tile_size:
+            raise ValueError(f"Stride must be in (0, {tile_size}]")
         
         logger.info(f"Supported formats: {get_supported_wsi_formats()}")
         
@@ -180,7 +194,7 @@ class WSIStreamReader:
         self.current_tile_size = tile_size
         self.memory_pressure = False
         
-        logger.info(f"Initialized WSIStreamReader for {self.wsi_path}")
+        logger.info(f"Initialized WSIStreamReader for {self.wsi_path} (tile_size={tile_size}, overlap={overlap}, stride={self.stride})")
     
     def initialize_streaming(self) -> StreamingMetadata:
         """Setup streaming with slide metadata."""
@@ -213,30 +227,75 @@ class WSIStreamReader:
                     magnification = float(properties['openslide.objective-power'])
                 except (ValueError, KeyError):
                     pass
+            elif 'aperio.AppMag' in properties:
+                try:
+                    magnification = float(properties['aperio.AppMag'])
+                except (ValueError, KeyError):
+                    pass
+            elif 'tiff.XResolution' in properties and 'tiff.YResolution' in properties:
+                # Estimate from resolution (microns per pixel)
+                try:
+                    x_res = float(properties['tiff.XResolution'])
+                    # Common magnifications: 40x ≈ 0.25 µm/px, 20x ≈ 0.5 µm/px
+                    if x_res > 0:
+                        mpp = 1.0 / x_res  # microns per pixel
+                        if mpp < 0.3:
+                            magnification = 40.0
+                        elif mpp < 0.6:
+                            magnification = 20.0
+                        elif mpp < 1.2:
+                            magnification = 10.0
+                except (ValueError, KeyError):
+                    pass
             
             # Get vendor info
             vendor = properties.get('openslide.vendor', properties.get('manufacturer', 'unknown'))
+            
+            # Log extracted metadata
+            logger.info(f"Extracted metadata - Dimensions: {dimensions}, Magnification: {magnification}x, Vendor: {vendor}")
             
             # Create DeepZoom generator for efficient tile access (OpenSlide only)
             if isinstance(self.slide, OpenSlide):
                 self.deepzoom = DeepZoomGenerator(
                     self.slide, 
                     tile_size=self.tile_size, 
-                    overlap=0,
+                    overlap=self.overlap,  # Use configured overlap
                     limit_bounds=True
                 )
             else:
                 # For other formats, we'd need custom tiling logic
                 raise NotImplementedError("DeepZoom only supported for OpenSlide formats")
             
-            # Estimate total patches
+            # Estimate total patches with background filtering
             level = self.deepzoom.level_count - 1  # Highest resolution
             level_dimensions = self.deepzoom.level_dimensions[level]
             tiles_x, tiles_y = self.deepzoom.level_tiles[level]
-            estimated_patches = tiles_x * tiles_y
+            raw_patch_count = tiles_x * tiles_y
+            
+            # Estimate actual patches after background filtering (typically 30-50% of raw)
+            # This is a heuristic - actual count determined during streaming
+            background_filter_ratio = 0.4  # Assume 40% are tissue (60% background)
+            estimated_patches = int(raw_patch_count * background_filter_ratio)
+            
+            logger.info(f"Patch estimation - Raw: {raw_patch_count}, Estimated (after filtering): {estimated_patches}")
             
             # Calculate memory budget (adaptive based on slide size)
-            memory_budget_gb = min(2.0, max(0.5, estimated_patches * 0.001))  # 1MB per 1000 patches
+            # Formula: base_budget + (patches * bytes_per_patch_estimate)
+            base_budget_gb = 0.5  # Minimum 500MB
+            bytes_per_patch = self.tile_size * self.tile_size * 3  # RGB uint8
+            estimated_memory_gb = base_budget_gb + (estimated_patches * bytes_per_patch) / (1024**3)
+            memory_budget_gb = min(2.0, max(0.5, estimated_memory_gb))
+            
+            # Calculate optimal buffer size based on memory budget
+            # Target: use 50% of budget for buffering
+            buffer_memory_gb = memory_budget_gb * 0.5
+            optimal_buffer_size = int((buffer_memory_gb * 1024**3) / bytes_per_patch)
+            optimal_buffer_size = max(4, min(64, optimal_buffer_size))  # Clamp to [4, 64]
+            
+            # Update instance buffer size
+            self.buffer_size = optimal_buffer_size
+            
+            logger.info(f"Buffer optimization - Memory budget: {memory_budget_gb:.2f}GB, Buffer size: {optimal_buffer_size} tiles")
             
             # Initialize buffer pool
             self.buffer_pool = TileBufferPool(
@@ -268,8 +327,13 @@ class WSIStreamReader:
             self._cleanup()
             raise
     
-    def stream_tiles(self) -> Iterator[TileBatch]:
-        """Yield tile batches for processing."""
+    def stream_tiles(self, spatial_order: bool = True) -> Iterator[TileBatch]:
+        """Yield tile batches for processing with spatial locality optimization.
+        
+        Args:
+            spatial_order: If True, process tiles in spatial order (row-major) for better
+                          attention computation locality. If False, process in arbitrary order.
+        """
         if not self.deepzoom or not self.metadata:
             raise RuntimeError("Streaming not initialized. Call initialize_streaming() first.")
         
@@ -282,6 +346,9 @@ class WSIStreamReader:
         total_batches = (tiles_x * tiles_y + self.buffer_size - 1) // self.buffer_size
         
         try:
+            # Spatial order: row-major traversal (default)
+            # This ensures tiles in same batch are spatially close
+            # Benefits attention computation with spatial locality
             for y in range(tiles_y):
                 for x in range(tiles_x):
                     # Check memory pressure and adapt
