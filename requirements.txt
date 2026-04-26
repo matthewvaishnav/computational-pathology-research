@@ -47,6 +47,9 @@ python-multipart>=0.0.6
 requests>=2.31.0
 flask>=3.0.0
 
+# Clinical Report Generation
+reportlab>=4.0.0
+
 # TOML parsing for Python < 3.11
 tomli>=2.0.0; python_version < '3.11'
 
