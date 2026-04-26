@@ -1,511 +1,763 @@
 """
-Workflow Orchestrator for PACS Integration System.
+PACS Workflow Orchestration System
 
-This module implements the WorkflowOrchestrator class that coordinates automated
-processing workflows and integrates with the existing Clinical Workflow System.
+This module provides automated workflow orchestration for PACS operations,
+including polling for new studies, priority-based processing, and workflow sequencing.
 """
 
 import asyncio
 import logging
-import threading
 import time
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from typing import Dict, List, Optional, Any, Callable, Set, Tuple
+from dataclasses import dataclass, field
+from enum import Enum
+import threading
+from concurrent.futures import ThreadPoolExecutor
+import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from queue import PriorityQueue, Queue, Empty
+import uuid
 
-from ..workflow import ClinicalWorkflowSystem
-from .data_models import AnalysisResults, DicomPriority, OperationResult, StudyInfo
-from .pacs_adapter import PACSAdapter
+from .error_handling import PACSErrorManager, ErrorContext, ErrorType, ErrorSeverity
+from .failover import FailoverManager, PACSEndpoint
+from ..workflow import ClinicalWorkflowSystem, WorkflowStatus, StudyMetadata
+from ...data.wsi_pipeline.pipeline import WSIPipeline
+
 
 logger = logging.getLogger(__name__)
 
 
+class WorkflowStage(Enum):
+    """Stages in the PACS workflow."""
+    DISCOVERY = "discovery"
+    QUERYING = "querying"
+    RETRIEVAL = "retrieval"
+    PROCESSING = "processing"
+    ANALYSIS = "analysis"
+    STORAGE = "storage"
+    NOTIFICATION = "notification"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class StudyPriority(Enum):
+    """Priority levels for study processing."""
+    LOW = 1
+    NORMAL = 2
+    HIGH = 3
+    URGENT = 4
+    CRITICAL = 5
+
+
+@dataclass
+class WorkflowTask:
+    """Represents a workflow task."""
+    task_id: str
+    study_uid: str
+    patient_id: str
+    stage: WorkflowStage
+    priority: StudyPriority
+    created_at: datetime
+    updated_at: datetime
+    retry_count: int = 0
+    max_retries: int = 3
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_context: Optional[ErrorContext] = None
+    
+    def __lt__(self, other):
+        """Enable priority queue ordering."""
+        if self.priority.value != other.priority.value:
+            return self.priority.value > other.priority.value  # Higher priority first
+        return self.created_at < other.created_at  # FIFO for same priority
+
+
+@dataclass
+class StudyWorkflow:
+    """Represents the complete workflow for a study."""
+    study_uid: str
+    patient_id: str
+    current_stage: WorkflowStage
+    priority: StudyPriority
+    created_at: datetime
+    updated_at: datetime
+    completed_stages: Set[WorkflowStage] = field(default_factory=set)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_history: List[ErrorContext] = field(default_factory=list)
+    performance_metrics: Dict[str, float] = field(default_factory=dict)
+
+
+class WorkflowMetrics:
+    """Tracks workflow performance metrics."""
+    
+    def __init__(self):
+        self.total_studies_processed = 0
+        self.studies_by_priority = {priority: 0 for priority in StudyPriority}
+        self.studies_by_stage = {stage: 0 for stage in WorkflowStage}
+        self.average_processing_time = 0.0
+        self.success_rate = 0.0
+        self.error_rate = 0.0
+        self.throughput_per_hour = 0.0
+        self.queue_depth = 0
+        self.active_workflows = 0
+        
+        self._processing_times: List[float] = []
+        self._successful_studies = 0
+        self._failed_studies = 0
+        self._start_time = time.time()
+    
+    def record_study_completion(self, processing_time: float, success: bool, priority: StudyPriority):
+        """Record completion of a study."""
+        self.total_studies_processed += 1
+        self.studies_by_priority[priority] += 1
+        
+        if success:
+            self._successful_studies += 1
+            self._processing_times.append(processing_time)
+            
+            # Keep only recent processing times (last 100)
+            if len(self._processing_times) > 100:
+                self._processing_times = self._processing_times[-100:]
+            
+            # Update average processing time
+            if self._processing_times:
+                self.average_processing_time = sum(self._processing_times) / len(self._processing_times)
+        else:
+            self._failed_studies += 1
+        
+        # Update rates
+        if self.total_studies_processed > 0:
+            self.success_rate = (self._successful_studies / self.total_studies_processed) * 100
+            self.error_rate = (self._failed_studies / self.total_studies_processed) * 100
+        
+        # Update throughput
+        elapsed_hours = (time.time() - self._start_time) / 3600
+        if elapsed_hours > 0:
+            self.throughput_per_hour = self.total_studies_processed / elapsed_hours
+    
+    def update_stage_count(self, stage: WorkflowStage):
+        """Update count for a workflow stage."""
+        self.studies_by_stage[stage] += 1
+    
+    def update_queue_metrics(self, queue_depth: int, active_workflows: int):
+        """Update queue and active workflow metrics."""
+        self.queue_depth = queue_depth
+        self.active_workflows = active_workflows
+
+
 class WorkflowOrchestrator:
-    """
-    Coordinates automated processing workflows and integrates with Clinical Workflow System.
-
-    This class provides comprehensive workflow automation including:
-    - Automated polling of PACS for new WSI studies
-    - Priority-based processing queue management
-    - Integration with existing ClinicalWorkflowSystem
-    - Real-time status updates and monitoring
-    - Error handling and recovery procedures
-    """
-
+    """Main workflow orchestrator for PACS operations."""
+    
     def __init__(
         self,
-        pacs_adapter: PACSAdapter,
+        failover_manager: FailoverManager,
+        error_manager: PACSErrorManager,
         clinical_workflow: ClinicalWorkflowSystem,
-        poll_interval: timedelta = timedelta(minutes=5),
-        max_concurrent_studies: int = 10,
+        wsi_pipeline: WSIPipeline,
+        polling_interval: float = 60.0,
+        max_concurrent_workflows: int = 10,
+        max_concurrent_retrievals: int = 5
     ):
-        """
-        Initialize Workflow Orchestrator.
-
-        Args:
-            pacs_adapter: PACS adapter for DICOM operations
-            clinical_workflow: Clinical workflow system for AI processing
-            poll_interval: Interval between PACS polling operations
-            max_concurrent_studies: Maximum concurrent study processing
-        """
-        self.pacs_adapter = pacs_adapter
+        self.failover_manager = failover_manager
+        self.error_manager = error_manager
         self.clinical_workflow = clinical_workflow
-        self.poll_interval = poll_interval
-        self.max_concurrent_studies = max_concurrent_studies
-
-        # Processing state
-        self._is_running = False
-        self._polling_thread: Optional[threading.Thread] = None
-        self._processing_executor: Optional[ThreadPoolExecutor] = ThreadPoolExecutor(
-            max_workers=max_concurrent_studies
-        )
-
-        # Study tracking
-        self._processed_studies: Set[str] = set()
-        self._processing_queue: List[StudyInfo] = []
-        self._active_processing: Dict[str, Dict[str, Any]] = {}
-        self._failed_studies: Dict[str, Dict[str, Any]] = {}
-
-        # Statistics
-        self._stats = {
-            "studies_processed": 0,
-            "studies_failed": 0,
-            "last_poll_time": None,
-            "last_poll_results": 0,
-            "processing_errors": [],
-        }
-
-        logger.info("WorkflowOrchestrator initialized")
-
-    def start_automated_polling(self) -> None:
-        """Start automated polling for new WSI studies."""
-        if self._is_running:
-            logger.warning("Automated polling is already running")
-            return
-
-        logger.info(f"Starting automated polling (interval: {self.poll_interval})")
-
-        if self._processing_executor is None:
-            self._processing_executor = ThreadPoolExecutor(max_workers=self.max_concurrent_studies)
-
-        self._is_running = True
-        self._polling_thread = threading.Thread(
-            target=self._polling_loop, daemon=True, name="PACS-Polling"
-        )
-        self._polling_thread.start()
-
-    def stop_automated_polling(self) -> None:
-        """Stop automated polling."""
-        if not self._is_running:
-            return
-
-        logger.info("Stopping automated polling")
-        self._is_running = False
-
-        if self._polling_thread:
-            self._polling_thread.join(timeout=30)
-            self._polling_thread = None
-
-        # Shutdown processing executor
-        if self._processing_executor is not None:
-            self._processing_executor.shutdown(wait=True)
-            self._processing_executor = None
-
-        logger.info("Automated polling stopped")
-
-    def process_new_studies(
-        self, studies: List[StudyInfo], force_reprocess: bool = False
-    ) -> List[OperationResult]:
-        """
-        Process a list of new studies through the clinical workflow.
-
-        Args:
-            studies: List of studies to process
-            force_reprocess: Whether to reprocess already processed studies
-
-        Returns:
-            List of processing results
-        """
-        logger.info(f"Processing {len(studies)} studies")
-
-        results = []
-
-        # Filter out already processed studies
-        if not force_reprocess:
-            studies = [
-                study
-                for study in studies
-                if study.study_instance_uid not in self._processed_studies
-            ]
-
-            if len(studies) == 0:
-                logger.info("No new studies to process")
-                return results
-
-        # Sort by priority (urgent first)
-        studies.sort(key=lambda s: self._get_priority_order(s.priority))
-
-        if self._processing_executor is None:
-            self._processing_executor = ThreadPoolExecutor(max_workers=self.max_concurrent_studies)
-
-        # Queue studies for processing and drain them as worker slots free up.
-        self._processing_queue.extend(studies)
-        pending_futures: Dict[Any, StudyInfo] = {}
-
-        def submit_next_study() -> None:
-            if self._processing_executor is None:
-                raise RuntimeError("Processing executor is not available")
-            if not self._processing_queue:
-                return
-
-            next_study = self._processing_queue.pop(0)
-            future = self._processing_executor.submit(self._process_single_study, next_study)
-            pending_futures[future] = next_study
-            self._active_processing[next_study.study_instance_uid] = {
-                "study": next_study,
-                "start_time": datetime.now(),
-                "status": "processing",
+        self.wsi_pipeline = wsi_pipeline
+        self.polling_interval = polling_interval
+        self.max_concurrent_workflows = max_concurrent_workflows
+        self.max_concurrent_retrievals = max_concurrent_retrievals
+        
+        # Workflow queues
+        self.task_queue: PriorityQueue[WorkflowTask] = PriorityQueue()
+        self.active_workflows: Dict[str, StudyWorkflow] = {}
+        self.completed_workflows: Dict[str, StudyWorkflow] = {}
+        
+        # Threading and concurrency
+        self.executor = ThreadPoolExecutor(max_workers=max_concurrent_workflows)
+        self.retrieval_semaphore = asyncio.Semaphore(max_concurrent_retrievals)
+        
+        # Control flags
+        self._running = False
+        self._polling_task = None
+        self._processing_task = None
+        
+        # Metrics and monitoring
+        self.metrics = WorkflowMetrics()
+        self.logger = logging.getLogger(f"{__name__}.WorkflowOrchestrator")
+        
+        # Configuration
+        self.config = {
+            'discovery_query_filters': {
+                'modality': 'SM',  # Slide Microscopy
+                'study_date_range': 7,  # Days
+                'max_results_per_query': 100
+            },
+            'priority_mapping': {
+                'STAT': StudyPriority.CRITICAL,
+                'URGENT': StudyPriority.URGENT,
+                'HIGH': StudyPriority.HIGH,
+                'ROUTINE': StudyPriority.NORMAL,
+                'LOW': StudyPriority.LOW
+            },
+            'retry_delays': {
+                WorkflowStage.QUERYING: 30,
+                WorkflowStage.RETRIEVAL: 60,
+                WorkflowStage.PROCESSING: 120,
+                WorkflowStage.ANALYSIS: 180,
+                WorkflowStage.STORAGE: 60,
+                WorkflowStage.NOTIFICATION: 30
             }
-
-        while self._processing_queue and len(self._active_processing) < self.max_concurrent_studies:
-            submit_next_study()
-
-        # Collect results, continuing to schedule queued studies until everything completes.
-        while pending_futures:
-            completed_futures, _ = wait(list(pending_futures.keys()), return_when=FIRST_COMPLETED)
-
-            for future in completed_futures:
-                study = pending_futures.pop(future)
-                study_uid = study.study_instance_uid
-
+        }
+    
+    async def start(self):
+        """Start the workflow orchestrator."""
+        if self._running:
+            return
+        
+        self._running = True
+        
+        # Start failover manager
+        await self.failover_manager.start()
+        
+        # Start background tasks
+        self._polling_task = asyncio.create_task(self._polling_loop())
+        self._processing_task = asyncio.create_task(self._processing_loop())
+        
+        self.logger.info("Workflow orchestrator started")
+    
+    async def stop(self):
+        """Stop the workflow orchestrator."""
+        self._running = False
+        
+        # Cancel background tasks
+        if self._polling_task:
+            self._polling_task.cancel()
+        if self._processing_task:
+            self._processing_task.cancel()
+        
+        # Wait for tasks to complete
+        for task in [self._polling_task, self._processing_task]:
+            if task:
                 try:
-                    result = future.result()
-                    results.append(result)
-
-                    # Update tracking
-                    if result.success:
-                        self._processed_studies.add(study_uid)
-                        self._stats["studies_processed"] += 1
-                        logger.info(f"Successfully processed study: {study_uid}")
-                    else:
-                        self._failed_studies[study_uid] = {
-                            "study": study,
-                            "error": result.message,
-                            "timestamp": datetime.now(),
-                        }
-                        self._stats["studies_failed"] += 1
-                        logger.error(f"Failed to process study {study_uid}: {result.message}")
-
-                except Exception as e:
-                    logger.error(f"Processing exception for study {study_uid}: {str(e)}")
-
-                    error_result = OperationResult.error_result(
-                        operation_id=f"process_{study_uid}",
-                        message=f"Processing exception: {str(e)}",
-                        errors=[str(e)],
-                    )
-                    results.append(error_result)
-
-                    self._failed_studies[study_uid] = {
-                        "study": study,
-                        "error": str(e),
-                        "timestamp": datetime.now(),
-                    }
-                    self._stats["studies_failed"] += 1
-
-                finally:
-                    # Remove from active processing
-                    self._active_processing.pop(study_uid, None)
-
-            while (
-                self._processing_queue
-                and len(self._active_processing) < self.max_concurrent_studies
-            ):
-                submit_next_study()
-
-        return results
-
-    def handle_processing_failure(self, study_uid: str, error: Exception) -> str:
-        """
-        Handle processing failure with appropriate recovery action.
-
-        Args:
-            study_uid: Study Instance UID that failed
-            error: Exception that caused the failure
-
-        Returns:
-            Recovery action taken
-        """
-        logger.error(f"Handling processing failure for study {study_uid}: {str(error)}")
-
-        # Record the failure
-        self._failed_studies[study_uid] = {
-            "error": str(error),
-            "timestamp": datetime.now(),
-            "recovery_attempts": self._failed_studies.get(study_uid, {}).get("recovery_attempts", 0)
-            + 1,
-        }
-
-        # Determine recovery action based on error type
-        error_str = str(error).lower()
-
-        if "connection" in error_str or "network" in error_str:
-            # Network-related error - retry later
-            recovery_action = "retry_later"
-            logger.info(f"Network error for {study_uid} - will retry later")
-
-        elif "disk" in error_str or "space" in error_str:
-            # Disk space error - pause processing
-            recovery_action = "pause_processing"
-            logger.warning(f"Disk space error for {study_uid} - pausing processing")
-
-        elif "authentication" in error_str or "certificate" in error_str:
-            # Security error - requires manual intervention
-            recovery_action = "manual_intervention"
-            logger.error(f"Security error for {study_uid} - requires manual intervention")
-
-        else:
-            # Generic error - retry with exponential backoff
-            attempts = self._failed_studies[study_uid]["recovery_attempts"]
-            if attempts < 3:
-                recovery_action = "retry_with_backoff"
-                logger.info(f"Generic error for {study_uid} - retry attempt {attempts}")
-            else:
-                recovery_action = "move_to_dead_letter"
-                logger.error(f"Max retries exceeded for {study_uid} - moving to dead letter queue")
-
-        # Record recovery action
-        self._failed_studies[study_uid]["recovery_action"] = recovery_action
-
-        return recovery_action
-
-    def get_processing_status(self) -> Dict[str, Any]:
-        """Get current processing status and statistics."""
-        return {
-            "is_running": self._is_running,
-            "poll_interval_minutes": self.poll_interval.total_seconds() / 60,
-            "max_concurrent_studies": self.max_concurrent_studies,
-            "active_processing": len(self._active_processing),
-            "queued_studies": len(self._processing_queue),
-            "processed_studies": len(self._processed_studies),
-            "failed_studies": len(self._failed_studies),
-            "statistics": self._stats.copy(),
-            "active_studies": [
-                {
-                    "study_uid": uid,
-                    "start_time": info["start_time"].isoformat(),
-                    "duration_minutes": (datetime.now() - info["start_time"]).total_seconds() / 60,
-                    "status": info["status"],
-                }
-                for uid, info in self._active_processing.items()
-            ],
-        }
-
-    def _polling_loop(self) -> None:
-        """Main polling loop that runs in background thread."""
-        logger.info("Starting PACS polling loop")
-
-        while self._is_running:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+        
+        # Stop failover manager
+        await self.failover_manager.stop()
+        
+        # Shutdown executor
+        self.executor.shutdown(wait=True)
+        
+        self.logger.info("Workflow orchestrator stopped")
+    
+    async def _polling_loop(self):
+        """Background loop for polling PACS for new studies."""
+        while self._running:
             try:
-                start_time = datetime.now()
-
-                # Query PACS for new studies
-                studies, query_result = self.pacs_adapter.query_studies(
-                    modality="SM", max_results=100  # Slide Microscopy
-                )
-
-                self._stats["last_poll_time"] = start_time
-                self._stats["last_poll_results"] = len(studies)
-
-                if query_result.success and studies:
-                    logger.info(f"Found {len(studies)} studies in PACS poll")
-
-                    # Process new studies
-                    processing_results = self.process_new_studies(studies)
-
-                    # Log processing summary
-                    successful = sum(1 for r in processing_results if r.success)
-                    failed = len(processing_results) - successful
-
-                    if processing_results:
-                        logger.info(
-                            f"Processing complete: {successful} successful, {failed} failed"
-                        )
-
-                elif not query_result.success:
-                    logger.error(f"PACS query failed: {query_result.message}")
-                    self._stats["processing_errors"].append(
-                        {"timestamp": start_time.isoformat(), "error": query_result.message}
-                    )
-
-                # Sleep until next poll
-                elapsed = datetime.now() - start_time
-                sleep_time = max(0, self.poll_interval.total_seconds() - elapsed.total_seconds())
-
-                if self._is_running and sleep_time > 0:
-                    time.sleep(sleep_time)
-
+                await self._discover_new_studies()
+                await asyncio.sleep(self.polling_interval)
+                
+            except asyncio.CancelledError:
+                break
             except Exception as e:
-                logger.error(f"Error in polling loop: {str(e)}")
-                self._stats["processing_errors"].append(
-                    {"timestamp": datetime.now().isoformat(), "error": str(e)}
+                self.logger.error(f"Error in polling loop: {e}")
+                await asyncio.sleep(10)  # Short delay before retry
+    
+    async def _processing_loop(self):
+        """Background loop for processing workflow tasks."""
+        while self._running:
+            try:
+                # Update metrics
+                self.metrics.update_queue_metrics(
+                    self.task_queue.qsize(),
+                    len(self.active_workflows)
                 )
-
-                # Sleep before retrying
-                if self._is_running:
-                    time.sleep(60)  # Wait 1 minute before retrying
-
-        logger.info("PACS polling loop stopped")
-
-    def _process_single_study(self, study: StudyInfo) -> OperationResult:
-        """
-        Process a single study through the complete workflow.
-
-        Args:
-            study: Study to process
-
-        Returns:
-            OperationResult with processing status
-        """
-        study_uid = study.study_instance_uid
-        operation_id = f"process_study_{study_uid}"
-
-        logger.info(f"Processing study: {study_uid}")
-
+                
+                # Process pending tasks
+                await self._process_pending_tasks()
+                await asyncio.sleep(1)  # Short delay between processing cycles
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self.logger.error(f"Error in processing loop: {e}")
+                await asyncio.sleep(5)
+    
+    async def _discover_new_studies(self):
+        """Discover new WSI studies from PACS."""
         try:
-            # Step 1: Retrieve WSI files from PACS
-            logger.debug(f"Retrieving study {study_uid} from PACS")
-
-            retrieval_result = self.pacs_adapter.retrieve_study(
-                study_instance_uid=study_uid, destination_path=f"./data/retrieved/{study_uid}"
+            endpoint = await self.failover_manager.get_healthy_endpoint()
+            if not endpoint:
+                self.logger.warning("No healthy PACS endpoints available for discovery")
+                return
+            
+            # Build discovery query
+            query_filters = self.config['discovery_query_filters']
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=query_filters['study_date_range'])
+            
+            query_params = {
+                'StudyDate': f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}",
+                'Modality': query_filters['modality'],
+                'QueryRetrieveLevel': 'STUDY'
+            }
+            
+            # Execute discovery query with failover
+            studies = await self.failover_manager.execute_with_failover(
+                self._execute_discovery_query,
+                query_params,
+                query_filters['max_results_per_query']
             )
-
-            if not retrieval_result.success:
-                return OperationResult.error_result(
-                    operation_id=operation_id,
-                    message=f"Retrieval failed: {retrieval_result.message}",
-                    errors=retrieval_result.errors,
-                )
-
-            retrieved_files = retrieval_result.data.get("retrieved_files", [])
-            if not retrieved_files:
-                return OperationResult.error_result(
-                    operation_id=operation_id,
-                    message="No files retrieved from PACS",
-                    errors=["Empty retrieval result"],
-                )
-
-            # Step 2: Process through clinical workflow
-            logger.debug(f"Processing study {study_uid} through clinical workflow")
-
-            # For now, create mock WSI features (in real implementation, would process DICOM files)
-            import torch
-
-            mock_features = torch.randn(1, 100, 1024)  # Mock patch features
-
-            # Process through clinical workflow
-            clinical_results = self.clinical_workflow.process_case(
-                wsi_features=mock_features,
-                patient_id=study.patient_id,
-                scan_id=study_uid,
-                scan_date=study.study_date.isoformat(),
-                model_version="1.0.0",
-            )
-
-            # Step 3: Convert clinical results to DICOM format
-            analysis_results = self._convert_clinical_results(clinical_results, study)
-
-            # Step 4: Store results back to PACS
-            logger.debug(f"Storing analysis results for study {study_uid}")
-
-            storage_result = self.pacs_adapter.store_analysis_results(
-                analysis_results=analysis_results, original_study_uid=study_uid
-            )
-
-            if not storage_result.success:
-                logger.warning(f"Failed to store results to PACS: {storage_result.message}")
-                # Continue - this is not a critical failure
-
-            return OperationResult.success_result(
-                operation_id=operation_id,
-                message=f"Successfully processed study {study_uid}",
-                data={
-                    "study_uid": study_uid,
-                    "retrieved_files": len(retrieved_files),
-                    "clinical_results": clinical_results,
-                    "stored_to_pacs": storage_result.success,
-                },
-            )
-
+            
+            # Queue new studies for processing
+            new_studies_count = 0
+            for study in studies:
+                if await self._queue_new_study(study):
+                    new_studies_count += 1
+            
+            if new_studies_count > 0:
+                self.logger.info(f"Discovered {new_studies_count} new studies for processing")
+                
         except Exception as e:
-            logger.error(f"Study processing failed: {str(e)}")
-
-            # Handle the failure
-            recovery_action = self.handle_processing_failure(study_uid, e)
-
-            return OperationResult.error_result(
-                operation_id=operation_id,
-                message=f"Processing failed: {str(e)}",
-                errors=[str(e), f"Recovery action: {recovery_action}"],
+            error_context = await self.error_manager.handle_error(
+                e, "study_discovery", {}, endpoint.name if endpoint else None
             )
-
-    def _convert_clinical_results(
-        self, clinical_results: Dict[str, Any], study: StudyInfo
-    ) -> AnalysisResults:
-        """Convert clinical workflow results to AnalysisResults format."""
-        from .data_models import DetectedRegion, DiagnosticRecommendation
-
-        # Extract primary diagnosis
-        primary_diagnosis = clinical_results.get("primary_diagnosis", {})
-
-        # Create detected regions (mock for now)
-        detected_regions = [
-            DetectedRegion(
-                region_id="region_1",
-                coordinates=(100, 100, 200, 200),
-                confidence=0.85,
-                region_type="suspicious_area",
-                description="AI-detected suspicious region",
-            )
-        ]
-
-        # Create diagnostic recommendations
-        recommendations = [
-            DiagnosticRecommendation(
-                recommendation_id="rec_1",
-                recommendation_text=f"Primary diagnosis: {primary_diagnosis.get('disease_name', 'Unknown')}",
-                confidence=primary_diagnosis.get("probability", 0.0),
-                urgency_level="MEDIUM",
-            )
-        ]
-
-        return AnalysisResults(
-            study_instance_uid=study.study_instance_uid,
-            series_instance_uid=study.study_instance_uid,  # Simplified
-            algorithm_name="HistoCore AI",
-            algorithm_version=clinical_results.get("model_version", "1.0.0"),
-            confidence_score=primary_diagnosis.get("probability", 0.0),
-            detected_regions=detected_regions,
-            diagnostic_recommendations=recommendations,
-            processing_timestamp=datetime.now(),
-            primary_diagnosis=primary_diagnosis.get("disease_name"),
-            probability_distribution=clinical_results.get("probability_distribution", {}),
+            self.logger.error(f"Failed to discover new studies: {e}")
+    
+    async def _execute_discovery_query(self, connection, query_params: Dict[str, str], max_results: int) -> List[Dict[str, Any]]:
+        """Execute discovery query against PACS."""
+        # This would use the actual DICOM query implementation
+        # For now, return mock data structure
+        studies = []
+        
+        # Mock implementation - in real code this would use pynetdicom
+        # to execute C-FIND operations
+        
+        return studies
+    
+    async def _queue_new_study(self, study_data: Dict[str, Any]) -> bool:
+        """Queue a new study for processing if not already processed."""
+        study_uid = study_data.get('StudyInstanceUID')
+        patient_id = study_data.get('PatientID')
+        
+        if not study_uid or not patient_id:
+            self.logger.warning("Study missing required identifiers, skipping")
+            return False
+        
+        # Check if already processed or in progress
+        if (study_uid in self.active_workflows or 
+            study_uid in self.completed_workflows):
+            return False
+        
+        # Determine priority
+        priority_str = study_data.get('StudyPriority', 'ROUTINE')
+        priority = self.config['priority_mapping'].get(priority_str, StudyPriority.NORMAL)
+        
+        # Create workflow task
+        task = WorkflowTask(
+            task_id=str(uuid.uuid4()),
+            study_uid=study_uid,
+            patient_id=patient_id,
+            stage=WorkflowStage.QUERYING,
+            priority=priority,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata=study_data
         )
-
-    def _get_priority_order(self, priority: DicomPriority) -> int:
-        """Get numeric order for priority sorting (lower = higher priority)."""
-        priority_order = {
-            DicomPriority.URGENT: 0,
-            DicomPriority.HIGH: 1,
-            DicomPriority.MEDIUM: 2,
-            DicomPriority.LOW: 3,
+        
+        # Add to queue
+        self.task_queue.put(task)
+        
+        # Create workflow tracking
+        workflow = StudyWorkflow(
+            study_uid=study_uid,
+            patient_id=patient_id,
+            current_stage=WorkflowStage.QUERYING,
+            priority=priority,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata=study_data
+        )
+        
+        self.active_workflows[study_uid] = workflow
+        
+        self.logger.debug(f"Queued new study for processing: {study_uid} (priority: {priority.name})")
+        return True
+    
+    async def _process_pending_tasks(self):
+        """Process pending workflow tasks."""
+        # Limit concurrent processing
+        if len(self.active_workflows) >= self.max_concurrent_workflows:
+            return
+        
+        try:
+            # Get next task (blocks briefly)
+            task = self.task_queue.get(timeout=0.1)
+            
+            # Process task asynchronously
+            asyncio.create_task(self._process_workflow_task(task))
+            
+        except:
+            # No tasks available
+            pass
+    
+    async def _process_workflow_task(self, task: WorkflowTask):
+        """Process a single workflow task."""
+        workflow = self.active_workflows.get(task.study_uid)
+        if not workflow:
+            self.logger.error(f"Workflow not found for task: {task.study_uid}")
+            return
+        
+        start_time = time.time()
+        success = False
+        
+        try:
+            # Update workflow stage
+            workflow.current_stage = task.stage
+            workflow.updated_at = datetime.now()
+            self.metrics.update_stage_count(task.stage)
+            
+            # Execute stage-specific processing
+            if task.stage == WorkflowStage.QUERYING:
+                await self._process_querying_stage(task, workflow)
+            elif task.stage == WorkflowStage.RETRIEVAL:
+                await self._process_retrieval_stage(task, workflow)
+            elif task.stage == WorkflowStage.PROCESSING:
+                await self._process_processing_stage(task, workflow)
+            elif task.stage == WorkflowStage.ANALYSIS:
+                await self._process_analysis_stage(task, workflow)
+            elif task.stage == WorkflowStage.STORAGE:
+                await self._process_storage_stage(task, workflow)
+            elif task.stage == WorkflowStage.NOTIFICATION:
+                await self._process_notification_stage(task, workflow)
+            
+            success = True
+            
+        except Exception as e:
+            # Handle task failure
+            await self._handle_task_failure(task, workflow, e)
+        
+        finally:
+            # Record metrics
+            processing_time = time.time() - start_time
+            workflow.performance_metrics[task.stage.value] = processing_time
+            
+            if success and workflow.current_stage == WorkflowStage.COMPLETED:
+                # Workflow completed successfully
+                total_time = sum(workflow.performance_metrics.values())
+                self.metrics.record_study_completion(total_time, True, workflow.priority)
+                
+                # Move to completed workflows
+                self.completed_workflows[workflow.study_uid] = workflow
+                del self.active_workflows[workflow.study_uid]
+                
+                self.logger.info(
+                    f"Workflow completed for study {workflow.study_uid} "
+                    f"({total_time:.2f}s total)"
+                )
+    
+    async def _process_querying_stage(self, task: WorkflowTask, workflow: StudyWorkflow):
+        """Process the querying stage."""
+        # Query PACS for detailed study information
+        query_params = {
+            'StudyInstanceUID': task.study_uid,
+            'QueryRetrieveLevel': 'SERIES'
         }
-        return priority_order.get(priority, 2)
-
-    def __enter__(self):
-        """Context manager entry."""
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
-        self.stop_automated_polling()
+        
+        series_list = await self.failover_manager.execute_with_failover(
+            self._execute_series_query,
+            query_params
+        )
+        
+        # Filter for WSI series
+        wsi_series = [s for s in series_list if self._is_wsi_series(s)]
+        
+        if not wsi_series:
+            raise Exception(f"No WSI series found for study {task.study_uid}")
+        
+        # Update workflow metadata
+        workflow.metadata['series_list'] = wsi_series
+        workflow.completed_stages.add(WorkflowStage.QUERYING)
+        
+        # Queue next stage
+        await self._queue_next_stage(task, WorkflowStage.RETRIEVAL)
+    
+    async def _process_retrieval_stage(self, task: WorkflowTask, workflow: StudyWorkflow):
+        """Process the retrieval stage."""
+        async with self.retrieval_semaphore:  # Limit concurrent retrievals
+            series_list = workflow.metadata.get('series_list', [])
+            
+            retrieved_files = []
+            for series in series_list:
+                files = await self.failover_manager.execute_with_failover(
+                    self._execute_series_retrieval,
+                    series
+                )
+                retrieved_files.extend(files)
+            
+            if not retrieved_files:
+                raise Exception(f"No files retrieved for study {task.study_uid}")
+            
+            # Update workflow metadata
+            workflow.metadata['retrieved_files'] = retrieved_files
+            workflow.completed_stages.add(WorkflowStage.RETRIEVAL)
+            
+            # Queue next stage
+            await self._queue_next_stage(task, WorkflowStage.PROCESSING)
+    
+    async def _process_processing_stage(self, task: WorkflowTask, workflow: StudyWorkflow):
+        """Process the processing stage."""
+        retrieved_files = workflow.metadata.get('retrieved_files', [])
+        
+        # Process files through WSI pipeline
+        processed_data = []
+        for file_path in retrieved_files:
+            # This would integrate with the actual WSI pipeline
+            result = await self._process_wsi_file(file_path)
+            processed_data.append(result)
+        
+        # Update workflow metadata
+        workflow.metadata['processed_data'] = processed_data
+        workflow.completed_stages.add(WorkflowStage.PROCESSING)
+        
+        # Queue next stage
+        await self._queue_next_stage(task, WorkflowStage.ANALYSIS)
+    
+    async def _process_analysis_stage(self, task: WorkflowTask, workflow: StudyWorkflow):
+        """Process the analysis stage."""
+        processed_data = workflow.metadata.get('processed_data', [])
+        
+        # Run AI analysis
+        analysis_results = []
+        for data in processed_data:
+            # This would integrate with the actual AI analysis pipeline
+            result = await self._run_ai_analysis(data)
+            analysis_results.append(result)
+        
+        # Update workflow metadata
+        workflow.metadata['analysis_results'] = analysis_results
+        workflow.completed_stages.add(WorkflowStage.ANALYSIS)
+        
+        # Queue next stage
+        await self._queue_next_stage(task, WorkflowStage.STORAGE)
+    
+    async def _process_storage_stage(self, task: WorkflowTask, workflow: StudyWorkflow):
+        """Process the storage stage."""
+        analysis_results = workflow.metadata.get('analysis_results', [])
+        
+        # Store results back to PACS as Structured Reports
+        stored_reports = []
+        for result in analysis_results:
+            report_uid = await self.failover_manager.execute_with_failover(
+                self._store_structured_report,
+                result,
+                task.study_uid
+            )
+            stored_reports.append(report_uid)
+        
+        # Update workflow metadata
+        workflow.metadata['stored_reports'] = stored_reports
+        workflow.completed_stages.add(WorkflowStage.STORAGE)
+        
+        # Queue next stage
+        await self._queue_next_stage(task, WorkflowStage.NOTIFICATION)
+    
+    async def _process_notification_stage(self, task: WorkflowTask, workflow: StudyWorkflow):
+        """Process the notification stage."""
+        # Send notifications to clinical staff
+        await self._send_completion_notifications(workflow)
+        
+        # Update workflow
+        workflow.completed_stages.add(WorkflowStage.NOTIFICATION)
+        workflow.current_stage = WorkflowStage.COMPLETED
+        workflow.updated_at = datetime.now()
+    
+    async def _handle_task_failure(self, task: WorkflowTask, workflow: StudyWorkflow, error: Exception):
+        """Handle task failure with retry logic."""
+        # Create error context
+        error_context = await self.error_manager.handle_error(
+            error,
+            f"workflow_{task.stage.value}",
+            task.metadata,
+            study_uid=task.study_uid,
+            patient_id=task.patient_id
+        )
+        
+        # Add to workflow error history
+        workflow.error_history.append(error_context)
+        
+        # Check if should retry
+        if task.retry_count < task.max_retries:
+            task.retry_count += 1
+            task.updated_at = datetime.now()
+            
+            # Calculate retry delay
+            delay = self.config['retry_delays'].get(task.stage, 60)
+            
+            self.logger.warning(
+                f"Task failed, retrying in {delay}s: {task.study_uid} "
+                f"(attempt {task.retry_count}/{task.max_retries})"
+            )
+            
+            # Schedule retry
+            asyncio.create_task(self._schedule_retry(task, delay))
+        else:
+            # Max retries exceeded, mark workflow as failed
+            workflow.current_stage = WorkflowStage.FAILED
+            workflow.updated_at = datetime.now()
+            
+            # Record failure metrics
+            total_time = sum(workflow.performance_metrics.values())
+            self.metrics.record_study_completion(total_time, False, workflow.priority)
+            
+            # Move to completed workflows (as failed)
+            self.completed_workflows[workflow.study_uid] = workflow
+            del self.active_workflows[workflow.study_uid]
+            
+            self.logger.error(
+                f"Workflow failed after {task.max_retries} retries: {task.study_uid}"
+            )
+    
+    async def _schedule_retry(self, task: WorkflowTask, delay: float):
+        """Schedule a task retry after delay."""
+        await asyncio.sleep(delay)
+        self.task_queue.put(task)
+    
+    async def _queue_next_stage(self, current_task: WorkflowTask, next_stage: WorkflowStage):
+        """Queue the next stage of workflow processing."""
+        next_task = WorkflowTask(
+            task_id=str(uuid.uuid4()),
+            study_uid=current_task.study_uid,
+            patient_id=current_task.patient_id,
+            stage=next_stage,
+            priority=current_task.priority,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata=current_task.metadata
+        )
+        
+        self.task_queue.put(next_task)
+    
+    # Mock implementations for integration points
+    async def _execute_series_query(self, connection, query_params: Dict[str, str]) -> List[Dict[str, Any]]:
+        """Execute series-level query."""
+        # Mock implementation
+        return []
+    
+    async def _execute_series_retrieval(self, connection, series_data: Dict[str, Any]) -> List[str]:
+        """Execute series retrieval."""
+        # Mock implementation
+        return []
+    
+    def _is_wsi_series(self, series_data: Dict[str, Any]) -> bool:
+        """Check if series is a WSI series."""
+        modality = series_data.get('Modality', '')
+        return modality == 'SM'  # Slide Microscopy
+    
+    async def _process_wsi_file(self, file_path: str) -> Dict[str, Any]:
+        """Process WSI file through pipeline."""
+        # Mock implementation
+        return {'file_path': file_path, 'processed': True}
+    
+    async def _run_ai_analysis(self, processed_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Run AI analysis on processed data."""
+        # Mock implementation
+        return {'analysis': 'completed', 'confidence': 0.95}
+    
+    async def _store_structured_report(self, connection, analysis_result: Dict[str, Any], study_uid: str) -> str:
+        """Store structured report to PACS."""
+        # Mock implementation
+        return f"SR_{study_uid}_{int(time.time())}"
+    
+    async def _send_completion_notifications(self, workflow: StudyWorkflow):
+        """Send completion notifications."""
+        # Mock implementation
+        self.logger.info(f"Notifications sent for study {workflow.study_uid}")
+    
+    # Public API methods
+    def get_workflow_status(self, study_uid: str) -> Optional[Dict[str, Any]]:
+        """Get status of a workflow."""
+        workflow = self.active_workflows.get(study_uid) or self.completed_workflows.get(study_uid)
+        if not workflow:
+            return None
+        
+        return {
+            'study_uid': workflow.study_uid,
+            'patient_id': workflow.patient_id,
+            'current_stage': workflow.current_stage.value,
+            'priority': workflow.priority.value,
+            'created_at': workflow.created_at.isoformat(),
+            'updated_at': workflow.updated_at.isoformat(),
+            'completed_stages': [stage.value for stage in workflow.completed_stages],
+            'performance_metrics': workflow.performance_metrics,
+            'error_count': len(workflow.error_history)
+        }
+    
+    def get_system_metrics(self) -> Dict[str, Any]:
+        """Get system performance metrics."""
+        return {
+            'total_studies_processed': self.metrics.total_studies_processed,
+            'studies_by_priority': {p.name: count for p, count in self.metrics.studies_by_priority.items()},
+            'studies_by_stage': {s.name: count for s, count in self.metrics.studies_by_stage.items()},
+            'average_processing_time': self.metrics.average_processing_time,
+            'success_rate': self.metrics.success_rate,
+            'error_rate': self.metrics.error_rate,
+            'throughput_per_hour': self.metrics.throughput_per_hour,
+            'queue_depth': self.metrics.queue_depth,
+            'active_workflows': self.metrics.active_workflows,
+            'endpoint_statistics': self.failover_manager.get_endpoint_statistics()
+        }
+    
+    def get_active_workflows(self) -> List[Dict[str, Any]]:
+        """Get list of active workflows."""
+        return [
+            self.get_workflow_status(study_uid)
+            for study_uid in self.active_workflows.keys()
+        ]
+    
+    def get_failed_workflows(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get list of failed workflows."""
+        failed = [
+            self.get_workflow_status(study_uid)
+            for study_uid, workflow in self.completed_workflows.items()
+            if workflow.current_stage == WorkflowStage.FAILED
+        ]
+        
+        # Sort by update time (most recent first)
+        failed.sort(key=lambda x: x['updated_at'], reverse=True)
+        
+        if limit:
+            failed = failed[:limit]
+        
+        return failed
+    
+    async def retry_failed_workflow(self, study_uid: str) -> bool:
+        """Retry a failed workflow."""
+        workflow = self.completed_workflows.get(study_uid)
+        if not workflow or workflow.current_stage != WorkflowStage.FAILED:
+            return False
+        
+        # Move back to active workflows
+        self.active_workflows[study_uid] = workflow
+        del self.completed_workflows[study_uid]
+        
+        # Reset workflow state
+        workflow.current_stage = WorkflowStage.QUERYING
+        workflow.updated_at = datetime.now()
+        workflow.error_history.clear()
+        
+        # Queue for processing
+        task = WorkflowTask(
+            task_id=str(uuid.uuid4()),
+            study_uid=study_uid,
+            patient_id=workflow.patient_id,
+            stage=WorkflowStage.QUERYING,
+            priority=workflow.priority,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            metadata=workflow.metadata
+        )
+        
+        self.task_queue.put(task)
+        
+        self.logger.info(f"Retrying failed workflow: {study_uid}")
+        return True

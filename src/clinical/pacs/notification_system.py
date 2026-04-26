@@ -1,686 +1,680 @@
-"""Multi-channel clinical notification system for HistoCore PACS integration."""
+"""
+Clinical Notification System for PACS Integration
 
-from __future__ import annotations
+This module provides multi-channel notification capabilities for clinical staff,
+including email, SMS, and HL7 message delivery with priority handling and tracking.
+"""
 
+import asyncio
 import logging
-import re
 import smtplib
-import socket
-import threading
+import ssl
+from typing import Dict, List, Optional, Any, Set
+from dataclasses import dataclass, field
+from enum import Enum
+from datetime import datetime, timedelta
+from email.mime.text import MimeText
+from email.mime.multipart import MimeMultipart
+from email.mime.base import MimeBase
+from email import encoders
+import json
 import uuid
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from datetime import datetime
-from email.mime.text import MIMEText
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
-
-if TYPE_CHECKING:
-    from .data_models import AnalysisResults, OperationResult, StudyInfo
+import requests
+from urllib.parse import urljoin
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class NotificationEvent:
-    """Represents a single notification event to be dispatched across channels."""
+class NotificationChannel(Enum):
+    """Available notification channels."""
+    EMAIL = "email"
+    SMS = "sms"
+    HL7 = "hl7"
+    WEBHOOK = "webhook"
+    SLACK = "slack"
+    TEAMS = "teams"
 
-    event_id: str
-    event_type: str  # "analysis_complete", "critical_finding", "error", "system_alert"
-    study_instance_uid: str
-    patient_id: str
-    analysis_summary: str
-    result_url: Optional[str]
-    priority: str  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
-    timestamp: datetime
-    algorithm_name: Optional[str] = None
-    confidence_score: Optional[float] = None
-    findings: Optional[List[str]] = None
 
-    def is_critical(self) -> bool:
-        return self.priority == "CRITICAL"
+class NotificationPriority(Enum):
+    """Notification priority levels."""
+    LOW = 1
+    NORMAL = 2
+    HIGH = 3
+    URGENT = 4
+    CRITICAL = 5
 
-    def format_subject(self) -> str:
-        uid_short = (
-            self.study_instance_uid[:8]
-            if len(self.study_instance_uid) >= 8
-            else self.study_instance_uid
-        )
-        if self.is_critical():
-            return f"[CRITICAL] HistoCore AI: {uid_short}..."
-        return f"[AI Result] HistoCore: {uid_short}..."
 
-    def format_body(self) -> str:
-        lines = [
-            f"HistoCore AI Notification — {self.event_type}",
-            f"Priority: {self.priority}",
-            f"Timestamp: {self.timestamp.isoformat()}",
-            "",
-            f"Study UID: {self.study_instance_uid}",
-            f"Patient ID: {self.patient_id}",
-        ]
-        if self.algorithm_name:
-            lines.append(f"Algorithm: {self.algorithm_name}")
-        if self.confidence_score is not None:
-            lines.append(f"Confidence: {self.confidence_score:.4f}")
-        lines.append("")
-        lines.append(f"Summary: {self.analysis_summary}")
-        if self.findings:
-            lines.append("")
-            lines.append("Key Findings:")
-            for f_item in self.findings:
-                lines.append(f"  - {f_item}")
-        if self.result_url:
-            lines.append("")
-            lines.append(f"Results: {self.result_url}")
-        return "\n".join(lines)
+class NotificationStatus(Enum):
+    """Status of notification delivery."""
+    PENDING = "pending"
+    SENT = "sent"
+    DELIVERED = "delivered"
+    FAILED = "failed"
+    RETRY = "retry"
 
 
 @dataclass
-class DeliveryRecord:
-    """Tracks the delivery attempt state for a single channel/recipient pair."""
+class NotificationRecipient:
+    """Represents a notification recipient."""
+    id: str
+    name: str
+    role: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    hl7_endpoint: Optional[str] = None
+    webhook_url: Optional[str] = None
+    slack_user_id: Optional[str] = None
+    teams_user_id: Optional[str] = None
+    preferred_channels: List[NotificationChannel] = field(default_factory=list)
+    escalation_channels: List[NotificationChannel] = field(default_factory=list)
+    active_hours: Optional[Dict[str, Any]] = None
+    on_call_schedule: Optional[Dict[str, Any]] = None
 
-    record_id: str
-    event_id: str
-    channel: str  # "email", "sms", "hl7"
-    recipient: str
-    status: str  # "pending", "sent", "failed", "retrying"
-    attempts: int = 0
-    max_attempts: int = 3
-    sent_time: Optional[datetime] = None
-    last_attempt_time: Optional[datetime] = None
+
+@dataclass
+class NotificationTemplate:
+    """Template for notification content."""
+    template_id: str
+    name: str
+    subject_template: str
+    body_template: str
+    priority: NotificationPriority
+    channels: List[NotificationChannel]
+    escalation_delay_minutes: int = 15
+    max_retries: int = 3
+    retry_delay_minutes: int = 5
+
+
+@dataclass
+class NotificationMessage:
+    """Represents a notification message."""
+    message_id: str
+    template_id: str
+    recipient: NotificationRecipient
+    channel: NotificationChannel
+    priority: NotificationPriority
+    subject: str
+    content: str
+    study_uid: Optional[str] = None
+    patient_id: Optional[str] = None
+    created_at: datetime = field(default_factory=datetime.now)
+    scheduled_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    delivered_at: Optional[datetime] = None
+    status: NotificationStatus = NotificationStatus.PENDING
+    retry_count: int = 0
     error_message: Optional[str] = None
-
-    def can_retry(self) -> bool:
-        return self.status in ("failed", "retrying") and self.attempts < self.max_attempts
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-class NotificationChannel(ABC):
-    """Abstract base for all notification delivery channels."""
-
-    channel_name: str
-
-    @abstractmethod
-    def send(self, event: NotificationEvent, recipient: str) -> bool:
-        """Attempt delivery; returns True on success. Must not raise."""
-        ...
-
-    @abstractmethod
-    def validate_recipient(self, recipient: str) -> bool:
-        """Return True if recipient address/identifier is well-formed."""
-        ...
-
-
-class EmailNotifier(NotificationChannel):
-    """Delivers notifications via SMTP email."""
-
-    channel_name = "email"
-
-    def __init__(
-        self,
-        smtp_server: str = "localhost",
-        smtp_port: int = 25,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        use_tls: bool = False,
-        from_address: str = "histocore@hospital.org",
-    ):
-        self.smtp_server = smtp_server
-        self.smtp_port = smtp_port
-        self.username = username
-        self.password = password
-        self.use_tls = use_tls
-        self.from_address = from_address
-
-    def send(self, event: NotificationEvent, recipient: str) -> bool:
-        msg = MIMEText(event.format_body())
-        msg["Subject"] = event.format_subject()
-        msg["From"] = self.from_address
-        msg["To"] = recipient
-        if (
-            self.smtp_server in {"localhost", "127.0.0.1"}
-            and not self.username
-            and not self.password
-            and not self.use_tls
-        ):
-            logger.info("Email (sim) to %s for event %s", recipient, event.event_id)
-            return True
+class EmailNotificationHandler:
+    """Handles email notifications."""
+    
+    def __init__(self, smtp_config: Dict[str, Any]):
+        self.smtp_config = smtp_config
+        self.logger = logging.getLogger(f"{__name__}.EmailNotificationHandler")
+    
+    async def send_notification(self, message: NotificationMessage) -> bool:
+        """Send email notification."""
         try:
-            if self.use_tls:
-                conn = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=5)
+            if not message.recipient.email:
+                raise ValueError("Recipient has no email address")
+            
+            # Create message
+            msg = MimeMultipart()
+            msg['From'] = self.smtp_config.get('from_email', 'histocore@hospital.local')
+            msg['To'] = message.recipient.email
+            msg['Subject'] = message.subject
+            
+            # Add priority headers
+            if message.priority in [NotificationPriority.URGENT, NotificationPriority.CRITICAL]:
+                msg['X-Priority'] = '1'
+                msg['X-MSMail-Priority'] = 'High'
+                msg['Importance'] = 'High'
+            
+            # Add body
+            msg.attach(MimeText(message.content, 'html' if '<html>' in message.content else 'plain'))
+            
+            # Send email
+            smtp_server = self.smtp_config.get('server', 'localhost')
+            smtp_port = self.smtp_config.get('port', 587)
+            username = self.smtp_config.get('username')
+            password = self.smtp_config.get('password')
+            use_tls = self.smtp_config.get('use_tls', True)
+            
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                if use_tls:
+                    server.starttls()
+                
+                if username and password:
+                    server.login(username, password)
+                
+                server.send_message(msg)
+            
+            self.logger.info(f"Email sent to {message.recipient.email}: {message.subject}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to send email to {message.recipient.email}: {e}")
+            message.error_message = str(e)
+            return False
+
+
+class SMSNotificationHandler:
+    """Handles SMS notifications."""
+    
+    def __init__(self, sms_config: Dict[str, Any]):
+        self.sms_config = sms_config
+        self.logger = logging.getLogger(f"{__name__}.SMSNotificationHandler")
+    
+    async def send_notification(self, message: NotificationMessage) -> bool:
+        """Send SMS notification."""
+        try:
+            if not message.recipient.phone:
+                raise ValueError("Recipient has no phone number")
+            
+            # Use configured SMS service (Twilio, AWS SNS, etc.)
+            service = self.sms_config.get('service', 'twilio')
+            
+            if service == 'twilio':
+                return await self._send_twilio_sms(message)
+            elif service == 'aws_sns':
+                return await self._send_aws_sns_sms(message)
             else:
-                conn = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=5)
-            with conn:
-                if self.username and self.password and not self.use_tls:
-                    conn.login(self.username, self.password)
-                conn.sendmail(self.from_address, [recipient], msg.as_string())
-            logger.info("Email sent to %s for event %s", recipient, event.event_id)
-            return True
-        except (ConnectionRefusedError, OSError) as exc:
-            # No real SMTP server available — expected in simulation / test environments.
-            logger.debug("Email delivery skipped (no SMTP): %s", exc)
+                raise ValueError(f"Unsupported SMS service: {service}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to send SMS to {message.recipient.phone}: {e}")
+            message.error_message = str(e)
             return False
-        except Exception as exc:
-            logger.warning("Email delivery failed for %s: %s", recipient, exc)
-            return False
-
-    def validate_recipient(self, recipient: str) -> bool:
-        at_pos = recipient.find("@")
-        if at_pos < 1:
-            return False
-        domain = recipient[at_pos + 1 :]
-        return "." in domain
-
-
-class SMSNotifier(NotificationChannel):
-    """Delivers short SMS alerts via an HTTP gateway (e.g. Twilio-compatible)."""
-
-    channel_name = "sms"
-
-    def __init__(
-        self,
-        gateway_url: Optional[str] = None,
-        api_key: Optional[str] = None,
-        sender_id: str = "HISTOCORE",
-    ):
-        self.gateway_url = gateway_url
-        self.api_key = api_key
-        self.sender_id = sender_id
-
-    def _build_sms_body(self, event: NotificationEvent) -> str:
-        critical_flag = "[CRITICAL] " if event.is_critical() else ""
-        uid_short = event.study_instance_uid[:12]
-        body = f"{critical_flag}HistoCore: Study {uid_short} — {event.analysis_summary}"
-        return body[:160]
-
-    def send(self, event: NotificationEvent, recipient: str) -> bool:
-        body = self._build_sms_body(event)
-        if not self.gateway_url:
-            # Simulation mode — log and succeed without hitting an external service.
-            logger.info("SMS (sim) to %s: %s", recipient, body)
-            return True
+    
+    async def _send_twilio_sms(self, message: NotificationMessage) -> bool:
+        """Send SMS via Twilio."""
         try:
-            import json as _json
-            import urllib.request
-
-            payload = _json.dumps({"to": recipient, "from": self.sender_id, "body": body}).encode()
-            headers = {"Content-Type": "application/json"}
-            if self.api_key:
-                headers["Authorization"] = f"Bearer {self.api_key}"
-            req = urllib.request.Request(
-                self.gateway_url, data=payload, headers=headers, method="POST"
+            from twilio.rest import Client
+            
+            account_sid = self.sms_config.get('twilio_account_sid')
+            auth_token = self.sms_config.get('twilio_auth_token')
+            from_number = self.sms_config.get('twilio_from_number')
+            
+            client = Client(account_sid, auth_token)
+            
+            # Truncate message for SMS
+            sms_content = message.content[:160] + "..." if len(message.content) > 160 else message.content
+            
+            message_obj = client.messages.create(
+                body=sms_content,
+                from_=from_number,
+                to=message.recipient.phone
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                success = resp.status < 300
-            if success:
-                logger.info("SMS sent to %s for event %s", recipient, event.event_id)
-            else:
-                logger.warning("SMS gateway returned non-2xx for %s", recipient)
-            return success
-        except Exception as exc:
-            logger.warning("SMS delivery failed for %s: %s", recipient, exc)
-            return False
-
-    def validate_recipient(self, recipient: str) -> bool:
-        # Strip formatting characters before counting digits.
-        digits = re.sub(r"[\s\-]", "", recipient)
-        if digits.startswith("+"):
-            digits = digits[1:]
-        return digits.isdigit() and 7 <= len(digits) <= 15
-
-
-class HL7Notifier(NotificationChannel):
-    """Sends HL7 v2 ORU^R01 observation results via MLLP over TCP."""
-
-    channel_name = "hl7"
-
-    def __init__(
-        self,
-        endpoint_host: Optional[str] = None,
-        endpoint_port: int = 2575,
-        sending_facility: str = "HISTOCORE",
-        receiving_facility: str = "HOSPITAL",
-    ):
-        self.endpoint_host = endpoint_host
-        self.endpoint_port = endpoint_port
-        self.sending_facility = sending_facility
-        self.receiving_facility = receiving_facility
-
-    def send(self, event: NotificationEvent, recipient: str) -> bool:
-        message = self._build_hl7_message(event, recipient)
-        if not self.endpoint_host:
-            logger.info("HL7 (sim) to %s: %s", recipient, message[:120])
+            
+            self.logger.info(f"SMS sent to {message.recipient.phone}: {message_obj.sid}")
             return True
-        return self._send_mllp(self.endpoint_host, self.endpoint_port, message)
-
-    def validate_recipient(self, recipient: str) -> bool:
-        return bool(re.match(r"^[A-Za-z0-9_\-]{1,20}$", recipient))
-
-    def _build_hl7_message(self, event: NotificationEvent, receiving_app: str) -> str:
-        now = datetime.now().strftime("%Y%m%d%H%M%S")
-        msg_id = uuid.uuid4().hex[:10].upper()
-        # Truncate free-text fields to avoid segment overflow.
-        summary = event.analysis_summary.replace("|", " ").replace("\n", " ")[:100]
-        study_uid = event.study_instance_uid.replace("|", "")
-        patient_id = event.patient_id.replace("|", "")
-
-        msh = (
-            f"MSH|^~\\&|{self.sending_facility}|{self.sending_facility}|"
-            f"{receiving_app}|{self.receiving_facility}|{now}||ORU^R01|{msg_id}|P|2.3"
-        )
-        pid = f"PID|1||{patient_id}^^^{self.receiving_facility}||||||||||||||"
-        obr = f"OBR|1||{study_uid}|AI_ANALYSIS^AI Analysis|||{now}"
-        obx = (
-            f"OBX|1|ST|AI_RESULT^AI Analysis Result||{summary}||||||F|||{now}|"
-            f"{self.sending_facility}"
-        )
-        return "\r".join([msh, pid, obr, obx]) + "\r"
-
-    def _send_mllp(self, host: str, port: int, message: str) -> bool:
-        mllp_frame = b"\x0b" + message.encode("utf-8") + b"\x1c\x0d"
+            
+        except Exception as e:
+            self.logger.error(f"Twilio SMS failed: {e}")
+            return False
+    
+    async def _send_aws_sns_sms(self, message: NotificationMessage) -> bool:
+        """Send SMS via AWS SNS."""
         try:
-            with socket.create_connection((host, port), timeout=10) as sock:
-                sock.sendall(mllp_frame)
-                # Read ACK — minimal read; HL7 ACK may be brief.
-                sock.recv(4096)
-            logger.info("HL7 MLLP sent to %s:%d", host, port)
+            import boto3
+            
+            sns = boto3.client(
+                'sns',
+                aws_access_key_id=self.sms_config.get('aws_access_key_id'),
+                aws_secret_access_key=self.sms_config.get('aws_secret_access_key'),
+                region_name=self.sms_config.get('aws_region', 'us-east-1')
+            )
+            
+            # Truncate message for SMS
+            sms_content = message.content[:160] + "..." if len(message.content) > 160 else message.content
+            
+            response = sns.publish(
+                PhoneNumber=message.recipient.phone,
+                Message=sms_content
+            )
+            
+            self.logger.info(f"AWS SNS SMS sent to {message.recipient.phone}: {response['MessageId']}")
             return True
-        except Exception as exc:
-            logger.warning("HL7 MLLP delivery failed to %s:%d: %s", host, port, exc)
+            
+        except Exception as e:
+            self.logger.error(f"AWS SNS SMS failed: {e}")
             return False
 
 
-class DeliveryTracker:
-    """Thread-safe store of delivery attempt records."""
+class HL7NotificationHandler:
+    """Handles HL7 message notifications."""
+    
+    def __init__(self, hl7_config: Dict[str, Any]):
+        self.hl7_config = hl7_config
+        self.logger = logging.getLogger(f"{__name__}.HL7NotificationHandler")
+    
+    async def send_notification(self, message: NotificationMessage) -> bool:
+        """Send HL7 notification."""
+        try:
+            if not message.recipient.hl7_endpoint:
+                raise ValueError("Recipient has no HL7 endpoint")
+            
+            # Create HL7 message
+            hl7_message = self._create_hl7_message(message)
+            
+            # Send to HL7 endpoint
+            response = requests.post(
+                message.recipient.hl7_endpoint,
+                data=hl7_message,
+                headers={'Content-Type': 'application/hl7-v2'},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                self.logger.info(f"HL7 message sent to {message.recipient.hl7_endpoint}")
+                return True
+            else:
+                raise Exception(f"HL7 endpoint returned status {response.status_code}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to send HL7 message: {e}")
+            message.error_message = str(e)
+            return False
+    
+    def _create_hl7_message(self, message: NotificationMessage) -> str:
+        """Create HL7 message format."""
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        
+        # Basic HL7 ADT message structure
+        hl7_msg = f"""MSH|^~\\&|HISTOCORE|HOSPITAL|{message.recipient.id}|DEPT|{timestamp}||ADT^A08|{message.message_id}|P|2.5
+EVN||{timestamp}|||{message.recipient.id}
+PID|||{message.patient_id or 'UNKNOWN'}||PATIENT^NAME||19700101|M|||123 MAIN ST^^CITY^ST^12345
+OBX|1|TX|NOTE||{message.content}"""
+        
+        return hl7_msg
 
-    def __init__(self):
-        self._records: Dict[str, DeliveryRecord] = {}
-        self._event_records: Dict[str, List[str]] = {}
-        self._lock = threading.Lock()
 
-    def create_record(
-        self,
-        event_id: str,
-        channel: str,
-        recipient: str,
-        max_attempts: int = 3,
-    ) -> DeliveryRecord:
-        record = DeliveryRecord(
-            record_id=str(uuid.uuid4()),
-            event_id=event_id,
-            channel=channel,
-            recipient=recipient,
-            status="pending",
-            max_attempts=max_attempts,
-        )
-        with self._lock:
-            self._records[record.record_id] = record
-            self._event_records.setdefault(event_id, []).append(record.record_id)
-        return record
+class WebhookNotificationHandler:
+    """Handles webhook notifications."""
+    
+    def __init__(self, webhook_config: Dict[str, Any]):
+        self.webhook_config = webhook_config
+        self.logger = logging.getLogger(f"{__name__}.WebhookNotificationHandler")
+    
+    async def send_notification(self, message: NotificationMessage) -> bool:
+        """Send webhook notification."""
+        try:
+            webhook_url = message.recipient.webhook_url or self.webhook_config.get('default_url')
+            if not webhook_url:
+                raise ValueError("No webhook URL configured")
+            
+            # Create webhook payload
+            payload = {
+                'message_id': message.message_id,
+                'recipient': {
+                    'id': message.recipient.id,
+                    'name': message.recipient.name,
+                    'role': message.recipient.role
+                },
+                'priority': message.priority.name,
+                'subject': message.subject,
+                'content': message.content,
+                'study_uid': message.study_uid,
+                'patient_id': message.patient_id,
+                'timestamp': message.created_at.isoformat(),
+                'metadata': message.metadata
+            }
+            
+            # Send webhook
+            headers = {
+                'Content-Type': 'application/json',
+                'User-Agent': 'HistoCore-PACS/1.0'
+            }
+            
+            # Add authentication if configured
+            if self.webhook_config.get('auth_token'):
+                headers['Authorization'] = f"Bearer {self.webhook_config['auth_token']}"
+            
+            response = requests.post(
+                webhook_url,
+                json=payload,
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201, 202]:
+                self.logger.info(f"Webhook sent to {webhook_url}")
+                return True
+            else:
+                raise Exception(f"Webhook returned status {response.status_code}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to send webhook: {e}")
+            message.error_message = str(e)
+            return False
 
-    def mark_sent(self, record_id: str) -> None:
-        with self._lock:
-            rec = self._records.get(record_id)
-            if rec:
-                rec.status = "sent"
-                rec.sent_time = datetime.now()
-                rec.last_attempt_time = rec.sent_time
-                rec.attempts += 1
 
-    def mark_failed(self, record_id: str, error_message: str) -> None:
-        with self._lock:
-            rec = self._records.get(record_id)
-            if rec:
-                rec.attempts += 1
-                rec.last_attempt_time = datetime.now()
-                rec.error_message = error_message
-                rec.status = "retrying" if rec.attempts < rec.max_attempts else "failed"
-
-    def get_pending_retries(self) -> List[DeliveryRecord]:
-        with self._lock:
-            return [r for r in self._records.values() if r.can_retry()]
-
-    def get_event_status(self, event_id: str) -> Dict[str, Any]:
-        with self._lock:
-            record_ids = self._event_records.get(event_id, [])
-            records = [self._records[rid] for rid in record_ids if rid in self._records]
-        sent = sum(1 for r in records if r.status == "sent")
-        failed = sum(1 for r in records if r.status == "failed")
-        pending = sum(1 for r in records if r.status in ("pending", "retrying"))
+class NotificationDeliveryTracker:
+    """Tracks notification delivery status and handles retries."""
+    
+    def __init__(self, max_retries: int = 3, retry_delay_minutes: int = 5):
+        self.max_retries = max_retries
+        self.retry_delay_minutes = retry_delay_minutes
+        self.pending_messages: Dict[str, NotificationMessage] = {}
+        self.delivery_history: List[NotificationMessage] = []
+        self.logger = logging.getLogger(f"{__name__}.NotificationDeliveryTracker")
+    
+    def track_message(self, message: NotificationMessage):
+        """Start tracking a message."""
+        self.pending_messages[message.message_id] = message
+        message.status = NotificationStatus.PENDING
+    
+    def mark_sent(self, message_id: str) -> bool:
+        """Mark message as sent."""
+        if message_id in self.pending_messages:
+            message = self.pending_messages[message_id]
+            message.status = NotificationStatus.SENT
+            message.sent_at = datetime.now()
+            return True
+        return False
+    
+    def mark_delivered(self, message_id: str) -> bool:
+        """Mark message as delivered."""
+        if message_id in self.pending_messages:
+            message = self.pending_messages[message_id]
+            message.status = NotificationStatus.DELIVERED
+            message.delivered_at = datetime.now()
+            
+            # Move to history
+            self.delivery_history.append(message)
+            del self.pending_messages[message_id]
+            
+            # Keep only recent history (last 1000 messages)
+            if len(self.delivery_history) > 1000:
+                self.delivery_history = self.delivery_history[-1000:]
+            
+            return True
+        return False
+    
+    def mark_failed(self, message_id: str, error_message: str) -> bool:
+        """Mark message as failed and schedule retry if applicable."""
+        if message_id in self.pending_messages:
+            message = self.pending_messages[message_id]
+            message.error_message = error_message
+            message.retry_count += 1
+            
+            if message.retry_count <= self.max_retries:
+                message.status = NotificationStatus.RETRY
+                message.scheduled_at = datetime.now() + timedelta(minutes=self.retry_delay_minutes)
+                self.logger.info(f"Scheduling retry {message.retry_count}/{self.max_retries} for message {message_id}")
+            else:
+                message.status = NotificationStatus.FAILED
+                self.delivery_history.append(message)
+                del self.pending_messages[message_id]
+                self.logger.error(f"Message {message_id} failed after {self.max_retries} retries")
+            
+            return True
+        return False
+    
+    def get_retry_messages(self) -> List[NotificationMessage]:
+        """Get messages that need to be retried."""
+        now = datetime.now()
+        retry_messages = []
+        
+        for message in self.pending_messages.values():
+            if (message.status == NotificationStatus.RETRY and
+                message.scheduled_at and
+                message.scheduled_at <= now):
+                retry_messages.append(message)
+        
+        return retry_messages
+    
+    def get_delivery_stats(self) -> Dict[str, Any]:
+        """Get delivery statistics."""
+        total_messages = len(self.delivery_history) + len(self.pending_messages)
+        delivered_count = len([m for m in self.delivery_history if m.status == NotificationStatus.DELIVERED])
+        failed_count = len([m for m in self.delivery_history if m.status == NotificationStatus.FAILED])
+        pending_count = len(self.pending_messages)
+        
         return {
-            "event_id": event_id,
-            "total_channels": len(records),
-            "sent": sent,
-            "failed": failed,
-            "pending": pending,
+            'total_messages': total_messages,
+            'delivered_count': delivered_count,
+            'failed_count': failed_count,
+            'pending_count': pending_count,
+            'delivery_rate': (delivered_count / total_messages * 100) if total_messages > 0 else 0,
+            'failure_rate': (failed_count / total_messages * 100) if total_messages > 0 else 0
         }
 
-    def get_statistics(self) -> Dict[str, Any]:
-        with self._lock:
-            records = list(self._records.values())
-        by_channel: Dict[str, Dict[str, int]] = {}
-        for rec in records:
-            ch = by_channel.setdefault(rec.channel, {"sent": 0, "failed": 0, "pending": 0})
-            if rec.status == "sent":
-                ch["sent"] += 1
-            elif rec.status == "failed":
-                ch["failed"] += 1
-            else:
-                ch["pending"] += 1
-        return {
-            "total_records": len(records),
-            "sent": sum(1 for r in records if r.status == "sent"),
-            "failed": sum(1 for r in records if r.status == "failed"),
-            "pending": sum(1 for r in records if r.status in ("pending", "retrying")),
-            "by_channel": by_channel,
-        }
 
-
-class NotificationSystem:
-    """Orchestrates multi-channel clinical alerts for AI analysis events."""
-
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        cfg = config or {}
-        self.channels: Dict[str, NotificationChannel] = {}
-        self.tracker = DeliveryTracker()
-        self._lock = threading.Lock()
-
-        # role → channel → [address]
-        self._recipients: Dict[str, Dict[str, List[str]]] = {}
-
-        self._critical_threshold: float = cfg.get("critical_finding_threshold", 0.9)
-        self._escalation_delay_seconds: int = cfg.get("escalation_delay_seconds", 300)
-
-        # Honour channel sub-configs if provided up front.
-        if "email" in cfg and cfg["email"].get("enabled", False):
-            email_cfg = cfg["email"]
-            self.configure_email(
-                smtp_server=email_cfg.get("smtp_server", "localhost"),
-                smtp_port=email_cfg.get("smtp_port", 587),
-                username=email_cfg.get("username"),
-                password=email_cfg.get("password"),
-                use_tls=email_cfg.get("use_tls", True),
-                from_address=email_cfg.get("from_address", "histocore@hospital.org"),
-            )
-        if "sms" in cfg and cfg["sms"].get("enabled", False):
-            sms_cfg = cfg["sms"]
-            self.configure_sms(
-                gateway_url=sms_cfg.get("gateway_url"),
-                api_key=sms_cfg.get("api_key"),
-            )
-        if "hl7" in cfg and cfg["hl7"].get("enabled", False):
-            hl7_cfg = cfg["hl7"]
-            self.configure_hl7(
-                endpoint_host=hl7_cfg.get("endpoint_host"),
-                endpoint_port=hl7_cfg.get("endpoint_port", 2575),
-            )
-
-        # Bulk-load recipients from config.
-        for role, addresses in cfg.get("recipients", {}).items():
-            for entry in addresses:
-                # entry may be a dict {"channel": ..., "address": ...} or a bare string.
-                if isinstance(entry, dict):
-                    self.add_recipient(role, entry["channel"], entry["address"])
-
-    def configure_email(
-        self,
-        smtp_server: str,
-        smtp_port: int = 587,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        use_tls: bool = True,
-        from_address: str = "histocore@hospital.org",
-    ) -> None:
-        self.channels["email"] = EmailNotifier(
-            smtp_server=smtp_server,
-            smtp_port=smtp_port,
-            username=username,
-            password=password,
-            use_tls=use_tls,
-            from_address=from_address,
+class ClinicalNotificationSystem:
+    """Main clinical notification system."""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.logger = logging.getLogger(f"{__name__}.ClinicalNotificationSystem")
+        
+        # Initialize handlers
+        self.handlers = {}
+        if config.get('email'):
+            self.handlers[NotificationChannel.EMAIL] = EmailNotificationHandler(config['email'])
+        if config.get('sms'):
+            self.handlers[NotificationChannel.SMS] = SMSNotificationHandler(config['sms'])
+        if config.get('hl7'):
+            self.handlers[NotificationChannel.HL7] = HL7NotificationHandler(config['hl7'])
+        if config.get('webhook'):
+            self.handlers[NotificationChannel.WEBHOOK] = WebhookNotificationHandler(config['webhook'])
+        
+        # Initialize delivery tracker
+        self.delivery_tracker = NotificationDeliveryTracker(
+            max_retries=config.get('max_retries', 3),
+            retry_delay_minutes=config.get('retry_delay_minutes', 5)
         )
-
-    def configure_sms(
-        self,
-        gateway_url: Optional[str] = None,
-        api_key: Optional[str] = None,
-    ) -> None:
-        self.channels["sms"] = SMSNotifier(gateway_url=gateway_url, api_key=api_key)
-
-    def configure_hl7(
-        self,
-        endpoint_host: Optional[str] = None,
-        endpoint_port: int = 2575,
-    ) -> None:
-        self.channels["hl7"] = HL7Notifier(
-            endpoint_host=endpoint_host,
-            endpoint_port=endpoint_port,
-        )
-
-    def add_recipient(self, role: str, channel: str, address: str) -> None:
-        """Register a recipient address for a role/channel combination.
-
-        Validates the address format before storing — invalid addresses are logged
-        and silently dropped rather than raising so callers don't have to handle
-        exceptions from configuration time.
-        """
-        notifier = self.channels.get(channel)
-        if notifier and not notifier.validate_recipient(address):
-            logger.warning("Invalid %s address for role %s: %s", channel, role, address)
+        
+        # Load recipients and templates
+        self.recipients: Dict[str, NotificationRecipient] = {}
+        self.templates: Dict[str, NotificationTemplate] = {}
+        self._load_recipients()
+        self._load_templates()
+        
+        # Background processing
+        self._running = False
+        self._processing_task = None
+    
+    async def start(self):
+        """Start the notification system."""
+        if self._running:
             return
-        with self._lock:
-            role_map = self._recipients.setdefault(role, {})
-            role_map.setdefault(channel, [])
-            if address not in role_map[channel]:
-                role_map[channel].append(address)
-
-    def notify_analysis_complete(
+        
+        self._running = True
+        self._processing_task = asyncio.create_task(self._processing_loop())
+        self.logger.info("Clinical notification system started")
+    
+    async def stop(self):
+        """Stop the notification system."""
+        self._running = False
+        
+        if self._processing_task:
+            self._processing_task.cancel()
+            try:
+                await self._processing_task
+            except asyncio.CancelledError:
+                pass
+        
+        self.logger.info("Clinical notification system stopped")
+    
+    async def send_notification(
         self,
-        analysis_results: AnalysisResults,
-        study_info: Optional[StudyInfo] = None,
-        result_url: Optional[str] = None,
-    ) -> OperationResult:
-        from .data_models import OperationResult
-
-        event = self._create_event_from_analysis(analysis_results, study_info, result_url)
-        op_id = str(uuid.uuid4())
-        sent, failed = self._broadcast_event(event)
-        return OperationResult.success_result(
-            operation_id=op_id,
-            message=f"Analysis complete notification dispatched: {sent} sent, {failed} failed",
-            data={"event_id": event.event_id, "sent": sent, "failed": failed},
-        )
-
-    def notify_critical_finding(
-        self,
-        study_instance_uid: str,
-        patient_id: str,
-        finding_description: str,
-        confidence: float,
-    ) -> OperationResult:
-        from .data_models import OperationResult
-
-        event = NotificationEvent(
-            event_id=str(uuid.uuid4()),
-            event_type="critical_finding",
-            study_instance_uid=study_instance_uid,
-            patient_id=patient_id,
-            analysis_summary=finding_description,
-            result_url=None,
-            priority="CRITICAL",
-            timestamp=datetime.now(),
-            confidence_score=confidence,
-            findings=[finding_description],
-        )
-        op_id = str(uuid.uuid4())
-        sent, failed = self._broadcast_event(event, include_admins=True)
-        return OperationResult.success_result(
-            operation_id=op_id,
-            message=f"Critical finding notification dispatched: {sent} sent, {failed} failed",
-            data={"event_id": event.event_id, "sent": sent, "failed": failed},
-        )
-
-    def notify_system_error(self, error_message: str, component: str) -> OperationResult:
-        from .data_models import OperationResult
-
-        event = NotificationEvent(
-            event_id=str(uuid.uuid4()),
-            event_type="error",
-            study_instance_uid="SYSTEM",
-            patient_id="SYSTEM",
-            analysis_summary=f"Component {component} error: {error_message}",
-            result_url=None,
-            priority="HIGH",
-            timestamp=datetime.now(),
-            findings=[f"Component: {component}", f"Error: {error_message}"],
-        )
-        op_id = str(uuid.uuid4())
-        sent, failed = self._broadcast_to_roles(event, roles=["admin"])
-        return OperationResult.success_result(
-            operation_id=op_id,
-            message=f"System error notification dispatched: {sent} sent, {failed} failed",
-            data={"event_id": event.event_id, "sent": sent, "failed": failed},
-        )
-
-    def retry_failed_deliveries(self) -> int:
-        retries = self.tracker.get_pending_retries()
-        success_count = 0
-        for record in retries:
-            channel = self.channels.get(record.channel)
-            if not channel:
+        template_id: str,
+        recipient_ids: List[str],
+        context: Dict[str, Any],
+        priority_override: Optional[NotificationPriority] = None,
+        study_uid: Optional[str] = None,
+        patient_id: Optional[str] = None
+    ) -> List[str]:
+        """Send notification to recipients."""
+        template = self.templates.get(template_id)
+        if not template:
+            raise ValueError(f"Template not found: {template_id}")
+        
+        message_ids = []
+        
+        for recipient_id in recipient_ids:
+            recipient = self.recipients.get(recipient_id)
+            if not recipient:
+                self.logger.warning(f"Recipient not found: {recipient_id}")
                 continue
-            # Reconstruct a minimal stub event for re-delivery; full event data is
-            # unavailable here, so we use the stored summary placeholder.
-            stub_event = NotificationEvent(
-                event_id=record.event_id,
-                event_type="retry",
-                study_instance_uid="UNKNOWN",
-                patient_id="UNKNOWN",
-                analysis_summary="(retry)",
-                result_url=None,
-                priority="HIGH",
-                timestamp=datetime.now(),
-            )
-            ok = channel.send(stub_event, record.recipient)
-            if ok:
-                self.tracker.mark_sent(record.record_id)
-                success_count += 1
-            else:
-                self.tracker.mark_failed(record.record_id, "retry failed")
-        return success_count
-
-    def get_delivery_statistics(self) -> Dict[str, Any]:
-        return self.tracker.get_statistics()
-
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
-
-    def _send_notification(
-        self, event: NotificationEvent, channel_name: str, recipient: str
-    ) -> bool:
-        channel = self.channels.get(channel_name)
-        if not channel:
-            return False
-        record = self.tracker.create_record(event.event_id, channel_name, recipient)
+            
+            # Determine channels to use
+            channels = recipient.preferred_channels or template.channels
+            priority = priority_override or template.priority
+            
+            # Create messages for each channel
+            for channel in channels:
+                if channel not in self.handlers:
+                    self.logger.warning(f"Handler not available for channel: {channel}")
+                    continue
+                
+                # Render template
+                subject = self._render_template(template.subject_template, context)
+                content = self._render_template(template.body_template, context)
+                
+                # Create message
+                message = NotificationMessage(
+                    message_id=str(uuid.uuid4()),
+                    template_id=template_id,
+                    recipient=recipient,
+                    channel=channel,
+                    priority=priority,
+                    subject=subject,
+                    content=content,
+                    study_uid=study_uid,
+                    patient_id=patient_id,
+                    metadata=context
+                )
+                
+                # Track message
+                self.delivery_tracker.track_message(message)
+                message_ids.append(message.message_id)
+                
+                # Send immediately for critical messages
+                if priority == NotificationPriority.CRITICAL:
+                    await self._send_message(message)
+        
+        return message_ids
+    
+    async def _processing_loop(self):
+        """Background processing loop for retries and escalations."""
+        while self._running:
+            try:
+                # Process retry messages
+                retry_messages = self.delivery_tracker.get_retry_messages()
+                for message in retry_messages:
+                    await self._send_message(message)
+                
+                # Check for escalations
+                await self._check_escalations()
+                
+                await asyncio.sleep(60)  # Check every minute
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self.logger.error(f"Error in notification processing loop: {e}")
+                await asyncio.sleep(10)
+    
+    async def _send_message(self, message: NotificationMessage) -> bool:
+        """Send a single message."""
         try:
-            ok = channel.send(event, recipient)
-        except Exception as exc:
-            # Belt-and-suspenders: channels should not raise, but guard anyway.
-            logger.error("Unexpected error from channel %s: %s", channel_name, exc)
-            ok = False
-        if ok:
-            self.tracker.mark_sent(record.record_id)
-        else:
-            self.tracker.mark_failed(record.record_id, "send returned False")
-        return ok
-
-    def _broadcast_event(self, event: NotificationEvent, include_admins: bool = False) -> tuple:
-        """Send event to all pathologist recipients (and optionally admins) on all channels."""
-        roles = ["pathologist"]
-        if include_admins:
-            roles.append("admin")
-        return self._broadcast_to_roles(event, roles=roles)
-
-    def _broadcast_to_roles(self, event: NotificationEvent, roles: List[str]) -> tuple:
-        sent = 0
-        failed = 0
-        with self._lock:
-            snapshot = {r: dict(self._recipients.get(r, {})) for r in roles}
-
-        for channel_name in list(self.channels):
-            # Collect all unique addresses across the requested roles for this channel.
-            addresses: List[str] = []
-            for role_map in snapshot.values():
-                for addr in role_map.get(channel_name, []):
-                    if addr not in addresses:
-                        addresses.append(addr)
-
-            # When no named recipients are registered, send a single "broadcast"
-            # placeholder so delivery tracking reflects the channel was attempted.
-            if not addresses:
-                addresses = [f"broadcast@{channel_name}"]
-
-            for addr in addresses:
-                ok = self._send_notification(event, channel_name, addr)
-                if ok:
-                    sent += 1
-                else:
-                    failed += 1
-        return sent, failed
-
-    def _create_event_from_analysis(
-        self,
-        analysis_results,
-        study_info,
-        result_url: Optional[str],
-    ) -> NotificationEvent:
-        patient_id = getattr(study_info, "patient_id", None) or getattr(
-            analysis_results, "patient_id", "UNKNOWN"
-        )
-
-        # Determine priority from urgency levels and confidence score.
-        has_urgent = any(
-            getattr(rec, "urgency_level", "") == "URGENT"
-            for rec in (analysis_results.diagnostic_recommendations or [])
-        )
-        above_threshold = (
-            analysis_results.confidence_score is not None
-            and analysis_results.confidence_score >= self._critical_threshold
-        )
-        if has_urgent or above_threshold:
-            priority = "CRITICAL"
-        elif (
-            analysis_results.confidence_score is not None
-            and analysis_results.confidence_score >= 0.7
-        ):
-            priority = "HIGH"
-        else:
-            priority = "MEDIUM"
-
-        findings = [
-            rec.recommendation_text for rec in (analysis_results.diagnostic_recommendations or [])
-        ]
-
-        summary_parts = []
-        if analysis_results.primary_diagnosis:
-            summary_parts.append(f"Diagnosis: {analysis_results.primary_diagnosis}")
-        summary_parts.append(
-            f"Confidence: {analysis_results.confidence_score:.2f}"
-            if analysis_results.confidence_score is not None
-            else "Confidence: N/A"
-        )
-        analysis_summary = "; ".join(summary_parts) if summary_parts else "Analysis complete"
-
-        return NotificationEvent(
-            event_id=str(uuid.uuid4()),
-            event_type="analysis_complete",
-            study_instance_uid=analysis_results.study_instance_uid,
-            patient_id=patient_id,
-            analysis_summary=analysis_summary,
-            result_url=result_url,
-            priority=priority,
-            timestamp=datetime.now(),
-            algorithm_name=getattr(analysis_results, "algorithm_name", None),
-            confidence_score=analysis_results.confidence_score,
-            findings=findings if findings else None,
-        )
+            handler = self.handlers.get(message.channel)
+            if not handler:
+                raise ValueError(f"No handler for channel: {message.channel}")
+            
+            success = await handler.send_notification(message)
+            
+            if success:
+                self.delivery_tracker.mark_sent(message.message_id)
+                # For now, assume delivery (in real implementation, would track actual delivery)
+                self.delivery_tracker.mark_delivered(message.message_id)
+            else:
+                self.delivery_tracker.mark_failed(message.message_id, message.error_message or "Unknown error")
+            
+            return success
+            
+        except Exception as e:
+            self.delivery_tracker.mark_failed(message.message_id, str(e))
+            return False
+    
+    async def _check_escalations(self):
+        """Check for messages that need escalation."""
+        # Implementation would check for undelivered high-priority messages
+        # and escalate to backup channels or administrators
+        pass
+    
+    def _render_template(self, template: str, context: Dict[str, Any]) -> str:
+        """Render template with context variables."""
+        try:
+            # Simple template rendering (in production, use Jinja2 or similar)
+            rendered = template
+            for key, value in context.items():
+                rendered = rendered.replace(f"{{{key}}}", str(value))
+            return rendered
+        except Exception as e:
+            self.logger.error(f"Template rendering failed: {e}")
+            return template
+    
+    def _load_recipients(self):
+        """Load notification recipients from configuration."""
+        recipients_config = self.config.get('recipients', [])
+        for recipient_data in recipients_config:
+            recipient = NotificationRecipient(
+                id=recipient_data['id'],
+                name=recipient_data['name'],
+                role=recipient_data['role'],
+                email=recipient_data.get('email'),
+                phone=recipient_data.get('phone'),
+                hl7_endpoint=recipient_data.get('hl7_endpoint'),
+                webhook_url=recipient_data.get('webhook_url'),
+                preferred_channels=[
+                    NotificationChannel(ch) for ch in recipient_data.get('preferred_channels', [])
+                ],
+                escalation_channels=[
+                    NotificationChannel(ch) for ch in recipient_data.get('escalation_channels', [])
+                ]
+            )
+            self.recipients[recipient.id] = recipient
+    
+    def _load_templates(self):
+        """Load notification templates from configuration."""
+        templates_config = self.config.get('templates', [])
+        for template_data in templates_config:
+            template = NotificationTemplate(
+                template_id=template_data['template_id'],
+                name=template_data['name'],
+                subject_template=template_data['subject_template'],
+                body_template=template_data['body_template'],
+                priority=NotificationPriority(template_data.get('priority', 2)),
+                channels=[
+                    NotificationChannel(ch) for ch in template_data.get('channels', ['email'])
+                ],
+                escalation_delay_minutes=template_data.get('escalation_delay_minutes', 15),
+                max_retries=template_data.get('max_retries', 3)
+            )
+            self.templates[template.template_id] = template
+    
+    def get_delivery_statistics(self) -> Dict[str, Any]:
+        """Get notification delivery statistics."""
+        return self.delivery_tracker.get_delivery_stats()
+    
+    def get_pending_notifications(self) -> List[Dict[str, Any]]:
+        """Get list of pending notifications."""
+        pending = []
+        for message in self.delivery_tracker.pending_messages.values():
+            pending.append({
+                'message_id': message.message_id,
+                'recipient': message.recipient.name,
+                'channel': message.channel.value,
+                'priority': message.priority.name,
+                'subject': message.subject,
+                'status': message.status.value,
+                'retry_count': message.retry_count,
+                'created_at': message.created_at.isoformat(),
+                'scheduled_at': message.scheduled_at.isoformat() if message.scheduled_at else None
+            })
+        return pending
