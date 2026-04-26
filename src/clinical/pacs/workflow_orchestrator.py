@@ -20,8 +20,8 @@ import uuid
 
 from .error_handling import PACSErrorManager, ErrorContext, ErrorType, ErrorSeverity
 from .failover import FailoverManager, PACSEndpoint
-from ..workflow import ClinicalWorkflowSystem, WorkflowStatus, StudyMetadata
-from ...data.wsi_pipeline.pipeline import WSIPipeline
+from ..workflow import ClinicalWorkflowSystem
+from ...data.wsi_pipeline import BatchProcessor
 
 
 logger = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ class WorkflowOrchestrator:
         failover_manager: FailoverManager,
         error_manager: PACSErrorManager,
         clinical_workflow: ClinicalWorkflowSystem,
-        wsi_pipeline: WSIPipeline,
+        wsi_pipeline: BatchProcessor,
         polling_interval: float = 60.0,
         max_concurrent_workflows: int = 10,
         max_concurrent_retrievals: int = 5

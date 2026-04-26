@@ -245,11 +245,8 @@ HistoCore AI Pathology System
         )
         await self.notification_system.start()
         
-        # Initialize clinical workflow system
-        clinical_workflow = ClinicalWorkflowSystem()
-        
         # Note: In a real implementation, we would initialize the full PACSService
-        # For demo purposes, we'll simulate the key components
+        # For demo purposes, we'll simulate the key components without full clinical workflow
         
         print("✅ Systems initialized successfully")
         
