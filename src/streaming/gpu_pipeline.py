@@ -14,6 +14,19 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# Import advanced memory optimization components
+try:
+    from .memory_optimizer import (
+        MemoryPoolManager,
+        MemoryPoolStrategy,
+        SmartGarbageCollector,
+        MemoryUsagePredictor
+    )
+    MEMORY_OPTIMIZER_AVAILABLE = True
+except ImportError:
+    MEMORY_OPTIMIZER_AVAILABLE = False
+    logger.warning("Advanced memory optimizer not available")
+
 
 @dataclass
 class ThroughputMetrics:
@@ -162,7 +175,8 @@ class GPUPipeline:
                  batch_size: int = 64, 
                  gpu_ids: Optional[List[int]] = None,
                  memory_limit_gb: Optional[float] = None,
-                 enable_fp16: bool = False):
+                 enable_fp16: bool = False,
+                 enable_advanced_memory_optimization: bool = True):
         """Initialize GPU pipeline.
         
         Args:
@@ -171,10 +185,12 @@ class GPUPipeline:
             gpu_ids: List of GPU IDs to use (None = auto-detect)
             memory_limit_gb: GPU memory limit in GB
             enable_fp16: Enable FP16 precision for memory reduction
+            enable_advanced_memory_optimization: Enable advanced memory pool and GC
         """
         self.model = model
         self.initial_batch_size = batch_size
         self.enable_fp16 = enable_fp16
+        self.enable_advanced_memory_optimization = enable_advanced_memory_optimization
         
         # Setup devices
         self.devices = self._setup_devices(gpu_ids)
@@ -204,11 +220,47 @@ class GPUPipeline:
             max_batch_size=256
         )
         
+        # Advanced memory optimization components
+        self.memory_pool = None
+        self.smart_gc = None
+        self.memory_predictor = None
+        
+        if self.enable_advanced_memory_optimization and MEMORY_OPTIMIZER_AVAILABLE:
+            try:
+                # Initialize memory pool
+                pool_size_gb = memory_limit_gb * 0.3 if memory_limit_gb else 1.0
+                self.memory_pool = MemoryPoolManager(
+                    device=self.primary_device,
+                    initial_pool_size_gb=pool_size_gb,
+                    max_pool_size_gb=memory_limit_gb if memory_limit_gb else 4.0,
+                    strategy=MemoryPoolStrategy.ADAPTIVE
+                )
+                
+                # Initialize smart garbage collector
+                self.smart_gc = SmartGarbageCollector(
+                    device=self.primary_device,
+                    memory_pressure_threshold=0.8,
+                    collection_interval_seconds=10.0,
+                    enable_adaptive=True
+                )
+                
+                # Initialize memory predictor
+                self.memory_predictor = MemoryUsagePredictor(enable_learning=True)
+                
+                logger.info("Advanced memory optimization enabled")
+            except Exception as e:
+                logger.warning(f"Failed to initialize advanced memory optimization: {e}")
+                self.enable_advanced_memory_optimization = False
+        
         # Performance tracking
         self.total_patches_processed = 0
         self.total_batches_processed = 0
         self.total_processing_time = 0.0
         self.batch_times = deque(maxlen=100)
+        
+        # Memory tracking for predictor
+        self.peak_memory_gb = 0.0
+        self.memory_samples = deque(maxlen=100)
         
         # Async processing
         self.processing_queue = asyncio.Queue()
@@ -258,6 +310,13 @@ class GPUPipeline:
         start_time = time.time()
         
         try:
+            # Check if smart GC should trigger
+            if self.smart_gc and self.memory_manager.memory_limit_gb > 0:
+                current_memory = self.memory_manager.get_memory_usage()
+                if self.smart_gc.should_collect(current_memory, self.memory_manager.memory_limit_gb):
+                    logger.debug("Triggering smart GC")
+                    self.smart_gc.collect(aggressive=False)
+            
             # Move to device
             patches = patches.to(self.primary_device)
             
@@ -281,6 +340,10 @@ class GPUPipeline:
             batch_time = time.time() - start_time
             memory_used = self.memory_manager.get_memory_usage()
             
+            # Track peak memory
+            self.peak_memory_gb = max(self.peak_memory_gb, memory_used)
+            self.memory_samples.append(memory_used)
+            
             self.batch_optimizer.record_batch(batch_time, memory_used)
             self.batch_times.append(batch_time)
             self.total_patches_processed += current_batch_size
@@ -302,8 +365,12 @@ class GPUPipeline:
             if "out of memory" in str(e).lower():
                 logger.error(f"GPU OOM error: {e}")
                 
-                # Handle OOM
-                self.memory_manager.cleanup()
+                # Handle OOM with smart GC if available
+                if self.smart_gc:
+                    self.smart_gc.collect(aggressive=True)
+                else:
+                    self.memory_manager.cleanup()
+                
                 self.batch_optimizer.handle_oom()
                 
                 # Retry with smaller batch
@@ -392,12 +459,58 @@ class GPUPipeline:
     
     def cleanup(self):
         """Clean up GPU resources."""
+        # Clean up advanced memory optimization components
+        if self.memory_pool:
+            self.memory_pool.cleanup()
+        
+        # Record final memory usage for predictor
+        if self.memory_predictor and self.memory_samples:
+            avg_memory = np.mean(self.memory_samples)
+            # Note: slide characteristics would need to be passed in for proper recording
+            logger.info(f"Peak memory: {self.peak_memory_gb:.2f}GB, Avg: {avg_memory:.2f}GB")
+        
+        # Standard cleanup
         self.memory_manager.cleanup()
         
         # Move model to CPU to free GPU memory
         if self.primary_device.type == 'cuda':
             self.model = self.model.cpu()
             torch.cuda.empty_cache()
+    
+    def get_memory_optimization_stats(self) -> Dict[str, Any]:
+        """Get advanced memory optimization statistics.
+        
+        Returns:
+            Dictionary with memory optimization stats
+        """
+        stats = {
+            'basic_memory': {
+                'peak_memory_gb': self.peak_memory_gb,
+                'avg_memory_gb': np.mean(self.memory_samples) if self.memory_samples else 0.0,
+                'current_memory_gb': self.memory_manager.get_memory_usage()
+            }
+        }
+        
+        if self.memory_pool:
+            pool_stats = self.memory_pool.get_stats()
+            stats['memory_pool'] = {
+                'total_blocks': pool_stats.total_blocks,
+                'free_blocks': pool_stats.free_blocks,
+                'utilization_percent': pool_stats.utilization_percent,
+                'hit_rate': pool_stats.hit_rate,
+                'fragmentation_ratio': pool_stats.fragmentation_ratio
+            }
+        
+        if self.smart_gc:
+            gc_stats = self.smart_gc.get_stats()
+            stats['garbage_collection'] = gc_stats.to_dict()
+        
+        # Add memory monitor stats if available
+        if hasattr(self, 'memory_monitor') and self.memory_monitor:
+            monitor_analytics = self.memory_monitor.get_analytics()
+            stats['memory_monitoring'] = monitor_analytics.to_dict()
+        
+        return stats
     
     def __enter__(self):
         """Context manager entry."""
