@@ -494,7 +494,7 @@ def run_production_federated_learning(
             print(f"  {client.client_id}: Training locally...")
             
             # Get current global model
-            global_state = orchestrator.get_model_state_dict()
+            global_state = orchestrator.get_global_model()
             
             # Local training
             update = client.local_training(
