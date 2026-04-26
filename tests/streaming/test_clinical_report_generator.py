@@ -651,3 +651,195 @@ class TestErrorHandling:
         import src.streaming.clinical_report_generator as crg
         
         assert crg.REPORTLAB_AVAILABLE is True
+
+
+
+class TestReportTemplateCustomization:
+    """Tests for report template customization."""
+    
+    def test_custom_template_page_size_a4(self, sample_report_data, temp_output_dir):
+        """Test custom template with A4 page size."""
+        from src.streaming.clinical_report_generator import ReportTemplate
+        
+        template = ReportTemplate(page_size='a4')
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            template_config=template
+        )
+        
+        output_path = temp_output_dir / "a4_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_custom_template_colors(self, sample_report_data, temp_output_dir):
+        """Test custom template with custom colors."""
+        from src.streaming.clinical_report_generator import ReportTemplate
+        
+        template = ReportTemplate(
+            primary_color='#0000FF',
+            confidence_high_color='#00FF00',
+            confidence_medium_color='#FFFF00',
+            confidence_low_color='#FF0000'
+        )
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            template_config=template
+        )
+        
+        output_path = temp_output_dir / "custom_colors_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_custom_template_sections(self, sample_report_data, temp_output_dir):
+        """Test custom template with selective sections."""
+        from src.streaming.clinical_report_generator import ReportTemplate
+        
+        template = ReportTemplate(
+            include_patient_info=False,
+            include_visualizations=False,
+            include_quality_metrics=True,
+            include_metadata=True,
+            include_clinical_notes=False,
+            include_disclaimer=False
+        )
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            template_config=template
+        )
+        
+        output_path = temp_output_dir / "selective_sections_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_custom_template_custom_sections(self, sample_report_data, temp_output_dir):
+        """Test custom template with custom sections."""
+        from src.streaming.clinical_report_generator import ReportTemplate
+        
+        template = ReportTemplate(
+            custom_sections={
+                'Additional Information': 'This is a custom section with additional details.',
+                'Quality Assurance': 'All results have been reviewed by QA team.'
+            }
+        )
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            template_config=template
+        )
+        
+        output_path = temp_output_dir / "custom_sections_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+
+
+class TestMultiLanguageSupport:
+    """Tests for multi-language support (i18n)."""
+    
+    def test_english_report(self, sample_report_data, temp_output_dir):
+        """Test report generation in English."""
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            language='en'
+        )
+        
+        output_path = temp_output_dir / "english_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_spanish_report(self, sample_report_data, temp_output_dir):
+        """Test report generation in Spanish."""
+        generator = StreamingReportGenerator(
+            institution_name="Hospital de Prueba",
+            language='es'
+        )
+        
+        output_path = temp_output_dir / "spanish_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_french_report(self, sample_report_data, temp_output_dir):
+        """Test report generation in French."""
+        generator = StreamingReportGenerator(
+            institution_name="Hôpital de Test",
+            language='fr'
+        )
+        
+        output_path = temp_output_dir / "french_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_german_report(self, sample_report_data, temp_output_dir):
+        """Test report generation in German."""
+        generator = StreamingReportGenerator(
+            institution_name="Test Krankenhaus",
+            language='de'
+        )
+        
+        output_path = temp_output_dir / "german_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_unsupported_language_fallback(self, sample_report_data, temp_output_dir):
+        """Test fallback to English for unsupported language."""
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            language='zh'  # Chinese not supported
+        )
+        
+        # Should fall back to English
+        assert generator.language == 'en'
+        
+        output_path = temp_output_dir / "fallback_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_custom_translations(self, sample_report_data, temp_output_dir):
+        """Test custom translation dictionary."""
+        custom_trans = {
+            'custom_lang': {
+                'report_title': 'Custom Title',
+                'slide_information': 'Custom Slide Info',
+                'analysis_results': 'Custom Results',
+                'confidence': 'Custom Confidence',
+                'quality_metrics': 'Custom Metrics',
+                'processing_metadata': 'Custom Metadata',
+                'disclaimer': 'Custom disclaimer text',
+                # Add minimal required keys
+                'slide_id': 'Slide ID',
+                'report_date': 'Report Date',
+                'prediction': 'Prediction',
+                'confidence_high': 'High',
+                'confidence_medium': 'Medium',
+                'confidence_low': 'Low',
+            }
+        }
+        
+        generator = StreamingReportGenerator(
+            institution_name="Test Hospital",
+            language='custom_lang',
+            custom_translations=custom_trans
+        )
+        
+        output_path = temp_output_dir / "custom_lang_report.pdf"
+        result_path = generator.generate_pdf_report(sample_report_data, output_path)
+        
+        assert result_path.exists()
+    
+    def test_translation_method(self):
+        """Test translation method."""
+        generator = StreamingReportGenerator(language='en')
+        
+        assert generator.t('report_title') == 'Real-Time WSI Analysis Report'
+        assert generator.t('confidence') == 'Confidence'
+        
+        generator_es = StreamingReportGenerator(language='es')
+        assert generator_es.t('report_title') == 'Informe de Análisis WSI en Tiempo Real'
+        assert generator_es.t('confidence') == 'Confianza'
