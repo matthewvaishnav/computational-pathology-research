@@ -1,45 +1,48 @@
+# ConfigMap for HistoCore streaming configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: pathology-config
-  namespace: pathology
+  name: histocore-config
+  namespace: histocore
 data:
-  # Application configuration
-  app.yaml: |
-    server:
-      host: 0.0.0.0
-      port: 8000
-      workers: 4
-    
-    model:
-      path: /app/models/best_model.pth
-      device: cpu
-      batch_size: 32
-    
-    logging:
-      level: INFO
-      format: json
-    
-    monitoring:
-      enabled: true
-      prometheus_port: 9090
+  # Application settings
+  HISTOCORE_ENV: "production"
+  HISTOCORE_LOG_LEVEL: "INFO"
+  HISTOCORE_DEBUG: "false"
   
-  # Model configuration
-  model-config.yaml: |
-    embed_dim: 256
-    num_classes: 4
-    dropout: 0.1
-    
-    wsi:
-      input_dim: 1024
-      hidden_dim: 512
-      num_heads: 8
-    
-    genomic:
-      input_dim: 2000
-      hidden_dims: [1024, 512]
-    
-    clinical:
-      vocab_size: 30000
-      embed_dim: 256
-      hidden_dim: 512
+  # GPU and memory
+  CUDA_VISIBLE_DEVICES: "0"
+  HISTOCORE_MAX_MEMORY_GB: "8"
+  HISTOCORE_BATCH_SIZE: "32"
+  HISTOCORE_MAX_PATCHES_PER_SLIDE: "10000"
+  
+  # Performance
+  HISTOCORE_WORKERS: "4"
+  HISTOCORE_TIMEOUT: "300"
+  HISTOCORE_KEEP_ALIVE: "2"
+  HISTOCORE_MAX_REQUESTS: "1000"
+  
+  # Cache
+  REDIS_URL: "redis://histocore-redis:6379"
+  HISTOCORE_CACHE_TTL: "3600"
+  HISTOCORE_CACHE_MAX_SIZE: "1000"
+  
+  # Monitoring
+  PROMETHEUS_PORT: "8002"
+  HISTOCORE_METRICS_ENABLED: "true"
+  HISTOCORE_HEALTH_CHECK_INTERVAL: "30"
+  
+  # Security
+  HISTOCORE_CORS_ORIGINS: "*"
+  HISTOCORE_RATE_LIMIT: "100/minute"
+  
+  # Clinical integration
+  HISTOCORE_PACS_ENABLED: "true"
+  HISTOCORE_FHIR_ENABLED: "true"
+  HISTOCORE_EMR_ENABLED: "false"
+  
+  # Paths
+  HISTOCORE_DATA_PATH: "/app/data"
+  HISTOCORE_LOG_PATH: "/app/logs"
+  HISTOCORE_CACHE_PATH: "/app/cache"
+  HISTOCORE_MODEL_PATH: "/app/checkpoints"

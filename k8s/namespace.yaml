@@ -1,7 +1,8 @@
+# Kubernetes namespace for HistoCore streaming
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: pathology
+  name: histocore
   labels:
-    name: pathology
-    environment: production
+    name: histocore
+    app: histocore-streaming

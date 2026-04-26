@@ -1,569 +1,313 @@
-# Kubernetes Deployment
+# HistoCore Kubernetes Deployment
 
-This directory contains Kubernetes manifests for deploying the Computational Pathology API.
-
-## Prerequisites
-
-- Kubernetes cluster (1.20+)
-- kubectl configured
-- Docker image built and pushed to registry
-- Persistent storage provisioner
-- (Optional) NGINX Ingress Controller
-- (Optional) cert-manager for TLS
-- (Optional) Prometheus Operator for monitoring
-- (Optional) NVIDIA GPU Operator for GPU nodes
+Production-ready Kubernetes manifests for real-time WSI streaming with GPU support.
 
 ## Quick Start
 
-### 1. Create Namespace
 ```bash
-kubectl apply -f namespace.yaml
+# Deploy everything
+./deploy.sh
+
+# Port forward for local access
+kubectl port-forward -n histocore svc/histocore-streaming 8000:8000
 ```
 
-### 2. Create ConfigMap and Secrets
-```bash
-# Edit secret.yaml with actual values first!
-kubectl apply -f configmap.yaml
-kubectl apply -f secret.yaml
+## Prerequisites
+
+- Kubernetes 1.20+
+- GPU nodes with NVIDIA drivers
+- NVIDIA Device Plugin
+- Ingress controller (nginx)
+- Storage class (fast-ssd recommended)
+
+## Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Ingress       │    │   Streaming     │    │     Redis       │
+│   (nginx)       │───▶│   (2+ pods)     │───▶│   (cache)       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │
+                                ▼
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │   Prometheus    │    │    Grafana      │
+                       │  (monitoring)   │───▶│  (dashboards)   │
+                       └─────────────────┘    └─────────────────┘
 ```
 
-### 3. Create Persistent Volume Claims
-```bash
-kubectl apply -f pvc.yaml
-```
+## Components
 
-### 4. Deploy Application
-```bash
-# CPU-only deployment
-kubectl apply -f deployment.yaml
+### Core Services
+- **Streaming**: Main application (2+ replicas)
+- **Redis**: Cache and session storage
+- **Prometheus**: Metrics collection
+- **Grafana**: Monitoring dashboards
 
-# Or GPU deployment
-kubectl apply -f gpu-deployment.yaml
-```
-
-### 5. Create Service
-```bash
-kubectl apply -f service.yaml
-```
-
-### 6. (Optional) Create Ingress
-```bash
-# Edit ingress.yaml with your domain first!
-kubectl apply -f ingress.yaml
-```
-
-### 7. (Optional) Enable Autoscaling
-```bash
-kubectl apply -f hpa.yaml
-```
-
-## File Descriptions
-
-### Core Resources
-
-#### `namespace.yaml`
-Creates the `pathology` namespace for all resources.
-
-#### `deployment.yaml`
-Main CPU-based deployment with:
-- 3 replicas
-- Rolling update strategy
-- Health checks
-- Resource limits
-- Anti-affinity rules
-
-#### `gpu-deployment.yaml`
-GPU-accelerated deployment with:
-- NVIDIA GPU support
-- 2 replicas (GPUs are expensive)
-- Node selector for GPU nodes
-- GPU tolerations
-
-#### `service.yaml`
-Two services:
-- `pathology-api`: LoadBalancer for external access
-- `pathology-api-internal`: ClusterIP for internal access
-
-#### `ingress.yaml`
-NGINX Ingress with:
-- TLS/SSL termination
-- Rate limiting
-- Proxy timeouts
-- cert-manager integration
-
-### Configuration
-
-#### `configmap.yaml`
-Application configuration:
-- Server settings
-- Model configuration
-- Logging configuration
-- Monitoring settings
-
-#### `secret.yaml`
-Sensitive data (⚠️ **DO NOT commit real secrets!**):
-- API keys
-- Database credentials
-- Cloud provider credentials
+### GPU Support
+- Node selector: `accelerator=nvidia-tesla-k80`
+- Resource requests: `nvidia.com/gpu: 1`
+- CUDA 12.1 runtime
 
 ### Storage
+- **Data**: 100Gi (ReadWriteMany)
+- **Logs**: 20Gi (ReadWriteMany)  
+- **Models**: 50Gi (ReadWriteMany)
+- **Cache**: 5Gi (EmptyDir)
 
-#### `pvc.yaml`
-Persistent Volume Claims:
-- `pathology-models-pvc`: 10Gi for model files (ReadOnlyMany)
-- `pathology-data-pvc`: 100Gi for data (ReadWriteMany)
-
-### Scaling
-
-#### `hpa.yaml`
-Horizontal Pod Autoscaler:
-- Min replicas: 3
+### Autoscaling
+- Min replicas: 2
 - Max replicas: 10
 - CPU target: 70%
 - Memory target: 80%
-- Smart scale-up/down policies
-
-### Monitoring
-
-#### `servicemonitor.yaml`
-Prometheus ServiceMonitor for metrics collection.
-
-## Deployment Scenarios
-
-### Scenario 1: Development/Testing
-
-```bash
-# Single replica, minimal resources
-kubectl apply -f namespace.yaml
-kubectl apply -f configmap.yaml
-kubectl apply -f secret.yaml
-kubectl apply -f pvc.yaml
-
-# Edit deployment.yaml: set replicas: 1
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-```
-
-### Scenario 2: Production (CPU)
-
-```bash
-# Full deployment with autoscaling
-kubectl apply -f namespace.yaml
-kubectl apply -f configmap.yaml
-kubectl apply -f secret.yaml
-kubectl apply -f pvc.yaml
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-kubectl apply -f ingress.yaml
-kubectl apply -f hpa.yaml
-kubectl apply -f servicemonitor.yaml
-```
-
-### Scenario 3: Production (GPU)
-
-```bash
-# GPU-accelerated deployment
-kubectl apply -f namespace.yaml
-kubectl apply -f configmap.yaml
-kubectl apply -f secret.yaml
-kubectl apply -f pvc.yaml
-kubectl apply -f gpu-deployment.yaml
-kubectl apply -f service.yaml
-kubectl apply -f ingress.yaml
-```
-
-### Scenario 4: Hybrid (CPU + GPU)
-
-```bash
-# Deploy both CPU and GPU versions
-kubectl apply -f namespace.yaml
-kubectl apply -f configmap.yaml
-kubectl apply -f secret.yaml
-kubectl apply -f pvc.yaml
-kubectl apply -f deployment.yaml
-kubectl apply -f gpu-deployment.yaml
-
-# Create separate services
-kubectl apply -f service.yaml
-
-# Route traffic based on requirements
-# (requires custom ingress configuration)
-```
 
 ## Configuration
 
-### Update Docker Image
-
-Edit `deployment.yaml` or `gpu-deployment.yaml`:
+### Environment Variables
+Edit `configmap.yaml`:
 ```yaml
-spec:
-  template:
-    spec:
-      containers:
-      - name: api
-        image: your-registry/pathology-api:v1.0.0  # Update this
+HISTOCORE_MAX_MEMORY_GB: "8"
+HISTOCORE_BATCH_SIZE: "32"
+CUDA_VISIBLE_DEVICES: "0"
 ```
 
-### Update Resource Limits
-
-Edit resource requests/limits in deployment files:
-```yaml
-resources:
-  requests:
-    memory: "4Gi"
-    cpu: "2"
-  limits:
-    memory: "8Gi"
-    cpu: "4"
-```
-
-### Update Replicas
-
-Edit `deployment.yaml`:
-```yaml
-spec:
-  replicas: 5  # Change this
-```
-
-Or use kubectl:
+### Secrets
+Edit `secret.yaml` (base64 encoded):
 ```bash
-kubectl scale deployment pathology-api -n pathology --replicas=5
+echo -n "your-secret" | base64
 ```
 
-### Update Environment Variables
-
-Edit `configmap.yaml` or add to deployment:
-```yaml
-env:
-- name: LOG_LEVEL
-  value: "debug"
-- name: MAX_BATCH_SIZE
-  value: "64"
-```
-
-## Secrets Management
-
-### Option 1: Kubernetes Secrets (Basic)
-
+### GPU Nodes
+Label GPU nodes:
 ```bash
-# Create secret from literal values
-kubectl create secret generic pathology-secrets \
-  --from-literal=api-key=your-key \
-  --from-literal=db-password=your-password \
-  -n pathology
+kubectl label nodes <node-name> accelerator=nvidia-tesla-k80
 ```
 
-### Option 2: Sealed Secrets
+## Deployment
 
+### Manual Steps
 ```bash
-# Install sealed-secrets controller
-kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.0/controller.yaml
+# 1. Create namespace
+kubectl apply -f namespace.yaml
 
-# Seal your secret
-kubeseal --format=yaml < secret.yaml > sealed-secret.yaml
-kubectl apply -f sealed-secret.yaml
+# 2. Configuration
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
+
+# 3. Storage and cache
+kubectl apply -f redis.yaml
+
+# 4. Main application
+kubectl apply -f streaming.yaml
+
+# 5. Monitoring
+kubectl apply -f monitoring.yaml
+kubectl apply -f prometheus-config.yaml
+kubectl apply -f grafana-config.yaml
+
+# 6. External access
+kubectl apply -f ingress.yaml
+
+# 7. Autoscaling
+kubectl apply -f hpa.yaml
 ```
 
-### Option 3: External Secrets Operator
-
+### Automated
 ```bash
-# Install External Secrets Operator
-helm repo add external-secrets https://charts.external-secrets.io
-helm install external-secrets external-secrets/external-secrets -n external-secrets-system --create-namespace
-
-# Configure AWS Secrets Manager backend
-# See: https://external-secrets.io/latest/provider/aws-secrets-manager/
-```
-
-### Option 4: HashiCorp Vault
-
-```bash
-# Install Vault
-helm repo add hashicorp https://helm.releases.hashicorp.com
-helm install vault hashicorp/vault
-
-# Configure Vault integration
-# See: https://www.vaultproject.io/docs/platform/k8s
-```
-
-## Storage
-
-### Prepare Model Files
-
-```bash
-# Copy model files to PVC
-kubectl run -it --rm copy-models --image=busybox -n pathology -- sh
-
-# Inside the pod:
-# Mount the PVC and copy files
-# Or use kubectl cp:
-kubectl cp models/best_model.pth pathology/copy-models:/models/
-```
-
-### Using Cloud Storage
-
-For AWS S3, GCS, or Azure Blob:
-
-1. Update deployment to use init container:
-```yaml
-initContainers:
-- name: download-models
-  image: amazon/aws-cli
-  command:
-  - sh
-  - -c
-  - aws s3 cp s3://your-bucket/models/ /models/ --recursive
-  volumeMounts:
-  - name: models
-    mountPath: /models
-```
-
-2. Add AWS credentials to secrets
-
-## Networking
-
-### Access the API
-
-**Via LoadBalancer**:
-```bash
-# Get external IP
-kubectl get svc pathology-api -n pathology
-
-# Access API
-curl http://<EXTERNAL-IP>/health
-```
-
-**Via Ingress**:
-```bash
-# Access via domain
-curl https://pathology-api.example.com/health
-```
-
-**Via Port Forward** (development):
-```bash
-kubectl port-forward svc/pathology-api 8000:8000 -n pathology
-curl http://localhost:8000/health
-```
-
-### Internal Access
-
-From within the cluster:
-```bash
-# Use internal service
-curl http://pathology-api-internal.pathology.svc.cluster.local:8000/health
+./deploy.sh
 ```
 
 ## Monitoring
 
-### View Logs
-
-```bash
-# All pods
-kubectl logs -f -l app=pathology-api -n pathology
-
-# Specific pod
-kubectl logs -f pathology-api-<pod-id> -n pathology
-
-# Previous container (if crashed)
-kubectl logs --previous pathology-api-<pod-id> -n pathology
-```
-
-### Check Pod Status
-
-```bash
-# List pods
-kubectl get pods -n pathology
-
-# Describe pod
-kubectl describe pod pathology-api-<pod-id> -n pathology
-
-# Get events
-kubectl get events -n pathology --sort-by='.lastTimestamp'
-```
-
-### Check Resource Usage
-
-```bash
-# Pod resource usage
-kubectl top pods -n pathology
-
-# Node resource usage
-kubectl top nodes
-```
+### Grafana Dashboards
+- GPU utilization per pod
+- Memory usage trends
+- Processing throughput
+- Error rates and latency
+- Cache hit rates
 
 ### Prometheus Metrics
+- `histocore_processing_time_seconds`
+- `histocore_memory_usage_bytes`
+- `histocore_gpu_utilization_percent`
+- `histocore_requests_total`
+- `histocore_errors_total`
 
-If ServiceMonitor is deployed:
-```bash
-# Access Prometheus
-kubectl port-forward -n monitoring svc/prometheus-k8s 9090:9090
-
-# View metrics at http://localhost:9090
-```
+### Alerts (TODO)
+- High memory usage (>90%)
+- GPU utilization low (<50%)
+- Processing queue backlog
+- Pod restart frequency
 
 ## Scaling
 
 ### Manual Scaling
-
 ```bash
-# Scale deployment
-kubectl scale deployment pathology-api -n pathology --replicas=5
-
-# Check status
-kubectl get deployment pathology-api -n pathology
+kubectl scale deployment histocore-streaming --replicas=5 -n histocore
 ```
 
-### Autoscaling
+### Auto Scaling
+HPA configured for:
+- CPU: 70% target
+- Memory: 80% target
+- Custom: Queue length
 
+### Cluster Scaling
+Add GPU nodes:
 ```bash
-# Check HPA status
-kubectl get hpa -n pathology
-
-# Describe HPA
-kubectl describe hpa pathology-api-hpa -n pathology
-
-# Watch autoscaling
-kubectl get hpa -n pathology --watch
+# GKE example
+gcloud container node-pools create gpu-pool \
+  --accelerator type=nvidia-tesla-k80,count=1 \
+  --zone us-central1-a \
+  --cluster histocore-cluster
 ```
 
-## Updates and Rollouts
+## Security
 
-### Update Image
-
-```bash
-# Update image
-kubectl set image deployment/pathology-api api=pathology-api:v2.0.0 -n pathology
-
-# Check rollout status
-kubectl rollout status deployment/pathology-api -n pathology
-
-# View rollout history
-kubectl rollout history deployment/pathology-api -n pathology
+### RBAC (TODO)
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: histocore-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "list"]
 ```
 
-### Rollback
-
-```bash
-# Rollback to previous version
-kubectl rollout undo deployment/pathology-api -n pathology
-
-# Rollback to specific revision
-kubectl rollout undo deployment/pathology-api --to-revision=2 -n pathology
+### Network Policies (TODO)
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: histocore-netpol
+spec:
+  podSelector:
+    matchLabels:
+      app: histocore-streaming
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: nginx-ingress
 ```
 
-### Zero-Downtime Updates
-
-The deployment uses `RollingUpdate` strategy with:
-- `maxSurge: 1` - One extra pod during update
-- `maxUnavailable: 0` - No downtime
+### Pod Security Standards
+```yaml
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+```
 
 ## Troubleshooting
 
-### Pod Not Starting
-
+### Pod Issues
 ```bash
 # Check pod status
-kubectl describe pod <pod-name> -n pathology
+kubectl get pods -n histocore
 
-# Common issues:
-# 1. Image pull error - check image name and registry access
-# 2. Resource limits - check node capacity
-# 3. Volume mount error - check PVC status
-# 4. Config error - check configmap and secrets
+# Check logs
+kubectl logs -f deployment/histocore-streaming -n histocore
+
+# Describe pod
+kubectl describe pod <pod-name> -n histocore
 ```
 
-### Service Not Accessible
-
+### GPU Issues
 ```bash
-# Check service
-kubectl get svc pathology-api -n pathology
-kubectl describe svc pathology-api -n pathology
+# Check GPU nodes
+kubectl get nodes -l accelerator=nvidia-tesla-k80
 
-# Check endpoints
-kubectl get endpoints pathology-api -n pathology
+# Check device plugin
+kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
 
-# Test from within cluster
-kubectl run -it --rm debug --image=busybox -n pathology -- sh
-wget -O- http://pathology-api:8000/health
+# Test GPU in pod
+kubectl exec -it <pod-name> -n histocore -- nvidia-smi
 ```
 
-### High Memory Usage
-
+### Storage Issues
 ```bash
-# Check memory usage
-kubectl top pods -n pathology
+# Check PVCs
+kubectl get pvc -n histocore
 
-# Solutions:
-# 1. Increase memory limits
-# 2. Reduce batch size (update configmap)
-# 3. Enable memory profiling
-# 4. Check for memory leaks
+# Check storage class
+kubectl get storageclass
+
+# Check volume mounts
+kubectl describe pod <pod-name> -n histocore
 ```
 
-### Slow Response Times
-
+### Network Issues
 ```bash
-# Check pod logs for slow requests
-kubectl logs -f <pod-name> -n pathology
+# Check services
+kubectl get svc -n histocore
 
-# Solutions:
-# 1. Scale up replicas
-# 2. Enable GPU deployment
-# 3. Optimize model inference
-# 4. Add caching layer
+# Check ingress
+kubectl get ingress -n histocore
+
+# Test internal connectivity
+kubectl exec -it <pod-name> -n histocore -- curl http://histocore-redis:6379
 ```
 
-## Cleanup
+## Backup and Recovery
 
-### Remove All Resources
-
+### Data Backup
 ```bash
-# Delete all resources in namespace
-kubectl delete namespace pathology
+# Backup Redis
+kubectl exec histocore-redis-xxx -n histocore -- redis-cli BGSAVE
 
-# Or delete individually
-kubectl delete -f .
+# Backup persistent volumes
+kubectl get pv
+# Use volume snapshots or backup tools
 ```
 
-### Remove Specific Resources
-
+### Disaster Recovery
 ```bash
-kubectl delete deployment pathology-api -n pathology
-kubectl delete svc pathology-api -n pathology
-kubectl delete ingress pathology-api-ingress -n pathology
+# Restore from backup
+kubectl apply -f backup-restore.yaml
+
+# Scale up from zero
+kubectl scale deployment histocore-streaming --replicas=2 -n histocore
 ```
 
-## Security Best Practices
+## Performance Tuning
 
-1. **Use RBAC**: Create service accounts with minimal permissions
-2. **Network Policies**: Restrict pod-to-pod communication
-3. **Pod Security Policies**: Enforce security standards
-4. **Secrets Management**: Use external secret managers
-5. **Image Scanning**: Scan images for vulnerabilities
-6. **TLS**: Always use TLS for external access
-7. **Resource Limits**: Set appropriate limits to prevent resource exhaustion
-8. **Read-Only Filesystem**: Mount volumes as read-only when possible
+### Resource Limits
+```yaml
+resources:
+  requests:
+    memory: "4Gi"
+    cpu: "1000m"
+    nvidia.com/gpu: 1
+  limits:
+    memory: "8Gi"
+    cpu: "2000m"
+    nvidia.com/gpu: 1
+```
 
-## Production Checklist
+### Node Affinity
+```yaml
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-type
+          operator: In
+          values:
+          - gpu-optimized
+```
 
-- [ ] Update all placeholder values (domain, secrets, etc.)
-- [ ] Configure proper resource limits
-- [ ] Set up persistent storage
-- [ ] Configure TLS/SSL certificates
-- [ ] Set up monitoring and alerting
-- [ ] Configure log aggregation
-- [ ] Set up backup strategy
-- [ ] Test disaster recovery
-- [ ] Configure autoscaling
-- [ ] Set up CI/CD pipeline
-- [ ] Document runbooks
-- [ ] Train operations team
-
-## Additional Resources
-
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-- [Kubernetes Best Practices](https://kubernetes.io/docs/concepts/configuration/overview/)
-- [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/)
-- [cert-manager](https://cert-manager.io/)
-- [Prometheus Operator](https://prometheus-operator.dev/)
+### Pod Disruption Budget
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: histocore-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: histocore-streaming
+```
