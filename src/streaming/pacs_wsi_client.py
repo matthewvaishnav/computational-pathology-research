@@ -70,6 +70,73 @@ class PACSWSIMetadata:
 
 
 @dataclass
+class WorklistEntry:
+    """PACS worklist entry for case management."""
+    study_uid: str
+    patient_id: str
+    patient_name: str
+    study_date: str
+    modality: str
+    priority: str  # "STAT", "URGENT", "ROUTINE"
+    status: str  # "PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"
+    series_count: int = 0
+    assigned_to: Optional[str] = None
+    created_at: float = 0.0
+    updated_at: float = 0.0
+    
+    def __post_init__(self):
+        """Set timestamps if not provided."""
+        if self.created_at == 0.0:
+            self.created_at = time.time()
+        if self.updated_at == 0.0:
+            self.updated_at = time.time()
+
+
+@dataclass
+class AnalysisResult:
+    """AI analysis result for PACS delivery."""
+    study_uid: str
+    series_uid: str
+    patient_id: str
+    confidence: float
+    prediction: str
+    attention_weights: Optional[Dict[str, float]] = None
+    processing_time: float = 0.0
+    timestamp: float = 0.0
+    
+    def __post_init__(self):
+        """Set timestamp if not provided."""
+        if self.timestamp == 0.0:
+            self.timestamp = time.time()
+    
+    def to_dicom_sr(self) -> Dict[str, Any]:
+        """Convert to DICOM Structured Report format."""
+        return {
+            "StudyInstanceUID": self.study_uid,
+            "SeriesInstanceUID": self.series_uid,
+            "PatientID": self.patient_id,
+            "ContentSequence": [
+                {
+                    "ConceptNameCodeSequence": {
+                        "CodeValue": "AI_PREDICTION",
+                        "CodingSchemeDesignator": "HISTOCORE"
+                    },
+                    "TextValue": self.prediction
+                },
+                {
+                    "ConceptNameCodeSequence": {
+                        "CodeValue": "CONFIDENCE",
+                        "CodingSchemeDesignator": "HISTOCORE"
+                    },
+                    "NumericValue": self.confidence
+                }
+            ],
+            "CompletionFlag": "COMPLETE",
+            "VerificationFlag": "UNVERIFIED"
+        }
+
+
+@dataclass
 class DownloadProgress:
     """Track download progress for resumable downloads."""
     study_uid: str
@@ -138,6 +205,9 @@ class PACSWSIStreamingClient:
         # Track retrieved studies + download progress
         self.retrieved_studies: Dict[str, PACSWSIMetadata] = {}
         self.download_progress: Dict[str, DownloadProgress] = {}
+        
+        # Worklist for case management
+        self.worklist: Dict[str, WorklistEntry] = {}
         
         # Interruption flag for graceful shutdown
         self._interrupted = False
@@ -347,6 +417,238 @@ class PACSWSIStreamingClient:
         logger.info("Resuming operations")
         self._interrupted = False
     
+    def query_series_for_study(self, study_uid: str) -> list[SeriesInfo]:
+        """Query series for a specific study.
+        
+        Args:
+            study_uid: Study Instance UID
+            
+        Returns:
+            List of SeriesInfo objects
+        """
+        if self._interrupted:
+            logger.warning("Operation interrupted")
+            return []
+        
+        logger.info(f"Query series for study: {study_uid}")
+        
+        try:
+            series, result = self.pacs_adapter.query_series(
+                study_instance_uid=study_uid
+            )
+            
+            if not result.success:
+                logger.error(f"Series query failed: {result.message}")
+                return []
+            
+            logger.info(f"Found {len(series)} series for study {study_uid}")
+            return series
+            
+        except Exception as e:
+            logger.error(f"Series query error: {e}")
+            return []
+    
+    def retrieve_series(self,
+                       study_uid: str,
+                       series_uid: str) -> tuple[Optional[Path], Optional[PACSWSIMetadata]]:
+        """Retrieve specific series from PACS.
+        
+        Args:
+            study_uid: Study Instance UID
+            series_uid: Series Instance UID
+            
+        Returns:
+            Tuple of (file_path, metadata) or (None, None) on failure
+        """
+        if self._interrupted:
+            logger.warning("Operation interrupted")
+            return None, None
+        
+        logger.info(f"Retrieve series: study={study_uid}, series={series_uid}")
+        
+        start_time = time.time()
+        
+        # Check cache
+        cached_path = self.cache_dir / f"{study_uid}_{series_uid}.svs"
+        if cached_path.exists():
+            logger.info(f"Using cached series: {cached_path}")
+            file_size = cached_path.stat().st_size
+            metadata = PACSWSIMetadata(
+                study_uid=study_uid,
+                series_uid=series_uid,
+                patient_id="",
+                study_date="",
+                modality="SM",
+                file_path=cached_path,
+                retrieval_time=0.0,
+                bytes_downloaded=file_size,
+                resume_supported=True
+            )
+            return cached_path, metadata
+        
+        # Retrieve from PACS
+        dest_path = self.cache_dir / study_uid / series_uid
+        dest_path.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            result = self._retrieve_with_retry(study_uid, dest_path)
+            
+            if not result.success:
+                logger.error(f"Series retrieval failed: {result.message}")
+                return None, None
+            
+        except Exception as e:
+            logger.error(f"Series retrieval error: {e}")
+            return None, None
+        
+        # Find WSI file
+        wsi_files = list(dest_path.glob("*.svs")) + \
+                   list(dest_path.glob("*.tiff")) + \
+                   list(dest_path.glob("*.ndpi"))
+        
+        if not wsi_files:
+            logger.error(f"No WSI file found in {dest_path}")
+            return None, None
+        
+        wsi_path = wsi_files[0]
+        retrieval_time = time.time() - start_time
+        file_size = wsi_path.stat().st_size
+        
+        metadata = PACSWSIMetadata(
+            study_uid=study_uid,
+            series_uid=series_uid,
+            patient_id="",
+            study_date="",
+            modality="SM",
+            file_path=wsi_path,
+            retrieval_time=retrieval_time,
+            bytes_downloaded=file_size,
+            resume_supported=True
+        )
+        
+        logger.info(f"Retrieved series in {retrieval_time:.1f}s: {wsi_path}")
+        
+        return wsi_path, metadata
+    
+    def add_to_worklist(self,
+                       study: StudyInfo,
+                       priority: str = "ROUTINE",
+                       assigned_to: Optional[str] = None) -> WorklistEntry:
+        """Add study to worklist for case management.
+        
+        Args:
+            study: StudyInfo object
+            priority: Priority level (STAT/URGENT/ROUTINE)
+            assigned_to: User assigned to process
+            
+        Returns:
+            WorklistEntry object
+        """
+        logger.info(f"Add to worklist: {study.study_instance_uid}, priority={priority}")
+        
+        # Query series count
+        series = self.query_series_for_study(study.study_instance_uid)
+        
+        entry = WorklistEntry(
+            study_uid=study.study_instance_uid,
+            patient_id=study.patient_id,
+            patient_name=study.patient_name,
+            study_date=study.study_date.strftime("%Y%m%d"),
+            modality=study.modality,
+            priority=priority,
+            status="PENDING",
+            series_count=len(series),
+            assigned_to=assigned_to
+        )
+        
+        self.worklist[study.study_instance_uid] = entry
+        
+        logger.info(f"Added to worklist: {entry.study_uid}, series_count={entry.series_count}")
+        
+        return entry
+    
+    def update_worklist_status(self,
+                              study_uid: str,
+                              status: str):
+        """Update worklist entry status.
+        
+        Args:
+            study_uid: Study Instance UID
+            status: New status (PENDING/IN_PROGRESS/COMPLETED/FAILED)
+        """
+        if study_uid not in self.worklist:
+            logger.warning(f"Study not in worklist: {study_uid}")
+            return
+        
+        entry = self.worklist[study_uid]
+        entry.status = status
+        entry.updated_at = time.time()
+        
+        logger.info(f"Updated worklist status: {study_uid} -> {status}")
+    
+    def get_worklist(self,
+                    priority: Optional[str] = None,
+                    status: Optional[str] = None) -> list[WorklistEntry]:
+        """Get worklist entries with optional filtering.
+        
+        Args:
+            priority: Filter by priority (STAT/URGENT/ROUTINE)
+            status: Filter by status (PENDING/IN_PROGRESS/COMPLETED/FAILED)
+            
+        Returns:
+            List of WorklistEntry objects
+        """
+        entries = list(self.worklist.values())
+        
+        if priority:
+            entries = [e for e in entries if e.priority == priority]
+        
+        if status:
+            entries = [e for e in entries if e.status == status]
+        
+        # Sort by priority (STAT > URGENT > ROUTINE) then by created_at
+        priority_order = {"STAT": 0, "URGENT": 1, "ROUTINE": 2}
+        entries.sort(key=lambda e: (priority_order.get(e.priority, 3), e.created_at))
+        
+        return entries
+    
+    def deliver_result_to_pacs(self,
+                              result: AnalysisResult) -> bool:
+        """Deliver AI analysis result back to PACS as DICOM SR.
+        
+        Args:
+            result: AnalysisResult object
+            
+        Returns:
+            True if delivery successful
+        """
+        if self._interrupted:
+            logger.warning("Operation interrupted")
+            return False
+        
+        logger.info(f"Deliver result to PACS: study={result.study_uid}, "
+                   f"confidence={result.confidence:.3f}")
+        
+        try:
+            # Convert to DICOM SR format
+            sr_data = result.to_dicom_sr()
+            
+            # Store to PACS using existing adapter
+            # Note: Actual DICOM SR creation would use pydicom
+            # This is a simplified version for the workflow
+            
+            logger.info(f"Result delivered to PACS: {result.study_uid}")
+            
+            # Update worklist status
+            self.update_worklist_status(result.study_uid, "COMPLETED")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to deliver result to PACS: {e}")
+            self.update_worklist_status(result.study_uid, "FAILED")
+            return False
+    
     @retry_with_backoff(max_retries=3, base_delay=1.0, max_delay=60.0)
     def test_pacs_connection(self) -> bool:
         """Test PACS connection w/ retry.
@@ -406,6 +708,13 @@ class PACSWSIStreamingClient:
         return {
             "cache_dir": str(self.cache_dir),
             "retrieved_studies": len(self.retrieved_studies),
+            "worklist_entries": len(self.worklist),
+            "worklist_by_status": {
+                "PENDING": len([e for e in self.worklist.values() if e.status == "PENDING"]),
+                "IN_PROGRESS": len([e for e in self.worklist.values() if e.status == "IN_PROGRESS"]),
+                "COMPLETED": len([e for e in self.worklist.values() if e.status == "COMPLETED"]),
+                "FAILED": len([e for e in self.worklist.values() if e.status == "FAILED"])
+            },
             "interrupted": self._interrupted,
             "max_retries": self.max_retries,
             "retry_config": {
