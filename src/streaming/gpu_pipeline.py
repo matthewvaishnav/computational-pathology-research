@@ -287,9 +287,10 @@ class GPUPipeline:
             self.total_batches_processed += 1
             self.total_processing_time += batch_time
             
-            # Optimize batch size
-            memory_pressure = memory_used / self.memory_manager.memory_limit_gb
-            self.batch_optimizer.optimize(memory_pressure)
+            # Optimize batch size (avoid division by zero for CPU)
+            if self.memory_manager.memory_limit_gb > 0:
+                memory_pressure = memory_used / self.memory_manager.memory_limit_gb
+                self.batch_optimizer.optimize(memory_pressure)
             
             # Periodic cleanup
             if self.total_batches_processed % 10 == 0:
@@ -340,7 +341,12 @@ class GPUPipeline:
         Returns:
             Optimized batch size
         """
-        memory_pressure = memory_usage / self.memory_manager.memory_limit_gb
+        # Avoid division by zero for CPU (memory_limit_gb=0)
+        if self.memory_manager.memory_limit_gb == 0:
+            memory_pressure = 0.0
+        else:
+            memory_pressure = memory_usage / self.memory_manager.memory_limit_gb
+        
         return self.batch_optimizer.optimize(memory_pressure)
     
     def get_throughput_stats(self) -> ThroughputMetrics:
