@@ -14,7 +14,7 @@ from .audit_logger import AuditLogger
 from .configuration_manager import ConfigurationManager
 from .error_handling import DeadLetterQueue, DicomErrorHandler, NetworkErrorHandler
 from .failover import FailoverManager
-from .notification_system import NotificationSystem
+from .notification_system import ClinicalNotificationSystem
 from .pacs_adapter import PACSAdapter
 from .query_engine import QueryEngine
 from .retrieval_engine import RetrievalEngine
@@ -93,7 +93,7 @@ class PACSService:
         )
 
         # Notification system
-        self.notification_system = NotificationSystem(
+        self.notification_system = ClinicalNotificationSystem(
             email_config=self.config.notifications.email,
             sms_config=self.config.notifications.sms,
             hl7_config=self.config.notifications.hl7,

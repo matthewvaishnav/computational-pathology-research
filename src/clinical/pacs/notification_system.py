@@ -13,9 +13,9 @@ from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime, timedelta
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from email.mime.base import MimeBase
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
 from email import encoders
 import json
 import uuid
@@ -121,7 +121,7 @@ class EmailNotificationHandler:
                 raise ValueError("Recipient has no email address")
             
             # Create message
-            msg = MimeMultipart()
+            msg = MIMEMultipart()
             msg['From'] = self.smtp_config.get('from_email', 'histocore@hospital.local')
             msg['To'] = message.recipient.email
             msg['Subject'] = message.subject
@@ -133,7 +133,7 @@ class EmailNotificationHandler:
                 msg['Importance'] = 'High'
             
             # Add body
-            msg.attach(MimeText(message.content, 'html' if '<html>' in message.content else 'plain'))
+            msg.attach(MIMEText(message.content, 'html' if '<html>' in message.content else 'plain'))
             
             # Send email
             smtp_server = self.smtp_config.get('server', 'localhost')
