@@ -1,0 +1,39 @@
+# Prometheus config for HistoCore monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # HistoCore streaming service
+  - job_name: 'histocore-streaming'
+    static_configs:
+      - targets: ['histocore-streaming:8002']
+    scrape_interval: 5s
+    metrics_path: /metrics
+    
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 15s
+    
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+# Alerting rules
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Recording rules for performance metrics
+rule_files:
+  - "/etc/prometheus/rules/*.yml"

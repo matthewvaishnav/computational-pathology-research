@@ -1,68 +1,75 @@
+# Docker ignore file for HistoCore
+
+# Git
+.git
+.gitignore
+.gitattributes
+
 # Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+__pycache__
+*.pyc
+*.pyo
+*.pyd
 .Python
-*.egg-info/
-dist/
-build/
-*.egg
-
-# Virtual environments
-venv/
-env/
-ENV/
-
-# Testing
-.pytest_cache/
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
 .coverage
-htmlcov/
-.tox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Documentation
+*.md
+docs/
+*.rst
 
 # IDE
-.vscode/
-.idea/
+.vscode
+.idea
 *.swp
 *.swo
 *~
 
-# Git
-.git/
-.gitignore
-.gitattributes
-
-# Documentation
-docs/
-*.md
-!README.md
-
-# Data (exclude large files)
-data/raw/
-data/processed/
-*.h5
-*.hdf5
-*.npy
-*.npz
-
-# Results
-results/
-experiments/
-notebooks/
-checkpoints/
-checkpoints_demo/
-
-# Logs
-*.log
-logs/
-
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Kiro
-.kiro/
+# Project specific
+data/
+logs/
+cache/
+results/
+experiments/
+*.pth
+*.ckpt
+*.h5
+*.pkl
 
-# Misc
-*.bak
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Temporary
+tmp/
+temp/
 *.tmp

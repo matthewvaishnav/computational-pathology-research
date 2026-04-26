@@ -1,48 +1,169 @@
+# Docker Compose for HistoCore real-time WSI streaming
+# GPU-enabled with Redis, monitoring, health checks
+
 version: '3.8'
 
 services:
-  # API service
-  api:
+  # ============================================================================
+  # Main streaming service
+  # ============================================================================
+  histocore-streaming:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pathology-api
-    ports:
-      - "8000:8000"
-    volumes:
-      # Mount models directory for trained weights
-      - ./models:/app/models:ro
-      # Mount data directory (optional)
-      - ./data:/app/data:ro
-    environment:
-      - PYTHONUNBUFFERED=1
-      - LOG_LEVEL=info
+      target: production
+    container_name: histocore-streaming
     restart: unless-stopped
+    
+    # GPU access
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    # Environment
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - HISTOCORE_LOG_LEVEL=INFO
+      - HISTOCORE_MAX_MEMORY_GB=8
+      - HISTOCORE_BATCH_SIZE=32
+      - REDIS_URL=redis://redis:6379
+      - PROMETHEUS_PORT=8002
+    
+    # Ports
+    ports:
+      - "8000:8000"  # Web dashboard
+      - "8001:8001"  # API
+      - "8002:8002"  # Metrics
+    
+    # Volumes
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    
+    # Dependencies
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    # Health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
 
-  # Jupyter notebook service (optional, for development)
-  notebook:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: pathology-notebook
-    ports:
-      - "8888:8888"
-    volumes:
-      - ./notebooks:/app/notebooks
-      - ./data:/app/data
-      - ./models:/app/models
-      - ./results:/app/results
-    environment:
-      - PYTHONUNBUFFERED=1
-    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
+  # ============================================================================
+  # Redis cache
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: histocore-redis
     restart: unless-stopped
+    
+    # Config
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    
+    # Ports
+    ports:
+      - "6379:6379"
+    
+    # Volumes
+    volumes:
+      - redis_data:/data
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
+  # ============================================================================
+  # Prometheus monitoring
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: histocore-prometheus
+    restart: unless-stopped
+    
+    # Config
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    
+    # Ports
+    ports:
+      - "9090:9090"
+    
+    # Volumes
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    
+    # Dependencies
+    depends_on:
+      - histocore-streaming
+
+  # ============================================================================
+  # Grafana dashboards
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: histocore-grafana
+    restart: unless-stopped
+    
+    # Environment
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=histocore123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    
+    # Ports
+    ports:
+      - "3000:3000"
+    
+    # Volumes
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+    
+    # Dependencies
+    depends_on:
+      - prometheus
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
 networks:
   default:
-    name: pathology-network
+    name: histocore-network
+    driver: bridge
