@@ -2,11 +2,12 @@
 
 import time
 import logging
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List, Tuple, Callable
 from dataclasses import dataclass
 from pathlib import Path
 import threading
 from queue import Queue, Empty
+import json
 
 import numpy as np
 import matplotlib
@@ -14,6 +15,16 @@ matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import torch
+
+# Import plotly for interactive visualizations
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    from plotly.subplots import make_subplots
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+    logger.warning("Plotly not available. Interactive features will be disabled.")
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +40,18 @@ class VisualizationUpdate:
     heatmap_data: Optional[np.ndarray] = None
 
 
+@dataclass
+class InteractiveConfig:
+    """Configuration for interactive visualization features."""
+    enable_zoom_pan: bool = True
+    enable_overlay: bool = True
+    enable_parameter_controls: bool = True
+    update_callback: Optional[Callable[[Dict[str, Any]], None]] = None
+    initial_zoom_level: float = 1.0
+    max_zoom_level: float = 10.0
+    min_zoom_level: float = 0.5
+
+
 class ProgressiveVisualizer:
     """Real-time visualization for streaming WSI processing.
     
@@ -40,7 +63,8 @@ class ProgressiveVisualizer:
     """
     
     def __init__(self, output_dir: str, slide_dimensions: Tuple[int, int],
-                 tile_size: int = 1024, update_interval: float = 1.0):
+                 tile_size: int = 1024, update_interval: float = 1.0,
+                 interactive_config: Optional[InteractiveConfig] = None):
         """Initialize progressive visualizer.
         
         Args:
@@ -48,6 +72,7 @@ class ProgressiveVisualizer:
             slide_dimensions: (width, height) of WSI in pixels
             tile_size: Size of tiles being processed
             update_interval: Minimum seconds between visualization updates
+            interactive_config: Configuration for interactive features
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -55,6 +80,9 @@ class ProgressiveVisualizer:
         self.slide_dimensions = slide_dimensions
         self.tile_size = tile_size
         self.update_interval = update_interval
+        
+        # Interactive configuration
+        self.interactive_config = interactive_config or InteractiveConfig()
         
         # Calculate heatmap dimensions
         self.heatmap_width = (slide_dimensions[0] + tile_size - 1) // tile_size
@@ -76,6 +104,12 @@ class ProgressiveVisualizer:
         
         # Colormap for attention heatmaps
         self.colormap = self._create_attention_colormap()
+        
+        # Interactive visualization state
+        self.current_zoom_level = self.interactive_config.initial_zoom_level
+        self.current_pan_offset = (0, 0)
+        self.overlay_opacity = 0.6
+        self.parameter_values: Dict[str, Any] = {}
         
         logger.info(f"Initialized ProgressiveVisualizer: {self.heatmap_width}x{self.heatmap_height} heatmap")
     
@@ -441,6 +475,426 @@ class ProgressiveVisualizer:
         }
         
         return stats
+    
+    # ========== Interactive Visualization Features ==========
+    
+    def create_interactive_heatmap(self, slide_thumbnail: Optional[np.ndarray] = None) -> Optional[go.Figure]:
+        """Create interactive attention heatmap with zoom and pan capabilities.
+        
+        Args:
+            slide_thumbnail: Optional slide thumbnail image for overlay [H, W, 3]
+            
+        Returns:
+            Plotly Figure object with interactive controls, or None if Plotly unavailable
+        """
+        if not PLOTLY_AVAILABLE:
+            logger.warning("Plotly not available. Cannot create interactive heatmap.")
+            return None
+        
+        # Normalize heatmap
+        normalized_heatmap = np.zeros_like(self.attention_heatmap)
+        if self.coverage_mask.any():
+            normalized_heatmap[self.coverage_mask] = self.attention_heatmap[self.coverage_mask]
+            max_val = normalized_heatmap.max()
+            if max_val > 0:
+                normalized_heatmap = normalized_heatmap / max_val
+        
+        # Create figure
+        fig = go.Figure()
+        
+        # Add slide thumbnail as background if provided
+        if slide_thumbnail is not None and self.interactive_config.enable_overlay:
+            fig.add_trace(go.Image(
+                z=slide_thumbnail,
+                name='Slide Thumbnail',
+                opacity=1.0 - self.overlay_opacity
+            ))
+        
+        # Add attention heatmap
+        fig.add_trace(go.Heatmap(
+            z=normalized_heatmap,
+            colorscale='Jet',
+            name='Attention Weights',
+            opacity=self.overlay_opacity,
+            colorbar=dict(
+                title='Attention Weight',
+                x=1.02,
+                tickmode='linear',
+                tick0=0,
+                dtick=0.2
+            ),
+            hovertemplate='X: %{x}<br>Y: %{y}<br>Attention: %{z:.3f}<extra></extra>'
+        ))
+        
+        # Configure layout with zoom and pan
+        fig.update_layout(
+            title='Interactive Attention Heatmap',
+            xaxis=dict(
+                title='Tile X',
+                scaleanchor='y',
+                scaleratio=1,
+                constrain='domain'
+            ),
+            yaxis=dict(
+                title='Tile Y',
+                constrain='domain'
+            ),
+            width=1200,
+            height=1000,
+            dragmode='pan' if self.interactive_config.enable_zoom_pan else 'zoom',
+            hovermode='closest'
+        )
+        
+        # Add zoom and pan controls
+        if self.interactive_config.enable_zoom_pan:
+            fig.update_xaxes(
+                range=[
+                    self.current_pan_offset[0],
+                    self.current_pan_offset[0] + self.heatmap_width / self.current_zoom_level
+                ]
+            )
+            fig.update_yaxes(
+                range=[
+                    self.current_pan_offset[1],
+                    self.current_pan_offset[1] + self.heatmap_height / self.current_zoom_level
+                ]
+            )
+        
+        return fig
+    
+    def create_interactive_confidence_plot(self) -> Optional[go.Figure]:
+        """Create interactive confidence progression plot.
+        
+        Returns:
+            Plotly Figure object with interactive controls, or None if Plotly unavailable
+        """
+        if not PLOTLY_AVAILABLE:
+            logger.warning("Plotly not available. Cannot create interactive confidence plot.")
+            return None
+        
+        if len(self.confidence_history) < 2:
+            return None
+        
+        # Extract data
+        timestamps = np.array([t for t, _ in self.confidence_history])
+        confidences = np.array([c for _, c in self.confidence_history])
+        timestamps = timestamps - timestamps[0]
+        
+        # Create figure
+        fig = go.Figure()
+        
+        # Add confidence trace
+        fig.add_trace(go.Scatter(
+            x=timestamps,
+            y=confidences,
+            mode='lines+markers',
+            name='Confidence',
+            line=dict(color='blue', width=2),
+            marker=dict(size=6),
+            hovertemplate='Time: %{x:.2f}s<br>Confidence: %{y:.4f}<extra></extra>'
+        ))
+        
+        # Add target threshold line
+        fig.add_hline(
+            y=0.95,
+            line_dash='dash',
+            line_color='red',
+            annotation_text='Target (0.95)',
+            annotation_position='right'
+        )
+        
+        # Configure layout
+        fig.update_layout(
+            title='Real-Time Confidence Progression',
+            xaxis_title='Time (seconds)',
+            yaxis_title='Confidence',
+            yaxis_range=[0.0, 1.0],
+            width=1000,
+            height=600,
+            hovermode='x unified',
+            showlegend=True
+        )
+        
+        return fig
+    
+    def create_interactive_dashboard(self, slide_thumbnail: Optional[np.ndarray] = None) -> Optional[go.Figure]:
+        """Create comprehensive interactive dashboard with multiple visualizations.
+        
+        Args:
+            slide_thumbnail: Optional slide thumbnail image for overlay
+            
+        Returns:
+            Plotly Figure object with subplots, or None if Plotly unavailable
+        """
+        if not PLOTLY_AVAILABLE:
+            logger.warning("Plotly not available. Cannot create interactive dashboard.")
+            return None
+        
+        if not self.confidence_history:
+            return None
+        
+        # Create subplots
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Attention Heatmap',
+                'Confidence Progression',
+                'Spatial Coverage',
+                'Attention Distribution'
+            ),
+            specs=[
+                [{'type': 'heatmap'}, {'type': 'scatter'}],
+                [{'type': 'heatmap'}, {'type': 'histogram'}]
+            ],
+            vertical_spacing=0.12,
+            horizontal_spacing=0.10
+        )
+        
+        # 1. Attention heatmap
+        normalized_heatmap = np.zeros_like(self.attention_heatmap)
+        if self.coverage_mask.any():
+            normalized_heatmap[self.coverage_mask] = self.attention_heatmap[self.coverage_mask]
+            max_val = normalized_heatmap.max()
+            if max_val > 0:
+                normalized_heatmap = normalized_heatmap / max_val
+        
+        fig.add_trace(
+            go.Heatmap(
+                z=normalized_heatmap,
+                colorscale='Jet',
+                showscale=True,
+                colorbar=dict(x=0.46, len=0.4)
+            ),
+            row=1, col=1
+        )
+        
+        # 2. Confidence progression
+        timestamps = np.array([t for t, _ in self.confidence_history])
+        confidences = np.array([c for _, c in self.confidence_history])
+        timestamps = timestamps - timestamps[0]
+        
+        fig.add_trace(
+            go.Scatter(
+                x=timestamps,
+                y=confidences,
+                mode='lines+markers',
+                name='Confidence',
+                line=dict(color='blue', width=2),
+                marker=dict(size=4)
+            ),
+            row=1, col=2
+        )
+        
+        # Add target line
+        fig.add_hline(
+            y=0.95,
+            line_dash='dash',
+            line_color='red',
+            row=1, col=2
+        )
+        
+        # 3. Spatial coverage
+        coverage_viz = self.coverage_mask.astype(float)
+        fig.add_trace(
+            go.Heatmap(
+                z=coverage_viz,
+                colorscale='Greys',
+                showscale=False
+            ),
+            row=2, col=1
+        )
+        
+        # 4. Attention distribution
+        attention_values = self.attention_heatmap[self.coverage_mask]
+        if len(attention_values) > 0:
+            fig.add_trace(
+                go.Histogram(
+                    x=attention_values,
+                    nbinsx=50,
+                    name='Attention',
+                    marker=dict(color='steelblue')
+                ),
+                row=2, col=2
+            )
+        
+        # Update layout
+        fig.update_layout(
+            title_text='Real-Time WSI Streaming Dashboard',
+            showlegend=False,
+            height=900,
+            width=1400
+        )
+        
+        # Update axes
+        fig.update_xaxes(title_text='Tile X', row=1, col=1)
+        fig.update_yaxes(title_text='Tile Y', row=1, col=1)
+        fig.update_xaxes(title_text='Time (seconds)', row=1, col=2)
+        fig.update_yaxes(title_text='Confidence', range=[0, 1], row=1, col=2)
+        fig.update_xaxes(title_text='Tile X', row=2, col=1)
+        fig.update_yaxes(title_text='Tile Y', row=2, col=1)
+        fig.update_xaxes(title_text='Attention Weight', row=2, col=2)
+        fig.update_yaxes(title_text='Frequency', row=2, col=2)
+        
+        return fig
+    
+    def save_interactive_html(self, filename: str = 'interactive_dashboard.html',
+                            slide_thumbnail: Optional[np.ndarray] = None) -> Optional[Path]:
+        """Save interactive dashboard as standalone HTML file.
+        
+        Args:
+            filename: Output filename
+            slide_thumbnail: Optional slide thumbnail for overlay
+            
+        Returns:
+            Path to saved HTML file, or None if Plotly unavailable
+        """
+        if not PLOTLY_AVAILABLE:
+            logger.warning("Plotly not available. Cannot save interactive HTML.")
+            return None
+        
+        fig = self.create_interactive_dashboard(slide_thumbnail)
+        if fig is None:
+            return None
+        
+        output_path = self.output_dir / filename
+        fig.write_html(str(output_path))
+        logger.info(f"Saved interactive dashboard: {output_path}")
+        
+        return output_path
+    
+    def set_zoom_level(self, zoom_level: float) -> None:
+        """Set zoom level for interactive visualizations.
+        
+        Args:
+            zoom_level: Zoom level (1.0 = normal, >1.0 = zoomed in)
+        """
+        if not self.interactive_config.enable_zoom_pan:
+            logger.warning("Zoom/pan not enabled in configuration")
+            return
+        
+        # Clamp to valid range
+        zoom_level = max(
+            self.interactive_config.min_zoom_level,
+            min(zoom_level, self.interactive_config.max_zoom_level)
+        )
+        
+        self.current_zoom_level = zoom_level
+        logger.debug(f"Zoom level set to {zoom_level:.2f}x")
+    
+    def set_pan_offset(self, x_offset: int, y_offset: int) -> None:
+        """Set pan offset for interactive visualizations.
+        
+        Args:
+            x_offset: Horizontal offset in tile coordinates
+            y_offset: Vertical offset in tile coordinates
+        """
+        if not self.interactive_config.enable_zoom_pan:
+            logger.warning("Zoom/pan not enabled in configuration")
+            return
+        
+        # Clamp to valid range
+        x_offset = max(0, min(x_offset, self.heatmap_width))
+        y_offset = max(0, min(y_offset, self.heatmap_height))
+        
+        self.current_pan_offset = (x_offset, y_offset)
+        logger.debug(f"Pan offset set to ({x_offset}, {y_offset})")
+    
+    def set_overlay_opacity(self, opacity: float) -> None:
+        """Set opacity for attention weight overlay.
+        
+        Args:
+            opacity: Opacity value between 0.0 (transparent) and 1.0 (opaque)
+        """
+        if not self.interactive_config.enable_overlay:
+            logger.warning("Overlay not enabled in configuration")
+            return
+        
+        # Clamp to valid range
+        opacity = max(0.0, min(1.0, opacity))
+        self.overlay_opacity = opacity
+        logger.debug(f"Overlay opacity set to {opacity:.2f}")
+    
+    def update_parameter(self, param_name: str, param_value: Any) -> None:
+        """Update processing parameter and trigger callback if configured.
+        
+        Args:
+            param_name: Name of parameter to update
+            param_value: New parameter value
+        """
+        if not self.interactive_config.enable_parameter_controls:
+            logger.warning("Parameter controls not enabled in configuration")
+            return
+        
+        # Store parameter value
+        old_value = self.parameter_values.get(param_name)
+        self.parameter_values[param_name] = param_value
+        
+        logger.info(f"Parameter '{param_name}' updated: {old_value} -> {param_value}")
+        
+        # Trigger callback if configured
+        if self.interactive_config.update_callback is not None:
+            try:
+                self.interactive_config.update_callback({
+                    'parameter': param_name,
+                    'old_value': old_value,
+                    'new_value': param_value,
+                    'all_parameters': self.parameter_values.copy()
+                })
+            except Exception as e:
+                logger.error(f"Error in parameter update callback: {e}")
+    
+    def get_parameter(self, param_name: str, default: Any = None) -> Any:
+        """Get current value of a parameter.
+        
+        Args:
+            param_name: Name of parameter
+            default: Default value if parameter not set
+            
+        Returns:
+            Current parameter value or default
+        """
+        return self.parameter_values.get(param_name, default)
+    
+    def export_visualization_state(self) -> Dict[str, Any]:
+        """Export current visualization state as JSON-serializable dict.
+        
+        Returns:
+            Dictionary containing visualization state
+        """
+        state = {
+            'slide_dimensions': self.slide_dimensions,
+            'heatmap_dimensions': (self.heatmap_width, self.heatmap_height),
+            'tile_size': self.tile_size,
+            'zoom_level': self.current_zoom_level,
+            'pan_offset': self.current_pan_offset,
+            'overlay_opacity': self.overlay_opacity,
+            'parameters': self.parameter_values.copy(),
+            'statistics': self.get_statistics(),
+            'confidence_history': [
+                {'timestamp': float(t), 'confidence': float(c)}
+                for t, c in self.confidence_history
+            ]
+        }
+        
+        return state
+    
+    def save_visualization_state(self, filename: str = 'visualization_state.json') -> Path:
+        """Save visualization state to JSON file.
+        
+        Args:
+            filename: Output filename
+            
+        Returns:
+            Path to saved JSON file
+        """
+        state = self.export_visualization_state()
+        output_path = self.output_dir / filename
+        
+        with open(output_path, 'w') as f:
+            json.dump(state, f, indent=2)
+        
+        logger.info(f"Saved visualization state: {output_path}")
+        return output_path
     
     def __enter__(self):
         """Context manager entry."""
