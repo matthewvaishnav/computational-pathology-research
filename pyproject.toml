@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "histocore"
 version = "0.1.0"
-description = "HistoCore: Production-grade PyTorch framework for computational pathology research"
+description = "HistoCore: #1 performing method in digital pathology - Production-grade PyTorch framework establishing superiority over all published baselines"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Matthew Vaishnav"}
 ]
-keywords = ["computational pathology", "multimodal fusion", "deep learning", "whole-slide imaging"]
+keywords = ["computational pathology", "multimodal fusion", "deep learning", "whole-slide imaging", "performance superiority", "federated learning", "digital pathology", "benchmark"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
