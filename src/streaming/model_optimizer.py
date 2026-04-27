@@ -144,8 +144,16 @@ class TensorRTOptimizer:
                 logger.info("Enabled FP16 precision")
             elif self.config.tensorrt_precision == "int8":
                 config.set_flag(trt.BuilderFlag.INT8)
-                # TODO: Add INT8 calibration
-                logger.info("Enabled INT8 precision")
+                
+                # Create calibration dataset from validation data
+                if hasattr(self, 'calibration_data') and self.calibration_data:
+                    calibrator = self._create_int8_calibrator(self.calibration_data)
+                    config.int8_calibrator = calibrator
+                    logger.info("Enabled INT8 precision with calibration")
+                else:
+                    logger.warning("INT8 precision requested but no calibration data provided")
+                    config.set_flag(trt.BuilderFlag.FP16)  # Fallback to FP16
+                    logger.info("Falling back to FP16 precision")
             
             # Set optimization profiles for dynamic shapes
             profile = builder.create_optimization_profile()
