@@ -413,6 +413,11 @@ class MetricsContext:
 
 
 # Convenience functions
+def record_processing_time(duration: float, stage: str, slide_type: str = 'wsi'):
+    """Record processing duration."""
+    get_metrics().record_processing_time(duration, stage, slide_type)
+
+
 def record_slide_success(slide_type: str = 'wsi'):
     """Record successful slide processing."""
     get_metrics().record_slide_processed('success', slide_type)
