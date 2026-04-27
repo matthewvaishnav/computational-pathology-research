@@ -547,17 +547,91 @@ class DICOMAdapter:
 
         Returns:
             List of matching studies/series
-
-        Note:
-            This is a placeholder implementation. Full PACS integration
-            requires pynetdicom library and proper DICOM networking setup.
         """
-        # Placeholder for PACS query functionality
-        # Full implementation would use pynetdicom for C-FIND operations
-        raise NotImplementedError(
-            "PACS query/retrieve requires pynetdicom library and network configuration. "
-            "This is a placeholder for future implementation."
-        )
+        try:
+            from pynetdicom import AE, debug_logger
+            from pynetdicom.sop_class import StudyRootQueryRetrieveInformationModelFind
+            from pydicom.dataset import Dataset
+            
+            logger.info(f"Querying PACS at {pacs_host}:{pacs_port} with AE title {ae_title}")
+            
+            # Create Application Entity
+            ae = AE(ae_title=ae_title)
+            ae.add_requested_context(StudyRootQueryRetrieveInformationModelFind)
+            
+            # Create query dataset
+            ds = Dataset()
+            
+            # Set query parameters
+            for key, value in query_params.items():
+                if hasattr(ds, key):
+                    setattr(ds, key, value)
+                    logger.debug(f"Query parameter: {key} = {value}")
+            
+            # Set query level
+            ds.QueryRetrieveLevel = 'STUDY'
+            
+            # Required return keys for study-level query
+            ds.StudyInstanceUID = ''
+            ds.PatientName = ''
+            ds.PatientID = ''
+            ds.StudyDate = ''
+            ds.StudyDescription = ''
+            ds.AccessionNumber = ''
+            ds.NumberOfStudyRelatedSeries = ''
+            ds.NumberOfStudyRelatedInstances = ''
+            
+            results = []
+            
+            # Associate with PACS
+            assoc = ae.associate(pacs_host, pacs_port)
+            
+            if assoc.is_established:
+                logger.info("Association established with PACS")
+                
+                # Send C-FIND request
+                responses = assoc.send_c_find(ds, StudyRootQueryRetrieveInformationModelFind)
+                
+                for (status, identifier) in responses:
+                    if status:
+                        if status.Status == 0xFF00:  # Pending - more results coming
+                            if identifier:
+                                study_data = {
+                                    'StudyInstanceUID': str(identifier.get('StudyInstanceUID', '')),
+                                    'PatientName': str(identifier.get('PatientName', '')),
+                                    'PatientID': str(identifier.get('PatientID', '')),
+                                    'StudyDate': str(identifier.get('StudyDate', '')),
+                                    'StudyDescription': str(identifier.get('StudyDescription', '')),
+                                    'AccessionNumber': str(identifier.get('AccessionNumber', '')),
+                                    'NumberOfSeries': str(identifier.get('NumberOfStudyRelatedSeries', '')),
+                                    'NumberOfInstances': str(identifier.get('NumberOfStudyRelatedInstances', ''))
+                                }
+                                results.append(study_data)
+                                logger.debug(f"Found study: {study_data['StudyInstanceUID']}")
+                        elif status.Status == 0x0000:  # Success - query complete
+                            logger.info(f"Query completed successfully. Found {len(results)} studies.")
+                            break
+                        else:
+                            logger.warning(f"C-FIND failed with status: 0x{status.Status:04X}")
+                            break
+                
+                # Release association
+                assoc.release()
+                logger.info("Association released")
+            else:
+                logger.error(f"Failed to establish association with PACS at {pacs_host}:{pacs_port}")
+                raise ConnectionError(f"Cannot connect to PACS at {pacs_host}:{pacs_port}")
+                
+            return results
+            
+        except ImportError:
+            logger.error("pynetdicom not installed. Install with: pip install pynetdicom")
+            raise NotImplementedError(
+                "PACS query requires pynetdicom library. Install with: pip install pynetdicom"
+            )
+        except Exception as e:
+            logger.error(f"PACS query failed: {e}")
+            raise
 
     def retrieve_from_pacs(
         self,

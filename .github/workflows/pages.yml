@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'README.md'
+      - 'TRAINING_STATUS.md'
+      - 'MEDICAL_AI_REVOLUTION_PROGRESS.md'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -27,6 +30,13 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
+      - name: Copy root documentation to docs
+        run: |
+          cp README.md docs/
+          cp TRAINING_STATUS.md docs/
+          cp MEDICAL_AI_REVOLUTION_PROGRESS.md docs/
+          cp -r .kiro/specs/medical-ai-revolution docs/specs/ || true
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1

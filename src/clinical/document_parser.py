@@ -421,16 +421,48 @@ class ClinicalDocumentParser:
     def _parse_pdf(self, file_path: Path) -> str:
         """
         Parse PDF document and extract text content.
-
-        Note: This is a placeholder. Production systems should use PDF parsing
-        libraries like PyPDF2, pdfplumber, or Apache Tika.
+        
+        Supports multiple PDF parsing libraries with automatic fallback.
         """
-        logger.warning(
-            "PDF parsing not fully implemented. Install PyPDF2 or pdfplumber for PDF support."
-        )
-        raise NotImplementedError(
-            "PDF parsing requires additional dependencies (PyPDF2 or pdfplumber)"
-        )
+        try:
+            # Try PyPDF2 first
+            import PyPDF2
+            with open(file_path, 'rb') as file:
+                reader = PyPDF2.PdfReader(file)
+                text_content = []
+                for page in reader.pages:
+                    text_content.append(page.extract_text())
+                return '\n'.join(text_content)
+        except ImportError:
+            try:
+                # Fallback to pdfplumber
+                import pdfplumber
+                with pdfplumber.open(file_path) as pdf:
+                    text_content = []
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if text:
+                            text_content.append(text)
+                    return '\n'.join(text_content)
+            except ImportError:
+                try:
+                    # Final fallback to PyMuPDF
+                    import fitz
+                    doc = fitz.open(file_path)
+                    text_content = []
+                    for page_num in range(doc.page_count):
+                        page = doc[page_num]
+                        text_content.append(page.get_text())
+                    doc.close()
+                    return '\n'.join(text_content)
+                except ImportError:
+                    logger.error(
+                        "PDF parsing requires one of: PyPDF2, pdfplumber, or PyMuPDF. "
+                        "Install with: pip install PyPDF2 pdfplumber pymupdf"
+                    )
+                    raise NotImplementedError(
+                        "PDF parsing requires additional dependencies (PyPDF2, pdfplumber, or PyMuPDF)"
+                    )
 
     def _normalize_text(self, text: str) -> str:
         """

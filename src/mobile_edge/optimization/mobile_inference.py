@@ -8,6 +8,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 import logging
+import psutil
+import gc
 from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
 from pathlib import Path
@@ -147,11 +149,15 @@ class TFLiteInference:
         return output
     
     def benchmark(self, input_shape: Tuple[int, ...]) -> BenchmarkResult:
-        """Benchmark inference"""
+        """Benchmark inference with memory monitoring"""
         
         import time
         
         dummy_input = np.random.randn(*input_shape).astype(np.float32)
+        
+        # Memory monitoring
+        process = psutil.Process()
+        memory_before = process.memory_info().rss / 1024 / 1024  # MB
         
         # Warmup
         for _ in range(self.config.warmup_runs):
@@ -165,6 +171,11 @@ class TFLiteInference:
             end = time.perf_counter()
             times.append((end - start) * 1000)
         
+        # Memory after inference
+        gc.collect()  # Force garbage collection
+        memory_after = process.memory_info().rss / 1024 / 1024  # MB
+        memory_used = max(0.0, memory_after - memory_before)  # Ensure non-negative
+        
         times = np.array(times)
         
         result = BenchmarkResult(
@@ -174,7 +185,7 @@ class TFLiteInference:
             max_inference_time_ms=float(np.max(times)),
             std_inference_time_ms=float(np.std(times)),
             throughput_fps=1000.0 / np.mean(times),
-            memory_mb=0.0  # TODO: measure memory
+            memory_mb=memory_used
         )
         
         return result
