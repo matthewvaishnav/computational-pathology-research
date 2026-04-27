@@ -50,9 +50,20 @@ Complete documentation for HistoCore Real-Time WSI Streaming.
 ## Features
 
 ### Real-Time WSI Streaming
+- **[Real-Time Streaming System](REALTIME_STREAMING.md)** - Complete streaming system documentation
 - **[Streaming Overview](features/STREAMING.md)** - Real-time processing architecture
 - **[Progressive Confidence](features/CONFIDENCE.md)** - Confidence building and early stopping
 - **[Attention Visualization](features/ATTENTION.md)** - Attention heatmap generation
+
+### Model Management
+- **[Model Hot-Swapping](REALTIME_STREAMING.md#model-hot-swapping)** - Zero-downtime model updates
+- **[A/B Testing](REALTIME_STREAMING.md#ab-testing)** - Model comparison and validation
+- **[Model Versioning](REALTIME_STREAMING.md#model-hot-swapping)** - Version control and rollback
+
+### Performance & Testing
+- **[Stress Testing](REALTIME_STREAMING.md#stress-testing)** - Concurrent load validation
+- **[Performance Regression](REALTIME_STREAMING.md#performance-regression-testing)** - Automated baseline tracking
+- **[Benchmarks](REALTIME_STREAMING.md#performance-benchmarks)** - Performance metrics
 
 ### PACS Integration
 - **[PACS Integration Guide](features/PACS_INTEGRATION.md)** - Hospital PACS integration
