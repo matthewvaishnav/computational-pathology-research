@@ -265,7 +265,128 @@ class AlertManager:
                     scope.set_tag(key, value)
                 sentry_sdk.capture_message(f"{title}: {message}")
         
-        # TODO: Add other alerting channels (Slack, PagerDuty, etc.)
+        # Additional alerting channels
+        self._send_slack_alert(level, title, message, tags)
+        self._send_email_alert(level, title, message, tags)
+        self._send_webhook_alert(level, title, message, tags)
+    
+    def _send_slack_alert(self, level: str, title: str, message: str, tags: Optional[Dict] = None):
+        """Send alert to Slack webhook."""
+        try:
+            slack_webhook = getattr(config.monitoring, 'slack_webhook_url', None)
+            if not slack_webhook:
+                return
+                
+            import requests
+            
+            # Color coding for different alert levels
+            color_map = {
+                'error': '#FF0000',    # Red
+                'warning': '#FFA500',  # Orange
+                'info': '#0000FF',     # Blue
+                'debug': '#808080'     # Gray
+            }
+            
+            payload = {
+                "attachments": [{
+                    "color": color_map.get(level, '#808080'),
+                    "title": f"🚨 {title}",
+                    "text": message,
+                    "fields": [
+                        {"title": "Level", "value": level.upper(), "short": True},
+                        {"title": "Timestamp", "value": datetime.now().isoformat(), "short": True}
+                    ],
+                    "footer": "Medical AI Monitoring",
+                    "ts": int(time.time())
+                }]
+            }
+            
+            # Add tag fields
+            if tags:
+                for key, value in tags.items():
+                    payload["attachments"][0]["fields"].append({
+                        "title": key.replace('_', ' ').title(),
+                        "value": str(value),
+                        "short": True
+                    })
+            
+            response = requests.post(slack_webhook, json=payload, timeout=10)
+            response.raise_for_status()
+            
+        except Exception as e:
+            logger.error(f"Failed to send Slack alert: {e}")
+    
+    def _send_email_alert(self, level: str, title: str, message: str, tags: Optional[Dict] = None):
+        """Send alert via email."""
+        try:
+            email_config = getattr(config.monitoring, 'email', None)
+            if not email_config or not email_config.get('enabled', False):
+                return
+                
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            
+            # Create email
+            msg = MIMEMultipart()
+            msg['From'] = email_config['from_address']
+            msg['To'] = ', '.join(email_config['to_addresses'])
+            msg['Subject'] = f"[{level.upper()}] {title}"
+            
+            # Email body
+            body = f"""
+Medical AI System Alert
+
+Level: {level.upper()}
+Title: {title}
+Message: {message}
+Timestamp: {datetime.now().isoformat()}
+
+"""
+            
+            if tags:
+                body += "Additional Information:\n"
+                for key, value in tags.items():
+                    body += f"- {key.replace('_', ' ').title()}: {value}\n"
+            
+            msg.attach(MIMEText(body, 'plain'))
+            
+            # Send email
+            server = smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port'])
+            if email_config.get('use_tls', True):
+                server.starttls()
+            if email_config.get('username') and email_config.get('password'):
+                server.login(email_config['username'], email_config['password'])
+            
+            server.send_message(msg)
+            server.quit()
+            
+        except Exception as e:
+            logger.error(f"Failed to send email alert: {e}")
+    
+    def _send_webhook_alert(self, level: str, title: str, message: str, tags: Optional[Dict] = None):
+        """Send alert to custom webhook."""
+        try:
+            webhook_url = getattr(config.monitoring, 'webhook_url', None)
+            if not webhook_url:
+                return
+                
+            import requests
+            
+            payload = {
+                "level": level,
+                "title": title,
+                "message": message,
+                "timestamp": datetime.now().isoformat(),
+                "tags": tags or {},
+                "source": "medical_ai_monitoring"
+            }
+            
+            response = requests.post(webhook_url, json=payload, timeout=10)
+            response.raise_for_status()
+            
+        except Exception as e:
+            logger.error(f"Failed to send webhook alert: {e}")
     
     def alert_high_cpu_usage(self, cpu_percent: float):
         """Alert for high CPU usage."""
