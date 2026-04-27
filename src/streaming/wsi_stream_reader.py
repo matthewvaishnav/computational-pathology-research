@@ -22,6 +22,42 @@ from .format_handlers import get_wsi_handler, get_supported_wsi_formats, validat
 logger = logging.getLogger(__name__)
 
 
+class SlideWrapper:
+    """Wrapper to make non-OpenSlide formats compatible with OpenSlide interface."""
+    
+    def __init__(self, slide_obj, handler):
+        """Initialize wrapper with slide object and format handler."""
+        self.slide_obj = slide_obj
+        self.handler = handler
+        self._dimensions = handler.get_dimensions(slide_obj)
+        self._properties = handler.get_properties(slide_obj)
+    
+    @property
+    def dimensions(self):
+        """Get slide dimensions."""
+        return self._dimensions
+    
+    @property
+    def properties(self):
+        """Get slide properties."""
+        return self._properties
+    
+    def read_region(self, location, level, size):
+        """Read a region from the slide."""
+        return self.handler.read_region(self.slide_obj, location, level, size)
+    
+    def get_best_level_for_downsample(self, downsample):
+        """Get best level for given downsample factor."""
+        return self.handler.get_best_level_for_downsample(self.slide_obj, downsample)
+    
+    def close(self):
+        """Close the slide."""
+        if hasattr(self.handler, 'close'):
+            self.handler.close(self.slide_obj)
+        elif hasattr(self.slide_obj, 'close'):
+            self.slide_obj.close()
+
+
 @dataclass
 class StreamingMetadata:
     """Metadata for WSI streaming configuration."""
@@ -211,9 +247,8 @@ class WSIStreamReader:
             if hasattr(slide_obj, 'dimensions'):
                 self.slide = slide_obj
             else:
-                # For non-OpenSlide formats, we need a different approach
-                # This is a simplified implementation
-                raise NotImplementedError("Non-OpenSlide formats require specialized handling")
+                # For non-OpenSlide formats, create a wrapper
+                self.slide = self._create_slide_wrapper(slide_obj, handler)
             
             # Get slide properties
             dimensions = handler.get_dimensions(slide_obj)

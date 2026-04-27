@@ -150,12 +150,141 @@ class PretrainedFeatureExtractor(nn.Module):
         return model.to(self.device)
 
     def _load_custom(self) -> nn.Module:
-        """Load custom models (CTransPath, etc.)."""
-        # Placeholder for custom loading logic
-        raise NotImplementedError(
-            f"Custom loader for {self.model_name} not yet implemented. "
-            "Please download weights manually from the source repository."
-        )
+        """Load custom models (CTransPath, Phikon, UNI, etc.)."""
+        
+        if self.model_name.lower() == 'ctranspath':
+            return self._load_ctranspath()
+        elif self.model_name.lower() == 'phikon':
+            return self._load_phikon()
+        elif self.model_name.lower() == 'uni':
+            return self._load_uni()
+        elif self.model_name.lower() == 'conch':
+            return self._load_conch()
+        else:
+            raise NotImplementedError(
+                f"Custom loader for {self.model_name} not yet implemented. "
+                "Supported custom models: ctranspath, phikon, uni, conch"
+            )
+    
+    def _load_ctranspath(self) -> nn.Module:
+        """Load CTransPath model."""
+        try:
+            import timm
+            
+            # CTransPath is based on Swin Transformer
+            model = timm.create_model(
+                'swin_tiny_patch4_window7_224',
+                pretrained=False,
+                num_classes=0,  # Remove classification head
+                global_pool=''  # Remove global pooling
+            )
+            
+            # Try to load CTransPath weights if available
+            weights_path = f"{self.cache_dir}/ctranspath_weights.pth"
+            if os.path.exists(weights_path):
+                logger.info(f"Loading CTransPath weights from {weights_path}")
+                checkpoint = torch.load(weights_path, map_location='cpu')
+                model.load_state_dict(checkpoint, strict=False)
+            else:
+                logger.warning(
+                    f"CTransPath weights not found at {weights_path}. "
+                    "Download from: https://github.com/Xiyue-Wang/TransPath"
+                )
+            
+            return model
+            
+        except ImportError:
+            raise ImportError("CTransPath requires timm. Install with: pip install timm")
+    
+    def _load_phikon(self) -> nn.Module:
+        """Load Phikon model."""
+        try:
+            import timm
+            
+            # Phikon is based on ViT
+            model = timm.create_model(
+                'vit_base_patch16_224',
+                pretrained=False,
+                num_classes=0,
+                global_pool=''
+            )
+            
+            # Try to load Phikon weights if available
+            weights_path = f"{self.cache_dir}/phikon_weights.pth"
+            if os.path.exists(weights_path):
+                logger.info(f"Loading Phikon weights from {weights_path}")
+                checkpoint = torch.load(weights_path, map_location='cpu')
+                model.load_state_dict(checkpoint, strict=False)
+            else:
+                logger.warning(
+                    f"Phikon weights not found at {weights_path}. "
+                    "Download from: https://huggingface.co/owkin/phikon"
+                )
+            
+            return model
+            
+        except ImportError:
+            raise ImportError("Phikon requires timm. Install with: pip install timm")
+    
+    def _load_uni(self) -> nn.Module:
+        """Load UNI (Universal Pathology Foundation Model)."""
+        try:
+            import timm
+            
+            # UNI is based on DINOv2 ViT
+            model = timm.create_model(
+                'vit_large_patch16_224',
+                pretrained=False,
+                num_classes=0,
+                global_pool=''
+            )
+            
+            # Try to load UNI weights if available
+            weights_path = f"{self.cache_dir}/uni_weights.pth"
+            if os.path.exists(weights_path):
+                logger.info(f"Loading UNI weights from {weights_path}")
+                checkpoint = torch.load(weights_path, map_location='cpu')
+                model.load_state_dict(checkpoint, strict=False)
+            else:
+                logger.warning(
+                    f"UNI weights not found at {weights_path}. "
+                    "Download from: https://huggingface.co/MahmoodLab/UNI"
+                )
+            
+            return model
+            
+        except ImportError:
+            raise ImportError("UNI requires timm. Install with: pip install timm")
+    
+    def _load_conch(self) -> nn.Module:
+        """Load CONCH model."""
+        try:
+            import timm
+            
+            # CONCH is based on ViT with contrastive learning
+            model = timm.create_model(
+                'vit_base_patch16_224',
+                pretrained=False,
+                num_classes=0,
+                global_pool=''
+            )
+            
+            # Try to load CONCH weights if available
+            weights_path = f"{self.cache_dir}/conch_weights.pth"
+            if os.path.exists(weights_path):
+                logger.info(f"Loading CONCH weights from {weights_path}")
+                checkpoint = torch.load(weights_path, map_location='cpu')
+                model.load_state_dict(checkpoint, strict=False)
+            else:
+                logger.warning(
+                    f"CONCH weights not found at {weights_path}. "
+                    "Download from: https://huggingface.co/MahmoodLab/CONCH"
+                )
+            
+            return model
+            
+        except ImportError:
+            raise ImportError("CONCH requires timm. Install with: pip install timm")
 
     def forward(self, patches: torch.Tensor) -> torch.Tensor:
         """
