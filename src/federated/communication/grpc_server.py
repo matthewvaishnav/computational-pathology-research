@@ -124,7 +124,7 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
                 return ModelResponse()
 
             # Get current global model
-            model_state = self.orchestrator.get_model_state_dict()
+            model_state = self.orchestrator.get_global_model()
 
             # Serialize model state dict
             import io
