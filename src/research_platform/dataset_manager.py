@@ -273,9 +273,141 @@ class DatasetOrganizer:
             annotation_coverage=0.0
         )
         
-        # TODO: Calculate detailed stats from samples
+        # Calculate detailed statistics from samples
+        if samples:
+            stats = self._calculate_detailed_stats(samples, dataset_id)
         
         return stats
+    
+    def _calculate_detailed_stats(self, samples: List[Dict], dataset_id: str) -> DatasetStatistics:
+        """Calculate comprehensive dataset statistics."""
+        import numpy as np
+        from collections import Counter, defaultdict
+        
+        # Initialize counters
+        disease_counter = Counter()
+        quality_scores = []
+        size_distribution = defaultdict(int)
+        annotation_count = 0
+        total_samples = len(samples)
+        
+        # Image statistics
+        image_sizes = []
+        file_sizes = []
+        
+        # Quality metrics
+        blur_scores = []
+        contrast_scores = []
+        brightness_scores = []
+        
+        for sample in samples:
+            # Disease distribution
+            disease = sample.get('disease', 'unknown')
+            disease_counter[disease] += 1
+            
+            # Quality scores
+            quality = sample.get('quality_score', 0.0)
+            quality_scores.append(quality)
+            
+            # Size distribution (in MB)
+            file_size = sample.get('file_size_bytes', 0) / (1024 * 1024)
+            if file_size < 10:
+                size_distribution['small'] += 1
+            elif file_size < 100:
+                size_distribution['medium'] += 1
+            else:
+                size_distribution['large'] += 1
+            
+            file_sizes.append(file_size)
+            
+            # Image dimensions
+            width = sample.get('width', 0)
+            height = sample.get('height', 0)
+            if width > 0 and height > 0:
+                image_sizes.append((width, height))
+            
+            # Annotation coverage
+            if sample.get('has_annotations', False):
+                annotation_count += 1
+            
+            # Image quality metrics
+            blur_scores.append(sample.get('blur_score', 0.0))
+            contrast_scores.append(sample.get('contrast_score', 0.0))
+            brightness_scores.append(sample.get('brightness_score', 0.0))
+        
+        # Calculate statistics
+        disease_distribution = {
+            disease: count / total_samples 
+            for disease, count in disease_counter.items()
+        }
+        
+        quality_stats = {
+            'mean': float(np.mean(quality_scores)) if quality_scores else 0.0,
+            'std': float(np.std(quality_scores)) if quality_scores else 0.0,
+            'min': float(np.min(quality_scores)) if quality_scores else 0.0,
+            'max': float(np.max(quality_scores)) if quality_scores else 0.0,
+            'median': float(np.median(quality_scores)) if quality_scores else 0.0,
+            'q25': float(np.percentile(quality_scores, 25)) if quality_scores else 0.0,
+            'q75': float(np.percentile(quality_scores, 75)) if quality_scores else 0.0
+        }
+        
+        size_stats = {
+            'small_percent': size_distribution['small'] / total_samples * 100,
+            'medium_percent': size_distribution['medium'] / total_samples * 100,
+            'large_percent': size_distribution['large'] / total_samples * 100,
+            'mean_size_mb': float(np.mean(file_sizes)) if file_sizes else 0.0,
+            'total_size_gb': sum(file_sizes) / 1024 if file_sizes else 0.0
+        }
+        
+        # Image dimension statistics
+        if image_sizes:
+            widths, heights = zip(*image_sizes)
+            dimension_stats = {
+                'mean_width': float(np.mean(widths)),
+                'mean_height': float(np.mean(heights)),
+                'min_width': int(np.min(widths)),
+                'max_width': int(np.max(widths)),
+                'min_height': int(np.min(heights)),
+                'max_height': int(np.max(heights)),
+                'aspect_ratio_mean': float(np.mean([w/h for w, h in image_sizes if h > 0]))
+            }
+        else:
+            dimension_stats = {}
+        
+        # Quality distribution
+        quality_distribution = {
+            'excellent': len([q for q in quality_scores if q >= 0.9]) / total_samples * 100,
+            'good': len([q for q in quality_scores if 0.7 <= q < 0.9]) / total_samples * 100,
+            'fair': len([q for q in quality_scores if 0.5 <= q < 0.7]) / total_samples * 100,
+            'poor': len([q for q in quality_scores if q < 0.5]) / total_samples * 100
+        }
+        
+        # Advanced quality metrics
+        advanced_quality = {
+            'blur_stats': {
+                'mean': float(np.mean(blur_scores)) if blur_scores else 0.0,
+                'std': float(np.std(blur_scores)) if blur_scores else 0.0
+            },
+            'contrast_stats': {
+                'mean': float(np.mean(contrast_scores)) if contrast_scores else 0.0,
+                'std': float(np.std(contrast_scores)) if contrast_scores else 0.0
+            },
+            'brightness_stats': {
+                'mean': float(np.mean(brightness_scores)) if brightness_scores else 0.0,
+                'std': float(np.std(brightness_scores)) if brightness_scores else 0.0
+            }
+        }
+        
+        return DatasetStatistics(
+            total_samples=total_samples,
+            disease_distribution=disease_distribution,
+            quality_scores=quality_stats,
+            size_distribution=size_stats,
+            annotation_coverage=annotation_count / total_samples * 100,
+            dimension_stats=dimension_stats,
+            quality_distribution=quality_distribution,
+            advanced_quality=advanced_quality
+        )
     
     def search_datasets(self, query: str) -> List[DatasetMetadata]:
         """Search datasets by name/description"""
