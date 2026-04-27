@@ -5,6 +5,7 @@ Provides certificate generation, validation, and gRPC channel setup
 for mutual TLS authentication between coordinator and clients.
 """
 
+import ipaddress
 import logging
 import os
 import ssl
@@ -138,7 +139,7 @@ class TLSManager:
                     [
                         x509.DNSName(hostname),
                         x509.DNSName("localhost"),
-                        x509.IPAddress("127.0.0.1"),
+                        x509.IPAddress(ipaddress.IPv4Address("127.0.0.1")),
                     ]
                 ),
                 critical=False,
@@ -379,9 +380,19 @@ def validate_certificate(cert_pem: bytes, ca_cert_pem: bytes) -> bool:
 
         # Check if certificate is signed by CA
         ca_public_key = ca_cert.public_key()
-        ca_public_key.verify(
-            cert.signature, cert.tbs_certificate_bytes, cert.signature_algorithm_oid._name
-        )
+        
+        # Get the signature hash algorithm from the certificate
+        from cryptography.hazmat.primitives.asymmetric import padding
+        
+        try:
+            ca_public_key.verify(
+                cert.signature,
+                cert.tbs_certificate_bytes,
+                padding.PKCS1v15(),
+                cert.signature_hash_algorithm,
+            )
+        except Exception:
+            return False
 
         # Check validity period
         now = datetime.utcnow()
