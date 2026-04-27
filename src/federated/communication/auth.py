@@ -53,16 +53,21 @@ class CertificateValidator:
             cert = x509.load_pem_x509_certificate(cert_pem)
 
             # Check certificate signature
+            from cryptography.hazmat.primitives.asymmetric import padding
+            
             try:
                 self.ca_public_key.verify(
-                    cert.signature, cert.tbs_certificate_bytes, cert.signature_algorithm_oid._name
+                    cert.signature,
+                    cert.tbs_certificate_bytes,
+                    padding.PKCS1v15(),
+                    cert.signature_hash_algorithm,
                 )
             except Exception as e:
                 raise AuthenticationError(f"Certificate signature invalid: {e}")
 
-            # Check validity period
+            # Check validity period (with 1 second tolerance for clock skew)
             now = time.time()
-            not_before = cert.not_valid_before.timestamp()
+            not_before = cert.not_valid_before.timestamp() - 1.0  # 1 second tolerance
             not_after = cert.not_valid_after.timestamp()
 
             if now < not_before:

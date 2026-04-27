@@ -5,6 +5,7 @@ Supports 5+ cancer types with shared encoder and disease-specific heads
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 import timm
@@ -123,7 +124,12 @@ class MultiDiseaseFoundationModel(nn.Module):
         patches_flat = patches.view(-1, channels, height, width)
         
         # Extract features
-        features = self.encoder(patches_flat)  # [batch*num_patches, feature_dim]
+        features = self.encoder(patches_flat)  # [batch*num_patches, 2048, 7, 7]
+        
+        # Apply global average pooling to get fixed-size features
+        if len(features.shape) == 4:  # [B, C, H, W]
+            features = F.adaptive_avg_pool2d(features, (1, 1))  # [B, C, 1, 1]
+            features = features.flatten(1)  # [B, C]
         
         # Reshape back
         features = features.view(batch_size, num_patches, -1)
