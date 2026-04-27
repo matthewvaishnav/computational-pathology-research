@@ -1,0 +1,609 @@
+openapi: 3.0.3
+info:
+  title: HistoCore Real-Time WSI Streaming API
+  version: 1.0.0
+  description: |
+    Production-grade API for real-time whole-slide image (WSI) streaming and analysis.
+    
+    ## Features
+    - Real-time gigapixel WSI processing (<30 seconds)
+    - Progressive confidence updates with attention visualization
+    - PACS integration with DICOM support
+    - GPU-accelerated batch processing
+    - Clinical reporting and workflow integration
+    
+    ## Authentication
+    All endpoints require OAuth 2.0 JWT token authentication.
+    Include token in Authorization header: `Bearer <token>`
+    
+    ## Rate Limits
+    - Standard: 100 requests/minute
+    - Processing: 10 concurrent slides
+    - Burst: 200 requests/minute (5 minute window)
+    
+  contact:
+    name: HistoCore Support
+    email: support@histocore.ai
+    url: https://histocore.ai/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.histocore.ai/v1
+    description: Production server
+  - url: https://staging-api.histocore.ai/v1
+    description: Staging server
+  - url: http://localhost:8000/v1
+    description: Local development
+
+tags:
+  - name: Processing
+    description: WSI processing and streaming operations
+  - name: Monitoring
+    description: Health checks and metrics
+  - name: PACS
+    description: PACS integration and DICOM operations
+  - name: Clinical
+    description: Clinical reporting and workflow
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  /health:
+    get:
+      tags: [Monitoring]
+      summary: Basic health check
+      description: Returns basic service health status
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health/live:
+    get:
+      tags: [Monitoring]
+      summary: Kubernetes liveness probe
+      description: Indicates if service is alive (for K8s liveness probe)
+      operationId: getLiveness
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [alive]
+        '503':
+          description: Service is dead
+
+  /health/ready:
+    get:
+      tags: [Monitoring]
+      summary: Kubernetes readiness probe
+      description: Indicates if service is ready to accept traffic
+      operationId: getReadiness
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ready]
+                  components:
+                    type: object
+                    properties:
+                      gpu:
+                        type: boolean
+                      metrics:
+                        type: boolean
+                      cache:
+                        type: boolean
+        '503':
+          description: Service not ready
+
+  /health/detailed:
+    get:
+      tags: [Monitoring]
+      summary: Detailed health status
+      description: Returns comprehensive health status of all components
+      operationId: getDetailedHealth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Detailed health information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedHealthStatus'
+
+  /metrics:
+    get:
+      tags: [Monitoring]
+      summary: Prometheus metrics
+      description: Returns metrics in Prometheus format
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics in Prometheus text format
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP histocore_slides_processed_total Total slides processed
+                  # TYPE histocore_slides_processed_total counter
+                  histocore_slides_processed_total 1234
+
+  /process/wsi:
+    post:
+      tags: [Processing]
+      summary: Process WSI file
+      description: |
+        Process a whole-slide image with real-time streaming.
+        Returns immediately with job ID for async processing.
+      operationId: processWSI
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessWSIRequest'
+      responses:
+        '202':
+          description: Processing started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingJob'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+        '429':
+          description: Rate limit exceeded
+
+  /process/wsi/{job_id}:
+    get:
+      tags: [Processing]
+      summary: Get processing status
+      description: Get current status and results of a processing job
+      operationId: getProcessingStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Processing status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingStatus'
+        '404':
+          description: Job not found
+
+  /process/wsi/{job_id}/stream:
+    get:
+      tags: [Processing]
+      summary: Stream processing updates
+      description: WebSocket endpoint for real-time processing updates
+      operationId: streamProcessingUpdates
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '101':
+          description: Switching to WebSocket protocol
+        '404':
+          description: Job not found
+
+  /process/wsi/{job_id}/cancel:
+    post:
+      tags: [Processing]
+      summary: Cancel processing
+      description: Cancel an in-progress processing job
+      operationId: cancelProcessing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Processing cancelled
+        '404':
+          description: Job not found
+        '409':
+          description: Job already completed
+
+  /pacs/studies:
+    get:
+      tags: [PACS]
+      summary: Query PACS studies
+      description: Query PACS for WSI studies using DICOM C-FIND
+      operationId: queryPACSStudies
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: patient_id
+          in: query
+          schema:
+            type: string
+        - name: study_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: modality
+          in: query
+          schema:
+            type: string
+            enum: [SM, WSI]
+      responses:
+        '200':
+          description: Study list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PACSStudy'
+
+  /pacs/studies/{study_uid}/retrieve:
+    post:
+      tags: [PACS]
+      summary: Retrieve study from PACS
+      description: Retrieve WSI study using DICOM C-MOVE
+      operationId: retrievePACSStudy
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: study_uid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Retrieval started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrievalJob'
+
+  /clinical/reports:
+    post:
+      tags: [Clinical]
+      summary: Generate clinical report
+      description: Generate PDF clinical report with visualizations
+      operationId: generateClinicalReport
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /admin/config:
+    get:
+      tags: [Admin]
+      summary: Get configuration
+      description: Get current system configuration
+      operationId: getConfig
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfig'
+    
+    put:
+      tags: [Admin]
+      summary: Update configuration
+      description: Update system configuration (hot reload)
+      operationId: updateConfig
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SystemConfig'
+      responses:
+        '200':
+          description: Configuration updated
+        '400':
+          description: Invalid configuration
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    DetailedHealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        components:
+          type: object
+          properties:
+            system:
+              $ref: '#/components/schemas/ComponentHealth'
+            gpu:
+              $ref: '#/components/schemas/ComponentHealth'
+            metrics:
+              $ref: '#/components/schemas/ComponentHealth'
+            cache:
+              $ref: '#/components/schemas/ComponentHealth'
+
+    ComponentHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        message:
+          type: string
+        details:
+          type: object
+
+    ProcessWSIRequest:
+      type: object
+      required:
+        - wsi_path
+      properties:
+        wsi_path:
+          type: string
+          description: Path to WSI file or PACS study UID
+        config:
+          type: object
+          properties:
+            tile_size:
+              type: integer
+              default: 1024
+            batch_size:
+              type: integer
+              default: 32
+            memory_budget_gb:
+              type: number
+              default: 2.0
+            target_time:
+              type: number
+              default: 30.0
+            confidence_threshold:
+              type: number
+              default: 0.95
+        metadata:
+          type: object
+          properties:
+            patient_id:
+              type: string
+            study_id:
+              type: string
+            priority:
+              type: string
+              enum: [low, normal, high, urgent]
+
+    ProcessingJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, processing, completed, failed, cancelled]
+        created_at:
+          type: string
+          format: date-time
+        stream_url:
+          type: string
+          format: uri
+
+    ProcessingStatus:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, processing, completed, failed, cancelled]
+        progress:
+          type: object
+          properties:
+            patches_processed:
+              type: integer
+            total_patches:
+              type: integer
+            percent_complete:
+              type: number
+            current_confidence:
+              type: number
+            estimated_time_remaining:
+              type: number
+        result:
+          type: object
+          properties:
+            prediction:
+              type: object
+              properties:
+                class:
+                  type: integer
+                probability:
+                  type: number
+                confidence:
+                  type: number
+            processing_time:
+              type: number
+            attention_heatmap_url:
+              type: string
+              format: uri
+        error:
+          type: string
+
+    PACSStudy:
+      type: object
+      properties:
+        study_uid:
+          type: string
+        patient_id:
+          type: string
+        patient_name:
+          type: string
+        study_date:
+          type: string
+          format: date
+        modality:
+          type: string
+        description:
+          type: string
+        series_count:
+          type: integer
+
+    RetrievalJob:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        study_uid:
+          type: string
+        status:
+          type: string
+          enum: [pending, retrieving, completed, failed]
+
+    ReportRequest:
+      type: object
+      required:
+        - job_id
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        template:
+          type: string
+          enum: [standard, detailed, summary]
+        include_heatmaps:
+          type: boolean
+          default: true
+        language:
+          type: string
+          default: en
+
+    SystemConfig:
+      type: object
+      properties:
+        streaming:
+          type: object
+          properties:
+            tile_size:
+              type: integer
+            batch_size:
+              type: integer
+            memory_budget_gb:
+              type: number
+        gpu:
+          type: object
+          properties:
+            device_ids:
+              type: array
+              items:
+                type: integer
+            enable_amp:
+              type: boolean
+        monitoring:
+          type: object
+          properties:
+            metrics_port:
+              type: integer
+            log_level:
+              type: string
+              enum: [DEBUG, INFO, WARNING, ERROR]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
