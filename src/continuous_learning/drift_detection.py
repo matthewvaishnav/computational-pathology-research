@@ -3,6 +3,9 @@ Model drift detection for federated learning.
 
 Monitors prediction confidence distributions, accuracy metrics, and data
 distribution shifts to detect model drift in medical AI systems.
+
+Includes comprehensive accuracy monitoring with per-disease tracking,
+statistical analysis, and automated alerting for performance degradation.
 """
 
 import logging
@@ -14,8 +17,43 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
 from scipy import stats
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from scipy.stats import ks_2samp, wasserstein_distance, entropy
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class DistributionShift:
+    """Represents a detected distribution shift."""
+    timestamp: float
+    round_number: int
+    disease_type: str
+    shift_type: str  # "feature", "prediction", "confidence"
+    test_statistic: float
+    p_value: float
+    threshold: float
+    severity: str  # "warning", "critical"
+    description: str
+
+
+@dataclass
+class AccuracyMetrics:
+    """Comprehensive accuracy metrics for a disease type."""
+    timestamp: float
+    round_number: int
+    disease_type: str
+    accuracy: float
+    precision: float
+    recall: float
+    f1_score: float
+    auc_roc: float
+    sensitivity: float
+    specificity: float
+    ppv: float  # positive predictive value
+    npv: float  # negative predictive value
+    sample_count: int
+    confusion_matrix: List[List[int]]
 
 
 @dataclass
@@ -85,7 +123,10 @@ class ModelDriftDetector:
         # Tracking data structures
         self.confidence_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
         self.accuracy_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
+        self.accuracy_metrics_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
         self.prediction_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
+        self.feature_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
+        self.distribution_shifts: List[DistributionShift] = []
         
         # Baseline statistics
         self.baseline_confidence: Dict[str, ConfidenceDistribution] = {}
@@ -109,7 +150,8 @@ class ModelDriftDetector:
         self,
         round_number: int,
         predictions: Dict[str, List[Dict]],
-        ground_truth: Optional[Dict[str, List]] = None
+        ground_truth: Optional[Dict[str, List]] = None,
+        features: Optional[Dict[str, np.ndarray]] = None
     ) -> None:
         """
         Update drift detector with new predictions.
@@ -119,6 +161,7 @@ class ModelDriftDetector:
             predictions: Dict of disease_type -> list of prediction dicts
                         Each prediction dict should have 'confidence' and 'prediction' keys
             ground_truth: Optional ground truth labels for accuracy calculation
+            features: Optional feature representations for distribution shift detection
         """
         timestamp = datetime.now().timestamp()
         
@@ -140,12 +183,28 @@ class ModelDriftDetector:
             # Update prediction history
             self.prediction_history[disease_type].extend(disease_predictions)
             
+            # Update feature history if available
+            if features and disease_type in features:
+                self.feature_history[disease_type].append({
+                    'timestamp': timestamp,
+                    'round_number': round_number,
+                    'features': features[disease_type]
+                })
+            
             # Update accuracy if ground truth available
             if ground_truth and disease_type in ground_truth:
                 gt_labels = ground_truth[disease_type]
                 if len(gt_labels) == len(disease_predictions):
                     predictions_labels = [pred.get('prediction', 0) for pred in disease_predictions]
-                    accuracy = self._compute_accuracy(predictions_labels, gt_labels)
+                    
+                    # Compute comprehensive accuracy metrics
+                    accuracy_metrics = self._compute_comprehensive_accuracy_metrics(
+                        timestamp, round_number, disease_type, predictions_labels, gt_labels
+                    )
+                    self.accuracy_metrics_history[disease_type].append(accuracy_metrics)
+                    
+                    # Also maintain simple accuracy for backward compatibility
+                    accuracy = accuracy_metrics.accuracy
                     self.accuracy_history[disease_type].append((timestamp, accuracy))
             
             # Set baseline if not established
@@ -154,6 +213,10 @@ class ModelDriftDetector:
             
             # Check for drift
             self._check_drift(disease_type, conf_dist, timestamp)
+            
+            # Check for distribution shifts if features available
+            if features and disease_type in features:
+                self._check_distribution_shifts(disease_type, timestamp, round_number)
         
         logger.debug(f"Updated drift detector for round {round_number} with {len(predictions)} disease types")
     
@@ -201,6 +264,87 @@ class ModelDriftDetector:
             sample_count=len(confidences)
         )
     
+    def _compute_comprehensive_accuracy_metrics(
+        self,
+        timestamp: float,
+        round_number: int,
+        disease_type: str,
+        predictions: List,
+        ground_truth: List
+    ) -> AccuracyMetrics:
+        """Compute comprehensive accuracy metrics."""
+        if len(predictions) != len(ground_truth):
+            # Return zero metrics if mismatch
+            return AccuracyMetrics(
+                timestamp=timestamp,
+                round_number=round_number,
+                disease_type=disease_type,
+                accuracy=0.0,
+                precision=0.0,
+                recall=0.0,
+                f1_score=0.0,
+                auc_roc=0.0,
+                sensitivity=0.0,
+                specificity=0.0,
+                ppv=0.0,
+                npv=0.0,
+                sample_count=0,
+                confusion_matrix=[[0, 0], [0, 0]]
+            )
+        
+        # Convert to numpy arrays
+        y_true = np.array(ground_truth)
+        y_pred = np.array(predictions)
+        
+        # Basic metrics
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred, average='binary', zero_division=0)
+        recall = recall_score(y_true, y_pred, average='binary', zero_division=0)
+        f1 = f1_score(y_true, y_pred, average='binary', zero_division=0)
+        
+        # AUC-ROC (if we have probability scores)
+        try:
+            auc_roc = roc_auc_score(y_true, y_pred)
+        except ValueError:
+            auc_roc = 0.0  # Can't compute AUC with only one class
+        
+        # Confusion matrix
+        cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+        if cm.shape != (2, 2):
+            # Handle case where not all classes are present
+            cm = np.zeros((2, 2), dtype=int)
+            for i, (true_label, pred_label) in enumerate(zip(y_true, y_pred)):
+                if true_label < 2 and pred_label < 2:
+                    cm[true_label, pred_label] += 1
+        
+        # Extract confusion matrix values
+        tn, fp, fn, tp = cm.ravel() if cm.size == 4 else (0, 0, 0, len(y_true))
+        
+        # Sensitivity (recall) and specificity
+        sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+        
+        # Positive and negative predictive values
+        ppv = tp / (tp + fp) if (tp + fp) > 0 else 0.0  # precision
+        npv = tn / (tn + fn) if (tn + fn) > 0 else 0.0
+        
+        return AccuracyMetrics(
+            timestamp=timestamp,
+            round_number=round_number,
+            disease_type=disease_type,
+            accuracy=accuracy,
+            precision=precision,
+            recall=recall,
+            f1_score=f1,
+            auc_roc=auc_roc,
+            sensitivity=sensitivity,
+            specificity=specificity,
+            ppv=ppv,
+            npv=npv,
+            sample_count=len(y_true),
+            confusion_matrix=cm.tolist()
+        )
+
     def _compute_accuracy(self, predictions: List, ground_truth: List) -> float:
         """Compute accuracy from predictions and ground truth."""
         if len(predictions) != len(ground_truth):
@@ -292,6 +436,11 @@ class ModelDriftDetector:
                     affected_diseases=[disease_type]
                 )
         
+        # Check comprehensive metrics drift if available
+        if self.accuracy_metrics_history[disease_type]:
+            recent_metrics = self.accuracy_metrics_history[disease_type][-1]
+            self._check_comprehensive_metrics_drift(disease_type, recent_metrics, timestamp)
+        
         # Check entropy drift (uncertainty pattern changes)
         entropy_drift = abs(current_dist.entropy - baseline.entropy)
         entropy_threshold = 0.5  # Entropy threshold
@@ -306,6 +455,156 @@ class ModelDriftDetector:
                 threshold=entropy_threshold,
                 description=f"Prediction uncertainty pattern changed for {disease_type}",
                 affected_diseases=[disease_type]
+            )
+    
+    def _check_comprehensive_metrics_drift(
+        self,
+        disease_type: str,
+        current_metrics: AccuracyMetrics,
+        timestamp: float
+    ) -> None:
+        """Check for drift in comprehensive accuracy metrics."""
+        if len(self.accuracy_metrics_history[disease_type]) < 5:
+            return  # Need baseline
+        
+        # Get baseline metrics (average of first 5 measurements)
+        baseline_metrics = list(self.accuracy_metrics_history[disease_type])[:5]
+        
+        # Check each metric for significant drift
+        metrics_to_check = [
+            ('precision', 'precision'),
+            ('recall', 'recall'), 
+            ('f1_score', 'f1_score'),
+            ('sensitivity', 'sensitivity'),
+            ('specificity', 'specificity')
+        ]
+        
+        for metric_name, attr_name in metrics_to_check:
+            current_value = getattr(current_metrics, attr_name)
+            baseline_value = np.mean([getattr(m, attr_name) for m in baseline_metrics])
+            
+            drift = abs(current_value - baseline_value)
+            if drift > self.accuracy_threshold:
+                self._trigger_alert(
+                    timestamp=timestamp,
+                    drift_type="performance",
+                    severity="warning" if drift < 2 * self.accuracy_threshold else "critical",
+                    metric_name=metric_name,
+                    current_value=current_value,
+                    baseline_value=baseline_value,
+                    threshold=self.accuracy_threshold,
+                    description=f"{metric_name.title()} drift detected for {disease_type}",
+                    affected_diseases=[disease_type]
+                )
+    
+    def _check_distribution_shifts(
+        self,
+        disease_type: str,
+        timestamp: float,
+        round_number: int
+    ) -> None:
+        """Check for distribution shifts in feature space."""
+        if len(self.feature_history[disease_type]) < 10:
+            return  # Need sufficient baseline data
+        
+        # Get current and baseline feature distributions
+        current_features = self.feature_history[disease_type][-1]['features']
+        baseline_features_list = [
+            entry['features'] for entry in list(self.feature_history[disease_type])[:5]
+        ]
+        
+        if not baseline_features_list:
+            return
+        
+        # Combine baseline features
+        baseline_features = np.concatenate(baseline_features_list, axis=0)
+        
+        # Perform statistical tests for distribution shift
+        shift_detected = False
+        test_results = []
+        
+        # Test each feature dimension
+        if current_features.ndim == 2 and baseline_features.ndim == 2:
+            n_features = min(current_features.shape[1], baseline_features.shape[1])
+            
+            for feature_idx in range(min(n_features, 50)):  # Limit to first 50 features for efficiency
+                current_feature_values = current_features[:, feature_idx]
+                baseline_feature_values = baseline_features[:, feature_idx]
+                
+                # Kolmogorov-Smirnov test
+                ks_statistic, ks_p_value = ks_2samp(baseline_feature_values, current_feature_values)
+                
+                # Wasserstein distance (Earth Mover's Distance)
+                wasserstein_dist = wasserstein_distance(baseline_feature_values, current_feature_values)
+                
+                # Check for significant shift
+                if ks_p_value < 0.01:  # Significant at 1% level
+                    shift_detected = True
+                    
+                    # Create distribution shift record
+                    shift = DistributionShift(
+                        timestamp=timestamp,
+                        round_number=round_number,
+                        disease_type=disease_type,
+                        shift_type="feature",
+                        test_statistic=ks_statistic,
+                        p_value=ks_p_value,
+                        threshold=0.01,
+                        severity="critical" if ks_p_value < 0.001 else "warning",
+                        description=f"Feature {feature_idx} distribution shift (KS={ks_statistic:.4f}, p={ks_p_value:.6f})"
+                    )
+                    self.distribution_shifts.append(shift)
+                    
+                    test_results.append({
+                        'feature_idx': feature_idx,
+                        'ks_statistic': ks_statistic,
+                        'ks_p_value': ks_p_value,
+                        'wasserstein_distance': wasserstein_dist
+                    })
+        
+        # Test overall distribution using sample statistics
+        current_mean = np.mean(current_features, axis=0)
+        baseline_mean = np.mean(baseline_features, axis=0)
+        
+        # Compute mean shift magnitude
+        mean_shift = np.linalg.norm(current_mean - baseline_mean)
+        mean_shift_threshold = 0.1  # Configurable threshold
+        
+        if mean_shift > mean_shift_threshold:
+            shift_detected = True
+            
+            shift = DistributionShift(
+                timestamp=timestamp,
+                round_number=round_number,
+                disease_type=disease_type,
+                shift_type="feature",
+                test_statistic=mean_shift,
+                p_value=0.0,  # Not applicable for mean shift
+                threshold=mean_shift_threshold,
+                severity="critical" if mean_shift > 2 * mean_shift_threshold else "warning",
+                description=f"Feature mean shift detected (magnitude={mean_shift:.4f})"
+            )
+            self.distribution_shifts.append(shift)
+        
+        # Trigger alert if significant shift detected
+        if shift_detected:
+            severity = "critical" if any(r.get('ks_p_value', 1.0) < 0.001 for r in test_results) else "warning"
+            
+            self._trigger_alert(
+                timestamp=timestamp,
+                drift_type="distribution",
+                severity=severity,
+                metric_name="feature_distribution",
+                current_value=mean_shift,
+                baseline_value=0.0,
+                threshold=mean_shift_threshold,
+                description=f"Feature distribution shift detected for {disease_type} ({len(test_results)} features affected)",
+                affected_diseases=[disease_type]
+            )
+            
+            logger.warning(
+                f"Distribution shift detected for {disease_type}: "
+                f"{len(test_results)} features affected, mean_shift={mean_shift:.4f}"
             )
     
     def _detect_confidence_drift(
@@ -551,6 +850,101 @@ class ModelDriftDetector:
             )),
             "most_recent_alert": recent_alerts[-1] if recent_alerts else None
         }
+    
+    def get_distribution_shifts(self, hours: int = 24) -> Dict:
+        """Get summary of recent distribution shifts."""
+        cutoff_time = datetime.now().timestamp() - (hours * 3600)
+        recent_shifts = [shift for shift in self.distribution_shifts if shift.timestamp > cutoff_time]
+        
+        # Group by disease and severity
+        shift_counts = defaultdict(int)
+        for shift in recent_shifts:
+            shift_counts[f"{shift.disease_type}_{shift.severity}"] += 1
+        
+        # Get most significant shifts
+        significant_shifts = [
+            shift for shift in recent_shifts 
+            if shift.severity == "critical" or shift.p_value < 0.001
+        ]
+        
+        return {
+            "total_shifts": len(recent_shifts),
+            "time_range_hours": hours,
+            "shift_breakdown": dict(shift_counts),
+            "affected_diseases": list(set(shift.disease_type for shift in recent_shifts)),
+            "significant_shifts": significant_shifts[-10:],  # Last 10 significant shifts
+            "most_recent_shift": recent_shifts[-1] if recent_shifts else None
+        }
+    
+    def export_drift_report(self, filepath: str, hours: int = 24) -> None:
+        """Export comprehensive drift report to file."""
+        import json
+        from datetime import datetime
+        
+        # Collect all drift information
+        report = {
+            "report_timestamp": datetime.now().isoformat(),
+            "time_range_hours": hours,
+            "drift_status": self.get_drift_status(),
+            "alert_summary": self.get_alert_summary(hours),
+            "distribution_shifts": self.get_distribution_shifts(hours),
+            "confidence_trends": {}
+        }
+        
+        # Add confidence trends for each disease
+        for disease in self.supported_diseases:
+            trends = self.get_confidence_trends(disease, hours)
+            if "error" not in trends:
+                report["confidence_trends"][disease] = trends
+        
+        # Write report
+        with open(filepath, 'w') as f:
+            json.dump(report, f, indent=2, default=str)
+        
+        logger.info(f"Drift report exported to {filepath}")
+    
+    def clear_old_data(self, hours: int = 168) -> None:  # Default: 1 week
+        """Clear old drift detection data to manage memory."""
+        cutoff_time = datetime.now().timestamp() - (hours * 3600)
+        
+        # Clear old alerts
+        self.alerts = [alert for alert in self.alerts if alert.timestamp > cutoff_time]
+        
+        # Clear old distribution shifts
+        self.distribution_shifts = [
+            shift for shift in self.distribution_shifts 
+            if shift.timestamp > cutoff_time
+        ]
+        
+        # Clear old feature history (keep recent data in deques)
+        for disease_type in self.feature_history:
+            recent_features = [
+                entry for entry in self.feature_history[disease_type]
+                if entry['timestamp'] > cutoff_time
+            ]
+            self.feature_history[disease_type].clear()
+            self.feature_history[disease_type].extend(recent_features)
+        
+        logger.info(f"Cleared drift data older than {hours} hours")
+    
+    def configure_alert_thresholds(
+        self,
+        confidence_threshold: Optional[float] = None,
+        accuracy_threshold: Optional[float] = None,
+        alert_cooldown: Optional[int] = None
+    ) -> None:
+        """Dynamically configure alert thresholds."""
+        if confidence_threshold is not None:
+            self.confidence_threshold = confidence_threshold
+            logger.info(f"Updated confidence threshold to {confidence_threshold}")
+        
+        if accuracy_threshold is not None:
+            self.accuracy_threshold = accuracy_threshold
+            logger.info(f"Updated accuracy threshold to {accuracy_threshold}")
+        
+        if alert_cooldown is not None:
+            self.alert_cooldown = alert_cooldown
+            logger.info(f"Updated alert cooldown to {alert_cooldown} seconds")
 
 
 if __name__ == "__main__":
