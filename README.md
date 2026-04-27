@@ -420,16 +420,64 @@ npx react-native run-android
 npx react-native build-android --mode=release
 ```
 
+### Data Acquisition (Multi-Disease & Vision-Language)
+
+**Quick Start**: Get datasets for multi-disease and vision-language training in 4-6 weeks.
+
+```bash
+# Step 1: Setup environment
+bash scripts/setup_data_acquisition.sh  # Linux/Mac
+# OR
+scripts\setup_data_acquisition.bat      # Windows
+
+# Step 2: Download public datasets (2-4 hours)
+python scripts/download_public_datasets.py --data-root data
+
+# Step 3: Verify downloads
+python scripts/verify_datasets.py --data-root data
+
+# Step 4: Generate captions with GPT-4V (optional, ~$300 for 10K images)
+export OPENAI_API_KEY=your_key_here
+python scripts/generate_captions_gpt4v.py \
+  --image-dir data/multi_disease \
+  --output-dir data/vision_language/generated \
+  --max-images 10000
+```
+
+**See [QUICKSTART_DATA_ACQUISITION.md](QUICKSTART_DATA_ACQUISITION.md) for detailed instructions.**
+
+**Available Datasets**:
+- ✅ **LC25000**: 25K lung cancer images (auto-download)
+- ✅ **NCT-CRC**: 100K colon cancer patches (auto-download)
+- ✅ **CRC-VAL**: 7K colon validation (auto-download)
+- ⚠ **HAM10000**: 10K melanoma (manual download)
+- ⚠ **PANDA**: 11K prostate WSI (Kaggle API)
+- ⚠ **SICAPv2**: 19K prostate patches (manual download)
+
 ### Training Pipeline
 
 ```bash
-# Train PCam model
+# Train PCam model (breast cancer)
 python experiments/train_pcam.py \
   --config configs/pcam_real.yaml \
   --data-root data/pcam_real \
   --checkpoint-dir checkpoints/pcam_real \
   --epochs 20 \
   --batch-size 64
+
+# Train multi-disease model (requires datasets from above)
+python experiments/train_multi_disease.py \
+  --config configs/multi_disease.yaml \
+  --data-root data \
+  --output-dir checkpoints/multi_disease \
+  --epochs 50
+
+# Train vision-language model (requires captions)
+python experiments/train_vision_language.py \
+  --config configs/vision_language.yaml \
+  --data-root data/vision_language \
+  --output-dir checkpoints/vision_language \
+  --epochs 100
 
 # Resume from checkpoint
 python experiments/train_pcam.py \
