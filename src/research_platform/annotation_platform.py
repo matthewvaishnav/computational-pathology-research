@@ -1,7 +1,7 @@
 """
 Annotation Platform
 
-Web-based annotation tools for medical images.
+Web-based annotation tools for medical images with advanced consensus algorithms.
 """
 
 import json
@@ -10,6 +10,9 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime
 import logging
+import numpy as np
+from sklearn.cluster import DBSCAN, AgglomerativeClustering
+from scipy.spatial.distance import cdist, directed_hausdorff
 
 
 @dataclass
