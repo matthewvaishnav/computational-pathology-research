@@ -1,0 +1,181 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'histocore-alerts@example.com'
+  smtp_auth_username: 'histocore-alerts@example.com'
+  smtp_auth_password: 'password'
+
+route:
+  group_by: ['alertname', 'component']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s
+      repeat_interval: 15m
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      repeat_interval: 4h
+    - match:
+        component: business
+      receiver: 'business-alerts'
+      group_wait: 5s
+      repeat_interval: 30m
+    - match:
+        component: sla
+      receiver: 'sla-alerts'
+      group_wait: 0s
+      repeat_interval: 10m
+
+receivers:
+  - name: 'web.hook'
+    webhook_configs:
+      - url: 'http://localhost:5001/webhook'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'oncall@example.com'
+        subject: '[CRITICAL] HistoCore Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Started: {{ .StartsAt }}
+          {{ end }}
+        headers:
+          Priority: 'high'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#histocore-alerts'
+        title: 'CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Started:* {{ .StartsAt }}
+          {{ end }}
+        color: 'danger'
+    pagerduty_configs:
+      - routing_key: 'YOUR_PAGERDUTY_INTEGRATION_KEY'
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+        severity: 'critical'
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'team@example.com'
+        subject: '[WARNING] HistoCore Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Started: {{ .StartsAt }}
+          {{ end }}
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#histocore-monitoring'
+        title: 'WARNING: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Started:* {{ .StartsAt }}
+          {{ end }}
+        color: 'warning'
+
+  - name: 'business-alerts'
+    email_configs:
+      - to: 'business-team@example.com,oncall@example.com'
+        subject: '[BUSINESS IMPACT] HistoCore Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          BUSINESS IMPACT ALERT
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Started: {{ .StartsAt }}
+          
+          This alert indicates potential impact to clinical operations.
+          Immediate attention required.
+          {{ end }}
+        headers:
+          Priority: 'high'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#histocore-business'
+        title: 'BUSINESS IMPACT: {{ .GroupLabels.alertname }}'
+        text: |
+          🚨 *BUSINESS IMPACT ALERT* 🚨
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Component:* {{ .Labels.component }}
+          *Started:* {{ .StartsAt }}
+          
+          This alert indicates potential impact to clinical operations.
+          {{ end }}
+        color: 'danger'
+
+  - name: 'sla-alerts'
+    email_configs:
+      - to: 'sla-team@example.com,management@example.com'
+        subject: '[SLA VIOLATION] HistoCore: {{ .GroupLabels.alertname }}'
+        body: |
+          SLA VIOLATION DETECTED
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Started: {{ .StartsAt }}
+          
+          This represents a violation of our 30-second processing SLA.
+          Customer impact is likely.
+          {{ end }}
+        headers:
+          Priority: 'high'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#histocore-sla'
+        title: 'SLA VIOLATION: {{ .GroupLabels.alertname }}'
+        text: |
+          ⚠️ *SLA VIOLATION* ⚠️
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Started:* {{ .StartsAt }}
+          
+          30-second processing SLA has been violated.
+          {{ end }}
+        color: 'danger'
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'component']
+  
+  - source_match:
+      alertname: 'HistoCoreServiceDown'
+    target_match_re:
+      alertname: 'HistoCore.*'
+    equal: ['instance']
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
