@@ -138,6 +138,37 @@ class StreamingMetrics:
             registry=self.registry
         )
         
+        self.cache_size = Gauge(
+            'histocore_cache_size_bytes',
+            'Cache size in bytes',
+            ['cache_type'],
+            registry=self.registry
+        )
+        
+        self.cache_operations = Histogram(
+            'histocore_cache_operations_duration_seconds',
+            'Cache operation duration',
+            ['operation'],
+            buckets=[0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0],
+            registry=self.registry
+        )
+        
+        # Storage metrics
+        self.storage_operations = Histogram(
+            'histocore_storage_operations_duration_seconds',
+            'Storage operation duration',
+            ['operation'],
+            buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0],
+            registry=self.registry
+        )
+        
+        self.storage_size = Gauge(
+            'histocore_storage_size_bytes',
+            'Storage size in bytes',
+            ['storage_type'],
+            registry=self.registry
+        )
+        
         # System info
         self.system_info = Info(
             'histocore_system_info',
@@ -400,3 +431,12 @@ def record_throughput_measurement(patches_per_second: float, gpu_id: str = '0'):
 def record_confidence_measurement(score: float, slide_id: str):
     """Record confidence measurement."""
     get_metrics().record_confidence(score, slide_id)
+
+
+# Cache and storage metric accessors
+cache_hits_total = get_metrics().cache_hits
+cache_misses_total = get_metrics().cache_misses
+cache_size_bytes = get_metrics().cache_size
+cache_operations_duration = get_metrics().cache_operations
+storage_operations_duration = get_metrics().storage_operations
+storage_size_bytes = get_metrics().storage_size
