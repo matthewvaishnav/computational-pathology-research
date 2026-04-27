@@ -280,6 +280,11 @@ kubectl get pods -n histocore
 
 - **[System Summary](STREAMING_SYSTEM_SUMMARY.md)** - Complete system overview
 - **[Architecture Design](docs/architecture/)** - Detailed architecture documentation
+- **[Foundation Model](docs/FOUNDATION_MODEL.md)** - Multi-disease foundation model architecture
+- **[Explainability System](docs/EXPLAINABILITY.md)** - Vision-language explainability engine
+- **[Federated Learning](docs/FEDERATED_LEARNING.md)** - Privacy-preserving federated learning
+- **[Continuous Learning](docs/CONTINUOUS_LEARNING.md)** - Drift detection, retraining, A/B testing
+- **[Clinical Validation](docs/CLINICAL_VALIDATION.md)** - Multi-site validation framework
 - **[Security & Compliance](docs/security/)** - HIPAA/GDPR/FDA compliance details
 - **[Performance Benchmarks](docs/benchmarks/)** - Detailed performance analysis
 
