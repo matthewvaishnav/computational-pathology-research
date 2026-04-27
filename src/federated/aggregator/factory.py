@@ -46,7 +46,14 @@ class AggregatorFactory:
         "krum": {"num_byzantine": 1, "multi_krum": False},
         "trimmed_mean": {"trim_ratio": 0.1},
         "median": {},
-        "secure": {"poly_modulus_degree": 8192, "max_workers": 4, "dropout_threshold": 0.5},
+        "secure": {
+            "poly_modulus_degree": 8192, 
+            "max_workers": 4, 
+            "dropout_threshold": 0.5,
+            "client_timeout": 300,  # 5 minutes
+            "max_retries": 3,
+            "failure_recovery": True
+        },
     }
 
     @classmethod

@@ -1,602 +1,605 @@
 """
-Privacy budget tracking for federated learning clients.
+Privacy budget tracking and monitoring for federated learning.
 
-Tracks per-client privacy expenditure and enforces budget limits
-to ensure formal differential privacy guarantees.
+Provides comprehensive privacy budget management, composition analysis,
+and real-time monitoring for medical AI federated learning systems.
 """
 
 import json
 import logging
-import os
-from dataclasses import dataclass, field
+import time
+from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
-import torch
-
-from ..common.data_models import PrivacyBudget
-from .dp_sgd import PrivacyAccountant
+import numpy as np
+import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class PrivacyBudgetEntry:
-    """Single privacy budget entry for a training round."""
-
-    round_id: int
-    timestamp: datetime
-    epsilon_spent: float
-    delta_spent: float
-    noise_multiplier: float
-    batch_size: int
-    dataset_size: int
-    clipping_norm: float
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return {
-            "round_id": self.round_id,
-            "timestamp": self.timestamp.isoformat(),
-            "epsilon_spent": self.epsilon_spent,
-            "delta_spent": self.delta_spent,
-            "noise_multiplier": self.noise_multiplier,
-            "batch_size": self.batch_size,
-            "dataset_size": self.dataset_size,
-            "clipping_norm": self.clipping_norm,
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "PrivacyBudgetEntry":
-        """Create from dictionary."""
-        return cls(
-            round_id=data["round_id"],
-            timestamp=datetime.fromisoformat(data["timestamp"]),
-            epsilon_spent=data["epsilon_spent"],
-            delta_spent=data["delta_spent"],
-            noise_multiplier=data["noise_multiplier"],
-            batch_size=data["batch_size"],
-            dataset_size=data["dataset_size"],
-            clipping_norm=data["clipping_norm"],
-        )
+class BudgetTransaction:
+    """Represents a privacy budget transaction."""
+    timestamp: float
+    round_number: int
+    epsilon_consumed: float
+    delta_consumed: float
+    remaining_epsilon: float
+    remaining_delta: float
+    client_count: int
+    mechanism: str
+    description: str = ""
 
 
-class ClientPrivacyTracker:
-    """Privacy budget tracker for a single client."""
+@dataclass
+class BudgetAlert:
+    """Represents a privacy budget alert."""
+    timestamp: float
+    alert_type: str  # "warning", "critical", "exhausted"
+    message: str
+    remaining_epsilon: float
+    remaining_delta: float
+    threshold_triggered: float
 
+
+class PrivacyBudgetTracker:
+    """
+    Comprehensive privacy budget tracking and monitoring.
+    
+    Features:
+    - Real-time budget consumption tracking
+    - Composition analysis and optimization
+    - Alert system for budget thresholds
+    - Historical analysis and reporting
+    - Budget forecasting and planning
+    """
+    
     def __init__(
         self,
-        client_id: str,
-        epsilon_limit: float = 1.0,
-        delta_limit: float = 1e-5,
-        time_window: Optional[timedelta] = None,
-        storage_path: Optional[str] = None,
+        total_epsilon: float,
+        total_delta: float,
+        warning_threshold: float = 0.8,
+        critical_threshold: float = 0.95,
+        save_path: Optional[str] = None
     ):
         """
-        Initialize client privacy tracker.
-
+        Initialize privacy budget tracker.
+        
         Args:
-            client_id: Client identifier
-            epsilon_limit: Total epsilon budget limit
-            delta_limit: Total delta budget limit
-            time_window: Time window for budget reset (None = no reset)
-            storage_path: Path to store budget history
+            total_epsilon: Total epsilon budget
+            total_delta: Total delta budget
+            warning_threshold: Warning threshold (fraction of budget)
+            critical_threshold: Critical threshold (fraction of budget)
+            save_path: Path to save tracking data
         """
-        self.client_id = client_id
-        self.epsilon_limit = epsilon_limit
-        self.delta_limit = delta_limit
-        self.time_window = time_window
-        self.storage_path = storage_path
-
-        # Budget tracking
-        self.budget_entries: List[PrivacyBudgetEntry] = []
-        self.total_epsilon = 0.0
-        self.total_delta = 0.0
-        self.is_exhausted = False
-
-        # Load existing budget if storage path provided
-        if storage_path:
-            self._load_budget_history()
-
+        self.total_epsilon = total_epsilon
+        self.total_delta = total_delta
+        self.warning_threshold = warning_threshold
+        self.critical_threshold = critical_threshold
+        self.save_path = Path(save_path) if save_path else None
+        
+        # Current budget state
+        self.consumed_epsilon = 0.0
+        self.consumed_delta = 0.0
+        self.round_count = 0
+        
+        # Transaction history
+        self.transactions: List[BudgetTransaction] = []
+        self.alerts: List[BudgetAlert] = []
+        
+        # Composition tracking
+        self.composition_history: List[Dict] = []
+        
+        # Alert callbacks
+        self.alert_callbacks = []
+        
         logger.info(
-            f"Privacy tracker initialized for {client_id}: ε_limit={epsilon_limit}, δ_limit={delta_limit}"
+            f"Initialized privacy budget tracker: "
+            f"ε={total_epsilon}, δ={total_delta}, "
+            f"warning={warning_threshold:.1%}, critical={critical_threshold:.1%}"
         )
-
-    def record_training_round(
+    
+    @property
+    def remaining_epsilon(self) -> float:
+        """Remaining epsilon budget."""
+        return max(0.0, self.total_epsilon - self.consumed_epsilon)
+    
+    @property
+    def remaining_delta(self) -> float:
+        """Remaining delta budget."""
+        return max(0.0, self.total_delta - self.consumed_delta)
+    
+    @property
+    def epsilon_usage_rate(self) -> float:
+        """Epsilon usage rate (0-1)."""
+        return self.consumed_epsilon / self.total_epsilon if self.total_epsilon > 0 else 0.0
+    
+    @property
+    def delta_usage_rate(self) -> float:
+        """Delta usage rate (0-1)."""
+        return self.consumed_delta / self.total_delta if self.total_delta > 0 else 0.0
+    
+    @property
+    def is_exhausted(self) -> bool:
+        """Check if budget is exhausted."""
+        return (self.consumed_epsilon >= self.total_epsilon or 
+                self.consumed_delta >= self.total_delta)
+    
+    def consume_budget(
         self,
-        round_id: int,
-        epsilon_spent: float,
-        delta_spent: float,
-        noise_multiplier: float,
-        batch_size: int,
-        dataset_size: int,
-        clipping_norm: float,
+        epsilon: float,
+        delta: float,
+        round_number: int,
+        client_count: int,
+        mechanism: str,
+        description: str = ""
     ) -> bool:
         """
-        Record privacy expenditure for a training round.
-
+        Consume privacy budget and record transaction.
+        
         Args:
-            round_id: Training round ID
-            epsilon_spent: Epsilon spent in this round
-            delta_spent: Delta spent in this round
-            noise_multiplier: Noise multiplier used
-            batch_size: Batch size used
-            dataset_size: Local dataset size
-            clipping_norm: Gradient clipping norm
-
+            epsilon: Epsilon to consume
+            delta: Delta to consume
+            round_number: Round number
+            client_count: Number of clients
+            mechanism: Privacy mechanism used
+            description: Optional description
+            
         Returns:
-            True if budget allows this expenditure
+            True if budget was consumed, False if insufficient
         """
-        # Check if this would exceed budget
-        new_epsilon = self.total_epsilon + epsilon_spent
-        new_delta = self.total_delta + delta_spent
-
-        if new_epsilon > self.epsilon_limit or new_delta > self.delta_limit:
+        # Check if we have sufficient budget
+        if (self.consumed_epsilon + epsilon > self.total_epsilon or
+            self.consumed_delta + delta > self.total_delta):
+            
             logger.warning(
-                f"Client {self.client_id}: Budget exceeded! ε={new_epsilon:.6f}/{self.epsilon_limit}, δ={new_delta:.2e}/{self.delta_limit}"
+                f"Insufficient privacy budget: "
+                f"requested ε={epsilon:.6f}, δ={delta:.8f}, "
+                f"remaining ε={self.remaining_epsilon:.6f}, δ={self.remaining_delta:.8f}"
             )
-            self.is_exhausted = True
             return False
-
-        # Record the expenditure
-        entry = PrivacyBudgetEntry(
-            round_id=round_id,
-            timestamp=datetime.now(),
-            epsilon_spent=epsilon_spent,
-            delta_spent=delta_spent,
-            noise_multiplier=noise_multiplier,
-            batch_size=batch_size,
-            dataset_size=dataset_size,
-            clipping_norm=clipping_norm,
+        
+        # Consume budget
+        self.consumed_epsilon += epsilon
+        self.consumed_delta += delta
+        self.round_count += 1
+        
+        # Record transaction
+        transaction = BudgetTransaction(
+            timestamp=time.time(),
+            round_number=round_number,
+            epsilon_consumed=epsilon,
+            delta_consumed=delta,
+            remaining_epsilon=self.remaining_epsilon,
+            remaining_delta=self.remaining_delta,
+            client_count=client_count,
+            mechanism=mechanism,
+            description=description
         )
-
-        self.budget_entries.append(entry)
-        self.total_epsilon = new_epsilon
-        self.total_delta = new_delta
-
-        # Check if budget is now exhausted
-        if self.total_epsilon >= self.epsilon_limit * 0.95:  # 95% threshold
-            logger.warning(
-                f"Client {self.client_id}: Budget nearly exhausted ({self.total_epsilon:.6f}/{self.epsilon_limit})"
-            )
-
-        # Save to storage if configured
-        if self.storage_path:
-            self._save_budget_history()
-
+        
+        self.transactions.append(transaction)
+        
+        # Check for alerts
+        self._check_budget_alerts()
+        
+        # Update composition history
+        self._update_composition_history(epsilon, delta, mechanism)
+        
+        # Save if path specified
+        if self.save_path:
+            self._save_state()
+        
         logger.info(
-            f"Client {self.client_id} round {round_id}: ε={epsilon_spent:.6f} (total: {self.total_epsilon:.6f}/{self.epsilon_limit})"
+            f"Consumed privacy budget: ε={epsilon:.6f}, δ={delta:.8f}, "
+            f"remaining ε={self.remaining_epsilon:.6f}, δ={self.remaining_delta:.8f}"
         )
-
+        
         return True
-
-    def get_remaining_budget(self) -> Tuple[float, float]:
-        """
-        Get remaining privacy budget.
-
-        Returns:
-            Tuple of (remaining_epsilon, remaining_delta)
-        """
-        remaining_epsilon = max(0.0, self.epsilon_limit - self.total_epsilon)
-        remaining_delta = max(0.0, self.delta_limit - self.total_delta)
-        return remaining_epsilon, remaining_delta
-
-    def can_participate(self, estimated_epsilon: float, estimated_delta: float) -> bool:
-        """
-        Check if client can participate in next round.
-
-        Args:
-            estimated_epsilon: Estimated epsilon for next round
-            estimated_delta: Estimated delta for next round
-
-        Returns:
-            True if client can participate
-        """
-        remaining_epsilon, remaining_delta = self.get_remaining_budget()
-        return (
-            estimated_epsilon <= remaining_epsilon
-            and estimated_delta <= remaining_delta
-            and not self.is_exhausted
-        )
-
-    def reset_budget(
-        self, new_epsilon_limit: Optional[float] = None, new_delta_limit: Optional[float] = None
-    ):
-        """
-        Reset privacy budget (e.g., for new time window).
-
-        Args:
-            new_epsilon_limit: New epsilon limit (optional)
-            new_delta_limit: New delta limit (optional)
-        """
-        if new_epsilon_limit is not None:
-            self.epsilon_limit = new_epsilon_limit
-        if new_delta_limit is not None:
-            self.delta_limit = new_delta_limit
-
-        # Archive old entries if storage configured
-        if self.storage_path and self.budget_entries:
-            self._archive_budget_history()
-
-        # Reset tracking
-        self.budget_entries.clear()
-        self.total_epsilon = 0.0
-        self.total_delta = 0.0
-        self.is_exhausted = False
-
-        logger.info(
-            f"Client {self.client_id}: Budget reset to ε={self.epsilon_limit}, δ={self.delta_limit}"
-        )
-
-    def get_budget_summary(self) -> Dict[str, Any]:
-        """
-        Get comprehensive budget summary.
-
-        Returns:
-            Dictionary with budget information
-        """
-        remaining_epsilon, remaining_delta = self.get_remaining_budget()
-
+    
+    def _check_budget_alerts(self) -> None:
+        """Check for budget threshold alerts."""
+        epsilon_rate = self.epsilon_usage_rate
+        delta_rate = self.delta_usage_rate
+        max_rate = max(epsilon_rate, delta_rate)
+        
+        alert_type = None
+        threshold = None
+        
+        if max_rate >= 1.0:
+            alert_type = "exhausted"
+            threshold = 1.0
+        elif max_rate >= self.critical_threshold:
+            alert_type = "critical"
+            threshold = self.critical_threshold
+        elif max_rate >= self.warning_threshold:
+            alert_type = "warning"
+            threshold = self.warning_threshold
+        
+        if alert_type:
+            # Check if we already have a recent alert of this type
+            recent_alerts = [
+                a for a in self.alerts 
+                if a.alert_type == alert_type and 
+                time.time() - a.timestamp < 300  # 5 minutes
+            ]
+            
+            if not recent_alerts:
+                message = self._generate_alert_message(alert_type, max_rate, threshold)
+                
+                alert = BudgetAlert(
+                    timestamp=time.time(),
+                    alert_type=alert_type,
+                    message=message,
+                    remaining_epsilon=self.remaining_epsilon,
+                    remaining_delta=self.remaining_delta,
+                    threshold_triggered=threshold
+                )
+                
+                self.alerts.append(alert)
+                self._notify_alert(alert)
+                
+                logger.warning(f"Privacy budget alert: {message}")
+    
+    def _generate_alert_message(self, alert_type: str, usage_rate: float, threshold: float) -> str:
+        """Generate alert message."""
+        if alert_type == "exhausted":
+            return f"Privacy budget exhausted! Usage: {usage_rate:.1%}"
+        elif alert_type == "critical":
+            return f"Critical privacy budget usage: {usage_rate:.1%} (threshold: {threshold:.1%})"
+        elif alert_type == "warning":
+            return f"Warning: High privacy budget usage: {usage_rate:.1%} (threshold: {threshold:.1%})"
+        else:
+            return f"Privacy budget alert: {usage_rate:.1%}"
+    
+    def _update_composition_history(self, epsilon: float, delta: float, mechanism: str) -> None:
+        """Update composition analysis history."""
+        composition_entry = {
+            "timestamp": time.time(),
+            "round": self.round_count,
+            "epsilon": epsilon,
+            "delta": delta,
+            "mechanism": mechanism,
+            "cumulative_epsilon": self.consumed_epsilon,
+            "cumulative_delta": self.consumed_delta
+        }
+        
+        self.composition_history.append(composition_entry)
+    
+    def _notify_alert(self, alert: BudgetAlert) -> None:
+        """Notify registered callbacks of alert."""
+        for callback in self.alert_callbacks:
+            try:
+                callback(alert)
+            except Exception as e:
+                logger.error(f"Error in alert callback: {e}")
+    
+    def add_alert_callback(self, callback) -> None:
+        """Add callback for budget alerts."""
+        self.alert_callbacks.append(callback)
+    
+    def get_budget_status(self) -> Dict:
+        """Get comprehensive budget status."""
         return {
-            "client_id": self.client_id,
-            "epsilon_limit": self.epsilon_limit,
-            "delta_limit": self.delta_limit,
             "total_epsilon": self.total_epsilon,
             "total_delta": self.total_delta,
-            "remaining_epsilon": remaining_epsilon,
-            "remaining_delta": remaining_delta,
+            "consumed_epsilon": self.consumed_epsilon,
+            "consumed_delta": self.consumed_delta,
+            "remaining_epsilon": self.remaining_epsilon,
+            "remaining_delta": self.remaining_delta,
+            "epsilon_usage_rate": self.epsilon_usage_rate,
+            "delta_usage_rate": self.delta_usage_rate,
+            "rounds_completed": self.round_count,
             "is_exhausted": self.is_exhausted,
-            "rounds_participated": len(self.budget_entries),
-            "avg_epsilon_per_round": self.total_epsilon / max(1, len(self.budget_entries)),
-            "budget_utilization": (
-                self.total_epsilon / self.epsilon_limit if self.epsilon_limit > 0 else 0.0
-            ),
+            "transactions_count": len(self.transactions),
+            "alerts_count": len(self.alerts),
+            "last_transaction": self.transactions[-1] if self.transactions else None
         }
-
-    def _load_budget_history(self):
-        """Load budget history from storage."""
-        if not self.storage_path or not os.path.exists(self.storage_path):
-            return
-
-        try:
-            with open(self.storage_path, "r") as f:
-                data = json.load(f)
-
-            # Load entries
-            self.budget_entries = [
-                PrivacyBudgetEntry.from_dict(entry_data) for entry_data in data.get("entries", [])
-            ]
-
-            # Recompute totals
-            self.total_epsilon = sum(entry.epsilon_spent for entry in self.budget_entries)
-            self.total_delta = sum(entry.delta_spent for entry in self.budget_entries)
-
-            # Check if budget exhausted
-            self.is_exhausted = (
-                self.total_epsilon >= self.epsilon_limit or self.total_delta >= self.delta_limit
-            )
-
-            logger.info(
-                f"Loaded budget history for {self.client_id}: {len(self.budget_entries)} entries"
-            )
-
-        except Exception as e:
-            logger.error(f"Failed to load budget history for {self.client_id}: {e}")
-
-    def _save_budget_history(self):
-        """Save budget history to storage."""
-        if not self.storage_path:
-            return
-
-        try:
-            # Ensure directory exists
-            os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
-
-            data = {
-                "client_id": self.client_id,
-                "epsilon_limit": self.epsilon_limit,
-                "delta_limit": self.delta_limit,
-                "total_epsilon": self.total_epsilon,
-                "total_delta": self.total_delta,
-                "is_exhausted": self.is_exhausted,
-                "last_updated": datetime.now().isoformat(),
-                "entries": [entry.to_dict() for entry in self.budget_entries],
-            }
-
-            with open(self.storage_path, "w") as f:
-                json.dump(data, f, indent=2)
-
-        except Exception as e:
-            logger.error(f"Failed to save budget history for {self.client_id}: {e}")
-
-    def _archive_budget_history(self):
-        """Archive current budget history before reset."""
-        if not self.storage_path:
-            return
-
-        archive_path = self.storage_path.replace(
-            ".json", f'_archive_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-        )
-
-        try:
-            data = {
-                "client_id": self.client_id,
-                "archived_at": datetime.now().isoformat(),
-                "epsilon_limit": self.epsilon_limit,
-                "delta_limit": self.delta_limit,
-                "total_epsilon": self.total_epsilon,
-                "total_delta": self.total_delta,
-                "entries": [entry.to_dict() for entry in self.budget_entries],
-            }
-
-            with open(archive_path, "w") as f:
-                json.dump(data, f, indent=2)
-
-            logger.info(f"Archived budget history for {self.client_id}: {archive_path}")
-
-        except Exception as e:
-            logger.error(f"Failed to archive budget history for {self.client_id}: {e}")
-
-
-class FederatedPrivacyManager:
-    """Manages privacy budgets for all clients in federated learning."""
-
-    def __init__(
-        self,
-        default_epsilon_limit: float = 1.0,
-        default_delta_limit: float = 1e-5,
-        storage_dir: str = "./privacy_budgets",
-    ):
+    
+    def get_usage_forecast(self, target_rounds: int) -> Dict:
         """
-        Initialize federated privacy manager.
-
+        Forecast budget usage for target number of rounds.
+        
         Args:
-            default_epsilon_limit: Default epsilon limit for new clients
-            default_delta_limit: Default delta limit for new clients
-            storage_dir: Directory to store client budget files
-        """
-        self.default_epsilon_limit = default_epsilon_limit
-        self.default_delta_limit = default_delta_limit
-        self.storage_dir = storage_dir
-
-        # Client trackers
-        self.client_trackers: Dict[str, ClientPrivacyTracker] = {}
-
-        # Ensure storage directory exists
-        os.makedirs(storage_dir, exist_ok=True)
-
-        logger.info(
-            f"Federated privacy manager initialized: ε={default_epsilon_limit}, δ={default_delta_limit}"
-        )
-
-    def register_client(
-        self,
-        client_id: str,
-        epsilon_limit: Optional[float] = None,
-        delta_limit: Optional[float] = None,
-    ) -> ClientPrivacyTracker:
-        """
-        Register a new client for privacy tracking.
-
-        Args:
-            client_id: Client identifier
-            epsilon_limit: Client-specific epsilon limit
-            delta_limit: Client-specific delta limit
-
+            target_rounds: Target number of additional rounds
+            
         Returns:
-            Client privacy tracker
+            Dictionary with forecast information
         """
-        if client_id in self.client_trackers:
-            logger.warning(f"Client {client_id} already registered")
-            return self.client_trackers[client_id]
-
-        # Use provided limits or defaults
-        eps_limit = epsilon_limit if epsilon_limit is not None else self.default_epsilon_limit
-        delta_limit = delta_limit if delta_limit is not None else self.default_delta_limit
-
-        # Create storage path
-        storage_path = os.path.join(self.storage_dir, f"{client_id}_budget.json")
-
-        # Create tracker
-        tracker = ClientPrivacyTracker(
-            client_id=client_id,
-            epsilon_limit=eps_limit,
-            delta_limit=delta_limit,
-            storage_path=storage_path,
-        )
-
-        self.client_trackers[client_id] = tracker
-
-        logger.info(f"Registered client {client_id} for privacy tracking")
-
-        return tracker
-
-    def record_client_round(
-        self,
-        client_id: str,
-        round_id: int,
-        epsilon_spent: float,
-        delta_spent: float,
-        noise_multiplier: float,
-        batch_size: int,
-        dataset_size: int,
-        clipping_norm: float,
-    ) -> bool:
-        """
-        Record privacy expenditure for a client's training round.
-
-        Args:
-            client_id: Client identifier
-            round_id: Training round ID
-            epsilon_spent: Epsilon spent
-            delta_spent: Delta spent
-            noise_multiplier: Noise multiplier used
-            batch_size: Batch size
-            dataset_size: Dataset size
-            clipping_norm: Clipping norm
-
-        Returns:
-            True if expenditure was recorded (budget allows)
-        """
-        if client_id not in self.client_trackers:
-            logger.error(f"Client {client_id} not registered for privacy tracking")
-            return False
-
-        tracker = self.client_trackers[client_id]
-        return tracker.record_training_round(
-            round_id,
-            epsilon_spent,
-            delta_spent,
-            noise_multiplier,
-            batch_size,
-            dataset_size,
-            clipping_norm,
-        )
-
-    def get_eligible_clients(self, estimated_epsilon: float, estimated_delta: float) -> List[str]:
-        """
-        Get list of clients eligible for next round.
-
-        Args:
-            estimated_epsilon: Estimated epsilon for next round
-            estimated_delta: Estimated delta for next round
-
-        Returns:
-            List of eligible client IDs
-        """
-        eligible = []
-
-        for client_id, tracker in self.client_trackers.items():
-            if tracker.can_participate(estimated_epsilon, estimated_delta):
-                eligible.append(client_id)
-
-        logger.info(f"Eligible clients for next round: {len(eligible)}/{len(self.client_trackers)}")
-
-        return eligible
-
-    def get_global_budget_summary(self) -> Dict[str, Any]:
-        """
-        Get summary of all client budgets.
-
-        Returns:
-            Dictionary with global budget information
-        """
-        if not self.client_trackers:
-            return {"total_clients": 0}
-
-        summaries = [tracker.get_budget_summary() for tracker in self.client_trackers.values()]
-
-        total_epsilon = sum(s["total_epsilon"] for s in summaries)
-        total_rounds = sum(s["rounds_participated"] for s in summaries)
-        exhausted_clients = sum(1 for s in summaries if s["is_exhausted"])
-
+        if not self.transactions:
+            return {"error": "No transaction history for forecasting"}
+        
+        # Calculate average consumption per round
+        recent_transactions = self.transactions[-10:]  # Last 10 rounds
+        avg_epsilon_per_round = np.mean([t.epsilon_consumed for t in recent_transactions])
+        avg_delta_per_round = np.mean([t.delta_consumed for t in recent_transactions])
+        
+        # Forecast consumption
+        forecast_epsilon = avg_epsilon_per_round * target_rounds
+        forecast_delta = avg_delta_per_round * target_rounds
+        
+        # Check feasibility
+        epsilon_feasible = forecast_epsilon <= self.remaining_epsilon
+        delta_feasible = forecast_delta <= self.remaining_delta
+        feasible = epsilon_feasible and delta_feasible
+        
+        # Estimate maximum rounds possible
+        max_rounds_epsilon = int(self.remaining_epsilon / avg_epsilon_per_round) if avg_epsilon_per_round > 0 else float('inf')
+        max_rounds_delta = int(self.remaining_delta / avg_delta_per_round) if avg_delta_per_round > 0 else float('inf')
+        max_rounds = min(max_rounds_epsilon, max_rounds_delta)
+        
         return {
-            "total_clients": len(self.client_trackers),
-            "exhausted_clients": exhausted_clients,
-            "active_clients": len(self.client_trackers) - exhausted_clients,
-            "total_epsilon_spent": total_epsilon,
+            "target_rounds": target_rounds,
+            "avg_epsilon_per_round": avg_epsilon_per_round,
+            "avg_delta_per_round": avg_delta_per_round,
+            "forecast_epsilon_consumption": forecast_epsilon,
+            "forecast_delta_consumption": forecast_delta,
+            "epsilon_feasible": epsilon_feasible,
+            "delta_feasible": delta_feasible,
+            "feasible": feasible,
+            "max_possible_rounds": max_rounds,
+            "remaining_epsilon_after": self.remaining_epsilon - forecast_epsilon if feasible else None,
+            "remaining_delta_after": self.remaining_delta - forecast_delta if feasible else None
+        }
+    
+    def analyze_composition(self) -> Dict:
+        """Analyze privacy composition across rounds."""
+        if not self.composition_history:
+            return {"error": "No composition history available"}
+        
+        # Group by mechanism
+        mechanism_stats = {}
+        for entry in self.composition_history:
+            mechanism = entry["mechanism"]
+            if mechanism not in mechanism_stats:
+                mechanism_stats[mechanism] = {
+                    "rounds": 0,
+                    "total_epsilon": 0.0,
+                    "total_delta": 0.0,
+                    "avg_epsilon": 0.0,
+                    "avg_delta": 0.0
+                }
+            
+            stats = mechanism_stats[mechanism]
+            stats["rounds"] += 1
+            stats["total_epsilon"] += entry["epsilon"]
+            stats["total_delta"] += entry["delta"]
+        
+        # Calculate averages
+        for mechanism, stats in mechanism_stats.items():
+            stats["avg_epsilon"] = stats["total_epsilon"] / stats["rounds"]
+            stats["avg_delta"] = stats["total_delta"] / stats["rounds"]
+        
+        # Overall composition analysis
+        total_rounds = len(self.composition_history)
+        composition_efficiency = self.consumed_epsilon / (total_rounds * self.total_epsilon / 100) if total_rounds > 0 else 0
+        
+        return {
             "total_rounds": total_rounds,
-            "avg_epsilon_per_client": total_epsilon / len(self.client_trackers),
-            "avg_rounds_per_client": total_rounds / len(self.client_trackers),
-            "client_summaries": {s["client_id"]: s for s in summaries},
+            "mechanism_breakdown": mechanism_stats,
+            "composition_efficiency": composition_efficiency,
+            "average_epsilon_per_round": self.consumed_epsilon / total_rounds if total_rounds > 0 else 0,
+            "average_delta_per_round": self.consumed_delta / total_rounds if total_rounds > 0 else 0
         }
-
-    def reset_all_budgets(self):
-        """Reset privacy budgets for all clients."""
-        for tracker in self.client_trackers.values():
-            tracker.reset_budget()
-
-        logger.info("Reset privacy budgets for all clients")
-
-    def export_budget_report(self, output_path: str):
-        """
-        Export comprehensive budget report.
-
-        Args:
-            output_path: Path to save report
-        """
-        report = {
-            "generated_at": datetime.now().isoformat(),
-            "global_summary": self.get_global_budget_summary(),
-            "client_details": {},
+    
+    def get_recent_alerts(self, hours: int = 24) -> List[BudgetAlert]:
+        """Get recent alerts within specified hours."""
+        cutoff_time = time.time() - (hours * 3600)
+        return [alert for alert in self.alerts if alert.timestamp > cutoff_time]
+    
+    def export_transaction_history(self, filepath: str) -> None:
+        """Export transaction history to JSON file."""
+        export_data = {
+            "metadata": {
+                "total_epsilon": self.total_epsilon,
+                "total_delta": self.total_delta,
+                "export_timestamp": time.time(),
+                "export_date": datetime.now().isoformat()
+            },
+            "transactions": [asdict(t) for t in self.transactions],
+            "alerts": [asdict(a) for a in self.alerts],
+            "composition_history": self.composition_history
         }
-
-        for client_id, tracker in self.client_trackers.items():
-            report["client_details"][client_id] = {
-                "summary": tracker.get_budget_summary(),
-                "entries": [entry.to_dict() for entry in tracker.budget_entries],
-            }
-
-        with open(output_path, "w") as f:
-            json.dump(report, f, indent=2)
-
-        logger.info(f"Exported budget report to {output_path}")
+        
+        with open(filepath, 'w') as f:
+            json.dump(export_data, f, indent=2)
+        
+        logger.info(f"Exported transaction history to {filepath}")
+    
+    def plot_budget_usage(self, save_path: Optional[str] = None) -> None:
+        """Plot budget usage over time."""
+        if not self.transactions:
+            logger.warning("No transactions to plot")
+            return
+        
+        # Extract data for plotting
+        timestamps = [t.timestamp for t in self.transactions]
+        epsilon_remaining = [t.remaining_epsilon for t in self.transactions]
+        delta_remaining = [t.remaining_delta for t in self.transactions]
+        
+        # Convert timestamps to relative time (hours)
+        start_time = timestamps[0]
+        time_hours = [(t - start_time) / 3600 for t in timestamps]
+        
+        # Create plot
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        
+        # Epsilon plot
+        ax1.plot(time_hours, epsilon_remaining, 'b-', linewidth=2, label='Remaining ε')
+        ax1.axhline(y=self.total_epsilon * (1 - self.warning_threshold), 
+                   color='orange', linestyle='--', alpha=0.7, label='Warning threshold')
+        ax1.axhline(y=self.total_epsilon * (1 - self.critical_threshold), 
+                   color='red', linestyle='--', alpha=0.7, label='Critical threshold')
+        ax1.set_ylabel('Remaining Epsilon')
+        ax1.set_title('Privacy Budget Usage Over Time')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        
+        # Delta plot
+        ax2.plot(time_hours, delta_remaining, 'g-', linewidth=2, label='Remaining δ')
+        ax2.axhline(y=self.total_delta * (1 - self.warning_threshold), 
+                   color='orange', linestyle='--', alpha=0.7, label='Warning threshold')
+        ax2.axhline(y=self.total_delta * (1 - self.critical_threshold), 
+                   color='red', linestyle='--', alpha=0.7, label='Critical threshold')
+        ax2.set_xlabel('Time (hours)')
+        ax2.set_ylabel('Remaining Delta')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            logger.info(f"Saved budget usage plot to {save_path}")
+        else:
+            plt.show()
+    
+    def _save_state(self) -> None:
+        """Save tracker state to file."""
+        if not self.save_path:
+            return
+        
+        state_data = {
+            "config": {
+                "total_epsilon": self.total_epsilon,
+                "total_delta": self.total_delta,
+                "warning_threshold": self.warning_threshold,
+                "critical_threshold": self.critical_threshold
+            },
+            "current_state": {
+                "consumed_epsilon": self.consumed_epsilon,
+                "consumed_delta": self.consumed_delta,
+                "round_count": self.round_count,
+                "last_updated": time.time()
+            },
+            "transactions": [asdict(t) for t in self.transactions[-100:]],  # Keep last 100
+            "alerts": [asdict(a) for a in self.alerts[-50:]]  # Keep last 50
+        }
+        
+        self.save_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.save_path, 'w') as f:
+            json.dump(state_data, f, indent=2)
+    
+    def load_state(self, filepath: str) -> None:
+        """Load tracker state from file."""
+        with open(filepath, 'r') as f:
+            state_data = json.load(f)
+        
+        # Load current state
+        current_state = state_data.get("current_state", {})
+        self.consumed_epsilon = current_state.get("consumed_epsilon", 0.0)
+        self.consumed_delta = current_state.get("consumed_delta", 0.0)
+        self.round_count = current_state.get("round_count", 0)
+        
+        # Load transactions
+        transaction_data = state_data.get("transactions", [])
+        self.transactions = [BudgetTransaction(**t) for t in transaction_data]
+        
+        # Load alerts
+        alert_data = state_data.get("alerts", [])
+        self.alerts = [BudgetAlert(**a) for a in alert_data]
+        
+        logger.info(f"Loaded tracker state from {filepath}")
+    
+    def reset(self) -> None:
+        """Reset tracker state."""
+        self.consumed_epsilon = 0.0
+        self.consumed_delta = 0.0
+        self.round_count = 0
+        self.transactions.clear()
+        self.alerts.clear()
+        self.composition_history.clear()
+        
+        logger.info("Reset privacy budget tracker")
 
 
 if __name__ == "__main__":
     # Demo: Privacy budget tracking
-
-    print("=== Privacy Budget Tracking Demo ===\n")
-
-    # Initialize manager
-    manager = FederatedPrivacyManager(
-        default_epsilon_limit=1.0, default_delta_limit=1e-5, storage_dir="./demo_budgets"
+    
+    print("=== Privacy Budget Tracker Demo ===\n")
+    
+    # Create tracker
+    tracker = PrivacyBudgetTracker(
+        total_epsilon=1.0,
+        total_delta=1e-5,
+        warning_threshold=0.7,
+        critical_threshold=0.9
     )
-
-    # Register clients
-    clients = ["hospital_A", "hospital_B", "hospital_C"]
-    for client_id in clients:
-        manager.register_client(client_id)
-
-    print(f"Registered {len(clients)} clients")
-
-    # Simulate training rounds
-    print("\nSimulating federated training rounds:")
-
-    for round_id in range(1, 11):
-        print(f"\nRound {round_id}:")
-
-        # Check eligible clients
-        eligible = manager.get_eligible_clients(0.1, 1e-6)
-        print(f"  Eligible clients: {eligible}")
-
-        # Record training for eligible clients
-        for client_id in eligible:
-            success = manager.record_client_round(
-                client_id=client_id,
-                round_id=round_id,
-                epsilon_spent=0.08,  # Spend 0.08 epsilon per round
-                delta_spent=1e-6,
-                noise_multiplier=1.0,
-                batch_size=32,
-                dataset_size=1000,
-                clipping_norm=1.0,
-            )
-
-            if not success:
-                print(f"    {client_id}: Budget exhausted!")
-
-    # Final summary
-    print("\nFinal Budget Summary:")
-    summary = manager.get_global_budget_summary()
-    print(f"  Total clients: {summary['total_clients']}")
-    print(f"  Active clients: {summary['active_clients']}")
-    print(f"  Exhausted clients: {summary['exhausted_clients']}")
-    print(f"  Total epsilon spent: {summary['total_epsilon_spent']:.4f}")
-    print(f"  Average rounds per client: {summary['avg_rounds_per_client']:.1f}")
-
-    # Individual client details
-    print("\nClient Details:")
-    for client_id in clients:
-        tracker = manager.client_trackers[client_id]
-        client_summary = tracker.get_budget_summary()
-        print(f"  {client_id}:")
-        print(f"    Budget utilization: {client_summary['budget_utilization']:.1%}")
-        print(f"    Remaining epsilon: {client_summary['remaining_epsilon']:.4f}")
-        print(f"    Rounds participated: {client_summary['rounds_participated']}")
-
-    # Export report
-    manager.export_budget_report("./demo_budget_report.json")
-    print("\nExported detailed budget report to ./demo_budget_report.json")
-
+    
+    # Add alert callback
+    def alert_handler(alert: BudgetAlert):
+        print(f"🚨 ALERT: {alert.message}")
+    
+    tracker.add_alert_callback(alert_handler)
+    
+    print("Budget tracker initialized")
+    print(f"Initial status: {tracker.get_budget_status()}")
+    
+    # Simulate federated learning rounds
+    mechanisms = ["gaussian", "laplace", "gaussian"]
+    epsilons = [0.1, 0.15, 0.2, 0.25, 0.3]
+    deltas = [1e-6, 2e-6, 1e-6, 3e-6, 2e-6]
+    
+    for i, (eps, delta, mech) in enumerate(zip(epsilons, deltas, mechanisms * 2)):
+        round_num = i + 1
+        client_count = np.random.randint(3, 8)
+        
+        print(f"\n--- Round {round_num} ---")
+        success = tracker.consume_budget(
+            epsilon=eps,
+            delta=delta,
+            round_number=round_num,
+            client_count=client_count,
+            mechanism=mech,
+            description=f"Federated round with {client_count} clients"
+        )
+        
+        if not success:
+            print("Budget exhausted!")
+            break
+        
+        # Show current status
+        status = tracker.get_budget_status()
+        print(f"Usage: ε={status['epsilon_usage_rate']:.1%}, δ={status['delta_usage_rate']:.1%}")
+    
+    # Show final analysis
+    print(f"\n--- Final Analysis ---")
+    
+    # Budget status
+    final_status = tracker.get_budget_status()
+    print(f"Final budget status:")
+    for key, value in final_status.items():
+        if isinstance(value, float):
+            print(f"  {key}: {value:.6f}")
+        else:
+            print(f"  {key}: {value}")
+    
+    # Composition analysis
+    print(f"\nComposition analysis:")
+    composition = tracker.analyze_composition()
+    for key, value in composition.items():
+        if key != "mechanism_breakdown":
+            print(f"  {key}: {value}")
+    
+    print(f"\nMechanism breakdown:")
+    for mechanism, stats in composition.get("mechanism_breakdown", {}).items():
+        print(f"  {mechanism}: {stats['rounds']} rounds, "
+              f"avg ε={stats['avg_epsilon']:.4f}, avg δ={stats['avg_delta']:.2e}")
+    
+    # Forecast
+    print(f"\nForecast for 10 more rounds:")
+    forecast = tracker.get_usage_forecast(10)
+    for key, value in forecast.items():
+        if isinstance(value, float):
+            print(f"  {key}: {value:.6f}")
+        else:
+            print(f"  {key}: {value}")
+    
+    # Recent alerts
+    recent_alerts = tracker.get_recent_alerts(24)
+    print(f"\nRecent alerts ({len(recent_alerts)}):")
+    for alert in recent_alerts:
+        print(f"  {alert.alert_type}: {alert.message}")
+    
     print("\n=== Demo Complete ===")
