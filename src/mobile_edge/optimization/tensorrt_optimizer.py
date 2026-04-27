@@ -93,7 +93,8 @@ class TensorRTOptimizer:
     
     def optimize_model(self, model: nn.Module,
                       input_shape: Tuple[int, ...],
-                      save_path: Path = None) -> 'TensorRTEngine':
+                      save_path: Path = None,
+                      calibration_dataloader=None) -> 'TensorRTEngine':
         """
         Optimize PyTorch model with TensorRT
         
@@ -101,6 +102,7 @@ class TensorRTOptimizer:
             model: PyTorch model
             input_shape: Input tensor shape (B, C, H, W)
             save_path: Path to save engine
+            calibration_dataloader: DataLoader for INT8 calibration (required for INT8)
             
         Returns:
             TensorRTEngine for inference
@@ -108,6 +110,13 @@ class TensorRTOptimizer:
         
         try:
             self.logger.info(f"Optimizing model with TensorRT {self.config.precision}")
+            
+            # Create calibration dataset for INT8
+            if self.config.precision == 'int8':
+                if calibration_dataloader is None:
+                    raise ValueError("INT8 precision requires calibration_dataloader")
+                self._calibration_data = self.create_calibration_dataset(calibration_dataloader)
+                self.config.calibration_cache = "calibration.cache"
             
             # Export to ONNX first
             onnx_path = Path("temp_model.onnx")
@@ -185,7 +194,12 @@ class TensorRTOptimizer:
             config.set_flag(trt.BuilderFlag.INT8)
             # INT8 calibration needed
             if self.config.calibration_cache:
-                config.int8_calibrator = self._create_calibrator()
+                # Load calibration data if available
+                calibration_data = getattr(self, '_calibration_data', None)
+                if calibration_data:
+                    config.int8_calibrator = self._create_calibrator(calibration_data)
+                else:
+                    raise RuntimeError("INT8 calibration requires calibration dataset. Use create_calibration_dataset() first.")
         
         # Timing cache
         config.set_flag(trt.BuilderFlag.STRICT_TYPES) if self.config.strict_type_constraints else None
@@ -201,10 +215,13 @@ class TensorRTOptimizer:
         
         return engine
     
-    def _create_calibrator(self):
-        """Create INT8 calibrator (placeholder)"""
+    def _create_calibrator(self, calibration_data: List[torch.Tensor]):
+        """Create INT8 calibrator with real calibration dataset."""
+        return self._create_int8_calibrator(calibration_data)
+    
     def _create_int8_calibrator(self, calibration_data: List[torch.Tensor]) -> trt.IInt8Calibrator:
         """Create INT8 calibrator with calibration dataset."""
+        import os
         
         class PythonEntropyCalibrator(trt.IInt8EntropyCalibrator2):
             def __init__(self, calibration_data: List[torch.Tensor], cache_file: str):
@@ -244,6 +261,40 @@ class TensorRTOptimizer:
                     
         cache_file = f"calibration_cache_{hash(str(calibration_data))}.cache"
         return PythonEntropyCalibrator(calibration_data, cache_file)
+    
+    def create_calibration_dataset(self, dataloader, num_samples: int = 500) -> List[torch.Tensor]:
+        """
+        Create calibration dataset from dataloader.
+        
+        Args:
+            dataloader: PyTorch DataLoader
+            num_samples: Number of calibration samples
+            
+        Returns:
+            List of calibration tensors
+        """
+        calibration_data = []
+        
+        self.logger.info(f"Creating calibration dataset with {num_samples} samples")
+        
+        with torch.no_grad():
+            for i, (data, _) in enumerate(dataloader):
+                if i >= num_samples:
+                    break
+                    
+                # Take first sample from batch
+                if isinstance(data, torch.Tensor):
+                    sample = data[0:1]  # Keep batch dimension
+                else:
+                    sample = data[0][0:1]  # Handle tuple inputs
+                    
+                calibration_data.append(sample.cpu())
+                
+                if (i + 1) % 100 == 0:
+                    self.logger.info(f"Collected {i + 1}/{num_samples} calibration samples")
+        
+        self.logger.info(f"Calibration dataset created with {len(calibration_data)} samples")
+        return calibration_data
     
     def _save_engine(self, engine: trt.ICudaEngine, save_path: Path):
         """Save TensorRT engine"""
