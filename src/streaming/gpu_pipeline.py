@@ -22,6 +22,7 @@ try:
         SmartGarbageCollector,
         MemoryUsagePredictor
     )
+    from .model_optimizer import ModelOptimizer, OptimizationConfig
     MEMORY_OPTIMIZER_AVAILABLE = True
 except ImportError:
     MEMORY_OPTIMIZER_AVAILABLE = False
@@ -176,7 +177,9 @@ class GPUPipeline:
                  gpu_ids: Optional[List[int]] = None,
                  memory_limit_gb: Optional[float] = None,
                  enable_fp16: bool = False,
-                 enable_advanced_memory_optimization: bool = True):
+                 enable_advanced_memory_optimization: bool = True,
+                 enable_model_optimization: bool = True,
+                 optimization_config: Optional[OptimizationConfig] = None):
         """Initialize GPU pipeline.
         
         Args:
@@ -186,11 +189,14 @@ class GPUPipeline:
             memory_limit_gb: GPU memory limit in GB
             enable_fp16: Enable FP16 precision for memory reduction
             enable_advanced_memory_optimization: Enable advanced memory pool and GC
+            enable_model_optimization: Enable TensorRT/quantization optimization
+            optimization_config: Configuration for model optimization
         """
         self.model = model
         self.initial_batch_size = batch_size
         self.enable_fp16 = enable_fp16
         self.enable_advanced_memory_optimization = enable_advanced_memory_optimization
+        self.enable_model_optimization = enable_model_optimization
         
         # Setup devices
         self.devices = self._setup_devices(gpu_ids)
@@ -209,6 +215,49 @@ class GPUPipeline:
         if len(self.devices) > 1:
             self.model = nn.DataParallel(self.model, device_ids=[d.index for d in self.devices if d.type == 'cuda'])
             logger.info(f"Enabled DataParallel across {len(self.devices)} GPUs")
+        
+        # Model optimization
+        self.optimized_inference_fn = None
+        self.optimization_info = None
+        
+        if self.enable_model_optimization:
+            try:
+                # Create dummy input for optimization
+                dummy_input = torch.randn(batch_size, 224, 224, 3).to(self.primary_device)
+                if self.enable_fp16:
+                    dummy_input = dummy_input.half()
+                
+                # Use provided config or create default
+                if optimization_config is None:
+                    optimization_config = OptimizationConfig(
+                        enable_tensorrt=True,
+                        tensorrt_precision="fp16" if self.enable_fp16 else "fp32",
+                        enable_quantization=True,
+                        enable_data_parallel=len(self.devices) > 1,
+                        gpu_ids=[d.index for d in self.devices if d.type == 'cuda']
+                    )
+                
+                # Optimize model
+                optimizer = ModelOptimizer(optimization_config)
+                
+                # Use original model for optimization (before DataParallel)
+                base_model = self.model.module if hasattr(self.model, 'module') else self.model
+                
+                optimized_model, self.optimization_info = optimizer.optimize_model(
+                    base_model, dummy_input, "gpu_pipeline_model"
+                )
+                
+                # Create optimized inference function
+                self.optimized_inference_fn = optimizer.create_optimized_inference_fn(
+                    optimized_model, self.optimization_info
+                )
+                
+                logger.info("Model optimization enabled: %s", 
+                           self.optimization_info.get("optimizations_applied", []))
+                
+            except Exception as e:
+                logger.warning("Model optimization failed, using standard model: %s", e)
+                self.enable_model_optimization = False
         
         # Initialize memory manager
         self.memory_manager = GPUMemoryManager(self.primary_device, memory_limit_gb)
@@ -334,7 +383,12 @@ class GPUPipeline:
             else:
                 # Process entire batch
                 with torch.no_grad():
-                    features = self.model(patches)
+                    if self.enable_model_optimization and self.optimized_inference_fn:
+                        # Use optimized inference
+                        features = self.optimized_inference_fn(patches)
+                    else:
+                        # Use standard model
+                        features = self.model(patches)
             
             # Record metrics
             batch_time = time.time() - start_time
@@ -389,7 +443,10 @@ class GPUPipeline:
             subbatch = patches[i:end_idx]
             
             with torch.no_grad():
-                subbatch_features = self.model(subbatch)
+                if self.enable_model_optimization and self.optimized_inference_fn:
+                    subbatch_features = self.optimized_inference_fn(subbatch)
+                else:
+                    subbatch_features = self.model(subbatch)
             
             features_list.append(subbatch_features.cpu())
             
