@@ -1,0 +1,283 @@
+groups:
+  - name: histocore.streaming
+    rules:
+      # Processing performance alerts
+      - alert: HistoCoreHighProcessingTime
+        expr: histogram_quantile(0.95, rate(histocore_processing_duration_seconds_bucket[5m])) > 30
+        for: 2m
+        labels:
+          severity: warning
+          component: streaming
+        annotations:
+          summary: "HistoCore processing time is high"
+          description: "95th percentile processing time is {{ $value }}s, exceeding 30s threshold for stage {{ $labels.stage }}"
+
+      - alert: HistoCoreVeryHighProcessingTime
+        expr: histogram_quantile(0.95, rate(histocore_processing_duration_seconds_bucket[5m])) > 60
+        for: 1m
+        labels:
+          severity: critical
+          component: streaming
+        annotations:
+          summary: "HistoCore processing time is critically high"
+          description: "95th percentile processing time is {{ $value }}s, exceeding 60s critical threshold for stage {{ $labels.stage }}"
+
+      - alert: HistoCoreLowThroughput
+        expr: histocore_throughput_patches_per_second < 100
+        for: 5m
+        labels:
+          severity: warning
+          component: gpu_pipeline
+        annotations:
+          summary: "HistoCore GPU throughput is low"
+          description: "GPU {{ $labels.gpu_id }} throughput is {{ $value }} patches/sec, below 100 patches/sec threshold"
+
+      - alert: HistoCoreVeryLowThroughput
+        expr: histocore_throughput_patches_per_second < 50
+        for: 2m
+        labels:
+          severity: critical
+          component: gpu_pipeline
+        annotations:
+          summary: "HistoCore GPU throughput is critically low"
+          description: "GPU {{ $labels.gpu_id }} throughput is {{ $value }} patches/sec, below 50 patches/sec critical threshold"
+
+      # Memory alerts
+      - alert: HistoCoreHighMemoryUsage
+        expr: histocore_memory_usage_bytes{type="used"} / histocore_memory_usage_bytes{type="available"} > 0.8
+        for: 3m
+        labels:
+          severity: warning
+          component: memory
+        annotations:
+          summary: "HistoCore memory usage is high"
+          description: "Memory usage for {{ $labels.component }} is {{ $value | humanizePercentage }}, exceeding 80% threshold"
+
+      - alert: HistoCoreVeryHighMemoryUsage
+        expr: histocore_memory_usage_bytes{type="used"} / histocore_memory_usage_bytes{type="available"} > 0.9
+        for: 1m
+        labels:
+          severity: critical
+          component: memory
+        annotations:
+          summary: "HistoCore memory usage is critically high"
+          description: "Memory usage for {{ $labels.component }} is {{ $value | humanizePercentage }}, exceeding 90% critical threshold"
+
+      - alert: HistoCoreHighGPUMemoryUsage
+        expr: histocore_gpu_memory_usage_bytes{type="used"} / histocore_gpu_memory_usage_bytes{type="total"} > 0.85
+        for: 2m
+        labels:
+          severity: warning
+          component: gpu_memory
+        annotations:
+          summary: "HistoCore GPU memory usage is high"
+          description: "GPU {{ $labels.gpu_id }} memory usage is {{ $value | humanizePercentage }}, exceeding 85% threshold"
+
+      - alert: HistoCoreVeryHighGPUMemoryUsage
+        expr: histocore_gpu_memory_usage_bytes{type="used"} / histocore_gpu_memory_usage_bytes{type="total"} > 0.95
+        for: 30s
+        labels:
+          severity: critical
+          component: gpu_memory
+        annotations:
+          summary: "HistoCore GPU memory usage is critically high"
+          description: "GPU {{ $labels.gpu_id }} memory usage is {{ $value | humanizePercentage }}, exceeding 95% critical threshold"
+
+      # Error rate alerts
+      - alert: HistoCoreHighErrorRate
+        expr: rate(histocore_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: "{{ $labels.component }}"
+        annotations:
+          summary: "HistoCore error rate is high"
+          description: "Error rate for {{ $labels.component }} is {{ $value }} errors/sec, exceeding 0.1/sec threshold. Error type: {{ $labels.error_type }}"
+
+      - alert: HistoCoreVeryHighErrorRate
+        expr: rate(histocore_errors_total[5m]) > 0.5
+        for: 1m
+        labels:
+          severity: critical
+          component: "{{ $labels.component }}"
+        annotations:
+          summary: "HistoCore error rate is critically high"
+          description: "Error rate for {{ $labels.component }} is {{ $value }} errors/sec, exceeding 0.5/sec critical threshold. Error type: {{ $labels.error_type }}"
+
+      - alert: HistoCoreOOMEvents
+        expr: rate(histocore_oom_events_total[5m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          component: gpu_memory
+        annotations:
+          summary: "HistoCore GPU out of memory events detected"
+          description: "GPU {{ $labels.gpu_id }} experiencing OOM events. Recovery action: {{ $labels.recovery_action }}"
+
+      # Quality alerts
+      - alert: HistoCoreLowConfidence
+        expr: histogram_quantile(0.50, rate(histocore_confidence_score_bucket[10m])) < 0.7
+        for: 5m
+        labels:
+          severity: warning
+          component: model_quality
+        annotations:
+          summary: "HistoCore model confidence is low"
+          description: "Median confidence score is {{ $value }}, below 0.7 threshold"
+
+      - alert: HistoCoreVeryLowConfidence
+        expr: histogram_quantile(0.50, rate(histocore_confidence_score_bucket[10m])) < 0.5
+        for: 2m
+        labels:
+          severity: critical
+          component: model_quality
+        annotations:
+          summary: "HistoCore model confidence is critically low"
+          description: "Median confidence score is {{ $value }}, below 0.5 critical threshold"
+
+      - alert: HistoCoreHighEarlyStoppingRate
+        expr: histocore_early_stopping_rate > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: model_quality
+        annotations:
+          summary: "HistoCore early stopping rate is high"
+          description: "Early stopping rate is {{ $value | humanizePercentage }}, exceeding 80% threshold"
+
+      # PACS connectivity alerts
+      - alert: HistoCoreHighPACSResponseTime
+        expr: histogram_quantile(0.95, rate(histocore_pacs_response_time_seconds_bucket[5m])) > 5
+        for: 3m
+        labels:
+          severity: warning
+          component: pacs
+        annotations:
+          summary: "HistoCore PACS response time is high"
+          description: "95th percentile PACS response time for {{ $labels.operation }} is {{ $value }}s, exceeding 5s threshold"
+
+      - alert: HistoCoreVeryHighPACSResponseTime
+        expr: histogram_quantile(0.95, rate(histocore_pacs_response_time_seconds_bucket[5m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+          component: pacs
+        annotations:
+          summary: "HistoCore PACS response time is critically high"
+          description: "95th percentile PACS response time for {{ $labels.operation }} is {{ $value }}s, exceeding 10s critical threshold"
+
+      - alert: HistoCorePACSErrors
+        expr: rate(histocore_pacs_requests_total{status!="success"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          component: pacs
+        annotations:
+          summary: "HistoCore PACS error rate is high"
+          description: "PACS error rate for {{ $labels.operation }} is {{ $value }} errors/sec, exceeding 0.05/sec threshold"
+
+      # Cache performance alerts
+      - alert: HistoCoreLowCacheHitRate
+        expr: rate(histocore_cache_hits_total[5m]) / (rate(histocore_cache_hits_total[5m]) + rate(histocore_cache_misses_total[5m])) < 0.7
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "HistoCore cache hit rate is low"
+          description: "Cache hit rate for {{ $labels.cache_type }} is {{ $value | humanizePercentage }}, below 70% threshold"
+
+      - alert: HistoCoreVeryLowCacheHitRate
+        expr: rate(histocore_cache_hits_total[5m]) / (rate(histocore_cache_hits_total[5m]) + rate(histocore_cache_misses_total[5m])) < 0.5
+        for: 2m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "HistoCore cache hit rate is critically low"
+          description: "Cache hit rate for {{ $labels.cache_type }} is {{ $value | humanizePercentage }}, below 50% critical threshold"
+
+      # Service availability alerts
+      - alert: HistoCoreServiceDown
+        expr: up{job="histocore-streaming"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: service
+        annotations:
+          summary: "HistoCore streaming service is down"
+          description: "HistoCore streaming service instance {{ $labels.instance }} is down"
+
+      - alert: HistoCoreMetricsDown
+        expr: up{job="histocore-metrics"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: monitoring
+        annotations:
+          summary: "HistoCore metrics service is down"
+          description: "HistoCore metrics service instance {{ $labels.instance }} is down"
+
+      # Attention computation alerts
+      - alert: HistoCoreSlowAttentionComputation
+        expr: histogram_quantile(0.95, rate(histocore_attention_computation_seconds_bucket[5m])) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          component: attention
+        annotations:
+          summary: "HistoCore attention computation is slow"
+          description: "95th percentile attention computation time is {{ $value }}s, exceeding 0.5s threshold"
+
+      - alert: HistoCoreVerySlowAttentionComputation
+        expr: histogram_quantile(0.95, rate(histocore_attention_computation_seconds_bucket[5m])) > 1.0
+        for: 1m
+        labels:
+          severity: critical
+          component: attention
+        annotations:
+          summary: "HistoCore attention computation is critically slow"
+          description: "95th percentile attention computation time is {{ $value }}s, exceeding 1.0s critical threshold"
+
+  - name: histocore.business
+    rules:
+      # Business-critical alerts
+      - alert: HistoCoreProcessingBacklog
+        expr: increase(histocore_slides_processed_total{status="success"}[5m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "HistoCore has stopped processing slides"
+          description: "No slides have been successfully processed in the last 10 minutes"
+
+      - alert: HistoCoreHighFailureRate
+        expr: rate(histocore_slides_processed_total{status="error"}[10m]) / rate(histocore_slides_processed_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "HistoCore slide failure rate is high"
+          description: "Slide failure rate is {{ $value | humanizePercentage }}, exceeding 10% threshold"
+
+      - alert: HistoCoreVeryHighFailureRate
+        expr: rate(histocore_slides_processed_total{status="error"}[10m]) / rate(histocore_slides_processed_total[10m]) > 0.25
+        for: 2m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "HistoCore slide failure rate is critically high"
+          description: "Slide failure rate is {{ $value | humanizePercentage }}, exceeding 25% critical threshold"
+
+      - alert: HistoCoreSLAViolation
+        expr: histogram_quantile(0.95, rate(histocore_processing_duration_seconds_bucket{stage="complete_pipeline"}[10m])) > 30
+        for: 5m
+        labels:
+          severity: critical
+          component: sla
+        annotations:
+          summary: "HistoCore SLA violation - processing time exceeds 30 seconds"
+          description: "95th percentile end-to-end processing time is {{ $value }}s, violating 30s SLA"
