@@ -1,320 +1,211 @@
----
-layout: default
-title: Documentation Index
----
+# HistoCore Documentation Index
 
-# Documentation Index
+Complete documentation for HistoCore Real-Time WSI Streaming.
 
-Comprehensive documentation for HistoCore - the **#1 performing method in digital pathology** establishing superiority over all published baselines with **93.94% AUC** (Rank #1/11 methods).
+## Quick Start
 
----
+- **[Installation Guide](INSTALLATION.md)** - Get started with HistoCore
+- **[Quick Start Tutorial](QUICK_START.md)** - Process your first slide in 5 minutes
+- **[FAQ](FAQ.md)** - Frequently asked questions
 
-## Getting Started
+## API Documentation
 
-### Installation and Setup
-- [Getting Started Guide](GETTING_STARTED.html) - Complete installation and setup guide
-- [System Requirements](GETTING_STARTED.html#system-requirements) - Hardware and software prerequisites
-- [Installation](GETTING_STARTED.html#installation) - Step-by-step installation instructions
-
-### Tutorials
-- [Your First Model](GETTING_STARTED.html#your-first-model) - Step-by-step PCam tutorial
-- [Working with Real Data](GETTING_STARTED.html#working-with-real-data) - PatchCamelyon and CAMELYON16 workflows
-- [API Reference](API_REFERENCE.html) - Complete API documentation
-
----
-
-## Training and Evaluation
-
-### PatchCamelyon (PCam)
-- [PCAM_REAL_RESULTS.md](PCAM_REAL_RESULTS.html) - **Real dataset results**: 85.26% accuracy, 0.9394 AUC with bootstrap CIs
-- [results/comprehensive_benchmark/HISTOCORE_SUPERIORITY_REPORT.md](../results/comprehensive_benchmark/HISTOCORE_SUPERIORITY_REPORT.html) - **🏆 Benchmark superiority**: #1 AUC performance vs 11 published methods
-- [PERFORMANCE_BENCHMARK_COMPLETE.md](../PERFORMANCE_BENCHMARK_COMPLETE.html) - **Performance benchmark completion**: Statistical validation and competitive analysis
-- [PCAM_FAILURE_ANALYSIS.md](PCAM_FAILURE_ANALYSIS.html) - **Failure analysis**: 26.11% false negative rate, clinical implications
-- [THRESHOLD_OPTIMIZATION.md](THRESHOLD_OPTIMIZATION.html) - **Clinical optimization**: 90% sensitivity for cancer screening
-- [PCAM_CROSS_VALIDATION.md](PCAM_CROSS_VALIDATION.html) - **Cross-validation**: K-fold validation for robustness assessment
-- [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.html) - Synthetic benchmark results and analysis
-- [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.html) - Comparing model architectures
-- **Topics**: Patch-level classification, data augmentation, baseline comparisons, clinical deployment, robustness validation, **performance superiority**
-
-### CAMELYON16 Slide-Level
-- [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.html) - Training guide and best practices
-- [CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.md](CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.html) - Implementation details
-- **Topics**: Slide-level aggregation, attention mechanisms, feature extraction
-
-### WSI Processing Pipeline
-- [WSI_PROCESSING_PIPELINE.md](WSI_PROCESSING_PIPELINE.html) - **Complete WSI processing pipeline**: OpenSlide integration, CLI tools, production deployment
-- **Topics**: Multi-format WSI support (.svs, .tiff, .ndpi, DICOM), streaming processing, CNN feature extraction, HDF5 caching, clinical deployment
-
-### Advanced Features
-- [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
-- [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
-- [PACS Integration System](PACS_INTEGRATION.html) - **Production-ready PACS integration**: DICOM C-FIND/C-MOVE/C-STORE, multi-vendor support, TLS 1.3, HIPAA audit logging (40/48 properties tested, 83%)
-- [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 1,448 tests with property-based testing
-
-### Evaluation Metrics
-- Model performance analysis with bootstrap confidence intervals
-- ROC curves and confusion matrices
-- CSV export for downstream analysis
-- Attention weight visualization and heatmap generation
-
----
-
-## Architecture and Design
-
-### System Overview
-- [ARCHITECTURE.md](ARCHITECTURE.html) - Complete system architecture
-- **Components**: Data loaders, model architectures, training loops, evaluation pipelines
-
-### Model Architectures
-- **Attention-Based MIL Models**: AttentionMIL, CLAM, TransMIL with attention weight visualization
-- **Multimodal Fusion**: Cross-modal attention for WSI, genomic, and clinical text integration
-- **Temporal Models**: Disease progression prediction with positional encoding
-- **Baseline Models**: ResNet, DenseNet, EfficientNet with pretrained weights
-- **Slide Classifiers**: Attention-based aggregation, pooling strategies
-- **Pretrained Integration**: torchvision and timm model loading (1000+ architectures)
-
-### Data Pipeline
-- **WSI Processing Pipeline**: Complete production-ready pipeline with OpenSlide integration
-- **PCam Dataset**: Patch extraction and preprocessing
-- **CAMELYON Dataset**: HDF5 feature storage, slide-level batching
-- **Augmentation**: Standard transforms, normalization
-
----
+- **[API Reference](api/README.md)** - Complete REST API documentation
+- **[OpenAPI Specification](api/openapi.yaml)** - Machine-readable API spec
+- **[WebSocket Streaming](api/README.md#websocket-streaming)** - Real-time updates
+- **[Code Examples](api/README.md#code-examples)** - Python, JavaScript, cURL
 
 ## Deployment
 
-### Docker Deployment
-- [DOCKER.md](DOCKER.html) - Complete Docker guide
-- **Topics**: Container setup, GPU support, production deployment
+- **[Deployment Guide](deployment/DEPLOYMENT_GUIDE.md)** - Complete deployment guide
+  - [Docker Deployment](deployment/DEPLOYMENT_GUIDE.md#docker-deployment)
+  - [Kubernetes Deployment](deployment/DEPLOYMENT_GUIDE.md#kubernetes-deployment)
+  - [Cloud Deployment](deployment/DEPLOYMENT_GUIDE.md#cloud-deployment) (AWS, Azure, GCP)
+- **[Configuration Guide](deployment/CONFIGURATION_GUIDE.md)** - Configuration reference
+  - [Core Settings](deployment/CONFIGURATION_GUIDE.md#core-settings)
+  - [GPU Configuration](deployment/CONFIGURATION_GUIDE.md#gpu-configuration)
+  - [PACS Integration](deployment/CONFIGURATION_GUIDE.md#pacs-integration)
+  - [Performance Tuning](deployment/CONFIGURATION_GUIDE.md#performance-tuning)
 
-### REST API
-- [deploy/README.md](../deploy/README.html) - API deployment instructions
-- **Endpoints**: Model inference, batch processing, health checks
+## Operations
 
-### Model Export
-- **ONNX Export**: Cross-platform deployment
-- **TorchScript**: Production optimization
-- **Quantization**: Model compression
+- **[Monitoring Guide](../monitoring/README.md)** - Monitoring and observability
+  - [Prometheus Metrics](../monitoring/README.md#prometheus-metrics)
+  - [Grafana Dashboards](../monitoring/README.md#grafana-dashboards)
+  - [Alerting](../monitoring/README.md#alerting)
+  - [Distributed Tracing](../monitoring/README.md#tracing)
+- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Common issues and solutions
+  - [Quick Diagnostics](TROUBLESHOOTING.md#quick-diagnostics)
+  - [GPU Issues](TROUBLESHOOTING.md#gpu-issues)
+  - [Performance Issues](TROUBLESHOOTING.md#performance-issues)
+  - [PACS Integration Issues](TROUBLESHOOTING.md#pacs-integration-issues)
 
----
+## Architecture
+
+- **[System Architecture](ARCHITECTURE.md)** - High-level system design
+- **[Architecture Diagrams](ARCHITECTURE_DIAGRAMS.md)** - Visual system documentation
+- **[Design Document](../.kiro/specs/real-time-wsi-streaming/design.md)** - Detailed technical design
+- **[Requirements Document](../.kiro/specs/real-time-wsi-streaming/requirements.md)** - System requirements
+
+## Features
+
+### Real-Time WSI Streaming
+- **[Streaming Overview](features/STREAMING.md)** - Real-time processing architecture
+- **[Progressive Confidence](features/CONFIDENCE.md)** - Confidence building and early stopping
+- **[Attention Visualization](features/ATTENTION.md)** - Attention heatmap generation
+
+### PACS Integration
+- **[PACS Integration Guide](features/PACS_INTEGRATION.md)** - Hospital PACS integration
+- **[DICOM Support](features/DICOM.md)** - DICOM networking and WSI support
+- **[Clinical Workflow](features/CLINICAL_WORKFLOW.md)** - Clinical reporting and workflow
+
+### Model Interpretability
+- **[Grad-CAM Visualization](features/GRADCAM.md)** - CNN feature visualization
+- **[Attention Heatmaps](features/ATTENTION_HEATMAPS.md)** - MIL attention visualization
+- **[Failure Analysis](features/FAILURE_ANALYSIS.md)** - Model debugging and analysis
 
 ## Development
 
-### Contributing
-- [CONTRIBUTING.md](../CONTRIBUTING.html) - Contribution guidelines
-- **Topics**: Code style, pull requests, issue reporting
+- **[Development Guide](development/DEVELOPMENT_GUIDE.md)** - Development setup
+- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute
+- **[Testing Guide](development/TESTING_GUIDE.md)** - Testing infrastructure
+- **[Code Style Guide](development/CODE_STYLE.md)** - Coding standards
 
-### Testing
-- [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Test suite documentation
-- **Coverage**: 55% code coverage, 1,448 unit tests
-- **Topics**: Unit tests, integration tests, property-based testing, edge case handling, performance benchmarks
+## Benchmarks and Results
 
-### Build System
-- [MAKEFILE.md](MAKEFILE.html) - Makefile usage guide
-- **Commands**: Build, test, lint, format, clean
+- **[PCam Real Results](PCAM_REAL_RESULTS.md)** - Full dataset benchmark results
+- **[Performance Benchmark](../PERFORMANCE_BENCHMARK_COMPLETE.md)** - Comprehensive performance analysis
+- **[Superiority Report](../results/comprehensive_benchmark/HISTOCORE_SUPERIORITY_REPORT.md)** - Competitive analysis
 
----
+## Reference
 
-## Performance and Optimization
+- **[CLI Reference](reference/CLI_REFERENCE.md)** - Command-line interface
+- **[Configuration Reference](deployment/CONFIGURATION_GUIDE.md)** - All configuration options
+- **[Metrics Reference](reference/METRICS_REFERENCE.md)** - Prometheus metrics
+- **[Error Codes](reference/ERROR_CODES.md)** - Error code reference
 
-### Performance Analysis
-- [PERFORMANCE.md](PERFORMANCE.html) - Optimization guide
-- **Topics**: Profiling, bottleneck analysis, GPU utilization
+## Use Cases
 
-### Model Profiling
-- Inference latency measurement
-- Memory usage analysis
-- Throughput optimization
+- **[Hospital Deployment](use-cases/HOSPITAL_DEPLOYMENT.md)** - Clinical deployment guide
+- **[Research Workflows](use-cases/RESEARCH_WORKFLOWS.md)** - Research use cases
+- **[Batch Processing](use-cases/BATCH_PROCESSING.md)** - High-throughput processing
+- **[Live Demos](use-cases/LIVE_DEMOS.md)** - Hospital demonstration setup
 
----
+## Security and Compliance
 
-## Results and Analysis
+- **[Security Guide](security/SECURITY_GUIDE.md)** - Security best practices
+- **[HIPAA Compliance](security/HIPAA_COMPLIANCE.md)** - HIPAA compliance guide
+- **[FDA Pathway](security/FDA_PATHWAY.md)** - FDA 510(k) preparation
+- **[Audit Logging](security/AUDIT_LOGGING.md)** - Audit trail documentation
 
-### Benchmark Results
-- [DEMO_RESULTS.md](DEMO_RESULTS.html) - Demo training results
-- **Metrics**: Accuracy, AUC, training time, convergence analysis
+## Cloud Providers
 
-### Project Portfolio
-- [PORTFOLIO_SUMMARY.md](PORTFOLIO_SUMMARY.html) - Complete project overview
-- **Status**: Current capabilities, limitations, future work
+- **[AWS Deployment](../cloud/aws/README.md)** - Amazon Web Services
+- **[Azure Deployment](../cloud/azure/README.md)** - Microsoft Azure
+- **[GCP Deployment](../cloud/gcp/README.md)** - Google Cloud Platform
 
-### Roadmap
-- [ROADMAP_TO_REAL_DATASETS.md](ROADMAP_TO_REAL_DATASETS.html) - Real dataset integration plan
-- **Timeline**: Short-term goals, long-term vision
+## Docker and Kubernetes
 
----
-
-## API Reference
-
-### Core Modules
-
-#### Data Loading
-```python
-from src.data import PatchCamelyonDataset, CAMELYONSlideDataset
-from src.data.wsi_pipeline import BatchProcessor, ProcessingConfig
-```
-- `PatchCamelyonDataset`: Patch-level image loading
-- `CAMELYONSlideDataset`: Slide-level feature loading
-- `collate_slide_bags`: Variable-length batch collation
-- `BatchProcessor`: WSI processing pipeline orchestration
-- `ProcessingConfig`: WSI pipeline configuration management
-
-#### Models
-```python
-from src.models import SimpleClassifier, SimpleSlideClassifier
-from src.models.pretrained import load_pretrained_encoder
-```
-- `SimpleClassifier`: Patch-level classifier
-- `SimpleSlideClassifier`: Slide-level aggregation
-- `load_pretrained_encoder`: Pretrained model loading
-
-#### Training
-```python
-from src.training import train_epoch, evaluate
-```
-- `train_epoch`: Single epoch training loop
-- `evaluate`: Model evaluation with metrics
-
-#### Utilities
-```python
-from src.utils import set_seed, save_checkpoint, load_checkpoint
-```
-- `set_seed`: Reproducibility utilities
-- `save_checkpoint`: Model checkpointing
-- `load_checkpoint`: Checkpoint loading
-
----
-
-## Quick Reference
-
-### Common Commands
-
-#### PACS Integration
-```bash
-# Start PACS service with production config
-python -c "from src.clinical.pacs import PACSService; \
-  with PACSService(config_path='.kiro/pacs/config.production.yaml') as s: \
-    print(s.health_check())"
-
-# Query PACS for studies
-python -c "from src.clinical.pacs import PACSService; \
-  with PACSService(config_path='.kiro/pacs/config.yaml') as s: \
-    studies = s.query_studies(patient_id='12345678', modality='SM'); \
-    print(f'Found {len(studies)} studies')"
-
-# Get PACS statistics
-python -c "from src.clinical.pacs import PACSService; \
-  with PACSService(config_path='.kiro/pacs/config.yaml') as s: \
-    print(s.get_statistics())"
-```
-
-#### WSI Processing
-```bash
-# Process WSI files
-python -m src.data.wsi_pipeline.cli process slide.svs --output-dir ./features
-
-# Batch processing
-python -m src.data.wsi_pipeline.cli process *.svs --config config.yaml
-
-# Validate installation
-python -m src.data.wsi_pipeline.cli validate
-
-# Performance benchmarks
-python -m src.data.wsi_pipeline.cli benchmark --quick
-```
-
-#### Training
-```bash
-# PCam training
-python experiments/train_pcam.py --config experiments/configs/pcam.yaml
-
-# CAMELYON training
-python experiments/train_camelyon.py --config experiments/configs/camelyon.yaml
-```
-
-#### Evaluation
-```bash
-# PCam evaluation
-python experiments/evaluate_pcam.py \
-  --checkpoint checkpoints/pcam/best_model.pth \
-  --data-root data/pcam
-
-# CAMELYON evaluation with CSV export
-python experiments/evaluate_camelyon.py \
-  --checkpoint checkpoints/camelyon/best_model.pth \
-  --save-predictions-csv
-```
-
-#### Testing
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run with coverage
-pytest tests/ --cov=src --cov-report=html
-```
-
-#### Model Profiling
-```bash
-# Profile inference time
-python scripts/model_profiler.py \
-  --checkpoint models/best_model.pth \
-  --profile-type time
-
-# Export to ONNX
-python scripts/export_onnx.py \
-  --checkpoint models/best_model.pth \
-  --output models/model.onnx
-```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### CUDA Out of Memory
-- Reduce batch size in config file
-- Use gradient accumulation
-- Enable mixed precision training
-
-#### Slow Training
-- Check GPU utilization with `nvidia-smi`
-- Increase number of data loader workers
-- Use faster data augmentation
-
-#### Poor Model Performance
-- Verify data preprocessing
-- Check learning rate schedule
-- Increase training epochs
-- Try different architectures
-
----
+- **[Docker Guide](../docker/README.md)** - Docker deployment
+- **[Kubernetes Guide](../k8s/README.md)** - Kubernetes deployment
+- **[Helm Charts](../k8s/helm/README.md)** - Helm deployment
 
 ## Additional Resources
 
-### External Documentation
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [torchvision Models](https://pytorch.org/vision/stable/models.html)
-- [timm Documentation](https://huggingface.co/docs/timm/)
+- **[Changelog](../CHANGELOG.md)** - Version history
+- **[Roadmap](../ROADMAP.md)** - Future plans
+- **[License](../LICENSE)** - MIT License
+- **[Citation](../CITATION.cff)** - How to cite HistoCore
 
-### Research Papers
-- **PatchCamelyon**: Veeling et al. (2018) - "Rotation Equivariant CNNs for Digital Pathology"
-- **CAMELYON16**: Bejnordi et al. (2017) - "Diagnostic Assessment of Deep Learning Algorithms"
+## Getting Help
 
-### Community
-- [GitHub Issues](https://github.com/matthewvaishnav/histocore/issues)
-- [Discussions](https://github.com/matthewvaishnav/histocore/discussions)
+- **[FAQ](FAQ.md)** - Frequently asked questions
+- **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues
+- **[GitHub Issues](https://github.com/histocore/histocore/issues)** - Bug reports and feature requests
+- **[Email Support](mailto:support@histocore.ai)** - Direct support
+- **[Slack Community](https://histocore.slack.com)** - Community chat
 
----
+## Documentation by Role
 
-## Archived Documentation
+### For Developers
+1. [Installation Guide](INSTALLATION.md)
+2. [Development Guide](development/DEVELOPMENT_GUIDE.md)
+3. [API Reference](api/README.md)
+4. [Testing Guide](development/TESTING_GUIDE.md)
+5. [Contributing Guide](../CONTRIBUTING.md)
 
-Historical documentation and implementation notes are available in [archive/](archive/).
+### For DevOps Engineers
+1. [Deployment Guide](deployment/DEPLOYMENT_GUIDE.md)
+2. [Configuration Guide](deployment/CONFIGURATION_GUIDE.md)
+3. [Monitoring Guide](../monitoring/README.md)
+4. [Troubleshooting Guide](TROUBLESHOOTING.md)
+5. [Security Guide](security/SECURITY_GUIDE.md)
 
----
+### For Clinical Users
+1. [Quick Start Tutorial](QUICK_START.md)
+2. [Clinical Workflow](features/CLINICAL_WORKFLOW.md)
+3. [PACS Integration](features/PACS_INTEGRATION.md)
+4. [FAQ](FAQ.md)
+5. [Troubleshooting](TROUBLESHOOTING.md)
 
-<div class="footer-note">
-  <p><em>Last updated: April 2026</em></p>
-  <p>For questions or suggestions, please <a href="https://github.com/matthewvaishnav/histocore/issues">open an issue</a>.</p>
-</div>
+### For Researchers
+1. [Quick Start Tutorial](QUICK_START.md)
+2. [Research Workflows](use-cases/RESEARCH_WORKFLOWS.md)
+3. [Model Interpretability](features/GRADCAM.md)
+4. [Benchmarks](PCAM_REAL_RESULTS.md)
+5. [API Reference](api/README.md)
+
+### For System Administrators
+1. [Deployment Guide](deployment/DEPLOYMENT_GUIDE.md)
+2. [Configuration Guide](deployment/CONFIGURATION_GUIDE.md)
+3. [Security Guide](security/SECURITY_GUIDE.md)
+4. [Monitoring Guide](../monitoring/README.md)
+5. [Backup and Recovery](deployment/DEPLOYMENT_GUIDE.md#backup-and-recovery)
+
+## Documentation Status
+
+| Document | Status | Last Updated |
+|----------|--------|--------------|
+| API Reference | ✅ Complete | 2026-04-26 |
+| Deployment Guide | ✅ Complete | 2026-04-26 |
+| Configuration Guide | ✅ Complete | 2026-04-26 |
+| Troubleshooting Guide | ✅ Complete | 2026-04-26 |
+| FAQ | ✅ Complete | 2026-04-26 |
+| Monitoring Guide | ✅ Complete | 2026-04-08 |
+| Docker Guide | ✅ Complete | 2026-04-08 |
+| Kubernetes Guide | ✅ Complete | 2026-04-08 |
+| Cloud Deployment | ✅ Complete | 2026-04-08 |
+| Installation Guide | 🚧 In Progress | - |
+| Quick Start Tutorial | 🚧 In Progress | - |
+| Development Guide | 📝 Planned | - |
+| Testing Guide | 📝 Planned | - |
+| Security Guide | 📝 Planned | - |
+
+## Contributing to Documentation
+
+Documentation improvements are welcome! To contribute:
+
+1. **Fork the repository**
+2. **Edit documentation** in `docs/` directory
+3. **Follow style guide**:
+   - Use Markdown format
+   - Include code examples
+   - Add diagrams where helpful
+   - Keep language clear and concise
+4. **Submit pull request**
+
+See [Contributing Guide](../CONTRIBUTING.md) for details.
+
+## Documentation Feedback
+
+Have feedback on the documentation?
+
+- **GitHub Issues**: [Report documentation issues](https://github.com/histocore/histocore/issues/new?labels=documentation)
+- **Email**: docs@histocore.ai
+- **Slack**: #documentation channel
+
+## License
+
+Documentation is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+Code examples in documentation are licensed under [MIT License](../LICENSE).
