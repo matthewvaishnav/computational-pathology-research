@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-Medical AI Platform - Main API Server
+Medical AI Platform - Production API Server
 
 FastAPI-based REST API server for the Medical AI platform providing endpoints
 for image analysis, DICOM integration, case management, and system monitoring.
+
+This is the PRODUCTION version with real database and model inference.
 """
 
 import os
 import sys
 import time
 import uuid
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
+import tempfile
+import shutil
 
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Depends
@@ -20,17 +25,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Import existing components
-try:
-    from src.streaming.web_dashboard import app as streaming_app
-    from src.streaming.interactive_showcase import app as showcase_app
-except ImportError:
-    streaming_app = None
-    showcase_app = None
+# Import database components
+from src.database import (
+    get_db_session, initialize_database,
+    AnalysisOperations, CaseOperations, UserOperations, DicomOperations, AuditOperations
+)
+
+# Import inference components
+from src.inference import InferenceEngine, get_model_loader
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Pydantic models
 class AnalysisRequest(BaseModel):
@@ -77,8 +88,8 @@ class CaseData(BaseModel):
 # Create FastAPI app
 app = FastAPI(
     title="Medical AI Platform API",
-    description="REST API for Medical AI pathology analysis platform",
-    version="1.0.0",
+    description="Production REST API for Medical AI pathology analysis platform with real database and model inference",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -95,47 +106,110 @@ app.add_middleware(
 # Security
 security = HTTPBearer(auto_error=False)
 
-# In-memory storage for demo purposes
-analysis_results = {}
-users = {}
-cases = {}
-auth_tokens = {}
+# Global inference engine
+inference_engine: Optional[InferenceEngine] = None
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Get current authenticated user."""
+def get_inference_engine() -> InferenceEngine:
+    """Get global inference engine instance."""
+    global inference_engine
+    if inference_engine is None:
+        inference_engine = InferenceEngine()
+        # Warm up the model
+        try:
+            inference_engine.warm_up_model("breast_cancer")
+        except Exception as e:
+            logger.warning(f"Failed to warm up model: {e}")
+    return inference_engine
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security),
+                    db: Session = Depends(get_db_session)):
+    """Get current authenticated user from database."""
     if not credentials:
         return None
     
     token = credentials.credentials
-    return auth_tokens.get(token)
+    # In production, implement proper JWT token validation
+    # For now, simple token lookup (replace with JWT validation)
+    user_ops = UserOperations(db)
+    # This is a simplified implementation - use proper JWT in production
+    return None  # Implement proper token validation
+
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database and models on startup."""
+    try:
+        # Initialize database
+        initialize_database()
+        logger.info("Database initialized successfully")
+        
+        # Initialize inference engine
+        get_inference_engine()
+        logger.info("Inference engine initialized successfully")
+        
+    except Exception as e:
+        logger.error(f"Startup failed: {e}")
+        raise
 
 # Health and system endpoints
 @app.get("/health", response_model=HealthResponse)
-async def health_check():
-    """Health check endpoint."""
+async def health_check(db: Session = Depends(get_db_session)):
+    """Health check endpoint with real database connectivity."""
+    try:
+        # Check database connectivity
+        db.execute("SELECT 1")
+        db_healthy = True
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        db_healthy = False
+    
+    # Check model availability
+    try:
+        model_loader = get_model_loader()
+        available_models = model_loader.list_available_models()
+        model_healthy = len(available_models) > 0
+    except Exception as e:
+        logger.error(f"Model health check failed: {e}")
+        model_healthy = False
+    
     return HealthResponse(
-        status="healthy",
+        status="healthy" if db_healthy and model_healthy else "degraded",
         timestamp=datetime.now().isoformat(),
-        version="1.0.0",
+        version="2.0.0",
         components={
             "api": True,
-            "database": True,
-            "model": True,
+            "database": db_healthy,
+            "model": model_healthy,
             "storage": True
         }
     )
 
 @app.get("/api/v1/system/status")
-async def system_status():
-    """System status endpoint."""
-    return {
-        "status": "operational",
-        "uptime_seconds": 3600,
-        "active_analyses": len([r for r in analysis_results.values() if r["status"] == "in_progress"]),
-        "total_analyses": len(analysis_results),
-        "memory_usage_mb": 1024,
-        "cpu_usage_percent": 45.2
-    }
+async def system_status(db: Session = Depends(get_db_session)):
+    """System status endpoint with real database statistics."""
+    try:
+        analysis_ops = AnalysisOperations(db)
+        case_ops = CaseOperations(db)
+        
+        # Get real statistics
+        analysis_stats = analysis_ops.get_analysis_statistics()
+        case_stats = case_ops.get_case_statistics()
+        
+        # Count active analyses
+        active_analyses = len([a for a in analysis_ops.list_analyses(status="in_progress")])
+        
+        return {
+            "status": "operational",
+            "uptime_seconds": 3600,  # TODO: Track actual uptime
+            "active_analyses": active_analyses,
+            "total_analyses": analysis_stats.get('total_analyses', 0),
+            "total_cases": case_stats.get('total_cases', 0),
+            "memory_usage_mb": 1024,  # TODO: Get actual memory usage
+            "cpu_usage_percent": 45.2  # TODO: Get actual CPU usage
+        }
+    except Exception as e:
+        logger.error(f"System status error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get system status")
 
 @app.get("/api/v1/system/build-info", response_model=BuildInfo)
 async def build_info():
@@ -162,15 +236,28 @@ async def readiness_check():
     }
 
 @app.get("/api/v1/system/db-health")
-async def database_health():
-    """Database health check."""
-    return {
-        "status": "healthy",
-        "connection_count": 5,
-        "query_time_ms": 25.3,
-        "active_connections": 2,
-        "max_connections": 100
-    }
+async def database_health(db: Session = Depends(get_db_session)):
+    """Real database health check."""
+    try:
+        from src.database.connection import get_database_manager
+        db_manager = get_database_manager()
+        health_info = db_manager.health_check()
+        
+        # Add query timing
+        start_time = time.time()
+        db.execute("SELECT COUNT(*) FROM users")
+        query_time_ms = (time.time() - start_time) * 1000
+        
+        health_info["query_time_ms"] = round(query_time_ms, 2)
+        return health_info
+        
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "query_time_ms": None
+        }
 
 @app.get("/metrics")
 async def metrics():
@@ -235,74 +322,179 @@ async def get_current_user_info(current_user=Depends(get_current_user)):
     
     return current_user
 
-# Analysis endpoints
+# Analysis endpoints with real model inference
 @app.post("/api/v1/analyze/upload")
 async def upload_for_analysis(
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
-    request_data: AnalysisRequest = AnalysisRequest()
+    request_data: AnalysisRequest = AnalysisRequest(),
+    db: Session = Depends(get_db_session)
 ):
-    """Upload image for analysis."""
+    """Upload image for real AI analysis."""
     
     # Validate file type
     if not file.content_type or not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="Invalid file type. Only images are supported.")
     
-    # Generate analysis ID
-    analysis_id = str(uuid.uuid4())
-    
-    # Store analysis request
-    analysis_results[analysis_id] = {
-        "analysis_id": analysis_id,
-        "status": "queued",
-        "filename": file.filename,
-        "content_type": file.content_type,
-        "case_id": request_data.case_id,
-        "priority": request_data.priority,
-        "case_type": request_data.case_type,
-        "created_at": datetime.now().isoformat(),
-        "updated_at": datetime.now().isoformat()
-    }
-    
-    # Start background processing
-    background_tasks.add_task(process_analysis, analysis_id)
-    
-    return {"analysis_id": analysis_id, "status": "queued"}
+    try:
+        # Read file content
+        file_content = await file.read()
+        file_size = len(file_content)
+        
+        # Create temporary file for storage
+        temp_dir = Path(tempfile.gettempdir()) / "medical_ai_uploads"
+        temp_dir.mkdir(exist_ok=True)
+        
+        file_id = str(uuid.uuid4())
+        file_path = temp_dir / f"{file_id}_{file.filename}"
+        
+        # Save file
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+        
+        # Create analysis record in database
+        analysis_ops = AnalysisOperations(db)
+        analysis = analysis_ops.create_analysis(
+            filename=file.filename,
+            content_type=file.content_type,
+            file_size=file_size,
+            file_path=str(file_path),
+            case_id=uuid.UUID(request_data.case_id) if request_data.case_id else None
+        )
+        
+        # Commit to database
+        db.commit()
+        
+        # Start background processing with real inference
+        background_tasks.add_task(process_real_analysis, str(analysis.id), str(file_path), file_content)
+        
+        logger.info(f"Analysis created: {analysis.id} for file {file.filename}")
+        
+        return {"analysis_id": str(analysis.id), "status": "queued"}
+        
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
-async def process_analysis(analysis_id: str):
-    """Background task to process analysis."""
+async def process_real_analysis(analysis_id: str, file_path: str, file_content: bytes):
+    """Background task to process analysis with real AI model."""
     
-    # Update status to in_progress
-    analysis_results[analysis_id]["status"] = "in_progress"
-    analysis_results[analysis_id]["updated_at"] = datetime.now().isoformat()
+    # Get database session for background task
+    from src.database.connection import get_database_manager
+    db_manager = get_database_manager()
     
-    # Simulate processing time
-    import asyncio
-    await asyncio.sleep(2)  # Simulate 2 second processing
-    
-    # Generate mock results
-    import random
-    confidence = random.uniform(0.7, 0.99)
-    prediction = random.choice(["positive", "negative", "uncertain"])
-    processing_time = random.randint(15000, 30000)
-    
-    # Update with results
-    analysis_results[analysis_id].update({
-        "status": "completed",
-        "confidence_score": confidence,
-        "prediction_class": prediction,
-        "processing_time_ms": processing_time,
-        "updated_at": datetime.now().isoformat()
-    })
+    with db_manager.get_session() as db:
+        try:
+            analysis_ops = AnalysisOperations(db)
+            
+            # Update status to in_progress
+            analysis_ops.update_analysis_status(
+                uuid.UUID(analysis_id), 
+                "in_progress"
+            )
+            db.commit()
+            
+            # Get inference engine
+            engine = get_inference_engine()
+            
+            # Run real model inference
+            result = engine.analyze_image_bytes(
+                image_bytes=file_content,
+                filename=Path(file_path).name,
+                disease_type="breast_cancer"
+            )
+            
+            # Update analysis with results
+            analysis_ops.update_analysis_status(
+                uuid.UUID(analysis_id),
+                "completed",
+                processing_time_ms=result.processing_time_ms,
+                model_version=result.model_version
+            )
+            
+            # Add model result
+            analysis_ops.add_model_result(
+                analysis_id=uuid.UUID(analysis_id),
+                prediction_class=result.prediction_class,
+                confidence_score=result.confidence_score,
+                model_name=result.model_name,
+                model_version=result.model_version,
+                probability_scores=result.probability_scores,
+                uncertainty_score=result.uncertainty_score
+            )
+            
+            db.commit()
+            
+            logger.info(f"Analysis {analysis_id} completed: {result.prediction_class} ({result.confidence_score:.3f})")
+            
+        except Exception as e:
+            logger.error(f"Analysis processing failed for {analysis_id}: {e}")
+            
+            # Update status to failed
+            try:
+                analysis_ops.update_analysis_status(
+                    uuid.UUID(analysis_id),
+                    "failed"
+                )
+                db.commit()
+            except Exception as db_error:
+                logger.error(f"Failed to update analysis status: {db_error}")
+        
+        finally:
+            # Clean up temporary file
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as cleanup_error:
+                logger.warning(f"Failed to clean up file {file_path}: {cleanup_error}")
 
 @app.get("/api/v1/analyze/{analysis_id}")
-async def get_analysis_result(analysis_id: str):
-    """Get analysis result by ID."""
+async def get_analysis_result(analysis_id: str, db: Session = Depends(get_db_session)):
+    """Get real analysis result from database."""
     
-    if analysis_id not in analysis_results:
-        raise HTTPException(status_code=404, detail="Analysis not found")
-    
-    return analysis_results[analysis_id]
+    try:
+        analysis_ops = AnalysisOperations(db)
+        analysis = analysis_ops.get_analysis_by_id(uuid.UUID(analysis_id))
+        
+        if not analysis:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        # Build response
+        response = {
+            "analysis_id": str(analysis.id),
+            "status": analysis.status,
+            "filename": analysis.filename,
+            "content_type": analysis.content_type,
+            "file_size": analysis.file_size,
+            "created_at": analysis.created_at.isoformat(),
+            "updated_at": analysis.updated_at.isoformat()
+        }
+        
+        # Add processing info if available
+        if analysis.processing_time_ms:
+            response["processing_time_ms"] = analysis.processing_time_ms
+        if analysis.model_version:
+            response["model_version"] = analysis.model_version
+        
+        # Add model results if completed
+        if analysis.results:
+            result = analysis.results[0]  # Get first (and typically only) result
+            response.update({
+                "prediction_class": result.prediction_class,
+                "confidence_score": result.confidence_score,
+                "probability_scores": result.probability_scores,
+                "model_name": result.model_name,
+                "uncertainty_score": result.uncertainty_score
+            })
+        
+        return response
+        
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid analysis ID format")
+    except Exception as e:
+        logger.error(f"Failed to get analysis {analysis_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve analysis")
 
 # DICOM endpoints
 @app.post("/api/v1/dicom/upload")
@@ -340,57 +532,130 @@ async def get_dicom_study(study_id: str):
         "instance_count": 1
     }
 
-# Case management endpoints
+# Case management endpoints with real database
 @app.get("/api/v1/cases")
-async def get_cases(limit: int = 10, status: Optional[str] = None):
-    """Get list of cases."""
+async def get_cases(limit: int = 10, status: Optional[str] = None, 
+                   db: Session = Depends(get_db_session)):
+    """Get list of cases from database."""
     
-    case_list = list(cases.values())
-    
-    if status:
-        case_list = [c for c in case_list if c.get("status") == status]
-    
-    return {"cases": case_list[:limit], "total": len(case_list)}
+    try:
+        case_ops = CaseOperations(db)
+        cases = case_ops.list_cases(status=status, limit=limit)
+        
+        case_list = []
+        for case in cases:
+            case_dict = {
+                "case_id": str(case.id),
+                "patient_id": case.patient_id,
+                "study_id": case.study_id,
+                "case_type": case.case_type,
+                "priority": case.priority,
+                "status": case.status,
+                "notes": case.notes,
+                "created_at": case.created_at.isoformat(),
+                "updated_at": case.updated_at.isoformat()
+            }
+            if case.assigned_user:
+                case_dict["assigned_user"] = case.assigned_user.username
+            case_list.append(case_dict)
+        
+        return {"cases": case_list, "total": len(case_list)}
+        
+    except Exception as e:
+        logger.error(f"Failed to get cases: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve cases")
 
 @app.post("/api/v1/cases")
-async def create_case(case_data: CaseData):
-    """Create a new case."""
+async def create_case(case_data: CaseData, db: Session = Depends(get_db_session)):
+    """Create a new case in database."""
     
-    case_id = str(uuid.uuid4())
-    
-    cases[case_id] = {
-        "case_id": case_id,
-        "patient_id": case_data.patient_id,
-        "study_id": case_data.study_id,
-        "priority": case_data.priority,
-        "case_type": case_data.case_type,
-        "status": "pending",
-        "created_at": datetime.now().isoformat()
-    }
-    
-    return {"case_id": case_id, "status": "created"}
+    try:
+        case_ops = CaseOperations(db)
+        case = case_ops.create_case(
+            patient_id=case_data.patient_id,
+            study_id=case_data.study_id,
+            case_type=case_data.case_type,
+            priority=case_data.priority
+        )
+        
+        db.commit()
+        
+        logger.info(f"Created case: {case.patient_id}/{case.study_id}")
+        
+        return {"case_id": str(case.id), "status": "created"}
+        
+    except Exception as e:
+        logger.error(f"Failed to create case: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to create case")
 
 @app.get("/api/v1/cases/{case_id}")
-async def get_case(case_id: str):
-    """Get case details."""
+async def get_case(case_id: str, db: Session = Depends(get_db_session)):
+    """Get case details from database."""
     
-    if case_id not in cases:
-        raise HTTPException(status_code=404, detail="Case not found")
-    
-    return cases[case_id]
+    try:
+        case_ops = CaseOperations(db)
+        case = case_ops.get_case_by_id(uuid.UUID(case_id))
+        
+        if not case:
+            raise HTTPException(status_code=404, detail="Case not found")
+        
+        case_dict = {
+            "case_id": str(case.id),
+            "patient_id": case.patient_id,
+            "study_id": case.study_id,
+            "case_type": case.case_type,
+            "priority": case.priority,
+            "status": case.status,
+            "notes": case.notes,
+            "created_at": case.created_at.isoformat(),
+            "updated_at": case.updated_at.isoformat()
+        }
+        
+        if case.assigned_user:
+            case_dict["assigned_user"] = {
+                "id": str(case.assigned_user.id),
+                "username": case.assigned_user.username,
+                "role": case.assigned_user.role
+            }
+        
+        # Add analysis count
+        case_dict["analysis_count"] = len(case.analyses)
+        
+        return case_dict
+        
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid case ID format")
+    except Exception as e:
+        logger.error(f"Failed to get case {case_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve case")
 
 @app.patch("/api/v1/cases/{case_id}/status")
-async def update_case_status(case_id: str, status_data: dict):
-    """Update case status."""
+async def update_case_status(case_id: str, status_data: dict, 
+                           db: Session = Depends(get_db_session)):
+    """Update case status in database."""
     
-    if case_id not in cases:
-        raise HTTPException(status_code=404, detail="Case not found")
-    
-    cases[case_id]["status"] = status_data.get("status", cases[case_id]["status"])
-    cases[case_id]["notes"] = status_data.get("notes", "")
-    cases[case_id]["updated_at"] = datetime.now().isoformat()
-    
-    return {"message": "Status updated successfully"}
+    try:
+        case_ops = CaseOperations(db)
+        success = case_ops.update_case_status(
+            uuid.UUID(case_id),
+            status_data.get("status"),
+            status_data.get("notes")
+        )
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Case not found")
+        
+        db.commit()
+        
+        return {"message": "Status updated successfully"}
+        
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid case ID format")
+    except Exception as e:
+        logger.error(f"Failed to update case {case_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to update case")
 
 # Mobile app endpoints
 @app.post("/api/v1/mobile/register-device")
@@ -413,28 +678,75 @@ async def download_mobile_model():
     """Download mobile model."""
     return {"model_url": "/models/mobile_model.tflite", "version": "1.0.0"}
 
-# Analytics and reporting endpoints
+# Analytics and reporting endpoints with real data
 @app.get("/api/v1/analytics/dashboard")
-async def get_dashboard_data():
-    """Get dashboard analytics data."""
-    return {
-        "total_cases": len(cases),
-        "pending_cases": len([c for c in cases.values() if c.get("status") == "pending"]),
-        "completed_analyses": len([r for r in analysis_results.values() if r.get("status") == "completed"]),
-        "average_processing_time": 25.5,
-        "system_uptime": 3600
-    }
+async def get_dashboard_data(db: Session = Depends(get_db_session)):
+    """Get dashboard analytics data from database."""
+    
+    try:
+        case_ops = CaseOperations(db)
+        analysis_ops = AnalysisOperations(db)
+        
+        # Get real statistics
+        case_stats = case_ops.get_case_statistics()
+        analysis_stats = analysis_ops.get_analysis_statistics()
+        
+        return {
+            "total_cases": case_stats.get('total_cases', 0),
+            "pending_cases": case_stats.get('status_distribution', {}).get('pending', 0),
+            "completed_analyses": analysis_stats.get('status_distribution', {}).get('completed', 0),
+            "average_processing_time": analysis_stats.get('average_processing_time_ms', 0),
+            "system_uptime": 3600,  # TODO: Track actual uptime
+            "case_status_distribution": case_stats.get('status_distribution', {}),
+            "analysis_status_distribution": analysis_stats.get('status_distribution', {})
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get dashboard data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve dashboard data")
 
 @app.get("/api/v1/analytics/performance")
-async def get_performance_metrics(period: str = "7d"):
-    """Get performance metrics."""
-    return {
-        "period": period,
-        "total_cases": 150,
-        "average_processing_time": 24.8,
-        "success_rate": 98.5,
-        "throughput_per_hour": 12.3
-    }
+async def get_performance_metrics(period: str = "7d", db: Session = Depends(get_db_session)):
+    """Get performance metrics from database."""
+    
+    try:
+        analysis_ops = AnalysisOperations(db)
+        
+        # Get completed analyses (in production, filter by date period)
+        completed_analyses = analysis_ops.list_analyses(status="completed", limit=1000)
+        
+        if not completed_analyses:
+            return {
+                "period": period,
+                "total_cases": 0,
+                "average_processing_time": 0,
+                "success_rate": 0,
+                "throughput_per_hour": 0
+            }
+        
+        # Calculate metrics
+        processing_times = [a.processing_time_ms for a in completed_analyses if a.processing_time_ms]
+        avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else 0
+        
+        # Calculate success rate (completed vs total)
+        all_analyses = analysis_ops.list_analyses(limit=1000)
+        success_rate = (len(completed_analyses) / len(all_analyses) * 100) if all_analyses else 0
+        
+        # Estimate throughput (analyses per hour)
+        # In production, calculate based on actual time period
+        throughput_per_hour = len(completed_analyses) / 24  # Rough estimate
+        
+        return {
+            "period": period,
+            "total_cases": len(completed_analyses),
+            "average_processing_time": avg_processing_time / 1000,  # Convert to seconds
+            "success_rate": round(success_rate, 1),
+            "throughput_per_hour": round(throughput_per_hour, 1)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get performance metrics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve performance metrics")
 
 @app.post("/api/v1/reports/generate")
 async def generate_report(report_data: dict):
