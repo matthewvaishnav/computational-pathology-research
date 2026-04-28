@@ -10,16 +10,17 @@ data:
   num_workers: 0  # Use 0 for CPU testing to avoid multiprocessing issues
   pin_memory: false
 
-model:
-  # Foundation model configuration
-  use_foundation: true
-  foundation:
-    model_name: phikon  # Options: phikon, uni, conch
-    freeze: true  # Freeze encoder weights (Phase 1)
-    projector:
-      output_dim: 256  # Project to HistoCore standard dimension
-      dropout: 0.1
-  
+# Foundation model configuration
+foundation_model:
+  model: phikon  # Options: phikon, uni, conch
+  freeze: true  # Freeze encoder weights (Phase 1)
+  use_cache: true  # Enable feature caching (4x speedup)
+  cache_dir: cache/features  # Cache directory
+  projector:
+    output_dim: 256  # Project to HistoCore standard dimension
+    dropout: 0.1
+
+
   # WSI encoder configuration (unchanged)
   wsi:
     input_dim: 256  # Matches projector output
