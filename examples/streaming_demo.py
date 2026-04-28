@@ -318,14 +318,17 @@ Examples:
   # Run all demos with a WSI file
   python streaming_demo.py --wsi slide.svs
   
+  # Run with mock models (no trained models required)
+  python streaming_demo.py --wsi slide.svs --use-mock-models
+  
   # Run specific demo
   python streaming_demo.py --wsi slide.svs --demo basic
   
   # Create synthetic WSI for testing
   python streaming_demo.py --create-synthetic synthetic.tiff
   
-  # Run with synthetic WSI
-  python streaming_demo.py --create-synthetic synthetic.tiff --wsi synthetic.tiff
+  # Run with synthetic WSI and mock models
+  python streaming_demo.py --create-synthetic test.tiff --wsi test.tiff --use-mock-models
         """
     )
     
@@ -358,6 +361,12 @@ Examples:
         help='Size of synthetic WSI (default: 10000 10000)'
     )
     
+    parser.add_argument(
+        '--use-mock-models',
+        action='store_true',
+        help='Use mock models for testing (no trained models required)'
+    )
+    
     args = parser.parse_args()
     
     # Create synthetic WSI if requested
@@ -379,6 +388,15 @@ Examples:
     if not Path(args.wsi).exists():
         print(f"Error: WSI file not found: {args.wsi}")
         sys.exit(1)
+    
+    # Show mock model warning if enabled
+    if args.use_mock_models:
+        print("\n" + "="*80)
+        print("MOCK MODEL MODE ENABLED")
+        print("="*80)
+        print("Using mock models for testing - no trained models required")
+        print("Results will be random but demonstrate the pipeline functionality")
+        print("="*80 + "\n")
     
     # Run selected demo
     if args.demo == 'all':

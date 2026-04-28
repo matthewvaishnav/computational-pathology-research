@@ -6,7 +6,6 @@ from .attention_aggregator import (
     StreamingAttentionAggregator, 
     ConfidenceUpdate, 
     PredictionResult,
-    AttentionMIL,
     ConfidenceCalibrator
 )
 from .progressive_visualizer import ProgressiveVisualizer, VisualizationUpdate
@@ -25,6 +24,14 @@ from .realtime_processor import (
     StreamingConfig,
     StreamingResult,
     process_wsi_realtime
+)
+from .mock_models import (
+    MockCNNEncoder,
+    MockAttentionMIL,
+    AttentionMIL,
+    create_mock_cnn_encoder,
+    create_mock_attention_model,
+    create_mock_models
 )
 
 __all__ = [
@@ -52,5 +59,10 @@ __all__ = [
     'RealTimeWSIProcessor',
     'StreamingConfig',
     'StreamingResult',
-    'process_wsi_realtime'
+    'process_wsi_realtime',
+    'MockCNNEncoder',
+    'MockAttentionMIL',
+    'create_mock_cnn_encoder',
+    'create_mock_attention_model',
+    'create_mock_models'
 ]
