@@ -116,9 +116,7 @@ header {
     text-align: center;
     margin-top: 20px;
     width: 100%;
-    max-width: 210px;
-    margin-left: auto;
-    margin-right: auto;
+    overflow: visible;
     
     a {
       color: #A51C30;
@@ -126,14 +124,16 @@ header {
       font-weight: 600;
       transition: all 0.2s ease;
       display: block;
-      padding: 8px 12px;
+      padding: 8px 10px;
       border-radius: 6px;
       background: rgba(165, 28, 48, 0.05);
-      word-wrap: break-word;
+      word-break: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
       white-space: normal;
-      max-width: 100%;
+      width: 100%;
       box-sizing: border-box;
+      overflow: visible;
       
       &:hover {
         background: rgba(165, 28, 48, 0.1);
@@ -143,13 +143,14 @@ header {
       small {
         display: block;
         color: #999;
-        font-size: 11px;
+        font-size: 10px;
         margin-top: 4px;
         font-weight: 400;
-        word-wrap: break-word;
+        word-break: break-word;
         overflow-wrap: break-word;
+        hyphens: auto;
         white-space: normal;
-        max-width: 100%;
+        width: 100%;
       }
     }
   }
