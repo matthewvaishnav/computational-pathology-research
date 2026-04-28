@@ -1,48 +1,44 @@
-# ConfigMap for HistoCore streaming configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: histocore-config
-  namespace: histocore
+  name: medical-ai-config
+  namespace: medical-ai
 data:
-  # Application settings
-  HISTOCORE_ENV: "production"
-  HISTOCORE_LOG_LEVEL: "INFO"
-  HISTOCORE_DEBUG: "false"
+  # API Configuration
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  API_WORKERS: "4"
+  DEBUG: "false"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
   
-  # GPU and memory
-  CUDA_VISIBLE_DEVICES: "0"
-  HISTOCORE_MAX_MEMORY_GB: "8"
-  HISTOCORE_BATCH_SIZE: "32"
-  HISTOCORE_MAX_PATCHES_PER_SLIDE: "10000"
+  # Model Configuration
+  MODELS_DIR: "/app/models"
+  DEFAULT_DISEASE_TYPE: "breast_cancer"
+  MODEL_CACHE_SIZE: "2"
   
-  # Performance
-  HISTOCORE_WORKERS: "4"
-  HISTOCORE_TIMEOUT: "300"
-  HISTOCORE_KEEP_ALIVE: "2"
-  HISTOCORE_MAX_REQUESTS: "1000"
-  
-  # Cache
-  REDIS_URL: "redis://histocore-redis:6379"
-  HISTOCORE_CACHE_TTL: "3600"
-  HISTOCORE_CACHE_MAX_SIZE: "1000"
+  # File Storage
+  UPLOAD_DIR: "/tmp/medical_ai_uploads"
+  MAX_FILE_SIZE_MB: "100"
   
   # Monitoring
-  PROMETHEUS_PORT: "8002"
-  HISTOCORE_METRICS_ENABLED: "true"
-  HISTOCORE_HEALTH_CHECK_INTERVAL: "30"
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "9090"
   
-  # Security
-  HISTOCORE_CORS_ORIGINS: "*"
-  HISTOCORE_RATE_LIMIT: "100/minute"
+  # Rate Limiting
+  RATE_LIMIT_PER_MINUTE: "60"
+  RATE_LIMIT_BURST: "10"
   
-  # Clinical integration
-  HISTOCORE_PACS_ENABLED: "true"
-  HISTOCORE_FHIR_ENABLED: "true"
-  HISTOCORE_EMR_ENABLED: "false"
-  
-  # Paths
-  HISTOCORE_DATA_PATH: "/app/data"
-  HISTOCORE_LOG_PATH: "/app/logs"
-  HISTOCORE_CACHE_PATH: "/app/cache"
-  HISTOCORE_MODEL_PATH: "/app/checkpoints"
+  # Health Check
+  HEALTH_CHECK_INTERVAL: "30"
+  HEALTH_CHECK_TIMEOUT: "10"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: medical-ai
+data:
+  POSTGRES_DB: "medical_ai"
+  POSTGRES_USER: "medical_ai_user"
+  PGDATA: "/var/lib/postgresql/data/pgdata"
