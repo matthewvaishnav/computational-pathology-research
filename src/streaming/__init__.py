@@ -20,6 +20,12 @@ from .web_dashboard import (
     update_dashboard_error,
     update_dashboard_complete
 )
+from .realtime_processor import (
+    RealTimeWSIProcessor,
+    StreamingConfig,
+    StreamingResult,
+    process_wsi_realtime
+)
 
 __all__ = [
     'WSIStreamReader',
@@ -42,5 +48,9 @@ __all__ = [
     'ProcessingParameters',
     'update_dashboard_status',
     'update_dashboard_error',
-    'update_dashboard_complete'
+    'update_dashboard_complete',
+    'RealTimeWSIProcessor',
+    'StreamingConfig',
+    'StreamingResult',
+    'process_wsi_realtime'
 ]
