@@ -542,8 +542,6 @@ def train_epoch(
         images = batch["image"].to(device)
         labels = batch["label"].to(device).float().unsqueeze(1)
 
-        optimizer.zero_grad()
-
         # Mixed precision training
         if scaler is not None:
             with torch.cuda.amp.autocast():
@@ -563,12 +561,14 @@ def train_epoch(
                 loss = criterion(logits, labels)
 
             # Check for NaN loss or extremely small loss (numerical instability)
-            if torch.isnan(loss) or loss.item() < 1e-7:
+            # Note: Avoid .item() here to prevent GPU sync - check on GPU first
+            if torch.isnan(loss) or loss < 1e-7:
+                loss_val = loss.item()  # Single GPU→CPU transfer for logging
                 if torch.isnan(loss):
                     logger.warning(f"NaN loss detected at batch {batch_idx}. Skipping batch.")
                 else:
                     logger.warning(
-                        f"Extremely small loss ({loss.item():.2e}) at batch {batch_idx}. Skipping to prevent numerical instability."
+                        f"Extremely small loss ({loss_val:.2e}) at batch {batch_idx}. Skipping to prevent numerical instability."
                     )
                 num_skipped_batches += 1
                 consecutive_nan_count += 1
@@ -922,6 +922,7 @@ def train_epoch(
                 )
 
             optimizer.step()
+            optimizer.zero_grad(set_to_none=True)  # Faster than default zero_grad()
 
             # Validate model parameters immediately after optimizer step
             if not validate_model_parameters_after_batch(
