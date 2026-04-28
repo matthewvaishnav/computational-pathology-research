@@ -22,7 +22,7 @@ title: Home
 
 HistoCore provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving **100% validation AUC** (epoch 10) on real histopathology data (262K training samples, 32K test samples) with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
 
-The framework features **8-12x optimized training pipeline** with torch.compile, mixed precision (AMP), and advanced GPU optimizations, reducing training time from 20-40 hours to 2-3 hours on consumer hardware. Includes first open-source **federated learning system** for digital pathology with ε ≤ 1.0 differential privacy (8/8 property tests passing), production-ready **PACS integration** with multi-vendor support and HIPAA compliance (40/48 properties validated), advanced model interpretability tools, comprehensive testing infrastructure (1,448 tests, 55% coverage), and real-time inference performance (<5 seconds) suitable for production clinical environments.
+The framework features **6-13x optimized training pipeline** with torch.compile, mixed precision (AMP), and advanced GPU optimizations, reducing training time from 20-40 hours to 3.1 hours on consumer hardware. Includes first open-source **federated learning system** for digital pathology with ε ≤ 1.0 differential privacy (8/8 property tests passing), production-ready **PACS integration** with multi-vendor support and HIPAA compliance (40/48 properties validated), advanced model interpretability tools, comprehensive testing infrastructure (1,483 tests, 55% coverage), and real-time inference performance (<5 seconds) suitable for production clinical environments.
 
 <div class="callout callout-warning">
   <strong>Research Use Only:</strong> This framework is designed for research purposes and has not been validated for clinical diagnostic use.
@@ -34,8 +34,8 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 
 <div class="features-grid">
   <div class="feature-card">
-    <h3>⚡ 8-12x Faster Training</h3>
-    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 2-3 hours. See <a href="PERFORMANCE_COMPARISON.html">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
+    <h3>⚡ 6-13x Faster Training</h3>
+    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 3.1 hours. See <a href="PERFORMANCE_COMPARISON.html">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
   </div>
   
   <div class="feature-card">
@@ -60,8 +60,8 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 
 <div class="features-grid">
   <div class="feature-card">
-    <h3>🚀 8-12x Training Optimization</h3>
-    <p>Production-grade performance engineering with torch.compile, mixed precision (AMP), channels_last memory format, and persistent workers. Reduced training time from 20-40 hours to 2-3 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%) through systematic profiling and optimization.</p>
+    <h3>🚀 6-13x Training Optimization</h3>
+    <p>Production-grade performance engineering with torch.compile, mixed precision (AMP), channels_last memory format, and persistent workers. Reduced training time from 20-40 hours to 3.1 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%) through systematic profiling and optimization.</p>
   </div>
   
   <div class="feature-card">
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
 ```
 
-Expected: **93-94% test AUC in 2.25 hours** on RTX 4070!
+Expected: **93.98% test AUC in 3.1 hours** on RTX 4070!
 
 ---
 
@@ -130,7 +130,7 @@ Expected: **93-94% test AUC in 2.25 hours** on RTX 4070!
   <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
   <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
   <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
-  <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
+  <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (6-13x)</a>
   <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
   <a href="MODEL_INTERPRETABILITY.html" class="doc-link">Model Interpretability</a>

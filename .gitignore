@@ -89,6 +89,9 @@ tmp_*/
 
 # Personal / non-project files
 Matthew_Vaishnav_Resume*.md
+Matthew_Vaishnav_Resume*.pdf
+Matthew_Vaishnav_Harvard_Style_Resume.md
+Matthew_Vaishnav_Harvard_Style_Resume.pdf
 *_Cover_Letter.md
 job_search_automation.py
 venv_gpu/

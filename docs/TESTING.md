@@ -122,10 +122,10 @@ Benchmarking and optimization validation:
 #### Training Performance
 | Configuration | Time | Speedup | GPU Util | Status |
 |---------------|------|---------|----------|--------|
-| Baseline | 20 hours | 1x | 17% | ✅ |
-| + AMP | 10 hours | 2x | 25% | ✅ |
-| + torch.compile | 5 hours | 4x | 45% | ✅ |
-| + All Optimizations | **2.25 hours** | **8-12x** | **85%** | ✅ |
+| Baseline | 30 hours | 1x | 17% | ✅ |
+| + AMP | 15 hours | 2x | 25% | ✅ |
+| + torch.compile | 7.5 hours | 4x | 45% | ✅ |
+| + All Optimizations | **3.1 hours** | **10x** | **85%** | ✅ |
 
 #### Inference Performance
 | Metric | Target | Actual | Status |
@@ -311,8 +311,8 @@ jobs:
 
 ### Optimization Validation
 
-**Training Speedup** (8-12x faster):
-- Baseline: 20-40 hours → Optimized: 2.25 hours
+**Training Speedup** (6-13x faster):
+- Baseline: 20-40 hours → Optimized: 3.1 hours
 - GPU Utilization: 17% → 85%
 - Memory Efficiency: <8GB VRAM for full training
 - Techniques: torch.compile, AMP, channels_last, persistent workers
