@@ -1,9 +1,7 @@
-# Grafana dashboard provisioning config
-
 apiVersion: 1
 
 providers:
-  - name: 'HistoCore Dashboards'
+  - name: 'Medical AI Dashboards'
     orgId: 1
     folder: ''
     type: file

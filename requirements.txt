@@ -124,3 +124,53 @@ onnxoptimizer>=0.3.13
 # Multi-GPU and Distributed Training
 accelerate>=0.24.0  # Hugging Face Accelerate for multi-GPU
 deepspeed>=0.12.0  # Optional: for advanced distributed training
+# Hospital Partnerships and Deployment Infrastructure
+paramiko>=3.0.0  # SSH connections for deployment
+docker>=6.0.0  # Container management
+kubernetes>=25.0.0  # Kubernetes orchestration
+pyyaml>=6.0  # YAML configuration (already included above)
+
+# Email and Communication
+# smtplib is built-in, but we need secure email handling
+secure-smtplib>=0.1.1  # Secure SMTP client
+slack-sdk>=3.21.0  # Slack integration for monitoring
+
+# Regulatory and Documentation
+fpdf2>=2.7.0  # Additional PDF generation
+markdown>=3.5.0  # Markdown processing for reports
+
+# Vision-Language Training
+transformers>=4.30.0  # Hugging Face transformers (BiomedCLIP)
+datasets>=2.12.0  # Hugging Face datasets
+tokenizers>=0.13.0  # Fast tokenization
+huggingface-hub>=0.16.0  # Model hub access
+
+# Multi-Disease Dataset Collection
+kaggle>=1.5.16  # Kaggle API for dataset downloads
+zenodo-client>=0.3.0  # Zenodo API for academic datasets
+zipfile36>=0.1.3  # Enhanced zip file handling
+
+# Advanced Monitoring and Alerting
+grafana-api>=1.0.3  # Grafana dashboard management
+influxdb-client>=1.38.0  # Time series database
+elasticsearch>=8.9.0  # Log aggregation and search
+
+# Deployment Automation
+ansible>=8.0.0  # Infrastructure automation
+terraform-python>=0.1.0  # Infrastructure as code
+fabric>=3.2.0  # Remote deployment automation
+
+# Performance Monitoring
+psutil>=5.9.0  # System monitoring (already included above)
+gpustat>=1.1.0  # GPU monitoring
+nvidia-ml-py>=12.535.0  # NVIDIA GPU management
+
+# Data Quality and Validation
+great-expectations>=0.17.0  # Data quality validation
+pandera>=0.17.0  # DataFrame validation
+cerberus>=1.3.4  # Schema validation
+
+# Advanced Analytics
+plotly>=5.14.0  # Interactive visualizations (already included above)
+dash>=2.14.0  # Web-based dashboards
+streamlit>=1.28.0  # Rapid prototyping and demos

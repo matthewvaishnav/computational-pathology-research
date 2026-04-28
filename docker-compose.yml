@@ -1,106 +1,94 @@
-# Docker Compose for HistoCore real-time WSI streaming
-# GPU-enabled with Redis, monitoring, health checks
-
 version: '3.8'
 
 services:
-  # ============================================================================
-  # Main streaming service
-  # ============================================================================
-  histocore-streaming:
+  # Main API Server
+  api:
     build:
       context: .
-      dockerfile: Dockerfile
-      target: production
-    container_name: histocore-streaming
-    restart: unless-stopped
-    
-    # GPU access
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    
-    # Environment
-    environment:
-      - CUDA_VISIBLE_DEVICES=0
-      - HISTOCORE_LOG_LEVEL=INFO
-      - HISTOCORE_MAX_MEMORY_GB=8
-      - HISTOCORE_BATCH_SIZE=32
-      - REDIS_URL=redis://redis:6379
-      - PROMETHEUS_PORT=8002
-    
-    # Ports
+      dockerfile: docker/Dockerfile.api
     ports:
-      - "8000:8000"  # Web dashboard
-      - "8001:8001"  # API
-      - "8002:8002"  # Metrics
-    
-    # Volumes
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://medai:medai123@postgres:5432/medical_ai
+      - REDIS_URL=redis://redis:6379/0
+      - MODEL_PATH=/app/checkpoints/pcam_real/best_model.pth
+      - LOG_LEVEL=INFO
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus_multiproc
     volumes:
-      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints:ro
+      - ./data:/app/data:ro
       - ./logs:/app/logs
-      - ./cache:/app/cache
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    
-    # Dependencies
+      - prometheus_data:/tmp/prometheus_multiproc
     depends_on:
-      redis:
-        condition: service_healthy
-    
-    # Health check
+      - postgres
+      - redis
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
-    
-    # Logging
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m"
-        max-file: "5"
 
-  # ============================================================================
-  # Redis cache
-  # ============================================================================
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=medical_ai
+      - POSTGRES_USER=medai
+      - POSTGRES_PASSWORD=medai123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medai -d medical_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: histocore-redis
-    restart: unless-stopped
-    
-    # Config
-    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
-    
-    # Ports
     ports:
       - "6379:6379"
-    
-    # Volumes
     volumes:
       - redis_data:/data
-    
-    # Health check
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
 
-  # ============================================================================
-  # Prometheus monitoring
-  # ============================================================================
+  # Load Balancer / Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring - Prometheus
   prometheus:
     image: prom/prometheus:latest
-    container_name: histocore-prometheus
-    restart: unless-stopped
-    
-    # Config
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_storage:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -108,62 +96,62 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
-    
-    # Ports
-    ports:
-      - "9090:9090"
-    
-    # Volumes
-    volumes:
-      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    
-    # Dependencies
-    depends_on:
-      - histocore-streaming
+    restart: unless-stopped
 
-  # ============================================================================
-  # Grafana dashboards
-  # ============================================================================
+  # Monitoring - Grafana
   grafana:
     image: grafana/grafana:latest
-    container_name: histocore-grafana
-    restart: unless-stopped
-    
-    # Environment
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=histocore123
-      - GF_USERS_ALLOW_SIGN_UP=false
-    
-    # Ports
     ports:
       - "3000:3000"
-    
-    # Volumes
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
-    
-    # Dependencies
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
     depends_on:
       - prometheus
+    restart: unless-stopped
 
-# ============================================================================
-# Volumes
-# ============================================================================
+  # DICOM Server (for testing)
+  dicom-server:
+    image: dcm4che/dcm4chee-arc-light:5.31.0
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+      - "11112:11112"
+    environment:
+      - POSTGRES_DB=pacsdb
+      - POSTGRES_USER=pacs
+      - POSTGRES_PASSWORD=pacs123
+    volumes:
+      - dicom_data:/opt/wildfly/standalone/data
+    restart: unless-stopped
+
+  # Background Worker (for async tasks)
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    environment:
+      - DATABASE_URL=postgresql://medai:medai123@postgres:5432/medical_ai
+      - REDIS_URL=redis://redis:6379/0
+      - MODEL_PATH=/app/checkpoints/pcam_real/best_model.pth
+    volumes:
+      - ./checkpoints:/app/checkpoints:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
 volumes:
+  postgres_data:
   redis_data:
-    driver: local
   prometheus_data:
-    driver: local
+  prometheus_storage:
   grafana_data:
-    driver: local
-
-# ============================================================================
-# Networks
-# ============================================================================
-networks:
-  default:
-    name: histocore-network
-    driver: bridge
+  dicom_data:
+  nginx_logs:
