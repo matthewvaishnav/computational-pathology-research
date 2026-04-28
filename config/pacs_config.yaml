@@ -1,0 +1,140 @@
+# PACS Integration Configuration
+# Configuration for Medical AI PACS integration system
+
+# DICOM Server Configuration
+dicom_server:
+  ae_title: "MEDICAL_AI"
+  port: 11112
+  storage_dir: "/tmp/dicom_storage"
+  max_associations: 10
+  network_timeout: 30
+
+# PACS Client Configuration  
+pacs_client:
+  ae_title: "MEDICAL_AI_CLIENT"
+  max_pdu_size: 16384
+  network_timeout: 30
+
+# HL7 Server Configuration
+hl7_server:
+  enabled: true
+  host: "localhost"
+  port: 2575
+  max_connections: 10
+
+# Workflow Orchestration Configuration
+workflow:
+  auto_start: true
+  polling_interval: 60  # seconds
+  max_concurrent_tasks: 10
+  retry_attempts: 3
+  task_timeout: 300  # seconds
+
+# Hospital PACS Connections
+pacs_connections:
+  epic_main:
+    name: "epic_main"
+    ae_title: "EPIC_PACS"
+    host: "pacs.hospital.local"
+    port: 11112
+    vendor: "epic"
+    timeout: 30
+    max_pdu: 16384
+    enabled: true
+    
+  cerner_main:
+    name: "cerner_main"
+    ae_title: "CERNER_PACS"
+    host: "cerner-pacs.hospital.local"
+    port: 104
+    vendor: "cerner"
+    timeout: 30
+    max_pdu: 16384
+    enabled: false  # Disabled for demo
+    
+  ge_centricity:
+    name: "ge_centricity"
+    ae_title: "GE_PACS"
+    host: "ge-pacs.hospital.local"
+    port: 11112
+    vendor: "ge"
+    timeout: 30
+    max_pdu: 16384
+    enabled: false  # Disabled for demo
+    
+  philips_isite:
+    name: "philips_isite"
+    ae_title: "PHILIPS_PACS"
+    host: "philips-pacs.hospital.local"
+    port: 11112
+    vendor: "philips"
+    timeout: 30
+    max_pdu: 16384
+    enabled: false  # Disabled for demo
+
+# Notification Configuration
+notifications:
+  email_enabled: false
+  sms_enabled: false
+  hl7_enabled: true
+  
+  # Email settings (if enabled)
+  email:
+    smtp_server: "smtp.hospital.local"
+    smtp_port: 587
+    username: "medical_ai@hospital.local"
+    password: "password"  # Use environment variable in production
+    from_address: "medical_ai@hospital.local"
+    
+  # SMS settings (if enabled)
+  sms:
+    provider: "twilio"
+    account_sid: "your_account_sid"
+    auth_token: "your_auth_token"  # Use environment variable in production
+    from_number: "+1234567890"
+    
+  # HL7 notification settings
+  hl7:
+    target_host: "his.hospital.local"
+    target_port: 2575
+    sending_application: "MEDICAL_AI"
+    receiving_application: "HIS"
+
+# Security Configuration
+security:
+  tls_enabled: false  # Enable for production
+  certificate_path: "/etc/ssl/certs/medical_ai.crt"
+  private_key_path: "/etc/ssl/private/medical_ai.key"
+  ca_certificate_path: "/etc/ssl/certs/ca.crt"
+  verify_certificates: true
+
+# Audit and Compliance
+audit:
+  enabled: true
+  log_level: "INFO"
+  log_file: "/var/log/medical_ai/pacs_audit.log"
+  retention_days: 2555  # 7 years for HIPAA compliance
+  include_phi: false  # Set to true only if required and properly secured
+
+# Performance Configuration
+performance:
+  max_studies_per_hour: 100
+  max_concurrent_retrievals: 5
+  connection_pool_size: 10
+  query_timeout: 30
+  retrieval_timeout: 300
+
+# Development/Testing Configuration
+development:
+  mock_pacs_enabled: false
+  sample_data_enabled: true
+  debug_dicom_messages: false
+  test_mode: false
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "/var/log/medical_ai/pacs_integration.log"
+  max_file_size: "10MB"
+  backup_count: 5
