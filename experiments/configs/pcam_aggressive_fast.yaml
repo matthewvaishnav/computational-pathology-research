@@ -1,0 +1,84 @@
+# PatchCamelyon AGGRESSIVE + FAST training configuration
+# Goal: 95-96% test AUC in 2-3 hours (not 8-10 hours)
+# Strategy: Larger model + stronger regularization + maximum optimizations
+
+data:
+  root_dir: "data/pcam_real"
+  num_workers: 0  # Must be 0 due to Windows memory limits with large model
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: false
+  download: false
+
+model:
+  embed_dim: 512  # Larger capacity
+  
+  feature_extractor:
+    model: "resnet50"  # Upgrade from ResNet18
+    pretrained: true
+    feature_dim: 2048  # ResNet50 output
+  
+  wsi:
+    input_dim: 2048
+    hidden_dim: 1024
+    num_heads: 16
+    num_layers: 3
+    pooling: "attention"  # Better than mean
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: [512, 256]  # 2-layer head
+    dropout: 0.5  # Strong dropout
+
+training:
+  batch_size: 128  # Large batch for speed (was 64)
+  num_epochs: 30  # Reduced from 50 (still enough with better model)
+  learning_rate: 0.0005  # Higher for faster convergence with large batch
+  weight_decay: 0.01  # Strong regularization
+  max_grad_norm: 1.0
+  use_amp: true  # Mixed precision
+  dropout: 0.3
+  
+  # Speed optimizations (torch.compile disabled on Windows)
+  use_torch_compile: false  # Triton not available on Windows
+  torch_compile_mode: "default"
+  channels_last: true
+  
+  # Warmup for stability
+  warmup_epochs: 2  # Reduced from 3
+  warmup_start_lr: 0.000001
+  
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-7
+
+validation:
+  interval: 1
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_aggressive_fast"
+  save_interval: 5
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 8  # Reduced from 10 for faster stopping
+  min_delta: 0.0005
+
+device: "cuda"
+cudnn_benchmark: true
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_aggressive_fast"
+  log_interval: 50
+  use_tensorboard: true
+  use_wandb: false
