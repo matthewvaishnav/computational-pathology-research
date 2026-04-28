@@ -220,6 +220,8 @@ def create_pcam_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader, DataL
     num_workers = config["data"].get("num_workers", 4)
     pin_memory = config["data"].get("pin_memory", True)
     batch_size = config["training"]["batch_size"]
+    persistent_workers = config["data"].get("persistent_workers", False)
+    prefetch_factor = config["data"].get("prefetch_factor", 2)
 
     # Get transforms
     train_transform = get_pcam_transforms(split="train", augmentation=True)
@@ -248,35 +250,46 @@ def create_pcam_dataloaders(config: Dict) -> Tuple[DataLoader, DataLoader, DataL
         download=config["data"].get("download", True),
     )
 
+    # DataLoader kwargs
+    loader_kwargs = {
+        "batch_size": batch_size,
+        "num_workers": num_workers,
+        "pin_memory": pin_memory,
+    }
+    
+    # Add persistent_workers only if num_workers > 0
+    if num_workers > 0 and persistent_workers:
+        loader_kwargs["persistent_workers"] = True
+        loader_kwargs["prefetch_factor"] = prefetch_factor
+
     # Create dataloaders
     train_loader = DataLoader(
         train_dataset,
-        batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
         drop_last=True,
+        **loader_kwargs
     )
 
     val_loader = DataLoader(
         val_dataset,
-        batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
+        **loader_kwargs
     )
 
     test_loader = DataLoader(
         test_dataset,
-        batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
+        **loader_kwargs
     )
 
     logger.info(f"Train samples: {len(train_dataset)}")
     logger.info(f"Val samples: {len(val_dataset)}")
     logger.info(f"Test samples: {len(test_dataset)}")
+    logger.info(f"Batch size: {batch_size}")
+    logger.info(f"Num workers: {num_workers}")
+    if num_workers > 0 and persistent_workers:
+        logger.info(f"Persistent workers: enabled")
+        logger.info(f"Prefetch factor: {prefetch_factor}")
 
     return train_loader, val_loader, test_loader
 
@@ -541,6 +554,10 @@ def train_epoch(
     for batch_idx, batch in enumerate(pbar):
         images = batch["image"].to(device)
         labels = batch["label"].to(device).float().unsqueeze(1)
+
+        # OPTIMIZATION: Convert to channels_last if enabled
+        if config.get("training", {}).get("channels_last", False) and device.type == "cuda":
+            images = images.to(memory_format=torch.channels_last)
 
         # Mixed precision training
         if scaler is not None:
@@ -2055,6 +2072,32 @@ def main():
     feature_extractor = feature_extractor.to(device)
     encoder = encoder.to(device)
     head = head.to(device)
+
+    # OPTIMIZATION: Enable channels_last memory format for better GPU performance
+    if config.get("training", {}).get("channels_last", False) and device.type == "cuda":
+        logger.info("Enabling channels_last memory format for better GPU performance")
+        feature_extractor = feature_extractor.to(memory_format=torch.channels_last)
+        logger.info("✓ Channels last enabled")
+
+    # OPTIMIZATION: Enable torch.compile for 20-40% speedup (PyTorch 2.0+)
+    if config.get("training", {}).get("use_torch_compile", False):
+        if hasattr(torch, 'compile'):
+            compile_mode = config.get("training", {}).get("torch_compile_mode", "default")
+            logger.info(f"Compiling models with torch.compile (mode={compile_mode})...")
+            try:
+                feature_extractor = torch.compile(feature_extractor, mode=compile_mode)
+                encoder = torch.compile(encoder, mode=compile_mode)
+                head = torch.compile(head, mode=compile_mode)
+                logger.info("✓ Models compiled successfully")
+            except Exception as e:
+                logger.warning(f"torch.compile failed: {e}. Continuing without compilation.")
+        else:
+            logger.warning("torch.compile not available (requires PyTorch 2.0+)")
+
+    # OPTIMIZATION: Enable cuDNN benchmark for faster convolutions
+    if config.get("cudnn_benchmark", False) and device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+        logger.info("✓ cuDNN benchmark enabled")
 
     # Feature caching for foundation models (4x speedup)
     use_cache = config.get("foundation_model", {}).get("use_cache", True)
