@@ -7,8 +7,10 @@ device: cuda
 data:
   root_dir: data/pcam_real
   download: false
-  num_workers: 0  # Use 0 for CPU testing to avoid multiprocessing issues
-  pin_memory: false
+  num_workers: 4  # Use 4-8 workers for GPU
+  pin_memory: true  # Always true for GPU
+  persistent_workers: true  # Keep workers alive between epochs
+  prefetch_factor: 2  # Prefetch 2 batches
 
 # Foundation model configuration
 foundation_model:
