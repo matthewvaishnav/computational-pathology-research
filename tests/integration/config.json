@@ -1,0 +1,54 @@
+{
+  "base_url": "http://localhost:8000",
+  "timeout": 300,
+  "retry_attempts": 3,
+  "parallel_execution": false,
+  "generate_fixtures": true,
+  "cleanup_fixtures": true,
+  "save_results": true,
+  "results_dir": "tests/integration/results",
+  "test_suites": {
+    "workflow": true,
+    "api_endpoints": true,
+    "performance": true,
+    "fixtures": true
+  },
+  "performance_thresholds": {
+    "api_response_time": 2.0,
+    "inference_time": 30.0,
+    "database_query_time": 1.0,
+    "memory_usage_mb": 2048,
+    "cpu_usage_percent": 80.0,
+    "throughput_requests_per_second": 5.0
+  },
+  "docker": {
+    "auto_start": false,
+    "compose_file": "docker-compose.yml",
+    "services": ["api", "postgres", "redis", "nginx"]
+  },
+  "test_data": {
+    "num_sample_images": 20,
+    "num_sample_dicoms": 10,
+    "num_test_cases": 50,
+    "num_test_users": 20,
+    "image_sizes": [[224, 224], [512, 512], [1024, 1024]],
+    "cancer_types": ["breast", "lung", "prostate", "colon", "melanoma"],
+    "stain_types": ["H&E", "IHC", "Trichrome", "PAS"]
+  },
+  "security": {
+    "test_auth": true,
+    "test_headers": true,
+    "test_https": false,
+    "test_rate_limiting": true
+  },
+  "monitoring": {
+    "test_metrics": true,
+    "test_logging": true,
+    "test_alerts": false
+  },
+  "mobile": {
+    "test_endpoints": true,
+    "test_offline_sync": true,
+    "test_push_notifications": false
+  }
+}
