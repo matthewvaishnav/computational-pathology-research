@@ -94,6 +94,9 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Track application start time for uptime monitoring
+app.state.start_time = time.time()
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -198,14 +201,29 @@ async def system_status(db: Session = Depends(get_db_session)):
         # Count active analyses
         active_analyses = len([a for a in analysis_ops.list_analyses(status="in_progress")])
         
+        # Get actual system metrics
+        import psutil
+        import time
+        
+        # Calculate uptime (would need to track app start time in production)
+        uptime_seconds = int(time.time() - getattr(app.state, 'start_time', time.time()))
+        
+        # Get actual memory usage
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        memory_usage_mb = memory_info.rss / (1024 * 1024)  # Convert bytes to MB
+        
+        # Get actual CPU usage
+        cpu_usage_percent = process.cpu_percent(interval=0.1)
+        
         return {
             "status": "operational",
-            "uptime_seconds": 3600,  # TODO: Track actual uptime
+            "uptime_seconds": uptime_seconds,
             "active_analyses": active_analyses,
             "total_analyses": analysis_stats.get('total_analyses', 0),
             "total_cases": case_stats.get('total_cases', 0),
-            "memory_usage_mb": 1024,  # TODO: Get actual memory usage
-            "cpu_usage_percent": 45.2  # TODO: Get actual CPU usage
+            "memory_usage_mb": round(memory_usage_mb, 2),
+            "cpu_usage_percent": round(cpu_usage_percent, 2)
         }
     except Exception as e:
         logger.error(f"System status error: {e}")
@@ -691,12 +709,16 @@ async def get_dashboard_data(db: Session = Depends(get_db_session)):
         case_stats = case_ops.get_case_statistics()
         analysis_stats = analysis_ops.get_analysis_statistics()
         
+        # Calculate actual uptime
+        import time
+        uptime_seconds = int(time.time() - getattr(app.state, 'start_time', time.time()))
+        
         return {
             "total_cases": case_stats.get('total_cases', 0),
             "pending_cases": case_stats.get('status_distribution', {}).get('pending', 0),
             "completed_analyses": analysis_stats.get('status_distribution', {}).get('completed', 0),
             "average_processing_time": analysis_stats.get('average_processing_time_ms', 0),
-            "system_uptime": 3600,  # TODO: Track actual uptime
+            "system_uptime": uptime_seconds,
             "case_status_distribution": case_stats.get('status_distribution', {}),
             "analysis_status_distribution": analysis_stats.get('status_distribution', {})
         }

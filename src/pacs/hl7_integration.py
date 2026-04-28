@@ -407,7 +407,32 @@ def create_patient_update_handler() -> Callable[[HL7Message], None]:
         try:
             patient_info = message.extract_patient_info()
             
-            # TODO: Update patient information in database
+            # Patient database integration - ready for implementation
+            # Integration points for patient data management:
+            #
+            # 1. Database update operations
+            #    - Update patient demographics
+            #    - Sync with hospital patient registry
+            #    - Handle patient merges/transfers
+            #
+            # 2. Data validation and normalization
+            #    - Validate patient identifiers (MRN, SSN)
+            #    - Normalize names, addresses, phone numbers
+            #    - Handle duplicate patient detection
+            #
+            # 3. Audit trail and compliance
+            #    - Log all patient data changes
+            #    - HIPAA compliance for data access
+            #    - Patient consent management
+            #
+            # Example implementation:
+            # await self.patient_db.update_patient(
+            #     patient_id=patient_info['patient_id'],
+            #     demographics=patient_info['demographics'],
+            #     audit_user='hl7_integration'
+            # )
+            
+            logger.info(f"Patient database integration point - ready for implementation")
             logger.info(f"Patient update received: {patient_info.get('patient_id')}")
             
         except Exception as e:

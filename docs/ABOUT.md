@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**HistoCore** is a production-grade PyTorch framework for computational pathology research and clinical deployment establishing **#1 performance in digital pathology** with **93.94% AUC** (Rank #1/11 published methods), outperforming Vision Transformers with 7x fewer parameters. The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
+**HistoCore** is a production-grade PyTorch framework for computational pathology research and clinical deployment establishing **#1 performance in digital pathology** with **93.98% AUC** (Rank #1/11 published methods), outperforming Vision Transformers with 7x fewer parameters. The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
 
 ### Current Statistics
 
@@ -10,7 +10,7 @@
 - **Test Suite**: 150 test files with 1,448 total tests
 - **Code Coverage**: 55% with comprehensive property-based testing
 - **Development Activity**: 286+ commits since January 2024
-- **Validated Performance**: **#1 in digital pathology** - 93.94% AUC (Rank #1/11 methods), 85.26% accuracy on real PCam benchmark
+- **Validated Performance**: **#1 in digital pathology** - 93.98% AUC (Rank #1/11 methods), 84.26% accuracy on real PCam benchmark
 - **Benchmark Superiority**: Statistically significant improvements over Vision Transformers, Medical AI specialists, and traditional CNNs
 - **Clinical Features**: DICOM/FHIR integration, PACS connectivity, federated learning, regulatory compliance
 
@@ -137,7 +137,7 @@ If you use HistoCore in your research, please cite:
   author = {Vaishnav, Matthew},
   year = {2026},
   url = {https://github.com/matthewvaishnav/histocore},
-  note = {#1 performing method in digital pathology with 93.94\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 1,448 tests, 55\% coverage, federated learning system, and PACS integration.}
+  note = {#1 performing method in digital pathology with 93.98\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 1,483 tests, 55\% coverage, federated learning system, and PACS integration.}
 }
 ```
 

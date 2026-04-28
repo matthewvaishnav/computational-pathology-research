@@ -47,7 +47,7 @@ histocore-demo start
 
 **Key Messages**:
 - ✅ **Speed**: 30 seconds vs competitors' 15+ minutes
-- ✅ **Accuracy**: 93.94% AUC (#1 performance proven)
+- ✅ **Accuracy**: 93.98% AUC (#1 performance proven)
 - ✅ **Interpretability**: Attention shows clinical reasoning
 - ✅ **Real-time feedback**: No waiting for batch results
 
@@ -128,7 +128,7 @@ histocore-demo start
 | **Real-time Processing** | ✅ <30 seconds | ❌ 15+ minutes | ❌ Batch only | ❌ 5+ minutes | ❌ Batch only |
 | **PACS Integration** | ✅ Production-ready | ⚠️ Limited | ⚠️ Basic | ⚠️ Limited | ❌ None |
 | **Federated Learning** | ✅ First in industry | ❌ None | ❌ None | ❌ None | ❌ None |
-| **Performance (AUC)** | ✅ 93.94% (#1) | ⚠️ 91.2% | ⚠️ 90.8% | ⚠️ 89.5% | ⚠️ 88.9% |
+| **Performance (AUC)** | ✅ 93.98% (#1) | ⚠️ 91.2% | ⚠️ 90.8% | ⚠️ 89.5% | ⚠️ 88.9% |
 | **Memory Efficiency** | ✅ <2GB | ❌ 8-16GB | ❌ 12GB+ | ❌ 6-10GB | ❌ 8GB+ |
 | **Open Source** | ✅ Full framework | ❌ Proprietary | ❌ Proprietary | ❌ Proprietary | ❌ Proprietary |
 | **Multi-vendor PACS** | ✅ GE/Philips/Siemens/Agfa | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited | ❌ None |

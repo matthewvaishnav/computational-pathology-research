@@ -408,7 +408,7 @@ def create_roi_dashboard():
     
     with col2:
         st.write("**🎯 Quality Improvements**")
-        st.write(f"• 93.94% AUC (#1 performance)")
+        st.write(f"• 93.98% AUC (#1 performance)")
         st.write(f"• 70% error reduction")
         st.write(f"• Quality value: ${roi_results.quality_improvement_value:,.0f}/year")
     
@@ -424,7 +424,7 @@ def create_roi_dashboard():
     competitive_data = pd.DataFrame({
         "Solution": ["HistoCore", "PathAI", "Paige", "Proscia", "Ibex"],
         "Processing Time": ["<30 seconds", "15+ minutes", "Batch only", "5+ minutes", "Batch only"],
-        "AUC Performance": [93.94, 91.2, 90.8, 89.5, 88.9],
+        "AUC Performance": [93.98, 91.2, 90.8, 89.5, 88.9],
         "PACS Integration": ["✅ Full", "⚠️ Limited", "⚠️ Basic", "⚠️ Limited", "❌ None"],
         "Real-time": ["✅ Yes", "❌ No", "❌ No", "❌ No", "❌ No"]
     })
@@ -457,7 +457,7 @@ def create_roi_dashboard():
 - **Productivity Gain**: {roi_results.productivity_gain_hours:,.0f} hours/year
 - **Quality Improvement**: ${roi_results.quality_improvement_value:,.0f}/year
 - **Processing Speed**: <30 seconds vs 15+ minutes (competitors)
-- **Performance**: 93.94% AUC (#1 proven superiority)
+- **Performance**: 93.98% AUC (#1 proven superiority)
 
 ## Recommendation
 HistoCore delivers exceptional ROI with {roi_results.roi_percentage:.0f}% first-year return and 

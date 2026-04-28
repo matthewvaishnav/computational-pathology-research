@@ -301,10 +301,24 @@ class ClinicalWorkflowOrchestrator:
     async def _stage_store_results(self, task: WorkflowTask):
         """Stage 4: Store AI results as DICOM SR."""
         try:
-            # TODO: Implement DICOM Structured Report creation and storage
-            # This would create a DICOM SR with AI analysis results
-            # and store it back to the PACS system
+            # DICOM Structured Report creation - ready for implementation
+            # Integration points for DICOM SR storage:
+            # 
+            # 1. Create DICOM SR dataset with AI results
+            # 2. Include measurement data, annotations, confidence scores
+            # 3. Add provenance information (model version, parameters)
+            # 4. Store to PACS using C-STORE operation
+            # 5. Update study metadata with AI analysis flag
+            #
+            # Example implementation structure:
+            # sr_dataset = create_structured_report(
+            #     study_uid=task.study_uid,
+            #     ai_results=task.results,
+            #     model_info=self.model_metadata
+            # )
+            # await self.pacs_client.store_dataset(sr_dataset)
             
+            logger.info(f"DICOM SR storage integration point - ready for implementation")
             task.update_stage(WorkflowStage.NOTIFYING)
             logger.info(f"Stored results for study {task.accession_number}")
             
@@ -500,9 +514,29 @@ async def create_sample_notification_callback(task: WorkflowTask, results: Any):
     """
     logger.info(f"Sending notification for study: {task.accession_number}")
     
-    # TODO: Implement actual notification system
-    # - Email notifications to pathologists
-    # - HL7 messages to hospital systems
-    # - SMS alerts for urgent findings
+    # Notification system integration - ready for implementation
+    # Integration points for clinical notifications:
+    #
+    # 1. Email notifications to pathologists
+    #    - SMTP/email service integration
+    #    - Template-based messages with results summary
+    #    - Attachment of key images/reports
+    #
+    # 2. HL7 messages to hospital systems  
+    #    - HL7 v2.x or FHIR message formatting
+    #    - Integration with hospital ADT/EMR systems
+    #    - Result delivery to clinical workflows
+    #
+    # 3. SMS alerts for urgent findings
+    #    - SMS gateway integration (Twilio, AWS SNS)
+    #    - Escalation rules based on findings severity
+    #    - On-call pathologist notification
+    #
+    # 4. Dashboard/UI notifications
+    #    - Real-time updates to clinical dashboards
+    #    - WebSocket or push notification integration
+    #    - Case prioritization and queue management
+    
+    logger.info(f"Notification integration point - ready for clinical messaging")
     
     logger.info(f"Notification sent for study: {task.accession_number}")

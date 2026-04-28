@@ -9,9 +9,9 @@ This script establishes HistoCore's superiority over existing solutions by:
 5. Publication-ready results and visualizations
 
 Current HistoCore Performance:
-- Accuracy: 85.26%
-- AUC: 93.94%
-- F1: 85.07%
+- Accuracy: 84.26%
+- AUC: 93.98%
+- F1: 81.81%
 """
 
 import argparse

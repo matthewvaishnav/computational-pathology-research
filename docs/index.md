@@ -40,7 +40,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>🎯 Competitive Accuracy</h3>
-    <p>93.94% test AUC on PCam - matching or exceeding PathML (92%) and CLAM (91%). See <a href="ARCHITECTURE.html">architecture details</a>.</p>
+    <p>93.98% test AUC on PCam - matching or exceeding PathML (92%) and CLAM (91%). See <a href="ARCHITECTURE.html">architecture details</a>.</p>
   </div>
   
   <div class="feature-card">

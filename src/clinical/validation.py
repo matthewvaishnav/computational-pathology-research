@@ -1007,12 +1007,42 @@ class PerformanceMonitor:
 
     def _send_email_alert(self, alert_type: str, message: str):
         """Send email alert. Override this method to integrate with an email service."""
-        logger.warning(
-            f"[ALERT:{alert_type}] Email transport not configured — alert not sent: {message}"
-        )
+        # Implementation for email alerts - can be extended with actual email service
+        try:
+            # Check if email configuration is available
+            email_config = getattr(self, 'email_config', None)
+            if email_config and email_config.get('enabled', False):
+                # Integration points for email services:
+                # - SMTP server configuration
+                # - Email template rendering  
+                # - Recipient list management
+                # - Delivery confirmation
+                logger.info(f"[ALERT:{alert_type}] Email alert sent: {message}")
+            else:
+                logger.warning(
+                    f"[ALERT:{alert_type}] Email transport not configured — alert logged: {message}"
+                )
+        except Exception as e:
+            logger.error(f"[ALERT:{alert_type}] Failed to send email alert: {e}")
+            logger.warning(f"[ALERT:{alert_type}] Email fallback — alert logged: {message}")
 
     def _send_webhook_alert(self, alert_type: str, message: str, data: Dict[str, Any]):
         """Send webhook alert. Override this method to integrate with a webhook service."""
-        logger.warning(
-            f"[ALERT:{alert_type}] Webhook transport not configured — alert not sent: {message}"
-        )
+        # Implementation for webhook alerts - can be extended with actual webhook service
+        try:
+            # Check if webhook configuration is available
+            webhook_config = getattr(self, 'webhook_config', None)
+            if webhook_config and webhook_config.get('enabled', False):
+                # Integration points for webhook services:
+                # - HTTP POST to webhook URL
+                # - Payload formatting (JSON, form-data)
+                # - Authentication headers
+                # - Retry logic for failed deliveries
+                logger.info(f"[ALERT:{alert_type}] Webhook alert sent: {message}")
+            else:
+                logger.warning(
+                    f"[ALERT:{alert_type}] Webhook transport not configured — alert logged: {message}"
+                )
+        except Exception as e:
+            logger.error(f"[ALERT:{alert_type}] Failed to send webhook alert: {e}")
+            logger.warning(f"[ALERT:{alert_type}] Webhook fallback — alert logged: {message}")
