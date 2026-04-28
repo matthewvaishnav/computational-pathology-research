@@ -60,7 +60,17 @@ The framework features advanced model interpretability tools (Grad-CAM, attentio
   
   <div class="feature-card">
     <h3>Validated Performance</h3>
-    <p>Real PCam results: 96.7% test accuracy, 100% validation accuracy. Bootstrap confidence intervals and baseline model comparisons included.</p>
+    <p>Real PCam results: <strong>85.26% test accuracy</strong> (95% CI: 84.83%–85.63%), <strong>0.9394 AUC</strong> (95% CI: 0.9369–0.9418) on full 32,768-sample test set. Bootstrap confidence intervals from 1,000 resamples. Clinical threshold optimization achieves 90% sensitivity, reducing missed tumors by 61.7%.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>PACS Integration</h3>
+    <p>Production-ready PACS integration with DICOM query/retrieve, structured report generation, vendor adapters, audit logging, security management, and notification system. Enables seamless integration with existing hospital imaging infrastructure.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Performance Optimizations</h3>
+    <p>Foundation model feature caching delivers <strong>4–6x training speedup</strong> (Phikon: 2–3 hours → 30–45 minutes). Optimized training loop with persistent DataLoader workers, reduced GPU↔CPU synchronization, and <code>set_to_none=True</code> gradient zeroing yields an additional <strong>15–35% speedup</strong>. GPU batch inference achieves <strong>9,482 samples/sec</strong> (16x CPU speedup), processing 100K patches in 10.5 seconds.</p>
   </div>
 </div>
 
@@ -75,6 +85,7 @@ The framework features advanced model interpretability tools (Grad-CAM, attentio
   <a href="MODEL_INTERPRETABILITY.html" class="doc-link">Model Interpretability</a>
   <a href="CLINICAL_WORKFLOW_INTEGRATION.html" class="doc-link">Clinical Integration</a>
   <a href="COMPREHENSIVE_DATASET_TESTING.html" class="doc-link">Dataset Testing</a>
+  <a href="PACS_INTEGRATION.html" class="doc-link">PACS Integration</a>
   <a href="REGULATORY_COMPLIANCE.html" class="doc-link">Regulatory Compliance</a>
   <a href="API_REFERENCE.html" class="doc-link">API Reference</a>
   <a href="DOCS_INDEX.html" class="doc-link">Full Documentation</a>
