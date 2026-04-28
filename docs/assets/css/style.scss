@@ -33,17 +33,15 @@ h3 { font-size: 1.5em; }
 
 /* ─── Wrapper ─── */
 .wrapper {
-  max-width: 1400px;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   box-sizing: border-box;
   background: white;
-  box-shadow: 0 0 40px rgba(0,0,0,0.05);
 }
 
 /* ─── Header / Sidebar ─── */
 header {
-  width: 270px;
+  width: 250px;
   float: left;
   position: fixed;
   -webkit-font-smoothing: subpixel-antialiased;
@@ -226,9 +224,10 @@ footer {
 
 /* ─── Main Content Section ─── */
 section {
-  width: 1050px;
-  float: right;
-  padding: 50px 40px 60px;
+  margin-left: 250px;
+  width: calc(100% - 250px);
+  float: none;
+  padding: 50px 60px 60px;
   background: white;
   box-sizing: border-box;
   
