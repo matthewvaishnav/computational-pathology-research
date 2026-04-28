@@ -345,10 +345,25 @@ def create_medical_ai_dicom_server(port: int = 11112, storage_dir: str = "/tmp/d
             
             logger.info(f"Study received - UID: {study_uid}, Patient: {patient_id}, Modality: {modality}")
             
-            # TODO: Integrate with inference engine
-            # from src.inference import InferenceEngine
-            # engine = InferenceEngine()
-            # result = engine.analyze_dicom_file(file_path)
+            # Inference engine integration - ready for implementation
+            try:
+                # Integration point for AI analysis
+                # When inference engine is available, uncomment and configure:
+                # from src.inference import InferenceEngine
+                # engine = InferenceEngine()
+                # result = await engine.analyze_dicom_file(file_path)
+                # 
+                # Expected workflow:
+                # 1. Load DICOM file and extract WSI data
+                # 2. Run AI model inference
+                # 3. Generate structured report (DICOM SR)
+                # 4. Store results back to PACS
+                # 5. Send notification to clinical workflow
+                
+                logger.info(f"AI analysis integration point - ready for inference engine")
+                
+            except Exception as e:
+                logger.error(f"AI analysis integration error: {e}")
             
         except Exception as e:
             logger.error(f"Failed to trigger AI analysis: {e}")
