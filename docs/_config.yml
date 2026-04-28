@@ -1,77 +1,34 @@
-title: Medical AI Revolution
-description: Comprehensive pathology AI platform with foundation models, explainability, and clinical deployment
-baseurl: "/computational-pathology-research"
-url: "https://matthewvaishnav.github.io"
+title: Computational Pathology Research Framework
+description: A tested PyTorch framework for computational pathology research with working benchmarks on PatchCamelyon and CAMELYON16
+theme: jekyll-theme-minimal
+logo: /assets/logo.svg?v=2
+show_downloads: true
+github:
+  repository_url: https://github.com/matthewvaishnav/computational-pathology-research
+  is_project_page: true
+  owner_name: Matthew Vaishnav
+  owner_url: https://github.com/matthewvaishnav
 
-# Build settings
-markdown: kramdown
-highlighter: rouge
-theme: minima
+# Navigation
+navigation:
+  - title: Home
+    url: /
+  - title: Documentation
+    url: /DOCS_INDEX.html
+  - title: GitHub
+    url: https://github.com/matthewvaishnav/computational-pathology-research
 
 # Plugins
 plugins:
-  - jekyll-feed
-  - jekyll-sitemap
-  - jekyll-seo-tag
+  - jekyll-relative-links
 
-# Navigation
-header_pages:
-  - README.md
-  - IMPLEMENTATION_STATUS.md
-  - TRAINING_STATUS.md
-  - MEDICAL_AI_REVOLUTION_PROGRESS.md
+# Relative links configuration
+relative_links:
+  enabled: true
+  collections: true
 
-# Collections
-collections:
-  specs:
-    output: true
-    permalink: /:collection/:name/
-
-# Defaults
-defaults:
-  - scope:
-      path: ""
-      type: "posts"
-    values:
-      layout: "post"
-  - scope:
-      path: ""
-      type: "specs"
-    values:
-      layout: "page"
-
-# Exclude from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
-
-# Site metadata
-author:
-  name: Matthew Vaishnav
-  email: matthew.vaishnav@example.com
-
-social:
-  github: matthewvaishnav
-  linkedin: matthewvaishnav
-
-# SEO
-twitter:
-  username: matthewvaishnav
-  card: summary_large_image
-
-# Analytics (optional)
-google_analytics: # Add your GA tracking ID if needed
-
-# Custom variables
-project:
-  name: Medical AI Revolution
-  version: "1.0.0"
-  status: "Production Ready"
-  training_auc: "95.02%"
-  tasks_completed: "96/96"
-  phases_completed: "7/7"
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: none
