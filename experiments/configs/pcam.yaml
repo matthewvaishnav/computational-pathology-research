@@ -8,8 +8,8 @@ experiment:
 
 data:
   dataset: pcam
-  root_dir: ./data/pcam
-  download: true
+  root_dir: ./data/pcam_real
+  download: false
   num_workers: 4
   pin_memory: true
   
@@ -44,9 +44,9 @@ model:
 
   wsi:
     input_dim: 512  # ResNet-18 feature dim
-    hidden_dim: 256
-    num_heads: 4
-    num_layers: 1
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
     pooling: mean  # Simple mean pooling for single patch
 
 task:
