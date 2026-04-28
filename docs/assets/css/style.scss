@@ -33,7 +33,7 @@ h3 { font-size: 1.5em; }
 
 /* ─── Wrapper ─── */
 .wrapper {
-  max-width: 960px;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
@@ -226,7 +226,7 @@ footer {
 
 /* ─── Main Content Section ─── */
 section {
-  width: 650px;
+  width: 1050px;
   float: right;
   padding: 50px 40px 60px;
   background: white;
@@ -337,15 +337,11 @@ section {
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     border-radius: 8px;
     overflow: hidden;
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     
     th, td {
       padding: 14px 18px;
       text-align: left;
       border-bottom: 1px solid #e8e8e8;
-      white-space: nowrap;
     }
     
     th {
