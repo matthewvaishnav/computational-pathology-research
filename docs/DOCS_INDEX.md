@@ -102,9 +102,10 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - **Topics**: Code style, pull requests, issue reporting
 
 ### Testing
-- [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Test suite documentation
-- **Coverage**: 55% code coverage, 1,448 unit tests
-- **Topics**: Unit tests, integration tests, property-based testing, edge case handling, performance benchmarks
+- [TESTING.md](TESTING.html) - **Comprehensive testing documentation**: 1,483 tests, 55% coverage, CI/CD pipeline
+- [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Historical test suite documentation
+- **Coverage**: Unit tests, integration tests, property-based testing, clinical validation
+- **Topics**: Test execution, coverage reports, benchmarks, quality assurance, reproducibility
 
 ### Build System
 - [MAKEFILE.md](MAKEFILE.html) - Makefile usage guide
