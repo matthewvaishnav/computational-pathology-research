@@ -25,6 +25,10 @@ from .realtime_processor import (
     StreamingResult,
     process_wsi_realtime
 )
+from .checkpoint_loader import (
+    CheckpointLoader,
+    load_checkpoint_for_streaming
+)
 from .mock_models import (
     MockCNNEncoder,
     MockAttentionMIL,
@@ -60,6 +64,8 @@ __all__ = [
     'StreamingConfig',
     'StreamingResult',
     'process_wsi_realtime',
+    'CheckpointLoader',
+    'load_checkpoint_for_streaming',
     'MockCNNEncoder',
     'MockAttentionMIL',
     'create_mock_cnn_encoder',

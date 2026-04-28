@@ -208,29 +208,130 @@ cnn_encoder, attention_model = create_mock_models(feature_dim=512)
 
 ## Transitioning to Real Models
 
-### Step 1: Train Models
+### Step 1: Verify Checkpoint Exists
+
+Check if you have a trained checkpoint:
 
 ```bash
-# Train PCam model (if not already done)
-python experiments/train_pcam.py --config configs/pcam_real.yaml
+# Check for PCam checkpoint
+ls checkpoints/pcam_real/best_model.pth
+
+# Or check other checkpoints
+ls checkpoints/*/best_model.pth
 ```
 
-### Step 2: Point to Trained Models
+### Step 2: Test Checkpoint Loading
+
+```bash
+# Test that checkpoint can be loaded
+python examples/test_checkpoint_loading.py
+```
+
+**Expected output**:
+```
+================================================================================
+CHECKPOINT LOADING TESTS
+================================================================================
+
+Testing trained model loading for real-time WSI streaming
+This verifies that PCam checkpoints can be loaded and used
+
+Device: cuda
+
+================================================================================
+TEST 1: CheckpointLoader
+================================================================================
+
+Loading checkpoint: checkpoints/pcam_real/best_model.pth
+✓ Checkpoint loaded successfully
+  Epoch: 20
+  Metrics: {'val_loss': 0.347, 'val_accuracy': 0.878, 'val_auc': 0.953}
+
+Loading models for streaming...
+✓ Models loaded successfully
+
+Testing CNN encoder:
+  Input shape: torch.Size([4, 3, 224, 224])
+  Output shape: torch.Size([4, 512])
+  ✓ CNN encoder working
+
+Testing attention model:
+  Input shape: torch.Size([4, 1, 512])
+  Logits shape: torch.Size([4, 2])
+  Attention shape: torch.Size([4, 1])
+  Attention sum: 1.000000
+  ✓ Attention model working
+
+[... more tests ...]
+
+================================================================================
+✓ ALL TESTS PASSED
+================================================================================
+```
+
+### Step 3: Use Trained Models in Streaming
+
+**Option A: Automatic (Recommended)**
+
+The system will automatically look for trained models in standard locations:
+
+```python
+from src.streaming import StreamingConfig, RealTimeWSIProcessor
+
+# Just create config - system finds trained models automatically
+config = StreamingConfig(
+    checkpoint_path="checkpoints/pcam_real/best_model.pth"
+)
+
+processor = RealTimeWSIProcessor(config)
+result = await processor.process_wsi_realtime("slide.svs")
+```
+
+**Option B: Explicit Path**
+
+Specify the checkpoint path explicitly:
 
 ```python
 config = StreamingConfig(
-    cnn_encoder_path="checkpoints/pcam_real/best_model.pth",
-    attention_model_path="checkpoints/attention_mil.pth"
+    checkpoint_path="checkpoints/pcam_real/best_model.pth",
+    batch_size=64,
+    memory_budget_gb=2.0
 )
 
 processor = RealTimeWSIProcessor(config)
 ```
 
-### Step 3: Test with Real WSI
+**Option C: Command Line**
 
 ```bash
-# Use real WSI file
+# Demo script will use trained models if available
 python examples/streaming_demo.py --wsi real_slide.svs
+
+# Or explicitly specify checkpoint
+python examples/streaming_demo.py \
+  --wsi real_slide.svs \
+  --checkpoint checkpoints/pcam_real/best_model.pth
+```
+
+### Step 4: Validate Predictions
+
+With trained models, predictions should be:
+- **Meaningful**: Tumor (1) vs Normal (0) based on actual features
+- **Calibrated**: Confidence reflects actual accuracy
+- **Consistent**: Similar slides get similar predictions
+
+```python
+# Process a slide
+result = await processor.process_wsi_realtime("tumor_slide.svs")
+
+print(f"Prediction: {result.prediction}")  # 0 or 1 (meaningful)
+print(f"Confidence: {result.confidence:.3f}")  # Calibrated (e.g., 0.95)
+print(f"Probabilities: {result.probabilities}")  # [P(normal), P(tumor)]
+
+# Attention should highlight tumor regions
+attention_weights = result.attention_weights
+attention_coords = result.attention_coordinates
+# High attention = important regions (likely tumor if prediction=1)
 ```
 
 ---

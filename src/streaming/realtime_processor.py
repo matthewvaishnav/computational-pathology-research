@@ -62,7 +62,11 @@ class StreamingConfig:
     enable_visualization: bool = True
     visualization_update_interval: int = 1000  # patches
     
-    # Model paths
+    # Model loading options
+    # Option 1: Load from checkpoint (recommended - loads both models)
+    checkpoint_path: Optional[str] = None
+    
+    # Option 2: Load individual models (fallback)
     cnn_encoder_path: Optional[str] = None
     attention_model_path: Optional[str] = None
     
@@ -156,6 +160,25 @@ class RealTimeWSIProcessor:
         """Load CNN encoder and attention models."""
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         
+        # Try to load from checkpoint first (if checkpoint_path is provided)
+        if hasattr(self.config, 'checkpoint_path') and self.config.checkpoint_path:
+            try:
+                self.logger.info(f"Loading models from checkpoint: {self.config.checkpoint_path}")
+                from .checkpoint_loader import load_checkpoint_for_streaming
+                
+                self._cnn_encoder, self._attention_model = load_checkpoint_for_streaming(
+                    self.config.checkpoint_path,
+                    device=device
+                )
+                self.logger.info("✓ Successfully loaded trained models from checkpoint")
+                return
+            except Exception as e:
+                self.logger.warning(
+                    f"Failed to load from checkpoint: {e}. "
+                    f"Falling back to individual model loading."
+                )
+        
+        # Fall back to individual model loading
         if self._cnn_encoder is None:
             if self.config.cnn_encoder_path:
                 self.logger.info(f"Loading CNN encoder from {self.config.cnn_encoder_path}")
