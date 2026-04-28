@@ -19,7 +19,7 @@ HistoCore achieves **competitive accuracy** with **4-8x faster training** compar
 
 **Key Takeaways:**
 - ✅ **Highest accuracy** among compared frameworks
-- ✅ **3-5x faster** training time
+- ✅ **3-10x faster** training time
 - ✅ **Consumer GPU** (RTX 4070 vs V100)
 - ✅ **Smaller model** (12M vs 15-18M parameters)
 
