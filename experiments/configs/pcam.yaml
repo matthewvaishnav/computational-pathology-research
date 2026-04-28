@@ -10,7 +10,7 @@ data:
   dataset: pcam
   root_dir: ./data/pcam_real
   download: false
-  num_workers: 4
+  num_workers: 0
   pin_memory: true
   
   # Feature extraction
