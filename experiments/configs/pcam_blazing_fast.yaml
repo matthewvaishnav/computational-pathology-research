@@ -1,0 +1,80 @@
+# PatchCamelyon BLAZING FAST configuration
+# Goal: 10-15 minute training for rapid iteration
+# Strategy: Minimal model + maximum batch size + aggressive scheduling
+
+data:
+  root_dir: "data/pcam_real"
+  num_workers: 0
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: false
+  download: false
+
+model:
+  embed_dim: 128  # REDUCED from 256
+  
+  feature_extractor:
+    model: "resnet18"
+    pretrained: true
+    feature_dim: 512
+  
+  wsi:
+    input_dim: 512
+    hidden_dim: 128  # MINIMAL (4x smaller than baseline)
+    num_heads: 2     # MINIMAL (4x smaller than baseline)
+    num_layers: 1
+    pooling: "mean"
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: []  # Direct classification
+    dropout: 0.3
+
+training:
+  batch_size: 512  # MAXIMUM (4x baseline)
+  num_epochs: 10   # MINIMAL
+  learning_rate: 0.002  # AGGRESSIVE
+  weight_decay: 0.005
+  max_grad_norm: 1.0
+  use_amp: true
+  dropout: 0.2
+  
+  use_torch_compile: false
+  channels_last: true
+  
+  warmup_epochs: 0
+  
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-5
+
+validation:
+  interval: 3  # Validate every 3 epochs
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_blazing_fast"
+  save_interval: 20
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 3
+  min_delta: 0.002
+
+device: "cuda"
+cudnn_benchmark: true
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_blazing_fast"
+  log_interval: 200
+  use_tensorboard: true
+  use_wandb: false

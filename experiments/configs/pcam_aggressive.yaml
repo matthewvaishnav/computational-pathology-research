@@ -1,0 +1,99 @@
+# PatchCamelyon AGGRESSIVE training configuration
+# Goal: Push test AUC from 93.7% to 95-96%+ to beat competitors
+# Strategy: Stronger regularization, larger model, deeper architecture, better optimization
+
+data:
+  root_dir: "data/pcam_real"
+  num_workers: 4  # Increase for faster data loading
+  pin_memory: true
+  prefetch_factor: 4  # Increase prefetch
+  persistent_workers: true  # Keep workers alive
+  download: false
+
+model:
+  embed_dim: 512  # Increase from 256 to 512 for more capacity
+  
+  feature_extractor:
+    model: "resnet50"  # Upgrade from ResNet18 to ResNet50
+    pretrained: true
+    feature_dim: 2048  # ResNet50 output dimension (4x larger than ResNet18)
+  
+  wsi:
+    input_dim: 2048  # Must match feature_extractor.feature_dim
+    hidden_dim: 1024  # Increase from 512 to 1024
+    num_heads: 16  # Increase from 8 to 16 for better attention
+    num_layers: 3  # Increase from 2 to 3 layers
+    pooling: "attention"  # Use attention pooling instead of mean
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: [512, 256]  # 2-layer classification head (was 1-layer with 128)
+    dropout: 0.5  # Aggressive dropout (was 0.3)
+
+training:
+  batch_size: 64  # Increase from 16 to 64 for better gradient estimates
+  num_epochs: 50  # Increase from 20 to 50 for longer training
+  learning_rate: 0.0003  # Increase from 0.0001 for faster convergence
+  weight_decay: 0.01  # Strong regularization (was 0.001)
+  max_grad_norm: 1.0
+  use_amp: true  # Enable mixed precision for speed
+  dropout: 0.3  # Global dropout
+  channels_last: true  # Memory format optimization
+  use_torch_compile: true  # Enable torch.compile for speed
+  torch_compile_mode: "default"  # Use default mode for stability
+  
+  # Warmup schedule for stable training
+  warmup_epochs: 3
+  warmup_start_lr: 1e-6
+  
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+    eps: 1e-8
+  
+  scheduler:
+    name: "cosine"  # Cosine annealing with warmup
+    min_lr: 1e-7
+    warmup_epochs: 3
+
+validation:
+  interval: 1
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_aggressive"
+  save_interval: 5
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 10  # Increase patience for longer training
+  min_delta: 0.0005  # Tighter convergence threshold
+
+device: "cuda"
+cudnn_benchmark: true  # Enable cuDNN autotuner
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_aggressive"
+  log_interval: 50
+  use_tensorboard: true
+  use_wandb: false
+
+# Data augmentation (stronger than default)
+augmentation:
+  horizontal_flip: true
+  vertical_flip: true
+  rotation: 90  # Random 90-degree rotations
+  color_jitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.2
+    hue: 0.1
+  random_erasing:
+    p: 0.3  # 30% chance to erase random patches
+    scale: [0.02, 0.2]
+    ratio: [0.3, 3.3]
