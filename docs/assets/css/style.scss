@@ -61,18 +61,16 @@ h3 { font-size: 1.5em; }
 header {
   width: 250px;
   float: left;
-  position: absolute;
+  position: static;
   -webkit-font-smoothing: subpixel-antialiased;
   text-align: center;
-  height: auto;
+  min-height: 100vh;
   overflow: visible;
   padding: 30px 20px 20px;
   background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
   border-right: 1px solid #e8e8e8;
   box-sizing: border-box;
   margin: 0;
-  top: 0;
-  left: 0;
   
   h1 {
     font-size: 26px;
