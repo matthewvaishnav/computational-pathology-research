@@ -1,0 +1,82 @@
+# PatchCamelyon OPTIMIZED training configuration (20 epochs)
+# Optimizations: Large batch size, torch.compile, better data loading, AMP
+# Expected: 8-12x faster than baseline (15-30 min vs 2.5 hours)
+
+data:
+  root_dir: "data/pcam_real"  # Use real PCam data (262K samples)
+  num_workers: 4  # Enable parallel data loading (was 0)
+  persistent_workers: true  # Keep workers alive between epochs
+  pin_memory: true
+  prefetch_factor: 4  # Increased from 2 for better prefetching
+  download: false  # Data already downloaded
+
+model:
+  embed_dim: 256  # Embedding dimension for encoder output
+  
+  feature_extractor:
+    model: "resnet18"
+    pretrained: true
+    feature_dim: 512  # ResNet18 output dimension
+  
+  wsi:
+    input_dim: 512  # Must match feature_extractor.feature_dim
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    pooling: "mean"
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: [128]
+    dropout: 0.3
+
+training:
+  batch_size: 128  # OPTIMIZED: Increased from 16 (8x larger)
+  num_epochs: 20   # Full 20 epochs
+  learning_rate: 0.0001  # Kept conservative for stability
+  weight_decay: 0.001  # Prevent overfitting with larger batches
+  max_grad_norm: 1.0
+  use_amp: true  # OPTIMIZED: Enable mixed precision (was false)
+  dropout: 0.1
+  
+  # OPTIMIZED: Enable torch.compile
+  use_torch_compile: true
+  torch_compile_mode: "max-autotune"  # Most aggressive optimization
+  
+  # OPTIMIZED: Channels last memory format
+  channels_last: true
+  
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-7
+
+validation:
+  interval: 1  # Validate every epoch
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_optimized"
+  save_interval: 5
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 15
+  min_delta: 0.001
+
+device: "cuda"  # OPTIMIZED: Use GPU (was cpu)
+cudnn_benchmark: true  # OPTIMIZED: Enable cuDNN autotuner
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_optimized"
+  log_interval: 50  # Log less frequently with larger batches
+  use_tensorboard: true
+  use_wandb: false
