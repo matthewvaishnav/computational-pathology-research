@@ -1,680 +1,277 @@
-"""
-PACS Failover and High Availability System
+"""Circuit-breaker and failover manager for PACS endpoint redundancy."""
 
-This module provides failover management, health checking, connection pooling,
-and circuit breaker patterns for high availability PACS operations.
-"""
-
-import asyncio
 import logging
 import time
-from typing import Dict, List, Optional, Any, Callable, Union, Tuple
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
-import threading
-from concurrent.futures import ThreadPoolExecutor
-import json
-from datetime import datetime, timedelta
-import statistics
+from typing import Any, Callable, Dict, List, Optional
 
-from pynetdicom import AE, Association
-from pynetdicom.sop_class import Verification
-
+from .data_models import PACSEndpoint
+from .error_handling import PACSConnectionError
 
 logger = logging.getLogger(__name__)
 
 
-class EndpointStatus(Enum):
-    """Status of a PACS endpoint."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
+# ---------------------------------------------------------------------------
+# Circuit-breaker
+# ---------------------------------------------------------------------------
 
 
-class CircuitBreakerState(Enum):
-    """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failing, reject requests
-    HALF_OPEN = "half_open"  # Testing if service recovered
+class CircuitState(Enum):
+    """States of a circuit-breaker protecting a single PACS endpoint."""
 
-
-@dataclass
-class PACSEndpoint:
-    """Represents a PACS endpoint configuration."""
-    name: str
-    host: str
-    port: int
-    ae_title: str
-    called_ae_title: str
-    priority: int = 1  # Lower number = higher priority
-    max_connections: int = 10
-    timeout: float = 30.0
-    tls_enabled: bool = False
-    certificate_path: Optional[str] = None
-    key_path: Optional[str] = None
-    ca_cert_path: Optional[str] = None
-    vendor: Optional[str] = None
-    additional_config: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class HealthCheckResult:
-    """Result of a health check operation."""
-    endpoint: PACSEndpoint
-    status: EndpointStatus
-    response_time: float
-    timestamp: datetime
-    error_message: Optional[str] = None
-    additional_metrics: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class ConnectionPoolStats:
-    """Statistics for connection pool."""
-    total_connections: int
-    active_connections: int
-    idle_connections: int
-    failed_connections: int
-    total_requests: int
-    successful_requests: int
-    failed_requests: int
-    average_response_time: float
-    peak_connections: int
+    CLOSED = "closed"       # Normal — requests flow through.
+    OPEN = "open"           # Failing — requests are rejected immediately.
+    HALF_OPEN = "half_open" # Probing — limited requests allowed to test recovery.
 
 
 class CircuitBreaker:
-    """Circuit breaker implementation for PACS endpoints."""
-    
+    """Per-endpoint circuit breaker that prevents thundering-herd on a failing PACS host.
+
+    State machine:
+        CLOSED → (failure_threshold consecutive failures) → OPEN
+        OPEN   → (recovery_timeout elapsed)               → HALF_OPEN
+        HALF_OPEN → (success_threshold successes)         → CLOSED
+        HALF_OPEN → (any failure)                         → OPEN
+    """
+
     def __init__(
         self,
         failure_threshold: int = 5,
         recovery_timeout: float = 60.0,
-        expected_exception: type = Exception
-    ):
-        self.failure_threshold = failure_threshold
-        self.recovery_timeout = recovery_timeout
-        self.expected_exception = expected_exception
-        
-        self.failure_count = 0
-        self.last_failure_time = None
-        self.state = CircuitBreakerState.CLOSED
-        self._lock = threading.Lock()
-        
-        self.logger = logging.getLogger(f"{__name__}.CircuitBreaker")
-    
-    def __call__(self, func: Callable) -> Callable:
-        """Decorator to wrap functions with circuit breaker."""
-        async def wrapper(*args, **kwargs):
-            return await self.call(func, *args, **kwargs)
-        return wrapper
-    
-    async def call(self, func: Callable, *args, **kwargs) -> Any:
-        """Execute function with circuit breaker protection."""
-        with self._lock:
-            if self.state == CircuitBreakerState.OPEN:
-                if self._should_attempt_reset():
-                    self.state = CircuitBreakerState.HALF_OPEN
-                    self.logger.info("Circuit breaker moving to HALF_OPEN state")
-                else:
-                    raise Exception("Circuit breaker is OPEN - rejecting request")
-        
-        try:
-            result = await func(*args, **kwargs)
-            self._on_success()
-            return result
-            
-        except self.expected_exception as e:
-            self._on_failure()
-            raise e
-    
-    def _should_attempt_reset(self) -> bool:
-        """Check if circuit breaker should attempt to reset."""
-        return (
-            self.last_failure_time and
-            time.time() - self.last_failure_time >= self.recovery_timeout
-        )
-    
-    def _on_success(self):
-        """Handle successful operation."""
-        with self._lock:
-            self.failure_count = 0
-            if self.state == CircuitBreakerState.HALF_OPEN:
-                self.state = CircuitBreakerState.CLOSED
-                self.logger.info("Circuit breaker reset to CLOSED state")
-    
-    def _on_failure(self):
-        """Handle failed operation."""
-        with self._lock:
-            self.failure_count += 1
-            self.last_failure_time = time.time()
-            
-            if self.failure_count >= self.failure_threshold:
-                self.state = CircuitBreakerState.OPEN
-                self.logger.warning(
-                    f"Circuit breaker opened after {self.failure_count} failures"
+        success_threshold: int = 2,
+    ) -> None:
+        self._failure_threshold = failure_threshold
+        self._recovery_timeout = recovery_timeout
+        self._success_threshold = success_threshold
+
+        self._state = CircuitState.CLOSED
+        self._failure_count = 0
+        self._success_count = 0
+        self._last_failure_time: Optional[float] = None
+        self._last_state_change: float = time.monotonic()
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
+    def call(self, fn: Callable, *args: Any, **kwargs: Any) -> Any:
+        """Execute *fn* if the circuit allows it; record the outcome.
+
+        Raises PACSConnectionError immediately when the circuit is OPEN and the
+        recovery timeout has not yet elapsed.
+        """
+        if self._state == CircuitState.OPEN:
+            elapsed = time.monotonic() - (self._last_failure_time or 0)
+            if elapsed < self._recovery_timeout:
+                raise PACSConnectionError(
+                    f"Circuit open — endpoint unavailable for {self._recovery_timeout - elapsed:.0f}s more."
                 )
-    
-    def get_state(self) -> CircuitBreakerState:
-        """Get current circuit breaker state."""
-        return self.state
-    
-    def reset(self):
-        """Manually reset circuit breaker."""
-        with self._lock:
-            self.failure_count = 0
-            self.last_failure_time = None
-            self.state = CircuitBreakerState.CLOSED
-            self.logger.info("Circuit breaker manually reset")
+            # Recovery window has elapsed; try a probe call.
+            self._transition(CircuitState.HALF_OPEN)
 
+        try:
+            result = fn(*args, **kwargs)
+        except Exception:
+            self.record_failure()
+            raise
 
-class ConnectionPool:
-    """Connection pool for PACS endpoints."""
-    
-    def __init__(self, endpoint: PACSEndpoint):
-        self.endpoint = endpoint
-        self.max_connections = endpoint.max_connections
-        self.timeout = endpoint.timeout
-        
-        self._connections: List[Association] = []
-        self._available_connections: List[Association] = []
-        self._lock = threading.Lock()
-        self._semaphore = threading.Semaphore(self.max_connections)
-        
-        # Statistics
-        self.stats = ConnectionPoolStats(
-            total_connections=0,
-            active_connections=0,
-            idle_connections=0,
-            failed_connections=0,
-            total_requests=0,
-            successful_requests=0,
-            failed_requests=0,
-            average_response_time=0.0,
-            peak_connections=0
-        )
-        self._response_times: List[float] = []
-        
-        self.logger = logging.getLogger(f"{__name__}.ConnectionPool")
-    
-    async def get_connection(self) -> Association:
-        """Get a connection from the pool."""
-        self._semaphore.acquire()
-        self.stats.total_requests += 1
-        
-        try:
-            with self._lock:
-                # Try to reuse existing connection
-                if self._available_connections:
-                    connection = self._available_connections.pop()
-                    if self._is_connection_valid(connection):
-                        self.stats.active_connections += 1
-                        self.stats.idle_connections -= 1
-                        return connection
-                    else:
-                        # Connection is invalid, remove it
-                        self._remove_connection(connection)
-            
-            # Create new connection
-            connection = await self._create_connection()
-            
-            with self._lock:
-                self._connections.append(connection)
-                self.stats.total_connections += 1
-                self.stats.active_connections += 1
-                self.stats.peak_connections = max(
-                    self.stats.peak_connections,
-                    len(self._connections)
-                )
-            
-            return connection
-            
-        except Exception as e:
-            self.stats.failed_connections += 1
-            self._semaphore.release()
-            raise e
-    
-    def return_connection(self, connection: Association, success: bool = True):
-        """Return a connection to the pool."""
-        try:
-            if success:
-                self.stats.successful_requests += 1
-            else:
-                self.stats.failed_requests += 1
-            
-            with self._lock:
-                if connection in self._connections:
-                    if self._is_connection_valid(connection) and success:
-                        # Return to available pool
-                        self._available_connections.append(connection)
-                        self.stats.active_connections -= 1
-                        self.stats.idle_connections += 1
-                    else:
-                        # Remove invalid or failed connection
-                        self._remove_connection(connection)
-                
-        finally:
-            self._semaphore.release()
-    
-    def record_response_time(self, response_time: float):
-        """Record response time for statistics."""
-        self._response_times.append(response_time)
-        
-        # Keep only recent response times (last 100)
-        if len(self._response_times) > 100:
-            self._response_times = self._response_times[-100:]
-        
-        # Update average
-        if self._response_times:
-            self.stats.average_response_time = statistics.mean(self._response_times)
-    
-    async def _create_connection(self) -> Association:
-        """Create a new DICOM association."""
-        ae = AE(ae_title=self.endpoint.ae_title)
-        ae.add_requested_context(Verification)
-        
-        # Configure TLS if enabled
-        if self.endpoint.tls_enabled:
-            # TLS configuration would go here
-            pass
-        
-        # Create association
-        association = ae.associate(
-            addr=self.endpoint.host,
-            port=self.endpoint.port,
-            ae_title=self.endpoint.called_ae_title,
-            max_pdu=16384  # Default PDU size
-        )
-        
-        if not association.is_established:
-            raise Exception(f"Failed to establish association with {self.endpoint.name}")
-        
-        return association
-    
-    def _is_connection_valid(self, connection: Association) -> bool:
-        """Check if a connection is still valid."""
-        try:
-            return connection.is_established
-        except:
-            return False
-    
-    def _remove_connection(self, connection: Association):
-        """Remove a connection from the pool."""
-        try:
-            if connection in self._connections:
-                self._connections.remove(connection)
-                self.stats.total_connections -= 1
-            
-            if connection in self._available_connections:
-                self._available_connections.remove(connection)
-                self.stats.idle_connections -= 1
-            else:
-                self.stats.active_connections -= 1
-            
-            # Close connection
-            if connection.is_established:
-                connection.release()
-                
-        except Exception as e:
-            self.logger.warning(f"Error removing connection: {e}")
-    
-    def close_all_connections(self):
-        """Close all connections in the pool."""
-        with self._lock:
-            for connection in self._connections[:]:
-                self._remove_connection(connection)
-            
-            self._connections.clear()
-            self._available_connections.clear()
-            
-            # Reset stats
-            self.stats.total_connections = 0
-            self.stats.active_connections = 0
-            self.stats.idle_connections = 0
-    
-    def get_stats(self) -> ConnectionPoolStats:
-        """Get current connection pool statistics."""
-        return self.stats
-
-
-class HealthChecker:
-    """Health checker for PACS endpoints."""
-    
-    def __init__(self, check_interval: float = 30.0):
-        self.check_interval = check_interval
-        self.logger = logging.getLogger(f"{__name__}.HealthChecker")
-        self._running = False
-        self._check_task = None
-        self.health_history: Dict[str, List[HealthCheckResult]] = {}
-        self.current_status: Dict[str, EndpointStatus] = {}
-    
-    async def check_endpoint_health(self, endpoint: PACSEndpoint) -> HealthCheckResult:
-        """Perform health check on a single endpoint."""
-        start_time = time.time()
-        
-        try:
-            # Create AE for health check
-            ae = AE(ae_title=endpoint.ae_title)
-            ae.add_requested_context(Verification)
-            
-            # Attempt C-ECHO (verification)
-            association = ae.associate(
-                addr=endpoint.host,
-                port=endpoint.port,
-                ae_title=endpoint.called_ae_title,
-                max_pdu=16384
-            )
-            
-            if association.is_established:
-                # Send C-ECHO
-                status = association.send_c_echo()
-                association.release()
-                
-                response_time = time.time() - start_time
-                
-                if status and status.Status == 0x0000:  # Success
-                    result = HealthCheckResult(
-                        endpoint=endpoint,
-                        status=EndpointStatus.HEALTHY,
-                        response_time=response_time,
-                        timestamp=datetime.now(),
-                        additional_metrics={
-                            'echo_status': status.Status,
-                            'association_established': True
-                        }
-                    )
-                else:
-                    result = HealthCheckResult(
-                        endpoint=endpoint,
-                        status=EndpointStatus.DEGRADED,
-                        response_time=response_time,
-                        timestamp=datetime.now(),
-                        error_message=f"C-ECHO failed with status: {status.Status if status else 'None'}",
-                        additional_metrics={
-                            'echo_status': status.Status if status else None,
-                            'association_established': True
-                        }
-                    )
-            else:
-                response_time = time.time() - start_time
-                result = HealthCheckResult(
-                    endpoint=endpoint,
-                    status=EndpointStatus.UNHEALTHY,
-                    response_time=response_time,
-                    timestamp=datetime.now(),
-                    error_message="Failed to establish association",
-                    additional_metrics={
-                        'association_established': False
-                    }
-                )
-                
-        except Exception as e:
-            response_time = time.time() - start_time
-            result = HealthCheckResult(
-                endpoint=endpoint,
-                status=EndpointStatus.UNHEALTHY,
-                response_time=response_time,
-                timestamp=datetime.now(),
-                error_message=str(e),
-                additional_metrics={
-                    'exception_type': type(e).__name__
-                }
-            )
-        
-        # Update health history
-        if endpoint.name not in self.health_history:
-            self.health_history[endpoint.name] = []
-        
-        self.health_history[endpoint.name].append(result)
-        
-        # Keep only recent history (last 100 checks)
-        if len(self.health_history[endpoint.name]) > 100:
-            self.health_history[endpoint.name] = self.health_history[endpoint.name][-100:]
-        
-        # Update current status
-        self.current_status[endpoint.name] = result.status
-        
-        self.logger.debug(
-            f"Health check for {endpoint.name}: {result.status.value} "
-            f"({result.response_time:.3f}s)"
-        )
-        
+        self.record_success()
         return result
-    
-    def get_endpoint_status(self, endpoint_name: str) -> EndpointStatus:
-        """Get current status of an endpoint."""
-        return self.current_status.get(endpoint_name, EndpointStatus.UNKNOWN)
-    
-    def get_health_history(self, endpoint_name: str, limit: Optional[int] = None) -> List[HealthCheckResult]:
-        """Get health check history for an endpoint."""
-        history = self.health_history.get(endpoint_name, [])
-        if limit:
-            return history[-limit:]
-        return history
-    
-    def get_endpoint_availability(self, endpoint_name: str, time_window: timedelta = timedelta(hours=1)) -> float:
-        """Calculate endpoint availability percentage over time window."""
-        history = self.health_history.get(endpoint_name, [])
-        if not history:
-            return 0.0
-        
-        cutoff_time = datetime.now() - time_window
-        recent_checks = [
-            check for check in history
-            if check.timestamp >= cutoff_time
-        ]
-        
-        if not recent_checks:
-            return 0.0
-        
-        healthy_checks = sum(
-            1 for check in recent_checks
-            if check.status in [EndpointStatus.HEALTHY, EndpointStatus.DEGRADED]
-        )
-        
-        return (healthy_checks / len(recent_checks)) * 100.0
+
+    def record_success(self) -> None:
+        """Notify the breaker of a successful call."""
+        if self._state == CircuitState.HALF_OPEN:
+            self._success_count += 1
+            if self._success_count >= self._success_threshold:
+                logger.info("Circuit breaker closing after %d consecutive successes.", self._success_count)
+                self._transition(CircuitState.CLOSED)
+        elif self._state == CircuitState.CLOSED:
+            # Reset running failure count so that isolated errors don't accumulate.
+            self._failure_count = 0
+
+    def record_failure(self) -> None:
+        """Notify the breaker of a failed call."""
+        self._last_failure_time = time.monotonic()
+
+        if self._state == CircuitState.CLOSED:
+            self._failure_count += 1
+            if self._failure_count >= self._failure_threshold:
+                logger.warning(
+                    "Circuit breaker opening after %d consecutive failures.",
+                    self._failure_count,
+                )
+                self._transition(CircuitState.OPEN)
+
+        elif self._state == CircuitState.HALF_OPEN:
+            # Any failure during the probe resets the recovery clock.
+            logger.warning("Circuit breaker re-opening after probe failure.")
+            self._transition(CircuitState.OPEN)
+
+    @property
+    def state(self) -> CircuitState:
+        """Current circuit state."""
+        return self._state
+
+    def get_status(self) -> Dict[str, Any]:
+        """Return a snapshot of the breaker's internal state for health-check endpoints."""
+        return {
+            "state": self._state.value,
+            "failure_count": self._failure_count,
+            "success_count": self._success_count,
+            "last_failure_time": (
+                datetime.fromtimestamp(self._last_failure_time).isoformat()
+                if self._last_failure_time
+                else None
+            ),
+            "last_state_change": datetime.fromtimestamp(self._last_state_change).isoformat(),
+        }
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    def _transition(self, new_state: CircuitState) -> None:
+        self._state = new_state
+        self._last_state_change = time.monotonic()
+        self._failure_count = 0
+        self._success_count = 0
+
+
+# ---------------------------------------------------------------------------
+# Failover manager
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class EndpointHealth:
+    """Mutable health record for a single PACS endpoint."""
+
+    endpoint: PACSEndpoint
+    is_available: bool = True
+    failure_count: int = 0
+    last_check_time: Optional[datetime] = None
+    last_failure_time: Optional[datetime] = None
+    circuit_breaker: CircuitBreaker = field(default_factory=CircuitBreaker)
 
 
 class FailoverManager:
-    """Manages failover between multiple PACS endpoints."""
-    
-    def __init__(self, endpoints: List[PACSEndpoint], health_check_interval: float = 30.0):
-        self.endpoints = sorted(endpoints, key=lambda x: x.priority)
-        self.health_checker = HealthChecker(health_check_interval)
-        self.connection_pools: Dict[str, ConnectionPool] = {}
-        self.circuit_breakers: Dict[str, CircuitBreaker] = {}
-        
-        # Initialize connection pools and circuit breakers
-        for endpoint in self.endpoints:
-            self.connection_pools[endpoint.name] = ConnectionPool(endpoint)
-            self.circuit_breakers[endpoint.name] = CircuitBreaker(
-                failure_threshold=5,
-                recovery_timeout=60.0
-            )
-        
-        self.logger = logging.getLogger(f"{__name__}.FailoverManager")
-        self._health_check_task = None
-        self._running = False
-    
-    async def start(self):
-        """Start the failover manager and health checking."""
-        if self._running:
-            return
-        
-        self._running = True
-        self._health_check_task = asyncio.create_task(self._health_check_loop())
-        self.logger.info("Failover manager started")
-    
-    async def stop(self):
-        """Stop the failover manager."""
-        self._running = False
-        
-        if self._health_check_task:
-            self._health_check_task.cancel()
-            try:
-                await self._health_check_task
-            except asyncio.CancelledError:
-                pass
-        
-        # Close all connection pools
-        for pool in self.connection_pools.values():
-            pool.close_all_connections()
-        
-        self.logger.info("Failover manager stopped")
-    
-    async def get_healthy_endpoint(self) -> Optional[PACSEndpoint]:
-        """Get the highest priority healthy endpoint."""
-        for endpoint in self.endpoints:
-            status = self.health_checker.get_endpoint_status(endpoint.name)
-            circuit_state = self.circuit_breakers[endpoint.name].get_state()
-            
-            if (status in [EndpointStatus.HEALTHY, EndpointStatus.DEGRADED] and
-                circuit_state != CircuitBreakerState.OPEN):
-                return endpoint
-        
-        return None
-    
-    async def execute_with_failover(
+    """Manages an ordered list of PACS endpoints and enforces circuit-breaker-based failover.
+
+    The primary endpoint (``is_primary=True``) is always preferred.  When it is
+    unavailable (circuit OPEN), the manager transparently selects the next healthy
+    backup endpoint so that callers never need to hard-code fallback logic.
+    """
+
+    def __init__(
         self,
-        operation: Callable,
-        *args,
-        **kwargs
-    ) -> Any:
-        """Execute an operation with automatic failover."""
-        last_exception = None
-        
-        for endpoint in self.endpoints:
-            try:
-                # Check if endpoint is available
-                status = self.health_checker.get_endpoint_status(endpoint.name)
-                circuit_breaker = self.circuit_breakers[endpoint.name]
-                
-                if (status == EndpointStatus.UNHEALTHY or
-                    circuit_breaker.get_state() == CircuitBreakerState.OPEN):
-                    self.logger.debug(f"Skipping unhealthy endpoint: {endpoint.name}")
-                    continue
-                
-                # Get connection from pool
-                pool = self.connection_pools[endpoint.name]
-                connection = await pool.get_connection()
-                
-                try:
-                    # Execute operation with circuit breaker protection
-                    start_time = time.time()
-                    result = await circuit_breaker.call(operation, connection, *args, **kwargs)
-                    response_time = time.time() - start_time
-                    
-                    # Record metrics
-                    pool.record_response_time(response_time)
-                    pool.return_connection(connection, success=True)
-                    
-                    self.logger.debug(
-                        f"Operation succeeded on endpoint {endpoint.name} "
-                        f"({response_time:.3f}s)"
-                    )
-                    
-                    return result
-                    
-                except Exception as e:
-                    pool.return_connection(connection, success=False)
-                    last_exception = e
-                    
-                    self.logger.warning(
-                        f"Operation failed on endpoint {endpoint.name}: {e}"
-                    )
-                    
-                    # Continue to next endpoint
-                    continue
-                    
-            except Exception as e:
-                last_exception = e
-                self.logger.warning(f"Failed to get connection for {endpoint.name}: {e}")
-                continue
-        
-        # All endpoints failed
-        if last_exception:
-            raise last_exception
+        endpoints: List[PACSEndpoint],
+        health_check_interval: float = 30.0,
+    ) -> None:
+        self._health_check_interval = health_check_interval
+        self._health: Dict[str, EndpointHealth] = {}
+
+        # Sort so that the primary endpoint is first; order among backups is
+        # preserved from the input list (which callers may have ranked by preference).
+        sorted_endpoints = sorted(endpoints, key=lambda ep: (not ep.is_primary,))
+        for ep in sorted_endpoints:
+            self._health[ep.endpoint_id] = EndpointHealth(endpoint=ep)
+
+    # ------------------------------------------------------------------
+    # Endpoint selection
+    # ------------------------------------------------------------------
+
+    def select_endpoint(self, operation_type: str = "query") -> PACSEndpoint:
+        """Return the best available endpoint for *operation_type*.
+
+        An endpoint is considered available when its circuit breaker is not in the
+        OPEN state.  Raises PACSConnectionError if no endpoint is usable.
+        """
+        for health in self._health.values():
+            cb_state = health.circuit_breaker.state
+            if cb_state != CircuitState.OPEN:
+                health.last_check_time = datetime.utcnow()
+                return health.endpoint
+
+        raise PACSConnectionError(
+            f"No PACS endpoint available for operation '{operation_type}'. "
+            "All circuit breakers are open."
+        )
+
+    # ------------------------------------------------------------------
+    # Outcome recording
+    # ------------------------------------------------------------------
+
+    def mark_endpoint_failed(self, endpoint: PACSEndpoint, error: Exception) -> None:
+        """Record a failure against *endpoint* and update its circuit breaker."""
+        health = self._health.get(endpoint.endpoint_id)
+        if health is None:
+            return
+
+        health.failure_count += 1
+        health.last_failure_time = datetime.utcnow()
+        health.circuit_breaker.record_failure()
+
+        if endpoint.is_primary:
+            logger.warning(
+                "Primary PACS endpoint %s failed (%s). Failing over to backup endpoints.",
+                endpoint.endpoint_id,
+                type(error).__name__,
+            )
         else:
-            raise Exception("No healthy endpoints available")
-    
-    async def _health_check_loop(self):
-        """Background health checking loop."""
-        while self._running:
-            try:
-                # Check all endpoints
-                for endpoint in self.endpoints:
-                    await self.health_checker.check_endpoint_health(endpoint)
-                
-                # Wait for next check
-                await asyncio.sleep(self.health_checker.check_interval)
-                
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                self.logger.error(f"Error in health check loop: {e}")
-                await asyncio.sleep(5)  # Short delay before retry
-    
-    def get_endpoint_statistics(self) -> Dict[str, Dict[str, Any]]:
-        """Get statistics for all endpoints."""
-        stats = {}
-        
-        for endpoint in self.endpoints:
-            pool_stats = self.connection_pools[endpoint.name].get_stats()
-            health_status = self.health_checker.get_endpoint_status(endpoint.name)
-            circuit_state = self.circuit_breakers[endpoint.name].get_state()
-            availability = self.health_checker.get_endpoint_availability(endpoint.name)
-            
-            stats[endpoint.name] = {
-                'endpoint': {
-                    'host': endpoint.host,
-                    'port': endpoint.port,
-                    'priority': endpoint.priority,
-                    'vendor': endpoint.vendor
-                },
-                'health': {
-                    'status': health_status.value,
-                    'availability_1h': availability,
-                    'circuit_breaker_state': circuit_state.value
-                },
-                'connection_pool': {
-                    'total_connections': pool_stats.total_connections,
-                    'active_connections': pool_stats.active_connections,
-                    'idle_connections': pool_stats.idle_connections,
-                    'failed_connections': pool_stats.failed_connections,
-                    'peak_connections': pool_stats.peak_connections
-                },
-                'performance': {
-                    'total_requests': pool_stats.total_requests,
-                    'successful_requests': pool_stats.successful_requests,
-                    'failed_requests': pool_stats.failed_requests,
-                    'success_rate': (
-                        pool_stats.successful_requests / pool_stats.total_requests * 100
-                        if pool_stats.total_requests > 0 else 0
-                    ),
-                    'average_response_time': pool_stats.average_response_time
-                }
+            logger.error(
+                "Backup PACS endpoint %s failed: %s",
+                endpoint.endpoint_id,
+                error,
+            )
+
+    def mark_endpoint_success(self, endpoint: PACSEndpoint) -> None:
+        """Record a successful operation against *endpoint*."""
+        health = self._health.get(endpoint.endpoint_id)
+        if health is None:
+            return
+
+        health.is_available = True
+        health.last_check_time = datetime.utcnow()
+        health.circuit_breaker.record_success()
+
+    # ------------------------------------------------------------------
+    # Inspection helpers
+    # ------------------------------------------------------------------
+
+    def get_available_endpoints(self) -> List[PACSEndpoint]:
+        """Return endpoints whose circuit is not OPEN."""
+        return [
+            h.endpoint
+            for h in self._health.values()
+            if h.circuit_breaker.state != CircuitState.OPEN
+        ]
+
+    def get_health_status(self) -> Dict[str, Dict[str, Any]]:
+        """Return a per-endpoint health snapshot suitable for a monitoring dashboard."""
+        return {
+            ep_id: {
+                "is_available": h.is_available,
+                "failure_count": h.failure_count,
+                "circuit_state": h.circuit_breaker.state.value,
+                "last_check": h.last_check_time.isoformat() if h.last_check_time else None,
             }
-        
-        return stats
-    
-    def reset_circuit_breaker(self, endpoint_name: str) -> bool:
-        """Manually reset circuit breaker for an endpoint."""
-        if endpoint_name in self.circuit_breakers:
-            self.circuit_breakers[endpoint_name].reset()
-            self.logger.info(f"Circuit breaker reset for endpoint: {endpoint_name}")
-            return True
-        return False
-    
-    def get_healthy_endpoints(self) -> List[PACSEndpoint]:
-        """Get all currently healthy endpoints."""
-        healthy = []
-        
-        for endpoint in self.endpoints:
-            status = self.health_checker.get_endpoint_status(endpoint.name)
-            circuit_state = self.circuit_breakers[endpoint.name].get_state()
-            
-            if (status in [EndpointStatus.HEALTHY, EndpointStatus.DEGRADED] and
-                circuit_state != CircuitBreakerState.OPEN):
-                healthy.append(endpoint)
-        
-        return healthy
+            for ep_id, h in self._health.items()
+        }
+
+    def add_endpoint(self, endpoint: PACSEndpoint) -> None:
+        """Register a new endpoint at runtime (e.g., after configuration reload)."""
+        if endpoint.endpoint_id in self._health:
+            logger.debug("Endpoint %s already registered; skipping.", endpoint.endpoint_id)
+            return
+        self._health[endpoint.endpoint_id] = EndpointHealth(endpoint=endpoint)
+        logger.info("Added PACS endpoint %s.", endpoint.endpoint_id)
+
+    def remove_endpoint(self, endpoint_id: str) -> None:
+        """Deregister an endpoint (e.g., when decommissioning a PACS node)."""
+        removed = self._health.pop(endpoint_id, None)
+        if removed:
+            logger.info("Removed PACS endpoint %s.", endpoint_id)
+        else:
+            logger.debug("Endpoint %s not found; nothing removed.", endpoint_id)

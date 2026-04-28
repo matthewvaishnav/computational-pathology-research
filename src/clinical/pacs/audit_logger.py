@@ -210,9 +210,6 @@ class AuditSearchIndex:
                     continue
                 results.append(entry)
             results.sort(key=lambda e: e["event_datetime"], reverse=True)
-            # If limit is 0 or negative, return all results
-            if limit <= 0:
-                return results
             return results[:limit]
 
     def generate_report(
@@ -372,7 +369,9 @@ class PACSAuditLogger:
         result_count: int,
         outcome: int = 0,
     ) -> str:
-        phi_fields = [f for f in ("PatientID", "PatientName") if f in query_params]
+        phi_fields = [
+            f for f in ("PatientID", "PatientName") if f in query_params
+        ]
         participants = [
             AuditParticipant(
                 user_id=user_id,
@@ -489,7 +488,8 @@ class PACSAuditLogger:
             event_action="C",
             outcome=outcome,
             description=(
-                f"C-STORE by {user_id}: SOP {sop_instance_uid} " f"into study {study_instance_uid}"
+                f"C-STORE by {user_id}: SOP {sop_instance_uid} "
+                f"into study {study_instance_uid}"
             ),
             participants=participants,
             additional_data={
@@ -510,7 +510,9 @@ class PACSAuditLogger:
     ) -> str:
         # PHI access events are HIPAA-critical; always record real patient_id
         # but de-identify name when phi_protection is on
-        stored_name = self._hash_phi(patient_name) if self.phi_protection_enabled else patient_name
+        stored_name = (
+            self._hash_phi(patient_name) if self.phi_protection_enabled else patient_name
+        )
         participants = [
             AuditParticipant(
                 user_id=user_id,
@@ -560,7 +562,9 @@ class PACSAuditLogger:
         )
         return self._log_message(message)
 
-    def log_system_event(self, event_type: str, description: str, outcome: int = 0) -> str:
+    def log_system_event(
+        self, event_type: str, description: str, outcome: int = 0
+    ) -> str:
         participants = [
             AuditParticipant(
                 user_id=self.system_user_id,
@@ -605,7 +609,9 @@ class PACSAuditLogger:
     # Integrity verification
     # ------------------------------------------------------------------
 
-    def verify_log_integrity(self, entry_path: Optional[str] = None) -> Dict[str, Any]:
+    def verify_log_integrity(
+        self, entry_path: Optional[str] = None
+    ) -> Dict[str, Any]:
         entries_root = self._storage.storage_path
         if entry_path is not None:
             full_path = entries_root / entry_path
@@ -682,7 +688,3 @@ class PACSAuditLogger:
             self._index.add_entry(message, file_path)
         logger.debug("Audit entry written: %s (%s)", message.message_id, message.event_type)
         return message.message_id
-
-
-# Backward-compatible public name used by PACS package exports and service wiring.
-AuditLogger = PACSAuditLogger

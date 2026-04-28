@@ -8,16 +8,11 @@ supporting PACS integration for query/retrieve operations.
 Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
-
-if TYPE_CHECKING:
-    from .pacs.data_models import AnalysisResults
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pydicom
 from pydicom.dataset import Dataset, FileDataset
@@ -100,7 +95,7 @@ class PACSMetadata(DICOMMetadata):
     compression_ratio: Optional[float] = None
     network_transfer_time: Optional[float] = None  # seconds
     pacs_vendor: Optional[str] = None
-
+    
     def calculate_quality_metrics(self) -> Dict[str, Any]:
         """Calculate image quality metrics for clinical validation."""
         metrics = {
@@ -110,7 +105,7 @@ class PACSMetadata(DICOMMetadata):
             "source_pacs": self.source_pacs_ae_title,
             "vendor": self.pacs_vendor,
         }
-
+        
         # Add quality assessment
         if self.compression_ratio:
             if self.compression_ratio < 10:
@@ -121,7 +116,7 @@ class PACSMetadata(DICOMMetadata):
                 metrics["quality_assessment"] = "low"
         else:
             metrics["quality_assessment"] = "uncompressed"
-
+            
         return metrics
 
 
@@ -547,91 +542,17 @@ class DICOMAdapter:
 
         Returns:
             List of matching studies/series
+
+        Note:
+            This is a placeholder implementation. Full PACS integration
+            requires pynetdicom library and proper DICOM networking setup.
         """
-        try:
-            from pynetdicom import AE, debug_logger
-            from pynetdicom.sop_class import StudyRootQueryRetrieveInformationModelFind
-            from pydicom.dataset import Dataset
-            
-            logger.info(f"Querying PACS at {pacs_host}:{pacs_port} with AE title {ae_title}")
-            
-            # Create Application Entity
-            ae = AE(ae_title=ae_title)
-            ae.add_requested_context(StudyRootQueryRetrieveInformationModelFind)
-            
-            # Create query dataset
-            ds = Dataset()
-            
-            # Set query parameters
-            for key, value in query_params.items():
-                if hasattr(ds, key):
-                    setattr(ds, key, value)
-                    logger.debug(f"Query parameter: {key} = {value}")
-            
-            # Set query level
-            ds.QueryRetrieveLevel = 'STUDY'
-            
-            # Required return keys for study-level query
-            ds.StudyInstanceUID = ''
-            ds.PatientName = ''
-            ds.PatientID = ''
-            ds.StudyDate = ''
-            ds.StudyDescription = ''
-            ds.AccessionNumber = ''
-            ds.NumberOfStudyRelatedSeries = ''
-            ds.NumberOfStudyRelatedInstances = ''
-            
-            results = []
-            
-            # Associate with PACS
-            assoc = ae.associate(pacs_host, pacs_port)
-            
-            if assoc.is_established:
-                logger.info("Association established with PACS")
-                
-                # Send C-FIND request
-                responses = assoc.send_c_find(ds, StudyRootQueryRetrieveInformationModelFind)
-                
-                for (status, identifier) in responses:
-                    if status:
-                        if status.Status == 0xFF00:  # Pending - more results coming
-                            if identifier:
-                                study_data = {
-                                    'StudyInstanceUID': str(identifier.get('StudyInstanceUID', '')),
-                                    'PatientName': str(identifier.get('PatientName', '')),
-                                    'PatientID': str(identifier.get('PatientID', '')),
-                                    'StudyDate': str(identifier.get('StudyDate', '')),
-                                    'StudyDescription': str(identifier.get('StudyDescription', '')),
-                                    'AccessionNumber': str(identifier.get('AccessionNumber', '')),
-                                    'NumberOfSeries': str(identifier.get('NumberOfStudyRelatedSeries', '')),
-                                    'NumberOfInstances': str(identifier.get('NumberOfStudyRelatedInstances', ''))
-                                }
-                                results.append(study_data)
-                                logger.debug(f"Found study: {study_data['StudyInstanceUID']}")
-                        elif status.Status == 0x0000:  # Success - query complete
-                            logger.info(f"Query completed successfully. Found {len(results)} studies.")
-                            break
-                        else:
-                            logger.warning(f"C-FIND failed with status: 0x{status.Status:04X}")
-                            break
-                
-                # Release association
-                assoc.release()
-                logger.info("Association released")
-            else:
-                logger.error(f"Failed to establish association with PACS at {pacs_host}:{pacs_port}")
-                raise ConnectionError(f"Cannot connect to PACS at {pacs_host}:{pacs_port}")
-                
-            return results
-            
-        except ImportError:
-            logger.error("pynetdicom not installed. Install with: pip install pynetdicom")
-            raise NotImplementedError(
-                "PACS query requires pynetdicom library. Install with: pip install pynetdicom"
-            )
-        except Exception as e:
-            logger.error(f"PACS query failed: {e}")
-            raise
+        # Placeholder for PACS query functionality
+        # Full implementation would use pynetdicom for C-FIND operations
+        raise NotImplementedError(
+            "PACS query/retrieve requires pynetdicom library and network configuration. "
+            "This is a placeholder for future implementation."
+        )
 
     def retrieve_from_pacs(
         self,
@@ -696,17 +617,18 @@ class DICOMAdapter:
         return [ts.value for ts in TransferSyntax]
 
 
+
 class StructuredReportBuilder:
     """
     Builder for DICOM Structured Reports conforming to TID 1500 (Measurement Report).
-
+    
     This class provides enhanced SR generation with:
     - TID 1500 template compliance
     - AI algorithm identification sequences
     - Measurement groups with confidence intervals
     - Proper content sequences for analysis results
     """
-
+    
     def __init__(
         self,
         institution_name: str = "Computational Pathology System",
@@ -714,39 +636,39 @@ class StructuredReportBuilder:
     ):
         """
         Initialize Structured Report Builder.
-
+        
         Args:
             institution_name: Institution name for SR
             manufacturer: Manufacturer name for SR
         """
         self.institution_name = institution_name
         self.manufacturer = manufacturer
-
+    
     def build_measurement_report(
         self,
-        analysis_results: AnalysisResults,
+        analysis_results: "AnalysisResults",  # type: ignore
         source_metadata: DICOMMetadata,
     ) -> Dataset:
         """
         Build TID 1500 compliant Structured Report for AI analysis results.
-
+        
         Args:
             analysis_results: AI analysis results
             source_metadata: Source WSI metadata
-
+            
         Returns:
             DICOM Structured Report dataset
         """
         from pydicom.dataset import Dataset
         from pydicom.uid import generate_uid
-
+        
         # Create SR dataset
         sr = Dataset()
-
+        
         # Patient Module
         sr.PatientName = source_metadata.patient_name
         sr.PatientID = source_metadata.patient_id
-
+        
         # General Study Module
         sr.StudyInstanceUID = source_metadata.study_instance_uid
         sr.StudyDate = source_metadata.study_date or datetime.now().strftime("%Y%m%d")
@@ -754,44 +676,44 @@ class StructuredReportBuilder:
         sr.ReferringPhysicianName = ""
         sr.StudyID = "1"
         sr.AccessionNumber = ""
-
+        
         # SR Document Series Module
         sr.Modality = "SR"
         sr.SeriesInstanceUID = generate_uid()
         sr.SeriesNumber = "1"
         sr.SeriesDate = datetime.now().strftime("%Y%m%d")
         sr.SeriesTime = datetime.now().strftime("%H%M%S")
-
+        
         # SR Document General Module
         sr.InstanceNumber = "1"
         sr.ContentDate = datetime.now().strftime("%Y%m%d")
         sr.ContentTime = datetime.now().strftime("%H%M%S")
         sr.SOPClassUID = "1.2.840.10008.5.1.4.1.1.88.33"  # Comprehensive SR
         sr.SOPInstanceUID = generate_uid()
-
+        
         # SR Document Content Module
         sr.ValueType = "CONTAINER"
-        sr.ConceptNameCodeSequence = [
-            self._create_code_sequence("126000", "DCM", "Imaging Measurement Report")
-        ]
+        sr.ConceptNameCodeSequence = [self._create_code_sequence(
+            "126000", "DCM", "Imaging Measurement Report"
+        )]
         sr.ContinuityOfContent = "SEPARATE"
-
+        
         # Add content sequence with AI results
         sr.ContentSequence = self._build_content_sequence(analysis_results, source_metadata)
-
+        
         # Add AI algorithm identification
         self.add_ai_algorithm_identification(sr, analysis_results)
-
+        
         return sr
-
+    
     def add_ai_algorithm_identification(
         self,
         sr_dataset: Dataset,
-        analysis_results: AnalysisResults,
+        analysis_results: "AnalysisResults",  # type: ignore
     ) -> None:
         """
         Add AI algorithm identification sequence to SR.
-
+        
         Args:
             sr_dataset: SR dataset to modify
             analysis_results: Analysis results with algorithm info
@@ -801,12 +723,12 @@ class StructuredReportBuilder:
         algo_seq.AlgorithmName = analysis_results.algorithm_name
         algo_seq.AlgorithmVersion = analysis_results.algorithm_version
         algo_seq.AlgorithmSource = self.manufacturer
-
+        
         if not hasattr(sr_dataset, "AlgorithmIdentificationSequence"):
             sr_dataset.AlgorithmIdentificationSequence = []
-
+        
         sr_dataset.AlgorithmIdentificationSequence.append(algo_seq)
-
+    
     def add_measurement_groups(
         self,
         sr_dataset: Dataset,
@@ -814,128 +736,122 @@ class StructuredReportBuilder:
     ) -> None:
         """
         Add measurement groups with confidence intervals to SR.
-
+        
         Args:
             sr_dataset: SR dataset to modify
             measurements: List of measurements with confidence data
         """
         if not hasattr(sr_dataset, "ContentSequence"):
             sr_dataset.ContentSequence = []
-
+        
         for measurement in measurements:
             # Create measurement item
             meas_item = Dataset()
             meas_item.ValueType = "NUM"
-            meas_item.ConceptNameCodeSequence = [
-                self._create_code_sequence(
-                    measurement.get("code", "121071"), "DCM", measurement.get("name", "Finding")
-                )
-            ]
-
+            meas_item.ConceptNameCodeSequence = [self._create_code_sequence(
+                measurement.get("code", "121071"),
+                "DCM",
+                measurement.get("name", "Finding")
+            )]
+            
             # Add measured value
             meas_value = Dataset()
             meas_value.NumericValue = str(measurement.get("value", 0.0))
-            meas_value.MeasurementUnitsCodeSequence = [
-                self._create_code_sequence("1", "UCUM", measurement.get("unit", "1"))
-            ]
+            meas_value.MeasurementUnitsCodeSequence = [self._create_code_sequence(
+                "1", "UCUM", measurement.get("unit", "1")
+            )]
             meas_item.MeasuredValueSequence = [meas_value]
-
+            
             # Add confidence interval if present
             if "confidence_interval" in measurement:
                 ci = measurement["confidence_interval"]
                 ci_item = Dataset()
                 ci_item.ValueType = "TEXT"
-                ci_item.ConceptNameCodeSequence = [
-                    self._create_code_sequence("C0009667", "UMLS", "Confidence Interval")
-                ]
+                ci_item.ConceptNameCodeSequence = [self._create_code_sequence(
+                    "C0009667", "UMLS", "Confidence Interval"
+                )]
                 ci_item.TextValue = f"[{ci['lower']:.3f}, {ci['upper']:.3f}]"
-
+                
                 if not hasattr(meas_item, "ContentSequence"):
                     meas_item.ContentSequence = []
                 meas_item.ContentSequence.append(ci_item)
-
+            
             sr_dataset.ContentSequence.append(meas_item)
-
+    
     def _build_content_sequence(
         self,
-        analysis_results: AnalysisResults,
+        analysis_results: "AnalysisResults",  # type: ignore
         source_metadata: DICOMMetadata,
     ) -> List[Dataset]:
         """Build content sequence for SR."""
         content_seq = []
-
+        
         # Add image reference
         img_ref = Dataset()
         img_ref.ValueType = "IMAGE"
         img_ref.ReferencedSOPSequence = [self._create_referenced_sop(source_metadata)]
         content_seq.append(img_ref)
-
+        
         # Add primary diagnosis
         if hasattr(analysis_results, "primary_diagnosis") and analysis_results.primary_diagnosis:
             diag_item = Dataset()
             diag_item.ValueType = "TEXT"
-            diag_item.ConceptNameCodeSequence = [
-                self._create_code_sequence("121071", "DCM", "Finding")
-            ]
+            diag_item.ConceptNameCodeSequence = [self._create_code_sequence(
+                "121071", "DCM", "Finding"
+            )]
             diag_item.TextValue = analysis_results.primary_diagnosis
             content_seq.append(diag_item)
-
+        
         # Add confidence score
         conf_item = Dataset()
         conf_item.ValueType = "NUM"
-        conf_item.ConceptNameCodeSequence = [
-            self._create_code_sequence("C0237529", "UMLS", "Confidence")
-        ]
-
+        conf_item.ConceptNameCodeSequence = [self._create_code_sequence(
+            "C0237529", "UMLS", "Confidence"
+        )]
+        
         conf_value = Dataset()
         conf_value.NumericValue = str(analysis_results.confidence_score)
-        conf_value.MeasurementUnitsCodeSequence = [self._create_code_sequence("1", "UCUM", "1")]
+        conf_value.MeasurementUnitsCodeSequence = [self._create_code_sequence(
+            "1", "UCUM", "1"
+        )]
         conf_item.MeasuredValueSequence = [conf_value]
         content_seq.append(conf_item)
-
+        
         # Add detected regions
         if hasattr(analysis_results, "detected_regions"):
             for region in analysis_results.detected_regions:
                 region_item = Dataset()
                 region_item.ValueType = "TEXT"
-                region_item.ConceptNameCodeSequence = [
-                    self._create_code_sequence("121071", "DCM", "Finding Site")
-                ]
-                region_item.TextValue = (
-                    region.description if hasattr(region, "description") else "Detected region"
-                )
+                region_item.ConceptNameCodeSequence = [self._create_code_sequence(
+                    "121071", "DCM", "Finding Site"
+                )]
+                region_item.TextValue = region.description if hasattr(region, "description") else "Detected region"
                 content_seq.append(region_item)
-
+        
         # Add diagnostic recommendations
         if hasattr(analysis_results, "diagnostic_recommendations"):
             for rec in analysis_results.diagnostic_recommendations:
                 rec_item = Dataset()
                 rec_item.ValueType = "TEXT"
-                rec_item.ConceptNameCodeSequence = [
-                    self._create_code_sequence("121075", "DCM", "Recommendation")
-                ]
-                rec_item.TextValue = (
-                    rec.recommendation_text if hasattr(rec, "recommendation_text") else str(rec)
-                )
+                rec_item.ConceptNameCodeSequence = [self._create_code_sequence(
+                    "121075", "DCM", "Recommendation"
+                )]
+                rec_item.TextValue = rec.recommendation_text if hasattr(rec, "recommendation_text") else str(rec)
                 content_seq.append(rec_item)
-
+        
         return content_seq
-
-    def _create_code_sequence(
-        self, code_value: str, coding_scheme: str, code_meaning: str
-    ) -> Dataset:
+    
+    def _create_code_sequence(self, code_value: str, coding_scheme: str, code_meaning: str) -> Dataset:
         """Create a code sequence item."""
         code_item = Dataset()
         code_item.CodeValue = code_value
         code_item.CodingSchemeDesignator = coding_scheme
         code_item.CodeMeaning = code_meaning
         return code_item
-
+    
     def _create_referenced_sop(self, metadata: DICOMMetadata) -> Dataset:
         """Create referenced SOP sequence item."""
         ref_sop = Dataset()
-        ref_sop.ReferencedSOPClassUID = (
-            "1.2.840.10008.5.1.4.1.1.77.1.6"  # VL Whole Slide Microscopy Image
-        )
+        ref_sop.ReferencedSOPClassUID = "1.2.840.10008.5.1.4.1.1.77.1.6"  # VL Whole Slide Microscopy Image
         ref_sop.ReferencedSOPInstanceUID = metadata.sop_instance_uid
         return ref_sop

@@ -29,7 +29,6 @@ from .data_models import (
     StudyInfo,
     ValidationResult,
 )
-from .vendor_adapters import VendorAdapterFactory, ConformanceNegotiator
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +48,7 @@ class RetrievalEngine:
 
     def __init__(
         self,
-        ae_title: str = "HISTO_RETRIEVE",
+        ae_title: str = "HISTOCORE_RETRIEVE",
         storage_scp_port: int = 11113,
         max_concurrent_retrievals: int = 5,
     ):
@@ -62,12 +61,9 @@ class RetrievalEngine:
             max_concurrent_retrievals: Maximum concurrent retrieval operations
         """
         self.ae_title = ae_title
-        self.storage_scp_ae_title = f"{ae_title}_SCP"[:16]  # Truncate to 16 chars max
+        self.storage_scp_ae_title = f"{ae_title}_SCP"
         self.storage_scp_port = storage_scp_port
         self.max_concurrent_retrievals = max_concurrent_retrievals
-
-        # Initialize conformance negotiator for vendor-specific optimizations
-        self.conformance_negotiator = ConformanceNegotiator()
 
         # Create Application Entity for C-MOVE requests
         self.ae = AE(ae_title=ae_title)
@@ -356,27 +352,6 @@ class RetrievalEngine:
         retrieved_files = []
 
         try:
-            # Get vendor-specific adapter for this endpoint
-            vendor_adapter = VendorAdapterFactory.detect_from_endpoint(endpoint)
-            logger.debug(f"Using vendor adapter for C-MOVE: {vendor_adapter.vendor.value}")
-            
-            # Apply vendor-specific optimizations to AE
-            vendor_adapter.apply_optimizations(self.ae)
-            
-            # Configure presentation contexts with vendor preferences for C-MOVE
-            presentation_contexts = self.conformance_negotiator.build_presentation_contexts(
-                vendor_adapter=vendor_adapter,
-                abstract_syntaxes=[StudyRootQueryRetrieveInformationModelMove]
-            )
-            
-            # Update AE with vendor-optimized presentation contexts
-            self.ae.requested_contexts = []
-            for ctx in presentation_contexts:
-                self.ae.add_requested_context(
-                    ctx["abstract_syntax"], 
-                    ctx["transfer_syntaxes"]
-                )
-
             # Establish association for C-MOVE
             assoc_params = endpoint.create_association_parameters()
             assoc = self.ae.associate(
