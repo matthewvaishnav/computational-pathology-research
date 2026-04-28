@@ -24,7 +24,6 @@ from .data_models import (
     PACSEndpoint,
     ValidationResult,
 )
-from .vendor_adapters import VendorAdapterFactory, ConformanceNegotiator
 
 logger = logging.getLogger(__name__)
 
@@ -428,9 +427,6 @@ class StorageEngine:
         self.ae_title = ae_title
         self.ae = AE(ae_title=ae_title)
 
-        # Initialize conformance negotiator for vendor-specific optimizations
-        self.conformance_negotiator = ConformanceNegotiator()
-
         # Add supported presentation contexts for C-STORE
         self.ae.add_requested_context(BasicTextSRStorage)
         self.ae.add_requested_context(EnhancedSRStorage)
@@ -610,28 +606,6 @@ class StorageEngine:
         operation_id = f"c_store_{sr_dataset.SOPInstanceUID}"
 
         try:
-            # Get vendor-specific adapter for this endpoint
-            vendor_adapter = VendorAdapterFactory.detect_from_endpoint(endpoint)
-            logger.debug(f"Using vendor adapter for C-STORE: {vendor_adapter.vendor.value}")
-            
-            # Apply vendor-specific optimizations to AE
-            vendor_adapter.apply_optimizations(self.ae)
-            
-            # Configure presentation contexts with vendor preferences for C-STORE
-            storage_syntaxes = [BasicTextSRStorage, EnhancedSRStorage, ComprehensiveSRStorage]
-            presentation_contexts = self.conformance_negotiator.build_presentation_contexts(
-                vendor_adapter=vendor_adapter,
-                abstract_syntaxes=storage_syntaxes
-            )
-            
-            # Update AE with vendor-optimized presentation contexts
-            self.ae.requested_contexts = []
-            for ctx in presentation_contexts:
-                self.ae.add_requested_context(
-                    ctx["abstract_syntax"], 
-                    ctx["transfer_syntaxes"]
-                )
-
             # Establish association
             assoc_params = endpoint.create_association_parameters()
             assoc = self.ae.associate(

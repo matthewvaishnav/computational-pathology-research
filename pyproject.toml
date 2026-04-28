@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "histocore"
 version = "0.1.0"
-description = "HistoCore: #1 performing method in digital pathology - Production-grade PyTorch framework establishing superiority over all published baselines"
+description = "HistoCore: Production-grade PyTorch framework for computational pathology research"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Matthew Vaishnav"}
 ]
-keywords = ["computational pathology", "multimodal fusion", "deep learning", "whole-slide imaging", "performance superiority", "federated learning", "digital pathology", "benchmark"]
+keywords = ["computational pathology", "multimodal fusion", "deep learning", "whole-slide imaging"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -83,13 +83,9 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --cov=src --cov-report=html --cov-report=term -p no:cacheprovider"
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "property: marks property-based tests (deselect with '-m \"not property\"')",
-    "integration: marks integration tests",
-    "asyncio: marks async tests",
 ]
 
 [tool.coverage.run]

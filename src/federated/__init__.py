@@ -1,18 +1,21 @@
 """
-Federated Learning System for HistoCore.
+Federated learning for multi-institutional computational pathology.
 
-First open-source federated learning framework for digital pathology.
-Enables privacy-preserving multi-site training across hospitals without
-centralizing patient data.
-
-Key Features:
-- Differential privacy (DP-SGD) with configurable epsilon
-- Secure aggregation with homomorphic encryption
-- Byzantine-robust aggregation (Krum, Trimmed Mean)
-- PACS-integrated data discovery
-- Property-based testing for correctness guarantees
+Enables training across hospital silos without sharing patient data.
+Uses Flower (flwr) framework with differential privacy support.
 """
 
-__version__ = "0.1.0"
+from .aggregation import ByzantineRobustAggregation, FedAvgPathology, FedProxPathology
+from .client import PathologyFLClient
+from .privacy import DifferentialPrivacyEngine, PrivacyAccountant
+from .server import start_federated_server
 
-__all__ = []
+__all__ = [
+    "PathologyFLClient",
+    "start_federated_server",
+    "FedAvgPathology",
+    "FedProxPathology",
+    "ByzantineRobustAggregation",
+    "DifferentialPrivacyEngine",
+    "PrivacyAccountant",
+]

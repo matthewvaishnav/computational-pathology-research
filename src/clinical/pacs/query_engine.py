@@ -23,7 +23,6 @@ from .data_models import (
     StudyInfo,
     ValidationResult,
 )
-from .vendor_adapters import VendorAdapterFactory, ConformanceNegotiator
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +48,6 @@ class QueryEngine:
         """
         self.ae_title = ae_title
         self.ae = AE(ae_title=ae_title)
-
-        # Initialize conformance negotiator for vendor-specific optimizations
-        self.conformance_negotiator = ConformanceNegotiator()
 
         # Add supported presentation contexts for C-FIND
         self.ae.add_requested_context(StudyRootQueryRetrieveInformationModelFind)
@@ -116,27 +112,6 @@ class QueryEngine:
 
         # Execute C-FIND operation
         try:
-            # Get vendor-specific adapter for this endpoint
-            vendor_adapter = VendorAdapterFactory.detect_from_endpoint(endpoint)
-            logger.debug(f"Using vendor adapter: {vendor_adapter.vendor.value}")
-            
-            # Apply vendor-specific optimizations to AE
-            vendor_adapter.apply_optimizations(self.ae)
-            
-            # Configure presentation contexts with vendor preferences
-            presentation_contexts = self.conformance_negotiator.build_presentation_contexts(
-                vendor_adapter=vendor_adapter,
-                abstract_syntaxes=[StudyRootQueryRetrieveInformationModelFind]
-            )
-            
-            # Update AE with vendor-optimized presentation contexts
-            self.ae.requested_contexts = []
-            for ctx in presentation_contexts:
-                self.ae.add_requested_context(
-                    ctx["abstract_syntax"], 
-                    ctx["transfer_syntaxes"]
-                )
-
             assoc_params = endpoint.create_association_parameters()
             assoc = self.ae.associate(
                 addr=assoc_params["address"],
@@ -402,22 +377,18 @@ class QueryEngine:
     ) -> Optional[StudyInfo]:
         """Parse C-FIND response into StudyInfo object."""
         try:
-            # Apply vendor-specific tag normalization
-            vendor_adapter = VendorAdapterFactory.detect_from_endpoint(endpoint)
-            normalized_ds = vendor_adapter.normalize_tags(response_ds)
-            
-            # Extract required fields from normalized dataset
-            study_uid = str(normalized_ds.get("StudyInstanceUID", ""))
-            patient_id = str(normalized_ds.get("PatientID", ""))
-            patient_name = str(normalized_ds.get("PatientName", ""))
-            study_description = str(normalized_ds.get("StudyDescription", ""))
+            # Extract required fields
+            study_uid = str(response_ds.get("StudyInstanceUID", ""))
+            patient_id = str(response_ds.get("PatientID", ""))
+            patient_name = str(response_ds.get("PatientName", ""))
+            study_description = str(response_ds.get("StudyDescription", ""))
 
             if not all([study_uid, patient_id]):
                 logger.warning("Incomplete study data - missing required fields")
                 return None
 
             # Parse study date
-            study_date_str = str(normalized_ds.get("StudyDate", ""))
+            study_date_str = str(response_ds.get("StudyDate", ""))
             try:
                 study_date = (
                     datetime.strptime(study_date_str, "%Y%m%d")
@@ -429,12 +400,12 @@ class QueryEngine:
                 study_date = datetime.now()
 
             # Extract optional fields
-            accession_number = str(normalized_ds.get("AccessionNumber", ""))
-            referring_physician = str(normalized_ds.get("ReferringPhysicianName", ""))
-            series_count = int(normalized_ds.get("NumberOfStudyRelatedSeries", 0))
+            accession_number = str(response_ds.get("AccessionNumber", ""))
+            referring_physician = str(response_ds.get("ReferringPhysicianName", ""))
+            series_count = int(response_ds.get("NumberOfStudyRelatedSeries", 0))
 
             # Determine modality and priority
-            modalities = normalized_ds.get("ModalitiesInStudy", "")
+            modalities = response_ds.get("ModalitiesInStudy", "")
             if isinstance(modalities, (list, tuple)):
                 modality = modalities[0] if modalities else "SM"
             else:
@@ -467,23 +438,18 @@ class QueryEngine:
     def _parse_series_response(self, response_ds: Dataset, study_uid: str) -> Optional[SeriesInfo]:
         """Parse C-FIND response into SeriesInfo object."""
         try:
-            # Apply vendor-specific tag normalization
-            # Note: We don't have endpoint context here, so we detect from dataset
-            vendor_adapter = VendorAdapterFactory.detect_from_dataset(response_ds)
-            normalized_ds = vendor_adapter.normalize_tags(response_ds)
-            
-            series_uid = str(normalized_ds.get("SeriesInstanceUID", ""))
-            series_number = str(normalized_ds.get("SeriesNumber", ""))
-            series_description = str(normalized_ds.get("SeriesDescription", ""))
-            modality = str(normalized_ds.get("Modality", ""))
-            instance_count = int(normalized_ds.get("NumberOfSeriesRelatedInstances", 0))
+            series_uid = str(response_ds.get("SeriesInstanceUID", ""))
+            series_number = str(response_ds.get("SeriesNumber", ""))
+            series_description = str(response_ds.get("SeriesDescription", ""))
+            modality = str(response_ds.get("Modality", ""))
+            instance_count = int(response_ds.get("NumberOfSeriesRelatedInstances", 0))
 
             if not all([series_uid, series_number]):
                 logger.warning("Incomplete series data - missing required fields")
                 return None
 
             # Parse series date
-            series_date_str = str(normalized_ds.get("SeriesDate", ""))
+            series_date_str = str(response_ds.get("SeriesDate", ""))
             series_date = None
             if series_date_str:
                 try:
@@ -491,8 +457,8 @@ class QueryEngine:
                 except ValueError:
                     logger.warning(f"Invalid series date format: {series_date_str}")
 
-            series_time = str(normalized_ds.get("SeriesTime", "")) or None
-            body_part = str(normalized_ds.get("BodyPartExamined", "")) or None
+            series_time = str(response_ds.get("SeriesTime", "")) or None
+            body_part = str(response_ds.get("BodyPartExamined", "")) or None
 
             return SeriesInfo(
                 series_instance_uid=series_uid,

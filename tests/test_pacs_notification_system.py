@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.clinical.pacs.notification_system import (
     DeliveryRecord,
     DeliveryTracker,
@@ -78,8 +79,8 @@ def _make_system_all_channels() -> NotificationSystem:
     """NotificationSystem with all 3 channels in simulation mode."""
     ns = NotificationSystem()
     ns.configure_email(smtp_server="localhost", smtp_port=25, use_tls=False)
-    ns.configure_sms()  # no gateway_url → simulation
-    ns.configure_hl7()  # no endpoint_host → simulation
+    ns.configure_sms()         # no gateway_url → simulation
+    ns.configure_hl7()         # no endpoint_host → simulation
     return ns
 
 
@@ -88,7 +89,6 @@ def _make_system_all_channels() -> NotificationSystem:
 # For any notification event, alerts SHALL be delivered through all
 # configured channels.
 # ---------------------------------------------------------------------------
-
 
 @settings(max_examples=100)
 @given(priority=st.sampled_from(_PRIORITY_VALUES))
@@ -117,16 +117,15 @@ def test_property_39_all_channels_attempt_delivery(priority):
 # Confidence < threshold with no URGENT recs → not CRITICAL.
 # ---------------------------------------------------------------------------
 
-
 @settings(max_examples=100)
 @given(confidence=st.floats(min_value=0.9, max_value=1.0, allow_nan=False))
 def test_property_40_high_confidence_yields_critical_priority(confidence):
     ns = NotificationSystem()
     ar = _make_analysis_results(confidence=confidence, urgency="MEDIUM")
     event = ns._create_event_from_analysis(ar, study_info=None, result_url=None)
-    assert (
-        event.priority == "CRITICAL"
-    ), f"Expected CRITICAL for confidence={confidence}, got {event.priority}"
+    assert event.priority == "CRITICAL", (
+        f"Expected CRITICAL for confidence={confidence}, got {event.priority}"
+    )
 
 
 @settings(max_examples=100)
@@ -135,16 +134,15 @@ def test_property_40_low_confidence_no_urgent_not_critical(confidence):
     ns = NotificationSystem()
     ar = _make_analysis_results(confidence=confidence, urgency="LOW")
     event = ns._create_event_from_analysis(ar, study_info=None, result_url=None)
-    assert (
-        event.priority != "CRITICAL"
-    ), f"Expected non-CRITICAL for confidence={confidence}, got {event.priority}"
+    assert event.priority != "CRITICAL", (
+        f"Expected non-CRITICAL for confidence={confidence}, got {event.priority}"
+    )
 
 
 # ---------------------------------------------------------------------------
 # Property 41 — Notification Content Completeness
 # format_body() must contain study_instance_uid and analysis_summary.
 # ---------------------------------------------------------------------------
-
 
 @settings(max_examples=100)
 @given(
@@ -177,7 +175,6 @@ def test_property_41_body_contains_required_fields(study_uid, summary):
 # After marking all sent → get_pending_retries() = 0.
 # ---------------------------------------------------------------------------
 
-
 @settings(max_examples=100)
 @given(n=st.integers(min_value=1, max_value=20))
 def test_property_42_pending_retries_matches_failed_records(n):
@@ -204,7 +201,6 @@ def test_property_42_pending_retries_matches_failed_records(n):
 # Unit tests — email recipient validation
 # ---------------------------------------------------------------------------
 
-
 def test_email_validate_recipient_valid():
     assert EmailNotifier().validate_recipient("user@hospital.org") is True
 
@@ -220,7 +216,6 @@ def test_email_validate_recipient_invalid_no_dot_in_domain():
 # ---------------------------------------------------------------------------
 # Unit tests — SMS recipient validation
 # ---------------------------------------------------------------------------
-
 
 def test_sms_validate_recipient_valid():
     assert SMSNotifier().validate_recipient("+15551234567") is True
@@ -238,7 +233,6 @@ def test_sms_validate_recipient_invalid_too_short():
 # Unit tests — HL7 recipient validation
 # ---------------------------------------------------------------------------
 
-
 def test_hl7_validate_recipient_valid():
     assert HL7Notifier().validate_recipient("PATHOLOGY_SYS") is True
 
@@ -254,7 +248,6 @@ def test_hl7_validate_recipient_invalid_space():
 # ---------------------------------------------------------------------------
 # Unit test — HL7 message structure
 # ---------------------------------------------------------------------------
-
 
 def test_hl7_build_message_contains_segments():
     notifier = HL7Notifier(sending_facility="HISTOCORE", receiving_facility="HOSPITAL")
@@ -285,7 +278,6 @@ def test_hl7_build_message_mllp_framing_absent_in_plain_message():
 # Unit test — full simulation-mode round trip
 # ---------------------------------------------------------------------------
 
-
 def test_notification_system_simulation_mode():
     ns = _make_system_all_channels()
     ar = _make_analysis_results(confidence=0.95, urgency="URGENT")
@@ -297,7 +289,6 @@ def test_notification_system_simulation_mode():
 # ---------------------------------------------------------------------------
 # Unit test — critical finding creates CRITICAL event
 # ---------------------------------------------------------------------------
-
 
 def test_critical_finding_creates_critical_event():
     ns = _make_system_all_channels()
@@ -322,7 +313,6 @@ def test_urgent_recommendation_elevates_to_critical():
 # ---------------------------------------------------------------------------
 # Unit test — DeliveryTracker statistics
 # ---------------------------------------------------------------------------
-
 
 def test_delivery_tracker_statistics():
     tracker = DeliveryTracker()
@@ -363,7 +353,6 @@ def test_delivery_tracker_event_status():
 # Unit test — retry_failed_deliveries updates delivery status
 # ---------------------------------------------------------------------------
 
-
 def test_retry_failed_deliveries_updates_status():
     ns = _make_system_all_channels()
 
@@ -394,7 +383,6 @@ def test_retry_exhausted_records_not_retried():
 # Unit test — format_subject critical flag
 # ---------------------------------------------------------------------------
 
-
 def test_format_subject_critical_includes_label():
     event = _make_event(priority="CRITICAL", study_uid="1.2.840.10008.99")
     assert "[CRITICAL]" in event.format_subject()
@@ -409,7 +397,6 @@ def test_format_subject_non_critical_uses_ai_result_label():
 # ---------------------------------------------------------------------------
 # Unit test — system error goes to admins only (no crash, success result)
 # ---------------------------------------------------------------------------
-
 
 def test_notify_system_error_returns_success():
     ns = _make_system_all_channels()

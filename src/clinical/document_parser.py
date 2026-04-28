@@ -4,7 +4,6 @@ Clinical document parser for extracting structured information from unstructured
 This module provides parsing capabilities for common clinical document formats (HL7 CDA, plain text, PDF)
 and extracts structured information including diagnoses, medications, procedures, and clinical observations.
 It handles medical abbreviations, terminology variations, negation detection, and uncertainty qualifiers.
-Also supports generating PDF reports from parsed clinical data.
 """
 
 import logging
@@ -13,7 +12,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -423,48 +421,16 @@ class ClinicalDocumentParser:
     def _parse_pdf(self, file_path: Path) -> str:
         """
         Parse PDF document and extract text content.
-        
-        Supports multiple PDF parsing libraries with automatic fallback.
+
+        Note: This is a placeholder. Production systems should use PDF parsing
+        libraries like PyPDF2, pdfplumber, or Apache Tika.
         """
-        try:
-            # Try PyPDF2 first
-            import PyPDF2
-            with open(file_path, 'rb') as file:
-                reader = PyPDF2.PdfReader(file)
-                text_content = []
-                for page in reader.pages:
-                    text_content.append(page.extract_text())
-                return '\n'.join(text_content)
-        except ImportError:
-            try:
-                # Fallback to pdfplumber
-                import pdfplumber
-                with pdfplumber.open(file_path) as pdf:
-                    text_content = []
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            text_content.append(text)
-                    return '\n'.join(text_content)
-            except ImportError:
-                try:
-                    # Final fallback to PyMuPDF
-                    import fitz
-                    doc = fitz.open(file_path)
-                    text_content = []
-                    for page_num in range(doc.page_count):
-                        page = doc[page_num]
-                        text_content.append(page.get_text())
-                    doc.close()
-                    return '\n'.join(text_content)
-                except ImportError:
-                    logger.error(
-                        "PDF parsing requires one of: PyPDF2, pdfplumber, or PyMuPDF. "
-                        "Install with: pip install PyPDF2 pdfplumber pymupdf"
-                    )
-                    raise NotImplementedError(
-                        "PDF parsing requires additional dependencies (PyPDF2, pdfplumber, or PyMuPDF)"
-                    )
+        logger.warning(
+            "PDF parsing not fully implemented. Install PyPDF2 or pdfplumber for PDF support."
+        )
+        raise NotImplementedError(
+            "PDF parsing requires additional dependencies (PyPDF2 or pdfplumber)"
+        )
 
     def _normalize_text(self, text: str) -> str:
         """
@@ -727,231 +693,3 @@ class ClinicalDocumentParser:
 
         # Clamp to [0.0, 1.0]
         return max(0.0, min(1.0, confidence))
-
-    def generate_pdf_report(self, parsed_document: ParsedDocument, 
-                           output_path: Union[str, Path],
-                           patient_info: Optional[Dict[str, str]] = None) -> Path:
-        """
-        Generate a PDF report from parsed clinical document.
-        
-        Args:
-            parsed_document: Parsed document with extracted entities
-            output_path: Path to save PDF report
-            patient_info: Optional patient information (name, id, dob, etc.)
-            
-        Returns:
-            Path to generated PDF report
-        """
-        try:
-            from reportlab.lib.pagesizes import letter
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-            from reportlab.lib.units import inch
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-            from reportlab.lib import colors
-            from reportlab.lib.enums import TA_CENTER, TA_LEFT
-        except ImportError:
-            logger.error("PDF generation requires reportlab: pip install reportlab")
-            raise NotImplementedError("PDF generation requires reportlab library")
-        
-        output_path = Path(output_path)
-        
-        # Create PDF document
-        doc = SimpleDocTemplate(str(output_path), pagesize=letter,
-                               rightMargin=72, leftMargin=72,
-                               topMargin=72, bottomMargin=18)
-        
-        # Get styles
-        styles = getSampleStyleSheet()
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=18,
-            spaceAfter=30,
-            alignment=TA_CENTER
-        )
-        
-        heading_style = ParagraphStyle(
-            'CustomHeading',
-            parent=styles['Heading2'],
-            fontSize=14,
-            spaceAfter=12,
-            textColor=colors.darkblue
-        )
-        
-        # Build story (content)
-        story = []
-        
-        # Title
-        story.append(Paragraph("Clinical Document Analysis Report", title_style))
-        story.append(Spacer(1, 12))
-        
-        # Patient information (if provided)
-        if patient_info:
-            story.append(Paragraph("Patient Information", heading_style))
-            patient_data = []
-            for key, value in patient_info.items():
-                patient_data.append([key.replace('_', ' ').title() + ':', value])
-            
-            patient_table = Table(patient_data, colWidths=[2*inch, 4*inch])
-            patient_table.setStyle(TableStyle([
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ]))
-            story.append(patient_table)
-            story.append(Spacer(1, 20))
-        
-        # Document metadata
-        story.append(Paragraph("Document Information", heading_style))
-        doc_data = [
-            ['Document Format:', parsed_document.document_format.value.replace('_', ' ').title()],
-            ['Analysis Date:', datetime.now().strftime('%Y-%m-%d %H:%M:%S')],
-            ['Total Entities Extracted:', str(len(parsed_document.get_all_entities()))],
-            ['High Confidence Entities:', str(len(parsed_document.get_high_confidence_entities()))]
-        ]
-        
-        doc_table = Table(doc_data, colWidths=[2*inch, 4*inch])
-        doc_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ]))
-        story.append(doc_table)
-        story.append(Spacer(1, 20))
-        
-        # Extracted entities sections
-        entity_sections = [
-            ('Diagnoses', parsed_document.diagnoses),
-            ('Medications', parsed_document.medications),
-            ('Procedures', parsed_document.procedures),
-            ('Observations', parsed_document.observations)
-        ]
-        
-        for section_name, entities in entity_sections:
-            if entities:
-                story.append(Paragraph(f"Extracted {section_name}", heading_style))
-                
-                # Create table data
-                table_data = [['Entity', 'Confidence', 'Status', 'Context']]
-                
-                for entity in entities:
-                    status_flags = []
-                    if entity.negated:
-                        status_flags.append('Negated')
-                    if entity.uncertain:
-                        status_flags.append('Uncertain')
-                    status = ', '.join(status_flags) if status_flags else 'Confirmed'
-                    
-                    # Truncate context for display
-                    context = entity.context[:100] + '...' if len(entity.context) > 100 else entity.context
-                    
-                    table_data.append([
-                        entity.value,
-                        f"{entity.confidence:.2f}",
-                        status,
-                        context
-                    ])
-                
-                # Create table
-                entity_table = Table(table_data, colWidths=[2*inch, 0.8*inch, 1*inch, 2.2*inch])
-                entity_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                ]))
-                
-                story.append(entity_table)
-                story.append(Spacer(1, 15))
-        
-        # Conflicts section (if any)
-        if parsed_document.conflicts:
-            story.append(Paragraph("Detected Conflicts", heading_style))
-            for i, conflict in enumerate(parsed_document.conflicts, 1):
-                story.append(Paragraph(f"{i}. {conflict}", styles['Normal']))
-            story.append(Spacer(1, 15))
-        
-        # Summary statistics
-        story.append(Paragraph("Summary Statistics", heading_style))
-        
-        all_entities = parsed_document.get_all_entities()
-        high_conf_entities = parsed_document.get_high_confidence_entities()
-        negated_entities = [e for e in all_entities if e.negated]
-        uncertain_entities = [e for e in all_entities if e.uncertain]
-        
-        summary_data = [
-            ['Total Entities:', str(len(all_entities))],
-            ['High Confidence (>0.8):', str(len(high_conf_entities))],
-            ['Negated Entities:', str(len(negated_entities))],
-            ['Uncertain Entities:', str(len(uncertain_entities))],
-            ['Diagnoses:', str(len(parsed_document.diagnoses))],
-            ['Medications:', str(len(parsed_document.medications))],
-            ['Procedures:', str(len(parsed_document.procedures))],
-            ['Observations:', str(len(parsed_document.observations))]
-        ]
-        
-        summary_table = Table(summary_data, colWidths=[2.5*inch, 1.5*inch])
-        summary_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
-        ]))
-        story.append(summary_table)
-        
-        # Build PDF
-        doc.build(story)
-        
-        logger.info(f"Generated PDF report: {output_path}")
-        return output_path
-        
-    def generate_structured_report(self, parsed_document: ParsedDocument) -> Dict[str, Any]:
-        """
-        Generate structured JSON report from parsed document.
-        
-        Args:
-            parsed_document: Parsed document with extracted entities
-            
-        Returns:
-            Structured report dictionary
-        """
-        all_entities = parsed_document.get_all_entities()
-        high_conf_entities = parsed_document.get_high_confidence_entities()
-        
-        report = {
-            'metadata': {
-                'document_format': parsed_document.document_format.value,
-                'analysis_timestamp': datetime.now().isoformat(),
-                'total_entities': len(all_entities),
-                'high_confidence_entities': len(high_conf_entities)
-            },
-            'entities': parsed_document.to_dict(),
-            'statistics': {
-                'by_type': {
-                    'diagnoses': len(parsed_document.diagnoses),
-                    'medications': len(parsed_document.medications),
-                    'procedures': len(parsed_document.procedures),
-                    'observations': len(parsed_document.observations)
-                },
-                'by_confidence': {
-                    'high': len([e for e in all_entities if e.get_confidence_level() == ExtractionConfidence.HIGH]),
-                    'medium': len([e for e in all_entities if e.get_confidence_level() == ExtractionConfidence.MEDIUM]),
-                    'low': len([e for e in all_entities if e.get_confidence_level() == ExtractionConfidence.LOW])
-                },
-                'by_status': {
-                    'confirmed': len([e for e in all_entities if not e.negated and not e.uncertain]),
-                    'negated': len([e for e in all_entities if e.negated]),
-                    'uncertain': len([e for e in all_entities if e.uncertain])
-                }
-            },
-            'conflicts': parsed_document.conflicts
-        }
-        
-        return report

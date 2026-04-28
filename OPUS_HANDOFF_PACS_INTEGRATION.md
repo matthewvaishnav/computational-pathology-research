@@ -1,4 +1,4 @@
-    # PACS Integration System - Opus 4.7 Handoff
+# PACS Integration System - Opus 4.7 Handoff
 
 ## Context
 HistoCore = production-grade computational pathology framework. Need PACS integration for clinical deployment in hospitals.

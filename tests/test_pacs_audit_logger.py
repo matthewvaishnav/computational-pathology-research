@@ -6,9 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.clinical.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,
@@ -18,6 +18,7 @@ from src.clinical.pacs.audit_logger import (
     PACSAuditLogger,
     TamperEvidentStorage,
 )
+
 
 # ---------------------------------------------------------------------------
 # Fixtures and helpers
@@ -57,17 +58,13 @@ def _make_study(uid: str = "1.2.3.4.5") -> SimpleNamespace:
 
 
 @given(
-    user_id=st.text(
-        min_size=1, max_size=64, alphabet=st.characters(whitelist_categories=("L", "N", "P"))
-    ),
+    user_id=st.text(min_size=1, max_size=64, alphabet=st.characters(whitelist_categories=("L", "N", "P"))),
     result_count=st.integers(min_value=0, max_value=10000),
 )
-@settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=100)
 def test_property_43_dicom_query_always_returns_message_id(tmp_path, user_id, result_count):
     """Any C-FIND call produces a non-empty message_id findable in the index."""
-    # Use a safe path component by replacing invalid characters
-    safe_user_id = "".join(c if c.isalnum() else "_" for c in user_id[:8])
-    audit = _make_logger(tmp_path / safe_user_id)
+    audit = _make_logger(tmp_path / user_id[:8])
     endpoint = _make_endpoint()
     mid = audit.log_dicom_query(
         user_id=user_id,
@@ -93,9 +90,7 @@ _REQUIRED_HIPAA_KEYS = {"event_type", "event_datetime", "outcome", "participants
 
 
 @given(
-    patient_id=st.text(
-        min_size=1, max_size=32, alphabet=st.characters(whitelist_categories=("L", "N"))
-    ),
+    patient_id=st.text(min_size=1, max_size=32, alphabet=st.characters(whitelist_categories=("L", "N"))),
     outcome=st.sampled_from([0, 4, 8, 12]),
 )
 @settings(max_examples=100)
@@ -125,9 +120,9 @@ def test_property_44_hipaa_format_has_required_keys(patient_id, outcome):
         description="Test PHI access",
     )
     hipaa = msg.to_hipaa_format()
-    assert _REQUIRED_HIPAA_KEYS.issubset(
-        hipaa.keys()
-    ), f"Missing keys: {_REQUIRED_HIPAA_KEYS - set(hipaa.keys())}"
+    assert _REQUIRED_HIPAA_KEYS.issubset(hipaa.keys()), (
+        f"Missing keys: {_REQUIRED_HIPAA_KEYS - set(hipaa.keys())}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +142,7 @@ def test_property_44_hipaa_format_has_required_keys(patient_id, outcome):
         unique=True,
     )
 )
-@settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=100)
 def test_property_45_phi_fields_recorded(tmp_path, phi_fields):
     """log_phi_access stores all specified phi_fields and marks phi_accessed=True."""
     audit = _make_logger(tmp_path)
@@ -175,7 +170,7 @@ def test_property_45_phi_fields_recorded(tmp_path, phi_fields):
 
 
 @given(entries=st.lists(st.text(min_size=1, max_size=128), min_size=1, max_size=20))
-@settings(max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=50)
 def test_property_46_tamper_evident_verify_all_clean(tmp_path, entries):
     """All freshly written entries verify as untampered."""
     storage = TamperEvidentStorage(tmp_path / "te", signing_key=b"x" * 32)
@@ -193,7 +188,7 @@ def test_property_46_tamper_evident_verify_all_clean(tmp_path, entries):
 
 
 @given(entries=st.lists(st.text(min_size=1, max_size=128), min_size=2, max_size=10))
-@settings(max_examples=30, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=30)
 def test_property_46_tamper_detected_after_modification(tmp_path, entries):
     """Modifying one file's JSON data causes verify_entry to return False for that file only."""
     storage = TamperEvidentStorage(tmp_path / "te2", signing_key=b"y" * 32)
@@ -540,8 +535,12 @@ def test_hipaa_format_participants_and_study_objects(tmp_path):
         event_outcome=data["event_outcome"],
         event_datetime=datetime.fromisoformat(data["event_datetime"]),
         event_type=data["event_type"],
-        participants=[AuditParticipant(**p) for p in data["participants"]],
-        study_objects=[AuditStudyObject(**s) for s in data["study_objects"]],
+        participants=[
+            AuditParticipant(**p) for p in data["participants"]
+        ],
+        study_objects=[
+            AuditStudyObject(**s) for s in data["study_objects"]
+        ],
         description=data["description"],
         phi_accessed=data["phi_accessed"],
         phi_fields=data["phi_fields"],
