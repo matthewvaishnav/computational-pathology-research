@@ -1,0 +1,68 @@
+{
+  "checkpoint_loading": {
+    "success": true,
+    "epoch": 2,
+    "metrics": {
+      "val_loss": 0.3476481641948794,
+      "val_accuracy": 0.87860107421875,
+      "val_f1": 0.8677086797472564,
+      "val_auc": 0.9536689392310058
+    },
+    "cnn_params": 11176512,
+    "attention_params": 6733569,
+    "total_params": 17910081,
+    "device": "cpu"
+  },
+  "model_inference": {
+    "success": true,
+    "num_samples": 1000,
+    "avg_time_ms": 7.27273154258728,
+    "std_time_ms": 1.2353418745719815,
+    "min_time_ms": 5.176067352294922,
+    "max_time_ms": 17.31133460998535,
+    "throughput_samples_per_sec": 137.49991927300664,
+    "device": "cpu"
+  },
+  "batch_benchmark": {
+    "success": true,
+    "device": "cpu",
+    "results": {
+      "batch_1": {
+        "batch_size": 1,
+        "avg_time_ms": 7.823526859283447,
+        "std_time_ms": 1.6210585437641918,
+        "time_per_sample_ms": 7.823526859283447,
+        "throughput_samples_per_sec": 127.81959057421699
+      },
+      "batch_4": {
+        "batch_size": 4,
+        "avg_time_ms": 14.393253326416016,
+        "std_time_ms": 1.1035465278695626,
+        "time_per_sample_ms": 3.598313331604004,
+        "throughput_samples_per_sec": 277.9079829477314
+      },
+      "batch_16": {
+        "batch_size": 16,
+        "avg_time_ms": 31.191089153289795,
+        "std_time_ms": 2.827378871891634,
+        "time_per_sample_ms": 1.9494430720806122,
+        "throughput_samples_per_sec": 512.967018284209
+      },
+      "batch_32": {
+        "batch_size": 32,
+        "avg_time_ms": 56.37505054473877,
+        "std_time_ms": 2.8089075705345827,
+        "time_per_sample_ms": 1.7617203295230865,
+        "throughput_samples_per_sec": 567.6269855333445
+      },
+      "batch_64": {
+        "batch_size": 64,
+        "avg_time_ms": 107.66956567764282,
+        "std_time_ms": 6.83187302100194,
+        "time_per_sample_ms": 1.682336963713169,
+        "throughput_samples_per_sec": 594.4112395847562
+      }
+    },
+    "optimal_batch_size": 64
+  }
+}
