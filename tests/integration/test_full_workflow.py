@@ -95,7 +95,6 @@ class IntegrationTestSuite:
         """Create a synthetic DICOM file for testing."""
         from pydicom.dataset import FileDataset, FileMetaDataset
         from pydicom.uid import ExplicitVRLittleEndian
-        import tempfile
         
         # Create file meta information
         file_meta = FileMetaDataset()
@@ -104,10 +103,10 @@ class IntegrationTestSuite:
         file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # Explicit VR Little Endian
         file_meta.ImplementationClassUID = generate_uid()
         
-        # Create the FileDataset instance
+        # Create the FileDataset instance (correct constructor)
         ds = FileDataset(
-            filename="test.dcm",
-            dataset={},
+            "test.dcm",  # filename as first positional argument
+            {},          # dataset as second positional argument
             file_meta=file_meta,
             preamble=b"\0" * 128
         )
