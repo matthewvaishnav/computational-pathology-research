@@ -552,7 +552,7 @@ PERMISSIONS = {
 
 ### Unique Value Proposition
 - **First pathology-specific plugin platform** (vs general medical imaging)
-- **Built on proven #1 performance** (93.94% AUC superiority)
+- **Built on proven #1 performance** (93.98% AUC superiority)
 - **Clinical compliance built-in** (FDA/CE marking support)
 - **Real-time processing capability** (unique technical foundation)
 

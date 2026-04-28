@@ -192,7 +192,7 @@ python ../experiments/train_pcam.py --config ../experiments/configs/pcam_ultra_f
 
 | Configuration | Training Time | Test AUC | GPU | Parameters |
 |---------------|---------------|----------|-----|------------|
-| **Ultra Fast** | 2.25 hours | 93.94% | RTX 4070 | 12M |
+| **Ultra Fast** | 2.25 hours | 93.98% | RTX 4070 | 12M |
 | Fast Improved | 3.1 hours | 94.2% | RTX 4070 | 18M |
 | Full Scale | 5.5 hours | 94.5% | RTX 4070 | 25M |
 
