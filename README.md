@@ -1,4 +1,4 @@
-# Medical AI Revolution: Comprehensive Pathology AI Platform
+# HistoCore: Comprehensive Pathology AI Platform
 
 <div align="center">
 
@@ -50,7 +50,7 @@ Traditional medical AI research:
 
 ### Our Solution
 
-Medical AI Revolution delivers:
+HistoCore delivers:
 - 🏥 **Hospital-ready deployment** with PACS/EMR integration
 - 🧠 **Multi-disease foundation model** (breast, lung, prostate, colon, melanoma)
 - 📱 **Mobile inference** with offline-first architecture
@@ -495,24 +495,24 @@ python experiments/evaluate.py \
 
 ```bash
 # Build image
-docker build -t medical-ai-revolution:latest .
+docker build -t histocore:latest .
 
 # Run training container
 docker run -d \
-  --name medical-ai-training \
+  --name histocore-training \
   --gpus all \
   -v /data:/data \
   -v /checkpoints:/checkpoints \
-  medical-ai-revolution:latest \
+  histocore:latest \
   python experiments/train_pcam.py --config configs/pcam_real.yaml
 
 # Run inference server
 docker run -d \
-  --name medical-ai-server \
+  --name histocore-server \
   --gpus all \
   -p 8000:8000 \
   -v /models:/models \
-  medical-ai-revolution:latest \
+  histocore:latest \
   python src/api/server.py
 ```
 
@@ -526,8 +526,8 @@ kubectl apply -f k8s/inference-deployment.yaml
 kubectl apply -f k8s/service.yaml
 
 # Check status
-kubectl get pods -n medical-ai
-kubectl logs -f deployment/medical-ai-training -n medical-ai
+kubectl get pods -n histocore
+kubectl logs -f deployment/histocore-training -n histocore
 ```
 
 ---
@@ -536,7 +536,7 @@ kubectl logs -f deployment/medical-ai-training -n medical-ai
 
 ### Implementation Guides
 
-- **[Medical AI Revolution Spec](/.kiro/specs/medical-ai-revolution/)** - Complete specification with 96 tasks
+- **[HistoCore Spec](/.kiro/specs/medical-ai-revolution/)** - Complete specification with 96 tasks
 - **[Training Status](TRAINING_STATUS.md)** - Live training progress and results
 - **[Foundation Model](src/foundation/)** - Multi-disease model architecture
 - **[Mobile Application](mobile/)** - React Native app with native inference
@@ -695,7 +695,7 @@ def test_model_deterministic(batch_size):
 
 ## 🏆 What Makes This Different
 
-| Feature | Medical AI Revolution | Academic Research | Commercial Solutions |
+| Feature | HistoCore | Academic Research | Commercial Solutions |
 |---------|----------------------|-------------------|---------------------|
 | **Real Training Results** | ✅ 95%+ AUC | ⚠️ Often synthetic | ✅ Yes |
 | **Multi-Disease Support** | ✅ 5+ cancer types | ❌ Single disease | ⚠️ Limited |
