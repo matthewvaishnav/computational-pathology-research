@@ -121,10 +121,12 @@ header {
       text-decoration: none;
       font-weight: 600;
       transition: all 0.2s ease;
-      display: inline-block;
+      display: block;
       padding: 8px 16px;
       border-radius: 6px;
       background: rgba(165, 28, 48, 0.05);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
       
       &:hover {
         background: rgba(165, 28, 48, 0.1);
@@ -137,6 +139,8 @@ header {
         font-size: 12px;
         margin-top: 4px;
         font-weight: 400;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
     }
   }
