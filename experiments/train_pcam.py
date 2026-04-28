@@ -2184,13 +2184,41 @@ def main():
         betas=config["training"]["optimizer"].get("betas", [0.9, 0.999]),
     )
 
-    # Setup scheduler
+    # Setup scheduler with optional warmup
     num_epochs = config["training"]["num_epochs"]
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(
-        optimizer,
-        T_max=num_epochs,
-        eta_min=config["training"]["scheduler"].get("min_lr", 1e-6),
-    )
+    warmup_epochs = config["training"].get("warmup_epochs", 0)
+    
+    if warmup_epochs > 0:
+        # Create warmup scheduler
+        warmup_start_lr = float(config["training"].get("warmup_start_lr", 1e-6))
+        learning_rate = float(config["training"]["learning_rate"])
+        main_scheduler = optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=num_epochs - warmup_epochs,
+            eta_min=config["training"]["scheduler"].get("min_lr", 1e-6),
+        )
+        
+        # Linear warmup from warmup_start_lr to learning_rate
+        warmup_scheduler = optim.lr_scheduler.LinearLR(
+            optimizer,
+            start_factor=warmup_start_lr / learning_rate,
+            end_factor=1.0,
+            total_iters=warmup_epochs,
+        )
+        
+        # Combine warmup + main scheduler
+        scheduler = optim.lr_scheduler.SequentialLR(
+            optimizer,
+            schedulers=[warmup_scheduler, main_scheduler],
+            milestones=[warmup_epochs],
+        )
+        logger.info(f"Using warmup scheduler: {warmup_epochs} epochs warmup from {warmup_start_lr} to {config['training']['learning_rate']}")
+    else:
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=num_epochs,
+            eta_min=config["training"]["scheduler"].get("min_lr", 1e-6),
+        )
 
     # Setup loss function
     criterion = nn.BCEWithLogitsLoss()

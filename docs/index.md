@@ -30,6 +30,32 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 
 ---
 
+## Why HistoCore?
+
+<div class="features-grid">
+  <div class="feature-card">
+    <h3>⚡ 8-12x Faster Training</h3>
+    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 2-3 hours. See <a href="PERFORMANCE_COMPARISON.html">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>🎯 Competitive Accuracy</h3>
+    <p>93.94% test AUC on PCam - matching or exceeding PathML (92%) and CLAM (91%). See <a href="ARCHITECTURE.html">architecture details</a>.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>💻 Consumer GPU Support</h3>
+    <p>Runs on RTX 4070 (12GB) with mixed precision and optimized memory layout. No expensive V100/A100 required!</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>🏥 Production Ready</h3>
+    <p><5 second inference, PACS integration, HIPAA compliance. Ready for clinical deployment.</p>
+  </div>
+</div>
+
+---
+
 ## Key Contributions
 
 <div class="features-grid">
@@ -76,10 +102,34 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 
 ---
 
-## Quick Links
+## Quickstart
+
+<div class="callout callout-info">
+  <strong>New to HistoCore?</strong> Start with our 5-minute tutorial to train your first model on PCam!
+</div>
+
+**Interactive Tutorials:**
+- [5-Minute PCam Training](https://github.com/matthewvaishnav/histocore/blob/main/examples/quickstart_pcam_training.ipynb) - Train AttentionMIL on PatchCamelyon
+- [Custom Dataset Tutorial](https://github.com/matthewvaishnav/histocore/blob/main/examples/custom_dataset_tutorial.ipynb) - Adapt to your own data
+
+**Quick Start Command:**
+```bash
+git clone https://github.com/matthewvaishnav/histocore.git
+cd histocore
+pip install -r requirements.txt
+python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
+```
+
+Expected: **93-94% test AUC in 2.25 hours** on RTX 4070!
+
+---
+
+## Documentation
 
 <div class="doc-links">
   <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
+  <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
+  <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
   <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
   <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>

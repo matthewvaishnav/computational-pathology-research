@@ -1,0 +1,80 @@
+# PatchCamelyon ULTRA FAST configuration for Windows
+# Goal: Sub-1 hour training with competitive performance
+# Strategy: Aggressive optimizations + reduced epochs with smart scheduling
+
+data:
+  root_dir: "data/pcam_real"
+  num_workers: 0  # Windows limitation
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: false
+  download: false
+
+model:
+  embed_dim: 256
+  
+  feature_extractor:
+    model: "resnet18"
+    pretrained: true
+    feature_dim: 512
+  
+  wsi:
+    input_dim: 512
+    hidden_dim: 256  # REDUCED from 512 (2x faster)
+    num_heads: 4     # REDUCED from 8 (2x faster)
+    num_layers: 1    # REDUCED from 2 (2x faster)
+    pooling: "mean"
+
+task:
+  type: "classification"
+  
+  classification:
+    hidden_dims: []  # NO hidden layer (faster)
+    dropout: 0.5
+
+training:
+  batch_size: 256  # DOUBLED from 128 (2x faster per epoch)
+  num_epochs: 15   # REDUCED from 25 (40% faster)
+  learning_rate: 0.001  # HIGHER for faster convergence
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  use_amp: true
+  dropout: 0.3
+  
+  use_torch_compile: false
+  channels_last: true
+  
+  warmup_epochs: 0  # NO warmup (faster start)
+  
+  optimizer:
+    name: "adamw"
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    name: "cosine"
+    min_lr: 1e-6
+
+validation:
+  interval: 2  # Validate every 2 epochs (2x faster)
+  metric: "val_auc"
+  maximize: true
+
+checkpoint:
+  checkpoint_dir: "checkpoints/pcam_ultra_fast"
+  save_interval: 10  # Save less often
+  save_best: true
+
+early_stopping:
+  enabled: true
+  patience: 5
+  min_delta: 0.001
+
+device: "cuda"
+cudnn_benchmark: true
+seed: 42
+  
+logging:
+  log_dir: "logs/pcam_ultra_fast"
+  log_interval: 100  # Log less often
+  use_tensorboard: true
+  use_wandb: false
