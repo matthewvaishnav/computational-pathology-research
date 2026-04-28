@@ -1,8 +1,38 @@
-# Kubernetes namespace for HistoCore streaming
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: histocore
+  name: medical-ai
   labels:
-    name: histocore
-    app: histocore-streaming
+    name: medical-ai
+    environment: production
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: medical-ai-quota
+  namespace: medical-ai
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 16Gi
+    limits.cpu: "16"
+    limits.memory: 32Gi
+    persistentvolumeclaims: "10"
+    services: "10"
+    secrets: "20"
+    configmaps: "20"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: medical-ai-limits
+  namespace: medical-ai
+spec:
+  limits:
+  - default:
+      cpu: "1"
+      memory: "2Gi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "256Mi"
+    type: Container

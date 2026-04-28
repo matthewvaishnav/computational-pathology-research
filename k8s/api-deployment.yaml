@@ -1,0 +1,176 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medical-ai-api
+  namespace: medical-ai
+  labels:
+    app: medical-ai-api
+    component: api
+    version: v2.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: medical-ai-api
+  template:
+    metadata:
+      labels:
+        app: medical-ai-api
+        component: api
+        version: v2.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      initContainers:
+      - name: db-migration
+        image: medical-ai:latest
+        command: ["python", "scripts/setup_production_db.py"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: medical-ai-secrets
+              key: DATABASE_URL
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      containers:
+      - name: api
+        image: medical-ai:latest
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        # Database
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: medical-ai-secrets
+              key: DATABASE_URL
+        # API Configuration
+        - name: API_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: API_HOST
+        - name: API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: API_PORT
+        - name: API_WORKERS
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: API_WORKERS
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: DEBUG
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: LOG_LEVEL
+        # Security
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: medical-ai-secrets
+              key: SECRET_KEY
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: medical-ai-secrets
+              key: JWT_SECRET_KEY
+        # Model Configuration
+        - name: MODELS_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: MODELS_DIR
+        - name: DEFAULT_DISEASE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: medical-ai-config
+              key: DEFAULT_DISEASE_TYPE
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+          readOnly: true
+        - name: temp-storage
+          mountPath: /tmp/medical_ai_uploads
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 4
+            memory: 8Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 2
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 10
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-storage-pvc
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 10Gi
+      nodeSelector:
+        node-type: compute  # Optional: target specific nodes
+      tolerations:
+      - key: "medical-ai"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-storage-pvc
+  namespace: medical-ai
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
