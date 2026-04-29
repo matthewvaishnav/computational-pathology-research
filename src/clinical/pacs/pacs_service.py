@@ -86,10 +86,9 @@ class PACSService:
         )
 
         # Audit logging
-        self.audit_logger = AuditLogger(
-            log_directory=Path(self.config.audit.log_directory),
-            retention_days=self.config.audit.retention_days,
-            enable_encryption=self.config.audit.enable_encryption,
+        self.audit_logger = PACSAuditLogger(
+            storage_path=str(Path(self.config.audit.log_directory)),
+            retention_years=self.config.audit.retention_days // 365,
         )
 
         # Notification system
