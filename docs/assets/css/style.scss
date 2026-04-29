@@ -112,10 +112,10 @@ header {
   }
   
   .view {
-    font-size: 14px;
+    font-size: 12px;
     text-align: center;
     margin-top: 20px;
-    width: 100%;
+    margin-bottom: 20px;
     
     a {
       color: #A51C30;
@@ -126,6 +126,7 @@ header {
       padding: 8px 10px;
       border-radius: 6px;
       background: rgba(165, 28, 48, 0.05);
+      line-height: 1.4;
       
       &:hover {
         background: rgba(165, 28, 48, 0.1);
@@ -135,7 +136,7 @@ header {
       small {
         display: block;
         color: #999;
-        font-size: 10px;
+        font-size: 9px;
         margin-top: 4px;
         font-weight: 400;
       }
@@ -145,10 +146,14 @@ header {
   .downloads {
     list-style: none;
     padding: 0;
-    margin: 25px 0;
+    margin: 20px 0 25px;
+    position: relative;
+    z-index: 10;
     
     li {
       margin: 8px 0;
+      position: relative;
+      z-index: 10;
       
       a {
         display: block;
@@ -164,7 +169,7 @@ header {
         transition: all 0.2s ease;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         position: relative;
-        z-index: 1;
+        z-index: 10;
         
         &:hover {
           background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
@@ -177,8 +182,43 @@ header {
     }
   }
   
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    margin: 15px auto 0;
+    width: 44px;
+    height: 44px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    position: relative;
+    z-index: 5;
+
+    &:hover {
+      background: rgba(165, 28, 48, 0.05);
+    }
+
+    span {
+      display: block;
+      width: 26px;
+      height: 3px;
+      background: #A51C30;
+      border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    &.is-open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+    &.is-open span:nth-child(2) { opacity: 0; }
+    &.is-open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+  }
+  
   nav {
-    margin-top: 35px;
+    margin-top: 25px;
     margin-bottom: 35px;
     clear: both;
     position: relative;
@@ -754,40 +794,6 @@ div.highlight pre code {
     color: #999;
     font-size: 0.9em;
   }
-}
-
-/* ─── Hamburger button (hidden on desktop) ─── */
-.nav-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 12px;
-  margin: 15px auto 0;
-  width: 44px;
-  height: 44px;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: rgba(165, 28, 48, 0.05);
-  }
-
-  span {
-    display: block;
-    width: 26px;
-    height: 3px;
-    background: #A51C30;
-    border-radius: 2px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-  }
-
-  &.is-open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
-  &.is-open span:nth-child(2) { opacity: 0; }
-  &.is-open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
 }
 
 /* ─── Smooth Scrolling ─── */
