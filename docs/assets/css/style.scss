@@ -59,7 +59,7 @@ h3 { font-size: 1.5em; }
 
 /* ─── Header / Sidebar ─── */
 header {
-  width: 300px;
+  width: 320px;
   float: left;
   position: static;
   -webkit-font-smoothing: subpixel-antialiased;
@@ -180,6 +180,9 @@ header {
   nav {
     margin-top: 35px;
     margin-bottom: 35px;
+    clear: both;
+    position: relative;
+    z-index: 1;
     
     ul {
       list-style: none;
@@ -223,6 +226,8 @@ footer {
   border-top: 2px solid #e8e8e8;
   text-align: center;
   position: relative;
+  clear: both;
+  z-index: 1;
   
   p {
     font-size: 12px;
@@ -246,11 +251,11 @@ footer {
 
 /* ─── Main Content Section ─── */
 section {
-  margin-left: 300px;
+  margin-left: 320px;
   margin-top: 0;
   margin-right: 0;
   margin-bottom: 0;
-  width: calc(100% - 300px);
+  width: calc(100% - 320px);
   float: none;
   padding: 50px 80px 60px;
   background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
