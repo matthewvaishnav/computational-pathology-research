@@ -59,7 +59,7 @@ h3 { font-size: 1.5em; }
 
 /* ─── Header / Sidebar ─── */
 header {
-  width: 250px;
+  width: 300px;
   float: left;
   position: static;
   -webkit-font-smoothing: subpixel-antialiased;
@@ -257,11 +257,11 @@ footer {
 
 /* ─── Main Content Section ─── */
 section {
-  margin-left: 250px;
+  margin-left: 300px;
   margin-top: 0;
   margin-right: 0;
   margin-bottom: 0;
-  width: calc(100% - 250px);
+  width: calc(100% - 300px);
   float: none;
   padding: 50px 80px 60px;
   background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
