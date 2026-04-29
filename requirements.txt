@@ -95,3 +95,7 @@ networkx>=3.0
 
 # Hypothesis generation
 anthropic>=0.30.0
+
+# Vector search and caching
+faiss-cpu>=1.7.4
+redis>=5.0.0

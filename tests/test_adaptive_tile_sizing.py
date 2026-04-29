@@ -15,7 +15,11 @@ import torch
 
 from src.data.wsi_pipeline.exceptions import ProcessingError, ResourceError
 from src.data.wsi_pipeline.tile_buffer_pool import TileBufferConfig, TileBufferPool
-from src.data.wsi_pipeline.wsi_stream_reader import StreamingMetadata, WSIStreamReader
+from src.data.wsi_pipeline.wsi_stream_reader import (
+    StreamingMetadata,
+    StreamingProgress,
+    WSIStreamReader,
+)
 
 
 class TestTileBufferConfigValidation:
