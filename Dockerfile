@@ -22,7 +22,6 @@ COPY src/ ./src/
 COPY deploy/ ./deploy/
 COPY models/ ./models/
 COPY pyproject.toml .
-COPY README.md .
 
 # Install package
 RUN pip install -e .
