@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 class ProgressCallback:
     """Callback configuration for progress updates."""
 
-    callback_func: Callable[[StreamingProgress], None]
+    callback_func: Callable[["StreamingProgress"], None]
     update_interval: float = 1.0  # Update interval in seconds
     min_progress_delta: float = 0.01  # Minimum progress change to trigger update (1%)
 
