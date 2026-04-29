@@ -22,6 +22,7 @@ stardist>=0.8.3
 csbdeep>=0.7.2
 pydicom>=2.3.0
 openslide-python>=1.2.0
+openslide-bin>=4.0.0; sys_platform == 'darwin'
 wsidicom>=0.9.0
 Pillow>=9.0.0
 opencv-python>=4.7.0
