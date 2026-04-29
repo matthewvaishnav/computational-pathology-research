@@ -2,7 +2,9 @@
 
 ## Executive Summary
 
-HistoCore achieves **competitive accuracy** with **4-8x faster training** compared to leading computational pathology frameworks, making it ideal for rapid experimentation and production deployment.
+HistoCore achieves **93.98% test AUC** with **6-13x faster training** compared to unoptimized PyTorch baseline, making it ideal for rapid experimentation and production deployment.
+
+**Note**: Competitor comparisons (PathML, CLAM) are based on published benchmarks and may use different hardware configurations. Direct head-to-head benchmarks on identical hardware are planned for future work.
 
 ---
 
@@ -10,18 +12,22 @@ HistoCore achieves **competitive accuracy** with **4-8x faster training** compar
 
 ### Test Set Performance
 
+**Note**: Competitor numbers are estimates from published literature and may use different hardware/configurations. HistoCore numbers are from direct benchmarks on RTX 4070.
+
 | Framework | Test AUC | Test Accuracy | Training Time | GPU | Parameters |
 |-----------|----------|---------------|---------------|-----|------------|
 | **HistoCore (Ours)** | **93.98%** | **84.26%** | **3.1 hours** | RTX 4070 | 12M |
-| PathML | 92.0% | 84.0% | 8-12 hours | V100 | 15M |
-| CLAM (Mahmood Lab) | 91.0% | 83.5% | 10-15 hours | V100 | 18M |
+| PathML (est.) | ~92.0% | ~84.0% | 8-12 hours* | V100* | 15M |
+| CLAM (est.) | ~91.0% | ~83.5% | 10-15 hours* | V100* | 18M |
 | Baseline PyTorch | 89.0% | 82.0% | 20-40 hours | RTX 4070 | 12M |
 
+*Estimated from literature; direct benchmarks pending
+
 **Key Takeaways:**
-- ✅ **Highest accuracy** among compared frameworks
-- ✅ **3-10x faster** training time
-- ✅ **Consumer GPU** (RTX 4070 vs V100)
-- ✅ **Smaller model** (12M vs 15-18M parameters)
+- ✅ **93.98% test AUC** (verified on RTX 4070)
+- ✅ **6-13x faster** than unoptimized baseline
+- ✅ **Consumer GPU** (RTX 4070 vs enterprise V100)
+- ✅ **Smaller model** (12M parameters)
 
 ---
 
