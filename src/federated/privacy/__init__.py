@@ -13,7 +13,7 @@ from .differential_privacy import (
     PrivacyParameters,
     compute_privacy_amplification,
 )
-from .dp_sgd import DifferentialPrivacyEngine
+from .dp_sgd import DifferentialPrivacyEngine, PrivacyAccountant
 from .noise_calibration import (
     AdaptiveNoiseCalibrator,
     CalibrationConfig,
@@ -36,6 +36,7 @@ __all__ = [
     "FederatedPrivacyManager",
     "compute_privacy_amplification",
     "DifferentialPrivacyEngine",
+    "PrivacyAccountant",
     "PrivacyBudgetTracker",
     "BudgetTransaction",
     "BudgetAlert",

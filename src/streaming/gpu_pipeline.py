@@ -28,6 +28,9 @@ try:
 except ImportError:
     MEMORY_OPTIMIZER_AVAILABLE = False
     logger.warning("Advanced memory optimizer not available")
+    
+    # Define stub for type hints when not available
+    OptimizationConfig = None
 
 
 @dataclass
