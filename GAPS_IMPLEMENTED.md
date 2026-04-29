@@ -88,9 +88,38 @@ from src.models.attention_mil import AttentionMIL
 model = AttentionMIL(feature_dim=1024, hidden_dim=256, num_classes=5)
 ```
 
+### 5. Instance-Level Clustering
+**Status**: ✅ Complete  
+**Commit**: (pending)  
+**Files**: `src/models/instance_clustering.py`
+
+**Features**:
+- CLAM-style instance clustering
+- KMeans and learnable cluster centers
+- Instance-level scoring (high-value region identification)
+- Top-k instance selection
+
+**Usage**:
+```python
+from src.models import InstanceClusteringModule, CLAMInstanceBranch, cluster_instances
+
+# Quick clustering
+cluster_features, cluster_ids = cluster_instances(features, num_clusters=10)
+
+# Full module
+clustering = InstanceClusteringModule(feature_dim=1024, num_clusters=10)
+clustering.fit_clusters(features)
+cluster_features, cluster_ids = clustering(features, return_assignments=True)
+
+# Instance scoring
+instance_branch = CLAMInstanceBranch(feature_dim=1024)
+scores = instance_branch(features)
+top_features, top_indices = instance_branch.select_top_instances(features, scores, top_k=100)
+```
+
 ## 🚧 In Progress
 
-### 5. Extended Format Support
+### 6. Extended Format Support
 **Status**: 🚧 Planned  
 **Target**: 160+ formats (PathML level)  
 **Approach**: Integrate bioformats-python or aicspylibczi
@@ -100,7 +129,7 @@ model = AttentionMIL(feature_dim=1024, hidden_dim=256, num_classes=5)
 
 ## 📋 Backlog
 
-### 6. Multiplexed Imaging
+### 7. Multiplexed Imaging
 **Status**: 📋 Backlog  
 **Priority**: Medium  
 **Effort**: 3-4 weeks
@@ -109,16 +138,6 @@ model = AttentionMIL(feature_dim=1024, hidden_dim=256, num_classes=5)
 - CODEX support
 - Vectra support
 - Multi-channel IF processing
-
-### 7. Instance-Level Clustering
-**Status**: 📋 Backlog  
-**Priority**: Low  
-**Effort**: 1-2 weeks
-
-**Features needed**:
-- CLAM-style instance clustering
-- Feature space refinement
-- Subregion identification
 
 ## Impact Summary
 
@@ -133,11 +152,12 @@ model = AttentionMIL(feature_dim=1024, hidden_dim=256, num_classes=5)
 - ✅ Nucleus segmentation → automated cell detection
 - ✅ Spatial graphs → cell-cell relationships + GNN support
 - ✅ Multi-class MIL → already supported
+- ✅ Instance clustering → CLAM-style feature refinement
 - 🚧 Extended formats → (in progress)
 
 ### Competitive Position
 **Before**: Production-ready but research-limited  
-**After**: Production-ready + research flexibility (stain norm + segmentation + spatial)  
+**After**: Production-ready + research flexibility (stain norm + segmentation + spatial + clustering)  
 **Still Missing**: Extended formats, multiplexed imaging (medium priority)
 
 ## Next Steps
@@ -146,5 +166,6 @@ model = AttentionMIL(feature_dim=1024, hidden_dim=256, num_classes=5)
 2. ✅ Nucleus segmentation - DONE
 3. ✅ Spatial graphs - DONE
 4. ✅ Multi-class MIL - ALREADY SUPPORTED
-5. 🚧 Extended format support - NEXT
-6. 📋 Multiplexed imaging - LATER
+5. ✅ Instance clustering - DONE
+6. 🚧 Extended format support - NEXT
+7. 📋 Multiplexed imaging - LATER
