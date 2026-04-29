@@ -54,7 +54,10 @@ logs/
 cache/
 results/
 experiments/
+checkpoints/
+checkpoints_demo/
 *.pth
+*.pt
 *.ckpt
 *.h5
 *.pkl
