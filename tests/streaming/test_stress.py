@@ -503,7 +503,7 @@ class TestNetworkResilience:
 
         async def simulate_network_call(call_id: int):
             """Simulate network call with random failures."""
-            nonlocal network_failures, successful_retries
+            nonlocal network_failures
 
             # 30% chance of failure
             if random.random() < 0.3:
@@ -586,7 +586,7 @@ class TestNetworkResilience:
 
         def make_request(request_id: int):
             """Simulate PACS request."""
-            nonlocal successful_requests, queued_requests
+            nonlocal successful_requests
 
             try:
                 # Simulate connection acquisition

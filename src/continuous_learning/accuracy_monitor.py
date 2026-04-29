@@ -458,6 +458,6 @@ if __name__ == "__main__":
     print(f"Accuracy trend slope: {trend['accuracy_trend']:.6f}")
 
     alert_summary = monitor.get_alert_summary()
-    print(f"Total alerts: {alert_summary["total_alerts"]}")
+    print(f"Total alerts: {alert_summary['total_alerts']}")
 
     print("Demo complete")
