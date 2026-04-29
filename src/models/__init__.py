@@ -27,6 +27,11 @@ from .stain_normalization import (
     StyleTransferDecoder,
 )
 from .temporal import CrossSlideTemporalReasoner, TemporalAttention
+from .instance_clustering import (
+    InstanceClusteringModule,
+    CLAMInstanceBranch,
+    cluster_instances,
+)
 
 
 def __getattr__(name):
@@ -70,4 +75,7 @@ __all__ = [
     "CONCHEncoder",
     "load_foundation_model",
     "FeatureProjector",
+    "InstanceClusteringModule",
+    "CLAMInstanceBranch",
+    "cluster_instances",
 ]
