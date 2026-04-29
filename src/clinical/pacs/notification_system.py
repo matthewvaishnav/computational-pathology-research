@@ -674,3 +674,7 @@ class NotificationSystem:
             confidence_score=analysis_results.confidence_score,
             findings=findings if findings else None,
         )
+
+
+# Alias for backward compatibility
+ClinicalNotificationSystem = NotificationSystem
