@@ -230,8 +230,8 @@ class AccuracyMonitor:
         timestamp = datetime.now().timestamp()
 
         description = (
-            f"{alert_type.replace("_", " ").title()} detected for {disease_type}"
-            f"{f" at {hospital_id}" if hospital_id else ""}: "
+            f"{alert_type.replace('_', ' ').title()} detected for {disease_type}"
+            f"{f' at {hospital_id}' if hospital_id else ''}: "
             f"{current_value:.4f} vs baseline {baseline_value:.4f} "
             f"({degradation_percent:.1f}% degradation)"
         )
