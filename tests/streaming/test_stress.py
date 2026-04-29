@@ -283,15 +283,14 @@ class TestMemoryPressure:
         # Set aggressive memory limit (50% of available)
         memory_limit_gb = total_memory_gb * 0.5
 
-        # Initialize with memory optimizer
-        memory_config = MemoryConfig(
-            gpu_memory_limit_gb=memory_limit_gb,
-            enable_memory_pooling=True,
-            enable_smart_gc=True,
-            gc_threshold_mb=100,
+        # Initialize with memory monitor
+        memory_monitor = MemoryMonitor(
+            device=device,
+            memory_limit_gb=memory_limit_gb,
+            sampling_interval_ms=100.0,
+            enable_alerts=True,
         )
-
-        memory_optimizer = MemoryOptimizer(config=memory_config)
+        memory_monitor.start_monitoring()
 
         gpu_pipeline = GPUPipeline(
             model=mock_cnn_model,
@@ -322,7 +321,7 @@ class TestMemoryPressure:
 
                 # Trigger GC if memory high
                 if memory_after > memory_limit_gb * 0.8:
-                    memory_optimizer.trigger_garbage_collection()
+                    torch.cuda.empty_cache()
                     oom_recoveries += 1
                     logger.info(f"Batch {batch_idx}: Triggered GC at {memory_after:.2f}GB")
 
@@ -332,7 +331,6 @@ class TestMemoryPressure:
 
                     # Clear cache and retry
                     torch.cuda.empty_cache()
-                    memory_optimizer.trigger_garbage_collection()
                     oom_recoveries += 1
 
                     # Retry with smaller batch
@@ -347,6 +345,7 @@ class TestMemoryPressure:
                     raise
 
         gpu_pipeline.cleanup()
+        memory_monitor.stop_monitoring()
 
         success_rate = successful_batches / num_batches
 
