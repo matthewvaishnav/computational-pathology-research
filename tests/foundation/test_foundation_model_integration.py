@@ -6,6 +6,7 @@ Tests all components: multi-disease model, self-supervised pre-training, zero-sh
 import json
 import shutil
 import sqlite3
+import time
 
 # Import foundation model components
 import sys
