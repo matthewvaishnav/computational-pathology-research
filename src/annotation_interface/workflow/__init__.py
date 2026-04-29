@@ -8,14 +8,14 @@ This module integrates the annotation interface with:
 - Notification system for pathologists
 """
 
-from .clinical_integration import ClinicalWorkflowIntegrator
 from .active_learning_connector import ActiveLearningConnector
-from .pacs_connector import PACSConnector
+from .clinical_integration import ClinicalWorkflowIntegrator
 from .notification_service import NotificationService
+from .pacs_connector import PACSConnector
 
 __all__ = [
-    'ClinicalWorkflowIntegrator',
-    'ActiveLearningConnector',
-    'PACSConnector',
-    'NotificationService'
+    "ClinicalWorkflowIntegrator",
+    "ActiveLearningConnector",
+    "PACSConnector",
+    "NotificationService",
 ]

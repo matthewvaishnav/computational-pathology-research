@@ -22,7 +22,7 @@ def test_secure_aggregator_in_factory():
 def test_secure_aggregator_factory_creation():
     """Test creating secure aggregator through factory."""
     aggregator = AggregatorFactory.create_aggregator("secure")
-    
+
     assert isinstance(aggregator, SecureAggregator)
     assert aggregator.algorithm_name == "SecureAggregation"
 
@@ -34,9 +34,9 @@ def test_secure_aggregator_factory_with_config():
         "max_workers": 2,
         "dropout_threshold": 0.6,
     }
-    
+
     aggregator = AggregatorFactory.create_aggregator("secure", config)
-    
+
     assert isinstance(aggregator, SecureAggregator)
     assert aggregator.poly_modulus_degree == 4096
     assert aggregator.max_workers == 2
@@ -50,7 +50,7 @@ def test_secure_aggregator_convenience_function():
         poly_modulus_degree=4096,
         dropout_threshold=0.7,
     )
-    
+
     assert isinstance(aggregator, SecureAggregator)
     assert aggregator.poly_modulus_degree == 4096
     assert aggregator.dropout_threshold == 0.7
@@ -59,7 +59,7 @@ def test_secure_aggregator_convenience_function():
 def test_secure_aggregator_algorithm_info():
     """Test getting algorithm information."""
     info = AggregatorFactory.get_algorithm_info("secure")
-    
+
     assert info["name"] == "secure"
     assert info["class"] == "SecureAggregator"
     assert "poly_modulus_degree" in info["default_config"]
@@ -70,12 +70,12 @@ def test_secure_aggregator_algorithm_info():
 def test_secure_aggregator_interface_compliance():
     """Test that secure aggregator implements BaseAggregator interface."""
     aggregator = SecureAggregator(poly_modulus_degree=4096)
-    
+
     # Check required methods exist
     assert hasattr(aggregator, "aggregate")
     assert hasattr(aggregator, "algorithm_name")
     assert callable(aggregator.aggregate)
-    
+
     # Check algorithm name
     assert aggregator.algorithm_name == "SecureAggregation"
 
@@ -83,9 +83,9 @@ def test_secure_aggregator_interface_compliance():
 def test_secure_aggregator_setup_round():
     """Test setup_round method."""
     aggregator = SecureAggregator(poly_modulus_degree=4096)
-    
+
     expected_clients = ["hospital_a", "hospital_b", "hospital_c"]
-    
+
     # This will fail without TenSEAL, but we can test the interface
     try:
         public_context = aggregator.setup_round(expected_clients)
@@ -102,22 +102,22 @@ def test_secure_aggregator_dropout_handling():
         poly_modulus_degree=4096,
         dropout_threshold=0.5,
     )
-    
+
     # Setup round with 4 clients
     expected_clients = ["hospital_a", "hospital_b", "hospital_c", "hospital_d"]
-    
+
     try:
         aggregator.setup_round(expected_clients)
-        
+
         # Check minimum clients required
         assert aggregator.min_clients_required == 2  # 50% of 4
-        
+
         # Handle dropout
         aggregator.handle_dropout(["hospital_d"])
-        
+
         # Minimum should still be based on remaining clients
         assert aggregator.min_clients_required >= 2
-        
+
     except RuntimeError:
         # TenSEAL not available - skip
         pytest.skip("TenSEAL not available")
@@ -126,7 +126,7 @@ def test_secure_aggregator_dropout_handling():
 def test_secure_aggregator_empty_updates_validation():
     """Test that empty updates are rejected."""
     aggregator = SecureAggregator(poly_modulus_degree=4096)
-    
+
     with pytest.raises(ValueError, match="Cannot aggregate empty list"):
         aggregator.aggregate([])
 
@@ -134,7 +134,7 @@ def test_secure_aggregator_empty_updates_validation():
 def test_secure_aggregator_zero_weight_validation():
     """Test that zero total weight is rejected."""
     aggregator = SecureAggregator(poly_modulus_degree=4096)
-    
+
     updates = [
         ClientUpdate(
             client_id="hospital_a",
@@ -145,7 +145,7 @@ def test_secure_aggregator_zero_weight_validation():
             training_time_seconds=1.0,
         )
     ]
-    
+
     with pytest.raises(ValueError, match="Total dataset size is zero"):
         aggregator.aggregate(updates)
 
@@ -156,13 +156,13 @@ def test_secure_aggregator_insufficient_clients_validation():
         poly_modulus_degree=4096,
         dropout_threshold=0.5,
     )
-    
+
     # Setup expecting 4 clients
     expected_clients = ["hospital_a", "hospital_b", "hospital_c", "hospital_d"]
-    
+
     try:
         aggregator.setup_round(expected_clients)
-        
+
         # Only 1 client responds (below 50% threshold)
         updates = [
             ClientUpdate(
@@ -174,11 +174,11 @@ def test_secure_aggregator_insufficient_clients_validation():
                 training_time_seconds=1.0,
             )
         ]
-        
+
         # Should fail due to insufficient clients
         with pytest.raises(ValueError, match="Insufficient clients"):
             aggregator.aggregate(updates)
-            
+
     except RuntimeError:
         # TenSEAL not available - skip
         pytest.skip("TenSEAL not available")
@@ -191,12 +191,12 @@ def test_secure_aggregator_string_representations():
         max_workers=2,
         dropout_threshold=0.6,
     )
-    
+
     # Test __str__
     str_repr = str(aggregator)
     assert "SecureAggregator" in str_repr
     assert "4096" in str_repr
-    
+
     # Test __repr__
     repr_str = repr(aggregator)
     assert "SecureAggregator" in repr_str
@@ -208,7 +208,7 @@ def test_secure_aggregator_string_representations():
 def test_secure_aggregator_default_config():
     """Test default configuration values."""
     aggregator = SecureAggregator()
-    
+
     # Check defaults
     assert aggregator.poly_modulus_degree == 8192
     assert aggregator.max_workers == 4
@@ -219,7 +219,7 @@ def test_secure_aggregator_default_config():
 def test_secure_aggregator_get_public_context():
     """Test getting public context."""
     aggregator = SecureAggregator(poly_modulus_degree=4096)
-    
+
     try:
         public_context = aggregator.get_public_context()
         assert isinstance(public_context, bytes)
