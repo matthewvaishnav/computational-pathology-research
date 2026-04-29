@@ -48,9 +48,49 @@ labels, details = segment_nuclei(image, model_name="2D_versatile_he")
 tissue_mask = detect_tissue(image, threshold=0.8)
 ```
 
+### 3. Spatial Graph Construction
+**Status**: ✅ Complete  
+**Commit**: 1951481  
+**Files**: `src/spatial/tissue_graph.py`
+
+**Features**:
+- KNN, radius, Delaunay edge construction
+- NetworkX graph representation
+- Cell-cell spatial relationships
+- Graph metrics (density, clustering, degree)
+
+**Usage**:
+```python
+from src.spatial import build_tissue_graph
+
+# Build graph from segmentation
+graph = build_tissue_graph(labels, method="knn", k=5)
+
+# Get adjacency matrix for GNN
+adj_matrix = graph.get_adjacency_matrix()
+node_features = graph.get_node_features()
+```
+
+### 4. Multi-Class MIL
+**Status**: ✅ Already Supported  
+**Files**: `src/models/attention_mil.py`
+
+**Features**:
+- All MIL models support num_classes parameter
+- AttentionMIL, CLAM, TransMIL work with multi-class
+- No changes needed - already implemented
+
+**Usage**:
+```python
+from src.models.attention_mil import AttentionMIL
+
+# Multi-class model (e.g., 5 cancer subtypes)
+model = AttentionMIL(feature_dim=1024, hidden_dim=256, num_classes=5)
+```
+
 ## 🚧 In Progress
 
-### 3. Extended Format Support
+### 5. Extended Format Support
 **Status**: 🚧 Planned  
 **Target**: 160+ formats (PathML level)  
 **Approach**: Integrate bioformats-python or aicspylibczi
@@ -60,17 +100,7 @@ tissue_mask = detect_tissue(image, threshold=0.8)
 
 ## 📋 Backlog
 
-### 4. Spatial Graph Construction
-**Status**: 📋 Backlog  
-**Priority**: Medium  
-**Effort**: 2-3 weeks
-
-**Features needed**:
-- Cell-cell spatial relationships
-- Tissue graph construction
-- Graph neural network support
-
-### 5. Multiplexed Imaging
+### 6. Multiplexed Imaging
 **Status**: 📋 Backlog  
 **Priority**: Medium  
 **Effort**: 3-4 weeks
@@ -80,7 +110,7 @@ tissue_mask = detect_tissue(image, threshold=0.8)
 - Vectra support
 - Multi-channel IF processing
 
-### 6. Instance-Level Clustering
+### 7. Instance-Level Clustering
 **Status**: 📋 Backlog  
 **Priority**: Low  
 **Effort**: 1-2 weeks
@@ -90,37 +120,31 @@ tissue_mask = detect_tissue(image, threshold=0.8)
 - Feature space refinement
 - Subregion identification
 
-### 7. Multi-Class Subtyping
-**Status**: 📋 Backlog  
-**Priority**: Low  
-**Effort**: 1 week
-
-**Features needed**:
-- Beyond binary classification
-- Multi-class MIL support
-- Hierarchical classification
-
 ## Impact Summary
 
 ### Before
 - ❌ No stain normalization → poor multi-site generalization
 - ❌ No nucleus segmentation → manual annotation required
+- ❌ No spatial graphs → can't model cell interactions
 - ❌ Limited format support → can't process many slides
 
 ### After
 - ✅ Stain normalization → handles scanner variation
 - ✅ Nucleus segmentation → automated cell detection
+- ✅ Spatial graphs → cell-cell relationships + GNN support
+- ✅ Multi-class MIL → already supported
 - 🚧 Extended formats → (in progress)
 
 ### Competitive Position
 **Before**: Production-ready but research-limited  
-**After**: Production-ready + research flexibility (stain norm + segmentation)  
-**Still Missing**: Spatial graphs, multiplexed imaging (medium priority)
+**After**: Production-ready + research flexibility (stain norm + segmentation + spatial)  
+**Still Missing**: Extended formats, multiplexed imaging (medium priority)
 
 ## Next Steps
 
 1. ✅ Stain normalization - DONE
 2. ✅ Nucleus segmentation - DONE
-3. 🚧 Extended format support - NEXT
-4. 📋 Spatial graphs - LATER
-5. 📋 Multiplexed imaging - LATER
+3. ✅ Spatial graphs - DONE
+4. ✅ Multi-class MIL - ALREADY SUPPORTED
+5. 🚧 Extended format support - NEXT
+6. 📋 Multiplexed imaging - LATER
