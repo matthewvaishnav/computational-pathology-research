@@ -455,7 +455,7 @@ if __name__ == "__main__":
     # Final analysis
     print("\nFinal Analysis:")
     trend = monitor.get_metrics_trend("breast", hours=24)
-    print(f"Accuracy trend slope: {trend["accuracy_trend"]:.6f}")
+    print(f"Accuracy trend slope: {trend['accuracy_trend']:.6f}")
 
     alert_summary = monitor.get_alert_summary()
     print(f"Total alerts: {alert_summary["total_alerts"]}")

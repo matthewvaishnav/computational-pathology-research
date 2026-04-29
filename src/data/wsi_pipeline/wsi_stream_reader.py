@@ -301,7 +301,7 @@ class StreamingProgressTracker:
 
         return estimated_time_remaining, estimated_total_time
 
-    def get_current_progress(self) -> StreamingProgress:
+    def get_current_progress(self) -> "StreamingProgress":
         """
         Get current progress information.
 
@@ -408,7 +408,7 @@ class StreamingProgressTracker:
 
         return progress
 
-    def _trigger_progress_callbacks(self, progress: StreamingProgress) -> None:
+    def _trigger_progress_callbacks(self, progress: "StreamingProgress") -> None:
         """
         Trigger progress callbacks if update conditions are met.
 
@@ -437,7 +437,7 @@ class StreamingProgressTracker:
                 except Exception as e:
                     logger.warning(f"Progress callback failed: {e}")
 
-    def finish_processing(self) -> StreamingProgress:
+    def finish_processing(self) -> "StreamingProgress":
         """
         Finish progress tracking and return final statistics.
 
