@@ -12,6 +12,9 @@ from datetime import datetime
 from email.mime.text import MIMEText
 from typing import Any, Dict, List, Optional
 
+# Import data models
+from .data_models import AnalysisResults, StudyInfo, OperationResult
+
 logger = logging.getLogger(__name__)
 
 

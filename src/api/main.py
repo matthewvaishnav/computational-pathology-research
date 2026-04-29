@@ -97,6 +97,10 @@ app = FastAPI(
 # Track application start time for uptime monitoring
 app.state.start_time = time.time()
 
+# In-memory storage for demo purposes (replace with proper database in production)
+users: Dict[str, Dict] = {}
+auth_tokens: Dict[str, Dict] = {}
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,

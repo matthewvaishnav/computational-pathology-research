@@ -24,9 +24,11 @@ try:
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
-    logger.warning("Plotly not available. Interactive features will be disabled.")
 
 logger = logging.getLogger(__name__)
+
+if not PLOTLY_AVAILABLE:
+    logger.warning("Plotly not available. Interactive features will be disabled.")
 
 
 @dataclass

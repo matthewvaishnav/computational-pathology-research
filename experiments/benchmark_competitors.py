@@ -114,42 +114,58 @@ def benchmark_baseline_pytorch():
     print("BENCHMARKING: Baseline PyTorch (No Optimizations)")
     print("="*80)
     
-    from experiments.train_pcam import main as train_pcam
+    import subprocess
     import sys
     
     # Run baseline config (no optimizations)
     print("Running baseline training...")
     start_time = time.time()
     
-    # Temporarily modify sys.argv to pass config
-    old_argv = sys.argv
-    sys.argv = [
-        "train_pcam.py",
-        "--config", "experiments/configs/pcam_baseline.yaml",
-        "--output_dir", str(RESULTS_DIR / "baseline_pytorch")
-    ]
-    
     try:
-        metrics = train_pcam()
+        # Run training as subprocess
+        result = subprocess.run(
+            [
+                sys.executable,
+                "experiments/train_pcam.py",
+                "--config", "experiments/configs/pcam_baseline.yaml",
+            ],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
         training_time = time.time() - start_time
         
+        # Parse metrics from output or checkpoint
+        # For now, return basic info
         results = {
             "framework": "Baseline PyTorch",
             "status": "completed",
-            "test_auc": metrics.get("test_auc", 0.0),
-            "test_accuracy": metrics.get("test_accuracy", 0.0),
             "training_time_hours": training_time / 3600,
-            "epochs": metrics.get("epochs", 0),
-            "parameters": metrics.get("parameters", 0),
+            "note": "Check checkpoints/pcam_baseline for detailed metrics"
         }
-    except Exception as e:
+        
+        print(result.stdout)
+        
+    except subprocess.CalledProcessError as e:
+        training_time = time.time() - start_time
         results = {
             "framework": "Baseline PyTorch",
             "status": "failed",
-            "error": str(e)
+            "error": str(e),
+            "training_time_hours": training_time / 3600,
+            "stdout": e.stdout,
+            "stderr": e.stderr
         }
-    finally:
-        sys.argv = old_argv
+        print(f"Error: {e.stderr}")
+    except Exception as e:
+        training_time = time.time() - start_time
+        results = {
+            "framework": "Baseline PyTorch",
+            "status": "failed",
+            "error": str(e),
+            "training_time_hours": training_time / 3600
+        }
     
     return results
 
@@ -160,48 +176,61 @@ def benchmark_histocore_optimized():
     print("BENCHMARKING: HistoCore (Optimized)")
     print("="*80)
     
-    from experiments.train_pcam import main as train_pcam
+    import subprocess
     import sys
     
     print("Running optimized training...")
     start_time = time.time()
     
-    old_argv = sys.argv
-    sys.argv = [
-        "train_pcam.py",
-        "--config", "experiments/configs/pcam_ultra_fast.yaml",
-        "--output_dir", str(RESULTS_DIR / "histocore_optimized")
-    ]
-    
     try:
-        metrics = train_pcam()
+        # Run training as subprocess
+        result = subprocess.run(
+            [
+                sys.executable,
+                "experiments/train_pcam.py",
+                "--config", "experiments/configs/pcam_ultra_fast.yaml",
+            ],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
         training_time = time.time() - start_time
         
         results = {
             "framework": "HistoCore (Optimized)",
             "status": "completed",
-            "test_auc": metrics.get("test_auc", 0.0),
-            "test_accuracy": metrics.get("test_accuracy", 0.0),
             "training_time_hours": training_time / 3600,
-            "epochs": metrics.get("epochs", 0),
-            "parameters": metrics.get("parameters", 0),
             "optimizations": [
-                "persistent_workers",
                 "pin_memory",
                 "channels_last",
                 "mixed_precision",
-                "torch_compile",
                 "optimized_batch_size"
-            ]
+            ],
+            "note": "Check checkpoints/pcam_ultra_fast for detailed metrics"
         }
-    except Exception as e:
+        
+        print(result.stdout)
+        
+    except subprocess.CalledProcessError as e:
+        training_time = time.time() - start_time
         results = {
             "framework": "HistoCore (Optimized)",
             "status": "failed",
-            "error": str(e)
+            "error": str(e),
+            "training_time_hours": training_time / 3600,
+            "stdout": e.stdout,
+            "stderr": e.stderr
         }
-    finally:
-        sys.argv = old_argv
+        print(f"Error: {e.stderr}")
+    except Exception as e:
+        training_time = time.time() - start_time
+        results = {
+            "framework": "HistoCore (Optimized)",
+            "status": "failed",
+            "error": str(e),
+            "training_time_hours": training_time / 3600
+        }
     
     return results
 

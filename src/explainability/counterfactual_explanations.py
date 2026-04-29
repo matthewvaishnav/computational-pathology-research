@@ -368,6 +368,7 @@ class GradientBasedCounterfactualGenerator(CounterfactualGenerator):
         
         best_counterfactual = None
         best_loss = float('inf')
+        prev_loss = float('inf')  # Initialize prev_loss for convergence check
         
         # For this simplified implementation, we'll work directly with features
         # In a full implementation, you'd need to map features back to image space

@@ -41,7 +41,7 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 
-from .exceptions import ProcessingError, ResourceError
+from .exceptions import ProcessingError, ResourceError, FileFormatError
 from .reader import WSIReader
 from .tile_buffer_pool import TileBufferConfig, TileBufferPool
 

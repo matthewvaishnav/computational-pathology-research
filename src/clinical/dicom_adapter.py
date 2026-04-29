@@ -26,6 +26,9 @@ from pydicom.uid import (
     generate_uid,
 )
 
+# Import PACS data models
+from .pacs.data_models import AnalysisResults
+
 
 class TransferSyntax(Enum):
     """Supported DICOM transfer syntaxes for pathology."""
