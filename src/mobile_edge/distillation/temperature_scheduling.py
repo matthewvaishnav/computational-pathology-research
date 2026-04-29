@@ -7,7 +7,7 @@ Dynamic temperature adjustment during distillation training.
 import torch
 import numpy as np
 import math
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List, Optional, Callable, Tuple
 from dataclasses import dataclass
 import logging
 

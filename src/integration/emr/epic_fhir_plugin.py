@@ -8,6 +8,7 @@ for patient data, orders, results, and clinical documentation.
 import asyncio
 import json
 import logging
+import uuid
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, asdict

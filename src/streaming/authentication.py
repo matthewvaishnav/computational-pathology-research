@@ -7,7 +7,7 @@ OAuth 2.0, JWT tokens, RBAC, hospital identity integration.
 import logging
 import time
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List, Set
+from typing import Optional, Dict, Any, List, Set, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
