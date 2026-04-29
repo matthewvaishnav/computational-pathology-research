@@ -223,14 +223,17 @@ header {
     clear: both;
     position: relative;
     z-index: 1;
+    background: none !important;
     
     ul {
       list-style: none;
       padding: 0;
       margin: 0;
+      background: none !important;
       
       li {
         margin: 10px 0;
+        background: none !important;
         
         a {
           display: block;
