@@ -18,7 +18,7 @@ Components:
 - PACS Service: Complete service integration
 """
 
-from .audit_logger import AuditLogger
+from .audit_logger import PACSAuditLogger as AuditLogger
 from .configuration_manager import ConfigurationManager
 from .data_models import (
     AnalysisResults,

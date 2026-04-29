@@ -9,13 +9,12 @@ Requirements: All clinical workflow requirements - system integration
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 import torch
 
 from src.clinical.audit import AuditLogger
 from src.clinical.classifier import MultiClassDiseaseClassifier
-from src.clinical.dicom_adapter import DICOMAdapter
 from src.clinical.longitudinal import LongitudinalTracker, ScanRecord
 from src.clinical.ood_detection import OODDetector
 from src.clinical.patient_context import ClinicalMetadata, PatientContextIntegrator
@@ -26,6 +25,9 @@ from src.clinical.taxonomy import DiseaseTaxonomy
 from src.clinical.thresholds import ClinicalThresholdSystem
 from src.clinical.uncertainty import UncertaintyQuantifier
 from src.clinical.validation import ModelValidator
+
+if TYPE_CHECKING:
+    from src.clinical.dicom_adapter import DICOMAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +117,10 @@ class ClinicalWorkflowSystem:
         self.report_generator = ClinicalReportGenerator(template_dir=config.report_template_dir)
 
         # 7. Initialize clinical standards adapters (optional)
-        self.dicom_adapter = DICOMAdapter() if config.enable_dicom else None
+        self.dicom_adapter = None
+        if config.enable_dicom:
+            from src.clinical.dicom_adapter import DICOMAdapter
+            self.dicom_adapter = DICOMAdapter()
         self.fhir_adapter = None  # Configured separately with credentials
 
         # 8. Initialize privacy and audit (if enabled)
