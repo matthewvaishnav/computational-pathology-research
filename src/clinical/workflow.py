@@ -9,7 +9,7 @@ Requirements: All clinical workflow requirements - system integration
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import torch
 
@@ -120,6 +120,7 @@ class ClinicalWorkflowSystem:
         self.dicom_adapter = None
         if config.enable_dicom:
             from src.clinical.dicom_adapter import DICOMAdapter
+
             self.dicom_adapter = DICOMAdapter()
         self.fhir_adapter = None  # Configured separately with credentials
 
