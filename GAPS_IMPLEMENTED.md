@@ -117,15 +117,30 @@ scores = instance_branch(features)
 top_features, top_indices = instance_branch.select_top_instances(features, scores, top_k=100)
 ```
 
-## 🚧 In Progress
-
 ### 6. Extended Format Support
-**Status**: 🚧 Planned  
-**Target**: 160+ formats (PathML level)  
-**Approach**: Integrate bioformats-python or aicspylibczi
+**Status**: ✅ Complete  
+**Commit**: (pending)  
+**Files**: `src/data/format_support.py`
 
-**Current**: .svs, .tiff, .ndpi, DICOM (~10 formats)  
-**Need**: .czi, .lif, .vsi, .scn, .mrxs, etc.
+**Features**:
+- python-bioformats integration (165+ formats)
+- UniversalSlideReader (auto-selects OpenSlide or Bio-Formats)
+- CZI, LIF, VSI, ND2, OIB, OIF, OIR, LSM, ZVI support
+- Automatic backend selection (OpenSlide for speed, Bio-Formats for coverage)
+
+**Usage**:
+```python
+from src.data import open_slide, get_supported_formats
+
+# Universal reader (auto-detects format)
+with open_slide("slide.czi") as slide:
+    dims = slide.dimensions
+    region = slide.read_region((0, 0), 0, (512, 512))
+
+# Check supported formats
+formats = get_supported_formats()
+# {'openslide': ['.svs', '.tif', ...], 'bioformats': ['.czi', '.lif', ...]}
+```
 
 ## 📋 Backlog
 
@@ -145,7 +160,7 @@ top_features, top_indices = instance_branch.select_top_instances(features, score
 - ❌ No stain normalization → poor multi-site generalization
 - ❌ No nucleus segmentation → manual annotation required
 - ❌ No spatial graphs → can't model cell interactions
-- ❌ Limited format support → can't process many slides
+- ❌ Limited format support (10 formats) → can't process many slides
 
 ### After
 - ✅ Stain normalization → handles scanner variation
@@ -153,12 +168,12 @@ top_features, top_indices = instance_branch.select_top_instances(features, score
 - ✅ Spatial graphs → cell-cell relationships + GNN support
 - ✅ Multi-class MIL → already supported
 - ✅ Instance clustering → CLAM-style feature refinement
-- 🚧 Extended formats → (in progress)
+- ✅ Extended formats (165+) → CZI, LIF, VSI, ND2, OIB, etc.
 
 ### Competitive Position
 **Before**: Production-ready but research-limited  
-**After**: Production-ready + research flexibility (stain norm + segmentation + spatial + clustering)  
-**Still Missing**: Extended formats, multiplexed imaging (medium priority)
+**After**: Production-ready + research flexibility (stain norm + segmentation + spatial + clustering + 165 formats)  
+**Still Missing**: Multiplexed imaging (medium priority)
 
 ## Next Steps
 
@@ -167,5 +182,5 @@ top_features, top_indices = instance_branch.select_top_instances(features, score
 3. ✅ Spatial graphs - DONE
 4. ✅ Multi-class MIL - ALREADY SUPPORTED
 5. ✅ Instance clustering - DONE
-6. 🚧 Extended format support - NEXT
+6. ✅ Extended format support - DONE
 7. 📋 Multiplexed imaging - LATER
