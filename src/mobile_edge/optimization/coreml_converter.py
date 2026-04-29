@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,8 +16,11 @@ try:
     import coremltools as ct
     from coremltools.models.neural_network import quantization_utils
     COREML_AVAILABLE = True
+    if TYPE_CHECKING:
+        from coremltools.models import MLModel as CoreMLModel
 except ImportError:
     COREML_AVAILABLE = False
+    CoreMLModel = None  # type: ignore
     logging.warning("CoreML not available")
 
 
