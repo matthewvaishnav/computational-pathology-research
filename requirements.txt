@@ -83,6 +83,7 @@ scanpy>=1.9.0
 # Install via: pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 torch-geometric>=2.3.0
 scipy>=1.11.0
+networkx>=3.0
 
 # Multi-omics factorization
 # (uses torch + numpy, no extra deps beyond core)
