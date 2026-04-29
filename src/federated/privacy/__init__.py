@@ -13,7 +13,15 @@ from .differential_privacy import (
     PrivacyParameters,
     compute_privacy_amplification,
 )
-from .dp_sgd import DifferentialPrivacyEngine, PrivacyAccountant
+
+# Import from privacy.py instead of dp_sgd.py
+try:
+    from ..privacy import DifferentialPrivacyEngine, PrivacyAccountant
+except ImportError:
+    # Fallback if privacy.py doesn't have these classes
+    DifferentialPrivacyEngine = None
+    PrivacyAccountant = None
+
 from .noise_calibration import (
     AdaptiveNoiseCalibrator,
     CalibrationConfig,
