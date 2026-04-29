@@ -380,10 +380,10 @@ def validate_certificate(cert_pem: bytes, ca_cert_pem: bytes) -> bool:
 
         # Check if certificate is signed by CA
         ca_public_key = ca_cert.public_key()
-        
+
         # Get the signature hash algorithm from the certificate
         from cryptography.hazmat.primitives.asymmetric import padding
-        
+
         try:
             ca_public_key.verify(
                 cert.signature,

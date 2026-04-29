@@ -124,11 +124,7 @@ class GEAdapter(VendorAdapter):
     def detect_from_dataset(self, dataset: Dataset) -> bool:
         manufacturer = dataset.get("Manufacturer", "").upper()
         institution = dataset.get("InstitutionName", "")
-        return (
-            "GE" in manufacturer
-            or "GEMS" in manufacturer
-            or "GE Healthcare" in institution
-        )
+        return "GE" in manufacturer or "GEMS" in manufacturer or "GE Healthcare" in institution
 
 
 class PhilipsAdapter(VendorAdapter):

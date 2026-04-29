@@ -12,6 +12,11 @@ from .foundation import (
 )
 from .fusion import CrossModalAttention, MultiModalFusionLayer
 from .heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
+from .instance_clustering import (
+    CLAMInstanceBranch,
+    InstanceClusteringModule,
+    cluster_instances,
+)
 from .multimodal import MultimodalFusionModel
 from .pretrained import (
     PretrainedFeatureExtractor,
@@ -27,11 +32,6 @@ from .stain_normalization import (
     StyleTransferDecoder,
 )
 from .temporal import CrossSlideTemporalReasoner, TemporalAttention
-from .instance_clustering import (
-    InstanceClusteringModule,
-    CLAMInstanceBranch,
-    cluster_instances,
-)
 
 
 def __getattr__(name):

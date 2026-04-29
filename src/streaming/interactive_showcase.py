@@ -5,30 +5,25 @@ Web-based interactive demo for hospital presentations and trade shows.
 Features live processing, real-time visualization, and interactive controls.
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Dict, List, Optional
 import asyncio
 import json
-import numpy as np
 from datetime import datetime
+from typing import Dict, List, Optional
+
+import numpy as np
 import uvicorn
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
-from .demo_scenarios import (
-    DemoScenarioRunner,
-    DemoScenario,
-    DemoDataGenerator,
-    SyntheticSlide
-)
-
+from .demo_scenarios import DemoDataGenerator, DemoScenario, DemoScenarioRunner, SyntheticSlide
 
 app = FastAPI(
     title="HistoCore Interactive Showcase",
     description="Interactive demo application for hospital presentations",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS for web interface
@@ -48,12 +43,14 @@ active_connections: List[WebSocket] = []
 
 class ProcessRequest(BaseModel):
     """Request to process a slide"""
+
     slide_id: str
     enable_realtime: bool = True
 
 
 class ComparisonRequest(BaseModel):
     """Request for benchmark comparison"""
+
     competitor: str  # "traditional", "batch", "competitor_a"
     num_slides: int = 10
 
@@ -359,10 +356,7 @@ async def get_showcase_ui():
 async def get_worklist(num_cases: int = 10):
     """Get synthetic PACS worklist"""
     worklist = data_generator.generate_worklist(num_cases)
-    return {
-        "worklist": [slide.to_dict() for slide in worklist],
-        "total": len(worklist)
-    }
+    return {"worklist": [slide.to_dict() for slide in worklist], "total": len(worklist)}
 
 
 @app.get("/api/slide/{slide_id}")
@@ -382,14 +376,11 @@ async def run_demo(scenario: str):
     """Run a demo scenario"""
     try:
         scenario_enum = DemoScenario(scenario)
-        
+
         # Run demo in background
         asyncio.create_task(run_demo_with_updates(scenario_enum))
-        
-        return {
-            "status": "started",
-            "scenario": scenario
-        }
+
+        return {"status": "started", "scenario": scenario}
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Unknown scenario: {scenario}")
 
@@ -397,13 +388,9 @@ async def run_demo(scenario: str):
 async def run_demo_with_updates(scenario: DemoScenario):
     """Run demo and send WebSocket updates"""
     result = await demo_runner.run_scenario(scenario)
-    
+
     # Send completion update
-    await broadcast_update({
-        "type": "complete",
-        "scenario": scenario.value,
-        "result": result
-    })
+    await broadcast_update({"type": "complete", "scenario": scenario.value, "result": result})
 
 
 @app.post("/api/process")
@@ -412,14 +399,11 @@ async def process_slide(request: ProcessRequest):
     try:
         index = int(request.slide_id.split("-")[1])
         slide = data_generator.generate_slide(index)
-        
+
         # Start processing in background
         asyncio.create_task(process_with_updates(slide, request.enable_realtime))
-        
-        return {
-            "status": "processing",
-            "slide_id": request.slide_id
-        }
+
+        return {"status": "processing", "slide_id": request.slide_id}
     except:
         raise HTTPException(status_code=400, detail="Invalid slide ID")
 
@@ -428,34 +412,38 @@ async def process_with_updates(slide: SyntheticSlide, enable_realtime: bool):
     """Process slide and send real-time updates"""
     total_patches = slide.num_patches
     processed = 0
-    
+
     while processed < total_patches:
         await asyncio.sleep(0.5)
-        
+
         # Simulate processing
         processed += int(total_patches * 0.05)
         processed = min(processed, total_patches)
-        
+
         progress = (processed / total_patches) * 100
         confidence = 0.5 + (processed / total_patches) * (slide.confidence - 0.5)
-        
+
         # Send update
-        await broadcast_update({
-            "type": "progress",
-            "slide_id": slide.slide_id,
-            "progress": progress,
-            "confidence": confidence,
-            "patches_processed": processed,
-            "total_patches": total_patches
-        })
-    
+        await broadcast_update(
+            {
+                "type": "progress",
+                "slide_id": slide.slide_id,
+                "progress": progress,
+                "confidence": confidence,
+                "patches_processed": processed,
+                "total_patches": total_patches,
+            }
+        )
+
     # Send completion
-    await broadcast_update({
-        "type": "complete",
-        "slide_id": slide.slide_id,
-        "diagnosis": slide.diagnosis,
-        "confidence": slide.confidence
-    })
+    await broadcast_update(
+        {
+            "type": "complete",
+            "slide_id": slide.slide_id,
+            "diagnosis": slide.diagnosis,
+            "confidence": slide.confidence,
+        }
+    )
 
 
 @app.post("/api/benchmark/compare")
@@ -467,40 +455,41 @@ async def benchmark_compare(request: ComparisonRequest):
             "processing_time": 25.0,
             "memory_usage": 1.8,
             "throughput": 4000,
-            "accuracy": 0.94
+            "accuracy": 0.94,
         },
         "traditional": {
             "processing_time": 180.0,
             "memory_usage": 8.0,
             "throughput": 550,
-            "accuracy": 0.92
+            "accuracy": 0.92,
         },
         "batch": {
             "processing_time": 90.0,
             "memory_usage": 12.0,
             "throughput": 1100,
-            "accuracy": 0.93
+            "accuracy": 0.93,
         },
         "competitor_a": {
             "processing_time": 60.0,
             "memory_usage": 6.0,
             "throughput": 1650,
-            "accuracy": 0.91
-        }
+            "accuracy": 0.91,
+        },
     }
-    
+
     histocore = benchmarks["histocore"]
     competitor = benchmarks.get(request.competitor, benchmarks["traditional"])
-    
+
     return {
         "histocore": histocore,
         "competitor": competitor,
         "comparison": {
             "speed_improvement": competitor["processing_time"] / histocore["processing_time"],
-            "memory_reduction": (competitor["memory_usage"] - histocore["memory_usage"]) / competitor["memory_usage"],
+            "memory_reduction": (competitor["memory_usage"] - histocore["memory_usage"])
+            / competitor["memory_usage"],
             "throughput_improvement": histocore["throughput"] / competitor["throughput"],
-            "accuracy_improvement": histocore["accuracy"] - competitor["accuracy"]
-        }
+            "accuracy_improvement": histocore["accuracy"] - competitor["accuracy"],
+        },
     }
 
 
@@ -509,7 +498,7 @@ async def websocket_endpoint(websocket: WebSocket):
     """WebSocket for real-time updates"""
     await websocket.accept()
     active_connections.append(websocket)
-    
+
     try:
         while True:
             # Keep connection alive
@@ -538,36 +527,29 @@ async def get_stats():
         "average_confidence": 0.94,
         "total_slides_processed": 1247,
         "uptime_hours": 720,
-        "gpu_utilization": 0.85
+        "gpu_utilization": 0.85,
     }
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat()
-    }
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 
-def run_showcase(
-    host: str = "0.0.0.0",
-    port: int = 8000,
-    gpu_ids: List[int] = [0]
-):
+def run_showcase(host: str = "0.0.0.0", port: int = 8000, gpu_ids: List[int] = [0]):
     """Run interactive showcase application"""
     global demo_runner
     demo_runner = DemoScenarioRunner(gpu_ids=gpu_ids)
-    
-    print("\n" + "="*60)
+
+    print("\n" + "=" * 60)
     print("HISTOCORE INTERACTIVE SHOWCASE")
-    print("="*60)
+    print("=" * 60)
     print(f"\nStarting server on http://{host}:{port}")
     print(f"GPU IDs: {gpu_ids}")
     print("\nOpen your browser and navigate to the URL above")
     print("Press Ctrl+C to stop\n")
-    
+
     uvicorn.run(app, host=host, port=port)
 
 

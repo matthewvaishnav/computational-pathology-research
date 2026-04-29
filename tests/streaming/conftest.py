@@ -7,5 +7,5 @@ from unittest.mock import MagicMock
 mock_openslide = MagicMock()
 mock_openslide.deepzoom = MagicMock()
 mock_openslide.deepzoom.DeepZoomGenerator = MagicMock()
-sys.modules['openslide'] = mock_openslide
-sys.modules['openslide.deepzoom'] = mock_openslide.deepzoom
+sys.modules["openslide"] = mock_openslide
+sys.modules["openslide.deepzoom"] = mock_openslide.deepzoom

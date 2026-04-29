@@ -1,12 +1,12 @@
 """Data loading and preprocessing modules."""
 
-from .loaders import MultimodalDataset, collate_multimodal
 from .format_support import (
-    UniversalSlideReader,
     BioFormatsReader,
-    open_slide,
+    UniversalSlideReader,
     get_supported_formats,
+    open_slide,
 )
+from .loaders import MultimodalDataset, collate_multimodal
 
 __all__ = [
     "MultimodalDataset",
