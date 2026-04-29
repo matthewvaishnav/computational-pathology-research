@@ -101,3 +101,11 @@ anthropic>=0.30.0
 # Vector search and caching
 faiss-cpu>=1.7.4
 redis>=5.0.0
+
+# Experiment tracking
+wandb>=0.15.0
+
+# gRPC and protobuf
+protobuf>=4.21.0,<5.0.0
+grpcio>=1.54.0
+grpcio-tools>=1.54.0
