@@ -274,12 +274,40 @@ class DatasetOrganizer:
         )
         
         # Calculate detailed statistics from samples
+        samples = self._load_dataset_samples(dataset_id)
         if samples:
             stats = self._calculate_detailed_stats(samples, dataset_id)
         
         return stats
     
-    def _calculate_detailed_stats(self, samples: List[Dict], dataset_id: str) -> DatasetStatistics:
+    def _load_dataset_samples(self, dataset_id: str) -> List[Dict]:
+        """Load sample metadata from dataset directory."""
+        dataset_path = self.get_dataset_path(dataset_id)
+        if not dataset_path or not dataset_path.exists():
+            return []
+        
+        # Try to load samples from metadata file
+        samples_file = dataset_path / "samples.json"
+        if samples_file.exists():
+            try:
+                with open(samples_file, 'r') as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        
+        # Fallback: scan directory for image files
+        samples = []
+        for img_file in dataset_path.glob("**/*.{jpg,jpeg,png,tiff,svs}"):
+            samples.append({
+                "file_path": str(img_file),
+                "disease_type": "unknown",
+                "quality_score": 1.0,
+                "size_mb": img_file.stat().st_size / (1024 * 1024)
+            })
+        
+        return samples
+    
+    def _calculate_detailed_stats(self, samples: List[Dict], dataset_id: str) -> DatasetStats:
         """Calculate comprehensive dataset statistics."""
         import numpy as np
         from collections import Counter, defaultdict
@@ -398,7 +426,7 @@ class DatasetOrganizer:
             }
         }
         
-        return DatasetStatistics(
+        return DatasetStats(
             total_samples=total_samples,
             disease_distribution=disease_distribution,
             quality_scores=quality_stats,
