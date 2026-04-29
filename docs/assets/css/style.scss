@@ -219,21 +219,18 @@ header {
   
   nav {
     margin-top: 25px;
-    margin-bottom: 35px;
-    clear: both;
-    position: relative;
-    z-index: 1;
-    background: none !important;
+    margin-bottom: 25px;
+    background: transparent !important;
     
     ul {
       list-style: none;
       padding: 0;
       margin: 0;
-      background: none !important;
+      background: transparent !important;
       
       li {
         margin: 10px 0;
-        background: none !important;
+        background: transparent !important;
         
         a {
           display: block;
