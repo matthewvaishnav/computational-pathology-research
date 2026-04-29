@@ -6,12 +6,13 @@ Uses Flower (flwr) framework with differential privacy support.
 """
 
 from .aggregation import ByzantineRobustAggregation, FedAvgPathology, FedProxPathology
-from .client import PathologyFLClient
+from .client import HospitalClient, FederatedTrainer
 from .privacy import DifferentialPrivacyEngine, PrivacyAccountant
 from .server import start_federated_server
 
 __all__ = [
-    "PathologyFLClient",
+    "HospitalClient",
+    "FederatedTrainer",
     "start_federated_server",
     "FedAvgPathology",
     "FedProxPathology",

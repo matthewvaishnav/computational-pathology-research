@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ..workflow import ClinicalWorkflowSystem
-from .audit_logger import AuditLogger
+from .audit_logger import PACSAuditLogger
 from .configuration_manager import ConfigurationManager
 from .error_handling import DeadLetterQueue, DicomErrorHandler, NetworkErrorHandler
 from .failover import FailoverManager

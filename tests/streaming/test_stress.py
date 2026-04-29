@@ -25,7 +25,7 @@ from src.streaming.attention_aggregator import StreamingAttentionAggregator
 
 # Import streaming components
 from src.streaming.gpu_pipeline import GPUPipeline
-from src.streaming.memory_optimizer import MemoryConfig, MemoryOptimizer
+from src.streaming.memory_optimizer import MemoryPoolManager, MemoryMonitor
 from src.streaming.model_optimizer import OptimizationConfig
 from src.streaming.parallel_pipeline import ParallelConfig, ParallelPipeline
 
