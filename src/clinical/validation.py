@@ -1010,11 +1010,11 @@ class PerformanceMonitor:
         # Implementation for email alerts - can be extended with actual email service
         try:
             # Check if email configuration is available
-            email_config = getattr(self, 'email_config', None)
-            if email_config and email_config.get('enabled', False):
+            email_config = getattr(self, "email_config", None)
+            if email_config and email_config.get("enabled", False):
                 # Integration points for email services:
                 # - SMTP server configuration
-                # - Email template rendering  
+                # - Email template rendering
                 # - Recipient list management
                 # - Delivery confirmation
                 logger.info(f"[ALERT:{alert_type}] Email alert sent: {message}")
@@ -1031,8 +1031,8 @@ class PerformanceMonitor:
         # Implementation for webhook alerts - can be extended with actual webhook service
         try:
             # Check if webhook configuration is available
-            webhook_config = getattr(self, 'webhook_config', None)
-            if webhook_config and webhook_config.get('enabled', False):
+            webhook_config = getattr(self, "webhook_config", None)
+            if webhook_config and webhook_config.get("enabled", False):
                 # Integration points for webhook services:
                 # - HTTP POST to webhook URL
                 # - Payload formatting (JSON, form-data)

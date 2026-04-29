@@ -1,17 +1,17 @@
 """Preprocessing utilities for digital pathology."""
 
-from .stain_normalization import (
-    StainNormalizer,
-    MacenkoNormalizer,
-    ReinhardNormalizer,
-    normalize_stain,
-)
 from .multiplexed_imaging import (
-    MultiplexedImageProcessor,
     CODEXProcessor,
+    MultiplexedImageProcessor,
     VectraProcessor,
     process_codex_image,
     process_vectra_image,
+)
+from .stain_normalization import (
+    MacenkoNormalizer,
+    ReinhardNormalizer,
+    StainNormalizer,
+    normalize_stain,
 )
 
 __all__ = [

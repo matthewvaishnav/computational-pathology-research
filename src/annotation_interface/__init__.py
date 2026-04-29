@@ -7,14 +7,14 @@ from .backend.annotation_api import app as annotation_app
 from .backend.annotation_models import (
     Annotation,
     AnnotationCreate,
+    AnnotationResponse,
     AnnotationUpdate,
-    AnnotationResponse
 )
 
 __all__ = [
-    'annotation_app',
-    'Annotation',
-    'AnnotationCreate',
-    'AnnotationUpdate',
-    'AnnotationResponse'
+    "annotation_app",
+    "Annotation",
+    "AnnotationCreate",
+    "AnnotationUpdate",
+    "AnnotationResponse",
 ]

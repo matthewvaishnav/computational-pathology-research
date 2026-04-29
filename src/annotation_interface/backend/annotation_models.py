@@ -2,14 +2,16 @@
 Data models for annotation interface
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class AnnotationType(str, Enum):
     """Types of annotations"""
+
     POLYGON = "polygon"
     CIRCLE = "circle"
     RECTANGLE = "rectangle"
@@ -19,6 +21,7 @@ class AnnotationType(str, Enum):
 
 class AnnotationLabel(str, Enum):
     """Annotation labels for pathology"""
+
     TUMOR = "tumor"
     NORMAL = "normal"
     NECROSIS = "necrosis"
@@ -29,12 +32,14 @@ class AnnotationLabel(str, Enum):
 
 class Point(BaseModel):
     """2D point coordinates"""
+
     x: float
     y: float
 
 
 class AnnotationGeometry(BaseModel):
     """Geometry data for annotations"""
+
     type: AnnotationType
     points: List[Point] = Field(default_factory=list)
     center: Optional[Point] = None
@@ -45,6 +50,7 @@ class AnnotationGeometry(BaseModel):
 
 class AnnotationCreate(BaseModel):
     """Request model for creating annotation"""
+
     slide_id: str = Field(..., description="Slide identifier")
     task_id: Optional[str] = Field(None, description="Associated annotation task ID")
     label: AnnotationLabel = Field(..., description="Annotation label")
@@ -56,6 +62,7 @@ class AnnotationCreate(BaseModel):
 
 class AnnotationUpdate(BaseModel):
     """Request model for updating annotation"""
+
     label: Optional[AnnotationLabel] = None
     geometry: Optional[AnnotationGeometry] = None
     confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
@@ -64,6 +71,7 @@ class AnnotationUpdate(BaseModel):
 
 class Annotation(BaseModel):
     """Complete annotation model"""
+
     id: str
     slide_id: str
     task_id: Optional[str]
@@ -79,6 +87,7 @@ class Annotation(BaseModel):
 
 class AnnotationResponse(BaseModel):
     """Response model for annotation operations"""
+
     success: bool
     annotation: Optional[Annotation] = None
     message: str = ""
@@ -86,6 +95,7 @@ class AnnotationResponse(BaseModel):
 
 class SlideInfo(BaseModel):
     """Slide information for annotation interface"""
+
     slide_id: str
     image_path: str
     width: int
@@ -97,6 +107,7 @@ class SlideInfo(BaseModel):
 
 class AIPredictionOverlay(BaseModel):
     """AI prediction overlay data"""
+
     slide_id: str
     prediction_type: str
     confidence: float
@@ -107,6 +118,7 @@ class AIPredictionOverlay(BaseModel):
 
 class AnnotationQueueItem(BaseModel):
     """Item in annotation queue"""
+
     task_id: str
     slide_id: str
     priority: float

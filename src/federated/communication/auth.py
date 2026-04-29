@@ -54,7 +54,7 @@ class CertificateValidator:
 
             # Check certificate signature
             from cryptography.hazmat.primitives.asymmetric import padding
-            
+
             try:
                 self.ca_public_key.verify(
                     cert.signature,

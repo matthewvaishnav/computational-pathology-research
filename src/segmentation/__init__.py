@@ -3,8 +3,8 @@
 from .nucleus_segmentation import (
     NucleusSegmenter,
     TissueDetector,
-    segment_nuclei,
     detect_tissue,
+    segment_nuclei,
 )
 
 __all__ = [

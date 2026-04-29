@@ -65,7 +65,9 @@ class KrumAggregator(BaseAggregator):
         f = self.num_byzantine
 
         if n <= 2 * f:
-            logger.warning(f"Not enough clients for Krum (n={n}, f={f}), falling back to simple average")
+            logger.warning(
+                f"Not enough clients for Krum (n={n}, f={f}), falling back to simple average"
+            )
             # Fallback to simple average when not enough clients
             return self._simple_average(client_updates)
 

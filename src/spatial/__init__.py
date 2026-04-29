@@ -1,9 +1,9 @@
 """Spatial analysis utilities for digital pathology."""
 
 from .tissue_graph import (
+    CellNode,
     TissueGraph,
     TissueGraphBuilder,
-    CellNode,
     build_tissue_graph,
 )
 

@@ -6,9 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
-
 from src.clinical.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,
@@ -18,7 +18,6 @@ from src.clinical.pacs.audit_logger import (
     PACSAuditLogger,
     TamperEvidentStorage,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures and helpers
@@ -58,7 +57,9 @@ def _make_study(uid: str = "1.2.3.4.5") -> SimpleNamespace:
 
 
 @given(
-    user_id=st.text(min_size=1, max_size=64, alphabet=st.characters(whitelist_categories=("L", "N", "P"))),
+    user_id=st.text(
+        min_size=1, max_size=64, alphabet=st.characters(whitelist_categories=("L", "N", "P"))
+    ),
     result_count=st.integers(min_value=0, max_value=10000),
 )
 @settings(max_examples=100)
@@ -90,7 +91,9 @@ _REQUIRED_HIPAA_KEYS = {"event_type", "event_datetime", "outcome", "participants
 
 
 @given(
-    patient_id=st.text(min_size=1, max_size=32, alphabet=st.characters(whitelist_categories=("L", "N"))),
+    patient_id=st.text(
+        min_size=1, max_size=32, alphabet=st.characters(whitelist_categories=("L", "N"))
+    ),
     outcome=st.sampled_from([0, 4, 8, 12]),
 )
 @settings(max_examples=100)
@@ -120,9 +123,9 @@ def test_property_44_hipaa_format_has_required_keys(patient_id, outcome):
         description="Test PHI access",
     )
     hipaa = msg.to_hipaa_format()
-    assert _REQUIRED_HIPAA_KEYS.issubset(hipaa.keys()), (
-        f"Missing keys: {_REQUIRED_HIPAA_KEYS - set(hipaa.keys())}"
-    )
+    assert _REQUIRED_HIPAA_KEYS.issubset(
+        hipaa.keys()
+    ), f"Missing keys: {_REQUIRED_HIPAA_KEYS - set(hipaa.keys())}"
 
 
 # ---------------------------------------------------------------------------
@@ -535,12 +538,8 @@ def test_hipaa_format_participants_and_study_objects(tmp_path):
         event_outcome=data["event_outcome"],
         event_datetime=datetime.fromisoformat(data["event_datetime"]),
         event_type=data["event_type"],
-        participants=[
-            AuditParticipant(**p) for p in data["participants"]
-        ],
-        study_objects=[
-            AuditStudyObject(**s) for s in data["study_objects"]
-        ],
+        participants=[AuditParticipant(**p) for p in data["participants"]],
+        study_objects=[AuditStudyObject(**s) for s in data["study_objects"]],
         description=data["description"],
         phi_accessed=data["phi_accessed"],
         phi_fields=data["phi_fields"],

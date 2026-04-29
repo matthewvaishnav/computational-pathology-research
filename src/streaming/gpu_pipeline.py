@@ -1,16 +1,16 @@
 """GPU Pipeline for async batch processing with memory optimization."""
 
 import asyncio
+import gc
 import logging
 import time
-from typing import List, Optional, Dict, Any
-from dataclasses import dataclass
 from collections import deque
-import gc
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +19,11 @@ try:
     from .memory_optimizer import (
         MemoryPoolManager,
         MemoryPoolStrategy,
+        MemoryUsagePredictor,
         SmartGarbageCollector,
-        MemoryUsagePredictor
     )
     from .model_optimizer import ModelOptimizer, OptimizationConfig
+
     MEMORY_OPTIMIZER_AVAILABLE = True
 except ImportError:
     MEMORY_OPTIMIZER_AVAILABLE = False
@@ -32,6 +33,7 @@ except ImportError:
 @dataclass
 class ThroughputMetrics:
     """Throughput and performance metrics."""
+
     patches_per_second: float
     batches_per_second: float
     avg_batch_time: float
@@ -40,7 +42,7 @@ class ThroughputMetrics:
     gpu_memory_total_gb: float
     current_batch_size: int
     total_patches_processed: int
-    
+
     @property
     def gpu_memory_percent(self) -> float:
         """Calculate GPU memory usage percentage."""
@@ -51,46 +53,48 @@ class ThroughputMetrics:
 
 class GPUMemoryManager:
     """Manages GPU memory allocation and cleanup."""
-    
+
     def __init__(self, device: torch.device, memory_limit_gb: Optional[float] = None):
         self.device = device
         self.memory_limit_gb = memory_limit_gb
-        
+
         # Get total GPU memory
-        if device.type == 'cuda':
+        if device.type == "cuda":
             self.total_memory_gb = torch.cuda.get_device_properties(device).total_memory / (1024**3)
         else:
             self.total_memory_gb = 0.0
-        
+
         # Set memory limit
         if memory_limit_gb is None:
             self.memory_limit_gb = self.total_memory_gb * 0.8  # Use 80% by default
-        
-        logger.info(f"GPU Memory Manager initialized: {self.total_memory_gb:.2f}GB total, {self.memory_limit_gb:.2f}GB limit")
-    
+
+        logger.info(
+            f"GPU Memory Manager initialized: {self.total_memory_gb:.2f}GB total, {self.memory_limit_gb:.2f}GB limit"
+        )
+
     def get_memory_usage(self) -> float:
         """Get current GPU memory usage in GB."""
-        if self.device.type == 'cuda':
+        if self.device.type == "cuda":
             return torch.cuda.memory_allocated(self.device) / (1024**3)
         return 0.0
-    
+
     def get_memory_reserved(self) -> float:
         """Get reserved GPU memory in GB."""
-        if self.device.type == 'cuda':
+        if self.device.type == "cuda":
             return torch.cuda.memory_reserved(self.device) / (1024**3)
         return 0.0
-    
+
     def is_memory_available(self, required_gb: float) -> bool:
         """Check if required memory is available."""
         current_usage = self.get_memory_usage()
         return (current_usage + required_gb) <= self.memory_limit_gb
-    
+
     def cleanup(self):
         """Clean up GPU memory."""
-        if self.device.type == 'cuda':
+        if self.device.type == "cuda":
             torch.cuda.empty_cache()
             gc.collect()
-    
+
     def get_available_memory(self) -> float:
         """Get available GPU memory in GB."""
         return max(0.0, self.memory_limit_gb - self.get_memory_usage())
@@ -98,71 +102,75 @@ class GPUMemoryManager:
 
 class BatchSizeOptimizer:
     """Dynamically optimizes batch size based on memory usage."""
-    
+
     def __init__(self, initial_batch_size: int, min_batch_size: int = 1, max_batch_size: int = 256):
         self.current_batch_size = initial_batch_size
         self.min_batch_size = min_batch_size
         self.max_batch_size = max_batch_size
-        
+
         # Track batch processing history
         self.batch_times = deque(maxlen=10)
         self.memory_usage = deque(maxlen=10)
-        
+
         # OOM tracking
         self.oom_count = 0
         self.last_oom_batch_size = None
-    
+
     def record_batch(self, batch_time: float, memory_used_gb: float):
         """Record batch processing metrics."""
         self.batch_times.append(batch_time)
         self.memory_usage.append(memory_used_gb)
-    
+
     def handle_oom(self):
         """Handle out-of-memory error."""
         self.oom_count += 1
         self.last_oom_batch_size = self.current_batch_size
-        
+
         # Reduce batch size significantly
         self.current_batch_size = max(self.min_batch_size, self.current_batch_size // 4)
         logger.warning(f"OOM detected. Reduced batch size to {self.current_batch_size}")
-    
+
     def optimize(self, memory_pressure: float) -> int:
         """Optimize batch size based on memory pressure.
-        
+
         Args:
             memory_pressure: Memory usage as fraction of limit (0.0 to 1.0)
-        
+
         Returns:
             Optimized batch size
         """
         if memory_pressure > 0.9:
             # Critical memory pressure - reduce aggressively
             self.current_batch_size = max(self.min_batch_size, self.current_batch_size // 2)
-            logger.info(f"Critical memory pressure. Reduced batch size to {self.current_batch_size}")
-        
+            logger.info(
+                f"Critical memory pressure. Reduced batch size to {self.current_batch_size}"
+            )
+
         elif memory_pressure > 0.8:
             # High memory pressure - reduce conservatively
             self.current_batch_size = max(self.min_batch_size, int(self.current_batch_size * 0.75))
             logger.info(f"High memory pressure. Reduced batch size to {self.current_batch_size}")
-        
+
         elif memory_pressure < 0.4 and len(self.batch_times) >= 5:
             # Low memory pressure and stable - try to increase
             avg_time = np.mean(self.batch_times)
-            
+
             # Only increase if processing is fast and stable
             if avg_time < 0.5 and self.oom_count == 0:
                 new_size = min(self.max_batch_size, int(self.current_batch_size * 1.2))
-                
+
                 # Don't increase past last OOM size
                 if self.last_oom_batch_size is not None:
                     new_size = min(new_size, self.last_oom_batch_size - 1)
-                
+
                 if new_size > self.current_batch_size:
                     self.current_batch_size = new_size
-                    logger.info(f"Low memory pressure. Increased batch size to {self.current_batch_size}")
-        
+                    logger.info(
+                        f"Low memory pressure. Increased batch size to {self.current_batch_size}"
+                    )
+
         return self.current_batch_size
-    
+
     def get_batch_size(self) -> int:
         """Get current batch size."""
         return self.current_batch_size
@@ -170,18 +178,20 @@ class BatchSizeOptimizer:
 
 class GPUPipeline:
     """Parallel GPU processing pipeline with async processing and memory optimization."""
-    
-    def __init__(self, 
-                 model: nn.Module, 
-                 batch_size: int = 64, 
-                 gpu_ids: Optional[List[int]] = None,
-                 memory_limit_gb: Optional[float] = None,
-                 enable_fp16: bool = False,
-                 enable_advanced_memory_optimization: bool = True,
-                 enable_model_optimization: bool = True,
-                 optimization_config: Optional[OptimizationConfig] = None):
+
+    def __init__(
+        self,
+        model: nn.Module,
+        batch_size: int = 64,
+        gpu_ids: Optional[List[int]] = None,
+        memory_limit_gb: Optional[float] = None,
+        enable_fp16: bool = False,
+        enable_advanced_memory_optimization: bool = True,
+        enable_model_optimization: bool = True,
+        optimization_config: Optional[OptimizationConfig] = None,
+    ):
         """Initialize GPU pipeline.
-        
+
         Args:
             model: PyTorch model for feature extraction
             batch_size: Initial batch size
@@ -197,36 +207,38 @@ class GPUPipeline:
         self.enable_fp16 = enable_fp16
         self.enable_advanced_memory_optimization = enable_advanced_memory_optimization
         self.enable_model_optimization = enable_model_optimization
-        
+
         # Setup devices
         self.devices = self._setup_devices(gpu_ids)
         self.primary_device = self.devices[0]
-        
+
         # Move model to device
         self.model = self.model.to(self.primary_device)
         self.model.eval()
-        
+
         # Enable FP16 if requested
-        if self.enable_fp16 and self.primary_device.type == 'cuda':
+        if self.enable_fp16 and self.primary_device.type == "cuda":
             self.model = self.model.half()
             logger.info("Enabled FP16 precision")
-        
+
         # Multi-GPU support
         if len(self.devices) > 1:
-            self.model = nn.DataParallel(self.model, device_ids=[d.index for d in self.devices if d.type == 'cuda'])
+            self.model = nn.DataParallel(
+                self.model, device_ids=[d.index for d in self.devices if d.type == "cuda"]
+            )
             logger.info(f"Enabled DataParallel across {len(self.devices)} GPUs")
-        
+
         # Model optimization
         self.optimized_inference_fn = None
         self.optimization_info = None
-        
+
         if self.enable_model_optimization:
             try:
                 # Create dummy input for optimization
                 dummy_input = torch.randn(batch_size, 224, 224, 3).to(self.primary_device)
                 if self.enable_fp16:
                     dummy_input = dummy_input.half()
-                
+
                 # Use provided config or create default
                 if optimization_config is None:
                     optimization_config = OptimizationConfig(
@@ -234,46 +246,46 @@ class GPUPipeline:
                         tensorrt_precision="fp16" if self.enable_fp16 else "fp32",
                         enable_quantization=True,
                         enable_data_parallel=len(self.devices) > 1,
-                        gpu_ids=[d.index for d in self.devices if d.type == 'cuda']
+                        gpu_ids=[d.index for d in self.devices if d.type == "cuda"],
                     )
-                
+
                 # Optimize model
                 optimizer = ModelOptimizer(optimization_config)
-                
+
                 # Use original model for optimization (before DataParallel)
-                base_model = self.model.module if hasattr(self.model, 'module') else self.model
-                
+                base_model = self.model.module if hasattr(self.model, "module") else self.model
+
                 optimized_model, self.optimization_info = optimizer.optimize_model(
                     base_model, dummy_input, "gpu_pipeline_model"
                 )
-                
+
                 # Create optimized inference function
                 self.optimized_inference_fn = optimizer.create_optimized_inference_fn(
                     optimized_model, self.optimization_info
                 )
-                
-                logger.info("Model optimization enabled: %s", 
-                           self.optimization_info.get("optimizations_applied", []))
-                
+
+                logger.info(
+                    "Model optimization enabled: %s",
+                    self.optimization_info.get("optimizations_applied", []),
+                )
+
             except Exception as e:
                 logger.warning("Model optimization failed, using standard model: %s", e)
                 self.enable_model_optimization = False
-        
+
         # Initialize memory manager
         self.memory_manager = GPUMemoryManager(self.primary_device, memory_limit_gb)
-        
+
         # Initialize batch size optimizer
         self.batch_optimizer = BatchSizeOptimizer(
-            initial_batch_size=batch_size,
-            min_batch_size=1,
-            max_batch_size=256
+            initial_batch_size=batch_size, min_batch_size=1, max_batch_size=256
         )
-        
+
         # Advanced memory optimization components
         self.memory_pool = None
         self.smart_gc = None
         self.memory_predictor = None
-        
+
         if self.enable_advanced_memory_optimization and MEMORY_OPTIMIZER_AVAILABLE:
             try:
                 # Initialize memory pool
@@ -282,41 +294,43 @@ class GPUPipeline:
                     device=self.primary_device,
                     initial_pool_size_gb=pool_size_gb,
                     max_pool_size_gb=memory_limit_gb if memory_limit_gb else 4.0,
-                    strategy=MemoryPoolStrategy.ADAPTIVE
+                    strategy=MemoryPoolStrategy.ADAPTIVE,
                 )
-                
+
                 # Initialize smart garbage collector
                 self.smart_gc = SmartGarbageCollector(
                     device=self.primary_device,
                     memory_pressure_threshold=0.8,
                     collection_interval_seconds=10.0,
-                    enable_adaptive=True
+                    enable_adaptive=True,
                 )
-                
+
                 # Initialize memory predictor
                 self.memory_predictor = MemoryUsagePredictor(enable_learning=True)
-                
+
                 logger.info("Advanced memory optimization enabled")
             except Exception as e:
                 logger.warning(f"Failed to initialize advanced memory optimization: {e}")
                 self.enable_advanced_memory_optimization = False
-        
+
         # Performance tracking
         self.total_patches_processed = 0
         self.total_batches_processed = 0
         self.total_processing_time = 0.0
         self.batch_times = deque(maxlen=100)
-        
+
         # Memory tracking for predictor
         self.peak_memory_gb = 0.0
         self.memory_samples = deque(maxlen=100)
-        
+
         # Async processing
         self.processing_queue = asyncio.Queue()
         self.result_queue = asyncio.Queue()
-        
-        logger.info(f"GPUPipeline initialized on {self.primary_device} with batch_size={batch_size}")
-    
+
+        logger.info(
+            f"GPUPipeline initialized on {self.primary_device} with batch_size={batch_size}"
+        )
+
     def _setup_devices(self, gpu_ids: Optional[List[int]]) -> List[torch.device]:
         """Setup GPU devices."""
         if gpu_ids is None:
@@ -326,26 +340,26 @@ class GPUPipeline:
                 gpu_ids = list(range(gpu_count))
             else:
                 logger.warning("No CUDA GPUs available, using CPU")
-                return [torch.device('cpu')]
-        
+                return [torch.device("cpu")]
+
         devices = []
         for gpu_id in gpu_ids:
             if torch.cuda.is_available() and gpu_id < torch.cuda.device_count():
-                devices.append(torch.device(f'cuda:{gpu_id}'))
+                devices.append(torch.device(f"cuda:{gpu_id}"))
             else:
                 logger.warning(f"GPU {gpu_id} not available")
-        
+
         if not devices:
-            devices = [torch.device('cpu')]
-        
+            devices = [torch.device("cpu")]
+
         return devices
-    
+
     async def process_batch_async(self, patches: torch.Tensor) -> torch.Tensor:
         """Asynchronously process patch batch through CNN.
-        
+
         Args:
             patches: Tensor of patches [batch_size, channels, height, width]
-        
+
         Returns:
             Feature tensor [batch_size, feature_dim]
         """
@@ -353,30 +367,32 @@ class GPUPipeline:
         loop = asyncio.get_event_loop()
         features = await loop.run_in_executor(None, self._process_batch_sync, patches)
         return features
-    
+
     def _process_batch_sync(self, patches: torch.Tensor) -> torch.Tensor:
         """Synchronous batch processing with memory optimization."""
         start_time = time.time()
-        
+
         try:
             # Check if smart GC should trigger
             if self.smart_gc and self.memory_manager.memory_limit_gb > 0:
                 current_memory = self.memory_manager.get_memory_usage()
-                if self.smart_gc.should_collect(current_memory, self.memory_manager.memory_limit_gb):
+                if self.smart_gc.should_collect(
+                    current_memory, self.memory_manager.memory_limit_gb
+                ):
                     logger.debug("Triggering smart GC")
                     self.smart_gc.collect(aggressive=False)
-            
+
             # Move to device
             patches = patches.to(self.primary_device)
-            
+
             # Convert to FP16 if enabled
-            if self.enable_fp16 and self.primary_device.type == 'cuda':
+            if self.enable_fp16 and self.primary_device.type == "cuda":
                 patches = patches.half()
-            
+
             # Check if we need to split batch due to memory
             current_batch_size = patches.shape[0]
             optimal_batch_size = self.batch_optimizer.get_batch_size()
-            
+
             if current_batch_size > optimal_batch_size:
                 # Process in sub-batches
                 features = self._process_in_subbatches(patches, optimal_batch_size)
@@ -389,79 +405,79 @@ class GPUPipeline:
                     else:
                         # Use standard model
                         features = self.model(patches)
-            
+
             # Record metrics
             batch_time = time.time() - start_time
             memory_used = self.memory_manager.get_memory_usage()
-            
+
             # Track peak memory
             self.peak_memory_gb = max(self.peak_memory_gb, memory_used)
             self.memory_samples.append(memory_used)
-            
+
             self.batch_optimizer.record_batch(batch_time, memory_used)
             self.batch_times.append(batch_time)
             self.total_patches_processed += current_batch_size
             self.total_batches_processed += 1
             self.total_processing_time += batch_time
-            
+
             # Optimize batch size (avoid division by zero for CPU)
             if self.memory_manager.memory_limit_gb > 0:
                 memory_pressure = memory_used / self.memory_manager.memory_limit_gb
                 self.batch_optimizer.optimize(memory_pressure)
-            
+
             # Periodic cleanup
             if self.total_batches_processed % 10 == 0:
                 self.memory_manager.cleanup()
-            
+
             return features.cpu()
-            
+
         except RuntimeError as e:
             if "out of memory" in str(e).lower():
                 logger.error(f"GPU OOM error: {e}")
-                
+
                 # Handle OOM with smart GC if available
                 if self.smart_gc:
                     self.smart_gc.collect(aggressive=True)
                 else:
                     self.memory_manager.cleanup()
-                
+
                 self.batch_optimizer.handle_oom()
-                
+
                 # Retry with smaller batch
                 optimal_batch_size = self.batch_optimizer.get_batch_size()
                 return self._process_in_subbatches(patches, optimal_batch_size)
             else:
                 raise
-    
+
     def _process_in_subbatches(self, patches: torch.Tensor, subbatch_size: int) -> torch.Tensor:
         """Process large batch in smaller sub-batches."""
         num_patches = patches.shape[0]
         features_list = []
-        
+
         for i in range(0, num_patches, subbatch_size):
             end_idx = min(i + subbatch_size, num_patches)
             subbatch = patches[i:end_idx]
-            
+
             with torch.no_grad():
                 if self.enable_model_optimization and self.optimized_inference_fn:
                     subbatch_features = self.optimized_inference_fn(subbatch)
                 else:
                     subbatch_features = self.model(subbatch)
-            
+
             features_list.append(subbatch_features.cpu())
-            
+
             # Cleanup between sub-batches
-            if self.primary_device.type == 'cuda':
+            if self.primary_device.type == "cuda":
                 torch.cuda.empty_cache()
-        
+
         return torch.cat(features_list, dim=0)
-    
+
     def optimize_batch_size(self, memory_usage: float) -> int:
         """Dynamically adjust batch size based on memory usage.
-        
+
         Args:
             memory_usage: Current memory usage in GB
-        
+
         Returns:
             Optimized batch size
         """
@@ -470,9 +486,9 @@ class GPUPipeline:
             memory_pressure = 0.0
         else:
             memory_pressure = memory_usage / self.memory_manager.memory_limit_gb
-        
+
         return self.batch_optimizer.optimize(memory_pressure)
-    
+
     def get_throughput_stats(self) -> ThroughputMetrics:
         """Get current processing throughput metrics."""
         # Calculate throughput
@@ -482,20 +498,20 @@ class GPUPipeline:
         else:
             patches_per_sec = 0.0
             batches_per_sec = 0.0
-        
+
         # Calculate average batch time
         avg_batch_time = np.mean(self.batch_times) if self.batch_times else 0.0
-        
+
         # Get GPU stats
         memory_used = self.memory_manager.get_memory_usage()
         memory_total = self.memory_manager.total_memory_gb
-        
+
         # Estimate GPU utilization (simplified)
         if avg_batch_time > 0:
             gpu_utilization = min(100.0, (1.0 / avg_batch_time) * 10.0)  # Rough estimate
         else:
             gpu_utilization = 0.0
-        
+
         return ThroughputMetrics(
             patches_per_second=patches_per_sec,
             batches_per_second=batches_per_sec,
@@ -504,135 +520,134 @@ class GPUPipeline:
             gpu_memory_used_gb=memory_used,
             gpu_memory_total_gb=memory_total,
             current_batch_size=self.batch_optimizer.get_batch_size(),
-            total_patches_processed=self.total_patches_processed
+            total_patches_processed=self.total_patches_processed,
         )
-    
+
     def reset_stats(self):
         """Reset performance statistics."""
         self.total_patches_processed = 0
         self.total_batches_processed = 0
         self.total_processing_time = 0.0
         self.batch_times.clear()
-    
+
     def cleanup(self):
         """Clean up GPU resources."""
         # Clean up advanced memory optimization components
         if self.memory_pool:
             self.memory_pool.cleanup()
-        
+
         # Record final memory usage for predictor
         if self.memory_predictor and self.memory_samples:
             avg_memory = np.mean(self.memory_samples)
             # Note: slide characteristics would need to be passed in for proper recording
             logger.info(f"Peak memory: {self.peak_memory_gb:.2f}GB, Avg: {avg_memory:.2f}GB")
-        
+
         # Standard cleanup
         self.memory_manager.cleanup()
-        
+
         # Move model to CPU to free GPU memory
-        if self.primary_device.type == 'cuda':
+        if self.primary_device.type == "cuda":
             self.model = self.model.cpu()
             torch.cuda.empty_cache()
-    
+
     def get_memory_optimization_stats(self) -> Dict[str, Any]:
         """Get advanced memory optimization statistics.
-        
+
         Returns:
             Dictionary with memory optimization stats
         """
         stats = {
-            'basic_memory': {
-                'peak_memory_gb': self.peak_memory_gb,
-                'avg_memory_gb': np.mean(self.memory_samples) if self.memory_samples else 0.0,
-                'current_memory_gb': self.memory_manager.get_memory_usage()
+            "basic_memory": {
+                "peak_memory_gb": self.peak_memory_gb,
+                "avg_memory_gb": np.mean(self.memory_samples) if self.memory_samples else 0.0,
+                "current_memory_gb": self.memory_manager.get_memory_usage(),
             }
         }
-        
+
         if self.memory_pool:
             pool_stats = self.memory_pool.get_stats()
-            stats['memory_pool'] = {
-                'total_blocks': pool_stats.total_blocks,
-                'free_blocks': pool_stats.free_blocks,
-                'utilization_percent': pool_stats.utilization_percent,
-                'hit_rate': pool_stats.hit_rate,
-                'fragmentation_ratio': pool_stats.fragmentation_ratio
+            stats["memory_pool"] = {
+                "total_blocks": pool_stats.total_blocks,
+                "free_blocks": pool_stats.free_blocks,
+                "utilization_percent": pool_stats.utilization_percent,
+                "hit_rate": pool_stats.hit_rate,
+                "fragmentation_ratio": pool_stats.fragmentation_ratio,
             }
-        
+
         if self.smart_gc:
             gc_stats = self.smart_gc.get_stats()
-            stats['garbage_collection'] = gc_stats.to_dict()
-        
+            stats["garbage_collection"] = gc_stats.to_dict()
+
         # Add memory monitor stats if available
-        if hasattr(self, 'memory_monitor') and self.memory_monitor:
+        if hasattr(self, "memory_monitor") and self.memory_monitor:
             monitor_analytics = self.memory_monitor.get_analytics()
-            stats['memory_monitoring'] = monitor_analytics.to_dict()
-        
+            stats["memory_monitoring"] = monitor_analytics.to_dict()
+
         return stats
-    
+
     def __enter__(self):
         """Context manager entry."""
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.cleanup()
 
 
-def get_optimal_batch_size(model: nn.Module, 
-                          input_shape: tuple, 
-                          device: torch.device,
-                          memory_limit_gb: float = 8.0) -> int:
+def get_optimal_batch_size(
+    model: nn.Module, input_shape: tuple, device: torch.device, memory_limit_gb: float = 8.0
+) -> int:
     """Estimate optimal batch size for given model and memory limit.
-    
+
     Args:
         model: PyTorch model
         input_shape: Input tensor shape (C, H, W)
         device: Target device
         memory_limit_gb: Memory limit in GB
-    
+
     Returns:
         Estimated optimal batch size
     """
     model = model.to(device)
     model.eval()
-    
+
     # Start with batch size of 1
     batch_size = 1
     max_batch_size = 256
-    
+
     try:
         while batch_size < max_batch_size:
             # Create dummy input
             dummy_input = torch.randn(batch_size, *input_shape).to(device)
-            
+
             # Try forward pass
             with torch.no_grad():
                 _ = model(dummy_input)
-            
+
             # Check memory usage
-            if device.type == 'cuda':
+            if device.type == "cuda":
                 memory_used = torch.cuda.memory_allocated(device) / (1024**3)
                 if memory_used > memory_limit_gb * 0.7:  # 70% threshold
                     break
-            
+
             # Double batch size
             batch_size *= 2
-            
+
             # Cleanup
             del dummy_input
-            if device.type == 'cuda':
+            if device.type == "cuda":
                 torch.cuda.empty_cache()
-        
+
         # Return 75% of max successful batch size for safety
         optimal = max(1, int(batch_size * 0.75))
         logger.info(f"Estimated optimal batch size: {optimal}")
         return optimal
-        
+
     except RuntimeError as e:
         if "out of memory" in str(e).lower():
             # Return last successful batch size
             return max(1, batch_size // 2)
         raise
     finally:
-        if device.type == 'cuda':
+        if device.type == "cuda":
             torch.cuda.empty_cache()

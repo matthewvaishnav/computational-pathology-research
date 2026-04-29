@@ -157,10 +157,10 @@ class TestMutualAuthentication:
     def test_certificate_validation_success(self, tls_manager):
         """Test successful certificate validation."""
         import time
-        
+
         # Wait a moment to ensure certificate is valid
         time.sleep(0.1)
-        
+
         ca_cert_path = os.path.join(tls_manager.cert_dir, "ca-cert.pem")
         client_cert_path = os.path.join(tls_manager.cert_dir, "client-cert.pem")
 
@@ -224,7 +224,9 @@ class TestMessageSerialization:
 
     def test_gradient_serialization(self, simple_model):
         """Test gradient serialization."""
-        gradients = {name: torch.randn_like(param) for name, param in simple_model.named_parameters()}
+        gradients = {
+            name: torch.randn_like(param) for name, param in simple_model.named_parameters()
+        }
 
         # Serialize
         buffer = io.BytesIO()
@@ -331,7 +333,9 @@ class TestGRPCServer:
         servicer.registered_clients["test_client"] = {"hostname": "localhost"}
 
         # Create gradients
-        gradients = {name: torch.randn_like(param) for name, param in simple_model.named_parameters()}
+        gradients = {
+            name: torch.randn_like(param) for name, param in simple_model.named_parameters()
+        }
         buffer = io.BytesIO()
         torch.save(gradients, buffer)
         gradients_bytes = buffer.getvalue()
