@@ -150,9 +150,10 @@ class TestPACSSystemIntegration:
     @pytest.mark.skip(reason="PACSErrorManager class doesn't exist - needs refactoring")
     async def test_error_handling_integration(self, temp_dir):
         """Test error handling and recovery integration."""
-        error_manager = PACSErrorManager(
-            dead_letter_queue_size=100, persistence_file=str(temp_dir / "dlq.json")
-        )
+        # error_manager = PACSErrorManager(
+        #     dead_letter_queue_size=100, persistence_file=str(temp_dir / "dlq.json")
+        # )
+        pass
 
         # Simulate network error
         test_error = ConnectionError("Network timeout")
