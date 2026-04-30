@@ -51,6 +51,9 @@ TRAINING_ROUNDS = Counter(
 # Security
 security = HTTPBearer()
 
+# Server start time for uptime calculation
+SERVER_START_TIME = datetime.now()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -133,6 +136,23 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
     audit_logger.log_authentication_attempt(user_id=user_id, success=True)
     return {"user_id": user_id, "payload": payload}
+
+
+async def get_admin_user(current_user: dict = Depends(get_current_user)):
+    """Verify user has admin role."""
+    payload = current_user.get("payload", {})
+    role = payload.get("role", "user")
+    
+    if role != "admin":
+        audit_logger.log_event(
+            event_type="unauthorized_access",
+            event_category="security",
+            description=f"Non-admin user {current_user['user_id']} attempted to access admin endpoint",
+            user_id=current_user["user_id"],
+        )
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    return current_user
 
 
 # Request logging middleware
@@ -374,10 +394,8 @@ async def get_latest_model(current_user: dict = Depends(get_current_user)):
 
 # Admin endpoints
 @app.get("/api/v1/admin/stats")
-async def get_system_stats(current_user: dict = Depends(get_current_user)):
+async def get_system_stats(current_user: dict = Depends(get_admin_user)):
     """Get system statistics (admin only)."""
-    # TODO: Add admin role check
-
     try:
         with db_manager.get_session() as session:
             # Get client stats
@@ -395,11 +413,23 @@ async def get_system_stats(current_user: dict = Depends(get_current_user)):
                 .filter(db_manager.TrainingRound.status == "completed")
                 .count()
             )
+            
+            # Calculate uptime
+            uptime_delta = datetime.now() - SERVER_START_TIME
+            uptime_seconds = int(uptime_delta.total_seconds())
+            uptime_hours = uptime_seconds // 3600
+            uptime_minutes = (uptime_seconds % 3600) // 60
+            uptime_str = f"{uptime_hours}h {uptime_minutes}m"
 
             return {
                 "clients": {"total": total_clients, "active": active_clients},
                 "training": {"total_rounds": total_rounds, "completed_rounds": completed_rounds},
-                "system": {"uptime": "TODO", "version": "1.0.0"},  # Calculate uptime
+                "system": {
+                    "uptime": uptime_str,
+                    "uptime_seconds": uptime_seconds,
+                    "version": "1.0.0",
+                    "start_time": SERVER_START_TIME.isoformat(),
+                },
             }
 
     except Exception as e:
