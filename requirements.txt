@@ -46,6 +46,7 @@ hypothesis>=6.0.0
 tqdm>=4.65.0
 pyyaml>=6.0
 psutil>=5.9.0
+tenacity>=8.2.0  # Retry logic with exponential backoff
 
 # API Deployment
 fastapi>=0.104.0
