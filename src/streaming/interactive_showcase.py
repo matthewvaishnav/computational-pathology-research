@@ -507,10 +507,33 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            # Keep connection alive
-            await websocket.receive_text()
+            # Keep connection alive - 30s timeout
+            await asyncio.wait_for(websocket.receive_text(), timeout=30.0)
+    except asyncio.CancelledError:
+        # Task cancelled - log and re-raise
+        import logging
+        logging.info("WebSocket task cancelled")
+        raise
+    except asyncio.TimeoutError:
+        # Receive timeout - close connection
+        import logging
+        logging.debug("WebSocket receive timeout")
+        try:
+            await websocket.close()
+        except Exception:
+            pass
     except WebSocketDisconnect:
-        active_connections.remove(websocket)
+        # Normal disconnect - clean up
+        import logging
+        logging.debug("WebSocket disconnected")
+    except Exception as e:
+        # Unexpected error - log with details
+        import logging
+        logging.error(f"WebSocket error: {type(e).__name__}: {e}")
+    finally:
+        # Always remove connection
+        if websocket in active_connections:
+            active_connections.remove(websocket)
 
 
 async def broadcast_update(data: Dict):
@@ -518,12 +541,39 @@ async def broadcast_update(data: Dict):
     message = json.dumps(data)
     for connection in active_connections:
         try:
-            await connection.send_text(message)
-        except (WebSocketDisconnect, RuntimeError, ConnectionError) as e:
-            # Log WebSocket send failures
+            # Wrap send with 30s timeout
+            await asyncio.wait_for(connection.send_text(message), timeout=30.0)
+        except asyncio.CancelledError:
+            # Task cancelled - log and re-raise
             import logging
-            logging.warning(f"WebSocket send failed: error_code=WS_SEND_FAILED")
-            # Remove failed connection
+            logging.info("Broadcast task cancelled")
+            raise
+        except asyncio.TimeoutError:
+            # Send timeout - log and remove connection
+            import logging
+            logging.warning(f"WebSocket send timeout: error_code=WS_SEND_TIMEOUT")
+            if connection in active_connections:
+                active_connections.remove(connection)
+            try:
+                await connection.close()
+            except Exception:
+                pass
+        except WebSocketDisconnect:
+            # Normal disconnect - log and remove
+            import logging
+            logging.debug("WebSocket disconnected during broadcast")
+            if connection in active_connections:
+                active_connections.remove(connection)
+        except (RuntimeError, ConnectionError) as e:
+            # Connection error - log and remove
+            import logging
+            logging.warning(f"WebSocket send failed: {type(e).__name__}: error_code=WS_SEND_FAILED")
+            if connection in active_connections:
+                active_connections.remove(connection)
+        except Exception as e:
+            # Unexpected error - log with details
+            import logging
+            logging.error(f"Unexpected broadcast error: {type(e).__name__}: {e}")
             if connection in active_connections:
                 active_connections.remove(connection)
 
