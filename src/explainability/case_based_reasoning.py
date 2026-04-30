@@ -154,60 +154,77 @@ class CaseDatabase:
 
     def _init_metadata_db(self):
         """Initialize SQLite database for metadata"""
-        conn = sqlite3.connect(self.metadata_db_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.metadata_db_path)
+            cursor = conn.cursor()
 
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS cases (
-                case_id TEXT PRIMARY KEY,
-                slide_id TEXT,
-                patient_id TEXT,
-                institution TEXT,
-                scanner_type TEXT,
-                magnification REAL,
-                stain_type TEXT,
-                tissue_type TEXT,
-                diagnosis TEXT,
-                grade TEXT,
-                stage TEXT,
-                molecular_markers TEXT,
-                pathologist_id TEXT,
-                confidence_score REAL,
-                annotation_time TEXT,
-                image_quality_score REAL,
-                artifact_flags TEXT,
-                demographics TEXT,
-                treatment_response TEXT,
-                follow_up_months INTEGER,
-                tags TEXT,
-                feature_idx INTEGER
-            )
-        """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS cases (
+                    case_id TEXT PRIMARY KEY,
+                    slide_id TEXT,
+                    patient_id TEXT,
+                    institution TEXT,
+                    scanner_type TEXT,
+                    magnification REAL,
+                    stain_type TEXT,
+                    tissue_type TEXT,
+                    diagnosis TEXT,
+                    grade TEXT,
+                    stage TEXT,
+                    molecular_markers TEXT,
+                    pathologist_id TEXT,
+                    confidence_score REAL,
+                    annotation_time TEXT,
+                    image_quality_score REAL,
+                    artifact_flags TEXT,
+                    demographics TEXT,
+                    treatment_response TEXT,
+                    follow_up_months INTEGER,
+                    tags TEXT,
+                    feature_idx INTEGER
+                )
+            """)
 
-        # Create indexes for fast querying
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_diagnosis ON cases(diagnosis)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_institution ON cases(institution)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_quality ON cases(image_quality_score)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_confidence ON cases(confidence_score)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_annotation_time ON cases(annotation_time)")
+            # Create indexes for fast querying
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_diagnosis ON cases(diagnosis)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_institution ON cases(institution)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_quality ON cases(image_quality_score)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_confidence ON cases(confidence_score)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_annotation_time ON cases(annotation_time)")
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to initialize metadata database: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def _load_existing_data(self):
         """Load existing cases and index from disk"""
+        conn = None
         try:
             # Load metadata
             conn = sqlite3.connect(self.metadata_db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM cases ORDER BY feature_idx")
             rows = cursor.fetchall()
-            conn.close()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to load existing data: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
-            if rows:
-                # Reconstruct cases list
-                self.cases = []
-                self.case_id_to_idx = {}
+        if rows:
+            # Reconstruct cases list
+            self.cases = []
+            self.case_id_to_idx = {}
 
                 for row in rows:
                     metadata = CaseMetadata(
@@ -331,41 +348,50 @@ class CaseDatabase:
 
     def _save_case_metadata(self, metadata: CaseMetadata, feature_idx: int):
         """Save case metadata to SQLite database"""
-        conn = sqlite3.connect(self.metadata_db_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.metadata_db_path)
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO cases VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                metadata.case_id,
-                metadata.slide_id,
-                metadata.patient_id,
-                metadata.institution,
-                metadata.scanner_type,
-                metadata.magnification,
-                metadata.stain_type,
-                metadata.tissue_type,
-                metadata.diagnosis,
-                metadata.grade,
-                metadata.stage,
-                json.dumps(metadata.molecular_markers),
-                metadata.pathologist_id,
-                metadata.confidence_score,
-                metadata.annotation_time.isoformat(),
-                metadata.image_quality_score,
-                json.dumps(metadata.artifact_flags),
-                json.dumps(metadata.demographics),
-                metadata.treatment_response,
-                metadata.follow_up_months,
-                json.dumps(metadata.tags),
-                feature_idx,
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO cases VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    metadata.case_id,
+                    metadata.slide_id,
+                    metadata.patient_id,
+                    metadata.institution,
+                    metadata.scanner_type,
+                    metadata.magnification,
+                    metadata.stain_type,
+                    metadata.tissue_type,
+                    metadata.diagnosis,
+                    metadata.grade,
+                    metadata.stage,
+                    json.dumps(metadata.molecular_markers),
+                    metadata.pathologist_id,
+                    metadata.confidence_score,
+                    metadata.annotation_time.isoformat(),
+                    metadata.image_quality_score,
+                    json.dumps(metadata.artifact_flags),
+                    json.dumps(metadata.demographics),
+                    metadata.treatment_response,
+                    metadata.follow_up_months,
+                    json.dumps(metadata.tags),
+                    feature_idx,
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to save case metadata: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def _save_case_features(self, features: torch.Tensor, feature_idx: int):
         """Save case features to disk"""
@@ -664,11 +690,20 @@ class CaseDatabase:
                 return False
 
             # Remove from metadata database
-            conn = sqlite3.connect(self.metadata_db_path)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM cases WHERE case_id = ?", (case_id,))
-            conn.commit()
-            conn.close()
+            conn = None
+            try:
+                conn = sqlite3.connect(self.metadata_db_path)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM cases WHERE case_id = ?", (case_id,))
+                conn.commit()
+            except Exception as e:
+                if conn:
+                    conn.rollback()
+                logging.error(f"Failed to remove case from database: {e}")
+                raise
+            finally:
+                if conn:
+                    conn.close()
 
             # Remove from memory structures
             idx = self.case_id_to_idx[case_id]

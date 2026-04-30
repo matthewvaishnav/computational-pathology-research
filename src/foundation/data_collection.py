@@ -271,6 +271,10 @@ class SlideDatabase:
         except sqlite3.IntegrityError as e:
             logging.warning(f"Duplicate slide detected: {metadata.slide_id} - {e}")
             return False
+        except Exception as e:
+            self.conn.rollback()
+            logging.error(f"Failed to insert slide metadata: {e}")
+            raise
 
     def get_slide_by_hash(self, sha256_hash: str) -> Optional[SlideMetadata]:
         """Get slide by SHA256 hash (for deduplication)"""

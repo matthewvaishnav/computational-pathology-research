@@ -24,6 +24,7 @@ from cryptography.fernet import Fernet
 
 # Import BoundedQueue and GracefulThread for memory-safe queue operations and graceful shutdown
 from src.utils.safe_threading import BoundedQueue, GracefulThread
+from src.utils.safe_operations import safe_db_transaction
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ class ModelPerformanceTracker:
             metric: ModelPerformanceMetric to record
         """
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with safe_db_transaction(Path(self.db_path)) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -119,7 +120,6 @@ class ModelPerformanceTracker:
                         metric.uncertainty_score,
                     ),
                 )
-                conn.commit()
 
         except Exception as e:
             logger.error(f"Failed to record performance metric: {e}")
@@ -139,7 +139,7 @@ class ModelPerformanceTracker:
         try:
             cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
 
-            with sqlite3.connect(self.db_path) as conn:
+            with safe_db_transaction(Path(self.db_path)) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
                     """
@@ -223,7 +223,7 @@ class ModelPerformanceTracker:
     def _init_database(self):
         """Initialize SQLite database for performance tracking."""
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with safe_db_transaction(Path(self.db_path)) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS performance_metrics (
@@ -244,8 +244,6 @@ class ModelPerformanceTracker:
                     CREATE INDEX IF NOT EXISTS idx_model_timestamp 
                     ON performance_metrics(model_version, timestamp)
                 """)
-
-                conn.commit()
 
         except Exception as e:
             logger.error(f"Failed to initialize database: {e}")
