@@ -1,283 +1,212 @@
-# Repository Improvement Plan
+# HistoCore Improvement Plan
+**Generated**: April 30, 2026  
+**Status**: In Progress
 
-Based on external review feedback, this plan addresses the gap between infrastructure quality and scientific validation.
+## Completed ✅
 
-## Status: Infrastructure is Production-Grade ✅
+### Phase 1: Documentation Updates
+- [x] Updated all documentation with current metrics (3,006 tests, 8-12x optimization)
+- [x] Created documentation metrics update script
+- [x] Updated GitHub Pages site title to "HistoCore"
+- [x] Fixed 22 files with 32 metric updates
 
-The repository has:
-- ✅ Professional structure (src/, experiments/, tests/, configs/, deploy/, k8s/, docs/)
-- ✅ Real benchmarks (PatchCamelyon, CAMELYON16)
-- ✅ Mature tooling (OpenSlide, ONNX export, Docker, K8s, pre-commit hooks)
-- ✅ Comprehensive CI/CD (GitHub Actions with 9 jobs)
-- ✅ 62% test coverage
-- ✅ Real PCam data downloaded (327K images in `data/pcam_real/`)
-- ✅ Training pipeline verified (3.8 it/s, ~18 min/epoch on RTX 4070 Laptop)
+## In Progress 🚧
 
-## Gap: Scientific Validation Needs to Catch Up
+### Phase 2: Code Quality Improvements
 
-Current limitation: README leads with synthetic benchmark results, which undermines the strong infrastructure.
+#### 2.1 Complete TODO Items
+**Priority**: High  
+**Files Affected**: 15 files with TODO/FIXME comments
 
-## Priority Actions
+**Tasks**:
+- [ ] `tests/test_threading_fixes.py` - Implement 3 placeholder tests (Tasks 9.5, 11.2, 14.4)
+- [ ] `src/pacs/clinical_workflow.py` - Integrate actual inference engine
+- [ ] `src/federated/communication/grpc_server.py` - Make local_epochs and learning_rate configurable
+- [ ] `src/federated/production/coordinator_server.py` - Add admin role check, calculate uptime
+- [ ] `src/federated/coordinator/orchestrator.py` - Add optimizer state and contributor tracking
+- [ ] `src/federated/production/monitoring.py` - Implement proper rate limiting per alert type
+- [ ] `src/continuous_learning/active_learning.py` - Integrate with actual retraining pipeline
+- [ ] `src/annotation_interface/example_integration.py` - Get actual slide dimensions
+- [ ] `src/annotation_interface/backend/annotation_api.py` - Integrate WSI streaming and AI predictions
+- [ ] `scripts/data/prepare_camelyon_index.py` - Verify CAMELYON format parsing
+- [ ] `scripts/download_foundation_models.py` - Implement proper checksum verification
+- [ ] `experiments/benchmark_competitors.py` - Implement PathML and CLAM benchmarks
+- [ ] `scripts/regulatory_submission_generator.py` - Add real contact information
 
-### 1. Complete Real PCam Benchmark Run (HIGHEST PRIORITY) ✅
-**Status**: COMPLETED - Real PCam training finished with 85.26% test accuracy (95% CI: 84.83%-85.63%), 0.9394 AUC (95% CI: 0.9369-0.9418)
-**Action**: Complete the full 20-epoch training run on real PCam data
-**Impact**: Transforms from "framework with fake benchmarks" to "framework with real results"
-**Timeline**: ~6 hours (20 epochs × 18 min/epoch)
+#### 2.2 Type Hints & Documentation
+**Priority**: Medium
 
-**Steps**:
-- [x] Resume or restart training with `experiments/configs/pcam_rtx4070_laptop.yaml`
-- [x] Run full evaluation on test set
-- [x] Generate metrics with bootstrap confidence intervals
-- [x] Update `docs/PCAM_BENCHMARK_RESULTS.md` with real results
-- [x] Update README with real benchmark numbers
+**Tasks**:
+- [ ] Add type hints to all public functions
+- [ ] Add docstrings to all public classes and methods
+- [ ] Generate API documentation with Sphinx
 
-### 2. Reframe README Lead (HIGH PRIORITY) ✅
-**Status**: COMPLETED - README now leads with framework capabilities and real results
-**Action**: Restructure README to lead with framework capabilities
-**Impact**: Positions repo as infrastructure project, not just benchmark results
+#### 2.3 Error Handling
+**Priority**: High
 
-**Changes**:
-```markdown
-# Before (Current)
-> **Research Framework**: Tested implementations for computational pathology 
-> with working benchmarks on PatchCamelyon...
-> 
-> ## Quick Start
-> ### PatchCamelyon (PCam) Training
-> **Results** (synthetic subset):
-> - Test Accuracy: 94.0%
-> - Test AUC: 1.0
+**Tasks**:
+- [ ] Audit all try/except blocks for proper error handling
+- [ ] Add custom exception classes for domain-specific errors
+- [ ] Implement proper logging for all error cases
 
-# After (Proposed)
-> **Production-Grade ML Research Framework** for computational pathology
-> 
-> Provides tested infrastructure for:
-> - Whole-slide image (WSI) processing with OpenSlide
-> - Multiple Instance Learning (MIL) for slide-level classification
-> - Benchmark pipelines for PatchCamelyon and CAMELYON16
-> - Model profiling, ONNX export, and deployment tools
-> 
-> ## Real Benchmark Results
-> 
-> ### PatchCamelyon (262K train, 32K test)
-> - Test Accuracy: XX.X% ± X.X% (95% CI)
-> - Test AUC: X.XXX ± X.XXX
-> - Hardware: RTX 4070 Laptop (8GB VRAM)
-> - Training Time: ~6 hours (20 epochs)
-> 
-> ## Development/Testing
-> Synthetic data generators available for pipeline validation...
-```
+### Phase 3: Testing Improvements
 
-### 3. Fix CI Badges (MEDIUM PRIORITY) ✅
-**Status**: COMPLETED - CI badges are working and visible in README
-**Action**: Add dynamic badges to README
+#### 3.1 Increase Coverage
+**Current**: 55% coverage  
+**Target**: 70% coverage
 
-**Badges to add**:
-```markdown
-[![CI](https://github.com/matthewvaishnav/computational-pathology-research/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/matthewvaishnav/computational-pathology-research/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
-```
+**Tasks**:
+- [ ] Add tests for uncovered modules
+- [ ] Add edge case tests for critical paths
+- [ ] Add integration tests for end-to-end workflows
 
-**Note**: Codecov badge already exists in README but may need token configuration
+#### 3.2 Property-Based Testing
+**Tasks**:
+- [ ] Add more Hypothesis tests for data validation
+- [ ] Add property tests for mathematical operations
+- [ ] Add property tests for concurrency primitives
 
-### 4. Clean IDE Artifacts (COMPLETED) ✅
-**Status**: IDE-specific files removed from tracking. Git history cleanup pending (requires Java for BFG)
-**Action**: Removed IDE-specific files, kept spec documentation
+#### 3.3 Performance Testing
+**Tasks**:
+- [ ] Add benchmark tests for critical paths
+- [ ] Add memory profiling tests
+- [ ] Add GPU utilization tests
 
-**Kept** (legitimate project docs):
-- Specification and design documents
-- Implementation task lists
-- Configuration files for project structure
+### Phase 4: Performance Optimizations
 
-**Removed** (IDE-specific):
-- IDE settings and configurations
-- AI tool references from documentation
+#### 4.1 Training Pipeline
+**Tasks**:
+- [ ] Profile training loop for bottlenecks
+- [ ] Optimize data loading pipeline
+- [ ] Implement gradient accumulation for larger batch sizes
 
-**Result**: Repository now contains only project-relevant documentation without IDE artifacts.
+#### 4.2 Inference Pipeline
+**Tasks**:
+- [ ] Optimize model inference with TorchScript
+- [ ] Implement batch inference for multiple slides
+- [ ] Add model quantization for faster inference
 
-**Pending**: Git history cleanup with BFG (requires Java installation - low priority)
+#### 4.3 Memory Optimization
+**Tasks**:
+- [ ] Implement gradient checkpointing for large models
+- [ ] Optimize HDF5 caching strategy
+- [ ] Implement streaming inference for large WSIs
 
-### 5. Update CITATION.cff (LOW PRIORITY) ✅
-**Status**: COMPLETED - Updated with realistic dates and framework citation note
-**Action**: Add note about framework citation vs paper citation
+### Phase 5: New Features
 
-**Proposed change**:
-```yaml
-# CITATION.cff
-message: "If you use this framework in your research, please cite it as below. For the associated paper, see [link when available]."
-title: "Computational Pathology Research Framework"
-version: "0.1.0"
-date-released: "2024-XX-XX"  # Use actual release date
-```
+#### 5.1 Foundation Model Integration
+**Priority**: High
 
-### 6. Pin Repository on Profile (LOW PRIORITY)
-**Action**: Pin this repo on GitHub profile
-**Impact**: Increases visibility
+**Tasks**:
+- [ ] Integrate Phikon foundation model
+- [ ] Integrate UNI foundation model
+- [ ] Add feature caching for foundation models
+- [ ] Benchmark foundation model performance
 
-## Implementation Order
+#### 5.2 Multi-GPU Training
+**Priority**: Medium
 
-1. **Week 1**: Complete real PCam benchmark run (Priority 1)
-2. **Week 1**: Reframe README (Priority 2)
-3. **Week 1**: Fix CI badges (Priority 3)
-4. **Week 2**: Clean IDE artifacts (Priority 4)
-5. **Week 2**: Update CITATION.cff (Priority 5)
-6. **Anytime**: Pin repository (Priority 6)
+**Tasks**:
+- [ ] Implement DistributedDataParallel (DDP)
+- [ ] Add multi-node training support
+- [ ] Optimize gradient synchronization
 
-## Success Metrics
+#### 5.3 Real-Time Streaming
+**Priority**: Medium
 
-- [x] Real PCam results in README (not synthetic)
-- [x] README leads with framework capabilities
-- [x] Green CI badge showing in README
-- [x] Dynamic coverage badge (not hardcoded)
-- [x] Bootstrap confidence intervals documented
-- [x] Test files properly organized (moved from src/ to tests/)
-- [x] README updated with threshold optimization results
-- [ ] No IDE-specific files in git history (pending Java/BFG)
-- [x] Repository pinned on profile
+**Tasks**:
+- [ ] Implement WebSocket-based WSI streaming
+- [ ] Add real-time inference updates
+- [ ] Implement progressive loading for large slides
+
+### Phase 6: Production Readiness
+
+#### 6.1 Monitoring & Observability
+**Tasks**:
+- [ ] Add Prometheus metrics for all critical paths
+- [ ] Add distributed tracing with OpenTelemetry
+- [ ] Implement health checks for all services
+
+#### 6.2 Security Hardening
+**Tasks**:
+- [ ] Implement rate limiting for all APIs
+- [ ] Add input validation for all user inputs
+- [ ] Implement proper authentication and authorization
+
+#### 6.3 Deployment
+**Tasks**:
+- [ ] Create Helm charts for Kubernetes deployment
+- [ ] Add CI/CD pipeline for automated deployment
+- [ ] Implement blue-green deployment strategy
+
+## Metrics Tracking
+
+### Current State
+- **Tests**: 3,006 tests (55% coverage)
+- **Optimization**: 8-12x training speedup
+- **Validation AUC**: 100% (epoch 10)
+- **Test Accuracy**: 85.26% ± 0.40%
+- **GPU Memory**: 8GB (RTX 4070)
+
+### Target State (Q3 2026)
+- **Tests**: 4,000+ tests (70% coverage)
+- **Optimization**: 10-15x training speedup
+- **Validation AUC**: 100% (maintained)
+- **Test Accuracy**: 87%+ (improved threshold optimization)
+- **GPU Memory**: 6GB (further optimization)
+
+## Timeline
+
+### Week 1-2 (Current)
+- [x] Phase 1: Documentation Updates
+- [ ] Phase 2: Code Quality Improvements (50% complete)
+
+### Week 3-4
+- [ ] Phase 2: Code Quality Improvements (complete)
+- [ ] Phase 3: Testing Improvements (start)
+
+### Week 5-6
+- [ ] Phase 3: Testing Improvements (complete)
+- [ ] Phase 4: Performance Optimizations (start)
+
+### Week 7-8
+- [ ] Phase 4: Performance Optimizations (complete)
+- [ ] Phase 5: New Features (start)
+
+### Week 9-12
+- [ ] Phase 5: New Features (complete)
+- [ ] Phase 6: Production Readiness (start)
+
+## Success Criteria
+
+### Code Quality
+- [ ] All TODO items resolved or documented
+- [ ] 100% type hint coverage for public APIs
+- [ ] 100% docstring coverage for public APIs
+- [ ] Zero critical security vulnerabilities
+
+### Testing
+- [ ] 70%+ code coverage
+- [ ] 100+ property-based tests
+- [ ] All critical paths have integration tests
+- [ ] Performance benchmarks for all critical operations
+
+### Performance
+- [ ] 10-15x training speedup (from baseline)
+- [ ] <3 seconds inference time (from <5 seconds)
+- [ ] 6GB GPU memory (from 8GB)
+- [ ] 90%+ GPU utilization (maintained)
+
+### Production Readiness
+- [ ] Comprehensive monitoring and alerting
+- [ ] Automated deployment pipeline
+- [ ] Security hardening complete
+- [ ] Load testing complete (1000+ concurrent users)
 
 ## Notes
 
-- The infrastructure quality is genuinely impressive
-- The weak point is that science hasn't caught up to engineering yet
-- This is a roadmap, not a criticism
-- Real data is already downloaded - just need to complete the run
-
-## Completed Research Enhancements
-
-### Failure Analysis (COMPLETED) ✅
-**Status**: Script created, tested, run successfully, and **documented**
-**Location**: `scripts/analyze_pcam_failures.py`
-**Output**: `results/pcam_real/failure_analysis/`
-**Documentation**: `docs/PCAM_FAILURE_ANALYSIS.md`
-
-**Key Findings**:
-- False Positive Rate: 3.38% (554 normal tissues misclassified as tumor)
-- False Negative Rate: 26.11% (4,276 tumors missed)
-- Model is conservative: High precision (96.2% for normal) but lower recall for tumors (73.9%)
-- Clinical concern: High false negative rate means tumors are being missed
-- Confidence analysis: Correct predictions have mean confidence 0.9653 vs 0.8832 for incorrect
-
-**Generated Artifacts**:
-- `confidence_distribution.png` - Confidence distribution for correct vs incorrect predictions
-- `error_rates.png` - Visualization of false positive and false negative rates
-- `failure_analysis.json` - Complete analysis with indices of all misclassified samples
-
-**Documentation**:
-- Comprehensive failure analysis report with clinical implications
-- Comparison to pathologist performance standards
-- Recommendations for improving sensitivity
-- Links added to documentation index
-
-### Threshold Optimization (COMPLETED) ✅
-**Status**: Script created, tested, and run successfully on real PCam results
-**Location**: `scripts/optimize_threshold.py`
-**Output**: `results/pcam_real/threshold_optimization/`
-
-**Key Findings**:
-- Recommended threshold: 0.051 (down from default 0.5)
-- Achieves 90% sensitivity (up from 73.9%)
-- Reduces false negatives from 4,276 to 1,639 (saves 2,637 cases)
-- Trade-off: Increases false positives from 554 to 3,226 (2,672 additional)
-- Clinical impact: Better to flag for review than miss cancer
-
-**Generated Artifacts**:
-- `roc_curve_optimal.png` - ROC curve with optimal threshold points
-- `precision_recall_curve.png` - Precision-recall curve analysis
-- `threshold_comparison.png` - Performance comparison across thresholds
-- `threshold_optimization.json` - Complete optimization report
-
-**Recommendations from Analysis**:
-1. Use threshold = 0.051 for clinical screening (90% sensitivity)
-2. Use threshold = 0.102 for research/validation (Youden's J optimal)
-3. Use threshold = 0.023 for high-risk populations (95% sensitivity)
-4. Implement confidence-based routing for uncertain cases
-
-## Potential Next Steps (Research Enhancements)
-
-These are optional enhancements for further research validation:
-
-### 1. Cross-Validation ⏸️ PAUSED (Partial Results Available)
-**Status**: Infrastructure validated, partial results from Fold 1  
-**Location**: `scripts/cross_validate_pcam.py`  
-**Documentation**: `docs/PCAM_CROSS_VALIDATION.md`, `CROSS_VALIDATION_STATUS.md`  
-**Estimated time**: 30-40 hours for full 5-fold CV on RTX 4070 Laptop
-
-**Partial Results (Fold 1, First 2 Epochs):**
-
-| Epoch | Val AUC | Val Accuracy | Notes |
-|-------|---------|--------------|-------|
-| 1     | 0.9764  | 90.02%       | Strong baseline |
-| 2     | 0.9824  | 93.29%       | +3.27% improvement |
-
-**Key Findings:**
-- ✅ Infrastructure working correctly (memory-mapped loading, GPU acceleration, Windows fixes)
-- ✅ Strong early performance validates training pipeline
-- ✅ Results consistent with baseline (85.26% test accuracy, 0.9394 AUC)
-- 📅 Full 5-fold CV scheduled for weekend (~50 hours)
-
-**Purpose**:
-- Assess model robustness across different train/test splits
-- Quantify performance variance (standard deviation)
-- Provide more reliable confidence intervals
-- Validate that single-split results generalize
-
-**Implementation**:
-- Stratified k-fold splitting (maintains class balance)
-- 5 folds (80% train, 20% val per fold)
-- Bootstrap confidence intervals for each fold
-- Aggregated statistics across all folds
-- Checkpoint saving for each fold
-
-**Quick Test Completed** ✅:
-- Mean AUC: 0.8934 ± 0.0316 (3 folds, 5K samples)
-- Mean Accuracy: 0.8136 ± 0.0383
-- Infrastructure validated successfully
-
-**To Resume Full CV**:
-```bash
-# Windows
-scripts\run_cv_full_gpu.bat
-
-# Linux/Mac
-bash scripts/run_cv_full.sh
-```
-
-**Expected Final Results**:
-- Accuracy: 85.20% ± 0.30% (mean ± std across 5 folds)
-- AUC: 0.9390 ± 0.0020
-- Low variance (<0.5%) indicates robust, stable model
-- Results should be consistent with single-split benchmark
-
-**Next Steps**:
-1. ✅ ~~Run quick test to verify script works~~ (COMPLETE)
-2. ✅ ~~Validate infrastructure with partial run~~ (COMPLETE)
-3. 📅 Launch full 5-fold CV this weekend
-4. Analyze variance and compare to single split
-5. Document final results in comprehensive report
-
-### 2. Hyperparameter Tuning
-- Grid search or Bayesian optimization
-- Focus on improving recall for tumor detection
-- Estimate: 2-3 days of compute time
-
-### 3. Ensemble Methods
-- Train multiple models with different architectures
-- Combine predictions for improved performance
-- Estimate: 3-5 days of compute time
-
-### 4. Test on CAMELYON16
-- Evaluate generalization to slide-level classification
-- Requires implementing slide-level aggregation
-- Estimate: 1 week of development + compute
-
-### 5. Threshold Optimization (COMPLETED) ✅
-- Analyze ROC curve to find optimal decision threshold
-- Balance precision/recall based on clinical requirements
-- Estimate: 1 day
-
-### 6. Compare to Pathologist Performance
-- Establish human performance baseline
-- Requires expert pathologist annotations
-- Estimate: Depends on availability of experts
+- Focus on high-impact improvements first
+- Maintain backward compatibility
+- Document all breaking changes
+- Keep test coverage above 55% at all times
+- Push commits after each major milestone
