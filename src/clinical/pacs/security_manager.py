@@ -105,6 +105,11 @@ class SecurityManager:
         self._active_connections: Dict[str, SecureConnection] = {}
         self._certificate_cache: Dict[str, x509.Certificate] = {}
         self._validation_cache: Dict[str, CertificateValidationResult] = {}
+        
+        # Rate limiting for connection attempts
+        self._connection_attempts: Dict[str, List[datetime]] = {}
+        self._max_attempts_per_minute = 10
+        self._lockout_duration_minutes = 15
 
         logger.info("SecurityManager initialized")
 
@@ -126,6 +131,21 @@ class SecurityManager:
             ssl.SSLError: If TLS handshake fails
         """
         logger.info(f"Establishing secure connection to {pacs_endpoint.host}:{pacs_endpoint.port}")
+
+        # Rate limiting check
+        endpoint_key = f"{pacs_endpoint.host}:{pacs_endpoint.port}"
+        if self._is_rate_limited(endpoint_key):
+            error_msg = f"Rate limit exceeded for {endpoint_key}. Too many connection attempts."
+            logger.warning(error_msg)
+            self._log_security_event(
+                event_type="rate_limit_exceeded",
+                endpoint=pacs_endpoint,
+                details={"endpoint": endpoint_key}
+            )
+            raise ConnectionError(error_msg)
+        
+        # Track connection attempt
+        self._record_connection_attempt(endpoint_key)
 
         # Log security event
         self._log_security_event(
@@ -156,6 +176,22 @@ class SecurityManager:
 
                 if not validation_result.is_valid:
                     ssl_sock.close()
+                    
+                    # Trigger security alert for validation failure
+                    logger.critical(
+                        f"SECURITY ALERT: Certificate validation failed for {pacs_endpoint.host}",
+                        extra={"errors": validation_result.errors}
+                    )
+                    self._log_security_event(
+                        event_type="certificate_validation_failed",
+                        endpoint=pacs_endpoint,
+                        details={
+                            "errors": validation_result.errors,
+                            "warnings": validation_result.warnings,
+                            "severity": "CRITICAL"
+                        }
+                    )
+                    
                     raise ssl.SSLError(f"Certificate validation failed: {validation_result.errors}")
 
             # Create secure connection object
@@ -375,15 +411,21 @@ class SecurityManager:
         else:
             context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
 
-        # Configure certificate verification
-        if security_config.verify_certificates:
-            context.check_hostname = True
-            context.verify_mode = ssl.CERT_REQUIRED
+        # Configure certificate verification (always required for production)
+        context.check_hostname = True
+        context.verify_mode = ssl.CERT_REQUIRED
 
-            # Load CA bundle if provided
-            if security_config.ca_bundle_path and security_config.ca_bundle_path.exists():
-                context.load_verify_locations(str(security_config.ca_bundle_path))
+        # Load CA bundle if provided
+        if security_config.ca_bundle_path and security_config.ca_bundle_path.exists():
+            context.load_verify_locations(str(security_config.ca_bundle_path))
+        elif security_config.verify_certificates:
+            # Use system CA bundle if no custom bundle provided
+            context.load_default_certs()
         else:
+            # Log warning if verification disabled (testing only)
+            logger.warning(
+                "Certificate verification disabled - INSECURE, only use for testing!"
+            )
             context.check_hostname = False
             context.verify_mode = ssl.CERT_NONE
 
@@ -396,8 +438,11 @@ class SecurityManager:
             else:
                 raise ValueError("Client certificate and key required for mutual authentication")
 
-        # Set secure cipher suites
-        context.set_ciphers("ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS")
+        # Set secure cipher suites (TLS 1.3 and strong TLS 1.2)
+        context.set_ciphers(
+            "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:"
+            "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305"
+        )
 
         return context
 
@@ -538,6 +583,7 @@ class SecurityManager:
         output_cert_path: Path,
         output_key_path: Path,
         validity_days: int = 365,
+        key_password: Optional[str] = None,
     ) -> OperationResult:
         """
         Generate self-signed certificate for testing purposes.
@@ -547,6 +593,7 @@ class SecurityManager:
             output_cert_path: Path to save certificate
             output_key_path: Path to save private key
             validity_days: Certificate validity period in days
+            key_password: Password to encrypt private key (recommended)
 
         Returns:
             OperationResult with generation status
@@ -591,14 +638,25 @@ class SecurityManager:
             with open(output_cert_path, "wb") as f:
                 f.write(cert.public_bytes(serialization.Encoding.PEM))
 
-            # Save private key
+            # Save private key with encryption if password provided
+            encryption_algo = (
+                serialization.BestAvailableEncryption(key_password.encode())
+                if key_password
+                else serialization.NoEncryption()
+            )
+            
             with open(output_key_path, "wb") as f:
                 f.write(
                     private_key.private_bytes(
                         encoding=serialization.Encoding.PEM,
                         format=serialization.PrivateFormat.PKCS8,
-                        encryption_algorithm=serialization.NoEncryption(),
+                        encryption_algorithm=encryption_algo,
                     )
+                )
+
+            if not key_password:
+                logger.warning(
+                    "Private key saved without encryption - use key_password parameter for production"
                 )
 
             logger.info(f"Self-signed certificate generated: {output_cert_path}")
@@ -621,6 +679,33 @@ class SecurityManager:
                 message=f"Certificate generation failed: {str(e)}",
                 errors=[str(e)],
             )
+
+    def _is_rate_limited(self, endpoint_key: str) -> bool:
+        """Check if endpoint is rate limited."""
+        if endpoint_key not in self._connection_attempts:
+            return False
+        
+        now = datetime.now()
+        attempts = self._connection_attempts[endpoint_key]
+        
+        # Remove attempts older than 1 minute
+        recent_attempts = [t for t in attempts if now - t < timedelta(minutes=1)]
+        self._connection_attempts[endpoint_key] = recent_attempts
+        
+        # Check if exceeded max attempts
+        if len(recent_attempts) >= self._max_attempts_per_minute:
+            # Check if still in lockout period
+            if recent_attempts and now - recent_attempts[0] < timedelta(minutes=self._lockout_duration_minutes):
+                return True
+        
+        return False
+    
+    def _record_connection_attempt(self, endpoint_key: str) -> None:
+        """Record connection attempt for rate limiting."""
+        if endpoint_key not in self._connection_attempts:
+            self._connection_attempts[endpoint_key] = []
+        
+        self._connection_attempts[endpoint_key].append(datetime.now())
 
     def get_security_statistics(self) -> Dict[str, Any]:
         """Get security manager statistics."""
