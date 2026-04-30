@@ -70,18 +70,19 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
             # Input validation
             if not client_id or len(client_id) > 64:
                 return RegistrationResponse(success=False, message="Invalid client ID")
-            
+
             import re
-            if not re.match(r'^[a-zA-Z0-9._-]+$', client_id):
+
+            if not re.match(r"^[a-zA-Z0-9._-]+$", client_id):
                 return RegistrationResponse(success=False, message="Invalid client ID format")
-            
+
             # Validate hostname
             if not request.hostname or len(request.hostname) > 253:
                 return RegistrationResponse(success=False, message="Invalid hostname")
-            
-            if not re.match(r'^[a-zA-Z0-9.-]+$', request.hostname):
+
+            if not re.match(r"^[a-zA-Z0-9.-]+$", request.hostname):
                 return RegistrationResponse(success=False, message="Invalid hostname format")
-            
+
             # Validate port
             if not (1 <= request.port <= 65535):
                 return RegistrationResponse(success=False, message="Invalid port")
