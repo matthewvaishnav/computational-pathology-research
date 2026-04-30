@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Set
 
+from src.utils.safe_threading import GracefulThread
+
 logger = logging.getLogger(__name__)
 
 
@@ -120,7 +122,7 @@ class ClientFailureHandler:
 
         # Monitoring
         self.monitoring_active = False
-        self.monitor_thread: Optional[threading.Thread] = None
+        self.monitor_thread: Optional[GracefulThread] = None
         self.stop_event = threading.Event()
 
         logger.info("Client failure handler initialized")
@@ -436,7 +438,17 @@ class ClientFailureHandler:
 
         self.monitoring_active = True
         self.stop_event.clear()
-        self.monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        
+        def cleanup_callback():
+            """Cleanup callback for graceful shutdown."""
+            logger.info("Failure handler monitoring cleanup completed")
+        
+        self.monitor_thread = GracefulThread(
+            target=self._monitoring_loop,
+            name="failure_handler_monitor",
+            daemon=False,
+            cleanup_callback=cleanup_callback
+        )
         self.monitor_thread.start()
         logger.info("Started client failure monitoring")
 
@@ -449,14 +461,19 @@ class ClientFailureHandler:
         self.stop_event.set()
 
         if self.monitor_thread:
-            self.monitor_thread.join(timeout=5.0)
+            if not self.monitor_thread.stop(timeout=5.0):
+                logger.warning("Failure handler monitor thread did not stop within timeout")
             self.monitor_thread = None
 
         logger.info("Stopped client failure monitoring")
 
-    def _monitoring_loop(self) -> None:
-        """Background monitoring loop."""
-        while self.monitoring_active and not self.stop_event.is_set():
+    def _monitoring_loop(self, thread: GracefulThread) -> None:
+        """Background monitoring loop.
+        
+        Args:
+            thread: GracefulThread instance for shutdown coordination
+        """
+        while not thread.should_stop():
             try:
                 # Check for timeouts
                 timed_out_clients = self.check_round_timeouts()
@@ -469,12 +486,14 @@ class ClientFailureHandler:
                             if metrics.last_failure.retry_count < self.max_retry_attempts:
                                 self.attempt_client_recovery(client_id)
 
-                # Sleep before next check
-                self.stop_event.wait(10.0)  # Check every 10 seconds
+                # Sleep before next check - exit immediately if stop requested
+                if thread.wait_or_stop(10.0):
+                    break
 
             except Exception as e:
                 logger.error(f"Error in monitoring loop: {e}")
-                self.stop_event.wait(5.0)  # Wait before retrying
+                if thread.wait_or_stop(5.0):
+                    break
 
     def reset_round(self) -> None:
         """Reset state for a new round."""

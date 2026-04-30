@@ -22,6 +22,9 @@ import numpy as np
 import torch
 from cryptography.fernet import Fernet
 
+# Import BoundedQueue and GracefulThread for memory-safe queue operations and graceful shutdown
+from src.utils.safe_threading import BoundedQueue, GracefulThread
+
 logger = logging.getLogger(__name__)
 
 
@@ -258,9 +261,14 @@ class ModelDriftDetector:
             performance_tracker: ModelPerformanceTracker instance
         """
         self.performance_tracker = performance_tracker
-        self.alert_queue = queue.Queue()
+        # Bounded queue to prevent memory exhaustion from alert accumulation
+        self.alert_queue = BoundedQueue(
+            maxsize=1000,
+            drop_policy='oldest',
+            name='alert_queue'
+        )
         self.monitoring_active = False
-        self.monitor_thread = None
+        self.monitor_thread: Optional[GracefulThread] = None
 
         logger.info("ModelDriftDetector initialized")
 
@@ -276,9 +284,19 @@ class ModelDriftDetector:
             return
 
         self.monitoring_active = True
-        self.monitor_thread = threading.Thread(
-            target=self._monitoring_loop, args=(model_version, check_interval_minutes), daemon=True
+        
+        def cleanup_callback():
+            """Cleanup callback for graceful shutdown."""
+            logger.info("Drift monitoring cleanup completed")
+        
+        self.monitor_thread = GracefulThread(
+            target=self._monitoring_loop,
+            name="drift_monitor",
+            daemon=False,
+            cleanup_callback=cleanup_callback
         )
+        # Pass arguments through a wrapper since GracefulThread target receives thread as first arg
+        self._monitor_args = (model_version, check_interval_minutes)
         self.monitor_thread.start()
 
         logger.info(f"Started drift monitoring for {model_version}")
@@ -287,7 +305,9 @@ class ModelDriftDetector:
         """Stop drift monitoring."""
         self.monitoring_active = False
         if self.monitor_thread:
-            self.monitor_thread.join(timeout=5)
+            if not self.monitor_thread.stop(timeout=5.0):
+                logger.warning("Drift monitor thread did not stop within timeout")
+            self.monitor_thread = None
 
         logger.info("Stopped drift monitoring")
 
@@ -370,9 +390,16 @@ class ModelDriftDetector:
 
         return alerts
 
-    def _monitoring_loop(self, model_version: str, check_interval_minutes: int):
-        """Continuous monitoring loop."""
-        while self.monitoring_active:
+    def _monitoring_loop(self, thread: GracefulThread):
+        """Continuous monitoring loop.
+        
+        Args:
+            thread: GracefulThread instance for shutdown coordination
+        """
+        # Get monitoring arguments
+        model_version, check_interval_minutes = self._monitor_args
+        
+        while not thread.should_stop():
             try:
                 alerts = self.check_for_drift(model_version)
 
@@ -380,12 +407,14 @@ class ModelDriftDetector:
                     self.alert_queue.put(alert)
                     logger.warning(f"Drift alert: {alert.drift_type} - {alert.severity} severity")
 
-                # Sleep for check interval
-                time.sleep(check_interval_minutes * 60)
+                # Sleep for check interval - exit immediately if stop requested
+                if thread.wait_or_stop(check_interval_minutes * 60):
+                    break
 
             except Exception as e:
                 logger.error(f"Error in monitoring loop: {e}")
-                time.sleep(60)  # Wait 1 minute before retrying
+                if thread.wait_or_stop(60):  # Wait 1 minute before retrying
+                    break
 
     def _calculate_severity(self, value: float, low: float, medium: float, high: float) -> str:
         """Calculate alert severity based on thresholds."""
@@ -418,6 +447,14 @@ class ModelDriftDetector:
         else:
             return "Moderate confidence drift. Monitor calibration quality."
 
+    def get_queue_statistics(self) -> Dict[str, Any]:
+        """Get alert queue statistics.
+        
+        Returns:
+            Dictionary with queue statistics including size, maxsize, and dropped count
+        """
+        return self.alert_queue.get_stats()
+
 
 class AutomatedRetrainingManager:
     """Manages automated model retraining triggers."""
@@ -434,7 +471,12 @@ class AutomatedRetrainingManager:
             "high_alerts": 3,  # 3 high alerts trigger retraining
             "medium_alerts": 5,  # 5 medium alerts trigger retraining
         }
-        self.retraining_queue = queue.Queue()
+        # Bounded queue to prevent memory exhaustion from retraining request accumulation
+        self.retraining_queue = BoundedQueue(
+            maxsize=1000,
+            drop_policy='oldest',
+            name='retraining_queue'
+        )
 
         logger.info("AutomatedRetrainingManager initialized")
 
@@ -533,6 +575,14 @@ class AutomatedRetrainingManager:
             "scheduled": 24,  # 24 hours for scheduled retraining
         }
         return time_estimates.get(priority, 24)
+
+    def get_queue_statistics(self) -> Dict[str, Any]:
+        """Get retraining queue statistics.
+        
+        Returns:
+            Dictionary with queue statistics including size, maxsize, and dropped count
+        """
+        return self.retraining_queue.get_stats()
 
 
 class ModelSecurityManager:

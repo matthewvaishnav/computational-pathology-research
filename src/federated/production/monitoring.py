@@ -21,6 +21,8 @@ from typing import Any, Dict, List, Optional, Union
 import psutil
 import requests
 
+from src.utils.safe_threading import GracefulThread
+
 logger = logging.getLogger(__name__)
 
 
@@ -433,7 +435,7 @@ class FederatedLearningMonitor:
 
         # Monitoring state
         self.monitoring_active = False
-        self.monitoring_thread = None
+        self.monitoring_thread: Optional[GracefulThread] = None
 
         logger.info("Federated Learning Monitor initialized")
 
@@ -515,7 +517,17 @@ class FederatedLearningMonitor:
             return
 
         self.monitoring_active = True
-        self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        
+        def cleanup_callback():
+            """Cleanup callback for graceful shutdown."""
+            logger.info("Production monitoring cleanup completed")
+        
+        self.monitoring_thread = GracefulThread(
+            target=self._monitoring_loop,
+            name="production_monitor",
+            daemon=False,
+            cleanup_callback=cleanup_callback
+        )
         self.monitoring_thread.start()
 
         logger.info("Started continuous monitoring")
@@ -524,15 +536,21 @@ class FederatedLearningMonitor:
         """Stop continuous monitoring."""
         self.monitoring_active = False
         if self.monitoring_thread:
-            self.monitoring_thread.join(timeout=5)
+            if not self.monitoring_thread.stop(timeout=5.0):
+                logger.warning("Production monitor thread did not stop within timeout")
+            self.monitoring_thread = None
 
         logger.info("Stopped continuous monitoring")
 
-    def _monitoring_loop(self):
-        """Main monitoring loop."""
+    def _monitoring_loop(self, thread: GracefulThread):
+        """Main monitoring loop.
+        
+        Args:
+            thread: GracefulThread instance for shutdown coordination
+        """
         interval = self.config.get("monitoring_interval_seconds", 30)
 
-        while self.monitoring_active:
+        while not thread.should_stop():
             try:
                 # Collect system metrics
                 system_metrics = self.system_monitor.get_system_metrics()
@@ -544,11 +562,14 @@ class FederatedLearningMonitor:
                 # Clean old metrics
                 self._cleanup_old_metrics()
 
-                time.sleep(interval)
+                # Sleep for interval - exit immediately if stop requested
+                if thread.wait_or_stop(interval):
+                    break
 
             except Exception as e:
                 logger.error(f"Monitoring loop error: {e}")
-                time.sleep(interval)
+                if thread.wait_or_stop(interval):
+                    break
 
     def record_fl_metrics(self, metrics: FederatedLearningMetrics):
         """
