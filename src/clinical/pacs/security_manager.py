@@ -225,7 +225,7 @@ class SecurityManager:
             raise ConnectionError(f"Secure connection failed: {str(e)}")
 
     def validate_certificate(
-        self, certificate: x509.Certificate, ca_bundle_path: Optional[Path]
+        self, certificate: x509.Certificate, ca_bundle_path: Optional[Path], hostname: Optional[str] = None
     ) -> CertificateValidationResult:
         """
         Validate X.509 certificate against configured Certificate Authority.
@@ -233,6 +233,7 @@ class SecurityManager:
         Args:
             certificate: Certificate to validate
             ca_bundle_path: Path to CA bundle file
+            hostname: Expected hostname for verification
 
         Returns:
             CertificateValidationResult with validation status
@@ -240,6 +241,11 @@ class SecurityManager:
         result = CertificateValidationResult(is_valid=True, certificate=certificate)
 
         try:
+            # Validate hostname if provided
+            if hostname:
+                if not self._verify_hostname(certificate, hostname):
+                    result.add_error(f"Certificate hostname verification failed for {hostname}")
+
             # Check certificate expiration
             uses_utc_properties = hasattr(certificate, "not_valid_before_utc")
             now = datetime.now(timezone.utc) if uses_utc_properties else datetime.now()
@@ -314,10 +320,74 @@ class SecurityManager:
             )
 
         except Exception as e:
-            result.add_error(f"Certificate validation error: {str(e)}")
-            logger.error(f"Certificate validation failed: {str(e)}")
+            result.add_error(f"Certificate validation failed")
+            logger.error(f"Certificate validation failed: {type(e).__name__}")
 
         return result
+
+    def _verify_hostname(self, certificate: x509.Certificate, hostname: str) -> bool:
+        """Verify certificate hostname matches expected hostname."""
+        import ipaddress
+        
+        # Validate hostname format
+        if not hostname or len(hostname) > 253:
+            return False
+        
+        # Check if hostname is an IP address
+        try:
+            ip = ipaddress.ip_address(hostname)
+            # Check IP addresses in SAN
+            try:
+                san_ext = certificate.extensions.get_extension_for_oid(
+                    x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+                ).value
+                ip_addresses = san_ext.get_values_for_type(x509.IPAddress)
+                return ip in ip_addresses
+            except x509.ExtensionNotFound:
+                return False
+        except ValueError:
+            pass
+        
+        # Check Subject Alternative Names
+        try:
+            san_ext = certificate.extensions.get_extension_for_oid(
+                x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+            ).value
+            dns_names = san_ext.get_values_for_type(x509.DNSName)
+            
+            for dns_name in dns_names:
+                if self._match_hostname(dns_name, hostname):
+                    return True
+        except x509.ExtensionNotFound:
+            pass
+        
+        # Check Common Name as fallback
+        try:
+            subject = certificate.subject
+            cn_attributes = subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+            if cn_attributes:
+                cn = cn_attributes[0].value
+                if self._match_hostname(cn, hostname):
+                    return True
+        except Exception:
+            pass
+        
+        return False
+    
+    def _match_hostname(self, cert_hostname: str, hostname: str) -> bool:
+        """Match hostname with wildcard support."""
+        # Exact match
+        if cert_hostname.lower() == hostname.lower():
+            return True
+        
+        # Wildcard match
+        if cert_hostname.startswith('*.'):
+            pattern = cert_hostname[2:].lower()
+            if '.' in hostname:
+                domain = hostname.split('.', 1)[1].lower()
+                return domain == pattern
+        
+        return False
 
     def rotate_credentials(
         self,
