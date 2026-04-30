@@ -157,10 +157,21 @@ class AES256Encryption(EncryptionProvider):
             new_key = Fernet.generate_key()
         
         old_key = self._key
+        
+        # Securely wipe old key from memory
+        if old_key:
+            # Overwrite with random data multiple times
+            for _ in range(3):
+                old_key_array = bytearray(old_key)
+                for i in range(len(old_key_array)):
+                    old_key_array[i] = secrets.randbits(8)
+            del old_key_array
+            del old_key
+        
         self._key = new_key
         self.fernet = Fernet(new_key)
         
-        logger.info("Encryption key rotated")
+        logger.info("Encryption key rotated securely")
         return new_key
     
     def re_encrypt_with_new_key(self, encrypted_data: bytes, new_key: bytes) -> bytes:
@@ -195,9 +206,13 @@ class PatientIdentifierAnonymizer:
 
     def anonymize_patient_id(self, patient_id: str) -> str:
         """Create anonymized patient identifier."""
+        # Validate input
+        if not patient_id or len(patient_id) > 100:
+            raise ValueError("Invalid patient ID")
+        
         # Use HMAC-SHA256 for consistent, irreversible anonymization
         mac = hmac.new(self.secret_key, patient_id.encode(), hashlib.sha256)
-        return f"anon_{mac.hexdigest()[:16]}"
+        return f"anon_{mac.hexdigest()[:32]}"  # Increased from 16 to 32
 
     def anonymize_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Anonymize patient identifiers in data dictionary."""
@@ -277,6 +292,13 @@ class RBACManager:
         custom_permissions: Optional[Set[Permission]] = None,
     ) -> str:
         """Create new user session."""
+        # Input validation
+        if not user_id or len(user_id) > 64:
+            raise ValueError("Invalid user ID")
+        import re
+        if not re.match(r'^[a-zA-Z0-9._-]+$', user_id):
+            raise ValueError("Invalid user ID format")
+        
         session_token = secrets.token_urlsafe(32)
         permissions = custom_permissions or self.ROLE_PERMISSIONS.get(role, set())
 
@@ -291,7 +313,7 @@ class RBACManager:
         )
 
         self.active_sessions[session_token] = session
-        self.logger.info(f"Created session for user {user_id} with role {role.value}")
+        self.logger.info(f"Created session for user {user_id}")
         return session_token
 
     def get_session(self, session_token: str) -> Optional[UserSession]:
