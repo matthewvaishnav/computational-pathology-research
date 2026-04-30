@@ -18,12 +18,173 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import jsonschema
 import psutil
 import requests
 
 from src.utils.safe_threading import GracefulThread
 
 logger = logging.getLogger(__name__)
+
+
+# Configuration JSON Schema
+# Requirements: 11.1, 11.4, 11.5
+CONFIG_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "monitoring_interval_seconds": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 3600,
+            "description": "Interval between monitoring checks in seconds"
+        },
+        "metrics_retention_hours": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 168,  # 1 week
+            "description": "How long to retain metrics history in hours"
+        },
+        "thresholds": {
+            "type": "object",
+            "properties": {
+                "cpu_percent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "CPU usage threshold percentage"
+                },
+                "memory_percent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Memory usage threshold percentage"
+                },
+                "disk_percent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Disk usage threshold percentage"
+                },
+                "gpu_utilization": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "GPU utilization threshold percentage"
+                },
+                "round_duration_minutes": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Maximum round duration in minutes"
+                },
+                "client_dropout_rate": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Maximum acceptable client dropout rate (0-1)"
+                }
+            },
+            "additionalProperties": False
+        },
+        "alerting": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Whether alerting is enabled"
+                },
+                "channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": ["log", "slack", "email", "webhook"]
+                    },
+                    "description": "List of alert channels to use"
+                },
+                "rate_limit_minutes": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Minimum minutes between duplicate alerts"
+                },
+                "slack": {
+                    "type": "object",
+                    "properties": {
+                        "webhook_url": {
+                            "type": "string",
+                            "pattern": "^https://hooks\\.slack\\.com/",
+                            "description": "Slack webhook URL"
+                        },
+                        "channel": {
+                            "type": "string",
+                            "description": "Slack channel name"
+                        }
+                    },
+                    "required": ["webhook_url"],
+                    "additionalProperties": False
+                },
+                "email": {
+                    "type": "object",
+                    "properties": {
+                        "smtp_server": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "SMTP server hostname"
+                        },
+                        "smtp_port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "description": "SMTP server port"
+                        },
+                        "username": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "SMTP username"
+                        },
+                        "password": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "SMTP password"
+                        },
+                        "from_email": {
+                            "type": "string",
+                            "format": "email",
+                            "description": "From email address"
+                        },
+                        "to_emails": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "minItems": 1,
+                            "description": "List of recipient email addresses"
+                        }
+                    },
+                    "required": ["smtp_server", "username", "password", "from_email", "to_emails"],
+                    "additionalProperties": False
+                },
+                "webhook": {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Webhook URL"
+                        },
+                        "headers": {
+                            "type": "object",
+                            "description": "Optional HTTP headers"
+                        }
+                    },
+                    "required": ["url"],
+                    "additionalProperties": False
+                }
+            },
+            "additionalProperties": False
+        }
+    },
+    "additionalProperties": True  # Allow additional fields for extensibility
+}
 
 
 class AlertSeverity(str, Enum):
@@ -440,7 +601,11 @@ class FederatedLearningMonitor:
         logger.info("Federated Learning Monitor initialized")
 
     def _load_config(self, config_path: Optional[Path]) -> Dict[str, Any]:
-        """Load monitoring configuration."""
+        """
+        Load monitoring configuration.
+        
+        Requirements: 11.2, 11.3, 11.6
+        """
         default_config = {
             "monitoring_interval_seconds": 30,
             "metrics_retention_hours": 24,
@@ -459,14 +624,40 @@ class FederatedLearningMonitor:
             try:
                 with open(config_path, "r") as f:
                     user_config = json.load(f)
+                
+                # Validate configuration against schema
+                # Requirements: 11.2, 11.3
+                try:
+                    jsonschema.validate(user_config, CONFIG_SCHEMA)
+                    logger.info("Configuration validation passed")
+                except jsonschema.ValidationError as e:
+                    # Log configuration validation errors with specific field and constraint
+                    # Requirement: 11.6
+                    error_path = ".".join(str(p) for p in e.path) if e.path else "root"
+                    logger.error(
+                        f"Configuration validation failed at '{error_path}': {e.message}"
+                    )
+                    raise ValueError(
+                        f"Configuration validation failed at '{error_path}': {e.message}"
+                    ) from e
+                
                 default_config.update(user_config)
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse config JSON from {config_path}: {e}")
+                raise ValueError(f"Invalid JSON in configuration file: {e}") from e
             except Exception as e:
+                if isinstance(e, ValueError):
+                    raise
                 logger.warning(f"Failed to load config from {config_path}: {e}")
 
         return default_config
 
     def _setup_alerters(self) -> Dict[AlertChannel, Any]:
-        """Setup alert channels."""
+        """
+        Setup alert channels.
+        
+        Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6
+        """
         alerters = {}
 
         # Always include log alerter
@@ -476,29 +667,86 @@ class FederatedLearningMonitor:
         alerting_config = self.config.get("alerting", {})
 
         # Slack
+        # Requirements: 12.1, 12.2, 12.3
         if "slack" in alerting_config:
             slack_config = alerting_config["slack"]
-            if slack_config.get("webhook_url"):
+            webhook_url = slack_config.get("webhook_url")
+            
+            if webhook_url:
+                # Validate Slack webhook URL starts with correct prefix
+                # Requirement: 12.1
+                if not webhook_url.startswith("https://hooks.slack.com/"):
+                    raise ValueError(
+                        f"Invalid Slack webhook URL: must start with 'https://hooks.slack.com/', "
+                        f"got '{webhook_url[:50]}...'"
+                    )
+                
+                # Test Slack webhook by sending test message
+                # Requirements: 12.2, 12.3
+                try:
+                    test_response = requests.post(
+                        webhook_url,
+                        json={"text": "HistoCore monitoring system initialized"},
+                        timeout=10
+                    )
+                    
+                    if test_response.status_code == 200:
+                        logger.info("Slack webhook test successful")
+                    else:
+                        # Log warning with HTTP status code if webhook test fails
+                        # Requirement: 12.3
+                        logger.warning(
+                            f"Slack webhook test failed with status {test_response.status_code}: "
+                            f"{test_response.text}"
+                        )
+                except Exception as e:
+                    logger.warning(f"Slack webhook test failed: {e}")
+                
                 alerters[AlertChannel.SLACK] = SlackAlerter(
-                    webhook_url=slack_config["webhook_url"],
+                    webhook_url=webhook_url,
                     channel=slack_config.get("channel", "#alerts"),
                 )
 
         # Email
+        # Requirements: 12.4, 12.5, 12.6
         if "email" in alerting_config:
             email_config = alerting_config["email"]
-            if all(
-                k in email_config
-                for k in ["smtp_server", "username", "password", "from_email", "to_emails"]
-            ):
-                alerters[AlertChannel.EMAIL] = EmailAlerter(
-                    smtp_server=email_config["smtp_server"],
-                    smtp_port=email_config.get("smtp_port", 587),
-                    username=email_config["username"],
-                    password=email_config["password"],
-                    from_email=email_config["from_email"],
-                    to_emails=email_config["to_emails"],
+            
+            # Validate email configurations contain all required fields
+            # Requirement: 12.4
+            required_fields = ["smtp_server", "username", "password", "from_email", "to_emails"]
+            missing_fields = [field for field in required_fields if field not in email_config]
+            
+            if missing_fields:
+                # Raise ValueError with missing field if validation fails
+                # Requirement: 12.6
+                raise ValueError(
+                    f"Email configuration missing required fields: {', '.join(missing_fields)}"
                 )
+            
+            # Validate to_emails is a list type
+            # Requirement: 12.5
+            if not isinstance(email_config["to_emails"], list):
+                # Raise ValueError with invalid field if validation fails
+                # Requirement: 12.6
+                raise ValueError(
+                    f"Email configuration field 'to_emails' must be a list, "
+                    f"got {type(email_config['to_emails']).__name__}"
+                )
+            
+            if len(email_config["to_emails"]) == 0:
+                raise ValueError(
+                    "Email configuration field 'to_emails' must contain at least one email address"
+                )
+            
+            alerters[AlertChannel.EMAIL] = EmailAlerter(
+                smtp_server=email_config["smtp_server"],
+                smtp_port=email_config.get("smtp_port", 587),
+                username=email_config["username"],
+                password=email_config["password"],
+                from_email=email_config["from_email"],
+                to_emails=email_config["to_emails"],
+            )
 
         # Webhook
         if "webhook" in alerting_config:
