@@ -86,7 +86,7 @@ The framework features **6-13x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>✅ Comprehensive Testing</h3>
-    <p>Robust validation infrastructure with 1,448 tests (55% coverage), property-based testing with Hypothesis (100+ correctness properties), bootstrap statistical validation, and parallel CI execution with pytest-xdist. Automated security validation and regression testing.</p>
+    <p>Robust validation infrastructure with 3,006 tests (55% coverage), property-based testing with Hypothesis (100+ correctness properties), bootstrap statistical validation, and parallel CI execution with pytest-xdist. Automated security validation and regression testing.</p>
   </div>
   
   <div class="feature-card">

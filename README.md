@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/matthewvaishnav/histocore/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/matthewvaishnav/histocore/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/histocore)
-[![Tests](https://img.shields.io/badge/tests-1483%20total-brightgreen.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-3006%20total-brightgreen.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/histocore)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
@@ -11,7 +11,7 @@
 
 > **Production-grade computational pathology framework with 8-12x optimized training, federated learning, and PACS integration**
 
-Advanced PyTorch framework providing state-of-the-art attention-based Multiple Instance Learning (MIL), **8-12x training optimization** (torch.compile, AMP, GPU optimization), **first open-source federated learning system** for digital pathology with differential privacy, **production-ready PACS integration** with multi-vendor support, comprehensive model interpretability tools, clinical workflow integration with DICOM/FHIR support, and robust testing infrastructure (1,483 tests, 100+ property-based tests) for whole-slide image analysis and clinical deployment.
+Advanced PyTorch framework providing state-of-the-art attention-based Multiple Instance Learning (MIL), **8-12x training optimization** (torch.compile, AMP, GPU optimization), **first open-source federated learning system** for digital pathology with differential privacy, **production-ready PACS integration** with multi-vendor support, comprehensive model interpretability tools, clinical workflow integration with DICOM/FHIR support, and robust testing infrastructure (3,006 tests, 100+ property-based tests) for whole-slide image analysis and clinical deployment.
 
 > **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
 
@@ -26,7 +26,7 @@ A production-grade PyTorch framework for computational pathology research and cl
 - 🔍 **Model Interpretability**: Grad-CAM visualizations, attention heatmaps, failure case analysis, feature importance computation, interactive dashboard
 - 🔬 **Whole-Slide Image (WSI) Processing**: Complete production-ready pipeline with OpenSlide integration for .svs, .tiff, .ndpi, DICOM formats, streaming patch extraction, CNN feature generation, and HDF5 caching
 - 🔗 **Multimodal Fusion**: Cross-modal attention for WSI, genomic, and clinical text data with temporal progression modeling
-- 📊 **Comprehensive Testing**: 1,483 tests (55% coverage) with property-based testing (Hypothesis), bootstrap statistical validation, parallel CI execution
+- 📊 **Comprehensive Testing**: 3,006 tests (55% coverage) with property-based testing (Hypothesis), bootstrap statistical validation, parallel CI execution
 - 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, audit logging, privacy protection
 - 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
 
@@ -390,7 +390,7 @@ python scripts/generate_synthetic_test_data.py --dataset pcam --samples 1000
 - **Coverage Reporting**: Detailed test coverage analysis with gap identification and improvement recommendations
 
 **Quality Assurance**:
-- **1,483 Total Tests**: Comprehensive validation across all framework components
+- **3,006 Total Tests**: Comprehensive validation across all framework components
 - **55% Code Coverage**: Systematic testing with continuous improvement tracking
 - **Automated Regression Detection**: CI/CD integration preventing quality degradation
 - **Reproducibility Validation**: Deterministic behavior verification across different environments
@@ -748,7 +748,7 @@ See [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) for details.
 
 ## Testing
 
-**Comprehensive test suite** with 1,448 tests and 55% coverage ensuring robust data pipeline reliability:
+**Comprehensive test suite** with 3,006 tests and 55% coverage ensuring robust data pipeline reliability:
 
 ```bash
 # Run all tests
@@ -789,7 +789,7 @@ open htmlcov/index.html
 - **Reproducibility Validation**: Deterministic behavior verification across different environments and hardware configurations
 
 **Quality Assurance Metrics**:
-- **Total Test Count**: 1,448 comprehensive tests across all framework components
+- **Total Test Count**: 3,006 comprehensive tests across all framework components
 - **Code Coverage**: 55% with systematic improvement tracking and gap analysis
 - **Property Test Cases**: 10,000+ generated test cases per property for thorough validation
 - **Performance Baselines**: Automated regression detection preventing performance degradation
@@ -877,7 +877,7 @@ See [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for a complete documentation index.
 - [docs/PCAM_BENCHMARK_RESULTS.md](docs/PCAM_BENCHMARK_RESULTS.md) - Synthetic subset validation for framework testing
 - [docs/MODEL_INTERPRETABILITY.md](docs/MODEL_INTERPRETABILITY.md) - Comprehensive interpretability tools: Grad-CAM, attention visualization, failure analysis, feature importance, interactive dashboard
 - [docs/CLINICAL_WORKFLOW_INTEGRATION.md](docs/CLINICAL_WORKFLOW_INTEGRATION.md) - Clinical deployment: Multi-class classification, DICOM/FHIR integration, regulatory compliance, longitudinal tracking
-- [docs/COMPREHENSIVE_DATASET_TESTING.md](docs/COMPREHENSIVE_DATASET_TESTING.md) - Testing infrastructure: 1,448 tests, property-based testing, synthetic data generation, performance benchmarking
+- [docs/COMPREHENSIVE_DATASET_TESTING.md](docs/COMPREHENSIVE_DATASET_TESTING.md) - Testing infrastructure: 3,006 tests, property-based testing, synthetic data generation, performance benchmarking
 - [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) - CAMELYON training guide and attention model implementation
 - [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) - Baseline comparison methodology and results
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture and design patterns
