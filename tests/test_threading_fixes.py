@@ -899,14 +899,82 @@ class TestWebSocketExceptionHandling:
 class TestSQLiteCleanup:
     """Unit tests for SQLite connection cleanup."""
     
-    def test_placeholder(self, temp_db):
-        """Placeholder test - will be implemented in Task 10.2."""
-        # TODO: Implement in Task 10.2
-        # - Test connection is closed on success
-        # - Test connection is closed on exception
-        # - Test rollback occurs on exception
-        # - Test cleanup with null connection
-        pass
+    def test_connection_closed_on_success(self, temp_db):
+        """Test connection is closed after successful operation."""
+        from src.utils.safe_operations import safe_db_transaction
+        from pathlib import Path
+        
+        # Perform successful operation
+        with safe_db_transaction(Path(temp_db)) as conn:
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)")
+            cursor.execute("INSERT INTO test (value) VALUES ('test')")
+        
+        # Verify connection is closed by attempting to use it
+        # (should fail if properly closed)
+        with pytest.raises(sqlite3.ProgrammingError):
+            conn.execute("SELECT * FROM test")
+    
+    def test_connection_closed_on_exception(self, temp_db):
+        """Test connection is closed even when exception occurs."""
+        from src.utils.safe_operations import safe_db_transaction
+        from pathlib import Path
+        
+        conn_ref = None
+        try:
+            with safe_db_transaction(Path(temp_db)) as conn:
+                conn_ref = conn
+                cursor = conn.cursor()
+                cursor.execute("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)")
+                # Force an error
+                raise ValueError("Test error")
+        except ValueError:
+            pass
+        
+        # Verify connection is closed
+        with pytest.raises(sqlite3.ProgrammingError):
+            conn_ref.execute("SELECT * FROM test")
+    
+    def test_rollback_on_exception(self, temp_db):
+        """Test rollback occurs when exception is raised."""
+        from src.utils.safe_operations import safe_db_transaction
+        from pathlib import Path
+        
+        # Create table first
+        with safe_db_transaction(Path(temp_db)) as conn:
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)")
+            cursor.execute("INSERT INTO test (value) VALUES ('initial')")
+        
+        # Try to insert but raise exception
+        try:
+            with safe_db_transaction(Path(temp_db)) as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO test (value) VALUES ('should_rollback')")
+                raise ValueError("Test error")
+        except ValueError:
+            pass
+        
+        # Verify rollback occurred - only initial value should exist
+        with safe_db_transaction(Path(temp_db)) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM test")
+            count = cursor.fetchone()[0]
+            assert count == 1, "Rollback should have prevented second insert"
+            
+            cursor.execute("SELECT value FROM test")
+            value = cursor.fetchone()[0]
+            assert value == 'initial', "Only initial value should exist after rollback"
+    
+    def test_cleanup_with_null_connection(self):
+        """Test cleanup handles null connection gracefully."""
+        from src.utils.safe_operations import safe_db_transaction
+        from pathlib import Path
+        
+        # Test with non-existent path - should raise but not crash
+        with pytest.raises(Exception):
+            with safe_db_transaction(Path("/nonexistent/path/db.sqlite")) as conn:
+                pass
 
 
 # =============================================================================

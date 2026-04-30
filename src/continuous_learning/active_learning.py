@@ -436,63 +436,72 @@ class ActiveLearningSystem:
         """Initialize SQLite database for persistence"""
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
 
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        # Cases table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS cases (
-                case_id TEXT PRIMARY KEY,
-                slide_id TEXT,
-                image_path TEXT,
-                prediction TEXT,
-                uncertainty_score REAL,
-                confidence REAL,
-                disease_type TEXT,
-                clinical_priority REAL,
-                metadata TEXT,
-                identified_at TIMESTAMP,
-                status TEXT DEFAULT 'pending'
-            )
-        """)
+            # Cases table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS cases (
+                    case_id TEXT PRIMARY KEY,
+                    slide_id TEXT,
+                    image_path TEXT,
+                    prediction TEXT,
+                    uncertainty_score REAL,
+                    confidence REAL,
+                    disease_type TEXT,
+                    clinical_priority REAL,
+                    metadata TEXT,
+                    identified_at TIMESTAMP,
+                    status TEXT DEFAULT 'pending'
+                )
+            """)
 
-        # Annotations table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS annotations (
-                annotation_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                case_id TEXT,
-                expert_id TEXT,
-                diagnosis TEXT,
-                confidence REAL,
-                grade TEXT,
-                stage TEXT,
-                molecular_markers TEXT,
-                comments TEXT,
-                annotation_time_seconds REAL,
-                quality_score REAL,
-                created_at TIMESTAMP,
-                FOREIGN KEY (case_id) REFERENCES cases (case_id)
-            )
-        """)
+            # Annotations table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS annotations (
+                    annotation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    case_id TEXT,
+                    expert_id TEXT,
+                    diagnosis TEXT,
+                    confidence REAL,
+                    grade TEXT,
+                    stage TEXT,
+                    molecular_markers TEXT,
+                    comments TEXT,
+                    annotation_time_seconds REAL,
+                    quality_score REAL,
+                    created_at TIMESTAMP,
+                    FOREIGN KEY (case_id) REFERENCES cases (case_id)
+                )
+            """)
 
-        # Tasks table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS tasks (
-                task_id TEXT PRIMARY KEY,
-                case_id TEXT,
-                priority REAL,
-                assigned_expert TEXT,
-                status TEXT,
-                created_at TIMESTAMP,
-                assigned_at TIMESTAMP,
-                completed_at TIMESTAMP,
-                deadline TIMESTAMP,
-                FOREIGN KEY (case_id) REFERENCES cases (case_id)
-            )
-        """)
+            # Tasks table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS tasks (
+                    task_id TEXT PRIMARY KEY,
+                    case_id TEXT,
+                    priority REAL,
+                    assigned_expert TEXT,
+                    status TEXT,
+                    created_at TIMESTAMP,
+                    assigned_at TIMESTAMP,
+                    completed_at TIMESTAMP,
+                    deadline TIMESTAMP,
+                    FOREIGN KEY (case_id) REFERENCES cases (case_id)
+                )
+            """)
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to initialize database: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def identify_uncertain_cases(
         self,
@@ -619,44 +628,53 @@ class ActiveLearningSystem:
         """Get current annotation queue for expert"""
 
         # Get tasks from database
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        query = """
-            SELECT task_id, case_id, priority, assigned_expert, status, 
-                   created_at, assigned_at, completed_at, deadline
-            FROM tasks 
-            WHERE status IN ('pending', 'in_progress')
-        """
+            query = """
+                SELECT task_id, case_id, priority, assigned_expert, status, 
+                       created_at, assigned_at, completed_at, deadline
+                FROM tasks 
+                WHERE status IN ('pending', 'in_progress')
+            """
 
-        if expert_id:
-            query += " AND (assigned_expert IS NULL OR assigned_expert = ?)"
-            cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (expert_id, limit))
-        else:
-            cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (limit,))
+            if expert_id:
+                query += " AND (assigned_expert IS NULL OR assigned_expert = ?)"
+                cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (expert_id, limit))
+            else:
+                cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (limit,))
 
-        tasks = []
-        for row in cursor.fetchall():
-            # Get case data
-            case_data = self._get_case_by_id(row[1])
-            if case_data:
-                task = AnnotationTask(
-                    task_id=row[0],
-                    case_data=case_data,
-                    ai_prediction=case_data.prediction,
-                    uncertainty_score=case_data.uncertainty_score,
-                    priority=row[2],
-                    assigned_expert=row[3],
-                    status=AnnotationStatus(row[4]),
-                    created_at=datetime.fromisoformat(row[5]),
-                    assigned_at=datetime.fromisoformat(row[6]) if row[6] else None,
-                    completed_at=datetime.fromisoformat(row[7]) if row[7] else None,
-                    deadline=datetime.fromisoformat(row[8]) if row[8] else None,
-                )
-                tasks.append(task)
+            tasks = []
+            for row in cursor.fetchall():
+                # Get case data
+                case_data = self._get_case_by_id(row[1])
+                if case_data:
+                    task = AnnotationTask(
+                        task_id=row[0],
+                        case_data=case_data,
+                        ai_prediction=case_data.prediction,
+                        uncertainty_score=case_data.uncertainty_score,
+                        priority=row[2],
+                        assigned_expert=row[3],
+                        status=AnnotationStatus(row[4]),
+                        created_at=datetime.fromisoformat(row[5]),
+                        assigned_at=datetime.fromisoformat(row[6]) if row[6] else None,
+                        completed_at=datetime.fromisoformat(row[7]) if row[7] else None,
+                        deadline=datetime.fromisoformat(row[8]) if row[8] else None,
+                    )
+                    tasks.append(task)
 
-        conn.close()
-        return tasks
+            return tasks
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to get annotation queue: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get system statistics"""
@@ -677,109 +695,145 @@ class ActiveLearningSystem:
 
     def _store_cases(self, cases: List[CaseForReview]):
         """Store cases in database"""
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        for case in cases:
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO cases 
-                (case_id, slide_id, image_path, prediction, uncertainty_score, 
-                 confidence, disease_type, clinical_priority, metadata, identified_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    case.case_id,
-                    case.slide_id,
-                    case.image_path,
-                    json.dumps(case.prediction),
-                    case.uncertainty_score,
-                    case.confidence,
-                    case.disease_type,
-                    case.clinical_priority,
-                    json.dumps(case.metadata),
-                    case.identified_at.isoformat(),
-                ),
-            )
+            for case in cases:
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO cases 
+                    (case_id, slide_id, image_path, prediction, uncertainty_score, 
+                     confidence, disease_type, clinical_priority, metadata, identified_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        case.case_id,
+                        case.slide_id,
+                        case.image_path,
+                        json.dumps(case.prediction),
+                        case.uncertainty_score,
+                        case.confidence,
+                        case.disease_type,
+                        case.clinical_priority,
+                        json.dumps(case.metadata),
+                        case.identified_at.isoformat(),
+                    ),
+                )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to store cases: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def _store_task(self, task: AnnotationTask):
         """Store task in database"""
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO tasks 
-            (task_id, case_id, priority, assigned_expert, status, 
-             created_at, assigned_at, completed_at, deadline)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                task.task_id,
-                task.case_data.case_id,
-                task.priority,
-                task.assigned_expert,
-                task.status.value,
-                task.created_at.isoformat(),
-                task.assigned_at.isoformat() if task.assigned_at else None,
-                task.completed_at.isoformat() if task.completed_at else None,
-                task.deadline.isoformat() if task.deadline else None,
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO tasks 
+                (task_id, case_id, priority, assigned_expert, status, 
+                 created_at, assigned_at, completed_at, deadline)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    task.task_id,
+                    task.case_data.case_id,
+                    task.priority,
+                    task.assigned_expert,
+                    task.status.value,
+                    task.created_at.isoformat(),
+                    task.assigned_at.isoformat() if task.assigned_at else None,
+                    task.completed_at.isoformat() if task.completed_at else None,
+                    task.deadline.isoformat() if task.deadline else None,
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to store task: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def _store_annotation(self, annotation: ExpertAnnotation):
         """Store annotation in database"""
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            INSERT INTO annotations 
-            (case_id, expert_id, diagnosis, confidence, grade, stage, 
-             molecular_markers, comments, annotation_time_seconds, 
-             quality_score, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                annotation.case_id,
-                annotation.expert_id,
-                annotation.diagnosis,
-                annotation.confidence,
-                annotation.grade,
-                annotation.stage,
-                json.dumps(annotation.molecular_markers),
-                annotation.comments,
-                annotation.annotation_time_seconds,
-                annotation.quality_score,
-                annotation.created_at.isoformat(),
-            ),
-        )
+            cursor.execute(
+                """
+                INSERT INTO annotations 
+                (case_id, expert_id, diagnosis, confidence, grade, stage, 
+                 molecular_markers, comments, annotation_time_seconds, 
+                 quality_score, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    annotation.case_id,
+                    annotation.expert_id,
+                    annotation.diagnosis,
+                    annotation.confidence,
+                    annotation.grade,
+                    annotation.stage,
+                    json.dumps(annotation.molecular_markers),
+                    annotation.comments,
+                    annotation.annotation_time_seconds,
+                    annotation.quality_score,
+                    annotation.created_at.isoformat(),
+                ),
+            )
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to store annotation: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
     def _get_case_by_id(self, case_id: str) -> Optional[CaseForReview]:
         """Get case by ID from database"""
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            SELECT case_id, slide_id, image_path, prediction, uncertainty_score,
-                   confidence, disease_type, clinical_priority, metadata, identified_at
-            FROM cases WHERE case_id = ?
-        """,
-            (case_id,),
-        )
+            cursor.execute(
+                """
+                SELECT case_id, slide_id, image_path, prediction, uncertainty_score,
+                       confidence, disease_type, clinical_priority, metadata, identified_at
+                FROM cases WHERE case_id = ?
+            """,
+                (case_id,),
+            )
 
-        row = cursor.fetchone()
-        conn.close()
+            row = cursor.fetchone()
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to get case by ID: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
         if row:
             return CaseForReview(
@@ -799,42 +853,51 @@ class ActiveLearningSystem:
 
     def _get_recent_annotations(self, days: int = 7) -> List[ExpertAnnotation]:
         """Get recent annotations from database"""
-        conn = sqlite3.connect(self.database_path)
-        cursor = conn.cursor()
+        conn = None
+        try:
+            conn = sqlite3.connect(self.database_path)
+            cursor = conn.cursor()
 
-        cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
+            cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
 
-        cursor.execute(
-            """
-            SELECT case_id, expert_id, diagnosis, confidence, grade, stage,
-                   molecular_markers, comments, annotation_time_seconds,
-                   quality_score, created_at
-            FROM annotations 
-            WHERE created_at >= ?
-            ORDER BY created_at DESC
-        """,
-            (cutoff_date,),
-        )
-
-        annotations = []
-        for row in cursor.fetchall():
-            annotation = ExpertAnnotation(
-                case_id=row[0],
-                expert_id=row[1],
-                diagnosis=row[2],
-                confidence=row[3],
-                grade=row[4],
-                stage=row[5],
-                molecular_markers=json.loads(row[6]),
-                comments=row[7],
-                annotation_time_seconds=row[8],
-                quality_score=row[9],
-                created_at=datetime.fromisoformat(row[10]),
+            cursor.execute(
+                """
+                SELECT case_id, expert_id, diagnosis, confidence, grade, stage,
+                       molecular_markers, comments, annotation_time_seconds,
+                       quality_score, created_at
+                FROM annotations 
+                WHERE created_at >= ?
+                ORDER BY created_at DESC
+            """,
+                (cutoff_date,),
             )
-            annotations.append(annotation)
 
-        conn.close()
-        return annotations
+            annotations = []
+            for row in cursor.fetchall():
+                annotation = ExpertAnnotation(
+                    case_id=row[0],
+                    expert_id=row[1],
+                    diagnosis=row[2],
+                    confidence=row[3],
+                    grade=row[4],
+                    stage=row[5],
+                    molecular_markers=json.loads(row[6]),
+                    comments=row[7],
+                    annotation_time_seconds=row[8],
+                    quality_score=row[9],
+                    created_at=datetime.fromisoformat(row[10]),
+                )
+                annotations.append(annotation)
+
+            return annotations
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logging.error(f"Failed to get recent annotations: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
 
 
 # Example usage
