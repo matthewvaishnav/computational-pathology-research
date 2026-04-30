@@ -417,7 +417,7 @@ def create_performance_visualization(results: Dict[str, Any]):
             # Show plot if in interactive mode
             try:
                 plt.show()
-            except:
+            except (ImportError, RuntimeError) as e:
                 print("Plot display not available in current environment")
         
     except Exception as e:
