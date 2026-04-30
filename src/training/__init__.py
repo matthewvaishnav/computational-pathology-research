@@ -336,17 +336,43 @@ class SupervisedTrainer:
         self.model.eval()
         self.task_head.eval()
         self.val_metrics.reset()
+        
+        # Initialize tensor variables for cleanup
+        embeddings = None
+        logits = None
 
-        for batch in val_loader:
-            batch = self._move_to_device(batch)
-            labels = batch.pop("label")
+        try:
+            for batch in val_loader:
+                batch = self._move_to_device(batch)
+                labels = batch.pop("label")
 
-            with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
-                embeddings = self.model(batch)
-                logits = self.task_head(embeddings)
-                loss = self._compute_loss(logits, labels)
+                with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
+                    embeddings = self.model(batch)
+                    logits = self.task_head(embeddings)
+                    loss = self._compute_loss(logits, labels)
 
-            self.val_metrics.update(logits, labels, loss.item())
+                self.val_metrics.update(logits, labels, loss.item())
+                
+                # Clean up tensors after each batch
+                if embeddings is not None:
+                    del embeddings
+                    embeddings = None
+                if logits is not None:
+                    del logits
+                    logits = None
+                
+                # Periodic GPU cache cleanup
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+        finally:
+            # Final cleanup
+            if embeddings is not None:
+                del embeddings
+            if logits is not None:
+                del logits
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         return self.val_metrics.compute()
 
@@ -529,17 +555,43 @@ class SupervisedTrainer:
         test_metrics = MetricsComputer(
             self.metrics_num_classes, binary_single_logit=self.binary_single_logit
         )
+        
+        # Initialize tensor variables for cleanup
+        embeddings = None
+        logits = None
 
-        for batch in test_loader:
-            batch = self._move_to_device(batch)
-            labels = batch.pop("label")
+        try:
+            for batch in test_loader:
+                batch = self._move_to_device(batch)
+                labels = batch.pop("label")
 
-            with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
-                embeddings = self.model(batch)
-                logits = self.task_head(embeddings)
-                loss = self._compute_loss(logits, labels)
+                with torch.amp.autocast(self.amp_device_type, enabled=self.use_amp):
+                    embeddings = self.model(batch)
+                    logits = self.task_head(embeddings)
+                    loss = self._compute_loss(logits, labels)
 
-            test_metrics.update(logits, labels, loss.item())
+                test_metrics.update(logits, labels, loss.item())
+                
+                # Clean up tensors after each batch
+                if embeddings is not None:
+                    del embeddings
+                    embeddings = None
+                if logits is not None:
+                    del logits
+                    logits = None
+                
+                # Periodic GPU cache cleanup
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+        finally:
+            # Final cleanup
+            if embeddings is not None:
+                del embeddings
+            if logits is not None:
+                del logits
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         metrics = test_metrics.compute()
 
