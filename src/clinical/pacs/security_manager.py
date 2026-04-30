@@ -132,6 +132,29 @@ class SecurityManager:
         """
         logger.info(f"Establishing secure connection to {pacs_endpoint.host}:{pacs_endpoint.port}")
 
+        # Input validation
+        if not pacs_endpoint or not pacs_endpoint.host:
+            raise ValueError("Invalid PACS endpoint")
+        
+        # Validate hostname format
+        import re
+        if not re.match(r'^[a-zA-Z0-9.-]+$', pacs_endpoint.host) or len(pacs_endpoint.host) > 253:
+            raise ValueError("Invalid hostname format")
+        
+        # Validate port range
+        if not (1 <= pacs_endpoint.port <= 65535):
+            raise ValueError("Invalid port number")
+        
+        # Validate certificate paths if provided
+        if pacs_endpoint.security_config:
+            sec_config = pacs_endpoint.security_config
+            if sec_config.ca_bundle_path and not sec_config.ca_bundle_path.exists():
+                raise ValueError(f"CA bundle not found: {sec_config.ca_bundle_path}")
+            if sec_config.client_cert_path and not sec_config.client_cert_path.exists():
+                raise ValueError(f"Client certificate not found: {sec_config.client_cert_path}")
+            if sec_config.client_key_path and not sec_config.client_key_path.exists():
+                raise ValueError(f"Client key not found: {sec_config.client_key_path}")
+
         # Rate limiting check
         endpoint_key = f"{pacs_endpoint.host}:{pacs_endpoint.port}"
         if self._is_rate_limited(endpoint_key):
@@ -751,22 +774,27 @@ class SecurityManager:
             )
 
     def _is_rate_limited(self, endpoint_key: str) -> bool:
-        """Check if endpoint is rate limited."""
+        """Check if endpoint is rate limited with exponential backoff."""
         if endpoint_key not in self._connection_attempts:
             return False
         
         now = datetime.now()
         attempts = self._connection_attempts[endpoint_key]
         
-        # Remove attempts older than 1 minute
-        recent_attempts = [t for t in attempts if now - t < timedelta(minutes=1)]
+        # Remove attempts older than lockout window
+        lockout_window = timedelta(minutes=self._lockout_duration_minutes)
+        recent_attempts = [t for t in attempts if now - t < lockout_window]
         self._connection_attempts[endpoint_key] = recent_attempts
         
-        # Check if exceeded max attempts
         if len(recent_attempts) >= self._max_attempts_per_minute:
-            # Check if still in lockout period
-            if recent_attempts and now - recent_attempts[0] < timedelta(minutes=self._lockout_duration_minutes):
-                return True
+            # Calculate exponential backoff
+            attempt_count = len(recent_attempts)
+            backoff_minutes = min(2 ** (attempt_count - self._max_attempts_per_minute), 60)  # Max 1 hour
+            
+            if recent_attempts:
+                last_attempt = max(recent_attempts)
+                if now - last_attempt < timedelta(minutes=backoff_minutes):
+                    return True
         
         return False
     
