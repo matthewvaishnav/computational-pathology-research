@@ -202,8 +202,7 @@ class SecurityManager:
                     
                     # Trigger security alert for validation failure
                     logger.critical(
-                        f"SECURITY ALERT: Certificate validation failed for {pacs_endpoint.host}",
-                        extra={"errors": validation_result.errors}
+                        f"SECURITY ALERT: Certificate validation failed for {pacs_endpoint.host}"
                     )
                     self._log_security_event(
                         event_type="certificate_validation_failed",
@@ -215,7 +214,7 @@ class SecurityManager:
                         }
                     )
                     
-                    raise ssl.SSLError(f"Certificate validation failed: {validation_result.errors}")
+                    raise ssl.SSLError("Certificate validation failed")
 
             # Create secure connection object
             connection = SecureConnection(
@@ -239,13 +238,13 @@ class SecurityManager:
             return connection
 
         except Exception as e:
-            # Log connection failure
+            # Log connection failure without exposing sensitive details
             self._log_security_event(
-                event_type="connection_failed", endpoint=pacs_endpoint, details={"error": str(e)}
+                event_type="connection_failed", endpoint=pacs_endpoint, details={"error_type": type(e).__name__}
             )
 
-            logger.error(f"Failed to establish secure connection: {str(e)}")
-            raise ConnectionError(f"Secure connection failed: {str(e)}")
+            logger.error(f"Failed to establish secure connection to {pacs_endpoint.host}")
+            raise ConnectionError("Secure connection failed")
 
     def validate_certificate(
         self, certificate: x509.Certificate, ca_bundle_path: Optional[Path], hostname: Optional[str] = None
