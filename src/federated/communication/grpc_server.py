@@ -215,8 +215,8 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
                 round_id=round_id,
                 model_state_dict=model_bytes,
                 aggregation_algorithm="FedAvg",
-                local_epochs=5,  # TODO: Make configurable
-                learning_rate=0.01,  # TODO: Make configurable
+                local_epochs=self.orchestrator.local_epochs,
+                learning_rate=self.orchestrator.learning_rate,
             )
 
         except Exception as e:

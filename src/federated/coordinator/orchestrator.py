@@ -33,6 +33,8 @@ class TrainingOrchestrator:
         model: nn.Module,
         aggregator: Optional[FedAvgAggregator] = None,
         checkpoint_dir: str = "./fl_checkpoints",
+        local_epochs: int = 5,
+        learning_rate: float = 0.01,
     ):
         """
         Initialize training orchestrator.
@@ -41,15 +43,25 @@ class TrainingOrchestrator:
             model: Global model to train
             aggregator: Aggregation algorithm (default: FedAvg)
             checkpoint_dir: Directory for saving checkpoints
+            local_epochs: Number of local training epochs per round
+            learning_rate: Learning rate for client training
         """
         self.global_model = model
         self.aggregator = aggregator or FedAvgAggregator()
         self.checkpoint_dir = Path(checkpoint_dir)
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Training hyperparameters
+        self.local_epochs = local_epochs
+        self.learning_rate = learning_rate
+        
+        # Initialize optimizer for global model
+        self.optimizer = torch.optim.SGD(self.global_model.parameters(), lr=learning_rate)
 
         self.current_version = 0
         self.current_round = 0
         self.training_history: List[TrainingRound] = []
+        self.round_contributors: Dict[int, List[str]] = {}  # round_id -> client_ids
 
     def start_round(self, client_ids: List[str]) -> TrainingRound:
         """
@@ -94,6 +106,10 @@ class TrainingOrchestrator:
         Returns:
             aggregated_update: Aggregated gradients
         """
+        # Track contributors for this round
+        contributor_ids = [update.client_id for update in client_updates]
+        self.round_contributors[self.current_round] = contributor_ids
+        
         return self.aggregator.aggregate(client_updates)
 
     def update_global_model(self, aggregated_update: Dict[str, torch.Tensor]):
@@ -141,10 +157,14 @@ class TrainingOrchestrator:
             round_id=self.current_round,
             timestamp=datetime.now(),
             model_state_dict=self.global_model.state_dict(),
-            optimizer_state_dict={},  # TODO: Add optimizer state
-            contributors=[],  # TODO: Track contributors
+            optimizer_state_dict=self.optimizer.state_dict(),
+            contributors=self.round_contributors.get(self.current_round, []),
             metrics=metrics or {},
-            provenance={"aggregation_algorithm": self.aggregator.algorithm_name},
+            provenance={
+                "aggregation_algorithm": self.aggregator.algorithm_name,
+                "local_epochs": self.local_epochs,
+                "learning_rate": self.learning_rate,
+            },
         )
 
         checkpoint_path = self.checkpoint_dir / f"model_v{self.current_version}.pt"
