@@ -261,27 +261,31 @@ class ProgressiveVisualizer:
         normalized_heatmap = np.zeros_like(self.attention_heatmap)
         normalized_heatmap[self.coverage_mask] = self.attention_heatmap[self.coverage_mask]
 
-        # Create figure
-        fig, ax = plt.subplots(figsize=(12, 10), dpi=100)
+        # Create figure with try-finally for cleanup
+        fig = None
+        try:
+            fig, ax = plt.subplots(figsize=(12, 10), dpi=100)
 
-        # Plot heatmap
-        im = ax.imshow(
-            normalized_heatmap, cmap=self.colormap, interpolation="bilinear", aspect="auto"
-        )
+            # Plot heatmap
+            im = ax.imshow(
+                normalized_heatmap, cmap=self.colormap, interpolation="bilinear", aspect="auto"
+            )
 
-        # Add colorbar
-        cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-        cbar.set_label("Attention Weight", rotation=270, labelpad=20)
+            # Add colorbar
+            cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+            cbar.set_label("Attention Weight", rotation=270, labelpad=20)
 
-        # Labels and title
-        ax.set_xlabel("Tile X")
-        ax.set_ylabel("Tile Y")
-        ax.set_title(f"Real-Time Attention Heatmap\n{patches_processed} patches processed")
+            # Labels and title
+            ax.set_xlabel("Tile X")
+            ax.set_ylabel("Tile Y")
+            ax.set_title(f"Real-Time Attention Heatmap\n{patches_processed} patches processed")
 
-        # Save
-        output_path = self.output_dir / "attention_heatmap_realtime.png"
-        plt.savefig(output_path, bbox_inches="tight", dpi=150)
-        plt.close(fig)
+            # Save
+            output_path = self.output_dir / "attention_heatmap_realtime.png"
+            plt.savefig(output_path, bbox_inches="tight", dpi=150)
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
     def _save_confidence_plot(self):
         """Save confidence progression plot."""
@@ -295,25 +299,29 @@ class ProgressiveVisualizer:
         # Normalize timestamps to start at 0
         timestamps = timestamps - timestamps[0]
 
-        # Create figure
-        fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
+        # Create figure with try-finally for cleanup
+        fig = None
+        try:
+            fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
 
-        # Plot confidence over time
-        ax.plot(timestamps, confidences, "b-", linewidth=2, label="Confidence")
-        ax.axhline(y=0.95, color="r", linestyle="--", linewidth=1, label="Target (0.95)")
+            # Plot confidence over time
+            ax.plot(timestamps, confidences, "b-", linewidth=2, label="Confidence")
+            ax.axhline(y=0.95, color="r", linestyle="--", linewidth=1, label="Target (0.95)")
 
-        # Labels and title
-        ax.set_xlabel("Time (seconds)")
-        ax.set_ylabel("Confidence")
-        ax.set_title("Real-Time Confidence Progression")
-        ax.set_ylim([0.0, 1.0])
-        ax.grid(True, alpha=0.3)
-        ax.legend()
+            # Labels and title
+            ax.set_xlabel("Time (seconds)")
+            ax.set_ylabel("Confidence")
+            ax.set_title("Real-Time Confidence Progression")
+            ax.set_ylim([0.0, 1.0])
+            ax.grid(True, alpha=0.3)
+            ax.legend()
 
-        # Save
-        output_path = self.output_dir / "confidence_progression.png"
-        plt.savefig(output_path, bbox_inches="tight", dpi=150)
-        plt.close(fig)
+            # Save
+            output_path = self.output_dir / "confidence_progression.png"
+            plt.savefig(output_path, bbox_inches="tight", dpi=150)
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
     def save_final_visualizations(self, export_formats: List[str] = ["png"]):
         """Save final high-quality visualizations.
@@ -332,30 +340,33 @@ class ProgressiveVisualizer:
             if max_val > 0:
                 normalized_heatmap = normalized_heatmap / max_val
 
-        # Create high-quality figure
-        fig, ax = plt.subplots(figsize=(16, 12), dpi=300)
+        # Create high-quality figure with try-finally for cleanup
+        fig = None
+        try:
+            fig, ax = plt.subplots(figsize=(16, 12), dpi=300)
 
-        # Plot heatmap
-        im = ax.imshow(
-            normalized_heatmap, cmap=self.colormap, interpolation="bilinear", aspect="auto"
-        )
+            # Plot heatmap
+            im = ax.imshow(
+                normalized_heatmap, cmap=self.colormap, interpolation="bilinear", aspect="auto"
+            )
 
-        # Add colorbar
-        cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-        cbar.set_label("Normalized Attention Weight", rotation=270, labelpad=25, fontsize=12)
+            # Add colorbar
+            cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+            cbar.set_label("Normalized Attention Weight", rotation=270, labelpad=25, fontsize=12)
 
-        # Labels and title
-        ax.set_xlabel("Tile X", fontsize=12)
-        ax.set_ylabel("Tile Y", fontsize=12)
-        ax.set_title("Final Attention Heatmap", fontsize=14, fontweight="bold")
+            # Labels and title
+            ax.set_xlabel("Tile X", fontsize=12)
+            ax.set_ylabel("Tile Y", fontsize=12)
+            ax.set_title("Final Attention Heatmap", fontsize=14, fontweight="bold")
 
-        # Save in requested formats
-        for fmt in export_formats:
-            output_path = self.output_dir / f"attention_heatmap_final.{fmt}"
-            plt.savefig(output_path, bbox_inches="tight", dpi=300, format=fmt)
-            logger.info(f"Saved final heatmap: {output_path}")
-
-        plt.close(fig)
+            # Save in requested formats
+            for fmt in export_formats:
+                output_path = self.output_dir / f"attention_heatmap_final.{fmt}"
+                plt.savefig(output_path, bbox_inches="tight", dpi=300, format=fmt)
+                logger.info(f"Saved final heatmap: {output_path}")
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
         # Save final confidence plot
         self._save_final_confidence_plot(export_formats)
@@ -373,31 +384,34 @@ class ProgressiveVisualizer:
         confidences = np.array([c for _, c in self.confidence_history])
         timestamps = timestamps - timestamps[0]
 
-        # Create figure
-        fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
+        # Create figure with try-finally for cleanup
+        fig = None
+        try:
+            fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
 
-        # Plot confidence
-        ax.plot(timestamps, confidences, "b-", linewidth=2.5, label="Confidence")
-        ax.axhline(y=0.95, color="r", linestyle="--", linewidth=1.5, label="Target (0.95)")
+            # Plot confidence
+            ax.plot(timestamps, confidences, "b-", linewidth=2.5, label="Confidence")
+            ax.axhline(y=0.95, color="r", linestyle="--", linewidth=1.5, label="Target (0.95)")
 
-        # Fill area under curve
-        ax.fill_between(timestamps, 0, confidences, alpha=0.2, color="blue")
+            # Fill area under curve
+            ax.fill_between(timestamps, 0, confidences, alpha=0.2, color="blue")
 
-        # Labels and title
-        ax.set_xlabel("Time (seconds)", fontsize=12)
-        ax.set_ylabel("Confidence", fontsize=12)
-        ax.set_title("Confidence Progression Over Time", fontsize=14, fontweight="bold")
-        ax.set_ylim([0.0, 1.0])
-        ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=11)
+            # Labels and title
+            ax.set_xlabel("Time (seconds)", fontsize=12)
+            ax.set_ylabel("Confidence", fontsize=12)
+            ax.set_title("Confidence Progression Over Time", fontsize=14, fontweight="bold")
+            ax.set_ylim([0.0, 1.0])
+            ax.grid(True, alpha=0.3)
+            ax.legend(fontsize=11)
 
-        # Save in requested formats
-        for fmt in export_formats:
-            output_path = self.output_dir / f"confidence_progression_final.{fmt}"
-            plt.savefig(output_path, bbox_inches="tight", dpi=300, format=fmt)
-            logger.info(f"Saved final confidence plot: {output_path}")
-
-        plt.close(fig)
+            # Save in requested formats
+            for fmt in export_formats:
+                output_path = self.output_dir / f"confidence_progression_final.{fmt}"
+                plt.savefig(output_path, bbox_inches="tight", dpi=300, format=fmt)
+                logger.info(f"Saved final confidence plot: {output_path}")
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
     def _save_statistics_dashboard(self, export_formats: List[str]):
         """Save processing statistics dashboard."""
@@ -421,33 +435,35 @@ class ProgressiveVisualizer:
             throughputs = np.array([t for _, t in self.throughput_history])
             avg_throughput = throughputs.mean()
 
-        # Create dashboard figure with subplots
-        fig = plt.figure(figsize=(16, 10), dpi=300)
-        gs = fig.add_gridspec(3, 2, hspace=0.3, wspace=0.3)
+        # Create dashboard figure with subplots with try-finally for cleanup
+        fig = None
+        try:
+            fig = plt.figure(figsize=(16, 10), dpi=300)
+            gs = fig.add_gridspec(3, 2, hspace=0.3, wspace=0.3)
 
-        # 1. Confidence over time
-        ax1 = fig.add_subplot(gs[0, :])
-        ax1.plot(timestamps, confidences, "b-", linewidth=2)
-        ax1.axhline(y=0.95, color="r", linestyle="--", linewidth=1)
-        ax1.set_xlabel("Time (seconds)")
-        ax1.set_ylabel("Confidence")
-        ax1.set_title("Confidence Progression")
-        ax1.grid(True, alpha=0.3)
-        ax1.set_ylim([0.0, 1.0])
+            # 1. Confidence over time
+            ax1 = fig.add_subplot(gs[0, :])
+            ax1.plot(timestamps, confidences, "b-", linewidth=2)
+            ax1.axhline(y=0.95, color="r", linestyle="--", linewidth=1)
+            ax1.set_xlabel("Time (seconds)")
+            ax1.set_ylabel("Confidence")
+            ax1.set_title("Confidence Progression")
+            ax1.grid(True, alpha=0.3)
+            ax1.set_ylim([0.0, 1.0])
 
-        # 2. Coverage heatmap
-        ax2 = fig.add_subplot(gs[1, 0])
-        coverage_viz = self.coverage_mask.astype(float)
-        ax2.imshow(coverage_viz, cmap="Greys", aspect="auto")
-        ax2.set_xlabel("Tile X")
-        ax2.set_ylabel("Tile Y")
-        ax2.set_title(f'Spatial Coverage ({stats["coverage_percent"]:.1f}%)')
+            # 2. Coverage heatmap
+            ax2 = fig.add_subplot(gs[1, 0])
+            coverage_viz = self.coverage_mask.astype(float)
+            ax2.imshow(coverage_viz, cmap="Greys", aspect="auto")
+            ax2.set_xlabel("Tile X")
+            ax2.set_ylabel("Tile Y")
+            ax2.set_title(f'Spatial Coverage ({stats["coverage_percent"]:.1f}%)')
 
-        # 3. Statistics text
-        ax3 = fig.add_subplot(gs[1, 1])
-        ax3.axis("off")
+            # 3. Statistics text
+            ax3 = fig.add_subplot(gs[1, 1])
+            ax3.axis("off")
 
-        stats_text = f"""
+            stats_text = f"""
         Processing Statistics
         ═══════════════════════════
         
@@ -462,55 +478,56 @@ class ProgressiveVisualizer:
         Avg Throughput: {avg_throughput:.1f} patches/sec
         """
 
-        ax3.text(
-            0.1,
-            0.5,
-            stats_text,
-            fontsize=11,
-            family="monospace",
-            verticalalignment="center",
-            transform=ax3.transAxes,
-        )
+            ax3.text(
+                0.1,
+                0.5,
+                stats_text,
+                fontsize=11,
+                family="monospace",
+                verticalalignment="center",
+                transform=ax3.transAxes,
+            )
 
-        # 4. Attention distribution histogram
-        ax4 = fig.add_subplot(gs[2, 0])
-        attention_values = self.attention_heatmap[self.coverage_mask]
-        if len(attention_values) > 0:
-            ax4.hist(attention_values, bins=50, color="steelblue", alpha=0.7, edgecolor="black")
-            ax4.set_xlabel("Attention Weight")
-            ax4.set_ylabel("Frequency")
-            ax4.set_title("Attention Weight Distribution")
-            ax4.grid(True, alpha=0.3, axis="y")
+            # 4. Attention distribution histogram
+            ax4 = fig.add_subplot(gs[2, 0])
+            attention_values = self.attention_heatmap[self.coverage_mask]
+            if len(attention_values) > 0:
+                ax4.hist(attention_values, bins=50, color="steelblue", alpha=0.7, edgecolor="black")
+                ax4.set_xlabel("Attention Weight")
+                ax4.set_ylabel("Frequency")
+                ax4.set_title("Attention Weight Distribution")
+                ax4.grid(True, alpha=0.3, axis="y")
 
-        # 5. Confidence statistics
-        ax5 = fig.add_subplot(gs[2, 1])
-        confidence_stats = {
-            "Min": confidences.min(),
-            "Q1": np.percentile(confidences, 25),
-            "Median": np.median(confidences),
-            "Q3": np.percentile(confidences, 75),
-            "Max": confidences.max(),
-        }
+            # 5. Confidence statistics
+            ax5 = fig.add_subplot(gs[2, 1])
+            confidence_stats = {
+                "Min": confidences.min(),
+                "Q1": np.percentile(confidences, 25),
+                "Median": np.median(confidences),
+                "Q3": np.percentile(confidences, 75),
+                "Max": confidences.max(),
+            }
 
-        ax5.boxplot([confidences], vert=True, widths=0.5)
-        ax5.set_ylabel("Confidence")
-        ax5.set_title("Confidence Distribution")
-        ax5.set_xticklabels(["All Updates"])
-        ax5.grid(True, alpha=0.3, axis="y")
-        ax5.set_ylim([0.0, 1.0])
+            ax5.boxplot([confidences], vert=True, widths=0.5)
+            ax5.set_ylabel("Confidence")
+            ax5.set_title("Confidence Distribution")
+            ax5.set_xticklabels(["All Updates"])
+            ax5.grid(True, alpha=0.3, axis="y")
+            ax5.set_ylim([0.0, 1.0])
 
-        # Overall title
-        fig.suptitle(
-            "Real-Time WSI Streaming - Processing Dashboard", fontsize=16, fontweight="bold", y=0.98
-        )
+            # Overall title
+            fig.suptitle(
+                "Real-Time WSI Streaming - Processing Dashboard", fontsize=16, fontweight="bold", y=0.98
+            )
 
-        # Save in requested formats
-        for fmt in export_formats:
-            output_path = self.output_dir / f"processing_dashboard.{fmt}"
-            plt.savefig(output_path, bbox_inches="tight", dpi=300, format=fmt)
-            logger.info(f"Saved statistics dashboard: {output_path}")
-
-        plt.close(fig)
+            # Save in requested formats
+            for fmt in export_formats:
+                output_path = self.output_dir / f"processing_dashboard.{fmt}"
+                plt.savefig(output_path, bbox_inches="tight", dpi=300, format=fmt)
+                logger.info(f"Saved statistics dashboard: {output_path}")
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get current visualization statistics."""
