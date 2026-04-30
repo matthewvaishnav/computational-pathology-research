@@ -17,6 +17,9 @@ import matplotlib.pyplot as plt
 import torch
 from matplotlib.colors import LinearSegmentedColormap
 
+# Import BoundedQueue and GracefulThread for memory-safe queue operations and graceful shutdown
+from src.utils.safe_threading import BoundedQueue, GracefulThread
+
 # Import plotly for interactive visualizations
 try:
     import plotly.express as px
@@ -110,10 +113,13 @@ class ProgressiveVisualizer:
         self.throughput_history: List[Tuple[float, float]] = []  # (timestamp, patches/sec)
         self.last_update_time = 0.0
 
-        # Thread-safe update queue
-        self.update_queue: Queue = Queue()
-        self.visualization_thread: Optional[threading.Thread] = None
-        self.running = False
+        # Thread-safe update queue with bounded size to prevent memory exhaustion
+        self.update_queue: BoundedQueue = BoundedQueue(
+            maxsize=1000,
+            drop_policy='oldest',
+            name='visualization_queue'
+        )
+        self.visualization_thread: Optional[GracefulThread] = None
 
         # Colormap for attention heatmaps
         self.colormap = self._create_attention_colormap()
@@ -138,25 +144,38 @@ class ProgressiveVisualizer:
 
     def start_async_updates(self):
         """Start background thread for async visualization updates."""
-        if self.running:
+        if self.visualization_thread and self.visualization_thread.is_alive():
             logger.warning("Visualization thread already running")
             return
 
-        self.running = True
-        self.visualization_thread = threading.Thread(target=self._update_loop, daemon=True)
+        def cleanup_callback():
+            """Cleanup callback for graceful shutdown."""
+            logger.info("Visualization thread cleanup completed")
+
+        self.visualization_thread = GracefulThread(
+            target=self._update_loop,
+            name="visualization_thread",
+            daemon=False,
+            cleanup_callback=cleanup_callback
+        )
         self.visualization_thread.start()
         logger.info("Started async visualization updates")
 
     def stop_async_updates(self):
         """Stop background visualization thread."""
-        self.running = False
         if self.visualization_thread:
-            self.visualization_thread.join(timeout=5.0)
+            if not self.visualization_thread.stop(timeout=5.0):
+                logger.warning("Visualization thread did not stop within timeout")
+            self.visualization_thread = None
         logger.info("Stopped async visualization updates")
 
-    def _update_loop(self):
-        """Background loop for processing visualization updates."""
-        while self.running:
+    def _update_loop(self, thread: GracefulThread):
+        """Background loop for processing visualization updates.
+        
+        Args:
+            thread: GracefulThread instance for shutdown coordination
+        """
+        while not thread.should_stop():
             try:
                 # Get update from queue (blocking with timeout)
                 update = self.update_queue.get(timeout=0.1)
@@ -211,7 +230,7 @@ class ProgressiveVisualizer:
             coordinates=coordinates.copy(),
         )
 
-        if self.running:
+        if self.visualization_thread and self.visualization_thread.is_alive():
             self.update_queue.put(update)
         else:
             # Synchronous update if async not enabled
@@ -505,6 +524,7 @@ class ProgressiveVisualizer:
                 self.confidence_history[-1][1] if self.confidence_history else 0.0
             ),
             "output_directory": str(self.output_dir),
+            "queue_stats": self.update_queue.get_stats(),  # Add queue statistics
         }
 
         return stats

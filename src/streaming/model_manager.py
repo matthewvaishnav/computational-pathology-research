@@ -25,6 +25,7 @@ import torch
 import torch.nn as nn
 
 from .metrics import record_processing_time, timed_operation
+from src.utils.safe_threading import TimeoutLock
 
 logger = logging.getLogger(__name__)
 
@@ -346,7 +347,7 @@ class ModelHotSwapper:
 
         self.current_model: Optional[nn.Module] = None
         self.current_metadata: Optional[ModelMetadata] = None
-        self.model_lock = threading.RLock()
+        self.model_lock = TimeoutLock(timeout=30.0, name='model_swap_lock')
 
         logger.info("Model hot swapper initialized")
 
@@ -386,23 +387,28 @@ class ModelHotSwapper:
                 return False, error_msg
 
         # Perform swap with lock
-        with self.model_lock:
-            old_model = self.current_model
-            old_metadata = self.current_metadata
+        try:
+            with self.model_lock:
+                old_model = self.current_model
+                old_metadata = self.current_metadata
 
-            # Swap
-            self.current_model = new_model
-            self.current_metadata = new_metadata
+                # Swap
+                self.current_model = new_model
+                self.current_metadata = new_metadata
 
-            # Update registry
-            self.registry.update_status(new_metadata.model_id, ModelStatus.ACTIVE)
+                # Update registry
+                self.registry.update_status(new_metadata.model_id, ModelStatus.ACTIVE)
 
-            if old_metadata:
-                self.registry.update_status(old_metadata.model_id, ModelStatus.DEPRECATED)
+                if old_metadata:
+                    self.registry.update_status(old_metadata.model_id, ModelStatus.DEPRECATED)
 
-            logger.info(
-                f"Model swapped: {old_metadata.model_id if old_metadata else 'None'} -> {new_metadata.model_id}"
-            )
+                logger.info(
+                    f"Model swapped: {old_metadata.model_id if old_metadata else 'None'} -> {new_metadata.model_id}"
+                )
+        except TimeoutError as e:
+            error_msg = f"Failed to acquire model swap lock: {e}"
+            logger.error(error_msg)
+            return False, error_msg
 
         return True, f"Successfully swapped to model {new_metadata.model_id}"
 
@@ -420,8 +426,12 @@ class ModelHotSwapper:
 
     def get_current_model(self) -> Tuple[Optional[nn.Module], Optional[ModelMetadata]]:
         """Get current active model."""
-        with self.model_lock:
-            return self.current_model, self.current_metadata
+        try:
+            with self.model_lock:
+                return self.current_model, self.current_metadata
+        except TimeoutError as e:
+            logger.error(f"Failed to acquire model lock for get_current_model: {e}")
+            return None, None
 
     def rollback(self, target_model_id: str) -> Tuple[bool, str]:
         """Rollback to a previous model version."""
@@ -470,7 +480,7 @@ class ABTestingManager:
         self.stats_a = {"requests": 0, "total_time": 0.0, "errors": 0}
         self.stats_b = {"requests": 0, "total_time": 0.0, "errors": 0}
 
-        self.lock = threading.Lock()
+        self.lock = TimeoutLock(timeout=30.0, name='ab_testing_lock')
 
         logger.info(f"A/B testing manager initialized: traffic_split={traffic_split}")
 
@@ -482,21 +492,25 @@ class ABTestingManager:
         metadata_b: ModelMetadata,
     ):
         """Setup A/B test with two models."""
-        with self.lock:
-            self.model_a = model_a
-            self.model_b = model_b
-            self.metadata_a = metadata_a
-            self.metadata_b = metadata_b
+        try:
+            with self.lock:
+                self.model_a = model_a
+                self.model_b = model_b
+                self.metadata_a = metadata_a
+                self.metadata_b = metadata_b
 
-            # Reset stats
-            self.stats_a = {"requests": 0, "total_time": 0.0, "errors": 0}
-            self.stats_b = {"requests": 0, "total_time": 0.0, "errors": 0}
+                # Reset stats
+                self.stats_a = {"requests": 0, "total_time": 0.0, "errors": 0}
+                self.stats_b = {"requests": 0, "total_time": 0.0, "errors": 0}
 
-            # Update registry
-            self.registry.update_status(metadata_a.model_id, ModelStatus.TESTING)
-            self.registry.update_status(metadata_b.model_id, ModelStatus.TESTING)
+                # Update registry
+                self.registry.update_status(metadata_a.model_id, ModelStatus.TESTING)
+                self.registry.update_status(metadata_b.model_id, ModelStatus.TESTING)
 
-        logger.info(f"A/B test setup: A={metadata_a.model_id} B={metadata_b.model_id}")
+            logger.info(f"A/B test setup: A={metadata_a.model_id} B={metadata_b.model_id}")
+        except TimeoutError as e:
+            logger.error(f"Failed to acquire A/B testing lock for setup: {e}")
+            raise
 
     def get_model_for_request(self) -> Tuple[nn.Module, ModelMetadata, str]:
         """
@@ -505,79 +519,96 @@ class ABTestingManager:
         Returns:
             (model, metadata, variant) where variant is 'A' or 'B'
         """
-        with self.lock:
-            if self.model_a is None or self.model_b is None:
-                raise RuntimeError("A/B test not setup")
+        try:
+            with self.lock:
+                if self.model_a is None or self.model_b is None:
+                    raise RuntimeError("A/B test not setup")
 
-            # Random assignment based on traffic split
-            if np.random.random() < self.traffic_split:
-                return self.model_b, self.metadata_b, "B"
-            else:
-                return self.model_a, self.metadata_a, "A"
+                # Random assignment based on traffic split
+                if np.random.random() < self.traffic_split:
+                    return self.model_b, self.metadata_b, "B"
+                else:
+                    return self.model_a, self.metadata_a, "A"
+        except TimeoutError as e:
+            logger.error(f"Failed to acquire A/B testing lock for get_model_for_request: {e}")
+            raise
 
     def record_request(self, variant: str, processing_time: float, error: bool = False):
         """Record request statistics."""
-        with self.lock:
-            if variant == "A":
-                stats = self.stats_a
-            elif variant == "B":
-                stats = self.stats_b
-            else:
-                return
+        try:
+            with self.lock:
+                if variant == "A":
+                    stats = self.stats_a
+                elif variant == "B":
+                    stats = self.stats_b
+                else:
+                    return
 
-            stats["requests"] += 1
-            stats["total_time"] += processing_time
+                stats["requests"] += 1
+                stats["total_time"] += processing_time
 
-            if error:
-                stats["errors"] += 1
+                if error:
+                    stats["errors"] += 1
+        except TimeoutError as e:
+            logger.error(f"Failed to acquire A/B testing lock for record_request: {e}")
 
     def get_results(self) -> Dict[str, Any]:
         """Get A/B test results."""
-        with self.lock:
-            results = {
-                "model_a": {
-                    "model_id": self.metadata_a.model_id if self.metadata_a else None,
-                    "requests": self.stats_a["requests"],
-                    "avg_time_ms": (
-                        (self.stats_a["total_time"] / self.stats_a["requests"] * 1000)
-                        if self.stats_a["requests"] > 0
-                        else 0
-                    ),
-                    "error_rate": (
-                        (self.stats_a["errors"] / self.stats_a["requests"])
-                        if self.stats_a["requests"] > 0
-                        else 0
-                    ),
-                },
-                "model_b": {
-                    "model_id": self.metadata_b.model_id if self.metadata_b else None,
-                    "requests": self.stats_b["requests"],
-                    "avg_time_ms": (
-                        (self.stats_b["total_time"] / self.stats_b["requests"] * 1000)
-                        if self.stats_b["requests"] > 0
-                        else 0
-                    ),
-                    "error_rate": (
-                        (self.stats_b["errors"] / self.stats_b["requests"])
-                        if self.stats_b["requests"] > 0
-                        else 0
-                    ),
-                },
+        try:
+            with self.lock:
+                results = {
+                    "model_a": {
+                        "model_id": self.metadata_a.model_id if self.metadata_a else None,
+                        "requests": self.stats_a["requests"],
+                        "avg_time_ms": (
+                            (self.stats_a["total_time"] / self.stats_a["requests"] * 1000)
+                            if self.stats_a["requests"] > 0
+                            else 0
+                        ),
+                        "error_rate": (
+                            (self.stats_a["errors"] / self.stats_a["requests"])
+                            if self.stats_a["requests"] > 0
+                            else 0
+                        ),
+                    },
+                    "model_b": {
+                        "model_id": self.metadata_b.model_id if self.metadata_b else None,
+                        "requests": self.stats_b["requests"],
+                        "avg_time_ms": (
+                            (self.stats_b["total_time"] / self.stats_b["requests"] * 1000)
+                            if self.stats_b["requests"] > 0
+                            else 0
+                        ),
+                        "error_rate": (
+                            (self.stats_b["errors"] / self.stats_b["requests"])
+                            if self.stats_b["requests"] > 0
+                            else 0
+                        ),
+                    },
+                }
+
+                # Calculate winner
+                if results["model_a"]["requests"] > 0 and results["model_b"]["requests"] > 0:
+                    # Compare by avg time and error rate
+                    a_score = results["model_a"]["avg_time_ms"] * (1 + results["model_a"]["error_rate"])
+                    b_score = results["model_b"]["avg_time_ms"] * (1 + results["model_b"]["error_rate"])
+
+                    results["winner"] = "A" if a_score < b_score else "B"
+                    results["improvement_pct"] = abs((b_score - a_score) / a_score * 100)
+                else:
+                    results["winner"] = None
+                    results["improvement_pct"] = 0
+
+                return results
+        except TimeoutError as e:
+            logger.error(f"Failed to acquire A/B testing lock for get_results: {e}")
+            # Return empty results on timeout
+            return {
+                "model_a": {"model_id": None, "requests": 0, "avg_time_ms": 0, "error_rate": 0},
+                "model_b": {"model_id": None, "requests": 0, "avg_time_ms": 0, "error_rate": 0},
+                "winner": None,
+                "improvement_pct": 0
             }
-
-            # Calculate winner
-            if results["model_a"]["requests"] > 0 and results["model_b"]["requests"] > 0:
-                # Compare by avg time and error rate
-                a_score = results["model_a"]["avg_time_ms"] * (1 + results["model_a"]["error_rate"])
-                b_score = results["model_b"]["avg_time_ms"] * (1 + results["model_b"]["error_rate"])
-
-                results["winner"] = "A" if a_score < b_score else "B"
-                results["improvement_pct"] = abs((b_score - a_score) / a_score * 100)
-            else:
-                results["winner"] = None
-                results["improvement_pct"] = 0
-
-            return results
 
     def finalize_test(self, promote_winner: bool = True) -> str:
         """Finalize A/B test and optionally promote winner."""
