@@ -16,6 +16,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
+from src.utils.safe_operations import safe_db_transaction
 from .cerner_pathnet_plugin import CernerPathNetPlugin, PathNetOrder, PathNetResult
 from .sunquest_plugin import SunquestLISPlugin, SunquestOrder, SunquestResult
 
@@ -143,7 +144,7 @@ class BidirectionalSyncManager:
         """Initialize sync tracking database"""
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
 
-        with sqlite3.connect(self.db_path) as conn:
+        with safe_db_transaction(Path(self.db_path)) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS sync_records (
                     sync_id TEXT PRIMARY KEY,
@@ -514,7 +515,7 @@ class BidirectionalSyncManager:
 
     def _save_sync_record(self, record: SyncRecord):
         """Save sync record to database"""
-        with sqlite3.connect(self.db_path) as conn:
+        with safe_db_transaction(Path(self.db_path)) as conn:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO sync_records 
@@ -540,7 +541,7 @@ class BidirectionalSyncManager:
 
     def _get_sync_record(self, sync_id: str) -> Optional[SyncRecord]:
         """Get sync record by ID"""
-        with sqlite3.connect(self.db_path) as conn:
+        with safe_db_transaction(Path(self.db_path)) as conn:
             cursor = conn.execute("SELECT * FROM sync_records WHERE sync_id = ?", (sync_id,))
             row = cursor.fetchone()
 
@@ -567,7 +568,7 @@ class BidirectionalSyncManager:
             f"{conflict.entity_type}:{conflict.entity_id}:{conflict.field_name}".encode()
         ).hexdigest()
 
-        with sqlite3.connect(self.db_path) as conn:
+        with safe_db_transaction(Path(self.db_path)) as conn:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO data_conflicts
@@ -596,7 +597,7 @@ class BidirectionalSyncManager:
     def _get_failed_syncs(self) -> List[SyncRecord]:
         """Get failed sync records"""
         records = []
-        with sqlite3.connect(self.db_path) as conn:
+        with safe_db_transaction(Path(self.db_path)) as conn:
             cursor = conn.execute(
                 "SELECT * FROM sync_records WHERE status = ? AND retry_count < ?",
                 (SyncStatus.FAILED.value, self.max_retries),
@@ -674,7 +675,7 @@ class BidirectionalSyncManager:
 
     def get_sync_statistics(self) -> Dict[str, Any]:
         """Get synchronization statistics"""
-        with sqlite3.connect(self.db_path) as conn:
+        with safe_db_transaction(Path(self.db_path)) as conn:
             stats = {}
 
             # Total syncs by status
