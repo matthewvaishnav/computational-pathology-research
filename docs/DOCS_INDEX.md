@@ -46,7 +46,7 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 ### Advanced Features
 - [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
 - [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
-- [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 1,448 tests with property-based testing
+- [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 3,006 tests with property-based testing
 
 ### Evaluation Metrics
 - Model performance analysis with bootstrap confidence intervals
@@ -102,7 +102,7 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - **Topics**: Code style, pull requests, issue reporting
 
 ### Testing
-- [TESTING.md](TESTING.html) - **Comprehensive testing documentation**: 1,483 tests, 55% coverage, CI/CD pipeline
+- [TESTING.md](TESTING.html) - **Comprehensive testing documentation**: 3,006 tests, 55% coverage, CI/CD pipeline
 - [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Historical test suite documentation
 - **Coverage**: Unit tests, integration tests, property-based testing, clinical validation
 - **Topics**: Test execution, coverage reports, benchmarks, quality assurance, reproducibility

@@ -2,7 +2,7 @@
 
 > **Comprehensive testing infrastructure ensuring production-grade reliability and clinical deployment readiness**
 
-[![Tests](https://img.shields.io/badge/tests-1,483%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions)
+[![Tests](https://img.shields.io/badge/tests-3,006%20passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions)
 [![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/computational-pathology-research)
 [![CI Status](https://img.shields.io/badge/CI-passing-brightgreen.svg)](https://github.com/matthewvaishnav/computational-pathology-research/actions/workflows/ci.yml)
 
@@ -10,13 +10,13 @@
 
 ## Overview
 
-HistoCore maintains a comprehensive testing infrastructure with **1,483 automated tests** covering unit tests, integration tests, property-based tests, and clinical validation scenarios. Our testing strategy ensures reliability, correctness, and production readiness for clinical deployment.
+HistoCore maintains a comprehensive testing infrastructure with **3,006 automated tests** covering unit tests, integration tests, property-based tests, and clinical validation scenarios. Our testing strategy ensures reliability, correctness, and production readiness for clinical deployment.
 
 ### Test Statistics
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Total Tests** | 1,483 | ✅ All Passing |
+| **Total Tests** | 3,006 | ✅ All Passing |
 | **Code Coverage** | 55% | 🟡 Good |
 | **Property-Based Tests** | 100+ | ✅ Passing |
 | **Integration Tests** | 50+ | ✅ Passing |
@@ -444,7 +444,7 @@ Want to contribute tests? See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelin
 
 ### Testing Excellence
 
-✅ **Comprehensive Coverage**: 1,483 tests across all framework components  
+✅ **Comprehensive Coverage**: 3,006 tests across all framework components  
 ✅ **Production Quality**: 55% code coverage with focus on critical paths  
 ✅ **Clinical Validation**: Real-world performance validated on 262K+ samples  
 ✅ **Continuous Integration**: Automated testing on every commit  
@@ -473,7 +473,7 @@ Want to contribute tests? See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelin
 ---
 
 **Last Updated**: 2026-04-28  
-**Test Count**: 1,483 passing  
+**Test Count**: 3,006 passing  
 **Coverage**: 55%  
 **Status**: ✅ All systems operational
 

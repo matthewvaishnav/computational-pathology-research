@@ -7,7 +7,7 @@
 ### Current Statistics
 
 - **Source Code**: 141 Python modules in `src/`
-- **Test Suite**: 150 test files with 1,448 total tests
+- **Test Suite**: 186 test files with 3,006 total tests
 - **Code Coverage**: 55% with comprehensive property-based testing
 - **Development Activity**: 286+ commits since January 2024
 - **Validated Performance**: **#1 in digital pathology** - 93.98% AUC (Rank #1/11 methods), 84.26% accuracy on real PCam benchmark
@@ -47,7 +47,7 @@
 - Production CLI for clinical deployment
 
 #### 📊 Comprehensive Testing
-- 1,448 tests across all framework components
+- 3,006 tests across all framework components
 - Property-based testing with Hypothesis for edge cases
 - Synthetic data generation for validation
 - Performance benchmarking with regression detection
@@ -81,7 +81,7 @@
 - WSI processing pipeline with OpenSlide integration
 - Clinical workflow integration (DICOM/FHIR)
 - PACS integration system with vendor adapters
-- Comprehensive testing infrastructure (1,448 tests)
+- Comprehensive testing infrastructure (3,006 tests)
 - Model interpretability tools (Grad-CAM, attention visualization)
 - Regulatory compliance features (FDA/CE)
 - Production deployment infrastructure (Docker/K8s)
@@ -137,7 +137,7 @@ If you use HistoCore in your research, please cite:
   author = {Vaishnav, Matthew},
   year = {2026},
   url = {https://github.com/matthewvaishnav/histocore},
-  note = {#1 performing method in digital pathology with 93.98\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 1,483 tests, 55\% coverage, federated learning system, and PACS integration.}
+  note = {#1 performing method in digital pathology with 93.98\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 3,006 tests, 55\% coverage, federated learning system, and PACS integration.}
 }
 ```
 
