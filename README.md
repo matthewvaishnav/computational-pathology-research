@@ -222,7 +222,7 @@ See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for det
 
 ## Key Features
 
-> **📊 Architecture Diagrams**: See [Enhanced Architecture Diagrams](docs/ARCHITECTURE_DIAGRAMS.md) for comprehensive visual system documentation with modern Mermaid diagrams.
+> **📊 Architecture**: See [System Architecture](docs/ARCHITECTURE.md) for comprehensive visual documentation with detailed component diagrams.
 
 ### Performance Optimizations
 
