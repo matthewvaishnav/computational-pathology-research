@@ -367,7 +367,10 @@ async def get_slide(slide_id: str):
         index = int(slide_id.split("-")[1])
         slide = data_generator.generate_slide(index)
         return slide.to_dict()
-    except:
+    except (ValueError, IndexError, AttributeError) as e:
+        # Log error without exposing internal details
+        import logging
+        logging.error(f"Failed to retrieve slide: error_code=SLIDE_NOT_FOUND")
         raise HTTPException(status_code=404, detail="Slide not found")
 
 
@@ -404,7 +407,10 @@ async def process_slide(request: ProcessRequest):
         asyncio.create_task(process_with_updates(slide, request.enable_realtime))
 
         return {"status": "processing", "slide_id": request.slide_id}
-    except:
+    except (ValueError, IndexError, AttributeError) as e:
+        # Log error without exposing internal details
+        import logging
+        logging.error(f"Failed to process slide: error_code=INVALID_SLIDE_ID")
         raise HTTPException(status_code=400, detail="Invalid slide ID")
 
 
@@ -513,8 +519,13 @@ async def broadcast_update(data: Dict):
     for connection in active_connections:
         try:
             await connection.send_text(message)
-        except:
-            pass
+        except (WebSocketDisconnect, RuntimeError, ConnectionError) as e:
+            # Log WebSocket send failures
+            import logging
+            logging.warning(f"WebSocket send failed: error_code=WS_SEND_FAILED")
+            # Remove failed connection
+            if connection in active_connections:
+                active_connections.remove(connection)
 
 
 @app.get("/api/stats")

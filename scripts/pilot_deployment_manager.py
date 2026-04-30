@@ -145,7 +145,8 @@ class PilotDeploymentManager:
             # Kubernetes client for orchestration
             try:
                 k8s_config.load_incluster_config()
-            except:
+            except Exception as e:
+                # Fall back to kubeconfig
                 k8s_config.load_kube_config()
             self.k8s_client = client.ApiClient()
             

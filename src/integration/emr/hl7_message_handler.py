@@ -269,8 +269,12 @@ class HL7MessageHandler:
                 try:
                     ack_message = self._generate_ack_message(message_info, HL7AckCode.AE, str(e))
                     processing_result["ack_message"] = ack_message
-                except:
-                    pass
+                except Exception as ack_error:
+                    # Log ACK generation failure
+                    logger.error(
+                        f"Failed to generate ACK message: error_code=ACK_GEN_FAILED, "
+                        f"original_error={type(e).__name__}"
+                    )
 
         return processing_result
 

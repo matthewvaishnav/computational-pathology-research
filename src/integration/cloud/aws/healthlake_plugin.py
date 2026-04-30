@@ -689,7 +689,8 @@ class AWSHealthLakePlugin(CloudPlugin):
             try:
                 self.s3_client.head_bucket(Bucket=self.s3_bucket)
                 s3_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"HealthLake health check failed: {type(e).__name__}")
                 pass
 
             return {

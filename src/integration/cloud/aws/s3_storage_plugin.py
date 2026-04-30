@@ -638,7 +638,8 @@ class AWSS3StoragePlugin(StoragePlugin):
             try:
                 self.s3_client.head_bucket(Bucket=self.bucket_name)
                 bucket_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"S3 health check failed: {type(e).__name__}")
                 pass
 
             # Test object operations

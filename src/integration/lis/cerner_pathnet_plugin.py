@@ -490,7 +490,8 @@ class CernerPathNetPlugin(LISPlugin):
             try:
                 orders = await self.get_pending_orders(limit=1)
                 orders_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"Orders test failed: {type(e).__name__}")
                 pass
 
             return {

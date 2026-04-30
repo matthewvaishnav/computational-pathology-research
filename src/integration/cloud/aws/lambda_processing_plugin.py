@@ -634,7 +634,8 @@ class AWSLambdaProcessingPlugin(ProcessingPlugin):
             try:
                 functions = await self.list_functions()
                 functions_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"Lambda health check failed: {type(e).__name__}")
                 pass
 
             # Test S3 code bucket access

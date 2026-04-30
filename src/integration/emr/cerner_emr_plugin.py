@@ -750,7 +750,8 @@ class CernerEMRPlugin(EMRPlugin):
             try:
                 patients = await self.search_patients({"_count": "1"})
                 patients_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"Patient search test failed: {type(e).__name__}")
                 pass
 
             return {

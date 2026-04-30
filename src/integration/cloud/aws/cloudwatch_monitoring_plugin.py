@@ -680,7 +680,8 @@ class AWSCloudWatchMonitoringPlugin(MonitoringPlugin):
                 async with self.session.client("logs") as logs:
                     await logs.describe_log_groups(limit=1)
                 logs_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"CloudWatch health check failed: {type(e).__name__}")
                 pass
 
             # Test metric publishing
@@ -698,7 +699,8 @@ class AWSCloudWatchMonitoringPlugin(MonitoringPlugin):
                 try:
                     sns_client = boto3.client("sns", region_name=self.aws_region)
                     sns_client.get_topic_attributes(TopicArn=self.sns_topic_arn)
-                except:
+                except Exception as e:
+                    logger.warning(f"SNS health check failed: {type(e).__name__}")
                     sns_accessible = False
 
             return {
