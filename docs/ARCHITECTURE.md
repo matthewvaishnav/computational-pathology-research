@@ -297,7 +297,7 @@ Raw WSI → Patch Extraction → Feature Extraction → Attention Pooling → Cl
 
 ## Scalability
 
-- **Single GPU**: RTX 4070 (12GB) - 256K samples in 2.25 hours
+- **Single GPU**: RTX 4070 (8GB) - 256K samples in 2.25 hours
 - **Multi-GPU**: Data parallel training (linear scaling)
 - **Distributed**: Federated learning across 3+ sites
 - **Production**: Batch inference on 1000+ slides/day

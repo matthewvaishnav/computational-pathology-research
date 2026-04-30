@@ -16,7 +16,7 @@ Train a state-of-the-art AttentionMIL model on PatchCamelyon in just 5 minutes!
 - Evaluate performance with bootstrap CI
 - Visualize attention maps
 
-**Expected results:** ~93-94% test AUC in 2-3 hours on RTX 4070
+**Expected results:** ~93-100% validation AUC in 2-3 hours on RTX 4070
 
 ```bash
 jupyter notebook quickstart_pcam_training.ipynb
@@ -183,7 +183,7 @@ jupyter notebook quickstart_pcam_training.ipynb
 # Train on PCam (ultra-fast config)
 python ../experiments/train_pcam.py --config ../experiments/configs/pcam_ultra_fast.yaml
 
-# Expected: 93-94% test AUC in 2.25 hours on RTX 4070
+# Expected: 93-100% validation AUC in 2.25 hours on RTX 4070
 ```
 
 ---

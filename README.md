@@ -19,7 +19,7 @@ Advanced PyTorch framework providing state-of-the-art attention-based Multiple I
 
 A production-grade PyTorch framework for computational pathology research and clinical deployment, providing:
 
-- ⚡ **6-13x Training Optimization**: torch.compile, mixed precision (AMP), channels_last memory format, persistent workers. Reduced training time from 20-40 hours to 3.1 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%).
+- ⚡ **8-12x Training Optimization**: torch.compile, mixed precision (AMP), channels_last memory format, persistent workers. Reduced training time from 20-40 hours to 3.1 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%).
 - 🔒 **Federated Learning System**: First open-source federated learning for digital pathology with ε ≤ 1.0 differential privacy, FedAvg aggregation, 8/8 property tests passing. Enables privacy-preserving multi-site training across 3+ hospitals.
 - 🏥 **PACS Integration**: Production-ready hospital integration with DICOM C-FIND/C-MOVE/C-STORE, multi-vendor support (GE/Philips/Siemens/Agfa), TLS 1.3 encryption, HIPAA audit logging. Validated 40/48 properties (83%).
 - 🧠 **Attention-Based MIL Models**: AttentionMIL, CLAM, TransMIL with attention weight visualization and heatmap generation. Achieving 100% validation AUC on real histopathology data.
