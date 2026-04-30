@@ -26,8 +26,10 @@ import time
 import sqlite3
 import tempfile
 import os
+import json
+from pathlib import Path
 from queue import Empty
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from unittest.mock import Mock, patch, MagicMock
 
 # Hypothesis for property-based testing
@@ -2186,3 +2188,354 @@ hypothesis.settings.register_profile(
 
 # Use stress profile for stress tests
 hypothesis.settings.load_profile("stress")
+
+
+# =============================================================================
+# Unit Tests - Configuration Validation (Task 14.4)
+# =============================================================================
+
+@pytest.mark.unit
+class TestConfigurationValidation:
+    """Unit tests for configuration validation."""
+    
+    def test_valid_configuration_accepted(self, temp_db):
+        """Test that valid configuration is accepted."""
+        # Create valid config file
+        config_path = Path(temp_db).parent / "valid_config.json"
+        valid_config = {
+            "monitoring_interval_seconds": 60,
+            "metrics_retention_hours": 48,
+            "thresholds": {
+                "cpu_percent": 75,
+                "memory_percent": 80,
+                "disk_percent": 85
+            },
+            "alerting": {
+                "enabled": True,
+                "channels": ["log"],
+                "rate_limit_minutes": 10
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(valid_config, f)
+        
+        try:
+            # Should not raise - import directly to avoid protobuf issues
+            import src.federated.production.monitoring as mon_module
+            monitor = mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify config was loaded
+            assert monitor.config["monitoring_interval_seconds"] == 60
+            assert monitor.config["metrics_retention_hours"] == 48
+            assert monitor.config["thresholds"]["cpu_percent"] == 75
+        finally:
+            config_path.unlink()
+    
+    def test_invalid_configuration_rejected(self, temp_db):
+        """Test that invalid configuration is rejected."""
+        # Create invalid config file (monitoring_interval_seconds out of range)
+        config_path = Path(temp_db).parent / "invalid_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": 5000,  # Exceeds maximum of 3600
+            "alerting": {
+                "enabled": True,
+                "channels": ["log"]
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            # Should raise ValueError
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify error message contains field and constraint info
+            assert "monitoring_interval_seconds" in str(exc_info.value).lower() or "5000" in str(exc_info.value)
+        finally:
+            config_path.unlink()
+    
+    def test_missing_required_fields_detected(self, temp_db):
+        """Test that missing required fields are detected."""
+        # Create config with email alerting but missing required fields
+        config_path = Path(temp_db).parent / "missing_fields_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": 30,
+            "alerting": {
+                "enabled": True,
+                "channels": ["email"],
+                "email": {
+                    "smtp_server": "smtp.example.com",
+                    "username": "user",
+                    # Missing: password, from_email, to_emails
+                }
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            # Should raise ValueError for missing email fields
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify error message mentions missing fields
+            error_msg = str(exc_info.value).lower()
+            assert "missing" in error_msg or "required" in error_msg
+        finally:
+            config_path.unlink()
+    
+    def test_out_of_range_values_rejected(self, temp_db):
+        """Test that out-of-range values are rejected."""
+        # Create config with threshold values out of range
+        config_path = Path(temp_db).parent / "out_of_range_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": 30,
+            "thresholds": {
+                "cpu_percent": 150,  # Exceeds maximum of 100
+                "memory_percent": -10  # Below minimum of 0
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            # Should raise ValueError
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify error message mentions the validation failure
+            assert "validation" in str(exc_info.value).lower()
+        finally:
+            config_path.unlink()
+    
+    def test_slack_webhook_validation(self, temp_db):
+        """Test Slack webhook validation."""
+        # Test invalid Slack webhook URL (doesn't start with correct prefix)
+        config_path = Path(temp_db).parent / "invalid_slack_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": 30,
+            "alerting": {
+                "enabled": True,
+                "channels": ["slack"],
+                "slack": {
+                    "webhook_url": "https://example.com/webhook"  # Invalid prefix
+                }
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            # Should raise ValueError for invalid Slack webhook
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify error message mentions Slack webhook
+            error_msg = str(exc_info.value).lower()
+            assert "slack" in error_msg and "webhook" in error_msg
+        finally:
+            config_path.unlink()
+    
+    def test_slack_webhook_pattern_validation_in_schema(self, temp_db):
+        """Test that JSON schema validates Slack webhook URL pattern."""
+        # Test that schema rejects invalid Slack webhook pattern
+        config_path = Path(temp_db).parent / "schema_slack_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": 30,
+            "alerting": {
+                "enabled": True,
+                "channels": ["slack"],
+                "slack": {
+                    "webhook_url": "http://hooks.slack.com/invalid"  # http instead of https
+                }
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            # Should raise ValueError due to schema validation
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify it's a validation error
+            assert "validation" in str(exc_info.value).lower()
+        finally:
+            config_path.unlink()
+    
+    def test_email_configuration_validation(self, temp_db):
+        """Test email configuration validation."""
+        # Test that to_emails must be a list
+        config_path = Path(temp_db).parent / "invalid_email_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": 30,
+            "alerting": {
+                "enabled": True,
+                "channels": ["email"],
+                "email": {
+                    "smtp_server": "smtp.example.com",
+                    "username": "user",
+                    "password": "pass",
+                    "from_email": "from@example.com",
+                    "to_emails": "to@example.com"  # Should be a list, not string
+                }
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            # Should raise ValueError
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify error mentions to_emails or list type
+            error_msg = str(exc_info.value).lower()
+            assert "to_emails" in error_msg or "list" in error_msg or "array" in error_msg
+        finally:
+            config_path.unlink()
+    
+    def test_email_to_emails_must_be_list(self, temp_db):
+        """Test that to_emails field must be a list type."""
+        # Create config with to_emails as string instead of list
+        config_path = Path(temp_db).parent / "email_not_list_config.json"
+        
+        # First test: to_emails as string (should fail schema validation)
+        invalid_config = {
+            "monitoring_interval_seconds": 30,
+            "alerting": {
+                "enabled": True,
+                "channels": ["email"],
+                "email": {
+                    "smtp_server": "smtp.example.com",
+                    "smtp_port": 587,
+                    "username": "user",
+                    "password": "pass",
+                    "from_email": "from@example.com",
+                    "to_emails": "single@example.com"  # String instead of list
+                }
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Should fail validation
+            assert "validation" in str(exc_info.value).lower() or "list" in str(exc_info.value).lower()
+        finally:
+            config_path.unlink()
+    
+    def test_valid_email_configuration_accepted(self, temp_db):
+        """Test that valid email configuration is accepted."""
+        config_path = Path(temp_db).parent / "valid_email_config.json"
+        valid_config = {
+            "monitoring_interval_seconds": 30,
+            "alerting": {
+                "enabled": True,
+                "channels": ["log"],  # Use log only to avoid actual email sending
+                "email": {
+                    "smtp_server": "smtp.example.com",
+                    "smtp_port": 587,
+                    "username": "user",
+                    "password": "pass",
+                    "from_email": "from@example.com",
+                    "to_emails": ["to1@example.com", "to2@example.com"]
+                }
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(valid_config, f)
+        
+        try:
+            # Should not raise
+            import src.federated.production.monitoring as mon_module
+            monitor = mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify email config was loaded
+            email_config = monitor.config["alerting"]["email"]
+            assert email_config["smtp_server"] == "smtp.example.com"
+            assert isinstance(email_config["to_emails"], list)
+            assert len(email_config["to_emails"]) == 2
+        finally:
+            config_path.unlink()
+    
+    def test_configuration_validation_error_logging(self, temp_db):
+        """Test that configuration validation errors are logged with specific field and constraint."""
+        config_path = Path(temp_db).parent / "log_test_config.json"
+        invalid_config = {
+            "monitoring_interval_seconds": -5,  # Invalid: below minimum
+            "alerting": {
+                "enabled": True,
+                "channels": ["log"]
+            }
+        }
+        
+        with open(config_path, "w") as f:
+            json.dump(invalid_config, f)
+        
+        try:
+            import src.federated.production.monitoring as mon_module
+            
+            with patch('src.federated.production.monitoring.logger') as mock_logger:
+                with pytest.raises(ValueError):
+                    mon_module.FederatedLearningMonitor(config_path)
+                
+                # Verify error was logged
+                error_calls = [call[0][0] for call in mock_logger.error.call_args_list]
+                assert len(error_calls) > 0
+                
+                # Verify log contains field information
+                error_log = " ".join(str(call) for call in error_calls).lower()
+                assert "validation" in error_log
+        finally:
+            config_path.unlink()
+    
+    def test_default_configuration_when_no_file(self):
+        """Test that default configuration is used when no config file provided."""
+        import src.federated.production.monitoring as mon_module
+        
+        # Should not raise - uses defaults
+        monitor = mon_module.FederatedLearningMonitor(config_path=None)
+        
+        # Verify defaults
+        assert monitor.config["monitoring_interval_seconds"] == 30
+        assert monitor.config["metrics_retention_hours"] == 24
+        assert monitor.config["alerting"]["enabled"] is True
+    
+    def test_invalid_json_rejected(self, temp_db):
+        """Test that invalid JSON is rejected with clear error."""
+        config_path = Path(temp_db).parent / "invalid_json_config.json"
+        
+        # Write invalid JSON
+        with open(config_path, "w") as f:
+            f.write("{invalid json content")
+        
+        try:
+            import src.federated.production.monitoring as mon_module
+            with pytest.raises(ValueError) as exc_info:
+                mon_module.FederatedLearningMonitor(config_path)
+            
+            # Verify error mentions JSON
+            assert "json" in str(exc_info.value).lower()
+        finally:
+            config_path.unlink()
