@@ -242,30 +242,30 @@ class InferenceEngine:
     def _load_image(self, image_path: str) -> Image.Image:
         """Load and validate image file with security checks."""
         import os
-        
+
         # Input validation
         if not image_path or len(image_path) > 1000:
             raise ValueError("Invalid image path")
-        
+
         # Convert to Path and resolve to prevent path traversal
         image_path = Path(image_path).resolve()
-        
+
         # Validate file extension
-        allowed_extensions = {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.bmp'}
+        allowed_extensions = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp"}
         if image_path.suffix.lower() not in allowed_extensions:
             raise ValueError(f"Unsupported file type: {image_path.suffix}")
-        
+
         # Check if file exists and is a regular file
         if not image_path.exists() or not image_path.is_file():
             raise FileNotFoundError(f"Image file not found: {image_path}")
-        
+
         # Check file size (max 50MB)
         file_size = image_path.stat().st_size
         if file_size > 50 * 1024 * 1024:
             raise ValueError(f"Image file too large: {file_size} bytes (max 50MB)")
-        
+
         # Validate path is within allowed directories (prevent path traversal)
-        allowed_dirs = ['/tmp', '/var/tmp', os.getcwd()]
+        allowed_dirs = ["/tmp", "/var/tmp", os.getcwd()]
         path_str = str(image_path)
         if not any(path_str.startswith(os.path.abspath(d)) for d in allowed_dirs):
             raise ValueError("Access to file path not allowed")
