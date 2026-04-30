@@ -125,7 +125,7 @@ class AES256Encryption(EncryptionProvider):
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
-            iterations=100000,
+            iterations=600000,  # OWASP recommended minimum
         )
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
         return cls(key)
@@ -142,6 +142,46 @@ class AES256Encryption(EncryptionProvider):
     def key(self) -> bytes:
         """Get encryption key."""
         return self._key
+    
+    def rotate_key(self, new_key: Optional[bytes] = None) -> bytes:
+        """
+        Rotate encryption key.
+        
+        Args:
+            new_key: New encryption key (generated if not provided)
+            
+        Returns:
+            New encryption key
+        """
+        if new_key is None:
+            new_key = Fernet.generate_key()
+        
+        old_key = self._key
+        self._key = new_key
+        self.fernet = Fernet(new_key)
+        
+        logger.info("Encryption key rotated")
+        return new_key
+    
+    def re_encrypt_with_new_key(self, encrypted_data: bytes, new_key: bytes) -> bytes:
+        """
+        Re-encrypt data with new key during key rotation.
+        
+        Args:
+            encrypted_data: Data encrypted with old key
+            new_key: New encryption key
+            
+        Returns:
+            Data encrypted with new key
+        """
+        # Decrypt with old key
+        decrypted = self.decrypt(encrypted_data)
+        
+        # Rotate to new key
+        self.rotate_key(new_key)
+        
+        # Encrypt with new key
+        return self.encrypt(decrypted)
 
 
 class PatientIdentifierAnonymizer:
