@@ -287,7 +287,7 @@ class PredictionRequest(BaseModel):
             if any(x < 0 or x > 50000 for x in v):
                 raise ValueError("Clinical text token IDs out of range")
         return v
-    )
+
     genomic: Optional[List[float]] = Field(
         None, description="Genomic features [2000]", min_items=2000, max_items=2000
     )
@@ -360,7 +360,6 @@ async def limit_request_size(request: Request, call_next):
             content={"detail": "Request too large"}
         )
     return await call_next(request)
-)
 
 # Add CORS middleware
 app.add_middleware(
