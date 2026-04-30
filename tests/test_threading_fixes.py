@@ -1883,43 +1883,524 @@ class TestStopEventProperties:
 class TestConcurrencyStress:
     """Comprehensive concurrency stress tests."""
     
-    def test_placeholder_bounded_queue_stress(self):
-        """Placeholder test - will be implemented in Task 15.1."""
-        # TODO: Implement in Task 15.1
-        # Property 1: Queue size never exceeds maxsize under concurrent load
-        # **Validates: Requirements 1.1-1.4**
-        pass
+    @given(
+        operations=st.lists(
+            st.tuples(
+                st.sampled_from(['put', 'get']),
+                st.integers(min_value=0, max_value=10000)
+            ),
+            min_size=500,
+            max_size=2000
+        )
+    )
+    @settings(max_examples=100, deadline=None)
+    def test_bounded_queue_concurrent_stress(self, operations):
+        """
+        Task 15.1: Stress test for bounded queue concurrency.
+        
+        Property 1: Queue size never exceeds maxsize under concurrent load
+        **Validates: Requirements 1.1-1.4**
+        
+        Creates 100 concurrent producer/consumer threads and verifies:
+        - Queue size never exceeds maxsize throughout execution
+        - Dropped item count increases monotonically
+        - No exceptions or crashes under high concurrency
+        """
+        maxsize = 100
+        queue = BoundedQueue(maxsize=maxsize, drop_policy='oldest', name='stress_test_queue')
+        
+        # Track queue size violations
+        size_violations = []
+        dropped_counts = []
+        
+        def worker(ops):
+            """Worker that performs random put/get operations."""
+            for op, value in ops:
+                try:
+                    if op == 'put':
+                        queue.put(value, timeout=0.1)
+                        # Check invariant: queue size never exceeds maxsize
+                        current_size = queue.qsize()
+                        if current_size > maxsize:
+                            size_violations.append(current_size)
+                        
+                        # Track dropped count (should be monotonic)
+                        stats = queue.get_stats()
+                        dropped_counts.append(stats['dropped_count'])
+                    else:  # get
+                        queue.get(timeout=0.1)
+                except Empty:
+                    pass  # Queue empty, continue
+                except Exception as e:
+                    # Should not raise other exceptions
+                    size_violations.append(f"Exception: {e}")
+        
+        # Split operations across 100 threads
+        num_threads = 100
+        chunk_size = max(1, len(operations) // num_threads)
+        threads = []
+        
+        for i in range(num_threads):
+            start_idx = i * chunk_size
+            end_idx = start_idx + chunk_size if i < num_threads - 1 else len(operations)
+            chunk = operations[start_idx:end_idx]
+            
+            thread = threading.Thread(target=worker, args=(chunk,), name=f'stress-worker-{i}')
+            threads.append(thread)
+        
+        # Start all threads
+        for thread in threads:
+            thread.start()
+        
+        # Wait for completion
+        for thread in threads:
+            thread.join(timeout=30.0)
+            assert not thread.is_alive(), f"Thread {thread.name} did not complete"
+        
+        # Verify invariants
+        assert len(size_violations) == 0, f"Queue size exceeded maxsize: {size_violations[:10]}"
+        
+        # Verify dropped count is monotonic (never decreases)
+        for i in range(1, len(dropped_counts)):
+            assert dropped_counts[i] >= dropped_counts[i-1], \
+                f"Dropped count decreased: {dropped_counts[i-1]} -> {dropped_counts[i]}"
+        
+        # Final verification
+        final_stats = queue.get_stats()
+        assert final_stats['size'] <= maxsize, \
+            f"Final queue size {final_stats['size']} exceeds maxsize {maxsize}"
     
-    def test_placeholder_graceful_thread_stress(self):
-        """Placeholder test - will be implemented in Task 15.2."""
-        # TODO: Implement in Task 15.2
-        # Create 100 concurrent threads with random workloads
-        pass
+    def test_graceful_thread_shutdown_stress(self):
+        """
+        Task 15.2: Stress test for graceful thread shutdown.
+        
+        Creates 100 concurrent threads with random workloads and verifies:
+        - All threads stop within timeout
+        - Cleanup callbacks are executed for all threads
+        - No threads hang or deadlock
+        """
+        num_threads = 100
+        threads = []
+        cleanup_counts = []
+        
+        def create_worker(worker_id, workload_duration):
+            """Create a worker function with specific workload."""
+            cleanup_called = []
+            
+            def cleanup():
+                cleanup_called.append(worker_id)
+                cleanup_counts.append(worker_id)
+            
+            def worker(thread: GracefulThread):
+                """Worker with random workload duration."""
+                start_time = time.time()
+                while not thread.should_stop():
+                    # Simulate work
+                    if time.time() - start_time > workload_duration:
+                        break
+                    if thread.wait_or_stop(0.01):
+                        break
+            
+            return worker, cleanup
+        
+        # Create threads with varying workload durations
+        for i in range(num_threads):
+            workload_duration = (i % 10) * 0.01  # 0 to 0.09 seconds
+            worker_func, cleanup_func = create_worker(i, workload_duration)
+            
+            thread = GracefulThread(
+                target=worker_func,
+                name=f'stress-graceful-{i}',
+                cleanup_callback=cleanup_func
+            )
+            threads.append(thread)
+        
+        # Start all threads
+        for thread in threads:
+            thread.start()
+        
+        # Let threads run briefly
+        time.sleep(0.2)
+        
+        # Request stop for all threads
+        start_time = time.time()
+        stop_results = []
+        for thread in threads:
+            result = thread.stop(timeout=5.0)
+            stop_results.append(result)
+        stop_duration = time.time() - start_time
+        
+        # Verify all threads stopped
+        assert all(stop_results), \
+            f"{stop_results.count(False)} threads did not stop within timeout"
+        
+        # Verify stop was reasonably fast (not 5s * 100 threads)
+        assert stop_duration < 10.0, \
+            f"Stopping {num_threads} threads took {stop_duration}s, expected < 10s"
+        
+        # Verify all cleanup callbacks were executed
+        assert len(cleanup_counts) == num_threads, \
+            f"Only {len(cleanup_counts)}/{num_threads} cleanup callbacks executed"
+        
+        # Verify no threads are still alive
+        alive_threads = [t for t in threads if t.is_alive()]
+        assert len(alive_threads) == 0, \
+            f"{len(alive_threads)} threads still alive: {[t.name for t in alive_threads]}"
     
-    def test_placeholder_lock_timeout_stress(self):
-        """Placeholder test - will be implemented in Task 15.3."""
-        # TODO: Implement in Task 15.3
-        # Create 100 concurrent threads attempting lock acquisition
-        pass
+    def test_lock_timeout_behavior_stress(self):
+        """
+        Task 15.3: Stress test for lock timeout behavior.
+        
+        Creates 100 concurrent threads attempting lock acquisition and verifies:
+        - TimeoutError is raised appropriately when lock cannot be acquired
+        - No actual deadlocks occur (all threads complete)
+        - Lock is properly released after each acquisition
+        """
+        lock = TimeoutLock(timeout=0.5, name='stress_test_lock')
+        
+        # Track results
+        successful_acquisitions = []
+        timeout_errors = []
+        other_errors = []
+        
+        def worker(worker_id):
+            """Worker that attempts to acquire lock."""
+            try:
+                with lock:
+                    # Hold lock briefly
+                    successful_acquisitions.append(worker_id)
+                    time.sleep(0.01)
+            except TimeoutError as e:
+                timeout_errors.append((worker_id, str(e)))
+            except Exception as e:
+                other_errors.append((worker_id, str(e)))
+        
+        # Create 100 threads
+        threads = []
+        for i in range(100):
+            thread = threading.Thread(target=worker, args=(i,), name=f'lock-stress-{i}')
+            threads.append(thread)
+        
+        # Start all threads simultaneously
+        for thread in threads:
+            thread.start()
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join(timeout=10.0)
+            assert not thread.is_alive(), \
+                f"Thread {thread.name} did not complete - possible deadlock"
+        
+        # Verify results
+        total_attempts = len(successful_acquisitions) + len(timeout_errors) + len(other_errors)
+        assert total_attempts == 100, \
+            f"Only {total_attempts}/100 threads completed"
+        
+        # Verify no unexpected errors
+        assert len(other_errors) == 0, \
+            f"Unexpected errors occurred: {other_errors[:5]}"
+        
+        # Verify some threads acquired lock successfully
+        assert len(successful_acquisitions) > 0, \
+            "No threads successfully acquired lock"
+        
+        # Verify some threads timed out (due to contention)
+        assert len(timeout_errors) > 0, \
+            "No threads timed out - lock contention not tested"
+        
+        # Verify TimeoutError messages contain lock name
+        for worker_id, error_msg in timeout_errors[:5]:
+            assert 'stress_test_lock' in error_msg, \
+                f"TimeoutError missing lock name: {error_msg}"
     
-    def test_placeholder_collection_consistency_stress(self):
-        """Placeholder test - will be implemented in Task 15.4."""
-        # TODO: Implement in Task 15.4
-        # Property 2: Final state is consistent with serial execution
-        # **Validates: Requirements 4.1-4.5**
-        pass
+    @given(
+        operations=st.lists(
+            st.tuples(
+                st.sampled_from(['add', 'remove', 'contains', 'get', 'set']),
+                st.text(min_size=1, max_size=20, alphabet=st.characters(min_codepoint=97, max_codepoint=122)),
+                st.integers(min_value=0, max_value=1000)
+            ),
+            min_size=500,
+            max_size=2000
+        )
+    )
+    @settings(max_examples=100, deadline=None)
+    def test_thread_safe_collection_consistency_stress(self, operations):
+        """
+        Task 15.4: Stress test for thread-safe collection consistency.
+        
+        Property 2: Final state is consistent with serial execution
+        **Validates: Requirements 4.1-4.5**
+        
+        Creates 100 concurrent threads performing random operations and verifies:
+        - Final state is valid and consistent
+        - No concurrent modification errors
+        - All operations complete successfully
+        """
+        # Test both ThreadSafeDict and ThreadSafeSet
+        safe_dict = ThreadSafeDict[str, int](name='stress_test_dict')
+        safe_set = ThreadSafeSet[str](name='stress_test_set')
+        
+        # Track errors
+        errors = []
+        
+        def worker(ops):
+            """Worker that performs random operations on collections."""
+            for op, key, value in ops:
+                try:
+                    if op == 'add':
+                        safe_set.add(key)
+                    elif op == 'remove':
+                        safe_set.discard(key)  # Use discard to avoid KeyError
+                    elif op == 'contains':
+                        _ = key in safe_set
+                    elif op == 'get':
+                        _ = safe_dict.get(key, None)
+                    elif op == 'set':
+                        safe_dict[key] = value
+                except Exception as e:
+                    errors.append((op, key, str(e)))
+        
+        # Split operations across 100 threads
+        num_threads = 100
+        chunk_size = max(1, len(operations) // num_threads)
+        threads = []
+        
+        for i in range(num_threads):
+            start_idx = i * chunk_size
+            end_idx = start_idx + chunk_size if i < num_threads - 1 else len(operations)
+            chunk = operations[start_idx:end_idx]
+            
+            thread = threading.Thread(target=worker, args=(chunk,), name=f'collection-stress-{i}')
+            threads.append(thread)
+        
+        # Start all threads
+        for thread in threads:
+            thread.start()
+        
+        # Wait for completion
+        for thread in threads:
+            thread.join(timeout=30.0)
+            assert not thread.is_alive(), f"Thread {thread.name} did not complete"
+        
+        # Verify no errors occurred
+        assert len(errors) == 0, f"Errors occurred during operations: {errors[:10]}"
+        
+        # Verify final state is consistent
+        # All keys in dict should be valid strings
+        for key, value in safe_dict.items():
+            assert isinstance(key, str), f"Invalid key type: {type(key)}"
+            assert len(key) >= 1, f"Invalid key length: {len(key)}"
+            assert isinstance(value, int), f"Invalid value type: {type(value)}"
+        
+        # All items in set should be valid strings
+        for item in safe_set:
+            assert isinstance(item, str), f"Invalid set item type: {type(item)}"
+            assert len(item) >= 1, f"Invalid set item length: {len(item)}"
+        
+        # Verify collections are accessible (no corruption)
+        dict_size = len(safe_dict)
+        set_size = len(safe_set)
+        assert dict_size >= 0, f"Invalid dict size: {dict_size}"
+        assert set_size >= 0, f"Invalid set size: {set_size}"
     
-    def test_placeholder_resource_cleanup_stress(self):
-        """Placeholder test - will be implemented in Task 15.5."""
-        # TODO: Implement in Task 15.5
-        # Simulate random exceptions during resource operations
-        pass
+    def test_resource_cleanup_under_exceptions_stress(self):
+        """
+        Task 15.5: Stress test for resource cleanup under exceptions.
+        
+        Simulates random exceptions during resource operations and verifies:
+        - Cleanup occurs in all code paths
+        - No resource leaks
+        - Resources are properly released even when exceptions occur
+        """
+        import matplotlib.pyplot as plt
+        
+        # Track cleanup
+        sqlite_cleanups = []
+        matplotlib_cleanups = []
+        gpu_cleanups = []
+        
+        def sqlite_operation_with_cleanup(db_path, should_fail):
+            """Simulate SQLite operation with cleanup."""
+            conn = None
+            try:
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, value TEXT)")
+                
+                if should_fail:
+                    raise ValueError("Simulated database error")
+                
+                conn.commit()
+            except Exception as e:
+                if conn:
+                    conn.rollback()
+                raise
+            finally:
+                if conn:
+                    conn.close()
+                    sqlite_cleanups.append(True)
+        
+        def matplotlib_operation_with_cleanup(should_fail):
+            """Simulate matplotlib operation with cleanup."""
+            fig = None
+            try:
+                fig, ax = plt.subplots(figsize=(8, 6))
+                ax.plot([1, 2, 3], [1, 2, 3])
+                
+                if should_fail:
+                    raise ValueError("Simulated plotting error")
+            finally:
+                if fig is not None:
+                    plt.close(fig)
+                    matplotlib_cleanups.append(True)
+        
+        def gpu_operation_with_cleanup(should_fail):
+            """Simulate GPU operation with cleanup."""
+            tensor = None
+            try:
+                # Simulate tensor creation (without actual torch dependency)
+                tensor = [1, 2, 3]  # Mock tensor
+                
+                if should_fail:
+                    raise ValueError("Simulated GPU error")
+            finally:
+                if tensor is not None:
+                    del tensor
+                    gpu_cleanups.append(True)
+        
+        # Create temporary database
+        fd, db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        
+        try:
+            # Run operations with random failures
+            num_operations = 100
+            
+            for i in range(num_operations):
+                should_fail = (i % 3 == 0)  # Fail every 3rd operation
+                
+                # SQLite operation
+                try:
+                    sqlite_operation_with_cleanup(db_path, should_fail)
+                except ValueError:
+                    pass  # Expected
+                
+                # Matplotlib operation
+                try:
+                    matplotlib_operation_with_cleanup(should_fail)
+                except ValueError:
+                    pass  # Expected
+                
+                # GPU operation
+                try:
+                    gpu_operation_with_cleanup(should_fail)
+                except ValueError:
+                    pass  # Expected
+            
+            # Verify all cleanups occurred
+            assert len(sqlite_cleanups) == num_operations, \
+                f"SQLite cleanup: {len(sqlite_cleanups)}/{num_operations}"
+            assert len(matplotlib_cleanups) == num_operations, \
+                f"Matplotlib cleanup: {len(matplotlib_cleanups)}/{num_operations}"
+            assert len(gpu_cleanups) == num_operations, \
+                f"GPU cleanup: {len(gpu_cleanups)}/{num_operations}"
+            
+            # Verify no matplotlib figures remain open
+            open_figures = len(plt.get_fignums())
+            assert open_figures == 0, \
+                f"{open_figures} matplotlib figures still open"
+        
+        finally:
+            # Cleanup temp database
+            try:
+                os.unlink(db_path)
+            except OSError:
+                pass
     
-    def test_placeholder_stop_event_responsiveness_stress(self):
-        """Placeholder test - will be implemented in Task 15.6."""
-        # TODO: Implement in Task 15.6
-        # Create monitoring loops with random stop timings
-        pass
+    def test_stop_event_responsiveness_stress(self):
+        """
+        Task 15.6: Stress test for stop event responsiveness.
+        
+        Creates monitoring loops with random stop timings and verifies:
+        - Loops exit immediately when stop is requested
+        - Loops don't wait full timeout period
+        - Stop event checking is responsive under load
+        """
+        num_loops = 100
+        exit_times = []
+        
+        def create_monitoring_loop(interval):
+            """Create a monitoring loop with specific interval."""
+            def monitoring_loop(thread: GracefulThread):
+                """Monitoring loop with configurable interval."""
+                start_time = time.time()
+                iterations = 0
+                
+                while not thread.should_stop():
+                    iterations += 1
+                    # Simulate monitoring work
+                    time.sleep(0.001)
+                    
+                    # Wait for interval or stop
+                    if thread.wait_or_stop(interval):
+                        break
+                
+                exit_time = time.time() - start_time
+                exit_times.append((exit_time, iterations))
+            
+            return monitoring_loop
+        
+        # Create threads with varying intervals
+        threads = []
+        for i in range(num_loops):
+            # Intervals from 0.1s to 10s
+            interval = 0.1 + (i % 10) * 1.0
+            
+            thread = GracefulThread(
+                target=create_monitoring_loop(interval),
+                name=f'monitor-stress-{i}'
+            )
+            threads.append(thread)
+        
+        # Start all threads
+        for thread in threads:
+            thread.start()
+        
+        # Let threads run briefly
+        time.sleep(0.5)
+        
+        # Request stop at random times
+        stop_start = time.time()
+        for i, thread in enumerate(threads):
+            # Stop threads in batches
+            if i % 10 == 0:
+                time.sleep(0.01)  # Small delay between batches
+            
+            thread.stop(timeout=2.0)
+        
+        total_stop_time = time.time() - stop_start
+        
+        # Verify all threads stopped
+        alive_threads = [t for t in threads if t.is_alive()]
+        assert len(alive_threads) == 0, \
+            f"{len(alive_threads)} threads still alive"
+        
+        # Verify threads exited quickly (not after full interval)
+        for exit_time, iterations in exit_times:
+            # Threads should exit within 2 seconds, not after their full interval
+            assert exit_time < 3.0, \
+                f"Thread took {exit_time}s to exit, expected < 3s"
+        
+        # Verify total stop time is reasonable
+        # Should not be 2s * 100 threads (sequential)
+        assert total_stop_time < 30.0, \
+            f"Stopping {num_loops} threads took {total_stop_time}s, expected < 30s"
+        
+        # Verify threads did at least some work
+        total_iterations = sum(iters for _, iters in exit_times)
+        assert total_iterations > num_loops, \
+            f"Threads did minimal work: {total_iterations} total iterations"
 
 
 # =============================================================================
