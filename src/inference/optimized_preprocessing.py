@@ -118,7 +118,26 @@ class OptimizedImagePreprocessor:
         Returns:
             Preprocessed tensor
         """
-        image = Image.open(io.BytesIO(image_bytes))
+        # Input validation
+        if not image_bytes or len(image_bytes) > 50 * 1024 * 1024:  # Max 50MB
+            raise ValueError("Invalid image data size")
+        
+        try:
+            with Image.open(io.BytesIO(image_bytes)) as image:
+                # Security checks
+                width, height = image.size
+                if width > 10000 or height > 10000:
+                    raise ValueError(f"Image too large: {width}x{height}")
+                
+                if image.format.lower() not in ['jpeg', 'png', 'tiff', 'bmp']:
+                    raise ValueError(f"Invalid image format: {image.format}")
+                
+                image.load()
+                image = image.copy()
+                
+        except Exception as e:
+            raise ValueError(f"Failed to load image: {type(e).__name__}")
+            
         return self.preprocess_single_fast(image)
 
     def preprocess_parallel(self, image_paths: List[str]) -> torch.Tensor:
