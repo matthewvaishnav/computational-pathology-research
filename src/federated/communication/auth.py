@@ -49,6 +49,13 @@ class CertificateValidator:
         Raises:
             AuthenticationError: If validation fails
         """
+        import secrets
+        
+        # Constant-time validation to prevent timing attacks
+        validation_start = time.time()
+        is_valid = True
+        error_msg = "Certificate validation failed"
+        
         try:
             cert = x509.load_pem_x509_certificate(cert_pem)
 
@@ -62,18 +69,18 @@ class CertificateValidator:
                     padding.PKCS1v15(),
                     cert.signature_hash_algorithm,
                 )
-            except Exception as e:
-                raise AuthenticationError(f"Certificate signature invalid: {e}")
+            except Exception:
+                is_valid = False
+                error_msg = "Certificate signature invalid"
 
             # Check validity period (with 1 second tolerance for clock skew)
             now = time.time()
-            not_before = cert.not_valid_before.timestamp() - 1.0  # 1 second tolerance
+            not_before = cert.not_valid_before.timestamp() - 1.0
             not_after = cert.not_valid_after.timestamp()
 
-            if now < not_before:
-                raise AuthenticationError("Certificate not yet valid")
-            if now > not_after:
-                raise AuthenticationError("Certificate expired")
+            if now < not_before or now > not_after:
+                is_valid = False
+                error_msg = "Certificate expired or not yet valid"
 
             # Extract identity information
             subject = cert.subject
@@ -86,9 +93,22 @@ class CertificateValidator:
                 elif attribute.oid == x509.NameOID.ORGANIZATION_NAME:
                     organization = attribute.value
 
+            # Validate common name format
+            if common_name and not self._is_valid_common_name(common_name):
+                is_valid = False
+                error_msg = "Invalid certificate common name"
+
             # Compute certificate fingerprint
             cert_der = cert.public_bytes(serialization.Encoding.DER)
             fingerprint = hashlib.sha256(cert_der).hexdigest()
+
+            # Constant-time delay to prevent timing attacks
+            elapsed = time.time() - validation_start
+            if elapsed < 0.1:  # Minimum 100ms validation time
+                time.sleep(0.1 - elapsed + secrets.randbelow(50) / 1000.0)
+
+            if not is_valid:
+                raise AuthenticationError(error_msg)
 
             return {
                 "valid": True,
@@ -102,8 +122,19 @@ class CertificateValidator:
 
         except AuthenticationError:
             raise
-        except Exception as e:
-            raise AuthenticationError(f"Certificate validation failed: {e}")
+        except Exception:
+            # Constant-time delay even for exceptions
+            elapsed = time.time() - validation_start
+            if elapsed < 0.1:
+                time.sleep(0.1 - elapsed + secrets.randbelow(50) / 1000.0)
+            raise AuthenticationError("Certificate validation failed")
+
+    def _is_valid_common_name(self, common_name: str) -> bool:
+        """Validate common name format to prevent injection attacks."""
+        import re
+        # Allow alphanumeric, hyphens, underscores, dots
+        pattern = r'^[a-zA-Z0-9._-]+$'
+        return bool(re.match(pattern, common_name)) and len(common_name) <= 64
 
 
 class RoleBasedAccessControl:
@@ -183,6 +214,11 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
         """
         self.validator = CertificateValidator(ca_cert_pem)
         self.rbac = rbac
+        
+        # Rate limiting for authentication attempts
+        self._auth_attempts = {}  # client_ip -> (count, last_attempt)
+        self._max_attempts = 5
+        self._lockout_duration = 300  # 5 minutes
 
         # Method to operation mapping
         self.method_operations = {
@@ -193,11 +229,53 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
             "/federated_learning.FederatedLearningService/StartRound": "start_round",
         }
 
+    def _validate_client_id(self, client_id: str) -> bool:
+        """Validate client ID format to prevent injection attacks."""
+        import re
+        if not client_id or len(client_id) > 64:
+            return False
+        # Allow alphanumeric, hyphens, underscores
+        pattern = r'^[a-zA-Z0-9_-]+$'
+        return bool(re.match(pattern, client_id))
+
+    def _check_rate_limit(self, client_ip: str) -> bool:
+        """Check if client is rate limited."""
+        now = time.time()
+        
+        if client_ip in self._auth_attempts:
+            count, last_attempt = self._auth_attempts[client_ip]
+            
+            # Reset counter if lockout period expired
+            if now - last_attempt > self._lockout_duration:
+                self._auth_attempts[client_ip] = (1, now)
+                return True
+            
+            # Check if exceeded max attempts
+            if count >= self._max_attempts:
+                return False
+            
+            # Increment counter
+            self._auth_attempts[client_ip] = (count + 1, now)
+        else:
+            self._auth_attempts[client_ip] = (1, now)
+        
+        return True
+
     def intercept_service(self, continuation, handler_call_details):
         """Intercept gRPC service calls for authentication."""
 
         def auth_wrapper(request, context):
             try:
+                # Get client IP for rate limiting
+                peer = context.peer()
+                client_ip = peer.split(':')[1] if ':' in peer else 'unknown'
+                
+                # Check rate limiting
+                if not self._check_rate_limit(client_ip):
+                    context.set_code(grpc.StatusCode.RESOURCE_EXHAUSTED)
+                    context.set_details("Too many authentication attempts")
+                    return
+
                 # Extract client certificate from TLS context
                 auth_context = context.auth_context()
                 peer_identity = None
@@ -210,7 +288,13 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
 
                 if not peer_identity:
                     context.set_code(grpc.StatusCode.UNAUTHENTICATED)
-                    context.set_details("No client certificate provided")
+                    context.set_details("Authentication required")
+                    return
+
+                # Validate peer identity format
+                if not self._validate_client_id(peer_identity):
+                    context.set_code(grpc.StatusCode.UNAUTHENTICATED)
+                    context.set_details("Invalid client identifier")
                     return
 
                 # Get operation from method name
@@ -219,21 +303,31 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
 
                 # Special handling for registration
                 if operation == "register":
-                    # Extract client_id from request
+                    # Extract and validate client_id from request
                     client_id = getattr(request, "client_id", None)
-                    if client_id:
-                        # Auto-assign client role for new registrations
-                        if client_id not in self.rbac.client_roles:
-                            # Determine role based on client_id pattern
-                            if client_id.startswith("coordinator"):
-                                self.rbac.assign_role(client_id, "coordinator")
-                            else:
-                                self.rbac.assign_role(client_id, "client")
+                    if not client_id or not self._validate_client_id(client_id):
+                        context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+                        context.set_details("Invalid client ID format")
+                        return
+                    
+                    # Verify client_id matches certificate identity
+                    if client_id != peer_identity:
+                        context.set_code(grpc.StatusCode.UNAUTHENTICATED)
+                        context.set_details("Client ID mismatch")
+                        return
+
+                    # Auto-assign client role for new registrations
+                    if client_id not in self.rbac.client_roles:
+                        # Determine role based on client_id pattern
+                        if client_id.startswith("coordinator"):
+                            self.rbac.assign_role(client_id, "coordinator")
+                        else:
+                            self.rbac.assign_role(client_id, "client")
 
                 # Check permissions
                 if not self.rbac.check_permission(peer_identity, operation):
                     context.set_code(grpc.StatusCode.PERMISSION_DENIED)
-                    context.set_details(f"Insufficient permissions for {operation}")
+                    context.set_details("Insufficient permissions")
                     return
 
                 # Add client identity to context for use in handlers
@@ -243,9 +337,9 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
                 return continuation(request, context)
 
             except Exception as e:
-                logger.error(f"Authentication error: {e}")
+                logger.error(f"Authentication error for {client_ip}: {type(e).__name__}")
                 context.set_code(grpc.StatusCode.INTERNAL)
-                context.set_details(f"Authentication error: {str(e)}")
+                context.set_details("Authentication error")
                 return
 
         return grpc.unary_unary_rpc_method_handler(auth_wrapper)
@@ -433,11 +527,20 @@ def generate_client_certificates(
         Dict mapping client_id to certificate path
     """
     import os
+    import stat
 
     from .tls_utils import TLSManager
 
     tls_manager = TLSManager(cert_dir)
     cert_paths = {}
+
+    # Validate all client IDs first
+    for client_id in client_ids:
+        if not client_id or len(client_id) > 64:
+            raise ValueError(f"Invalid client ID: {client_id}")
+        import re
+        if not re.match(r'^[a-zA-Z0-9._-]+$', client_id):
+            raise ValueError(f"Invalid client ID format: {client_id}")
 
     for client_id in client_ids:
         # Generate client certificate
@@ -445,14 +548,19 @@ def generate_client_certificates(
             ca_cert_pem, ca_key_pem, client_id
         )
 
-        # Save certificate
+        # Save certificate with secure permissions
         cert_path = os.path.join(cert_dir, f"{client_id}-cert.pem")
         key_path = os.path.join(cert_dir, f"{client_id}-key.pem")
 
+        # Write certificate (readable by owner and group)
         with open(cert_path, "wb") as f:
             f.write(client_cert_pem)
+        os.chmod(cert_path, stat.S_IRUSR | stat.S_IRGRP)  # 0o440
+
+        # Write private key (readable by owner only)
         with open(key_path, "wb") as f:
             f.write(client_key_pem)
+        os.chmod(key_path, stat.S_IRUSR)  # 0o400
 
         cert_paths[client_id] = cert_path
         logger.info(f"Generated certificate for {client_id}")
