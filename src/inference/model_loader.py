@@ -72,8 +72,9 @@ class ModelLoader:
         logger.info(f"Loading PCam model from: {checkpoint_path}")
 
         try:
-            # Load checkpoint
-            checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            # Load checkpoint safely (always to CPU first to avoid OOM)
+            from src.utils.safe_operations import safe_torch_load
+            checkpoint = safe_torch_load(checkpoint_path, device=None)  # Load to CPU first
 
             # Create model architecture (based on your training setup)
             model = self._create_pcam_model()
@@ -85,6 +86,11 @@ class ModelLoader:
                 model.load_state_dict(checkpoint)
 
             model.to(self.device)
+            model.eval()
+
+            # Safely move model to device with memory checks
+            from src.utils.safe_operations import safe_model_to_device
+            model, actual_device = safe_model_to_device(model, self.device)
             model.eval()
 
             # Model configuration

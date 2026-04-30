@@ -317,7 +317,10 @@ class LocalStorage:
 
                     if file_age > max_age_seconds:
                         file_size = os.path.getsize(filepath)
-                        os.remove(filepath)
+                        # Safe deletion with archival
+                        from src.utils.safe_operations import safe_delete
+                        archive_dir = self.cache_dir / "archive"
+                        safe_delete(Path(filepath), archive_dir=archive_dir)
                         cleaned_count += 1
                         cleaned_size += file_size
 
