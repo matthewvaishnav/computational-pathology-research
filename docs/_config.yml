@@ -1,5 +1,5 @@
-title: Computational Pathology Research Framework
-description: A tested PyTorch framework for computational pathology research with working benchmarks on PatchCamelyon and CAMELYON16
+title: HistoCore
+description: Production-grade PyTorch framework for computational pathology research with 3,006 tests, 8-12x training optimization, federated learning, and PACS integration
 theme: jekyll-theme-minimal
 logo: /assets/logo.svg?v=2
 show_downloads: true
