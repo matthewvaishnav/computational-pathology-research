@@ -283,6 +283,9 @@ class RBACManager:
         self.active_sessions: Dict[str, UserSession] = {}
         self.session_timeout_minutes = 30
         self.logger = logging.getLogger(__name__)
+        # Encrypt session tokens in memory
+        self._session_encryption = AES256Encryption()
+        self._encrypted_sessions: Dict[str, bytes] = {}
 
     def create_session(
         self,
@@ -313,6 +316,15 @@ class RBACManager:
         )
 
         self.active_sessions[session_token] = session
+        # Store encrypted session data
+        session_data = json.dumps({
+            'user_id': session.user_id,
+            'role': session.role.value,
+            'created_at': session.created_at.isoformat(),
+            'last_activity': session.last_activity.isoformat(),
+            'ip_address': session.ip_address
+        }).encode()
+        self._encrypted_sessions[session_token] = self._session_encryption.encrypt(session_data)
         self.logger.info(f"Created session for user {user_id}")
         return session_token
 
