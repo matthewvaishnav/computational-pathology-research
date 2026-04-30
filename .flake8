@@ -2,4 +2,4 @@
 max-line-length = 100
 max-complexity = 15
 ignore = E402,C901,W503,W504
-exclude = .git,__pycache__,.hypothesis,.kiro,.kilo
+exclude = .git,__pycache__,.hypothesis,.kiro,.kilo,*_pb2.py,*_pb2_grpc.py
