@@ -66,20 +66,69 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
         """
         try:
             client_id = request.client_id
+            
+            # Input validation
+            if not client_id or len(client_id) > 64:
+                return RegistrationResponse(success=False, message="Invalid client ID")
+            
+            import re
+            if not re.match(r'^[a-zA-Z0-9._-]+$', client_id):
+                return RegistrationResponse(success=False, message="Invalid client ID format")
+            
+            # Validate hostname
+            if not request.hostname or len(request.hostname) > 253:
+                return RegistrationResponse(success=False, message="Invalid hostname")
+            
+            if not re.match(r'^[a-zA-Z0-9.-]+$', request.hostname):
+                return RegistrationResponse(success=False, message="Invalid hostname format")
+            
+            # Validate port
+            if not (1 <= request.port <= 65535):
+                return RegistrationResponse(success=False, message="Invalid port")
 
-            # Validate client certificate (basic check)
+            # Validate and verify client certificate
             if not request.certificate:
-                return RegistrationResponse(success=False, message="Client certificate required")
+                return RegistrationResponse(success=False, message="Certificate required")
+            
+            try:
+                from cryptography import x509
+                cert = x509.load_pem_x509_certificate(request.certificate.encode())
+                
+                # Basic certificate validation
+                from datetime import datetime, timezone
+                now = datetime.now(timezone.utc)
+                if now < cert.not_valid_before_utc or now > cert.not_valid_after_utc:
+                    return RegistrationResponse(success=False, message="Certificate expired or not valid")
+                
+                # Verify certificate subject matches client_id
+                subject = cert.subject
+                cn_attributes = subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
+                if not cn_attributes or cn_attributes[0].value != client_id:
+                    return RegistrationResponse(success=False, message="Certificate subject mismatch")
+                    
+            except Exception:
+                return RegistrationResponse(success=False, message="Invalid certificate format")
+
+            # Validate capabilities
+            caps = request.capabilities
+            if caps.available_memory_gb < 0 or caps.available_memory_gb > 1024:
+                return RegistrationResponse(success=False, message="Invalid memory specification")
+            
+            if caps.num_gpus < 0 or caps.num_gpus > 16:
+                return RegistrationResponse(success=False, message="Invalid GPU count")
+            
+            if caps.dataset_size < 0 or caps.dataset_size > 10000000:
+                return RegistrationResponse(success=False, message="Invalid dataset size")
 
             # Store client info
             self.registered_clients[client_id] = {
                 "hostname": request.hostname,
                 "port": request.port,
                 "capabilities": {
-                    "memory_gb": request.capabilities.available_memory_gb,
-                    "num_gpus": request.capabilities.num_gpus,
-                    "dataset_size": request.capabilities.dataset_size,
-                    "algorithms": list(request.capabilities.supported_algorithms),
+                    "memory_gb": caps.available_memory_gb,
+                    "num_gpus": caps.num_gpus,
+                    "dataset_size": caps.dataset_size,
+                    "algorithms": list(caps.supported_algorithms),
                 },
                 "certificate": request.certificate,
                 "registered_at": time.time(),
@@ -87,20 +136,30 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
 
             logger.info(f"Client {client_id} registered successfully")
 
-            # Return coordinator certificate for mutual TLS
+            # Return coordinator certificate for mutual TLS with secure file access
             ca_cert_path = f"{self.tls_manager.cert_dir}/ca-cert.pem"
-            with open(ca_cert_path, "r") as f:
-                coordinator_cert = f.read()
+            
+            # Validate file path to prevent directory traversal
+            import os
+            ca_cert_path = os.path.abspath(ca_cert_path)
+            if not ca_cert_path.startswith(os.path.abspath(self.tls_manager.cert_dir)):
+                return RegistrationResponse(success=False, message="Registration failed")
+            
+            try:
+                with open(ca_cert_path, "r") as f:
+                    coordinator_cert = f.read()
+            except (IOError, OSError):
+                return RegistrationResponse(success=False, message="Registration failed")
 
             return RegistrationResponse(
                 success=True,
-                message=f"Client {client_id} registered successfully",
+                message="Registration successful",
                 coordinator_certificate=coordinator_cert,
             )
 
         except Exception as e:
-            logger.error(f"Client registration failed: {e}")
-            return RegistrationResponse(success=False, message=f"Registration failed: {str(e)}")
+            logger.error(f"Client registration failed: {type(e).__name__}")
+            return RegistrationResponse(success=False, message="Registration failed")
 
     def GetGlobalModel(self, request: ModelRequest, context) -> ModelResponse:
         """
@@ -116,11 +175,24 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
         try:
             client_id = request.client_id
             round_id = request.round_id
+            
+            # Input validation
+            if not client_id or len(client_id) > 64:
+                context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+                context.set_details("Invalid client ID")
+                return ModelResponse()
 
-            # Verify client is registered
+            # Verify client is registered and authorized
             if client_id not in self.registered_clients:
                 context.set_code(grpc.StatusCode.UNAUTHENTICATED)
                 context.set_details("Client not registered")
+                return ModelResponse()
+            
+            # Check if client registration is still valid (not expired)
+            client_info = self.registered_clients[client_id]
+            if time.time() - client_info["registered_at"] > 86400:  # 24 hours
+                context.set_code(grpc.StatusCode.UNAUTHENTICATED)
+                context.set_details("Registration expired")
                 return ModelResponse()
 
             # Get current global model
@@ -135,7 +207,7 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
             torch.save(model_state, buffer)
             model_bytes = buffer.getvalue()
 
-            logger.info(f"Serving global model v{self.orchestrator.current_version} to {client_id}")
+            logger.info(f"Serving global model to {client_id}")
 
             return ModelResponse(
                 model_version=self.orchestrator.current_version,
