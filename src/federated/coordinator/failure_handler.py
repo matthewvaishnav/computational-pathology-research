@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Set
 
-from src.utils.safe_threading import GracefulThread
+from src.utils.safe_threading import GracefulThread, ThreadSafeDict, ThreadSafeSet
 
 logger = logging.getLogger(__name__)
 
@@ -109,16 +109,16 @@ class ClientFailureHandler:
         self.notification_callback = notification_callback
 
         # Client tracking
-        self.client_metrics: Dict[str, ClientHealthMetrics] = {}
-        self.active_clients: Set[str] = set()
-        self.failed_clients: Set[str] = set()
-        self.blacklisted_clients: Set[str] = set()
+        self.client_metrics: ThreadSafeDict[str, ClientHealthMetrics] = ThreadSafeDict(name='client_metrics')
+        self.active_clients: ThreadSafeSet[str] = ThreadSafeSet(name='active_clients')
+        self.failed_clients: ThreadSafeSet[str] = ThreadSafeSet(name='failed_clients')
+        self.blacklisted_clients: ThreadSafeSet[str] = ThreadSafeSet(name='blacklisted_clients')
 
         # Round tracking
         self.current_round_id: int = 0
         self.round_start_time: Optional[datetime] = None
-        self.expected_clients: Set[str] = set()
-        self.received_updates: Set[str] = set()
+        self.expected_clients: ThreadSafeSet[str] = ThreadSafeSet(name='expected_clients')
+        self.received_updates: ThreadSafeSet[str] = ThreadSafeSet(name='received_updates')
 
         # Monitoring
         self.monitoring_active = False
