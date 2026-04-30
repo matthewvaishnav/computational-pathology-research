@@ -762,13 +762,114 @@ class TestThreadSafeCollections:
 class TestStopEventChecking:
     """Unit tests for stop event return value checking."""
     
-    def test_placeholder(self):
-        """Placeholder test - will be implemented in Task 7.2."""
-        # TODO: Implement in Task 7.2
-        # - Test loop exits immediately when stop is requested
-        # - Test loop does not wait full timeout when stopped early
-        # - Test stop_event.is_set() is checked in loop condition
-        pass
+    def test_loop_exits_immediately_when_stop_requested(self):
+        """Test that monitoring loop exits immediately when stop is requested."""
+        exit_times = []
+        
+        def monitoring_loop(thread: GracefulThread):
+            """Simulated monitoring loop."""
+            start_time = time.time()
+            while not thread.should_stop():
+                # Simulate work
+                if thread.wait_or_stop(10.0):  # Long wait
+                    break
+            exit_time = time.time() - start_time
+            exit_times.append(exit_time)
+        
+        thread = GracefulThread(target=monitoring_loop, name='test_stop_exit')
+        thread.start()
+        
+        # Let thread start waiting
+        time.sleep(0.2)
+        
+        # Request stop
+        start_time = time.time()
+        thread.stop(timeout=2.0)
+        stop_time = time.time()
+        
+        # Verify thread exited quickly, not after 10 seconds
+        assert len(exit_times) == 1
+        assert exit_times[0] < 3.0, f"Loop took {exit_times[0]}s to exit, expected < 3s"
+        assert (stop_time - start_time) < 2.0, "Stop took too long"
+    
+    def test_loop_does_not_wait_full_timeout_when_stopped_early(self):
+        """Test that loop doesn't wait full timeout period when stopped early."""
+        iterations = []
+        
+        def monitoring_loop(thread: GracefulThread):
+            """Loop with long wait periods."""
+            while not thread.should_stop():
+                iterations.append(time.time())
+                # Long wait - should exit early when stopped
+                if thread.wait_or_stop(30.0):
+                    break
+        
+        thread = GracefulThread(target=monitoring_loop, name='test_early_exit')
+        thread.start()
+        
+        # Let thread do one iteration
+        time.sleep(0.5)
+        
+        # Stop thread
+        start_time = time.time()
+        thread.stop(timeout=2.0)
+        stop_time = time.time()
+        
+        # Verify thread stopped quickly, not after 30 seconds
+        assert (stop_time - start_time) < 3.0, "Thread took too long to stop"
+        assert len(iterations) >= 1, "Thread should have done at least one iteration"
+    
+    def test_should_stop_checked_in_loop_condition(self):
+        """Test that should_stop() is checked in loop condition."""
+        loop_checks = []
+        
+        def monitoring_loop(thread: GracefulThread):
+            """Loop that tracks should_stop checks."""
+            while not thread.should_stop():
+                loop_checks.append('checked')
+                if thread.wait_or_stop(0.1):
+                    break
+        
+        thread = GracefulThread(target=monitoring_loop, name='test_should_stop')
+        thread.start()
+        
+        # Let thread run a bit
+        time.sleep(0.3)
+        
+        # Stop thread
+        thread.stop(timeout=1.0)
+        
+        # Verify should_stop was checked multiple times
+        assert len(loop_checks) >= 2, "should_stop should be checked multiple times"
+    
+    def test_stop_event_responsiveness_under_load(self):
+        """Test that stop event is responsive even under load."""
+        work_done = []
+        
+        def monitoring_loop(thread: GracefulThread):
+            """Loop that does work."""
+            while not thread.should_stop():
+                # Simulate some work
+                work_done.append(1)
+                time.sleep(0.01)
+                # Check for stop with short wait
+                if thread.wait_or_stop(0.1):
+                    break
+        
+        thread = GracefulThread(target=monitoring_loop, name='test_load')
+        thread.start()
+        
+        # Let thread do some work
+        time.sleep(0.5)
+        
+        # Stop thread
+        start_time = time.time()
+        thread.stop(timeout=1.0)
+        stop_time = time.time()
+        
+        # Verify thread stopped quickly
+        assert (stop_time - start_time) < 1.0, "Thread took too long to stop under load"
+        assert len(work_done) > 0, "Thread should have done some work"
 
 
 # =============================================================================
@@ -1371,12 +1472,110 @@ class TestThreadSafeCollectionProperties:
 class TestStopEventProperties:
     """Property-based tests for stop event responsiveness."""
     
-    def test_placeholder(self):
-        """Placeholder test - will be implemented in Task 7.3."""
-        # TODO: Implement in Task 7.3
-        # Property 5: Loop exits within 100ms of stop request
-        # **Validates: Requirements 5.1, 5.2**
-        pass
+    @given(
+        wait_interval=st.floats(min_value=0.1, max_value=5.0),
+        stop_delay=st.floats(min_value=0.05, max_value=0.5)
+    )
+    @settings(max_examples=10, deadline=None)
+    def test_loop_exits_within_100ms_of_stop_request(self, wait_interval, stop_delay):
+        """
+        Property 5: Loop exits within 100ms of stop request.
+        
+        For any wait interval and stop timing, the monitoring loop should
+        exit within 100ms of the stop request being issued.
+        
+        **Validates: Requirements 5.1, 5.2**
+        """
+        exit_times = []
+        stop_times = []
+        
+        def monitoring_loop(thread: GracefulThread):
+            """Monitoring loop with configurable wait interval."""
+            while not thread.should_stop():
+                # Use wait_or_stop which should exit immediately on stop
+                if thread.wait_or_stop(wait_interval):
+                    break
+            exit_times.append(time.time())
+        
+        thread = GracefulThread(target=monitoring_loop, name='property_test_stop')
+        thread.start()
+        
+        # Wait before stopping
+        time.sleep(stop_delay)
+        
+        # Request stop and record time
+        stop_time = time.time()
+        stop_times.append(stop_time)
+        thread.stop(timeout=2.0)
+        
+        # Verify thread exited quickly after stop request
+        assert len(exit_times) == 1, "Thread should have exited"
+        assert len(stop_times) == 1, "Stop time should be recorded"
+        
+        exit_delay = exit_times[0] - stop_times[0]
+        
+        # Allow 200ms tolerance (100ms target + 100ms margin for system scheduling)
+        assert exit_delay < 0.2, \
+            f"Loop took {exit_delay*1000:.1f}ms to exit after stop, expected < 200ms"
+    
+    @given(
+        num_loops=st.integers(min_value=5, max_value=20),
+        wait_intervals=st.lists(
+            st.floats(min_value=0.1, max_value=2.0),
+            min_size=5,
+            max_size=20
+        )
+    )
+    @settings(max_examples=10, deadline=None)
+    def test_multiple_loops_all_exit_quickly(self, num_loops, wait_intervals):
+        """
+        Property: Multiple monitoring loops all exit quickly when stopped.
+        
+        For any number of concurrent monitoring loops with different wait
+        intervals, all should exit within a reasonable time when stopped.
+        
+        **Validates: Requirements 5.1, 5.2**
+        """
+        # Ensure we have enough intervals
+        while len(wait_intervals) < num_loops:
+            wait_intervals.append(1.0)
+        
+        threads = []
+        exit_times = []
+        
+        # Create threads
+        for i in range(num_loops):
+            interval = wait_intervals[i]
+            
+            def monitoring_loop(thread: GracefulThread, interval=interval):
+                """Monitoring loop with specific wait interval."""
+                while not thread.should_stop():
+                    if thread.wait_or_stop(interval):
+                        break
+                exit_times.append(time.time())
+            
+            thread = GracefulThread(
+                target=monitoring_loop,
+                name=f'loop_{i}'
+            )
+            threads.append(thread)
+            thread.start()
+        
+        # Let threads start
+        time.sleep(0.2)
+        
+        # Stop all threads
+        stop_time = time.time()
+        for thread in threads:
+            thread.stop(timeout=2.0)
+        
+        # Verify all threads exited
+        assert len(exit_times) == num_loops, f"Expected {num_loops} exits, got {len(exit_times)}"
+        
+        # Verify all threads exited within reasonable time
+        max_exit_delay = max(t - stop_time for t in exit_times)
+        assert max_exit_delay < 1.0, \
+            f"Slowest loop took {max_exit_delay*1000:.1f}ms to exit, expected < 1000ms"
 
 
 # =============================================================================
