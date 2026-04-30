@@ -648,7 +648,8 @@ class AllscriptsEMRPlugin(EMRPlugin):
             if dob_str:
                 try:
                     dob = datetime.strptime(dob_str, "%m/%d/%Y")
-                except:
+                except (ValueError, TypeError) as e:
+                    self.logger.warning(f"Invalid DOB format in XML: error_code=INVALID_DOB")
                     pass
 
             gender = root.findtext(".//Gender", "U")
@@ -691,7 +692,8 @@ class AllscriptsEMRPlugin(EMRPlugin):
             if dob_str:
                 try:
                     dob = datetime.strptime(dob_str, "%m/%d/%Y")
-                except:
+                except (ValueError, TypeError) as e:
+                    self.logger.warning(f"Invalid DOB format in delimited data: error_code=INVALID_DOB")
                     pass
 
             gender = fields[7] if len(fields) > 7 else "U"
@@ -804,7 +806,8 @@ class AllscriptsEMRPlugin(EMRPlugin):
             try:
                 patients = await self.search_patients({"family": "Test"})
                 patients_accessible = True
-            except:
+            except Exception as e:
+                logger.warning(f"Patient search test failed: {type(e).__name__}")
                 pass
 
             return {

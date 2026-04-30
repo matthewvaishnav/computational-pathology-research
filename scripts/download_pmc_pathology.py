@@ -117,7 +117,8 @@ def extract_images_from_article(pmc_id: str) -> List[Dict]:
                         "filename": f"PMC{pmc_id}_figure{i}.{ext}",
                         "caption": f"Figure {i} from PMC{pmc_id}"
                     })
-            except:
+            except Exception as e:
+                print(f"Failed to download figure: {type(e).__name__}")
                 continue
     
     return images

@@ -221,8 +221,9 @@ def summary(ctx):
                 results[name] = f"{float(value):.2f}"
             else:
                 results[name] = "N/A"
-        except:
+        except Exception as e:
             results[name] = "Error"
+            print(f"Check failed for {name}: {type(e).__name__}")
             
     headers = ['Metric', 'Value']
     rows = [[k, v] for k, v in results.items()]
