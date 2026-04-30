@@ -52,14 +52,22 @@ from src.models import MultimodalFusionModel, ClassificationHead
 # ============================================================================
 
 # Security configuration
-SECRET_KEY = os.getenv("API_SECRET_KEY", secrets.token_urlsafe(32))
+SECRET_KEY = os.getenv("API_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("API_SECRET_KEY environment variable required")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# API Keys (in production, store in database or secrets manager)
+# API Keys - must be set via environment variables
+API_KEY_1 = os.getenv("API_KEY_1")
+API_KEY_2 = os.getenv("API_KEY_2")
+
+if not API_KEY_1 or not API_KEY_2:
+    raise RuntimeError("API_KEY_1 and API_KEY_2 environment variables required")
+
 VALID_API_KEYS = {
-    os.getenv("API_KEY_1", "demo-key-1"): {"name": "demo-user", "tier": "standard"},
-    os.getenv("API_KEY_2", "demo-key-2"): {"name": "premium-user", "tier": "premium"},
+    API_KEY_1: {"name": "user1", "tier": "standard"},
+    API_KEY_2: {"name": "user2", "tier": "premium"},
 }
 
 # Rate limiting configuration
@@ -183,7 +191,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)) -> Dict[str, A
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API key required")
 
     if api_key not in VALID_API_KEYS:
-        logger.warning(f"Invalid API key attempt: {api_key[:8]}...")
+        logger.warning("Invalid API key attempt")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
 
     return VALID_API_KEYS[api_key]
@@ -247,7 +255,38 @@ class PredictionRequest(BaseModel):
     """Request schema for prediction."""
 
     wsi_features: Optional[List[List[float]]] = Field(
-        None, description="WSI patch features [num_patches, 1024]", min_items=1, max_items=1000
+        None, description="WSI patch features [num_patches, 1024]", min_items=1, max_items=100
+    )
+    genomic_features: Optional[List[float]] = Field(
+        None, description="Genomic features [feature_dim]", min_items=1, max_items=1000
+    )
+    clinical_text: Optional[List[int]] = Field(
+        None, description="Tokenized clinical text [seq_len]", min_items=1, max_items=512
+    )
+
+    @validator('wsi_features')
+    def validate_wsi_features(cls, v):
+        if v is not None:
+            for patch in v:
+                if len(patch) > 2048:
+                    raise ValueError("WSI patch feature dimension too large")
+                if any(abs(x) > 100 for x in patch):
+                    raise ValueError("WSI feature values out of range")
+        return v
+
+    @validator('genomic_features')
+    def validate_genomic_features(cls, v):
+        if v is not None:
+            if any(abs(x) > 100 for x in v):
+                raise ValueError("Genomic feature values out of range")
+        return v
+
+    @validator('clinical_text')
+    def validate_clinical_text(cls, v):
+        if v is not None:
+            if any(x < 0 or x > 50000 for x in v):
+                raise ValueError("Clinical text token IDs out of range")
+        return v
     )
     genomic: Optional[List[float]] = Field(
         None, description="Genomic features [2000]", min_items=2000, max_items=2000
@@ -309,6 +348,18 @@ app = FastAPI(
     version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+)
+
+# Add request size limit middleware
+@app.middleware("http")
+async def limit_request_size(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > 10 * 1024 * 1024:  # 10MB limit
+        return JSONResponse(
+            status_code=413,
+            content={"detail": "Request too large"}
+        )
+    return await call_next(request)
 )
 
 # Add CORS middleware
