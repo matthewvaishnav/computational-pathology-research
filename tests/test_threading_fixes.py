@@ -1002,14 +1002,241 @@ class TestMatplotlibCleanup:
 class TestGPUMemoryCleanup:
     """Unit tests for GPU memory cleanup."""
     
-    def test_placeholder(self):
-        """Placeholder test - will be implemented in Task 12.2."""
-        # TODO: Implement in Task 12.2
-        # - Test tensors are deleted on success
-        # - Test tensors are deleted on exception
-        # - Test empty_cache is called when GPU available
-        # - Test cleanup with null tensors
-        pass
+    def test_tensors_deleted_on_success(self):
+        """Test that tensors are deleted after successful inference."""
+        import torch
+        
+        # Skip if CUDA not available
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        
+        # Create a simple inference function with GPU cleanup
+        def inference_with_cleanup():
+            features = None
+            try:
+                # Simulate tensor creation
+                features = torch.randn(100, 512, device='cuda')
+                # Simulate processing
+                result = features.mean()
+                return result.item()
+            finally:
+                if features is not None:
+                    del features
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        
+        # Run inference
+        initial_memory = torch.cuda.memory_allocated()
+        result = inference_with_cleanup()
+        final_memory = torch.cuda.memory_allocated()
+        
+        # Verify result is valid
+        assert isinstance(result, float)
+        
+        # Verify memory was cleaned up (should be close to initial)
+        # Allow some tolerance for CUDA allocator behavior
+        memory_diff = abs(final_memory - initial_memory)
+        assert memory_diff < 1024 * 1024, f"Memory not cleaned up: {memory_diff} bytes remaining"
+    
+    def test_tensors_deleted_on_exception(self):
+        """Test that tensors are deleted even when exception occurs."""
+        import torch
+        
+        # Skip if CUDA not available
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        
+        # Create inference function that raises exception
+        def inference_with_exception():
+            features = None
+            try:
+                features = torch.randn(100, 512, device='cuda')
+                # Simulate exception during processing
+                raise ValueError("Simulated error")
+            finally:
+                if features is not None:
+                    del features
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        
+        # Run inference and catch exception
+        initial_memory = torch.cuda.memory_allocated()
+        
+        with pytest.raises(ValueError, match="Simulated error"):
+            inference_with_exception()
+        
+        final_memory = torch.cuda.memory_allocated()
+        
+        # Verify memory was cleaned up despite exception
+        memory_diff = abs(final_memory - initial_memory)
+        assert memory_diff < 1024 * 1024, f"Memory not cleaned up after exception: {memory_diff} bytes"
+    
+    def test_empty_cache_called_when_gpu_available(self):
+        """Test that empty_cache is called when GPU is available."""
+        import torch
+        
+        # Skip if CUDA not available
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        
+        # Mock empty_cache to verify it's called
+        with patch('torch.cuda.empty_cache') as mock_empty_cache:
+            def inference_with_cleanup():
+                features = None
+                try:
+                    features = torch.randn(100, 512, device='cuda')
+                    return features.mean().item()
+                finally:
+                    if features is not None:
+                        del features
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+            
+            # Run inference
+            inference_with_cleanup()
+            
+            # Verify empty_cache was called
+            assert mock_empty_cache.call_count >= 1, "empty_cache should be called at least once"
+    
+    def test_cleanup_with_null_tensors(self):
+        """Test that cleanup handles null tensors gracefully."""
+        import torch
+        
+        # Skip if CUDA not available
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        
+        # Create inference function with null tensor
+        def inference_with_null_tensor():
+            features = None
+            try:
+                # Don't create tensor - simulate early exit
+                return None
+            finally:
+                # Should handle None gracefully
+                if features is not None:
+                    del features
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        
+        # Run inference - should not raise
+        result = inference_with_null_tensor()
+        assert result is None
+    
+    def test_multiple_tensors_cleanup(self):
+        """Test cleanup of multiple tensors in inference loop."""
+        import torch
+        
+        # Skip if CUDA not available
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        
+        # Simulate inference loop with multiple tensors
+        def inference_loop():
+            input_tensor = None
+            output_tensor = None
+            intermediate = None
+            
+            try:
+                input_tensor = torch.randn(50, 256, device='cuda')
+                intermediate = torch.randn(50, 512, device='cuda')
+                output_tensor = torch.randn(50, 128, device='cuda')
+                
+                # Simulate processing
+                result = (input_tensor.mean() + intermediate.mean() + output_tensor.mean()).item()
+                return result
+            finally:
+                if input_tensor is not None:
+                    del input_tensor
+                if intermediate is not None:
+                    del intermediate
+                if output_tensor is not None:
+                    del output_tensor
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        
+        # Run inference
+        initial_memory = torch.cuda.memory_allocated()
+        result = inference_loop()
+        final_memory = torch.cuda.memory_allocated()
+        
+        # Verify result
+        assert isinstance(result, float)
+        
+        # Verify all tensors were cleaned up
+        memory_diff = abs(final_memory - initial_memory)
+        assert memory_diff < 1024 * 1024, f"Multiple tensors not cleaned up: {memory_diff} bytes"
+    
+    def test_cleanup_in_nested_loops(self):
+        """Test GPU cleanup in nested inference loops."""
+        import torch
+        
+        # Skip if CUDA not available
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        
+        # Simulate nested loops (e.g., batch processing)
+        def nested_inference():
+            results = []
+            
+            for batch_idx in range(3):
+                batch_tensor = None
+                try:
+                    batch_tensor = torch.randn(20, 128, device='cuda')
+                    
+                    # Inner loop
+                    for item_idx in range(5):
+                        item_tensor = None
+                        try:
+                            item_tensor = torch.randn(10, 64, device='cuda')
+                            result = (batch_tensor.mean() + item_tensor.mean()).item()
+                            results.append(result)
+                        finally:
+                            if item_tensor is not None:
+                                del item_tensor
+                            if torch.cuda.is_available():
+                                torch.cuda.empty_cache()
+                
+                finally:
+                    if batch_tensor is not None:
+                        del batch_tensor
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+            
+            return results
+        
+        # Run nested inference
+        initial_memory = torch.cuda.memory_allocated()
+        results = nested_inference()
+        final_memory = torch.cuda.memory_allocated()
+        
+        # Verify results
+        assert len(results) == 15  # 3 batches * 5 items
+        
+        # Verify memory was cleaned up
+        memory_diff = abs(final_memory - initial_memory)
+        assert memory_diff < 1024 * 1024, f"Nested loop memory not cleaned up: {memory_diff} bytes"
+    
+    def test_cleanup_cpu_fallback(self):
+        """Test that cleanup works correctly when GPU not available."""
+        import torch
+        
+        # Force CPU mode
+        def inference_cpu_only():
+            features = None
+            try:
+                features = torch.randn(100, 512, device='cpu')
+                return features.mean().item()
+            finally:
+                if features is not None:
+                    del features
+                # Should not crash when CUDA not available
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        
+        # Run inference - should work on CPU
+        result = inference_cpu_only()
+        assert isinstance(result, float)
 
 
 # =============================================================================

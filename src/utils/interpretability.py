@@ -282,40 +282,72 @@ class SaliencyMap:
         clinical_text = batch.get("clinical_text")
 
         saliency_maps = {}
+        
+        # Initialize tensor variables for cleanup
+        input_tensor = None
+        output = None
+        logits = None
 
-        # Compute saliency for each modality
-        for modality, input_tensor in [
-            ("wsi", wsi_features),
-            ("genomic", genomic),
-            ("clinical", clinical_text),
-        ]:
-            if input_tensor is None:
-                continue
-            if not torch.is_floating_point(input_tensor):
-                continue
+        try:
+            # Compute saliency for each modality
+            for modality, input_tensor_orig in [
+                ("wsi", wsi_features),
+                ("genomic", genomic),
+                ("clinical", clinical_text),
+            ]:
+                if input_tensor_orig is None:
+                    continue
+                if not torch.is_floating_point(input_tensor_orig):
+                    continue
 
-            # Enable gradients for this input
-            input_tensor = input_tensor.detach().requires_grad_(True)
+                # Enable gradients for this input
+                input_tensor = input_tensor_orig.detach().requires_grad_(True)
 
-            # Create temporary batch for this modality
-            temp_batch = batch.copy()
-            temp_batch[self._batch_key_for_modality(modality)] = input_tensor
+                # Create temporary batch for this modality
+                temp_batch = batch.copy()
+                temp_batch[self._batch_key_for_modality(modality)] = input_tensor
 
-            # Forward pass
-            output = model(temp_batch)
+                # Forward pass
+                output = model(temp_batch)
 
-            # Get target
-            logits = self._select_target_logits(output, labels, target_idx, self.device)
+                # Get target
+                logits = self._select_target_logits(output, labels, target_idx, self.device)
 
-            # Backward pass
-            model.zero_grad()
-            logits.sum().backward()
+                # Backward pass
+                model.zero_grad()
+                logits.sum().backward()
 
-            # Get gradients
-            grad = input_tensor.grad.detach().cpu().numpy()
+                # Get gradients
+                grad = input_tensor.grad.detach().cpu().numpy()
 
-            # Compute absolute gradient magnitude as saliency
-            saliency_maps[modality] = np.abs(grad).mean(axis=-1) if grad.ndim > 1 else np.abs(grad)
+                # Compute absolute gradient magnitude as saliency
+                saliency_maps[modality] = np.abs(grad).mean(axis=-1) if grad.ndim > 1 else np.abs(grad)
+                
+                # Clean up tensors after each modality
+                if input_tensor is not None:
+                    del input_tensor
+                    input_tensor = None
+                if output is not None:
+                    del output
+                    output = None
+                if logits is not None:
+                    del logits
+                    logits = None
+                
+                # Clear GPU cache if available
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+        finally:
+            # Final cleanup
+            if input_tensor is not None:
+                del input_tensor
+            if output is not None:
+                del output
+            if logits is not None:
+                del logits
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         # Restore label to batch if it was present
         if labels is not None:
@@ -366,60 +398,116 @@ class SaliencyMap:
         clinical_text = batch.get("clinical_text")
 
         integrated_grads = {}
+        
+        # Initialize tensor variables for cleanup
+        input_tensor = None
+        baseline_tensor = None
+        interpolated = None
+        output = None
+        logits = None
+        accumulated_grads = None
 
-        for modality, input_tensor in [
-            ("wsi", wsi_features),
-            ("genomic", genomic),
-            ("clinical", clinical_text),
-        ]:
-            if input_tensor is None:
-                continue
-            if not torch.is_floating_point(input_tensor):
-                continue
+        try:
+            for modality, input_tensor_orig in [
+                ("wsi", wsi_features),
+                ("genomic", genomic),
+                ("clinical", clinical_text),
+            ]:
+                if input_tensor_orig is None:
+                    continue
+                if not torch.is_floating_point(input_tensor_orig):
+                    continue
 
-            input_tensor = input_tensor.detach().to(self.device)
-            input_tensor.shape[0]
+                input_tensor = input_tensor_orig.detach().to(self.device)
+                input_tensor.shape[0]
 
-            # Get baseline
-            baseline_tensor = baseline.get(modality)
-            if baseline_tensor is None:
-                baseline_tensor = torch.zeros_like(input_tensor)
-            else:
-                baseline_tensor = baseline_tensor.detach().to(self.device)
+                # Get baseline
+                baseline_tensor = baseline.get(modality)
+                if baseline_tensor is None:
+                    baseline_tensor = torch.zeros_like(input_tensor)
+                else:
+                    baseline_tensor = baseline_tensor.detach().to(self.device)
 
-            # Compute gradients at each step along the interpolation path
-            accumulated_grads = torch.zeros_like(input_tensor)
+                # Compute gradients at each step along the interpolation path
+                accumulated_grads = torch.zeros_like(input_tensor)
 
-            for step in range(num_steps):
-                # Interpolate between baseline and input
-                alpha = (step + 0.5) / num_steps
-                interpolated = baseline_tensor + alpha * (input_tensor - baseline_tensor)
-                interpolated = interpolated.detach().requires_grad_(True)
+                for step in range(num_steps):
+                    # Interpolate between baseline and input
+                    alpha = (step + 0.5) / num_steps
+                    interpolated = baseline_tensor + alpha * (input_tensor - baseline_tensor)
+                    interpolated = interpolated.detach().requires_grad_(True)
 
-                # Create temporary batch
-                temp_batch = batch.copy()
-                temp_batch[self._batch_key_for_modality(modality)] = interpolated
+                    # Create temporary batch
+                    temp_batch = batch.copy()
+                    temp_batch[self._batch_key_for_modality(modality)] = interpolated
 
-                # Forward pass
-                output = model(temp_batch)
+                    # Forward pass
+                    output = model(temp_batch)
 
-                # Get target
-                logits = self._select_target_logits(output, labels, target_idx, self.device)
+                    # Get target
+                    logits = self._select_target_logits(output, labels, target_idx, self.device)
 
-                # Backward pass
-                model.zero_grad()
-                logits.sum().backward()
+                    # Backward pass
+                    model.zero_grad()
+                    logits.sum().backward()
 
-                # Accumulate gradients
-                if interpolated.grad is not None:
-                    accumulated_grads += interpolated.grad.detach()
+                    # Accumulate gradients
+                    if interpolated.grad is not None:
+                        accumulated_grads += interpolated.grad.detach()
+                    
+                    # Clean up intermediate tensors
+                    if interpolated is not None:
+                        del interpolated
+                        interpolated = None
+                    if output is not None:
+                        del output
+                        output = None
+                    if logits is not None:
+                        del logits
+                        logits = None
+                    
+                    # Periodic GPU cache cleanup
+                    if torch.cuda.is_available() and step % 10 == 0:
+                        torch.cuda.empty_cache()
 
-            # Average gradients and scale by input difference
-            integrated_grads[modality] = (
-                (input_tensor - baseline_tensor).detach().cpu().numpy()
-                * accumulated_grads.cpu().numpy()
-                / num_steps
-            )
+                # Average gradients and scale by input difference
+                integrated_grads[modality] = (
+                    (input_tensor - baseline_tensor).detach().cpu().numpy()
+                    * accumulated_grads.cpu().numpy()
+                    / num_steps
+                )
+                
+                # Clean up tensors after each modality
+                if input_tensor is not None:
+                    del input_tensor
+                    input_tensor = None
+                if baseline_tensor is not None:
+                    del baseline_tensor
+                    baseline_tensor = None
+                if accumulated_grads is not None:
+                    del accumulated_grads
+                    accumulated_grads = None
+                
+                # Clear GPU cache if available
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+        finally:
+            # Final cleanup
+            if input_tensor is not None:
+                del input_tensor
+            if baseline_tensor is not None:
+                del baseline_tensor
+            if interpolated is not None:
+                del interpolated
+            if output is not None:
+                del output
+            if logits is not None:
+                del logits
+            if accumulated_grads is not None:
+                del accumulated_grads
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
         # Restore label to batch if it was present
         if labels is not None:
