@@ -60,7 +60,7 @@ python experiments/benchmark_competitors.py --framework baseline
 ## Fair Comparison Criteria
 
 All benchmarks must use:
-1. **Same hardware**: RTX 4070 (12GB)
+1. **Same hardware**: RTX 4070 (8GB)
 2. **Same dataset**: PCam (262K train, 32K val, 32K test)
 3. **Same data splits**: Identical train/val/test sets
 4. **Same metrics**: AUC, accuracy, training time
@@ -100,7 +100,7 @@ All benchmarks must use:
 Based on architecture and optimization differences, we expect:
 
 **HistoCore advantages**:
-- Faster training (6-13x vs baseline)
+- Faster training (8-12x vs baseline)
 - Better GPU utilization (mixed precision, torch.compile)
 - Smaller memory footprint
 

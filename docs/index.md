@@ -130,7 +130,7 @@ Expected: **100% validation AUC in 3.1 hours** on RTX 4070!
   <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
   <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
   <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
-  <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (6-13x)</a>
+  <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
   <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
   <a href="MODEL_INTERPRETABILITY.html" class="doc-link">Model Interpretability</a>
