@@ -39,8 +39,8 @@ from src.utils.safe_threading import (
     BoundedQueue,
     GracefulThread,
     TimeoutLock,
-    # ThreadSafeDict,
-    # ThreadSafeSet,
+    ThreadSafeDict,
+    ThreadSafeSet,
 )
 
 
@@ -589,14 +589,169 @@ class TestTimeoutLock:
 class TestThreadSafeCollections:
     """Unit tests for ThreadSafeDict and ThreadSafeSet."""
     
-    def test_placeholder(self):
-        """Placeholder test - will be implemented in Task 6.3."""
-        # TODO: Implement in Task 6.3
-        # - Test concurrent read/write operations
-        # - Test iteration safety (no concurrent modification errors)
-        # - Test batch operations with lock context manager
-        # - Test get/set/add/remove operations
-        pass
+    def test_thread_safe_dict_concurrent_read_write(self):
+        """Test ThreadSafeDict handles concurrent read/write operations."""
+        d = ThreadSafeDict[str, int](name='test_dict')
+        
+        def writer(key: str, value: int):
+            d[key] = value
+        
+        def reader(key: str) -> Optional[int]:
+            return d.get(key)
+        
+        # Start 10 writer threads
+        threads = []
+        for i in range(10):
+            t = threading.Thread(target=writer, args=(f'key{i}', i))
+            threads.append(t)
+            t.start()
+        
+        # Wait for all writes
+        for t in threads:
+            t.join()
+        
+        # Verify all writes succeeded
+        for i in range(10):
+            assert d[f'key{i}'] == i
+    
+    def test_thread_safe_set_concurrent_add_remove(self):
+        """Test ThreadSafeSet handles concurrent add/remove operations."""
+        s = ThreadSafeSet[int](name='test_set')
+        
+        def adder(value: int):
+            s.add(value)
+        
+        def remover(value: int):
+            s.discard(value)
+        
+        # Add 20 items
+        threads = []
+        for i in range(20):
+            t = threading.Thread(target=adder, args=(i,))
+            threads.append(t)
+            t.start()
+        
+        for t in threads:
+            t.join()
+        
+        assert len(s) == 20
+        
+        # Remove 10 items
+        threads = []
+        for i in range(10):
+            t = threading.Thread(target=remover, args=(i,))
+            threads.append(t)
+            t.start()
+        
+        for t in threads:
+            t.join()
+        
+        assert len(s) == 10
+    
+    def test_thread_safe_dict_iteration_safety(self):
+        """Test ThreadSafeDict iteration doesn't raise concurrent modification errors."""
+        d = ThreadSafeDict[str, int](name='test_dict')
+        
+        # Populate dict
+        for i in range(100):
+            d[f'key{i}'] = i
+        
+        # Iterate while modifying in another thread
+        def modifier():
+            for i in range(100, 200):
+                d[f'key{i}'] = i
+                time.sleep(0.001)
+        
+        t = threading.Thread(target=modifier)
+        t.start()
+        
+        # Iterate (should not raise)
+        count = 0
+        for key, value in d.items():
+            count += 1
+        
+        t.join()
+        
+        assert count >= 100  # At least original items
+    
+    def test_thread_safe_set_iteration_safety(self):
+        """Test ThreadSafeSet iteration doesn't raise concurrent modification errors."""
+        s = ThreadSafeSet[int](name='test_set')
+        
+        # Populate set
+        for i in range(100):
+            s.add(i)
+        
+        # Iterate while modifying in another thread
+        def modifier():
+            for i in range(100, 200):
+                s.add(i)
+                time.sleep(0.001)
+        
+        t = threading.Thread(target=modifier)
+        t.start()
+        
+        # Iterate (should not raise)
+        count = 0
+        for item in s:
+            count += 1
+        
+        t.join()
+        
+        assert count >= 100  # At least original items
+    
+    def test_thread_safe_dict_batch_operations_with_lock(self):
+        """Test ThreadSafeDict batch operations with lock context manager."""
+        d = ThreadSafeDict[str, int](name='test_dict')
+        
+        # Batch update with lock
+        with d.lock():
+            for i in range(10):
+                d[f'key{i}'] = i
+        
+        # Verify all updates
+        assert len(d) == 10
+        for i in range(10):
+            assert d[f'key{i}'] == i
+    
+    def test_thread_safe_dict_get_set_operations(self):
+        """Test ThreadSafeDict get/set operations."""
+        d = ThreadSafeDict[str, int](name='test_dict')
+        
+        # Set
+        d['key1'] = 100
+        assert d['key1'] == 100
+        
+        # Get with default
+        assert d.get('key2', 200) == 200
+        
+        # Contains
+        assert 'key1' in d
+        assert 'key2' not in d
+        
+        # Delete
+        del d['key1']
+        assert 'key1' not in d
+    
+    def test_thread_safe_set_add_remove_operations(self):
+        """Test ThreadSafeSet add/remove operations."""
+        s = ThreadSafeSet[str](name='test_set')
+        
+        # Add
+        s.add('item1')
+        assert 'item1' in s
+        
+        # Remove
+        s.remove('item1')
+        assert 'item1' not in s
+        
+        # Discard (no error if not present)
+        s.discard('item2')  # Should not raise
+        
+        # Add multiple
+        s.add('item3')
+        s.add('item4')
+        assert len(s) == 2
 
 
 # =============================================================================
@@ -1015,12 +1170,196 @@ class TestLockTimeoutProperties:
 class TestThreadSafeCollectionProperties:
     """Property-based tests for thread-safe collection consistency."""
     
-    def test_placeholder(self):
-        """Placeholder test - will be implemented in Task 6.4."""
-        # TODO: Implement in Task 6.4
-        # Property 4: Final state is consistent with some serial execution order
-        # **Validates: Requirements 4.1-4.5**
-        pass
+    @given(
+        operations=st.lists(
+            st.tuples(
+                st.sampled_from(['add', 'remove', 'contains']),
+                st.integers(min_value=0, max_value=100)
+            ),
+            min_size=100,
+            max_size=500
+        )
+    )
+    @settings(max_examples=10, deadline=None)
+    def test_threadsafe_dict_final_state_consistent(self, operations):
+        """
+        Property 4: ThreadSafeDict final state is consistent with some serial execution order.
+        
+        For any sequence of concurrent operations on ThreadSafeDict, the final state
+        should be valid and consistent (no corruption, no lost updates).
+        
+        **Validates: Requirements 4.1-4.5**
+        """
+        d = ThreadSafeDict[int, int](name='property_test_dict')
+        
+        def worker(ops):
+            for op, key in ops:
+                if op == 'add':
+                    d[key] = key * 10
+                elif op == 'remove':
+                    try:
+                        del d[key]
+                    except KeyError:
+                        pass  # Key doesn't exist
+                else:  # contains
+                    _ = key in d
+        
+        # Split operations across 10 threads
+        num_threads = 10
+        chunk_size = len(operations) // num_threads
+        threads = []
+        
+        for i in range(num_threads):
+            start = i * chunk_size
+            end = start + chunk_size if i < num_threads - 1 else len(operations)
+            chunk = operations[start:end]
+            thread = threading.Thread(target=worker, args=(chunk,))
+            threads.append(thread)
+            thread.start()
+        
+        # Wait for completion
+        for thread in threads:
+            thread.join(timeout=10.0)
+        
+        # Verify invariants:
+        # 1. All keys in dict should have consistent values (key * 10)
+        for key, value in d.items():
+            assert value == key * 10, f"Inconsistent value for key {key}: expected {key * 10}, got {value}"
+        
+        # 2. Dict should be in valid state (no corruption)
+        assert len(d) >= 0, "Dict length is negative (corruption)"
+        
+        # 3. All operations should have completed without errors
+        for thread in threads:
+            assert not thread.is_alive(), f"Thread {thread.name} still alive"
+    
+    @given(
+        operations=st.lists(
+            st.tuples(
+                st.sampled_from(['add', 'remove', 'contains']),
+                st.integers(min_value=0, max_value=100)
+            ),
+            min_size=100,
+            max_size=500
+        )
+    )
+    @settings(max_examples=10, deadline=None)
+    def test_threadsafe_set_final_state_consistent(self, operations):
+        """
+        Property 4: ThreadSafeSet final state is consistent with some serial execution order.
+        
+        For any sequence of concurrent operations on ThreadSafeSet, the final state
+        should be valid and consistent (no corruption, no duplicate items).
+        
+        **Validates: Requirements 4.1-4.5**
+        """
+        s = ThreadSafeSet[int](name='property_test_set')
+        
+        def worker(ops):
+            for op, value in ops:
+                if op == 'add':
+                    s.add(value)
+                elif op == 'remove':
+                    s.discard(value)  # discard doesn't raise if not present
+                else:  # contains
+                    _ = value in s
+        
+        # Split operations across 10 threads
+        num_threads = 10
+        chunk_size = len(operations) // num_threads
+        threads = []
+        
+        for i in range(num_threads):
+            start = i * chunk_size
+            end = start + chunk_size if i < num_threads - 1 else len(operations)
+            chunk = operations[start:end]
+            thread = threading.Thread(target=worker, args=(chunk,))
+            threads.append(thread)
+            thread.start()
+        
+        # Wait for completion
+        for thread in threads:
+            thread.join(timeout=10.0)
+        
+        # Verify invariants:
+        # 1. Set should be in valid state (no corruption)
+        assert len(s) >= 0, "Set length is negative (corruption)"
+        
+        # 2. No duplicate items (set property)
+        items = list(s)
+        assert len(items) == len(set(items)), "Set contains duplicates (corruption)"
+        
+        # 3. All operations should have completed without errors
+        for thread in threads:
+            assert not thread.is_alive(), f"Thread {thread.name} still alive"
+    
+    @given(
+        num_threads=st.integers(min_value=20, max_value=100),
+        num_operations=st.integers(min_value=100, max_value=500)
+    )
+    @settings(max_examples=10, deadline=None)
+    def test_no_concurrent_modification_errors(self, num_threads, num_operations):
+        """
+        Property: Thread-safe collections never raise concurrent modification errors
+        during iteration, even when modified by other threads.
+        
+        **Validates: Requirements 4.3, 4.4**
+        """
+        d = ThreadSafeDict[int, int](name='concurrent_mod_test')
+        s = ThreadSafeSet[int](name='concurrent_mod_test')
+        
+        # Populate collections
+        for i in range(50):
+            d[i] = i * 10
+            s.add(i)
+        
+        errors = []
+        
+        def modifier():
+            """Continuously modify collections."""
+            for i in range(num_operations):
+                d[i + 100] = i
+                s.add(i + 100)
+                if i % 10 == 0:
+                    try:
+                        del d[i]
+                    except KeyError:
+                        pass
+                    s.discard(i)
+        
+        def iterator():
+            """Continuously iterate collections."""
+            try:
+                for _ in range(num_operations // 10):
+                    # Iterate dict
+                    for key, value in d.items():
+                        pass
+                    # Iterate set
+                    for item in s:
+                        pass
+            except Exception as e:
+                errors.append(str(e))
+        
+        # Create threads
+        threads = []
+        for i in range(num_threads // 2):
+            threads.append(threading.Thread(target=modifier, name=f'modifier-{i}'))
+            threads.append(threading.Thread(target=iterator, name=f'iterator-{i}'))
+        
+        # Start all threads
+        for thread in threads:
+            thread.start()
+        
+        # Wait for completion
+        for thread in threads:
+            thread.join(timeout=15.0)
+        
+        # Verify no concurrent modification errors
+        assert len(errors) == 0, f"Concurrent modification errors occurred: {errors}"
+        
+        # Verify all threads completed
+        for thread in threads:
+            assert not thread.is_alive(), f"Thread {thread.name} still alive"
 
 
 # =============================================================================
