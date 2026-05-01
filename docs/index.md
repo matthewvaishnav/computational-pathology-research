@@ -44,6 +44,11 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   </div>
   
   <div class="feature-card">
+    <h3>⚡ Multi-GPU Training</h3>
+    <p>DistributedDataParallel (DDP) for linear scaling with num GPUs. Single-node and multi-node support. See <a href="MULTI_GPU_TRAINING.html">multi-GPU training</a>.</p>
+  </div>
+  
+  <div class="feature-card">
     <h3>🎯 Foundation Models</h3>
     <p>State-of-the-art pretrained models (UNI, Phikon) for superior feature representations. Better accuracy with less training data. See <a href="FOUNDATION_MODELS.html">foundation models</a>.</p>
   </div>
@@ -142,6 +147,7 @@ Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
   <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
   <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
   <a href="INFERENCE_OPTIMIZATION.html" class="doc-link">🚀 Inference Optimization (2-3x)</a>
+  <a href="MULTI_GPU_TRAINING.html" class="doc-link">⚡ Multi-GPU Training (DDP)</a>
   <a href="FOUNDATION_MODELS.html" class="doc-link">🎯 Foundation Models (UNI, Phikon)</a>
   <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
