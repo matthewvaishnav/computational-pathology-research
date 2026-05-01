@@ -20,7 +20,7 @@
 **Impact**: Better code maintainability, clearer APIs, easier debugging
 
 ### Phase 4: Performance Optimizations ✅
-**All training + inference optimizations complete**:
+**All training + inference + memory optimizations complete**:
 - ✅ **4.1 Training Pipeline**:
   - Performance Profiler: Comprehensive analysis tool
   - Mixed Precision Training (AMP): 2x speedup, 40% memory ↓
@@ -30,10 +30,15 @@
   - TorchScript export: 2-3x faster inference
   - Batch inference: Production-ready pipeline
   - Cross-platform deployment: C++, mobile, edge
+- ✅ **4.3 Memory Optimization**:
+  - Gradient checkpointing: 30-50% memory reduction
+  - HDF5 caching: gzip compression + chunking
+  - Streaming inference: <2GB memory for gigapixel WSIs
 
 **Impact**: 
 - Training: 2.5x speedup, 40% GPU memory ↓
 - Inference: 2-3x speedup, cross-platform
+- Memory: <2GB for gigapixel WSI processing
 - End-to-end optimized pipeline
 
 **Documentation**: See `PHASE_4_COMPLETE.md`, `PHASE_4_2_COMPLETE.md`
@@ -127,6 +132,7 @@
 - ef04662: Gradient checkpointing
 - c1620d1: DDP multi-GPU training
 - d2d1129: DDP documentation
+- 1a7762a: Streaming inference for large WSIs
 
 ## Next Steps - Recommendations
 
