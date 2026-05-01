@@ -217,3 +217,14 @@ class MultimodalFusionModel(nn.Module):
     def get_embedding_dim(self) -> int:
         """Return the dimension of the fused embedding."""
         return self.embed_dim
+    
+    def enable_gradient_checkpointing(self):
+        """Enable gradient checkpointing to save memory during training."""
+        # Enable checkpointing in fusion layer
+        if hasattr(self.fusion_layer, 'enable_gradient_checkpointing'):
+            self.fusion_layer.enable_gradient_checkpointing()
+        
+        # Enable checkpointing in encoders if they support it
+        for encoder in [self.wsi_encoder, self.genomic_encoder, self.clinical_encoder]:
+            if hasattr(encoder, 'enable_gradient_checkpointing'):
+                encoder.enable_gradient_checkpointing()

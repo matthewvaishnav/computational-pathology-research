@@ -576,6 +576,11 @@ def parse_args():
         action="store_true",
         help="Use mixed precision training (AMP) for faster training and lower memory usage",
     )
+    parser.add_argument(
+        "--use-gradient-checkpointing",
+        action="store_true",
+        help="Use gradient checkpointing to save memory (trades compute for memory)",
+    )
 
     return parser.parse_args()
 
@@ -600,6 +605,11 @@ def main():
     # Initialize model
     logger.info("Initializing model...")
     model = MultimodalFusionModel(embed_dim=args.embed_dim)
+    
+    # Enable gradient checkpointing if requested
+    if args.use_gradient_checkpointing:
+        logger.info("Enabling gradient checkpointing...")
+        model.enable_gradient_checkpointing()
 
     # Initialize task head
     if args.task_type == "classification":
