@@ -1,44 +1,35 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: medical-ai-config
-  namespace: medical-ai
+  name: histocore-config
+  labels:
+    app: histocore
 data:
-  # API Configuration
-  API_HOST: "0.0.0.0"
-  API_PORT: "8000"
-  API_WORKERS: "4"
-  DEBUG: "false"
+  # Application settings
   LOG_LEVEL: "INFO"
-  LOG_FORMAT: "json"
+  MODEL_PATH: "/app/models"
+  CACHE_PATH: "/app/cache"
+  MAX_WORKERS: "4"
   
-  # Model Configuration
-  MODELS_DIR: "/app/models"
-  DEFAULT_DISEASE_TYPE: "breast_cancer"
-  MODEL_CACHE_SIZE: "2"
+  # GPU settings
+  CUDA_VISIBLE_DEVICES: "0"
+  PYTORCH_CUDA_ALLOC_CONF: "max_split_size_mb:512"
   
-  # File Storage
-  UPLOAD_DIR: "/tmp/medical_ai_uploads"
-  MAX_FILE_SIZE_MB: "100"
+  # Inference settings
+  BATCH_SIZE: "32"
+  MAX_BATCH_SIZE: "128"
+  INFERENCE_TIMEOUT: "300"
   
-  # Monitoring
-  ENABLE_METRICS: "true"
-  METRICS_PORT: "9090"
-  
-  # Rate Limiting
+  # Rate limiting
   RATE_LIMIT_PER_MINUTE: "60"
+  RATE_LIMIT_PER_HOUR: "1000"
   RATE_LIMIT_BURST: "10"
   
-  # Health Check
+  # Health check settings
   HEALTH_CHECK_INTERVAL: "30"
   HEALTH_CHECK_TIMEOUT: "10"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config
-  namespace: medical-ai
-data:
-  POSTGRES_DB: "medical_ai"
-  POSTGRES_USER: "medical_ai_user"
-  PGDATA: "/var/lib/postgresql/data/pgdata"
+  
+  # Monitoring
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "8000"
+  PROMETHEUS_MULTIPROC_DIR: "/tmp/prometheus"
