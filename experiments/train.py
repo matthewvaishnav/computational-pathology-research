@@ -100,6 +100,12 @@ class MultimodalTrainer:
         # Loss function
         self.criterion = self._create_criterion()
 
+        # Mixed precision training
+        self.use_amp = config.get("use_amp", False) and device == "cuda"
+        self.scaler = torch.cuda.amp.GradScaler() if self.use_amp else None
+        if self.use_amp:
+            logger.info("Mixed precision training (AMP) enabled")
+
         # Training state
         self.current_epoch = 0
         self.global_step = 0
@@ -210,26 +216,48 @@ class MultimodalTrainer:
             batch = self._batch_to_device(batch)
             labels = batch.pop("label")
 
-            # Forward pass
+            # Forward pass with AMP
             self.optimizer.zero_grad()
-            embeddings = self.model(batch)
-            logits = self.task_head(embeddings)
-
-            # Compute loss
-            loss = self._compute_loss(logits, labels)
-
-            # Backward pass
-            loss.backward()
-
-            # Gradient clipping
-            max_grad_norm = self.config.get("max_grad_norm", 1.0)
-            if max_grad_norm > 0:
-                torch.nn.utils.clip_grad_norm_(
-                    list(self.model.parameters()) + list(self.task_head.parameters()),
-                    max_norm=max_grad_norm,
-                )
-
-            self.optimizer.step()
+            
+            if self.use_amp:
+                with torch.cuda.amp.autocast():
+                    embeddings = self.model(batch)
+                    logits = self.task_head(embeddings)
+                    loss = self._compute_loss(logits, labels)
+                
+                # Backward pass with gradient scaling
+                self.scaler.scale(loss).backward()
+                
+                # Gradient clipping
+                max_grad_norm = self.config.get("max_grad_norm", 1.0)
+                if max_grad_norm > 0:
+                    self.scaler.unscale_(self.optimizer)
+                    torch.nn.utils.clip_grad_norm_(
+                        list(self.model.parameters()) + list(self.task_head.parameters()),
+                        max_norm=max_grad_norm,
+                    )
+                
+                # Optimizer step with scaler
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                # Standard training without AMP
+                embeddings = self.model(batch)
+                logits = self.task_head(embeddings)
+                loss = self._compute_loss(logits, labels)
+                
+                # Backward pass
+                loss.backward()
+                
+                # Gradient clipping
+                max_grad_norm = self.config.get("max_grad_norm", 1.0)
+                if max_grad_norm > 0:
+                    torch.nn.utils.clip_grad_norm_(
+                        list(self.model.parameters()) + list(self.task_head.parameters()),
+                        max_norm=max_grad_norm,
+                    )
+                
+                self.optimizer.step()
 
             # Update learning rate
             if self.scheduler is not None and not isinstance(
@@ -503,6 +531,11 @@ def parse_args():
     # Other
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--device", type=str, default="cuda", help="Device to train on")
+    parser.add_argument(
+        "--use-amp",
+        action="store_true",
+        help="Use mixed precision training (AMP) for faster training and lower memory usage",
+    )
 
     return parser.parse_args()
 
