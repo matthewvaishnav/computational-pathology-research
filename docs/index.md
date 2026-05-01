@@ -13,16 +13,16 @@ title: Home
   <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg" alt="PyTorch">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-  <img src="https://img.shields.io/badge/coverage-55%25-yellow.svg" alt="Coverage">
+  <img src="https://img.shields.io/badge/tests-2898-green.svg" alt="2898 Tests">
 </div>
 
 ---
 
 ## Abstract
 
-HistoCore provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving **100% validation AUC** (epoch 10) on real histopathology data (262K training samples, 32K test samples) with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
+HistoCore provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving **95.37% validation AUC** and **93.94% test AUC** on real histopathology data (262K training samples, 32K test samples) with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
 
-The framework features **8-12x optimized training pipeline** with torch.compile, mixed precision (AMP), and advanced GPU optimizations, reducing training time from 20-40 hours to 3.1 hours on consumer hardware. Includes first open-source **federated learning system** for digital pathology with ε ≤ 1.0 differential privacy (8/8 property tests passing), production-ready **PACS integration** with multi-vendor support and HIPAA compliance (40/48 properties validated), advanced model interpretability tools, comprehensive testing infrastructure (3,006 tests, 55% coverage), and real-time inference performance (<5 seconds) suitable for production clinical environments.
+The framework features **8-12x optimized training pipeline** with torch.compile, mixed precision (AMP), and advanced GPU optimizations, reducing training time from 20-40 hours to 2-3 hours on consumer hardware. Includes first open-source **federated learning system** for digital pathology with ε ≤ 1.0 differential privacy (8/8 property tests passing), production-ready **PACS integration** with multi-vendor support and HIPAA compliance (40/48 properties validated), advanced model interpretability tools, comprehensive testing infrastructure (2,898 tests), and real-time inference performance (<5 seconds) suitable for production clinical environments.
 
 <div class="callout callout-warning">
   <strong>Research Use Only:</strong> This framework is designed for research purposes and has not been validated for clinical diagnostic use.
@@ -35,12 +35,12 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 <div class="features-grid">
   <div class="feature-card">
     <h3>⚡ 8-12x Faster Training</h3>
-    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 3.1 hours. See <a href="PERFORMANCE_COMPARISON.html">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
+    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 2-3 hours. See <a href="PERFORMANCE_COMPARISON.html">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
   </div>
   
   <div class="feature-card">
-    <h3>🎯 100% Validation AUC</h3>
-    <p>100% validation AUC (epoch 10) on real PCam data (262K samples). 85.26% test accuracy with bootstrap confidence intervals. See <a href="PCAM_REAL_RESULTS.html">real results</a>.</p>
+    <h3>🎯 95.37% Validation AUC</h3>
+    <p>95.37% validation AUC, 93.94% test AUC on real PCam data (262K samples). 85.26% test accuracy with bootstrap confidence intervals. See <a href="PCAM_REAL_RESULTS.html">real results</a>.</p>
   </div>
   
   <div class="feature-card">
@@ -50,7 +50,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>🏥 Production Ready</h3>
-    <p><5 second inference, PACS integration, HIPAA compliance, 3,006 tests. Ready for clinical deployment.</p>
+    <p><5 second inference, PACS integration, HIPAA compliance, 2,898 tests. Ready for clinical deployment.</p>
   </div>
 </div>
 
@@ -61,7 +61,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 <div class="features-grid">
   <div class="feature-card">
     <h3>🚀 8-12x Training Optimization</h3>
-    <p>Production-grade performance engineering with torch.compile, mixed precision (AMP), channels_last memory format, and persistent workers. Reduced training time from 20-40 hours to 3.1 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%) through systematic profiling and optimization.</p>
+    <p>Production-grade performance engineering with torch.compile, mixed precision (AMP), channels_last memory format, and persistent workers. Reduced training time from 20-40 hours to 2-3 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%) through systematic profiling and optimization.</p>
   </div>
   
   <div class="feature-card">
@@ -76,7 +76,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>🎯 Attention-Based MIL Models</h3>
-    <p>State-of-the-art AttentionMIL, CLAM, and TransMIL architectures with attention weight visualization and heatmap generation for slide-level classification. Achieving 100% validation AUC on real histopathology data.</p>
+    <p>State-of-the-art AttentionMIL, CLAM, and TransMIL architectures with attention weight visualization and heatmap generation for slide-level classification. Achieving 95.37% validation AUC and 93.94% test AUC on real histopathology data.</p>
   </div>
   
   <div class="feature-card">
@@ -86,7 +86,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>✅ Comprehensive Testing</h3>
-    <p>Robust validation infrastructure with 3,006 tests (55% coverage), property-based testing with Hypothesis (100+ correctness properties), bootstrap statistical validation, and parallel CI execution with pytest-xdist. Automated security validation and regression testing.</p>
+    <p>Robust validation infrastructure with 2,898 tests, property-based testing with Hypothesis (100+ correctness properties), bootstrap statistical validation, and parallel CI execution with pytest-xdist. Automated security validation and regression testing.</p>
   </div>
   
   <div class="feature-card">
@@ -96,7 +96,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>📊 Validated Performance</h3>
-    <p>Real PCam results: <strong>100% validation AUC</strong> (epoch 10) on 262K training samples, <strong>85.26% test accuracy</strong> (95% CI: 84.83%–85.63%), <strong>0.9394 AUC</strong> (95% CI: 0.9369–0.9418) on full 32,768-sample test set. Bootstrap confidence intervals from 1,000 resamples. Clinical threshold optimization achieves 90% sensitivity, reducing missed tumors by 61.7%.</p>
+    <p>Real PCam results: <strong>95.37% validation AUC</strong>, <strong>93.94% test AUC</strong> on 262K training samples, <strong>85.26% test accuracy</strong> (95% CI: 84.83%–85.63%) on full 32,768-sample test set. Bootstrap confidence intervals from 1,000 resamples. Clinical threshold optimization achieves 90% sensitivity, reducing missed tumors by 61.7%.</p>
   </div>
 </div>
 
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
 ```
 
-Expected: **100% validation AUC in 3.1 hours** on RTX 4070!
+Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
 
 ---
 
