@@ -19,12 +19,12 @@
 **Files Affected**: 15 files with TODO/FIXME comments
 
 **Tasks**:
-- [ ] `tests/test_threading_fixes.py` - Implement 3 placeholder tests (Tasks 9.5, 11.2, 14.4)
+- [x] `tests/test_threading_fixes.py` - Implement 3 placeholder tests (Tasks 9.5, 11.2, 14.4) - ALREADY COMPLETE
 - [ ] `src/pacs/clinical_workflow.py` - Integrate actual inference engine
-- [ ] `src/federated/communication/grpc_server.py` - Make local_epochs and learning_rate configurable
-- [ ] `src/federated/production/coordinator_server.py` - Add admin role check, calculate uptime
-- [ ] `src/federated/coordinator/orchestrator.py` - Add optimizer state and contributor tracking
-- [ ] `src/federated/production/monitoring.py` - Implement proper rate limiting per alert type
+- [x] `src/federated/communication/grpc_server.py` - Make local_epochs and learning_rate configurable
+- [x] `src/federated/production/coordinator_server.py` - Add admin role check, calculate uptime
+- [x] `src/federated/coordinator/orchestrator.py` - Add optimizer state and contributor tracking
+- [x] `src/federated/production/monitoring.py` - Implement proper rate limiting per alert type
 - [ ] `src/continuous_learning/active_learning.py` - Integrate with actual retraining pipeline
 - [ ] `src/annotation_interface/example_integration.py` - Get actual slide dimensions
 - [ ] `src/annotation_interface/backend/annotation_api.py` - Integrate WSI streaming and AI predictions
