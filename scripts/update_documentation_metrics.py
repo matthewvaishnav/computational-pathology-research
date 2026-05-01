@@ -10,8 +10,8 @@ from typing import List, Tuple
 
 # Current metrics
 CURRENT_METRICS = {
-    "test_count": "3,006",
-    "test_count_no_comma": "3006",
+    "test_count": "3,171",
+    "test_count_no_comma": "3171",
     "coverage": "55%",
     "optimization": "8-12x",
     "validation_auc": "100%",
@@ -21,7 +21,7 @@ CURRENT_METRICS = {
 
 # Old metrics to replace
 OLD_METRICS = {
-    "test_count": ["1,483", "1,448", "1483", "1448"],
+    "test_count": ["3,006", "3006", "2,898", "2898", "1,483", "1,448", "1483", "1448"],
     "optimization": ["6-13x", "6x-13x"],
     "validation_auc": ["93.98%", "94%"],
     "gpu_memory": ["12GB", "16GB"],

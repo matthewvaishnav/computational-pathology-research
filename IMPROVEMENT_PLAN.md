@@ -5,7 +5,7 @@
 ## Completed ✅
 
 ### Phase 1: Documentation Updates
-- [x] Updated all documentation with current metrics (3,006 tests, 8-12x optimization)
+- [x] Updated all documentation with current metrics (3,171 tests, 8-12x optimization)
 - [x] Created documentation metrics update script
 - [x] Updated GitHub Pages site title to "HistoCore"
 - [x] Fixed 22 files with 32 metric updates
@@ -337,7 +337,7 @@ See `PHASE_4_COMPLETE.md` for detailed documentation.
 ## Metrics Tracking
 
 ### Current State
-- **Tests**: 2,898 tests (coverage varies by module)
+- **Tests**: 3,171 tests (273 new tests added in Phase 3.1)
 - **Optimization**: 8-12x training speedup
 - **Validation AUC**: 95.37% (best epoch, 262K training samples)
 - **Test Accuracy**: 85.26% on 32,768 real PCam samples

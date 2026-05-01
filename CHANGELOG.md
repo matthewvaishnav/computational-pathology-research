@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Attention-based MIL models (AttentionMIL, CLAM, TransMIL)
 - Clinical workflow integration (DICOM/FHIR support)
 - Model interpretability tools (Grad-CAM, attention heatmaps)
-- Comprehensive testing infrastructure (3,006 tests, 55% coverage)
+- Comprehensive testing infrastructure (3,171 tests, 55% coverage)
 - PCam benchmark training and evaluation
 - CAMELYON16 slide-level classification support
 - Multi-GPU distributed training
