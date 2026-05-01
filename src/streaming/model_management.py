@@ -811,9 +811,12 @@ class ModelSecurityManager:
             logger.info(f"Adversarial robustness score: {robustness_score:.3f}")
             return robustness_score
 
+        except (RuntimeError, ValueError) as e:
+            logger.error(f"Model error testing adversarial robustness: {e}")
+            raise ModelError(f"Failed to test adversarial robustness: {e}") from e
         except Exception as e:
-            logger.error(f"Failed to test adversarial robustness: {e}")
-            return 0.0
+            logger.error(f"Unexpected error testing adversarial robustness: {e}")
+            raise ModelError(f"Failed to test adversarial robustness: {e}") from e
 
     def get_security_status(self, model_path: str) -> ModelSecurityStatus:
         """Get comprehensive security status for a model.
@@ -836,8 +839,11 @@ class ModelSecurityManager:
                     signature_data = json.load(f)
                 expected_hash = signature_data["signature"]
                 integrity_verified = self.verify_model_integrity(model_path, expected_hash)
+            except SecurityError:
+                raise
             except Exception as e:
                 logger.error(f"Failed to verify signature: {e}")
+                raise SecurityError(f"Failed to verify signature: {e}") from e
 
         # Calculate current hash
         try:
