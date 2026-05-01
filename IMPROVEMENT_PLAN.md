@@ -63,10 +63,10 @@
 ### Phase 3: Testing Improvements
 
 #### 3.1 Increase Coverage
-**Current**: 2% coverage (42336 stmts, 41496 miss)  
-**Target**: 70% coverage
+**Current**: 2% coverage (42336 stmts, 41998 miss)  
+**Target**: 70% coverage (long-term goal)
 
-**Status**: In Progress
+**Status**: In Progress - Foundation Complete
 
 **Completed**:
 - [x] Created `tests/test_custom_exceptions.py` - 13 tests (4 pass, 9 skip OpenSlide)
@@ -76,16 +76,36 @@
   - TimeoutLock, BoundedQueue, GracefulThread, ThreadSafeDict, ThreadSafeSet
   - Thread safety validation under concurrent access
   - 81% coverage on safe_threading.py (200 stmts, 38 miss)
+- [x] Created `tests/test_statistical.py` - 14 tests (all pass)
+  - Bootstrap CI computation, all metrics with CI, edge cases
+  - 86% coverage on statistical.py (58 stmts, 8 miss)
+- [x] Created `tests/test_validation.py` - 48 tests (all pass)
+  - Tensor validation, modality-specific validation, batch validation
+  - 85% coverage on validation.py (178 stmts, 26 miss)
 - [x] Created `tests/test_streaming_cache.py` - skipped (OpenSlide DLL dependency)
 
-**Next Steps**:
-- [ ] Add tests for high-value uncovered modules:
-  - [ ] `src/streaming/` modules (cache, model_management, metrics)
-  - [ ] `src/clinical/` modules (privacy, regulatory, validation)
-  - [ ] `src/federated/` modules (aggregation, privacy, communication)
-  - [ ] `src/models/` modules (attention_mil, encoders, baselines)
-- [ ] Add edge case tests for critical paths
-- [ ] Add integration tests for end-to-end workflows
+**Total New Tests**: 98 tests
+**High-Value Modules Improved**:
+- safe_threading.py: 0% → 81%
+- statistical.py: 22% → 86%
+- validation.py: 10% → 85%
+
+**Analysis**: 
+- Codebase is very large (42K statements) - reaching 70% would require ~29K more statements covered
+- Current 2% overall coverage reflects many large uncovered modules (models, clinical, streaming, federated)
+- Foundation testing complete for critical utility modules
+- Recommend focusing on integration tests and high-impact modules for incremental improvement
+
+**Next Steps** (Prioritized by ROI):
+- [ ] Add integration tests for end-to-end workflows (higher ROI than unit tests)
+- [ ] Add tests for high-value modules with partial coverage:
+  - [ ] `src/utils/monitoring.py` (24% → target 80%)
+  - [ ] `src/utils/interpretability.py` (9% → target 80%)
+  - [ ] `src/utils/attention_utils.py` (23% → target 80%)
+- [ ] Add tests for critical path modules:
+  - [ ] `src/models/attention_mil.py` (549 stmts, 0% coverage)
+  - [ ] `src/streaming/memory_optimizer.py` (512 stmts, 0% coverage)
+  - [ ] `src/clinical/treatment_response.py` (650 stmts, 0% coverage)
 
 **Tasks**:
 - [ ] Add tests for uncovered modules
