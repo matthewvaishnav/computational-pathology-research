@@ -40,8 +40,14 @@
 #### 2.2 Type Hints & Documentation
 **Priority**: Medium
 
+**Status**: In Progress
+
+**Completed**:
+- [x] `src/utils/interpretability.py` - Added return type hints to __init__ methods, enhanced docstrings
+- [x] `src/utils/attention_utils.py` - Added DataLoadError/DataSaveError to Raises sections
+
 **Tasks**:
-- [ ] Add type hints to all public functions
+- [ ] Add type hints to remaining public functions
 - [ ] Add docstrings to all public classes and methods
 - [ ] Generate API documentation with Sphinx
 
