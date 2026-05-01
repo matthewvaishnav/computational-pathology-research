@@ -31,6 +31,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data import MultimodalDataset
 from src.data.loaders import collate_multimodal
+from src.data.prefetch import DataPrefetcher
 from src.models import ClassificationHead, MultimodalFusionModel, SurvivalPredictionHead
 
 # Configure logging
@@ -113,6 +114,11 @@ class MultimodalTrainer:
             logger.info(
                 f"Effective batch size: {config.get('batch_size', 16) * self.accumulation_steps}"
             )
+
+        # Data prefetching
+        self.use_prefetch = config.get("use_prefetch", True) and device == "cuda"
+        if self.use_prefetch:
+            logger.info("Data prefetching enabled for improved I/O performance")
 
         # Training state
         self.current_epoch = 0
@@ -217,11 +223,18 @@ class MultimodalTrainer:
         all_preds = []
         all_labels = []
 
-        pbar = tqdm(self.train_loader, desc=f"Epoch {self.current_epoch}")
+        # Use prefetcher if enabled
+        if self.use_prefetch:
+            data_iter = DataPrefetcher(self.train_loader, self.device)
+        else:
+            data_iter = self.train_loader
+
+        pbar = tqdm(data_iter, desc=f"Epoch {self.current_epoch}")
 
         for batch_idx, batch in enumerate(pbar):
-            # Move batch to device
-            batch = self._batch_to_device(batch)
+            # Move batch to device (if not using prefetcher)
+            if not self.use_prefetch:
+                batch = self._batch_to_device(batch)
             labels = batch.pop("label")
 
             # Forward pass with AMP
@@ -605,7 +618,9 @@ def main():
             batch_size=args.batch_size,
             shuffle=True,
             num_workers=args.num_workers,
-            pin_memory=True,
+            pin_memory=True if device.type == "cuda" else False,
+            prefetch_factor=2 if args.num_workers > 0 else None,
+            persistent_workers=True if args.num_workers > 0 else False,
             collate_fn=collate_multimodal,
         )
         val_loader = DataLoader(
@@ -613,7 +628,9 @@ def main():
             batch_size=args.batch_size,
             shuffle=False,
             num_workers=args.num_workers,
-            pin_memory=True,
+            pin_memory=True if device.type == "cuda" else False,
+            prefetch_factor=2 if args.num_workers > 0 else None,
+            persistent_workers=True if args.num_workers > 0 else False,
             collate_fn=collate_multimodal,
         )
     except Exception as e:
