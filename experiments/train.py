@@ -106,6 +106,14 @@ class MultimodalTrainer:
         if self.use_amp:
             logger.info("Mixed precision training (AMP) enabled")
 
+        # Gradient accumulation
+        self.accumulation_steps = config.get("accumulation_steps", 1)
+        if self.accumulation_steps > 1:
+            logger.info(f"Gradient accumulation enabled: {self.accumulation_steps} steps")
+            logger.info(
+                f"Effective batch size: {config.get('batch_size', 16) * self.accumulation_steps}"
+            )
+
         # Training state
         self.current_epoch = 0
         self.global_step = 0
@@ -217,56 +225,67 @@ class MultimodalTrainer:
             labels = batch.pop("label")
 
             # Forward pass with AMP
-            self.optimizer.zero_grad()
-            
             if self.use_amp:
                 with torch.cuda.amp.autocast():
                     embeddings = self.model(batch)
                     logits = self.task_head(embeddings)
                     loss = self._compute_loss(logits, labels)
                 
+                # Scale loss for gradient accumulation
+                loss = loss / self.accumulation_steps
+                
                 # Backward pass with gradient scaling
                 self.scaler.scale(loss).backward()
                 
-                # Gradient clipping
-                max_grad_norm = self.config.get("max_grad_norm", 1.0)
-                if max_grad_norm > 0:
-                    self.scaler.unscale_(self.optimizer)
-                    torch.nn.utils.clip_grad_norm_(
-                        list(self.model.parameters()) + list(self.task_head.parameters()),
-                        max_norm=max_grad_norm,
-                    )
-                
-                # Optimizer step with scaler
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
+                # Optimizer step with gradient accumulation
+                if (batch_idx + 1) % self.accumulation_steps == 0:
+                    # Gradient clipping
+                    max_grad_norm = self.config.get("max_grad_norm", 1.0)
+                    if max_grad_norm > 0:
+                        self.scaler.unscale_(self.optimizer)
+                        torch.nn.utils.clip_grad_norm_(
+                            list(self.model.parameters()) + list(self.task_head.parameters()),
+                            max_norm=max_grad_norm,
+                        )
+                    
+                    # Optimizer step with scaler
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                    self.optimizer.zero_grad()
             else:
                 # Standard training without AMP
                 embeddings = self.model(batch)
                 logits = self.task_head(embeddings)
                 loss = self._compute_loss(logits, labels)
                 
+                # Scale loss for gradient accumulation
+                loss = loss / self.accumulation_steps
+                
                 # Backward pass
                 loss.backward()
                 
-                # Gradient clipping
-                max_grad_norm = self.config.get("max_grad_norm", 1.0)
-                if max_grad_norm > 0:
-                    torch.nn.utils.clip_grad_norm_(
-                        list(self.model.parameters()) + list(self.task_head.parameters()),
-                        max_norm=max_grad_norm,
-                    )
-                
-                self.optimizer.step()
+                # Optimizer step with gradient accumulation
+                if (batch_idx + 1) % self.accumulation_steps == 0:
+                    # Gradient clipping
+                    max_grad_norm = self.config.get("max_grad_norm", 1.0)
+                    if max_grad_norm > 0:
+                        torch.nn.utils.clip_grad_norm_(
+                            list(self.model.parameters()) + list(self.task_head.parameters()),
+                            max_norm=max_grad_norm,
+                        )
+                    
+                    self.optimizer.step()
+                    self.optimizer.zero_grad()
 
-            # Update learning rate
-            if self.scheduler is not None and not isinstance(
-                self.scheduler, optim.lr_scheduler.ReduceLROnPlateau
-            ):
-                self.scheduler.step()
+            # Update learning rate (only on actual optimizer steps)
+            if (batch_idx + 1) % self.accumulation_steps == 0:
+                if self.scheduler is not None and not isinstance(
+                    self.scheduler, optim.lr_scheduler.ReduceLROnPlateau
+                ):
+                    self.scheduler.step()
 
-            # Accumulate metrics
-            total_loss += loss.item()
+            # Accumulate metrics (use unscaled loss for logging)
+            total_loss += loss.item() * self.accumulation_steps
 
             # Get predictions
             if self.config.get("task_type") == "classification":
@@ -278,16 +297,18 @@ class MultimodalTrainer:
             all_labels.extend(labels.cpu().numpy())
 
             # Update progress bar
-            pbar.set_postfix({"loss": loss.item()})
+            pbar.set_postfix({"loss": loss.item() * self.accumulation_steps})
 
-            # Log to TensorBoard
-            if batch_idx % self.config.get("log_interval", 10) == 0:
-                self.writer.add_scalar("train/loss", loss.item(), self.global_step)
-                self.writer.add_scalar(
-                    "train/lr", self.optimizer.param_groups[0]["lr"], self.global_step
-                )
-
-            self.global_step += 1
+            # Log to TensorBoard (only on actual optimizer steps)
+            if (batch_idx + 1) % self.accumulation_steps == 0:
+                if batch_idx % self.config.get("log_interval", 10) == 0:
+                    self.writer.add_scalar(
+                        "train/loss", loss.item() * self.accumulation_steps, self.global_step
+                    )
+                    self.writer.add_scalar(
+                        "train/lr", self.optimizer.param_groups[0]["lr"], self.global_step
+                    )
+                self.global_step += 1
 
         # Compute epoch metrics
         avg_loss = total_loss / len(self.train_loader)
@@ -503,6 +524,12 @@ def parse_args():
     )
     parser.add_argument(
         "--max-grad-norm", type=float, default=1.0, help="Maximum gradient norm for clipping"
+    )
+    parser.add_argument(
+        "--accumulation-steps",
+        type=int,
+        default=1,
+        help="Gradient accumulation steps (effective batch size = batch_size * accumulation_steps)",
     )
 
     # Checkpoint arguments
