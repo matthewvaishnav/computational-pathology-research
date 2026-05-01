@@ -5,10 +5,15 @@ This module provides functions for computing bootstrap confidence intervals
 for classification metrics, enabling statistically rigorous performance reporting.
 """
 
+import logging
 from typing import Callable, Dict, Tuple
 
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+
+from src.exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 def compute_bootstrap_ci(
@@ -170,9 +175,14 @@ def compute_all_metrics_with_ci(
             )
 
         results["auc"] = {"value": auc_value, "ci_lower": auc_lower, "ci_upper": auc_upper}
-    except Exception as e:
-        # AUC computation can fail for edge cases
+    except (ValueError, RuntimeError) as e:
+        # AUC computation can fail for edge cases (invalid data, numerical issues)
+        logger.warning(f"AUC computation failed: {e}")
         results["auc"] = {"value": 0.0, "ci_lower": 0.0, "ci_upper": 0.0, "error": str(e)}
+    except Exception as e:
+        # Unexpected error in AUC computation
+        logger.error(f"Unexpected error in AUC computation: {e}")
+        raise ValidationError(f"AUC computation failed: {e}") from e
 
     # F1 Score
     f1_value, f1_lower, f1_upper = compute_bootstrap_ci(
