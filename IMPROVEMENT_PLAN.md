@@ -264,7 +264,7 @@ See `PHASE_4_COMPLETE.md` for detailed documentation.
 
 **Impact**: 2-4x faster inference, 2-4x memory reduction, production-ready quantization
 
-**Commits**: TBD
+**Commits**: 514b9bb
 
 #### 4.3 Memory Optimization ✅ COMPLETE
 **Tasks**:
