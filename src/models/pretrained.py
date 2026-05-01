@@ -25,6 +25,15 @@ PRETRAINED_MODELS = {
         "requires_timm": True,
         "requires_huggingface": True,
     },
+    "phikon": {
+        "name": "Phikon",
+        "source": "hf_hub:owkin/phikon",
+        "description": "ViT-B/16 pretrained on 500M+ histopathology patches",
+        "input_size": 224,
+        "output_dim": 768,
+        "requires_timm": True,
+        "requires_huggingface": True,
+    },
     "gigapath": {
         "name": "Prov-GigaPath",
         "source": "hf_hub:prov-gigapath/prov-gigapath",
@@ -232,13 +241,14 @@ def get_recommended_model(task: str = "general") -> str:
     Get recommended pretrained model for a task.
 
     Args:
-        task: One of 'general', 'gigapixel', 'fast', 'baseline'
+        task: One of 'general', 'gigapixel', 'fast', 'baseline', 'histopathology'
 
     Returns:
         Model name key
     """
     recommendations = {
         "general": "uni",  # Best overall performance
+        "histopathology": "phikon",  # Specialized for histopathology
         "gigapixel": "gigapath",  # Designed for large WSIs
         "fast": "resnet50_imagenet",  # Fastest, smallest
         "baseline": "resnet50_imagenet",  # Standard baseline
