@@ -47,7 +47,7 @@
 - Production CLI for clinical deployment
 
 #### 📊 Comprehensive Testing
-- 3,006 tests across all framework components
+- 3,171 tests across all framework components
 - Property-based testing with Hypothesis for edge cases
 - Synthetic data generation for validation
 - Performance benchmarking with regression detection
@@ -64,7 +64,7 @@
 
 ## Author
 
-**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of HistoCore, a PyTorch framework establishing **#1 performance in digital pathology** with **93.94% AUC superiority** over all published baselines (Vision Transformers, Medical AI specialists, traditional CNNs), featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,006 tests (55% coverage), and validated performance on real-world benchmarks (85.26% accuracy, 0.9394 AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
+**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of HistoCore, a PyTorch framework establishing **#1 performance in digital pathology** with **93.94% AUC superiority** over all published baselines (Vision Transformers, Medical AI specialists, traditional CNNs), featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,171 tests (55% coverage), and validated performance on real-world benchmarks (85.26% accuracy, 0.9394 AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
 
 ### Contact
 
@@ -81,7 +81,7 @@
 - WSI processing pipeline with OpenSlide integration
 - Clinical workflow integration (DICOM/FHIR)
 - PACS integration system with vendor adapters
-- Comprehensive testing infrastructure (3,006 tests)
+- Comprehensive testing infrastructure (3,171 tests)
 - Model interpretability tools (Grad-CAM, attention visualization)
 - Regulatory compliance features (FDA/CE)
 - Production deployment infrastructure (Docker/K8s)
@@ -137,7 +137,7 @@ If you use HistoCore in your research, please cite:
   author = {Vaishnav, Matthew},
   year = {2026},
   url = {https://github.com/matthewvaishnav/histocore},
-  note = {#1 performing method in digital pathology with 93.98\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 3,006 tests, 55\% coverage, federated learning system, and PACS integration.}
+  note = {#1 performing method in digital pathology with 93.98\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 3,171 tests, 55\% coverage, federated learning system, and PACS integration.}
 }
 ```
 

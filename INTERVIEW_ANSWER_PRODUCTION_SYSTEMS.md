@@ -165,7 +165,7 @@ Yes, I have extensive experience supporting large-scale production systems throu
 ✅ **Performance**: <5s inference latency (p95)  
 ✅ **Scale**: 262K samples per training run  
 ✅ **Monitoring**: 50+ metrics tracked continuously  
-✅ **Testing**: 3,006 tests with 55% coverage  
+✅ **Testing**: 3,171 tests with 55% coverage  
 
 ---
 

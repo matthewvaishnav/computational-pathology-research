@@ -271,7 +271,7 @@ python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.ya
 - **<5 second** inference latency
 - **PACS integration** for hospitals
 - **HIPAA compliant** audit logging
-- **3,006 tests** (55% coverage)
+- **3,171 tests** (55% coverage)
 
 ### 5. Unique Features
 - **Federated learning** (ε ≤ 1.0 DP)

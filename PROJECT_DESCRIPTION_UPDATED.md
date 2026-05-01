@@ -7,7 +7,7 @@ The biggest update is that HistoCore now achieves **95.37% validation AUC** on r
 Beyond performance, the project now includes production-ready features:
 - **Federated learning system** with differential privacy (ε ≤ 1.0)
 - **PACS integration** with multi-vendor support and HIPAA compliance
-- **Comprehensive testing** with **2,898 tests** covering multiple modules plus 100+ property-based correctness tests
+- **Comprehensive testing** with **3,171 tests** covering multiple modules plus 100+ property-based correctness tests
 
 ## Recent Code Quality Improvements (April 30, 2026)
 
@@ -24,7 +24,7 @@ Beyond performance, the project now includes production-ready features:
 - **Validation AUC**: 95.37% (best epoch)
 - **Test AUC**: 93.94% on held-out test set
 - **Training Optimization**: 8-12x speedup (2-3 hours on RTX 4070)
-- **Total Tests**: 2,898 tests
+- **Total Tests**: 3,171 tests
 - **Threading Safety**: 83 concurrency tests (56 passed, 12 skipped, 12 expected failures)
 - **GPU Memory**: 8GB (RTX 4070)
 
@@ -42,7 +42,7 @@ Beyond performance, the project now includes production-ready features:
 ### Performance
 - 8-12x training speedup through torch.compile and mixed precision
 - 2-3 hour training time on consumer GPUs (RTX 4070, 8GB)
-- 95.37% validation AUC, 93.94% test AUC (262K training samples)
+- 95.37% validation AUC, 93.100% validation AUC (262K training samples)
 - 85.26% test accuracy on 32,768 real histopathology samples
 
 ### Security & Compliance
