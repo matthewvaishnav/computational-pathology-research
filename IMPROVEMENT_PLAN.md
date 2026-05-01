@@ -156,11 +156,17 @@ All Phase 2 tasks complete:
   - Proper gradient clipping with scaler.unscale_()
   - CLI flag --use-amp for easy enabling
   - Expected: 2x speedup + 40% memory reduction
+- [x] Implemented gradient accumulation for larger effective batch sizes
+  - Configurable accumulation_steps parameter
+  - Proper loss scaling (loss / accumulation_steps)
+  - Optimizer step only after N accumulation steps
+  - Works with both AMP and standard training
+  - CLI flag --accumulation-steps
+  - Enables training with larger effective batch sizes on limited GPU memory
 
 **Next Steps**:
 - [ ] Run profiler to identify bottlenecks
 - [ ] Optimize data loading pipeline based on profiler results
-- [ ] Implement gradient accumulation for larger effective batch sizes
 - [ ] Optimize model inference with TorchScript compilation
 
 #### 4.1 Training Pipeline
@@ -168,7 +174,7 @@ All Phase 2 tasks complete:
 - [x] Create performance profiler
 - [ ] Profile training loop for bottlenecks
 - [ ] Optimize data loading pipeline
-- [ ] Implement gradient accumulation for larger batch sizes
+- [x] Implement gradient accumulation for larger batch sizes
 - [x] Add mixed precision training (AMP)
 
 #### 4.2 Inference Pipeline
