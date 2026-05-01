@@ -1,67 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pathology-api
-  namespace: pathology
+  name: histocore
   labels:
-    app: pathology-api
-    version: v1
+    app: histocore
 spec:
   replicas: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   selector:
     matchLabels:
-      app: pathology-api
+      app: histocore
   template:
     metadata:
       labels:
-        app: pathology-api
-        version: v1
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
-        prometheus.io/path: "/metrics"
+        app: histocore
     spec:
       containers:
-      - name: api
-        image: pathology-api:latest
-        imagePullPolicy: IfNotPresent
+      - name: histocore
+        image: histocore:latest
         ports:
-        - name: http
-          containerPort: 8000
-          protocol: TCP
-        env:
-        - name: PYTHONUNBUFFERED
-          value: "1"
-        - name: LOG_LEVEL
-          value: "info"
-        - name: DEVICE
-          value: "cpu"
-        - name: MODEL_PATH
-          value: "/app/models/best_model.pth"
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: histocore-config
         resources:
           requests:
             memory: "4Gi"
             cpu: "2"
+            nvidia.com/gpu: "1"
           limits:
             memory: "8Gi"
             cpu: "4"
+            nvidia.com/gpu: "1"
         livenessProbe:
           httpGet:
-            path: /health
-            port: http
+            path: /health/live
+            port: 8000
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
-            port: http
+            path: /health/ready
+            port: 8000
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
@@ -70,25 +52,18 @@ spec:
         - name: models
           mountPath: /app/models
           readOnly: true
-        - name: config
-          mountPath: /app/config
-          readOnly: true
+        - name: cache
+          mountPath: /app/cache
       volumes:
       - name: models
         persistentVolumeClaim:
-          claimName: pathology-models-pvc
-      - name: config
-        configMap:
-          name: pathology-config
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - pathology-api
-              topologyKey: kubernetes.io/hostname
+          claimName: histocore-models
+      - name: cache
+        emptyDir:
+          sizeLimit: 10Gi
+      nodeSelector:
+        accelerator: nvidia-gpu
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule

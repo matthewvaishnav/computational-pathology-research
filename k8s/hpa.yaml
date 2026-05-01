@@ -1,15 +1,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: medical-ai-api-hpa
-  namespace: medical-ai
+  name: histocore-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: medical-ai-api
-  minReplicas: 3
-  maxReplicas: 20
+    name: histocore
+  minReplicas: 2
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:
@@ -26,67 +25,24 @@ spec:
   - type: Pods
     pods:
       metric:
-        name: http_requests_per_second
+        name: histocore_active_requests
       target:
         type: AverageValue
-        averageValue: "100"
+        averageValue: "10"
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
-      policies:
-      - type: Percent
-        value: 10
-        periodSeconds: 60
-      - type: Pods
-        value: 2
-        periodSeconds: 60
-      selectPolicy: Min
-    scaleUp:
-      stabilizationWindowSeconds: 60
       policies:
       - type: Percent
         value: 50
         periodSeconds: 60
-      - type: Pods
-        value: 4
-        periodSeconds: 60
-      selectPolicy: Max
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: postgres-hpa
-  namespace: medical-ai
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: postgres
-  minReplicas: 1
-  maxReplicas: 3  # For read replicas
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 80
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 85
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 600  # Longer for database
-      policies:
-      - type: Pods
-        value: 1
-        periodSeconds: 300
     scaleUp:
-      stabilizationWindowSeconds: 300
+      stabilizationWindowSeconds: 0
       policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
       - type: Pods
-        value: 1
-        periodSeconds: 180
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max

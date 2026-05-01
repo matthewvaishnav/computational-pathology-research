@@ -1,29 +1,23 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pathology-models-pvc
-  namespace: pathology
-  labels:
-    app: pathology-api
+  name: histocore-models
 spec:
   accessModes:
   - ReadOnlyMany
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: standard
+      storage: 50Gi
+  storageClassName: fast-ssd
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pathology-data-pvc
-  namespace: pathology
-  labels:
-    app: pathology-api
+  name: histocore-data
 spec:
   accessModes:
   - ReadWriteMany
   resources:
     requests:
-      storage: 100Gi
+      storage: 500Gi
   storageClassName: standard
