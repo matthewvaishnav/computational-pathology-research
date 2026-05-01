@@ -1,313 +1,268 @@
-# HistoCore Kubernetes Deployment
+# Kubernetes Deployment for HistoCore
 
-Production-ready Kubernetes manifests for real-time WSI streaming with GPU support.
+Production-ready k8s configs for HistoCore deployment.
 
 ## Quick Start
 
 ```bash
-# Deploy everything
-./deploy.sh
+# Create namespace
+kubectl create namespace histocore
 
-# Port forward for local access
-kubectl port-forward -n histocore svc/histocore-streaming 8000:8000
-```
+# Apply configs
+kubectl apply -f k8s/ -n histocore
 
-## Prerequisites
-
-- Kubernetes 1.20+
-- GPU nodes with NVIDIA drivers
-- NVIDIA Device Plugin
-- Ingress controller (nginx)
-- Storage class (fast-ssd recommended)
-
-## Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Ingress       │    │   Streaming     │    │     Redis       │
-│   (nginx)       │───▶│   (2+ pods)     │───▶│   (cache)       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │   Prometheus    │    │    Grafana      │
-                       │  (monitoring)   │───▶│  (dashboards)   │
-                       └─────────────────┘    └─────────────────┘
+# Check status
+kubectl get pods -n histocore
+kubectl get svc -n histocore
 ```
 
 ## Components
 
-### Core Services
-- **Streaming**: Main application (2+ replicas)
-- **Redis**: Cache and session storage
-- **Prometheus**: Metrics collection
-- **Grafana**: Monitoring dashboards
+### ConfigMap (`configmap.yaml`)
+- Application settings (log level, paths, workers)
+- GPU settings (CUDA devices, memory allocation)
+- Inference settings (batch size, timeout)
+- Rate limiting config
+- Monitoring settings
 
-### GPU Support
-- Node selector: `accelerator=nvidia-tesla-k80`
-- Resource requests: `nvidia.com/gpu: 1`
-- CUDA 12.1 runtime
+### Deployment (`deployment.yaml`)
+- 3 replicas for HA
+- GPU support (1 GPU per pod)
+- Health checks (liveness + readiness)
+- Resource limits (4Gi RAM, 2 CPU, 1 GPU)
+- Volume mounts for models + cache
+- ConfigMap integration
 
-### Storage
-- **Data**: 100Gi (ReadWriteMany)
-- **Logs**: 20Gi (ReadWriteMany)  
-- **Models**: 50Gi (ReadWriteMany)
-- **Cache**: 5Gi (EmptyDir)
+### Service (`service.yaml`)
+- LoadBalancer for external access
+- ClusterIP for metrics (Prometheus)
+- Port 80 → 8000
 
-### Autoscaling
-- Min replicas: 2
-- Max replicas: 10
+### HPA (`hpa.yaml`)
+- Auto-scaling: 2-10 replicas
 - CPU target: 70%
 - Memory target: 80%
+- Custom metric: active requests
+- Scale-up: fast (100% every 30s)
+- Scale-down: slow (50% every 60s, 5min stabilization)
 
-## Configuration
+### PVC (`pvc.yaml`)
+- Models: 50Gi (ReadOnlyMany, fast-ssd)
+- Data: 500Gi (ReadWriteMany, standard)
+
+### Ingress (`ingress.yaml`)
+- NGINX ingress controller
+- TLS/SSL termination
+- Rate limiting (100 RPS, 50 connections)
+- CORS support
+- Large file uploads (1024MB)
+- Timeouts (300s)
+
+### NetworkPolicy (`networkpolicy.yaml`)
+- Ingress: Allow from ingress controller, Prometheus, same namespace
+- Egress: Allow DNS, HTTPS, HTTP, same namespace
+- Zero-trust network security
+
+## Prerequisites
+
+### GPU Support
+```bash
+# Install NVIDIA device plugin
+kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/main/nvidia-device-plugin.yml
+```
+
+### Metrics Server
+```bash
+# Install metrics server for HPA
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
+
+### Prometheus (optional)
+```bash
+# Install Prometheus for custom metrics
+helm install prometheus prometheus-community/kube-prometheus-stack
+```
+
+### Configuration
+
+### ConfigMap
+Edit `configmap.yaml` for application settings:
+```yaml
+data:
+  LOG_LEVEL: "INFO"
+  BATCH_SIZE: "32"
+  RATE_LIMIT_PER_MINUTE: "60"
+```
 
 ### Environment Variables
-Edit `configmap.yaml`:
-```yaml
-HISTOCORE_MAX_MEMORY_GB: "8"
-HISTOCORE_BATCH_SIZE: "32"
-CUDA_VISIBLE_DEVICES: "0"
-```
-
-### Secrets
-Edit `secret.yaml` (base64 encoded):
-```bash
-echo -n "your-secret" | base64
-```
-
-### GPU Nodes
-Label GPU nodes:
-```bash
-kubectl label nodes <node-name> accelerator=nvidia-tesla-k80
-```
-
-## Deployment
-
-### Manual Steps
-```bash
-# 1. Create namespace
-kubectl apply -f namespace.yaml
-
-# 2. Configuration
-kubectl apply -f configmap.yaml
-kubectl apply -f secret.yaml
-
-# 3. Storage and cache
-kubectl apply -f redis.yaml
-
-# 4. Main application
-kubectl apply -f streaming.yaml
-
-# 5. Monitoring
-kubectl apply -f monitoring.yaml
-kubectl apply -f prometheus-config.yaml
-kubectl apply -f grafana-config.yaml
-
-# 6. External access
-kubectl apply -f ingress.yaml
-
-# 7. Autoscaling
-kubectl apply -f hpa.yaml
-```
-
-### Automated
-```bash
-./deploy.sh
-```
-
-## Monitoring
-
-### Grafana Dashboards
-- GPU utilization per pod
-- Memory usage trends
-- Processing throughput
-- Error rates and latency
-- Cache hit rates
-
-### Prometheus Metrics
-- `histocore_processing_time_seconds`
-- `histocore_memory_usage_bytes`
-- `histocore_gpu_utilization_percent`
-- `histocore_requests_total`
-- `histocore_errors_total`
-
-### Alerts (TODO)
-- High memory usage (>90%)
-- GPU utilization low (<50%)
-- Processing queue backlog
-- Pod restart frequency
-
-## Scaling
-
-### Manual Scaling
-```bash
-kubectl scale deployment histocore-streaming --replicas=5 -n histocore
-```
-
-### Auto Scaling
-HPA configured for:
-- CPU: 70% target
-- Memory: 80% target
-- Custom: Queue length
-
-### Cluster Scaling
-Add GPU nodes:
-```bash
-# GKE example
-gcloud container node-pools create gpu-pool \
-  --accelerator type=nvidia-tesla-k80,count=1 \
-  --zone us-central1-a \
-  --cluster histocore-cluster
-```
-
-## Security
-
-### RBAC (TODO)
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: histocore-role
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services"]
-  verbs: ["get", "list"]
-```
-
-### Network Policies (TODO)
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: histocore-netpol
-spec:
-  podSelector:
-    matchLabels:
-      app: histocore-streaming
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: nginx-ingress
-```
-
-### Pod Security Standards
-```yaml
-securityContext:
-  runAsNonRoot: true
-  runAsUser: 1000
-  allowPrivilegeEscalation: false
-```
-
-## Troubleshooting
-
-### Pod Issues
-```bash
-# Check pod status
-kubectl get pods -n histocore
-
-# Check logs
-kubectl logs -f deployment/histocore-streaming -n histocore
-
-# Describe pod
-kubectl describe pod <pod-name> -n histocore
-```
-
-### GPU Issues
-```bash
-# Check GPU nodes
-kubectl get nodes -l accelerator=nvidia-tesla-k80
-
-# Check device plugin
-kubectl get daemonset nvidia-device-plugin-daemonset -n kube-system
-
-# Test GPU in pod
-kubectl exec -it <pod-name> -n histocore -- nvidia-smi
-```
-
-### Storage Issues
-```bash
-# Check PVCs
-kubectl get pvc -n histocore
-
-# Check storage class
-kubectl get storageclass
-
-# Check volume mounts
-kubectl describe pod <pod-name> -n histocore
-```
-
-### Network Issues
-```bash
-# Check services
-kubectl get svc -n histocore
-
-# Check ingress
-kubectl get ingress -n histocore
-
-# Test internal connectivity
-kubectl exec -it <pod-name> -n histocore -- curl http://histocore-redis:6379
-```
-
-## Backup and Recovery
-
-### Data Backup
-```bash
-# Backup Redis
-kubectl exec histocore-redis-xxx -n histocore -- redis-cli BGSAVE
-
-# Backup persistent volumes
-kubectl get pv
-# Use volume snapshots or backup tools
-```
-
-### Disaster Recovery
-```bash
-# Restore from backup
-kubectl apply -f backup-restore.yaml
-
-# Scale up from zero
-kubectl scale deployment histocore-streaming --replicas=2 -n histocore
-```
-
-## Performance Tuning
+ConfigMap automatically loaded via `envFrom` in deployment.
 
 ### Resource Limits
+Edit `deployment.yaml`:
 ```yaml
 resources:
   requests:
     memory: "4Gi"
-    cpu: "1000m"
-    nvidia.com/gpu: 1
+    cpu: "2"
+    nvidia.com/gpu: "1"
   limits:
     memory: "8Gi"
-    cpu: "2000m"
-    nvidia.com/gpu: 1
+    cpu: "4"
+    nvidia.com/gpu: "1"
 ```
 
-### Node Affinity
+### Scaling
+Edit `hpa.yaml`:
 ```yaml
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: node-type
-          operator: In
-          values:
-          - gpu-optimized
+minReplicas: 2
+maxReplicas: 10
 ```
 
-### Pod Disruption Budget
+## Monitoring
+
+### Health Checks
+```bash
+# Liveness probe
+curl http://<service-ip>/health/live
+
+# Readiness probe
+curl http://<service-ip>/health/ready
+
+# Detailed health
+curl http://<service-ip>/health/detailed
+```
+
+### Metrics
+```bash
+# Prometheus metrics
+curl http://<service-ip>/metrics
+```
+
+### Logs
+```bash
+# View logs
+kubectl logs -f deployment/histocore -n histocore
+
+# View logs from specific pod
+kubectl logs -f <pod-name> -n histocore
+```
+
+## Troubleshooting
+
+### Pod not starting
+```bash
+# Check events
+kubectl describe pod <pod-name> -n histocore
+
+# Check logs
+kubectl logs <pod-name> -n histocore
+```
+
+### GPU not available
+```bash
+# Check GPU nodes
+kubectl get nodes -l accelerator=nvidia-gpu
+
+# Check device plugin
+kubectl get pods -n kube-system | grep nvidia
+```
+
+### OOM errors
+```bash
+# Increase memory limits in deployment.yaml
+resources:
+  limits:
+    memory: "16Gi"
+```
+
+### Slow scaling
+```bash
+# Check HPA status
+kubectl get hpa -n histocore
+
+# Check metrics
+kubectl top pods -n histocore
+```
+
+## Production Checklist
+
+- [ ] GPU nodes available
+- [ ] Metrics server installed
+- [ ] Prometheus installed (for custom metrics)
+- [ ] NGINX ingress controller installed
+- [ ] cert-manager installed (for TLS)
+- [ ] PVCs created and bound
+- [ ] Models uploaded to PVC
+- [ ] ConfigMap values configured
+- [ ] Ingress hostname configured
+- [ ] TLS certificates issued
+- [ ] Resource limits tuned
+- [ ] HPA thresholds configured
+- [ ] NetworkPolicy rules reviewed
+- [ ] Health checks passing
+- [ ] Monitoring dashboards setup
+- [ ] Alerts configured
+- [ ] Backup strategy in place
+- [ ] Disaster recovery tested
+
+## Security
+
+### Ingress TLS
 ```yaml
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: histocore-pdb
+# Edit ingress.yaml
 spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: histocore-streaming
+  tls:
+  - hosts:
+    - your-domain.com
+    secretName: histocore-tls
+```
+
+### NetworkPolicy
+Network policies enforce zero-trust security:
+- Ingress: Only from ingress controller, Prometheus, same namespace
+- Egress: Only DNS, HTTPS, HTTP, same namespace
+
+Edit `networkpolicy.yaml` to customize rules.
+
+### RBAC
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: histocore
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: histocore
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+```
+
+## Updates
+
+### Rolling Update
+```bash
+# Update image
+kubectl set image deployment/histocore histocore=histocore:v2 -n histocore
+
+# Check rollout status
+kubectl rollout status deployment/histocore -n histocore
+
+# Rollback if needed
+kubectl rollout undo deployment/histocore -n histocore
+```
+
+### Blue-Green Deployment
+```bash
+# Deploy new version
+kubectl apply -f k8s/deployment-v2.yaml -n histocore
+
+# Switch traffic
+kubectl patch service histocore -p '{"spec":{"selector":{"version":"v2"}}}' -n histocore
+
+# Remove old version
+kubectl delete deployment histocore-v1 -n histocore
 ```
