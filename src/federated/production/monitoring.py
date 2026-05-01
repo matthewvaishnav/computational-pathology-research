@@ -597,6 +597,10 @@ class FederatedLearningMonitor:
         # Monitoring state
         self.monitoring_active = False
         self.monitoring_thread: Optional[GracefulThread] = None
+        
+        # Rate limiting: track last alert time per alert type
+        self.last_alert_times: Dict[str, datetime] = {}
+        self.rate_limit_lock = threading.Lock()
 
         logger.info("Federated Learning Monitor initialized")
 
@@ -932,8 +936,26 @@ class FederatedLearningMonitor:
         if not self.config.get("alerting", {}).get("enabled", True):
             return
 
-        # Rate limiting (simple implementation)
-        # TODO: Implement proper rate limiting per alert type
+        # Rate limiting per alert type
+        alert_key = f"{alert.alert_type}:{alert.severity}"
+        rate_limit_minutes = self.config.get("alerting", {}).get("rate_limit_minutes", 5)
+        
+        with self.rate_limit_lock:
+            last_alert_time = self.last_alert_times.get(alert_key)
+            now = datetime.now()
+            
+            if last_alert_time:
+                time_since_last = (now - last_alert_time).total_seconds() / 60
+                if time_since_last < rate_limit_minutes:
+                    logger.debug(
+                        f"Rate limiting alert {alert_key}: "
+                        f"{time_since_last:.1f}m since last alert "
+                        f"(limit: {rate_limit_minutes}m)"
+                    )
+                    return
+            
+            # Update last alert time
+            self.last_alert_times[alert_key] = now
 
         channels = self.config.get("alerting", {}).get("channels", ["log"])
 
