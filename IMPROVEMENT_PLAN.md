@@ -150,12 +150,17 @@ All Phase 2 tasks complete:
   - PyTorch profiler integration (CPU/CUDA time, memory usage)
   - Data loader throughput measurement
   - Time distribution analysis
+- [x] Added mixed precision training (AMP) to `experiments/train.py`
+  - torch.cuda.amp.autocast() for forward pass
+  - GradScaler for backward pass
+  - Proper gradient clipping with scaler.unscale_()
+  - CLI flag --use-amp for easy enabling
+  - Expected: 2x speedup + 40% memory reduction
 
 **Next Steps**:
 - [ ] Run profiler to identify bottlenecks
 - [ ] Optimize data loading pipeline based on profiler results
 - [ ] Implement gradient accumulation for larger effective batch sizes
-- [ ] Add mixed precision training (torch.cuda.amp)
 - [ ] Optimize model inference with TorchScript compilation
 
 #### 4.1 Training Pipeline
@@ -164,7 +169,7 @@ All Phase 2 tasks complete:
 - [ ] Profile training loop for bottlenecks
 - [ ] Optimize data loading pipeline
 - [ ] Implement gradient accumulation for larger batch sizes
-- [ ] Add mixed precision training (AMP)
+- [x] Add mixed precision training (AMP)
 
 #### 4.2 Inference Pipeline
 **Tasks**:
