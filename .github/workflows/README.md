@@ -53,9 +53,41 @@ git tag -a v1.0.0 -m "Release version 1.0.0"
 git push origin v1.0.0
 ```
 
-### 3. `docker-publish.yml` - Docker Image Publishing
-**Trigger**: Push to main (when Docker-related files change)
-**Purpose**: Continuous Docker image updates
+### 3. `cd.yml` - Continuous Deployment
+**Trigger**: Push to main (when src/k8s/Dockerfile/requirements change), Manual dispatch
+**Purpose**: Automated deployment pipeline with environment promotion
+
+**Jobs**:
+- **test**: Run full test suite (skippable via manual trigger)
+- **build**: Build and push Docker image to GitHub Container Registry
+- **deploy-dev**: Deploy to development environment (automatic)
+- **deploy-staging**: Deploy to staging environment (automatic after dev)
+- **deploy-prod**: Deploy to production with blue-green strategy (manual only)
+- **rollback**: Automatic rollback on failure
+- **notify**: Deployment status summary
+
+**Features**:
+- Multi-environment deployment (dev → staging → prod)
+- Blue-green deployment for production
+- Automatic rollback on failure
+- Smoke tests and integration tests
+- Security scanning with Trivy
+- Health check verification
+
+**Manual Deployment**:
+```bash
+# Deploy to specific environment
+gh workflow run cd.yml -f environment=prod
+```
+
+**Environments**:
+- Development: https://dev.histocore.example.com
+- Staging: https://staging.histocore.example.com
+- Production: https://histocore.example.com
+
+### 4. `docker-publish.yml` - Docker Image Publishing
+**Trigger**: Manual dispatch only
+**Purpose**: Standalone Docker image publishing to Docker Hub
 
 **Jobs**:
 - **build-and-push**: Build and push Docker image to Docker Hub
@@ -65,7 +97,7 @@ git push origin v1.0.0
 - `main-<sha>` (commit-specific)
 - Branch name (for other branches)
 
-### 4. `codeql.yml` - Security Analysis
+### 5. `codeql.yml` - Security Analysis
 **Trigger**: Push, Pull requests, Weekly schedule (Monday midnight)
 **Purpose**: Advanced security scanning with CodeQL
 
@@ -75,7 +107,7 @@ git push origin v1.0.0
 - Runs security-and-quality queries
 - Integrates with GitHub Security tab
 
-### 5. `dependency-review.yml` - Dependency Security
+### 6. `dependency-review.yml` - Dependency Security
 **Trigger**: Pull requests
 **Purpose**: Review dependency changes for security issues
 
@@ -93,6 +125,11 @@ Check workflow status at: `https://github.com/your-org/repo/actions`
 
 Configure these secrets in repository settings:
 
+### Kubernetes (for cd.yml)
+- `KUBECONFIG_DEV`: Base64-encoded kubeconfig for dev cluster
+- `KUBECONFIG_STAGING`: Base64-encoded kubeconfig for staging cluster
+- `KUBECONFIG_PROD`: Base64-encoded kubeconfig for prod cluster
+
 ### Docker Hub (for docker-publish.yml and release.yml)
 - `DOCKER_USERNAME`: Docker Hub username
 - `DOCKER_PASSWORD`: Docker Hub password or access token
@@ -109,10 +146,20 @@ Configure these secrets in repository settings:
 2. Click "New repository secret"
 3. Add each required secret
 
+### Encoding kubeconfig for GitHub Secrets
+```bash
+# Encode kubeconfig file
+cat ~/.kube/config | base64 -w 0 > kubeconfig.b64
+
+# Copy content and add as secret
+cat kubeconfig.b64
+```
+
 ## Workflow Triggers
 
 ### Automatic Triggers
 - **Push to main/develop**: Runs CI, Docker publish
+- **Push to main (src/k8s changes)**: Runs CD pipeline (dev → staging)
 - **Pull requests**: Runs CI, dependency review
 - **Tag push (v*.*.*)**: Runs release workflow
 - **Weekly (Monday)**: Runs CodeQL security scan
@@ -123,6 +170,18 @@ All workflows support manual triggering via `workflow_dispatch`:
 2. Select workflow
 3. Click "Run workflow"
 4. Choose branch and run
+
+**CD Pipeline Manual Deployment**:
+```bash
+# Using GitHub CLI
+gh workflow run cd.yml -f environment=prod -f skip_tests=false
+
+# Or via Actions UI
+# 1. Go to Actions → CD
+# 2. Click "Run workflow"
+# 3. Select environment (dev/staging/prod)
+# 4. Optionally skip tests
+```
 
 ## Local Testing
 
@@ -156,6 +215,33 @@ docker run --rm pathology-api:test python -c "import src"
 
 # Run quick demo
 python run_quick_demo.py
+```
+
+### Test CD pipeline locally
+```bash
+# Build Docker image
+docker build -t histocore:test .
+
+# Test with Helm (requires k8s cluster)
+helm install histocore-test ./k8s/helm/histocore \
+  --namespace test \
+  --create-namespace \
+  --values ./k8s/helm/histocore/values-dev.yaml \
+  --set image.repository=histocore \
+  --set image.tag=test \
+  --dry-run --debug
+
+# Deploy to local k8s (minikube/kind)
+helm upgrade --install histocore-local ./k8s/helm/histocore \
+  --namespace local \
+  --create-namespace \
+  --values ./k8s/helm/histocore/values-dev.yaml \
+  --set image.repository=histocore \
+  --set image.tag=test
+
+# Verify deployment
+kubectl get pods -n local
+kubectl logs -n local -l app.kubernetes.io/name=histocore
 ```
 
 ## Workflow Optimization
@@ -215,6 +301,28 @@ docs ─┘
 - Review license compatibility
 - Request exception if necessary
 
+### Issue: CD deployment fails
+**Cause**: Missing kubeconfig secrets or cluster access issues
+**Solution**:
+- Verify kubeconfig secrets are base64-encoded correctly
+- Test cluster access: `kubectl --kubeconfig=<file> get nodes`
+- Check Helm chart syntax: `helm lint ./k8s/helm/histocore`
+- Verify namespace exists or use `--create-namespace`
+
+### Issue: Blue-green deployment stuck
+**Cause**: Green deployment not healthy or traffic switch failed
+**Solution**:
+- Check pod status: `kubectl get pods -n prod -l version=green`
+- View logs: `kubectl logs -n prod -l version=green`
+- Manual rollback: `kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"blue"}}}'`
+
+### Issue: Trivy security scan fails
+**Cause**: Critical vulnerabilities in Docker image
+**Solution**:
+- Update base image in Dockerfile
+- Update vulnerable dependencies in requirements.txt
+- Review Trivy report in GitHub Security tab
+
 ## Best Practices
 
 1. **Always run tests locally** before pushing
@@ -232,6 +340,7 @@ Add these badges to your README.md:
 
 ```markdown
 ![CI](https://github.com/your-org/repo/workflows/CI/badge.svg)
+![CD](https://github.com/your-org/repo/workflows/CD/badge.svg)
 ![Docker](https://github.com/your-org/repo/workflows/Docker%20Publish/badge.svg)
 ![CodeQL](https://github.com/your-org/repo/workflows/CodeQL/badge.svg)
 [![codecov](https://codecov.io/gh/your-org/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/your-org/repo)

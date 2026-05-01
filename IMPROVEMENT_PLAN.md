@@ -340,8 +340,8 @@ See `PHASE_4_COMPLETE.md` for detailed documentation.
 - [x] Create NetworkPolicy for security
 - [x] Add deployment documentation
 - [x] Create Helm charts for Kubernetes deployment
-- [ ] Add CI/CD pipeline for automated deployment
-- [ ] Implement blue-green deployment strategy
+- [x] Add CI/CD pipeline for automated deployment
+- [x] Implement blue-green deployment strategy
 
 **Completed**:
 - Dockerfile: multi-stage build (base + GPU variant)
@@ -356,12 +356,19 @@ See `PHASE_4_COMPLETE.md` for detailed documentation.
   - Security: pod security context, network policies, RBAC
   - Monitoring: Prometheus annotations, health checks
   - High availability: pod anti-affinity, PDB, auto-scaling
+- **CI/CD Pipeline**: Automated deployment workflow (Commit TBD)
+  - Multi-environment deployment (dev → staging → prod)
+  - Automatic deployment to dev/staging on main push
+  - Manual production deployment with approval
+  - Blue-green deployment strategy for zero-downtime
+  - Automatic rollback on failure
+  - Security scanning with Trivy
+  - Smoke tests and integration tests
+  - Comprehensive deployment documentation
 
-**Impact**: Production-ready k8s deployment, auto-scaling, security hardening, simplified deployment with Helm
+**Impact**: Production-ready k8s deployment, auto-scaling, security hardening, automated deployment pipeline, zero-downtime updates
 
-**Commits**: a43fbb2
-
-**Impact**: Production-ready k8s deployment, auto-scaling, security hardening
+**Commits**: a43fbb2, TBD
 
 ## Metrics Tracking
 
