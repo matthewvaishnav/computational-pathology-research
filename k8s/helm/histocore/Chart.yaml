@@ -1,0 +1,19 @@
+apiVersion: v2
+name: histocore
+description: Production-grade computational pathology framework with 8-12x optimized training, federated learning, and PACS integration
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - computational-pathology
+  - deep-learning
+  - medical-imaging
+  - pytorch
+  - whole-slide-imaging
+home: https://github.com/matthewvaishnav/histocore
+sources:
+  - https://github.com/matthewvaishnav/histocore
+maintainers:
+  - name: Matthew Vaishnav
+    email: matthew.vaishnav@example.com
+icon: https://raw.githubusercontent.com/matthewvaishnav/histocore/main/docs/assets/logo.png

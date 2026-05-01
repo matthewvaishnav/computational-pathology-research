@@ -1,0 +1,74 @@
+# Development environment values
+# Minimal resources, no persistence, debug logging
+
+replicaCount: 1
+
+image:
+  repository: histocore/histocore
+  pullPolicy: Always
+  tag: "latest"
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 8Gi
+  requests:
+    cpu: 1000m
+    memory: 4Gi
+
+autoscaling:
+  enabled: false
+
+persistence:
+  enabled: false
+
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+config:
+  model:
+    type: "attention_mil"
+    featureDim: 512
+    hiddenDim: 128
+    numClasses: 2
+  
+  training:
+    batchSize: 16
+    learningRate: 0.001
+    epochs: 10
+    useAmp: false
+    gradientAccumulation: 1
+  
+  inference:
+    batchSize: 32
+    timeout: 60
+    maxConcurrent: 5
+  
+  pacs:
+    enabled: false
+  
+  security:
+    rateLimitPerMinute: 1000
+    rateLimitPerHour: 10000
+    enableAuth: false
+  
+  monitoring:
+    prometheusEnabled: false
+    logLevel: "DEBUG"
+
+secrets:
+  database:
+    host: "localhost"
+    port: "5432"
+    name: "histocore_dev"
+    user: "dev_user"
+    password: "dev_password"
+  apiKeys:
+    admin: "dev-admin-key"
+    service: "dev-service-key"
