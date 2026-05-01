@@ -615,12 +615,106 @@ class ActiveLearningSystem:
             self.logger.info(f"Not enough annotations for retraining: {len(annotations)}")
             return False
 
-        # TODO: Integrate with actual retraining pipeline
-        # For now, just log the trigger
-        self.logger.info(f"Triggering retraining with {len(annotations)} annotations")
-        self.stats["retraining_triggered"] += 1
+        # Integrate with actual retraining pipeline
+        try:
+            # Prepare training data from annotations
+            training_data = self._prepare_training_data_from_annotations(annotations)
+            
+            # Create retraining configuration
+            retraining_config = {
+                "annotation_count": len(annotations),
+                "timestamp": datetime.now().isoformat(),
+                "min_annotations": self.min_annotations_for_retraining,
+                "forced": force,
+            }
+            
+            # Save retraining trigger file for external pipeline
+            retraining_trigger_path = Path("./retraining_triggers")
+            retraining_trigger_path.mkdir(parents=True, exist_ok=True)
+            
+            trigger_file = retraining_trigger_path / f"trigger_{int(time.time())}.json"
+            with open(trigger_file, 'w') as f:
+                json.dump({
+                    "config": retraining_config,
+                    "training_data": training_data,
+                    "annotations": [
+                        {
+                            "case_id": ann.case_id,
+                            "expert_id": ann.expert_id,
+                            "diagnosis": ann.diagnosis,
+                            "confidence": ann.confidence,
+                            "quality_score": ann.quality_score,
+                        }
+                        for ann in annotations
+                    ]
+                }, f, indent=2)
+            
+            self.logger.info(
+                f"Triggered retraining with {len(annotations)} annotations. "
+                f"Trigger file: {trigger_file}"
+            )
+            self.stats["retraining_triggered"] += 1
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to trigger retraining: {e}")
+            return False
 
-        return True
+    def _prepare_training_data_from_annotations(
+        self, annotations: List[ExpertAnnotation]
+    ) -> Dict[str, Any]:
+        """
+        Prepare training data structure from expert annotations
+        
+        Args:
+            annotations: List of expert annotations
+            
+        Returns:
+            Dictionary containing training data paths and metadata
+        """
+        training_data = {
+            "cases": [],
+            "labels": [],
+            "metadata": {
+                "total_cases": len(annotations),
+                "unique_experts": len(set(ann.expert_id for ann in annotations)),
+                "avg_confidence": np.mean([ann.confidence for ann in annotations]),
+                "avg_quality": np.mean([ann.quality_score for ann in annotations]),
+            }
+        }
+        
+        # Group annotations by case
+        case_annotations = {}
+        for ann in annotations:
+            if ann.case_id not in case_annotations:
+                case_annotations[ann.case_id] = []
+            case_annotations[ann.case_id].append(ann)
+        
+        # Process each case
+        for case_id, case_anns in case_annotations.items():
+            # Get case data from database
+            case_data = self._get_case_by_id(case_id)
+            if case_data:
+                # Use consensus label if multiple annotations
+                if len(case_anns) > 1:
+                    # Weighted voting by confidence and quality
+                    label_votes = {}
+                    for ann in case_anns:
+                        weight = ann.confidence * ann.quality_score
+                        label_votes[ann.diagnosis] = label_votes.get(ann.diagnosis, 0) + weight
+                    consensus_label = max(label_votes, key=label_votes.get)
+                else:
+                    consensus_label = case_anns[0].diagnosis
+                
+                training_data["cases"].append({
+                    "case_id": case_id,
+                    "image_path": case_data.image_path,
+                    "slide_id": case_data.slide_id,
+                })
+                training_data["labels"].append(consensus_label)
+        
+        return training_data
 
     def get_annotation_queue(
         self, expert_id: Optional[str] = None, limit: int = 10
