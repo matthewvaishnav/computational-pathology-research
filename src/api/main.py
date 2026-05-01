@@ -44,6 +44,9 @@ from src.database import (
 # Import inference components
 from src.inference import InferenceEngine, get_model_loader
 
+# Import tracing
+from src.monitoring.tracing import get_tracer
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -171,6 +174,17 @@ async def startup_event():
         # Initialize inference engine
         get_inference_engine()
         logger.info("Inference engine initialized successfully")
+
+        # Initialize distributed tracing
+        tracer = get_tracer("histocore-api")
+        tracer.initialize(
+            jaeger_endpoint=os.getenv("JAEGER_ENDPOINT"),
+            otlp_endpoint=os.getenv("OTLP_ENDPOINT"),
+            service_version="2.0.0",
+            environment=os.getenv("ENVIRONMENT", "development"),
+        )
+        tracer.instrument_fastapi(app)
+        logger.info("Distributed tracing initialized successfully")
 
     except Exception as e:
         logger.error(f"Startup failed: {e}")

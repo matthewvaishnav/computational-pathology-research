@@ -25,6 +25,9 @@ from ..privacy.dp_sgd import DPSGDEngine
 from .config import get_config
 from .monitoring import get_metrics_manager, setup_logging
 
+# Import distributed tracing
+from src.monitoring.tracing import get_tracer
+
 logger = structlog.get_logger(__name__)
 config = get_config()
 
@@ -59,6 +62,17 @@ async def lifespan(app: FastAPI):
             epsilon=config.federated_learning.default_epsilon,
             delta=config.federated_learning.default_delta,
         )
+
+        # Initialize distributed tracing
+        tracer = get_tracer(f"histocore-fl-client-{config.client_id}")
+        tracer.initialize(
+            jaeger_endpoint=os.getenv("JAEGER_ENDPOINT"),
+            otlp_endpoint=os.getenv("OTLP_ENDPOINT"),
+            service_version="1.0.0",
+            environment=os.getenv("ENVIRONMENT", "development"),
+        )
+        tracer.instrument_fastapi(app)
+        logger.info("Distributed tracing initialized successfully")
 
         logger.info("FL Client Server started successfully")
 
