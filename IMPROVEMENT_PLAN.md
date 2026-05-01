@@ -142,11 +142,29 @@ All Phase 2 tasks complete:
 
 ### Phase 4: Performance Optimizations
 
+**Status**: In Progress
+
+**Completed**:
+- [x] Created `scripts/profile_training.py` - Comprehensive training pipeline profiler
+  - Single batch operation timing (data loading, forward, backward, optimizer)
+  - PyTorch profiler integration (CPU/CUDA time, memory usage)
+  - Data loader throughput measurement
+  - Time distribution analysis
+
+**Next Steps**:
+- [ ] Run profiler to identify bottlenecks
+- [ ] Optimize data loading pipeline based on profiler results
+- [ ] Implement gradient accumulation for larger effective batch sizes
+- [ ] Add mixed precision training (torch.cuda.amp)
+- [ ] Optimize model inference with TorchScript compilation
+
 #### 4.1 Training Pipeline
 **Tasks**:
+- [x] Create performance profiler
 - [ ] Profile training loop for bottlenecks
 - [ ] Optimize data loading pipeline
 - [ ] Implement gradient accumulation for larger batch sizes
+- [ ] Add mixed precision training (AMP)
 
 #### 4.2 Inference Pipeline
 **Tasks**:
