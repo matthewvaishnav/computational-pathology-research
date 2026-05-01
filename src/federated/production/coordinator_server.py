@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 import signal
 import sys
 import time
@@ -28,6 +29,9 @@ from .config import get_config, validate_production_config
 from .database import get_db_manager, init_database
 from .monitoring import get_metrics_manager, setup_logging
 from .security import get_audit_logger, get_security_manager, validate_security_config
+
+# Import distributed tracing
+from src.monitoring.tracing import get_tracer
 
 # Configuration
 config = get_config()
@@ -79,6 +83,17 @@ async def lifespan(app: FastAPI):
                     SqlalchemyIntegration(),
                 ],
             )
+
+        # Initialize distributed tracing
+        tracer = get_tracer("histocore-fl-coordinator")
+        tracer.initialize(
+            jaeger_endpoint=os.getenv("JAEGER_ENDPOINT"),
+            otlp_endpoint=os.getenv("OTLP_ENDPOINT"),
+            service_version="1.0.0",
+            environment=config.monitoring.sentry_environment if hasattr(config, "monitoring") else "development",
+        )
+        tracer.instrument_fastapi(app)
+        logger.info("Distributed tracing initialized successfully")
 
         # Initialize orchestrator
         app.state.orchestrator = None

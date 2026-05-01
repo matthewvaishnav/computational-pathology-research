@@ -322,7 +322,7 @@ See `PHASE_4_COMPLETE.md` for detailed documentation.
 #### 6.1 Monitoring & Observability ✅ COMPLETE
 **Tasks**:
 - [x] Add Prometheus metrics for all critical paths
-- [ ] Add distributed tracing with OpenTelemetry
+- [x] Add distributed tracing with OpenTelemetry
 - [x] Implement health checks for all services
 
 **Completed**:
@@ -330,8 +330,20 @@ See `PHASE_4_COMPLETE.md` for detailed documentation.
 - Prometheus metrics: inference, latency, GPU, errors (Commit 93915c3)
 - FastAPI endpoints: /health, /metrics, /health/ready, /health/live
 - K8s probes: readiness + liveness
+- **Distributed tracing**: OpenTelemetry integration (Commit TBD)
+  - Centralized tracing module (src/monitoring/tracing.py)
+  - FastAPI auto-instrumentation
+  - SQLAlchemy instrumentation
+  - Decorator-based tracing (@traced)
+  - Context manager tracing (trace_span)
+  - Trace context propagation for distributed services
+  - Integrated with main API (src/api/main.py)
+  - Integrated with federated learning services (coordinator + client)
+  - Comprehensive documentation (docs/DISTRIBUTED_TRACING.md)
+  - Integration examples (examples/tracing_integration_example.py)
+  - Test suite (tests/test_distributed_tracing.py)
 
-**Impact**: Production monitoring, observability, auto-scaling support
+**Impact**: Production monitoring, observability, auto-scaling support, end-to-end request tracing
 
 #### 6.2 Security Hardening ✅ COMPLETE
 **Tasks**:
