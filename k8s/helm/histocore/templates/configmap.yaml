@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "histocore.fullname" . }}-config
+  labels:
+    {{- include "histocore.labels" . | nindent 4 }}
+data:
+  # Model configuration
+  MODEL_TYPE: {{ .Values.config.model.type | quote }}
+  MODEL_FEATURE_DIM: {{ .Values.config.model.featureDim | quote }}
+  MODEL_HIDDEN_DIM: {{ .Values.config.model.hiddenDim | quote }}
+  MODEL_NUM_CLASSES: {{ .Values.config.model.numClasses | quote }}
+  
+  # Training configuration
+  TRAINING_BATCH_SIZE: {{ .Values.config.training.batchSize | quote }}
+  TRAINING_LEARNING_RATE: {{ .Values.config.training.learningRate | quote }}
+  TRAINING_EPOCHS: {{ .Values.config.training.epochs | quote }}
+  TRAINING_USE_AMP: {{ .Values.config.training.useAmp | quote }}
+  TRAINING_GRADIENT_ACCUMULATION: {{ .Values.config.training.gradientAccumulation | quote }}
+  
+  # Inference configuration
+  INFERENCE_BATCH_SIZE: {{ .Values.config.inference.batchSize | quote }}
+  INFERENCE_TIMEOUT: {{ .Values.config.inference.timeout | quote }}
+  INFERENCE_MAX_CONCURRENT: {{ .Values.config.inference.maxConcurrent | quote }}
+  
+  # PACS integration
+  PACS_ENABLED: {{ .Values.config.pacs.enabled | quote }}
+  PACS_HOST: {{ .Values.config.pacs.host | quote }}
+  PACS_PORT: {{ .Values.config.pacs.port | quote }}
+  PACS_AET: {{ .Values.config.pacs.aet | quote }}
+  PACS_CALLED_AET: {{ .Values.config.pacs.calledAet | quote }}
+  
+  # Security
+  SECURITY_RATE_LIMIT_PER_MINUTE: {{ .Values.config.security.rateLimitPerMinute | quote }}
+  SECURITY_RATE_LIMIT_PER_HOUR: {{ .Values.config.security.rateLimitPerHour | quote }}
+  SECURITY_ENABLE_AUTH: {{ .Values.config.security.enableAuth | quote }}
+  
+  # Monitoring
+  MONITORING_PROMETHEUS_ENABLED: {{ .Values.config.monitoring.prometheusEnabled | quote }}
+  MONITORING_LOG_LEVEL: {{ .Values.config.monitoring.logLevel | quote }}

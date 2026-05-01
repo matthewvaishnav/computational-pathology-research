@@ -1,0 +1,226 @@
+# Default values for histocore
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+image:
+  repository: histocore/histocore
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: histocore.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: histocore-tls
+      hosts:
+        - histocore.example.com
+
+resources:
+  limits:
+    cpu: 4000m
+    memory: 16Gi
+    nvidia.com/gpu: 1
+  requests:
+    cpu: 2000m
+    memory: 8Gi
+    nvidia.com/gpu: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector:
+  gpu: "true"
+
+tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - histocore
+          topologyKey: kubernetes.io/hostname
+
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  accessMode: ReadWriteOnce
+  size: 100Gi
+  mountPath: /data
+
+config:
+  # Model configuration
+  model:
+    type: "attention_mil"
+    featureDim: 2048
+    hiddenDim: 256
+    numClasses: 2
+  
+  # Training configuration
+  training:
+    batchSize: 32
+    learningRate: 0.0001
+    epochs: 50
+    useAmp: true
+    gradientAccumulation: 1
+  
+  # Inference configuration
+  inference:
+    batchSize: 64
+    timeout: 30
+    maxConcurrent: 10
+  
+  # PACS integration
+  pacs:
+    enabled: false
+    host: ""
+    port: 11112
+    aet: "HISTOCORE"
+    calledAet: "PACS"
+  
+  # Security
+  security:
+    rateLimitPerMinute: 60
+    rateLimitPerHour: 1000
+    enableAuth: true
+  
+  # Monitoring
+  monitoring:
+    prometheusEnabled: true
+    logLevel: "INFO"
+
+# Environment variables
+env:
+  - name: PYTHONUNBUFFERED
+    value: "1"
+  - name: CUDA_VISIBLE_DEVICES
+    value: "0"
+  - name: OMP_NUM_THREADS
+    value: "4"
+
+# Secrets (use external secret management in production)
+secrets:
+  # Database credentials
+  database:
+    host: ""
+    port: "5432"
+    name: "histocore"
+    user: ""
+    password: ""
+  
+  # API keys
+  apiKeys:
+    admin: ""
+    service: ""
+
+# Health checks
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Network policy
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      ports:
+      - protocol: TCP
+        port: 8000
+  egress:
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443  # HTTPS
+      - protocol: TCP
+        port: 5432  # PostgreSQL
+      - protocol: TCP
+        port: 11112  # DICOM
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Priority Class
+priorityClassName: ""

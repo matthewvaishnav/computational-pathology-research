@@ -1,0 +1,119 @@
+# Production environment values
+# High availability, auto-scaling, full security
+
+replicaCount: 3
+
+image:
+  repository: histocore/histocore
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+resources:
+  limits:
+    cpu: 4000m
+    memory: 16Gi
+    nvidia.com/gpu: 1
+  requests:
+    cpu: 2000m
+    memory: 8Gi
+    nvidia.com/gpu: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  accessMode: ReadWriteOnce
+  size: 500Gi
+  mountPath: /data
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: histocore.prod.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: histocore-tls
+      hosts:
+        - histocore.prod.example.com
+
+networkPolicy:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - histocore
+        topologyKey: kubernetes.io/hostname
+
+priorityClassName: "high-priority"
+
+config:
+  model:
+    type: "attention_mil"
+    featureDim: 2048
+    hiddenDim: 256
+    numClasses: 2
+  
+  training:
+    batchSize: 32
+    learningRate: 0.0001
+    epochs: 50
+    useAmp: true
+    gradientAccumulation: 2
+  
+  inference:
+    batchSize: 64
+    timeout: 30
+    maxConcurrent: 10
+  
+  pacs:
+    enabled: true
+    host: "pacs.hospital.org"
+    port: 11112
+    aet: "HISTOCORE"
+    calledAet: "PACS"
+  
+  security:
+    rateLimitPerMinute: 60
+    rateLimitPerHour: 1000
+    enableAuth: true
+  
+  monitoring:
+    prometheusEnabled: true
+    logLevel: "INFO"
+
+# NOTE: Use external secrets management in production
+# Do not commit real credentials to version control
+secrets:
+  database:
+    host: ""  # Set via external secrets
+    port: "5432"
+    name: "histocore_prod"
+    user: ""  # Set via external secrets
+    password: ""  # Set via external secrets
+  apiKeys:
+    admin: ""  # Set via external secrets
+    service: ""  # Set via external secrets
