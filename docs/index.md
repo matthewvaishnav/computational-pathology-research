@@ -39,7 +39,17 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   </div>
   
   <div class="feature-card">
-    <h3>🎯 95.37% Validation AUC</h3>
+    <h3>🚀 2-3x Faster Inference</h3>
+    <p>TorchScript compilation and batch processing for production deployment. Cross-platform support (Python, C++, mobile). See <a href="INFERENCE_OPTIMIZATION.html">inference optimization</a>.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>🎯 Foundation Models</h3>
+    <p>State-of-the-art pretrained models (UNI, Phikon) for superior feature representations. Better accuracy with less training data. See <a href="FOUNDATION_MODELS.html">foundation models</a>.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>📊 95.37% Validation AUC</h3>
     <p>95.37% validation AUC, 93.94% test AUC on real PCam data (262K samples). 85.26% test accuracy with bootstrap confidence intervals. See <a href="PCAM_REAL_RESULTS.html">real results</a>.</p>
   </div>
   
@@ -131,6 +141,8 @@ Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
   <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
   <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
   <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
+  <a href="INFERENCE_OPTIMIZATION.html" class="doc-link">🚀 Inference Optimization (2-3x)</a>
+  <a href="FOUNDATION_MODELS.html" class="doc-link">🎯 Foundation Models (UNI, Phikon)</a>
   <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
   <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
   <a href="MODEL_INTERPRETABILITY.html" class="doc-link">Model Interpretability</a>
