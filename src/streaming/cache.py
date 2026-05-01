@@ -19,6 +19,11 @@ import redis
 import torch
 from redis.exceptions import ConnectionError, TimeoutError
 
+from src.exceptions import (
+    CacheConnectionError,
+    CacheError,
+    CacheSerializationError,
+)
 from .metrics import (
     cache_hits_total,
     cache_misses_total,
@@ -142,6 +147,7 @@ class RedisCache:
         except (ConnectionError, TimeoutError) as e:
             logger.error("Failed to connect to Redis: %s", e)
             self.redis_client = None
+            raise CacheConnectionError(f"Redis connection failed: {e}") from e
 
     def _compress(self, data: bytes) -> bytes:
         """Compress data if enabled and above threshold."""
@@ -188,7 +194,11 @@ class RedisCache:
             return json.loads(decompressed.decode())
         except (json.JSONDecodeError, UnicodeDecodeError):
             # Fall back to pickle
-            return pickle.loads(decompressed)
+            try:
+                return pickle.loads(decompressed)
+            except (pickle.UnpicklingError, EOFError, AttributeError) as e:
+                logger.error("Failed to deserialize cached data: %s", e)
+                raise CacheSerializationError(f"Deserialization failed: {e}") from e
 
     @cache_operations_duration.labels(operation="get").time()
     def get(self, key: str) -> Optional[Any]:
@@ -206,9 +216,15 @@ class RedisCache:
             cache_hits_total.labels(cache_type="redis").inc()
             return self._deserialize(data)
 
+        except CacheSerializationError:
+            # Re-raise serialization errors
+            raise
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error for key %s: %s", key, e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache get error for key %s: %s", key, e)
-            return None
+            raise CacheError(f"Cache get failed: {e}") from e
 
     @cache_operations_duration.labels(operation="set").time()
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
@@ -229,9 +245,15 @@ class RedisCache:
 
             return True
 
+        except CacheSerializationError:
+            # Re-raise serialization errors
+            raise
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error for key %s: %s", key, e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache set error for key %s: %s", key, e)
-            return False
+            raise CacheError(f"Cache set failed: {e}") from e
 
     @cache_operations_duration.labels(operation="delete").time()
     def delete(self, key: str) -> bool:
@@ -242,9 +264,12 @@ class RedisCache:
         try:
             self.redis_client.delete(key)
             return True
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error for key %s: %s", key, e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache delete error for key %s: %s", key, e)
-            return False
+            raise CacheError(f"Cache delete failed: {e}") from e
 
     def exists(self, key: str) -> bool:
         """Check if key exists in cache."""
@@ -253,9 +278,12 @@ class RedisCache:
 
         try:
             return bool(self.redis_client.exists(key))
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error for key %s: %s", key, e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache exists error for key %s: %s", key, e)
-            return False
+            raise CacheError(f"Cache exists check failed: {e}") from e
 
     def get_many(self, keys: List[str]) -> Dict[str, Any]:
         """Get multiple values from cache."""
@@ -275,9 +303,15 @@ class RedisCache:
 
             return result
 
+        except CacheSerializationError:
+            # Re-raise serialization errors
+            raise
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error in get_many: %s", e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache get_many error: %s", e)
-            return {}
+            raise CacheError(f"Cache get_many failed: {e}") from e
 
     def set_many(self, mapping: Dict[str, Any], ttl: Optional[int] = None) -> bool:
         """Set multiple values in cache."""
@@ -297,9 +331,15 @@ class RedisCache:
             pipe.execute()
             return True
 
+        except CacheSerializationError:
+            # Re-raise serialization errors
+            raise
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error in set_many: %s", e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache set_many error: %s", e)
-            return False
+            raise CacheError(f"Cache set_many failed: {e}") from e
 
     def clear_pattern(self, pattern: str) -> int:
         """Clear all keys matching pattern."""
@@ -311,9 +351,12 @@ class RedisCache:
             if keys:
                 return self.redis_client.delete(*keys)
             return 0
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Cache connection error for pattern %s: %s", pattern, e)
+            raise CacheConnectionError(f"Redis connection lost: {e}") from e
         except Exception as e:
             logger.error("Cache clear_pattern error for pattern %s: %s", pattern, e)
-            return 0
+            raise CacheError(f"Cache clear_pattern failed: {e}") from e
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
