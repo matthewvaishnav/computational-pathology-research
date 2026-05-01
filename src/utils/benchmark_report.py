@@ -102,6 +102,7 @@ def generate_benchmark_report(
 
     # Write report with UTF-8 encoding
     output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text("\n".join(report_lines), encoding="utf-8")
     logger.info(f"Benchmark report saved to: {output_path}")
 
