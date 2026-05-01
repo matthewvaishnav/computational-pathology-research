@@ -39,6 +39,7 @@ def save_attention_weights(
 
     Raises:
         ValueError: If attention_weights and coordinates have different lengths
+        DataSaveError: If file I/O fails during save operation
 
     Example:
         >>> attention = torch.tensor([0.1, 0.3, 0.6])
@@ -106,6 +107,9 @@ def load_attention_weights(
         Tuple of (attention_weights, coordinates) as numpy arrays, or None if
         file not found. attention_weights has shape [num_patches] and
         coordinates has shape [num_patches, 2].
+
+    Raises:
+        DataLoadError: If file I/O fails during load operation
 
     Example:
         >>> weights, coords = load_attention_weights("slide_001", Path("./output"))
