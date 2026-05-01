@@ -292,7 +292,7 @@ class ClinicalWorkflowOrchestrator:
             # Trigger AI analysis callbacks
             for callback in self.analysis_callbacks:
                 try:
-                    await callback(study_info["study_path"], task.study_uid)
+                    await callback(study_info["study_path"], task.study_uid, task)
                 except Exception as e:
                     logger.error(f"Analysis callback failed: {e}")
 
