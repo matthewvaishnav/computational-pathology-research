@@ -63,8 +63,29 @@
 ### Phase 3: Testing Improvements
 
 #### 3.1 Increase Coverage
-**Current**: 55% coverage  
+**Current**: 2% coverage (42336 stmts, 41496 miss)  
 **Target**: 70% coverage
+
+**Status**: In Progress
+
+**Completed**:
+- [x] Created `tests/test_custom_exceptions.py` - 13 tests (4 pass, 9 skip OpenSlide)
+  - Tests for CacheError, DatabaseError, DataLoadError/SaveError, ResourceError, ModelError, SecurityError, ThreadingError, ValidationError
+  - Exception inheritance hierarchy validation
+- [x] Created `tests/test_safe_threading.py` - 23 tests (all pass)
+  - TimeoutLock, BoundedQueue, GracefulThread, ThreadSafeDict, ThreadSafeSet
+  - Thread safety validation under concurrent access
+  - 81% coverage on safe_threading.py (200 stmts, 38 miss)
+- [x] Created `tests/test_streaming_cache.py` - skipped (OpenSlide DLL dependency)
+
+**Next Steps**:
+- [ ] Add tests for high-value uncovered modules:
+  - [ ] `src/streaming/` modules (cache, model_management, metrics)
+  - [ ] `src/clinical/` modules (privacy, regulatory, validation)
+  - [ ] `src/federated/` modules (aggregation, privacy, communication)
+  - [ ] `src/models/` modules (attention_mil, encoders, baselines)
+- [ ] Add edge case tests for critical paths
+- [ ] Add integration tests for end-to-end workflows
 
 **Tasks**:
 - [ ] Add tests for uncovered modules
