@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 import numpy as np
+import torch
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -214,32 +215,225 @@ async def get_slide_info(slide_id: str):
 
 @app.get("/api/slides/{slide_id}/tile/{z}/{x}/{y}")
 async def get_slide_tile(slide_id: str, z: int, x: int, y: int):
-    """Get slide tile for OpenSeadragon (placeholder)"""
-    # TODO: Integrate with actual WSI streaming system
-    # For now, return placeholder response
-    return JSONResponse(
-        {
-            "slide_id": slide_id,
-            "z": z,
-            "x": x,
-            "y": y,
-            "message": "Tile endpoint - integrate with WSI streaming",
-        }
-    )
+    """Get slide tile for OpenSeadragon viewer"""
+    try:
+        # Get slide info from database
+        if slide_id not in slides_db:
+            raise HTTPException(status_code=404, detail="Slide not found")
+        
+        slide_info = slides_db[slide_id]
+        image_path = slide_info.image_path
+        
+        # Check if file exists
+        import os
+        if not os.path.exists(image_path):
+            raise HTTPException(status_code=404, detail="Slide file not found")
+        
+        # Determine file type and extract tile
+        from pathlib import Path
+        file_ext = Path(image_path).suffix.lower()
+        
+        # For WSI formats, use OpenSlide
+        if file_ext in ['.svs', '.tif', '.tiff', '.ndpi', '.vms', '.vmu', '.scn', '.mrxs', '.bif']:
+            try:
+                import openslide
+                from PIL import Image
+                import io
+                
+                slide = openslide.OpenSlide(image_path)
+                
+                # Calculate tile position at the requested zoom level
+                # OpenSeadragon uses zoom level 0 as highest resolution
+                # OpenSlide uses level 0 as highest resolution
+                level = min(z, slide.level_count - 1)
+                
+                # Get level dimensions and downsample factor
+                level_dimensions = slide.level_dimensions[level]
+                downsample = slide.level_downsamples[level]
+                
+                # Calculate tile position in level 0 coordinates
+                tile_size = slide_info.tile_size
+                x_pos = int(x * tile_size * downsample)
+                y_pos = int(y * tile_size * downsample)
+                
+                # Read region from slide
+                tile = slide.read_region(
+                    (x_pos, y_pos),
+                    level,
+                    (tile_size, tile_size)
+                )
+                
+                # Convert RGBA to RGB
+                tile = tile.convert('RGB')
+                
+                # Save to bytes
+                img_byte_arr = io.BytesIO()
+                tile.save(img_byte_arr, format='JPEG', quality=85)
+                img_byte_arr.seek(0)
+                
+                slide.close()
+                
+                return FileResponse(
+                    img_byte_arr,
+                    media_type="image/jpeg",
+                    headers={
+                        "Cache-Control": "public, max-age=31536000",
+                        "Content-Type": "image/jpeg"
+                    }
+                )
+                
+            except Exception as e:
+                logger.error(f"Error reading WSI tile: {e}")
+                raise HTTPException(status_code=500, detail=f"Error reading tile: {str(e)}")
+        
+        # For regular images, use PIL
+        elif file_ext in ['.png', '.jpg', '.jpeg']:
+            try:
+                from PIL import Image
+                import io
+                
+                img = Image.open(image_path)
+                
+                # Calculate tile position
+                tile_size = slide_info.tile_size
+                x_pos = x * tile_size
+                y_pos = y * tile_size
+                
+                # Crop tile
+                tile = img.crop((
+                    x_pos,
+                    y_pos,
+                    x_pos + tile_size,
+                    y_pos + tile_size
+                ))
+                
+                # Save to bytes
+                img_byte_arr = io.BytesIO()
+                tile.save(img_byte_arr, format='JPEG', quality=85)
+                img_byte_arr.seek(0)
+                
+                img.close()
+                
+                return FileResponse(
+                    img_byte_arr,
+                    media_type="image/jpeg",
+                    headers={
+                        "Cache-Control": "public, max-age=31536000",
+                        "Content-Type": "image/jpeg"
+                    }
+                )
+                
+            except Exception as e:
+                logger.error(f"Error reading image tile: {e}")
+                raise HTTPException(status_code=500, detail=f"Error reading tile: {str(e)}")
+        
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported image format")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in get_slide_tile: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/api/slides/{slide_id}/ai-prediction", response_model=AIPredictionOverlay)
 async def get_ai_prediction(slide_id: str):
     """Get AI prediction overlay for slide"""
-    # TODO: Integrate with foundation model predictions
-    # For now, return placeholder
-    return AIPredictionOverlay(
-        slide_id=slide_id,
-        prediction_type="tumor_detection",
-        confidence=0.85,
-        regions=[],
-        metadata={"model": "foundation_model_v1"},
-    )
+    try:
+        # Get slide info from database
+        if slide_id not in slides_db:
+            raise HTTPException(status_code=404, detail="Slide not found")
+        
+        slide_info = slides_db[slide_id]
+        
+        # Check if we have a cached prediction
+        prediction_cache_path = Path(f"./prediction_cache/{slide_id}.json")
+        if prediction_cache_path.exists():
+            with open(prediction_cache_path, 'r') as f:
+                cached_prediction = json.load(f)
+                return AIPredictionOverlay(**cached_prediction)
+        
+        # Generate prediction using inference engine
+        try:
+            from src.inference.inference_engine import InferenceEngine
+            
+            # Initialize inference engine (use cached instance if available)
+            if not hasattr(get_ai_prediction, '_inference_engine'):
+                get_ai_prediction._inference_engine = InferenceEngine(
+                    model_path="checkpoints/best_model.pth",
+                    device="cuda" if torch.cuda.is_available() else "cpu"
+                )
+            
+            engine = get_ai_prediction._inference_engine
+            
+            # Run inference on the slide
+            result = engine.predict_slide(slide_info.image_path)
+            
+            # Convert result to overlay format
+            regions = []
+            if "regions" in result:
+                for region in result["regions"]:
+                    regions.append({
+                        "x": region.get("x", 0),
+                        "y": region.get("y", 0),
+                        "width": region.get("width", 0),
+                        "height": region.get("height", 0),
+                        "confidence": region.get("confidence", 0.0),
+                        "label": region.get("label", "unknown"),
+                    })
+            
+            prediction = AIPredictionOverlay(
+                slide_id=slide_id,
+                prediction_type=result.get("prediction_type", "tumor_detection"),
+                confidence=result.get("confidence", 0.0),
+                regions=regions,
+                metadata={
+                    "model": result.get("model_name", "foundation_model_v1"),
+                    "timestamp": datetime.now().isoformat(),
+                    "inference_time_ms": result.get("inference_time_ms", 0),
+                },
+            )
+            
+            # Cache the prediction
+            prediction_cache_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(prediction_cache_path, 'w') as f:
+                json.dump(json.loads(prediction.json()), f, indent=2)
+            
+            return prediction
+            
+        except ImportError:
+            logger.warning("InferenceEngine not available, returning placeholder prediction")
+            # Return placeholder if inference engine not available
+            return AIPredictionOverlay(
+                slide_id=slide_id,
+                prediction_type="tumor_detection",
+                confidence=0.0,
+                regions=[],
+                metadata={
+                    "model": "placeholder",
+                    "note": "InferenceEngine not available"
+                },
+            )
+        except Exception as e:
+            logger.error(f"Error generating AI prediction: {e}")
+            # Return empty prediction on error
+            return AIPredictionOverlay(
+                slide_id=slide_id,
+                prediction_type="tumor_detection",
+                confidence=0.0,
+                regions=[],
+                metadata={
+                    "error": str(e),
+                    "note": "Prediction generation failed"
+                },
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in get_ai_prediction: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ============================================================================
