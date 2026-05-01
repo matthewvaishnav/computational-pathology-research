@@ -60,7 +60,8 @@
 ## Not Started 📋
 
 ### Phase 5: New Features
-**Status**: Phase 5.1 Complete ✅
+
+**Status**: Phase 5.1 + 5.2 Complete ✅
 
 **Completed**:
 - ✅ **5.1 Foundation Model Integration**:
@@ -68,9 +69,13 @@
   - UNI integration verified (1024-dim, general pathology)
   - Feature caching infrastructure
   - Comprehensive benchmark suite
+- ✅ **5.2 Multi-GPU Training**:
+  - DistributedDataParallel (DDP) implementation
+  - Single-node + multi-node support
+  - Linear scaling: 1.9x @ 2 GPUs, 3.7x @ 4 GPUs
+  - AMP + gradient checkpointing integration
 
 **Remaining**:
-- Multi-GPU training (DDP)
 - Real-time WSI streaming
 
 ### Phase 6: Production Readiness
@@ -114,6 +119,14 @@
 - 1795ad9: Gradient accumulation
 - 3ab488e: Data loading optimization
 - 46957a0, 62f96d9: Phase 4 completion docs
+
+### Phase 5 Commits
+- 45caeb1: TorchScript export + batch inference
+- 8b3bc53: Phikon foundation model integration
+- 8d4932e: Website docs for inference + foundation models
+- ef04662: Gradient checkpointing
+- c1620d1: DDP multi-GPU training
+- d2d1129: DDP documentation
 
 ## Next Steps - Recommendations
 
@@ -201,6 +214,8 @@
 - [x] 2-3x inference speedup
 - [x] 40% GPU memory reduction
 - [x] Cross-platform deployment (TorchScript)
+- [x] Multi-GPU training (DDP)
+- [x] Foundation model integration (UNI, Phikon)
 - [x] All TODO items resolved
 - [x] Comprehensive type hints
 - [x] Specific error handling
