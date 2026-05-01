@@ -54,7 +54,13 @@ class AttentionVisualizer:
         style: Plot style (default: 'seaborn-v0_8')
     """
 
-    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8"):
+    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8") -> None:
+        """Initialize attention visualizer.
+        
+        Args:
+            output_dir: Directory to save visualizations
+            style: Matplotlib style name
+        """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         plt.style.use(style)
@@ -193,9 +199,8 @@ class SaliencyMap:
     Works with multimodal inputs (WSI, genomic, clinical separately).
     """
 
-    def __init__(self, device: Optional[torch.device] = None):
-        """
-        Initialize saliency map calculator.
+    def __init__(self, device: Optional[torch.device] = None) -> None:
+        """Initialize saliency map calculator.
 
         Args:
             device: torch device to use (defaults to CUDA if available)
@@ -531,13 +536,12 @@ class EmbeddingAnalyzer:
     - Modality correlation computation
     """
 
-    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8"):
-        """
-        Initialize embedding analyzer.
+    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8") -> None:
+        """Initialize embedding analyzer.
 
         Args:
             output_dir: Directory to save visualizations
-            style: Plot style
+            style: Matplotlib style name
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
