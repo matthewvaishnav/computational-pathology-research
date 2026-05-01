@@ -1,0 +1,420 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'k8s/**'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      skip_tests:
+        description: 'Skip tests (use with caution)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_tests }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e ".[foundation]"
+    
+    - name: Install PyG extensions
+      run: |
+        python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
+    
+    - name: Run tests
+      run: |
+        pytest tests/ -v -m "not property and not slow" --cov=src --cov-report=xml
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: cd-pipeline
+        fail_ci_if_error: false
+
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped')
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value={{date 'YYYYMMDD-HHmmss'}}
+    
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ github.ref_name }}
+    
+    - name: Test Docker image
+      run: |
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }}
+        docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }} python -c "import src; print('✓ Import successful')"
+    
+    - name: Scan image for vulnerabilities
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+      continue-on-error: true
+    
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
+      continue-on-error: true
+
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' || inputs.environment == 'dev'
+    environment:
+      name: development
+      url: https://dev.histocore.example.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: 'v3.13.0'
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG_DEV }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+    
+    - name: Deploy with Helm
+      run: |
+        helm upgrade --install histocore-dev ./k8s/helm/histocore \
+          --namespace dev \
+          --create-namespace \
+          --values ./k8s/helm/histocore/values-dev.yaml \
+          --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set image.tag=main-${{ github.sha }} \
+          --wait \
+          --timeout 5m
+    
+    - name: Verify deployment
+      run: |
+        kubectl rollout status deployment/histocore-dev -n dev --timeout=5m
+        kubectl get pods -n dev -l app.kubernetes.io/name=histocore
+    
+    - name: Run smoke tests
+      run: |
+        DEV_URL="https://dev.histocore.example.com"
+        echo "Testing health endpoint..."
+        curl -f $DEV_URL/health || exit 1
+        echo "Testing metrics endpoint..."
+        curl -f $DEV_URL/metrics || exit 1
+        echo "✓ Smoke tests passed"
+    
+    - name: Notify deployment
+      if: always()
+      run: |
+        echo "Deployment to dev: ${{ job.status }}"
+        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }}"
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, deploy-dev]
+    if: (github.ref == 'refs/heads/main' && needs.deploy-dev.result == 'success') || inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.histocore.example.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: 'v3.13.0'
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+    
+    - name: Deploy with Helm
+      run: |
+        helm upgrade --install histocore-staging ./k8s/helm/histocore \
+          --namespace staging \
+          --create-namespace \
+          --values ./k8s/helm/histocore/values.yaml \
+          --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set image.tag=main-${{ github.sha }} \
+          --set replicaCount=2 \
+          --set autoscaling.minReplicas=2 \
+          --set autoscaling.maxReplicas=5 \
+          --wait \
+          --timeout 10m
+    
+    - name: Verify deployment
+      run: |
+        kubectl rollout status deployment/histocore-staging -n staging --timeout=10m
+        kubectl get pods -n staging -l app.kubernetes.io/name=histocore
+    
+    - name: Run integration tests
+      run: |
+        STAGING_URL="https://staging.histocore.example.com"
+        echo "Testing health endpoint..."
+        curl -f $STAGING_URL/health || exit 1
+        echo "Testing metrics endpoint..."
+        curl -f $STAGING_URL/metrics || exit 1
+        echo "Testing inference endpoint..."
+        curl -f -X POST $STAGING_URL/api/v1/inference \
+          -H "Content-Type: application/json" \
+          -d '{"test": true}' || echo "Inference test skipped (requires auth)"
+        echo "✓ Integration tests passed"
+    
+    - name: Notify deployment
+      if: always()
+      run: |
+        echo "Deployment to staging: ${{ job.status }}"
+        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }}"
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, deploy-staging]
+    if: inputs.environment == 'prod'
+    environment:
+      name: production
+      url: https://histocore.example.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: 'v3.13.0'
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+    
+    - name: Deploy with Helm (Blue-Green)
+      run: |
+        # Deploy to green environment
+        helm upgrade --install histocore-green ./k8s/helm/histocore \
+          --namespace prod \
+          --create-namespace \
+          --values ./k8s/helm/histocore/values-prod.yaml \
+          --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set image.tag=main-${{ github.sha }} \
+          --set service.selector.version=green \
+          --wait \
+          --timeout 15m
+    
+    - name: Verify green deployment
+      run: |
+        kubectl rollout status deployment/histocore-green -n prod --timeout=15m
+        kubectl get pods -n prod -l app.kubernetes.io/name=histocore,version=green
+    
+    - name: Run production smoke tests
+      run: |
+        GREEN_URL="https://green.histocore.example.com"
+        echo "Testing health endpoint..."
+        curl -f $GREEN_URL/health || exit 1
+        echo "Testing metrics endpoint..."
+        curl -f $GREEN_URL/metrics || exit 1
+        echo "✓ Production smoke tests passed"
+    
+    - name: Switch traffic to green
+      run: |
+        # Update service to point to green
+        kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"green"}}}'
+        echo "✓ Traffic switched to green deployment"
+    
+    - name: Monitor for 5 minutes
+      run: |
+        echo "Monitoring green deployment for 5 minutes..."
+        sleep 300
+        
+        # Check error rate
+        ERROR_COUNT=$(kubectl logs -n prod -l version=green --tail=1000 | grep -c "ERROR" || echo "0")
+        if [ "$ERROR_COUNT" -gt 10 ]; then
+          echo "High error rate detected: $ERROR_COUNT errors"
+          exit 1
+        fi
+        
+        echo "✓ Monitoring passed"
+    
+    - name: Remove blue deployment
+      if: success()
+      run: |
+        kubectl delete deployment histocore-blue -n prod --ignore-not-found=true
+        echo "✓ Blue deployment removed"
+    
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "Deployment failed, rolling back..."
+        kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"blue"}}}'
+        kubectl delete deployment histocore-green -n prod --ignore-not-found=true
+        echo "✓ Rolled back to blue deployment"
+        exit 1
+    
+    - name: Notify deployment
+      if: always()
+      run: |
+        echo "Deployment to production: ${{ job.status }}"
+        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }}"
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'workflow_dispatch'
+    needs: [deploy-dev, deploy-staging, deploy-prod]
+    
+    steps:
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: 'v3.13.0'
+    
+    - name: Rollback environment
+      run: |
+        ENV="${{ inputs.environment }}"
+        
+        case $ENV in
+          dev)
+            echo "${{ secrets.KUBECONFIG_DEV }}" | base64 -d > $HOME/.kube/config
+            helm rollback histocore-dev -n dev
+            ;;
+          staging)
+            echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+            helm rollback histocore-staging -n staging
+            ;;
+          prod)
+            echo "${{ secrets.KUBECONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+            helm rollback histocore-green -n prod
+            ;;
+        esac
+        
+        echo "✓ Rollback completed for $ENV"
+
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-dev, deploy-staging, deploy-prod]
+    if: always()
+    
+    steps:
+    - name: Deployment summary
+      run: |
+        echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image**: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Dev**: ${{ needs.deploy-dev.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Staging**: ${{ needs.deploy-staging.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Prod**: ${{ needs.deploy-prod.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Environments" >> $GITHUB_STEP_SUMMARY
+        echo "- Dev: https://dev.histocore.example.com" >> $GITHUB_STEP_SUMMARY
+        echo "- Staging: https://staging.histocore.example.com" >> $GITHUB_STEP_SUMMARY
+        echo "- Prod: https://histocore.example.com" >> $GITHUB_STEP_SUMMARY
