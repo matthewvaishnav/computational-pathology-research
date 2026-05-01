@@ -235,7 +235,9 @@ class ModelDownloader:
             logger.warning(f"File suspiciously small: {file_size} bytes")
             return False
         
-        # TODO: Implement proper checksum verification when real checksums available
+        # Checksum verification (when checksums are provided in model config)
+        # Note: Most foundation models don't publish official checksums
+        # This implementation will verify if checksum is provided and not placeholder
         if expected_checksum and expected_checksum != "placeholder":
             # Calculate SHA256
             sha256_hash = hashlib.sha256()
@@ -247,6 +249,9 @@ class ModelDownloader:
             if calculated != expected_checksum:
                 logger.error(f"Checksum mismatch: expected {expected_checksum}, got {calculated}")
                 return False
+            logger.info(f"Checksum verification passed: {calculated}")
+        else:
+            logger.debug("No checksum provided for verification")
         
         logger.info(f"File verification passed: {filepath}")
         return True
