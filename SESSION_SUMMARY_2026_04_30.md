@@ -67,7 +67,7 @@ Completed 6 TODO items from the codebase, improving production readiness, securi
 
 **Threading Tests**: 83 tests total - 56 passed, 12 skipped (env-dependent), 12 failed (Python 3.14 + protobuf compatibility - expected)
 
-**Total Project Tests**: 2,898 tests (13 collection errors due to Python 3.14 + protobuf incompatibility)
+**Total Project Tests**: 3,171 tests (13 collection errors due to Python 3.14 + protobuf incompatibility)
 
 **Test Coverage**:
 - Bounded queue operations
@@ -89,7 +89,7 @@ Completed 6 TODO items from the codebase, improving production readiness, securi
 | Lines Added | ~100 |
 | Lines Removed | ~10 |
 | TODO Items Resolved | 6 |
-| Total Tests | 2,898 tests |
+| Total Tests | 3,171 tests |
 | Threading Tests | 83 tests (56 passed, 12 skipped, 12 failed - Python 3.14 + protobuf) |
 
 ## Code Quality Improvements

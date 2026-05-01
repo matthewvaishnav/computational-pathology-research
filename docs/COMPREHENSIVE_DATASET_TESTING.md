@@ -11,7 +11,7 @@ Comprehensive dataset testing suite ensuring data pipeline reliability, catching
 
 ## Overview
 
-The framework includes 3,006 tests with 55% coverage, featuring comprehensive dataset validation for PCam, CAMELYON, multimodal datasets, OpenSlide integration, data preprocessing, edge cases, and performance testing.
+The framework includes 3,171 tests with 55% coverage, featuring comprehensive dataset validation for PCam, CAMELYON, multimodal datasets, OpenSlide integration, data preprocessing, edge cases, and performance testing.
 
 **Key Features:**
 - Property-based testing for robust validation
