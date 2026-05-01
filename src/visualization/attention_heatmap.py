@@ -18,6 +18,8 @@ import numpy as np
 from matplotlib.patches import Rectangle
 from PIL import Image
 
+from src.exceptions import DataLoadError
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,9 +111,12 @@ class AttentionHeatmapGenerator:
             )
             return attention_weights, coordinates
 
+        except (OSError, IOError) as e:
+            logger.error(f"File I/O error loading attention weights for {slide_id}: {e}")
+            raise DataLoadError(f"Failed to load attention weights: {e}") from e
         except Exception as e:
             logger.error(f"Error loading attention weights for {slide_id}: {e}")
-            return None
+            raise DataLoadError(f"Failed to load attention weights: {e}") from e
 
     def create_heatmap_array(
         self,

@@ -21,6 +21,8 @@ import time
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Generic, Optional, Set, TypeVar
 
+from src.exceptions import ThreadingError
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
@@ -269,17 +271,24 @@ class GracefulThread(threading.Thread):
             logger.info(f"Thread '{self.name}' started")
             self._target(self)
         
+        except ThreadingError:
+            self._exception = e
+            raise
         except Exception as e:
             self._exception = e
             logger.error(f"Thread '{self.name}' error: {e}", exc_info=True)
+            raise ThreadingError(f"Thread '{self.name}' failed: {e}") from e
         
         finally:
             # Cleanup
             if self._cleanup_callback:
                 try:
                     self._cleanup_callback()
+                except ThreadingError:
+                    raise
                 except Exception as e:
                     logger.error(f"Thread '{self.name}' cleanup error: {e}")
+                    raise ThreadingError(f"Thread '{self.name}' cleanup failed: {e}") from e
             
             logger.info(f"Thread '{self.name}' stopped")
     

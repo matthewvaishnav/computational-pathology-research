@@ -29,6 +29,13 @@ import psutil
 import torch
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from src.exceptions import (
+    DatabaseError,
+    DataSaveError,
+    DiskSpaceError,
+    ResourceError,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -215,9 +222,12 @@ def check_disk_space(filepath: Path, required_bytes: int, buffer_factor: float =
             )
             return False
         return True
+    except (OSError, IOError) as e:
+        logger.error(f"Failed to check disk space: {e}")
+        raise DiskSpaceError(f"Failed to check disk space: {e}") from e
     except Exception as e:
         logger.error(f"Failed to check disk space: {e}")
-        return False
+        raise ResourceError(f"Failed to check disk space: {e}") from e
 
 
 def atomic_write(filepath: Path, data: Any, mode: str = 'json'):
@@ -261,13 +271,20 @@ def atomic_write(filepath: Path, data: Any, mode: str = 'json'):
         # Atomic rename (POSIX guarantees atomicity)
         os.replace(temp_path, filepath)
         logger.debug(f"Atomic write successful: {filepath}")
+    except (OSError, IOError) as e:
+        # Clean up temp file on failure
+        try:
+            os.unlink(temp_path)
+        except:
+            pass
+        raise DataSaveError(f"Atomic write failed: {e}") from e
     except Exception as e:
         # Clean up temp file on failure
         try:
             os.unlink(temp_path)
         except:
             pass
-        raise IOError(f"Atomic write failed: {e}")
+        raise DataSaveError(f"Atomic write failed: {e}") from e
 
 
 def safe_delete(filepath: Path, archive_dir: Optional[Path] = None):
@@ -393,10 +410,13 @@ def safe_db_transaction(db_path: Path):
         yield conn
         conn.commit()
         logger.debug(f"Database transaction committed: {db_path}")
+    except DatabaseError:
+        conn.rollback()
+        raise
     except Exception as e:
         conn.rollback()
         logger.error(f"Database transaction rolled back: {e}")
-        raise
+        raise DatabaseError(f"Database transaction failed: {e}") from e
     finally:
         conn.close()
 

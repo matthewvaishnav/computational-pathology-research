@@ -14,6 +14,8 @@ import h5py
 import numpy as np
 import torch
 
+from src.exceptions import DataLoadError, DataSaveError
+
 logger = logging.getLogger(__name__)
 
 
@@ -79,9 +81,12 @@ def save_attention_weights(
 
         logger.info(f"Saved attention weights to {output_path}")
 
+    except (OSError, IOError) as e:
+        logger.error(f"File I/O error saving attention weights for {slide_id}: {e}")
+        raise DataSaveError(f"Failed to save attention weights: {e}") from e
     except Exception as e:
         logger.error(f"Error saving attention weights for {slide_id}: {e}")
-        raise
+        raise DataSaveError(f"Failed to save attention weights: {e}") from e
 
 
 def load_attention_weights(
@@ -127,6 +132,9 @@ def load_attention_weights(
 
         return attention_weights, coordinates
 
+    except (OSError, IOError) as e:
+        logger.error(f"File I/O error loading attention weights for {slide_id}: {e}")
+        raise DataLoadError(f"Failed to load attention weights: {e}") from e
     except Exception as e:
         logger.error(f"Error loading attention weights for {slide_id}: {e}")
-        return None
+        raise DataLoadError(f"Failed to load attention weights: {e}") from e

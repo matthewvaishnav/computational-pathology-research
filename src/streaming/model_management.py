@@ -25,6 +25,12 @@ from cryptography.fernet import Fernet
 # Import BoundedQueue and GracefulThread for memory-safe queue operations and graceful shutdown
 from src.utils.safe_threading import BoundedQueue, GracefulThread
 from src.utils.safe_operations import safe_db_transaction
+from src.exceptions import (
+    DatabaseError,
+    EncryptionError,
+    ModelError,
+    SecurityError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -121,8 +127,11 @@ class ModelPerformanceTracker:
                     ),
                 )
 
+        except DatabaseError:
+            raise
         except Exception as e:
             logger.error(f"Failed to record performance metric: {e}")
+            raise DatabaseError(f"Failed to record performance metric: {e}") from e
 
     def get_performance_history(
         self, model_version: str, days: int = 30
@@ -169,9 +178,11 @@ class ModelPerformanceTracker:
 
                 return metrics
 
+        except DatabaseError:
+            raise
         except Exception as e:
             logger.error(f"Failed to get performance history: {e}")
-            return []
+            raise DatabaseError(f"Failed to get performance history: {e}") from e
 
     def calculate_performance_trends(self, model_version: str) -> Dict[str, float]:
         """Calculate performance trends for drift detection.
@@ -245,8 +256,11 @@ class ModelPerformanceTracker:
                     ON performance_metrics(model_version, timestamp)
                 """)
 
+        except DatabaseError:
+            raise
         except Exception as e:
             logger.error(f"Failed to initialize database: {e}")
+            raise DatabaseError(f"Failed to initialize database: {e}") from e
 
 
 class ModelDriftDetector:
@@ -383,8 +397,11 @@ class ModelDriftDetector:
                 )
                 alerts.append(alert)
 
+        except ModelError:
+            raise
         except Exception as e:
             logger.error(f"Failed to check for drift: {e}")
+            raise ModelError(f"Failed to check for drift: {e}") from e
 
         return alerts
 
@@ -409,8 +426,12 @@ class ModelDriftDetector:
                 if thread.wait_or_stop(check_interval_minutes * 60):
                     break
 
+            except ModelError as e:
+                logger.error(f"Model error in monitoring loop: {e}")
+                if thread.wait_or_stop(60):  # Wait 1 minute before retrying
+                    break
             except Exception as e:
-                logger.error(f"Error in monitoring loop: {e}")
+                logger.error(f"Unexpected error in monitoring loop: {e}")
                 if thread.wait_or_stop(60):  # Wait 1 minute before retrying
                     break
 
@@ -627,9 +648,12 @@ class ModelSecurityManager:
 
             return integrity_verified
 
+        except (OSError, IOError) as e:
+            logger.error(f"File I/O error verifying model integrity: {e}")
+            raise SecurityError(f"Failed to verify model integrity: {e}") from e
         except Exception as e:
             logger.error(f"Failed to verify model integrity: {e}")
-            return False
+            raise SecurityError(f"Failed to verify model integrity: {e}") from e
 
     def sign_model(self, model_path: str) -> str:
         """Generate cryptographic signature for model.
@@ -665,9 +689,12 @@ class ModelSecurityManager:
             logger.info(f"Model signed: {model_path}")
             return signature
 
+        except (OSError, IOError) as e:
+            logger.error(f"File I/O error signing model: {e}")
+            raise SecurityError(f"Failed to sign model: {e}") from e
         except Exception as e:
             logger.error(f"Failed to sign model: {e}")
-            return ""
+            raise SecurityError(f"Failed to sign model: {e}") from e
 
     def encrypt_model(self, model_path: str, output_path: str) -> bool:
         """Encrypt model file for secure storage.
@@ -694,9 +721,12 @@ class ModelSecurityManager:
             logger.info(f"Model encrypted: {model_path} -> {output_path}")
             return True
 
+        except (OSError, IOError) as e:
+            logger.error(f"File I/O error encrypting model: {e}")
+            raise EncryptionError(f"Failed to encrypt model: {e}") from e
         except Exception as e:
             logger.error(f"Failed to encrypt model: {e}")
-            return False
+            raise EncryptionError(f"Failed to encrypt model: {e}") from e
 
     def decrypt_model(self, encrypted_path: str, output_path: str) -> bool:
         """Decrypt model file for use.
@@ -723,9 +753,12 @@ class ModelSecurityManager:
             logger.info(f"Model decrypted: {encrypted_path} -> {output_path}")
             return True
 
+        except (OSError, IOError) as e:
+            logger.error(f"File I/O error decrypting model: {e}")
+            raise EncryptionError(f"Failed to decrypt model: {e}") from e
         except Exception as e:
             logger.error(f"Failed to decrypt model: {e}")
-            return False
+            raise EncryptionError(f"Failed to decrypt model: {e}") from e
 
     def test_adversarial_robustness(self, model, test_samples: List[torch.Tensor]) -> float:
         """Test model robustness against adversarial attacks.
