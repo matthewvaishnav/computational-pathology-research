@@ -29,6 +29,73 @@ class AnnotationInterfaceIntegration:
     def __init__(self, active_learning_system: ActiveLearningSystem):
         self.active_learning = active_learning_system
 
+    def _get_slide_dimensions(self, image_path: str) -> tuple[int, int, int]:
+        """
+        Get actual slide dimensions from WSI file
+        
+        Args:
+            image_path: Path to the slide image file
+            
+        Returns:
+            Tuple of (width, height, max_zoom_level)
+        """
+        import os
+        from pathlib import Path
+        
+        # Check if file exists
+        if not os.path.exists(image_path):
+            # Return default dimensions if file not found
+            return (10000, 10000, 10)
+        
+        # Check file extension
+        file_ext = Path(image_path).suffix.lower()
+        
+        # For WSI formats, use OpenSlide
+        if file_ext in ['.svs', '.tif', '.tiff', '.ndpi', '.vms', '.vmu', '.scn', '.mrxs', '.bif']:
+            try:
+                import openslide
+                slide = openslide.OpenSlide(image_path)
+                width, height = slide.dimensions
+                
+                # Calculate max zoom level based on slide dimensions
+                # Assuming 256x256 tiles, max zoom is when tile covers full slide
+                import math
+                max_zoom = max(
+                    math.ceil(math.log2(width / 256)),
+                    math.ceil(math.log2(height / 256))
+                )
+                
+                slide.close()
+                return (width, height, max_zoom)
+                
+            except Exception as e:
+                print(f"Warning: Could not read slide dimensions from {image_path}: {e}")
+                return (10000, 10000, 10)
+        
+        # For regular images (PNG, JPG), use PIL
+        elif file_ext in ['.png', '.jpg', '.jpeg']:
+            try:
+                from PIL import Image
+                img = Image.open(image_path)
+                width, height = img.size
+                img.close()
+                
+                # For regular images, max zoom is typically lower
+                import math
+                max_zoom = max(
+                    math.ceil(math.log2(width / 256)),
+                    math.ceil(math.log2(height / 256))
+                )
+                
+                return (width, height, max_zoom)
+                
+            except Exception as e:
+                print(f"Warning: Could not read image dimensions from {image_path}: {e}")
+                return (10000, 10000, 10)
+        
+        # Unknown format - return defaults
+        return (10000, 10000, 10)
+
     def submit_uncertain_cases_for_annotation(self, cases: List[CaseForReview]) -> List[str]:
         """
         Submit uncertain cases from active learning to annotation interface
@@ -42,14 +109,17 @@ class AnnotationInterfaceIntegration:
         task_ids = []
 
         for case in cases:
+            # Get actual slide dimensions using OpenSlide
+            width, height, max_zoom = self._get_slide_dimensions(case.image_path)
+            
             # Add slide info to annotation interface
             slide_info = SlideInfo(
                 slide_id=case.slide_id,
                 image_path=case.image_path,
-                width=10000,  # TODO: Get from actual slide
-                height=10000,
+                width=width,
+                height=height,
                 tile_size=256,
-                max_zoom=10,
+                max_zoom=max_zoom,
                 metadata=case.metadata,
             )
             add_slide_to_db(slide_info)
