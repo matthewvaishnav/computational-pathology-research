@@ -20,17 +20,17 @@
 
 **Tasks**:
 - [x] `tests/test_threading_fixes.py` - Implement 3 placeholder tests (Tasks 9.5, 11.2, 14.4) - ALREADY COMPLETE
-- [ ] `src/pacs/clinical_workflow.py` - Integrate actual inference engine
+- [x] `src/pacs/clinical_workflow.py` - Integrate actual inference engine - COMPLETE (Commit dd2cd76)
 - [x] `src/federated/communication/grpc_server.py` - Make local_epochs and learning_rate configurable
 - [x] `src/federated/production/coordinator_server.py` - Add admin role check, calculate uptime
 - [x] `src/federated/coordinator/orchestrator.py` - Add optimizer state and contributor tracking
 - [x] `src/federated/production/monitoring.py` - Implement proper rate limiting per alert type
-- [ ] `src/continuous_learning/active_learning.py` - Integrate with actual retraining pipeline
-- [ ] `src/annotation_interface/example_integration.py` - Get actual slide dimensions
-- [ ] `src/annotation_interface/backend/annotation_api.py` - Integrate WSI streaming and AI predictions
+- [x] `src/continuous_learning/active_learning.py` - Integrate with actual retraining pipeline - COMPLETE (Commit a4e68f7)
+- [x] `src/annotation_interface/example_integration.py` - Get actual slide dimensions - COMPLETE (Commit a905537)
+- [x] `src/annotation_interface/backend/annotation_api.py` - Integrate WSI streaming and AI predictions - COMPLETE (Commit 481b574)
 - [ ] `scripts/data/prepare_camelyon_index.py` - Verify CAMELYON format parsing
 - [ ] `scripts/download_foundation_models.py` - Implement proper checksum verification
-- [ ] `experiments/benchmark_competitors.py` - Implement PathML and CLAM benchmarks
+- [x] `experiments/benchmark_competitors.py` - Implement PathML and CLAM benchmarks - COMPLETE (Commit 59399d1)
 - [ ] `scripts/regulatory_submission_generator.py` - Add real contact information
 
 #### 2.2 Type Hints & Documentation
