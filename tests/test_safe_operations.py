@@ -522,11 +522,11 @@ def test_memory_monitor_detects_leak():
     # Establish baseline
     monitor.check_memory()
     
-    # Simulate memory growth by mocking
+    # Simulate memory growth by mocking - make it large enough to persist after GC
     original_baseline = monitor.baseline_mb
-    monitor.baseline_mb = original_baseline - 20  # Fake 20MB growth
+    monitor.baseline_mb = original_baseline - 50  # Fake 50MB growth (larger than threshold)
     
-    # Should detect leak
+    # Should detect leak (even after GC attempt)
     with pytest.raises(MemoryError, match="Memory leak"):
         monitor.check_memory()
 
