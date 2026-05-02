@@ -735,10 +735,11 @@ class ActiveLearningSystem:
             """
 
             if expert_id:
-                query += " AND (assigned_expert IS NULL OR assigned_expert = ?)"
-                cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (expert_id, limit))
+                query += " AND (assigned_expert IS NULL OR assigned_expert = ?) ORDER BY priority DESC LIMIT ?"
+                cursor.execute(query, (expert_id, limit))
             else:
-                cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (limit,))
+                query += " ORDER BY priority DESC LIMIT ?"
+                cursor.execute(query, (limit,))
 
             tasks = []
             for row in cursor.fetchall():

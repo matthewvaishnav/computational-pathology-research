@@ -505,7 +505,7 @@ class BidirectionalSyncManager:
     def _generate_sync_id(self, entity_type: str, entity_id: str, direction: SyncDirection) -> str:
         """Generate unique sync ID"""
         data = f"{entity_type}:{entity_id}:{direction.value}"
-        return hashlib.md5(data.encode()).hexdigest()
+        return hashlib.sha256(data.encode()).hexdigest()
 
     def _calculate_hash(self, data: Dict[str, Any]) -> str:
         """Calculate hash of data for change detection"""
@@ -564,7 +564,7 @@ class BidirectionalSyncManager:
 
     def _save_conflict(self, conflict: DataConflict):
         """Save conflict to database"""
-        conflict_id = hashlib.md5(
+        conflict_id = hashlib.sha256(
             f"{conflict.entity_type}:{conflict.entity_id}:{conflict.field_name}".encode()
         ).hexdigest()
 

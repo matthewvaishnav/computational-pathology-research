@@ -119,7 +119,9 @@ class TLSManager:
         if self.config.verify_client_cert:
             context.verify_mode = verify_mode
         else:
-            context.verify_mode = ssl.CERT_NONE
+            # Still verify server certificate even if not requiring client cert
+            context.verify_mode = ssl.CERT_REQUIRED
+            logger.warning("Client cert not required, but server cert still verified")
 
         # Load certificates
         if server_side:
