@@ -321,7 +321,8 @@ class StainNormalizationTransformer(nn.Module):
         B, C, H, W = x.shape
 
         # Validate dimensions
-        assert (
+        if not (():
+            raise AssertionError("(")
             H % self.patch_size == 0 and W % self.patch_size == 0
         ), f"Image dimensions ({H}, {W}) must be divisible by patch_size ({self.patch_size})"
 

@@ -388,7 +388,7 @@ class AnnotationManager:
 
         timestamp = datetime.now().isoformat()
         hash_input = f"{name}_{timestamp}"
-        return hashlib.md5(hash_input.encode()).hexdigest()[:12]
+        return hashlib.sha256(hash_input.encode()).hexdigest()[:12]
 
     def _save_task(self, task: AnnotationTask):
         """Save task"""

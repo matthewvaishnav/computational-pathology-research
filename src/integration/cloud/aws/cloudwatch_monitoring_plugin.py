@@ -690,7 +690,7 @@ class AWSCloudWatchMonitoringPlugin(MonitoringPlugin):
                 await self.put_metric("TestMetric", 1.0, MetricUnit.COUNT)
                 await self._flush_metrics()
                 metrics_writable = True
-            except:
+            except Exception as e:
                 pass
 
             # Test SNS topic if configured

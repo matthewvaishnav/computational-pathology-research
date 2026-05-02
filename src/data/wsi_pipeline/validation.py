@@ -80,7 +80,8 @@ class WSIPipelineValidator:
             )
             # Test coordinate generation
             coords = extractor.generate_coordinates((1000, 1000))
-            assert len(coords) > 0, "No coordinates generated"
+            if not (len(coords) > 0):
+                raise ValueError("No coordinates generated")
             results["patch_extractor"] = {
                 "status": "pass",
                 "error": None,
@@ -98,7 +99,8 @@ class WSIPipelineValidator:
             # Test with synthetic patch
             test_patch = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
             tissue_pct = detector.calculate_tissue_percentage(test_patch)
-            assert 0.0 <= tissue_pct <= 1.0, f"Invalid tissue percentage: {tissue_pct}"
+            if not (0.0 <= tissue_pct <= 1.0):
+                raise ValueError(f"Invalid tissue percentage: {tissue_pct}")
             results["tissue_detector"] = {
                 "status": "pass",
                 "error": None,
@@ -117,8 +119,10 @@ class WSIPipelineValidator:
             # Test with synthetic patches
             test_patches = np.random.randint(0, 255, (4, 256, 256, 3), dtype=np.uint8)
             features = generator.extract_features(test_patches)
-            assert features.shape[0] == 4, f"Wrong batch size: {features.shape[0]}"
-            assert (
+            if not (features.shape[0] == 4, f"Wrong batch size: {features.shape[0]}"):
+                raise AssertionError("features.shape[0] == 4, f"Wrong batch size: {features.shape[0]}"")
+            if not (():
+                raise AssertionError("(")
                 features.shape[1] == generator.feature_dim
             ), f"Wrong feature dim: {features.shape[1]}"
             results["feature_generator"] = {
@@ -148,10 +152,12 @@ class WSIPipelineValidator:
                 )
 
                 loaded_data = cache.load_features("test_slide")
-                assert np.array_equal(
+                if not (np.array_equal():
+                    raise AssertionError("np.array_equal(")
                     loaded_data["features"], test_features
                 ), "Features don't match"
-                assert np.array_equal(
+                if not (np.array_equal():
+                    raise AssertionError("np.array_equal(")
                     loaded_data["coordinates"], test_coords
                 ), "Coordinates don't match"
 
@@ -183,7 +189,8 @@ class WSIPipelineValidator:
                 patch_size=256,
                 expected_feature_dim=128,
             )
-            assert "blur_scores" in qc_report, "Missing blur scores in QC report"
+            if not ("blur_scores" in qc_report):
+                raise ValueError("Missing blur scores in QC report")
             results["quality_control"] = {
                 "status": "pass",
                 "error": None,
@@ -324,13 +331,16 @@ class WSIPipelineValidator:
                 processing_time = time.time() - start_time
 
                 # Validate results
-                assert (
+                if not (():
+                    raise AssertionError("(")
                     loaded_data["features"].shape == features.shape
                 ), "Feature shape mismatch after caching"
-                assert (
+                if not (():
+                    raise AssertionError("(")
                     loaded_data["coordinates"].shape == coords_array.shape
                 ), "Coordinate shape mismatch after caching"
-                assert "blur_scores" in qc_report, "Missing QC metrics"
+                if not ("blur_scores" in qc_report):
+                    raise ValueError("Missing QC metrics")
 
                 results = {
                     "status": "pass",

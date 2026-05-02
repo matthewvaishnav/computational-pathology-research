@@ -643,7 +643,7 @@ class AWSLambdaProcessingPlugin(ProcessingPlugin):
             try:
                 self.s3_client.head_bucket(Bucket=self.code_bucket)
                 s3_accessible = True
-            except:
+            except Exception as e:
                 pass
 
             # Test IAM role
@@ -652,7 +652,7 @@ class AWSLambdaProcessingPlugin(ProcessingPlugin):
                 iam_client = boto3.client("iam", region_name=self.aws_region)
                 iam_client.get_role(RoleName=self.execution_role_arn.split("/")[-1])
                 role_accessible = True
-            except:
+            except Exception as e:
                 pass
 
             return {

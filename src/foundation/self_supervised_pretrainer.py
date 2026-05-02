@@ -219,7 +219,8 @@ class MoCoQueue:
         """Update queue with new keys"""
         batch_size = keys.shape[0]
 
-        assert self.queue_size % batch_size == 0, "Queue size must be divisible by batch size"
+        if not (self.queue_size % batch_size == 0):
+            raise ValueError("Queue size must be divisible by batch size")
 
         # Replace oldest keys
         self.queue[:, self.queue_ptr : self.queue_ptr + batch_size] = keys.T
