@@ -201,3 +201,136 @@ CLAUDE.md
 .claude/
 .claude/settings/
 look here ai agents for specs/
+
+# Personal resumes and job search materials
+Matthew_Vaishnav*.md
+Matthew_Vaishnav*.pdf
+*_Cover_Letter.md
+*_Cover_Letter.pdf
+job_search_automation.py
+create_resume_pdf*.py
+
+# Development/debugging scripts
+fix_*.py
+check_*.py
+debug_*.py
+test_*.py
+quick_fix.py
+validate_*.py
+demo_*.py
+monitor_*.py
+
+# Session summaries and status docs
+*_SUMMARY.md
+*_STATUS.md
+*_COMPLETE.md
+*_PROGRESS.md
+*_NOTES.md
+*_UPDATES.md
+*_SUCCESS.md
+*_RUNNING.md
+SESSION_*.md
+AUTONOMOUS_SESSION_*.md
+
+# Implementation/execution docs
+*_IMPLEMENTATION*.md
+*_EXECUTION*.md
+*_PLAN.md
+*_GUIDE.md
+*_HANDOFF*.md
+*_CHECKLIST*.md
+*_PRIORITIES*.md
+
+# Analysis/report docs
+*_ANALYSIS.md
+*_REPORT.md
+*_ASSESSMENT.md
+*_FIXES*.md
+*_FINDINGS*.md
+COMPREHENSIVE_ISSUES_REPORT.md
+ADDITIONAL_ISSUES.md
+CRITICAL_FAILURE_POINTS*.md
+
+# Validation/verification docs
+*_VALIDATION*.md
+*_VERIFICATION*.md
+checkpoint_validation_*.md
+checkpoint_validation_*.json
+
+# Specific status/progress files
+ADAPTIVE_TILE_SIZING_IMPLEMENTATION.md
+BUG_FIXES_SUMMARY.md
+CHANGELOG.md
+CI_OPTIMIZATION_PLAN.md
+CODE_QUALITY_IMPROVEMENTS_SESSION.md
+CODE_REVIEW_FIXES_COMPLETE.md
+CROSS_VALIDATION_STATUS.md
+DATA_ACQUISITION_*.md
+DOCKER_DEPLOYMENT_GUIDE.md
+FINAL_*.md
+FOUNDATION_MODEL_STATUS.md
+GAPS_IMPLEMENTED.md
+GPU_*.md
+HISTOCORE_*.md
+IMMEDIATE_NEXT_STEPS_STATUS.md
+IMPROVEMENT_PLAN.md
+INTEGRATION_TESTING_*.md
+INTERVIEW_ANSWER_*.md
+KUBERNETES_DEPLOYMENT_GUIDE.md
+LINKEDIN_POST_*.md
+LOGO_TAGLINE.md
+LONGITUDINAL_TRACKING_IMPLEMENTATION.md
+MEDICAL_AI_REVOLUTION_PROGRESS.md
+NEXT_BIG_THING_*.md
+OPUS_HANDOFF_*.md
+OPTIMIZATIONS_READY.md
+OPTIMIZATION_REPORT_*.md
+PACS_*.md
+PERFORMANCE_BENCHMARK_COMPLETE.md
+PHASE_*.md
+PRODUCTION_*.md
+PROJECT_DESCRIPTION_UPDATED.md
+PROJECT_STATUS_SUMMARY.md
+PROGRESS_SUMMARY.md
+PROXMOX_SETUP.md
+QUICK_TASKS_SUMMARY.md
+QUICKSTART_*.md
+REAL_TIME_*.md
+REPRODUCTION.md
+RESUME_COVER_LETTER_UPDATES.md
+RISK_*.md
+SECURITY_*.md
+SPEED_COMPARISON.md
+STREAMING_*.md
+TASK_*.md
+TEST_IMPROVEMENTS_SUMMARY.md
+TESTING_WITHOUT_MODELS.md
+TRAINING_*.md
+ULTRA_FAST_RUNNING.md
+USING_TRAINED_MODELS.md
+WORK_SUMMARY_*.md
+WSI_PIPELINE_*.md
+RUN_THIS_NOW.md
+RUN_ULTRA_FAST.md
+FAST_TRAINING_RUNNING.md
+
+# Hypothesis test database
+.hypothesis/
+
+# Experiment results
+results/
+output.txt
+patient_timeline.json
+patient_timeline.png
+progression_summary.png
+treatment_response.png
+b1915f5d-*.png
+
+# Utility JARs
+bfg.jar
+
+# Kiro specs (development artifacts)
+.kiro/specs/
+
+# Build artifacts
+build/

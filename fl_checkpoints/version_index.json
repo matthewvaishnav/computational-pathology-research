@@ -1,0 +1,168 @@
+{
+  "versions": [
+    {
+      "version": 0,
+      "round_id": 1,
+      "timestamp": "2026-05-01T20:39:26.669654",
+      "contributors": [],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 0,
+      "round_id": 2,
+      "timestamp": "2026-05-01T20:39:26.671761",
+      "contributors": [],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 0,
+      "round_id": 3,
+      "timestamp": "2026-05-01T20:39:26.673836",
+      "contributors": [],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 3
+      }
+    },
+    {
+      "version": 0,
+      "round_id": 1,
+      "timestamp": "2026-05-01T20:39:54.505689",
+      "contributors": [],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 0,
+      "round_id": 2,
+      "timestamp": "2026-05-01T20:39:54.507411",
+      "contributors": [],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 0,
+      "round_id": 3,
+      "timestamp": "2026-05-01T20:39:54.511535",
+      "contributors": [],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 3
+      }
+    },
+    {
+      "version": 1,
+      "round_id": 1,
+      "timestamp": "2026-05-01T20:39:54.526012",
+      "contributors": [
+        "client_0"
+      ],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 2,
+      "round_id": 2,
+      "timestamp": "2026-05-01T20:39:54.528956",
+      "contributors": [
+        "client_0"
+      ],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 3,
+      "round_id": 3,
+      "timestamp": "2026-05-01T20:39:54.531718",
+      "contributors": [
+        "client_0"
+      ],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 3
+      }
+    },
+    {
+      "version": 4,
+      "round_id": 4,
+      "timestamp": "2026-05-01T20:39:54.534776",
+      "contributors": [
+        "client_0"
+      ],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 4
+      }
+    },
+    {
+      "version": 5,
+      "round_id": 5,
+      "timestamp": "2026-05-01T20:39:54.537113",
+      "contributors": [
+        "client_0"
+      ],
+      "metrics": {},
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 5
+      }
+    }
+  ]
+}

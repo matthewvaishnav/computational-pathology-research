@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: federated-learning
+  labels:
+    name: federated-learning
+    environment: production

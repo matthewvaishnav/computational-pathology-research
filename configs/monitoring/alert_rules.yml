@@ -1,0 +1,126 @@
+# Prometheus alert rules for Federated Learning
+
+groups:
+  - name: federated_learning_alerts
+    interval: 30s
+    rules:
+      # Privacy budget alert
+      - alert: PrivacyBudgetExhausted
+        expr: fl_privacy_epsilon >= 1.0
+        for: 1m
+        labels:
+          severity: critical
+          component: privacy
+        annotations:
+          summary: "Privacy budget exhausted"
+          description: "Privacy budget (epsilon) has reached {{ $value }}, exceeding the limit of 1.0"
+
+      # Byzantine attack alert
+      - alert: HighByzantineDetectionRate
+        expr: rate(fl_byzantine_detections_total[5m]) > 0.2
+        for: 2m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "High Byzantine detection rate"
+          description: "Byzantine detection rate is {{ $value }} detections/sec, indicating potential attack"
+
+      # Client dropout alert
+      - alert: HighClientDropoutRate
+        expr: rate(fl_client_dropout_total[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          component: reliability
+        annotations:
+          summary: "High client dropout rate"
+          description: "Client dropout rate is {{ $value }} dropouts/sec"
+
+      # Low client participation
+      - alert: LowClientParticipation
+        expr: fl_client_participation_total < 3
+        for: 5m
+        labels:
+          severity: warning
+          component: training
+        annotations:
+          summary: "Low client participation"
+          description: "Only {{ $value }} clients participating, below minimum threshold"
+
+      # Training stall (loss not improving)
+      - alert: TrainingStalled
+        expr: delta(fl_model_loss[10m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+          component: training
+        annotations:
+          summary: "Training has stalled"
+          description: "Model loss has not changed in 10 minutes, current value: {{ $value }}"
+
+      # Performance degradation
+      - alert: ModelPerformanceDegraded
+        expr: delta(fl_model_loss[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Model performance degraded"
+          description: "Model loss increased by {{ $value }} in the last 5 minutes"
+
+      # Slow round duration
+      - alert: SlowRoundDuration
+        expr: fl_round_duration_seconds > 600
+        for: 1m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Training round taking too long"
+          description: "Round duration is {{ $value }} seconds, exceeding 10 minute threshold"
+
+      # Slow aggregation
+      - alert: SlowAggregation
+        expr: fl_aggregation_time_seconds > 60
+        for: 1m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Aggregation taking too long"
+          description: "Aggregation time is {{ $value }} seconds, exceeding 1 minute threshold"
+
+      # High gradient norm (potential instability)
+      - alert: HighGradientNorm
+        expr: fl_gradient_norm > 10.0
+        for: 2m
+        labels:
+          severity: warning
+          component: training
+        annotations:
+          summary: "High gradient norm detected"
+          description: "Gradient norm is {{ $value }}, indicating potential training instability"
+
+      # Coordinator down
+      - alert: CoordinatorDown
+        expr: up{job="fl_coordinator"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "FL Coordinator is down"
+          description: "FL Coordinator has been down for more than 1 minute"
+
+      # Client down
+      - alert: ClientDown
+        expr: up{job="fl_clients"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "FL Client {{ $labels.client_id }} is down"
+          description: "FL Client {{ $labels.client_id }} has been down for more than 5 minutes"

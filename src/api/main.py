@@ -8,6 +8,7 @@ for image analysis, DICOM integration, case management, and system monitoring.
 This is the PRODUCTION version with real database and model inference.
 """
 
+import asyncio
 import logging
 import os
 import shutil
@@ -15,16 +16,18 @@ import sys
 import tempfile
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import uvicorn
-from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy.orm import Session
 
 # Add project root to path
@@ -46,6 +49,23 @@ from src.inference import InferenceEngine, get_model_loader
 
 # Import tracing
 from src.monitoring.tracing import get_tracer
+
+# Import security utilities
+from src.api.security import (
+    check_account_lockout,
+    clear_failed_login,
+    create_access_token,
+    decode_access_token,
+    get_security_headers,
+    hash_password,
+    limiter,
+    log_security_event,
+    record_failed_login,
+    sanitize_for_log,
+    validate_security_configuration,
+    validate_uploaded_image,
+    verify_password,
+)
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -113,18 +133,25 @@ app = FastAPI(
 # Track application start time for uptime monitoring
 app.state.start_time = time.time()
 
-# In-memory storage for demo purposes (replace with proper database in production)
-users: Dict[str, Dict] = {}
-auth_tokens: Dict[str, Dict] = {}
+# Database for user storage (replace in-memory dict with proper database)
+# In production, use database with proper password hashing
+users_db: Dict[str, Dict] = {}  # Temporary - will be replaced with database
 
-# Add CORS middleware
+# Add CORS middleware with environment-specific origins
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=ALLOWED_ORIGINS,  # Restrict to specific origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=3600,
 )
+
+# Add rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Security
 security = HTTPBearer(auto_error=False)
@@ -150,16 +177,42 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db_session),
 ):
-    """Get current authenticated user from database."""
+    """Get current authenticated user from database with proper JWT validation."""
     if not credentials:
-        return None
+        log_security_event("authentication_failed", details="No credentials provided", success=False)
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     token = credentials.credentials
-    # In production, implement proper JWT token validation
-    # For now, simple token lookup (replace with JWT validation)
-    user_ops = UserOperations(db)
-    # This is a simplified implementation - use proper JWT in production
-    return None  # Implement proper token validation
+
+    try:
+        # Decode and validate JWT token
+        payload = decode_access_token(token)
+        user_id = payload.get("sub")
+
+        if not user_id:
+            log_security_event(
+                "authentication_failed", details="Invalid token payload", success=False
+            )
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        # Get user from database
+        user_ops = UserOperations(db)
+        user = user_ops.get_user_by_id(uuid.UUID(user_id))
+
+        if not user:
+            log_security_event(
+                "authentication_failed", username=user_id, details="User not found", success=False
+            )
+            raise HTTPException(status_code=401, detail="User not found")
+
+        return user
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Authentication error: {e}")
+        log_security_event("authentication_error", details=str(e), success=False)
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
 
 # Startup event
@@ -167,6 +220,9 @@ def get_current_user(
 async def startup_event():
     """Initialize database and models on startup."""
     try:
+        # Validate security configuration
+        validate_security_configuration()
+
         # Initialize database
         initialize_database()
         logger.info("Database initialized successfully")
@@ -186,8 +242,11 @@ async def startup_event():
         tracer.instrument_fastapi(app)
         logger.info("Distributed tracing initialized successfully")
 
+        log_security_event("system_startup", details="API server started", success=True)
+
     except Exception as e:
         logger.error(f"Startup failed: {e}")
+        log_security_event("system_startup", details=f"Startup failed: {e}", success=False)
         raise
 
 
@@ -340,34 +399,110 @@ model_inference_duration_seconds_bucket{le="+Inf"} 45
 
 # Authentication endpoints
 @app.post("/api/v1/auth/register")
-async def register_user(user_data: UserRegistration):
-    """Register a new user."""
-    if user_data.username in users:
-        raise HTTPException(status_code=409, detail="User already exists")
+async def register_user(user_data: UserRegistration, request: Request):
+    """Register a new user with secure password hashing."""
+    try:
+        # Check if user already exists
+        if user_data.username in users_db:
+            log_security_event(
+                "registration_failed",
+                username=user_data.username,
+                ip_address=request.client.host,
+                details="User already exists",
+                success=False,
+            )
+            raise HTTPException(status_code=409, detail="User already exists")
 
-    user_id = str(uuid.uuid4())
-    users[user_data.username] = {
-        "user_id": user_id,
-        "username": user_data.username,
-        "email": user_data.email,
-        "role": user_data.role,
-        "created_at": datetime.now().isoformat(),
-    }
+        # Hash password
+        hashed_password = hash_password(user_data.password)
 
-    return {"message": "User registered successfully", "user_id": user_id}
+        # Create user
+        user_id = str(uuid.uuid4())
+        users_db[user_data.username] = {
+            "user_id": user_id,
+            "username": user_data.username,
+            "email": user_data.email,
+            "password_hash": hashed_password,
+            "role": user_data.role,
+            "created_at": datetime.now().isoformat(),
+        }
+
+        log_security_event(
+            "user_registered",
+            username=user_data.username,
+            ip_address=request.client.host,
+            details=f"Role: {user_data.role}",
+            success=True,
+        )
+
+        return {"message": "User registered successfully", "user_id": user_id}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")
 
 
 @app.post("/api/v1/auth/login")
-async def login_user(login_data: UserLogin):
-    """User login."""
-    if login_data.username not in users:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+@limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute
+async def login_user(login_data: UserLogin, request: Request):
+    """User login with rate limiting and brute force protection."""
+    username = login_data.username
+    ip_address = request.client.host
 
-    # Generate token (simplified for demo)
-    token = str(uuid.uuid4())
-    auth_tokens[token] = users[login_data.username]
+    try:
+        # Check account lockout
+        check_account_lockout(username)
 
-    return {"access_token": token, "token_type": "bearer"}
+        # Validate credentials
+        if username not in users_db:
+            record_failed_login(username)
+            log_security_event(
+                "login_failed",
+                username=username,
+                ip_address=ip_address,
+                details="User not found",
+                success=False,
+            )
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        user = users_db[username]
+
+        # Verify password
+        if not verify_password(login_data.password, user["password_hash"]):
+            record_failed_login(username)
+            log_security_event(
+                "login_failed",
+                username=username,
+                ip_address=ip_address,
+                details="Invalid password",
+                success=False,
+            )
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        # Clear failed login attempts
+        clear_failed_login(username)
+
+        # Generate JWT token
+        access_token = create_access_token(
+            data={"sub": user["user_id"], "username": username, "role": user["role"]}
+        )
+
+        log_security_event(
+            "login_success", username=username, ip_address=ip_address, success=True
+        )
+
+        return {"access_token": access_token, "token_type": "bearer"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        log_security_event(
+            "login_error", username=username, ip_address=ip_address, details=str(e), success=False
+        )
+        raise HTTPException(status_code=500, detail="Login failed")
 
 
 @app.get("/api/v1/auth/me")
@@ -385,55 +520,88 @@ async def upload_for_analysis(
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     request_data: AnalysisRequest = AnalysisRequest(),
+    request: Request = None,
     db: Session = Depends(get_db_session),
 ):
-    """Upload image for real AI analysis."""
-
-    # Validate file type
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Invalid file type. Only images are supported.")
+    """Upload image for real AI analysis with comprehensive security validation."""
 
     try:
         # Read file content
         file_content = await file.read()
+
+        # Comprehensive file validation
+        safe_filename, detected_type = validate_uploaded_image(
+            file_content, file.filename, file.content_type
+        )
+
         file_size = len(file_content)
 
-        # Create temporary file for storage
-        temp_dir = Path(tempfile.gettempdir()) / "medical_ai_uploads"
-        temp_dir.mkdir(exist_ok=True)
-
-        file_id = str(uuid.uuid4())
-        file_path = temp_dir / f"{file_id}_{file.filename}"
-
-        # Save file
-        with open(file_path, "wb") as f:
-            f.write(file_content)
-
-        # Create analysis record in database
-        analysis_ops = AnalysisOperations(db)
-        analysis = analysis_ops.create_analysis(
-            filename=file.filename,
-            content_type=file.content_type,
-            file_size=file_size,
-            file_path=str(file_path),
-            case_id=uuid.UUID(request_data.case_id) if request_data.case_id else None,
+        # Create secure temporary file with restricted permissions
+        fd, temp_path = tempfile.mkstemp(
+            suffix=".tmp", prefix="medical_ai_", dir=tempfile.gettempdir()
         )
 
-        # Commit to database
-        db.commit()
+        try:
+            # Set restrictive permissions (owner read/write only)
+            os.chmod(temp_path, 0o600)
 
-        # Start background processing with real inference
-        background_tasks.add_task(
-            process_real_analysis, str(analysis.id), str(file_path), file_content
-        )
+            # Write content atomically
+            with os.fdopen(fd, "wb") as f:
+                f.write(file_content)
+                f.flush()
+                os.fsync(f.fileno())
 
-        logger.info(f"Analysis created: {analysis.id} for file {file.filename}")
+            # Create analysis record in database
+            analysis_ops = AnalysisOperations(db)
+            analysis = analysis_ops.create_analysis(
+                filename=safe_filename,
+                content_type=detected_type,
+                file_size=file_size,
+                file_path=temp_path,
+                case_id=uuid.UUID(request_data.case_id) if request_data.case_id else None,
+            )
 
-        return {"analysis_id": str(analysis.id), "status": "queued"}
+            # Commit to database
+            db.commit()
 
+            # Start background processing with real inference
+            background_tasks.add_task(
+                process_real_analysis, str(analysis.id), temp_path, file_content
+            )
+
+            logger.info(
+                f"Analysis created: {analysis.id} for file {sanitize_for_log(safe_filename)}"
+            )
+
+            log_security_event(
+                "file_upload",
+                ip_address=request.client.host if request else None,
+                details=f"File: {safe_filename}, Size: {file_size}, Type: {detected_type}",
+                success=True,
+            )
+
+            return {"analysis_id": str(analysis.id), "status": "queued"}
+
+        except Exception as e:
+            # Clean up temporary file on error
+            try:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            except Exception as cleanup_error:
+                logger.warning(f"Failed to clean up temp file: {cleanup_error}")
+            raise e
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Upload failed: {e}")
         db.rollback()
+        log_security_event(
+            "file_upload_failed",
+            ip_address=request.client.host if request else None,
+            details=str(e),
+            success=False,
+        )
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
@@ -901,15 +1069,46 @@ async def internal_error_handler(request, exc):
 def main():
     """Run the API server."""
 
+    # Add HTTPS redirect middleware (production only)
+    @app.middleware("http")
+    async def https_redirect(request: Request, call_next):
+        """Redirect HTTP to HTTPS in production."""
+        if (
+            request.url.scheme != "https"
+            and os.getenv("ENVIRONMENT") == "production"
+            and not request.url.path.startswith("/health")
+        ):
+            url = request.url.replace(scheme="https")
+            return RedirectResponse(url=str(url), status_code=301)
+        return await call_next(request)
+
+    # Add request timeout middleware
+    @app.middleware("http")
+    async def timeout_middleware(request: Request, call_next):
+        """Add timeout to all requests to prevent slowloris attacks."""
+        try:
+            return await asyncio.wait_for(call_next(request), timeout=30.0)
+        except asyncio.TimeoutError:
+            logger.warning(f"Request timeout: {request.url.path}")
+            log_security_event(
+                "request_timeout",
+                ip_address=request.client.host,
+                details=f"Path: {request.url.path}",
+                success=False,
+            )
+            return JSONResponse(status_code=504, content={"detail": "Request timeout"})
+
     # Add security headers middleware
     @app.middleware("http")
-    async def add_security_headers(request, call_next):
+    async def add_security_headers(request: Request, call_next):
+        """Add security headers to all responses."""
         response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000"
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
+
+        # Add all security headers
+        security_headers = get_security_headers()
+        for header, value in security_headers.items():
+            response.headers[header] = value
+
         return response
 
     # Run server
