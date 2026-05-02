@@ -647,7 +647,7 @@ class AWSS3StoragePlugin(StoragePlugin):
             try:
                 objects = await self.list_objects(max_keys=1)
                 objects_accessible = True
-            except:
+            except Exception as e:
                 pass
 
             # Test upload permissions
@@ -667,7 +667,7 @@ class AWSS3StoragePlugin(StoragePlugin):
                     )
 
                 upload_accessible = True
-            except:
+            except Exception as e:
                 pass
 
             return {
