@@ -99,8 +99,8 @@ class WSIPipelineValidator:
             # Test with synthetic patch
             test_patch = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
             tissue_pct = detector.calculate_tissue_percentage(test_patch)
-            if not (0.0 <= tissue_pct <= 1.0, f"Invalid tissue percentage: {tissue_pct}"):
-                raise AssertionError("0.0 <= tissue_pct <= 1.0, f"Invalid tissue percentage: {tissue_pct}"")
+            if not (0.0 <= tissue_pct <= 1.0):
+                raise ValueError(f"Invalid tissue percentage: {tissue_pct}")
             results["tissue_detector"] = {
                 "status": "pass",
                 "error": None,
