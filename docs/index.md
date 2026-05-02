@@ -87,6 +87,11 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
     <h3>🔒 Security Hardened</h3>
     <p>TLS 1.3 encryption, input validation, rate limiting, and HIPAA compliance. All critical vulnerabilities resolved. Production-ready security.</p>
   </div>
+
+  <div class="feature-card">
+    <h3>📊 Competitor Benchmarking</h3>
+    <p>Automated benchmark system comparing HistoCore against PathML, CLAM, and baseline PyTorch. Isolated virtual environments, identical task specs, reproducible results. See <a href="BENCHMARK_SYSTEM.html">benchmark system</a>.</p>
+  </div>
 </div>
 
 ---
@@ -170,6 +175,7 @@ Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
   <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
   <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
   <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
+  <a href="BENCHMARK_SYSTEM.html" class="doc-link">🏆 Competitor Benchmark System</a>
   <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
   <a href="INFERENCE_OPTIMIZATION.html" class="doc-link">🚀 Inference Optimization (2-3x)</a>
   <a href="MULTI_GPU_TRAINING.html" class="doc-link">⚡ Multi-GPU Training (DDP)</a>
