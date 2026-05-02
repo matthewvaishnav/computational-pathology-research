@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class DicomStorageProvider:
     """Handles DICOM storage operations for received studies."""
 
-    def __init__(self, storage_dir: str = "/tmp/dicom_storage"):
+    def __init__(self, storage_dir: str = tempfile.mkdtemp(prefix="dicom_storage_")):
         """Initialize storage provider.
 
         Args:
@@ -328,7 +328,7 @@ class DicomServer:
 
 
 def create_medical_ai_dicom_server(
-    port: int = 11112, storage_dir: str = "/tmp/dicom_storage"
+    port: int = 11112, storage_dir: str = tempfile.mkdtemp(prefix="dicom_storage_")
 ) -> DicomServer:
     """Create a configured DICOM server for Medical AI platform.
 

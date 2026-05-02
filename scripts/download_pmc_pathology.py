@@ -128,7 +128,7 @@ def download_image(url: str, output_path: Path) -> bool:
     """Download an image from URL."""
     
     try:
-        response = requests.get(url, timeout=30)
+        response = requests.get(url, timeout=30, timeout=30)
         response.raise_for_status()
         
         output_path.parent.mkdir(parents=True, exist_ok=True)

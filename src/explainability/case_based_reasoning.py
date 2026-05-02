@@ -156,8 +156,9 @@ class CaseDatabase:
         """Initialize SQLite database for metadata"""
         conn = None
         try:
-            conn = sqlite3.connect(self.metadata_db_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.metadata_db_path) as conn:
+
+                cursor = conn.cursor()
 
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS cases (
@@ -208,8 +209,9 @@ class CaseDatabase:
         conn = None
         try:
             # Load metadata
-            conn = sqlite3.connect(self.metadata_db_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.metadata_db_path) as conn:
+
+                cursor = conn.cursor()
             cursor.execute("SELECT * FROM cases ORDER BY feature_idx")
             rows = cursor.fetchall()
         except Exception as e:
@@ -350,8 +352,9 @@ class CaseDatabase:
         """Save case metadata to SQLite database"""
         conn = None
         try:
-            conn = sqlite3.connect(self.metadata_db_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.metadata_db_path) as conn:
+
+                cursor = conn.cursor()
 
             cursor.execute(
                 """
@@ -692,8 +695,9 @@ class CaseDatabase:
             # Remove from metadata database
             conn = None
             try:
-                conn = sqlite3.connect(self.metadata_db_path)
-                cursor = conn.cursor()
+                with sqlite3.connect(self.metadata_db_path) as conn:
+
+                    cursor = conn.cursor()
                 cursor.execute("DELETE FROM cases WHERE case_id = ?", (case_id,))
                 conn.commit()
             except Exception as e:

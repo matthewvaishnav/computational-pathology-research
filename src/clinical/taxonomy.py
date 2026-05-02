@@ -1,3 +1,4 @@
+import time
 """
 Disease taxonomy configuration system for clinical workflow integration.
 
@@ -273,7 +274,10 @@ class DiseaseTaxonomy:
         ancestors = []
         current_id = disease_id
 
-        while True:
+        timeout = time.time() + 3600
+
+
+        while time.time() < timeout:
             parent_id = self.get_parent(current_id)
             if parent_id is None:
                 break

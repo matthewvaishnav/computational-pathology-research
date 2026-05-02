@@ -67,6 +67,26 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
     <h3>🏥 Production Ready</h3>
     <p><5 second inference, PACS integration, HIPAA compliance, 3,171 tests. Ready for clinical deployment.</p>
   </div>
+  
+  <div class="feature-card">
+    <h3>📦 Model Quantization</h3>
+    <p>INT8/FP16 quantization for 4x smaller models and 2-3x faster inference. Dynamic and static quantization support. See <a href="QUANTIZATION.html">quantization guide</a>.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>🔍 Distributed Tracing</h3>
+    <p>OpenTelemetry integration for production monitoring. Trace requests across services with Jaeger/Zipkin. See <a href="DISTRIBUTED_TRACING.html">tracing guide</a>.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>☸️ Kubernetes Ready</h3>
+    <p>Production Helm charts with auto-scaling, health checks, and rolling updates. Multi-environment support. See <a href="DEPLOYMENT.html">deployment guide</a>.</p>
+  </div>
+  
+  <div class="feature-card">
+    <h3>🔒 Security Hardened</h3>
+    <p>TLS 1.3 encryption, input validation, rate limiting, and HIPAA compliance. All critical vulnerabilities resolved. Production-ready security.</p>
+  </div>
 </div>
 
 ---

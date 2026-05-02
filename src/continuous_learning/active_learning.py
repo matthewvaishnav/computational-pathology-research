@@ -438,8 +438,9 @@ class ActiveLearningSystem:
 
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             # Cases table
             cursor.execute("""
@@ -724,8 +725,9 @@ class ActiveLearningSystem:
         # Get tasks from database
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             query = """
                 SELECT task_id, case_id, priority, assigned_expert, status, 
@@ -735,10 +737,11 @@ class ActiveLearningSystem:
             """
 
             if expert_id:
-                query += " AND (assigned_expert IS NULL OR assigned_expert = ?)"
-                cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (expert_id, limit))
+                query += " AND (assigned_expert IS NULL OR assigned_expert = ?) ORDER BY priority DESC LIMIT ?"
+                cursor.execute(query, (expert_id, limit))
             else:
-                cursor.execute(query + " ORDER BY priority DESC LIMIT ?", (limit,))
+                query += " ORDER BY priority DESC LIMIT ?"
+                cursor.execute(query, (limit,))
 
             tasks = []
             for row in cursor.fetchall():
@@ -791,8 +794,9 @@ class ActiveLearningSystem:
         """Store cases in database"""
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             for case in cases:
                 cursor.execute(
@@ -830,8 +834,9 @@ class ActiveLearningSystem:
         """Store task in database"""
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             cursor.execute(
                 """
@@ -867,8 +872,9 @@ class ActiveLearningSystem:
         """Store annotation in database"""
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             cursor.execute(
                 """
@@ -907,8 +913,9 @@ class ActiveLearningSystem:
         """Get case by ID from database"""
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             cursor.execute(
                 """
@@ -949,8 +956,9 @@ class ActiveLearningSystem:
         """Get recent annotations from database"""
         conn = None
         try:
-            conn = sqlite3.connect(self.database_path)
-            cursor = conn.cursor()
+            with sqlite3.connect(self.database_path) as conn:
+
+                cursor = conn.cursor()
 
             cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
 
