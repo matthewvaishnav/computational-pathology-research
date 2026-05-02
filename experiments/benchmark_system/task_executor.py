@@ -225,14 +225,20 @@ class TrainingTaskExecutor:
                 output_dir,
             )
         elif config.framework_name == "PathML":
-            raise NotImplementedError(
-                "PathML adapter not yet implemented. "
-                "See experiments/benchmark_system/adapters/pathml_adapter.py"
+            from experiments.benchmark_system.adapters.pathml_adapter import PathMLAdapter
+            adapter = PathMLAdapter(env)
+            return adapter.execute_training(
+                config.task_spec,
+                config.config_dict,
+                output_dir,
             )
         elif config.framework_name == "CLAM":
-            raise NotImplementedError(
-                "CLAM adapter not yet implemented. "
-                "See experiments/benchmark_system/adapters/clam_adapter.py"
+            from experiments.benchmark_system.adapters.clam_adapter import CLAMAdapter
+            adapter = CLAMAdapter(env)
+            return adapter.execute_training(
+                config.task_spec,
+                config.config_dict,
+                output_dir,
             )
         elif config.framework_name == "PyTorch":
             raise NotImplementedError(
