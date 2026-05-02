@@ -32,9 +32,9 @@ experiments/benchmark_system/
 ├── report_generator.py      # Generates JSON/HTML/Markdown reports with visualizations
 └── adapters/
     ├── histocore_adapter.py # HistoCore framework integration
-    ├── pathml_adapter.py    # PathML framework integration (in progress)
-    ├── clam_adapter.py      # CLAM framework integration (in progress)
-    └── pytorch_adapter.py   # Baseline PyTorch integration (in progress)
+    ├── pathml_adapter.py    # PathML framework integration
+    ├── clam_adapter.py      # CLAM framework integration
+    └── pytorch_adapter.py   # Baseline PyTorch integration
 ```
 
 ### `FrameworkManager`
@@ -163,12 +163,14 @@ python experiments/benchmark_system/example_orchestrator_usage.py --frameworks H
 python experiments/benchmark_system/example_orchestrator_usage.py --report-only
 ```
 
-**Current Status:** 60% complete
+**Current Status:** 70% complete
 - ✅ Core infrastructure (Tasks 1-9)
 - ✅ Report Generator (Task 10)
 - ✅ Benchmark Orchestrator (Task 11)
-- ✅ HistoCore Adapter (Task 13.1)
-- 🚧 PathML, CLAM, PyTorch adapters (Tasks 13.2-13.4)
+- ✅ Framework Adapters (Tasks 13.1-13.5)
+  - HistoCore, PathML, CLAM, PyTorch adapters complete
+  - 65 adapter tests passing
+- 🚧 VersionTracker (Task 14)
 - 🚧 CLI and main entry point (Task 15)
 
 ---
@@ -190,8 +192,8 @@ pytest tests/benchmark_system/test_configuration_properties.py \
 - `test_task_executor.py` — task translation, equivalence verification, execution
 - `test_orchestrator.py` — orchestration, checkpointing, error recovery
 - `test_report_generator.py` — report generation, visualization, format validation
-- `test_histocore_adapter.py` — HistoCore framework integration
+- `test_adapters.py` — all 4 framework adapters (HistoCore, PathML, CLAM, PyTorch)
 - `test_configuration_properties.py` — property-based config correctness
 - `test_serialization_properties.py` — property-based serialization round-trips
 
-**Test Status:** 258 tests passing
+**Test Status:** 323 tests passing (65 adapter tests added)
