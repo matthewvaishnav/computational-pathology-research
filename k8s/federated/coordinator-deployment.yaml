@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+  labels:
+    app: fl-coordinator
+    component: coordinator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fl-coordinator
+  template:
+    metadata:
+      labels:
+        app: fl-coordinator
+        component: coordinator
+    spec:
+      containers:
+      - name: coordinator
+        image: histocore/fl-coordinator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: grpc
+          protocol: TCP
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        env:
+        - name: FL_COORDINATOR_HOST
+          value: "0.0.0.0"
+        - name: FL_COORDINATOR_PORT
+          value: "8080"
+        - name: FL_NUM_ROUNDS
+          valueFrom:
+            configMapKeyRef:
+              name: fl-config
+              key: num_rounds
+        - name: FL_MIN_CLIENTS
+          valueFrom:
+            configMapKeyRef:
+              name: fl-config
+              key: min_clients
+        volumeMounts:
+        - name: certs
+          mountPath: /app/certs
+          readOnly: true
+        - name: config
+          mountPath: /app/configs/federated
+          readOnly: true
+        - name: checkpoints
+          mountPath: /app/checkpoints
+        - name: logs
+          mountPath: /app/logs
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: certs
+        secret:
+          secretName: fl-tls-certs
+      - name: config
+        configMap:
+          name: fl-coordinator-config
+      - name: checkpoints
+        persistentVolumeClaim:
+          claimName: fl-coordinator-checkpoints
+      - name: logs
+        persistentVolumeClaim:
+          claimName: fl-coordinator-logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fl-coordinator
+  namespace: federated-learning
+  labels:
+    app: fl-coordinator
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: grpc
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    app: fl-coordinator
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fl-coordinator-checkpoints
+  namespace: federated-learning
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fl-coordinator-logs
+  namespace: federated-learning
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

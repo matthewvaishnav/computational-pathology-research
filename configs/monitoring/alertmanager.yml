@@ -1,0 +1,95 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alertmanager@federated-learning.example.com'
+  smtp_auth_username: 'alertmanager'
+  smtp_auth_password: 'password'
+
+# Route tree for alert routing
+route:
+  group_by: ['alertname', 'cluster', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+  routes:
+    # Critical alerts go to pagerduty and email
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+    
+    # Warning alerts go to email only
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+    
+    # Privacy alerts
+    - match:
+        component: privacy
+      receiver: 'privacy-alerts'
+    
+    # Security alerts (Byzantine attacks)
+    - match:
+        component: security
+      receiver: 'security-alerts'
+
+# Receivers for different alert types
+receivers:
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://localhost:5001/alerts'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'oncall@example.com'
+        headers:
+          Subject: '[CRITICAL] Federated Learning Alert: {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Critical Alert</h2>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><strong>Time:</strong> {{ .StartsAt }}</p>
+    pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+        description: '{{ .CommonAnnotations.summary }}'
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'team@example.com'
+        headers:
+          Subject: '[WARNING] Federated Learning Alert: {{ .GroupLabels.alertname }}'
+
+  - name: 'privacy-alerts'
+    email_configs:
+      - to: 'privacy-team@example.com'
+        headers:
+          Subject: '[PRIVACY] Federated Learning Alert: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#privacy-alerts'
+        title: 'Privacy Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.description }}'
+
+  - name: 'security-alerts'
+    email_configs:
+      - to: 'security-team@example.com'
+        headers:
+          Subject: '[SECURITY] Federated Learning Alert: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#security-alerts'
+        title: 'Security Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.description }}'
+        color: 'danger'
+
+# Inhibition rules to suppress alerts
+inhibit_rules:
+  # Suppress warning alerts if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster']

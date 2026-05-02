@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fl-client
+  namespace: federated-learning
+  labels:
+    app: fl-client
+    component: client
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fl-client
+  template:
+    metadata:
+      labels:
+        app: fl-client
+        component: client
+    spec:
+      containers:
+      - name: client
+        image: histocore/fl-client:latest
+        imagePullPolicy: Always
+        env:
+        - name: FL_CLIENT_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: FL_COORDINATOR_URL
+          value: "https://fl-coordinator:8080"
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        volumeMounts:
+        - name: certs
+          mountPath: /app/certs
+          readOnly: true
+        - name: config
+          mountPath: /app/configs/federated
+          readOnly: true
+        - name: checkpoints
+          mountPath: /app/checkpoints
+        - name: logs
+          mountPath: /app/logs
+        - name: pacs-cache
+          mountPath: /app/data/pacs_cache
+        resources:
+          requests:
+            cpu: "4"
+            memory: "16Gi"
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "8"
+            memory: "32Gi"
+            nvidia.com/gpu: "1"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import torch; print('OK')"
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
+      volumes:
+      - name: certs
+        secret:
+          secretName: fl-tls-certs
+      - name: config
+        configMap:
+          name: fl-client-config
+      - name: checkpoints
+        persistentVolumeClaim:
+          claimName: fl-client-checkpoints
+      - name: logs
+        persistentVolumeClaim:
+          claimName: fl-client-logs
+      - name: pacs-cache
+        persistentVolumeClaim:
+          claimName: fl-client-pacs-cache
+      nodeSelector:
+        accelerator: nvidia-gpu
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fl-client-checkpoints
+  namespace: federated-learning
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fl-client-logs
+  namespace: federated-learning
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fl-client-pacs-cache
+  namespace: federated-learning
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: standard

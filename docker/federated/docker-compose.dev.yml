@@ -1,0 +1,70 @@
+version: '3.8'
+
+# Development environment - single coordinator + 2 clients
+services:
+  coordinator:
+    build:
+      context: ../..
+      dockerfile: docker/federated/Dockerfile.coordinator
+    container_name: fl-coordinator-dev
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - ../../src:/app/src
+      - ../../configs:/app/configs
+      - ./certs:/app/certs:ro
+      - ./dev-data/coordinator:/app/data
+    environment:
+      - FL_COORDINATOR_HOST=0.0.0.0
+      - FL_COORDINATOR_PORT=8080
+      - FL_NUM_ROUNDS=10
+      - FL_MIN_CLIENTS=2
+      - PYTHONUNBUFFERED=1
+    networks:
+      - federated-dev
+    restart: unless-stopped
+
+  client-1:
+    build:
+      context: ../..
+      dockerfile: docker/federated/Dockerfile.client
+    container_name: fl-client-1-dev
+    depends_on:
+      - coordinator
+    volumes:
+      - ../../src:/app/src
+      - ../../configs:/app/configs
+      - ./certs:/app/certs:ro
+      - ./dev-data/client-1:/app/data
+    environment:
+      - FL_CLIENT_ID=dev-hospital-001
+      - FL_COORDINATOR_URL=https://coordinator:8080
+      - PYTHONUNBUFFERED=1
+    networks:
+      - federated-dev
+    restart: unless-stopped
+
+  client-2:
+    build:
+      context: ../..
+      dockerfile: docker/federated/Dockerfile.client
+    container_name: fl-client-2-dev
+    depends_on:
+      - coordinator
+    volumes:
+      - ../../src:/app/src
+      - ../../configs:/app/configs
+      - ./certs:/app/certs:ro
+      - ./dev-data/client-2:/app/data
+    environment:
+      - FL_CLIENT_ID=dev-hospital-002
+      - FL_COORDINATOR_URL=https://coordinator:8080
+      - PYTHONUNBUFFERED=1
+    networks:
+      - federated-dev
+    restart: unless-stopped
+
+networks:
+  federated-dev:
+    driver: bridge

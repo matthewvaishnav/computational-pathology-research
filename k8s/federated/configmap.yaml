@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fl-config
+  namespace: federated-learning
+data:
+  num_rounds: "100"
+  min_clients: "3"
+  client_timeout_seconds: "600"
+  sync_mode: "semi_synchronous"
+  min_client_percentage: "0.8"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fl-coordinator-config
+  namespace: federated-learning
+data:
+  coordinator.yaml: |
+    server:
+      host: "0.0.0.0"
+      port: 8080
+      tls_cert: "/app/certs/coordinator-cert.pem"
+      tls_key: "/app/certs/coordinator-key.pem"
+      enable_mutual_auth: true
+
+    training:
+      num_rounds: 100
+      min_clients: 3
+      max_clients: 10
+      client_timeout_seconds: 600
+      sync_mode: "semi_synchronous"
+      min_client_percentage: 0.8
+
+    aggregation:
+      algorithm: "fedavg"
+
+    privacy:
+      enable_dp: true
+      target_epsilon: 1.0
+      target_delta: 1e-5
+      noise_multiplier: 1.1
+      max_grad_norm: 1.0
+
+    byzantine:
+      enable: true
+      algorithm: "krum"
+      threshold_std: 3.0
+
+    compression:
+      enable: true
+      mode: "quantization"
+      quantization_bits: 8
+
+    monitoring:
+      enable_prometheus: true
+      prometheus_port: 9090
+      enable_tensorboard: true
+      tensorboard_dir: "/app/runs"
+      log_level: "INFO"
+
+    model_registry:
+      checkpoint_dir: "/app/checkpoints"
+      max_versions: 10
+      save_interval: 1
+
+    database:
+      type: "postgresql"
+      host: "postgres"
+      port: 5432
+      database: "federated"
+      user: "federated"
+      password: "${DB_PASSWORD}"
+
+    fault_tolerance:
+      enable_checkpoints: true
+      checkpoint_interval: 5
+      enable_partition_detection: true
+      partition_threshold_seconds: 60
+      reconnection_strategy: "exponential_backoff"
+      max_reconnection_attempts: 10
+
+    async_training:
+      enable_staleness_weighting: true
+      staleness_alpha: 0.5
+      max_staleness: 10
+      enable_dynamic_timeout: true
+      timeout_multiplier: 2.0
+
+    security:
+      enable_audit_logging: true
+      audit_log_dir: "/app/logs/audit"
+      log_retention_days: 2555
+      enable_tamper_detection: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fl-client-config
+  namespace: federated-learning
+data:
+  client.yaml: |
+    client:
+      id: "${FL_CLIENT_ID}"
+      name: "Hospital Client"
+      site_code: "K8S"
+
+    coordinator:
+      url: "https://fl-coordinator:8080"
+      tls_cert: "/app/certs/coordinator-cert.pem"
+      client_cert: "/app/certs/client-cert.pem"
+      client_key: "/app/certs/client-key.pem"
+      connection_timeout: 30
+      heartbeat_interval: 60
+
+    training:
+      batch_size: 32
+      local_epochs: 5
+      learning_rate: 0.001
+      optimizer: "adam"
+      gradient_accumulation_steps: 1
+      device: "cuda"
+      mixed_precision: true
+      num_workers: 4
+
+    pacs:
+      enable: false  # Configure per-site
+
+    resources:
+      max_gpu_memory_gb: 8
+      max_cpu_cores: 4
+      max_disk_space_gb: 100
+      enable_scheduling: false
+
+    privacy:
+      enable_dp: true
+      noise_multiplier: 1.1
+      max_grad_norm: 1.0
+      privacy_budget_epsilon: 1.0
+      privacy_budget_delta: 1e-5
+
+    compression:
+      enable: true
+      mode: "quantization"
+      quantization_bits: 8
+
+    fault_tolerance:
+      enable_checkpoints: true
+      checkpoint_dir: "/app/checkpoints"
+      max_checkpoints: 5
+      enable_network_monitoring: true
+      heartbeat_interval: 60
+      failure_threshold: 3
+
+    logging:
+      level: "INFO"
+      log_dir: "/app/logs"
+      enable_audit: true
