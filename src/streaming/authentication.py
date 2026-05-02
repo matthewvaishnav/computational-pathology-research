@@ -327,7 +327,7 @@ class OAuth2Provider:
         #         'client_id': self.config.client_id,
         #         'client_secret': self.config.client_secret
         #     }
-        # )
+        # , timeout=30)
         # return response.json()
 
         return {
@@ -346,7 +346,7 @@ class OAuth2Provider:
         # response = requests.get(
         #     self.config.userinfo_endpoint,
         #     headers={'Authorization': f'Bearer {access_token}'}
-        # )
+        # , timeout=30)
         # return response.json()
 
         return {

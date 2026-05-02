@@ -100,8 +100,8 @@ class IntegrationTestRunner:
                 compose_file = self.config["docker"]["compose_file"]
                 services = " ".join(self.config["docker"]["services"])
 
-                cmd = f"docker-compose -f {compose_file} up -d {services}"
-                result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                cmd = ["docker-compose", "-f", str(compose_file), "up", "-d"] + services.split()
+                result = subprocess.run(cmd, shell=False, capture_output=True, text=True)
 
                 if result.returncode == 0:
                     print("✅ Docker services started successfully")

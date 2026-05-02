@@ -359,7 +359,7 @@ class SlackAlerter:
                     )
 
             # Send to Slack
-            response = requests.post(self.webhook_url, json=payload, timeout=10)
+            response = requests.post(self.webhook_url, json=payload, timeout=10, timeout=30)
 
             if response.status_code == 200:
                 logger.info(f"Slack alert sent: {alert.title}")
@@ -484,7 +484,7 @@ class WebhookAlerter:
 
             response = requests.post(
                 self.webhook_url, json=payload, headers=self.headers, timeout=10
-            )
+            , timeout=30)
 
             if response.status_code in [200, 201, 202]:
                 logger.info(f"Webhook alert sent: {alert.title}")
@@ -692,7 +692,7 @@ class FederatedLearningMonitor:
                         webhook_url,
                         json={"text": "HistoCore monitoring system initialized"},
                         timeout=10
-                    )
+                    , timeout=30)
                     
                     if test_response.status_code == 200:
                         logger.info("Slack webhook test successful")

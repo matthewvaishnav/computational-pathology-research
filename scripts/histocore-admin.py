@@ -54,7 +54,7 @@ def status(ctx):
     health_url = config['endpoints']['health']
     
     try:
-        response = requests.get(f"{health_url}/health/detailed", timeout=10)
+        response = requests.get(f"{health_url}/health/detailed", timeout=10, timeout=30)
         data = response.json()
         
         # Overall status
@@ -110,7 +110,7 @@ def live(ctx):
     health_url = config['endpoints']['health']
     
     try:
-        response = requests.get(f"{health_url}/health/live", timeout=5)
+        response = requests.get(f"{health_url}/health/live", timeout=5, timeout=30)
         if response.status_code == 200:
             click.echo("✓ Service is alive")
         else:
@@ -129,7 +129,7 @@ def ready(ctx):
     health_url = config['endpoints']['health']
     
     try:
-        response = requests.get(f"{health_url}/health/ready", timeout=5)
+        response = requests.get(f"{health_url}/health/ready", timeout=5, timeout=30)
         if response.status_code == 200:
             click.echo("✓ Service is ready")
         else:
@@ -160,7 +160,7 @@ def query(ctx, query, time):
         params['time'] = time
         
     try:
-        response = requests.get(f"{metrics_url}/api/v1/query", params=params, timeout=10)
+        response = requests.get(f"{metrics_url}/api/v1/query", params=params, timeout=10, timeout=30)
         data = response.json()
         
         if data['status'] == 'success':
@@ -213,7 +213,7 @@ def summary(ctx):
     results = {}
     for name, query in queries.items():
         try:
-            response = requests.get(f"{metrics_url}/api/v1/query", params={'query': query}, timeout=5)
+            response = requests.get(f"{metrics_url}/api/v1/query", params={'query': query}, timeout=5, timeout=30)
             data = response.json()
             
             if data['status'] == 'success' and data['data']['result']:
@@ -254,7 +254,7 @@ def submit(ctx, slide_path, priority, wait):
     }
     
     try:
-        response = requests.post(f"{streaming_url}/api/v1/process", json=payload, timeout=10)
+        response = requests.post(f"{streaming_url}/api/v1/process", json=payload, timeout=10, timeout=30)
         
         if response.status_code == 200:
             data = response.json()
@@ -284,7 +284,7 @@ def status_job(ctx, job_id):
     streaming_url = config['endpoints']['streaming']
     
     try:
-        response = requests.get(f"{streaming_url}/api/v1/jobs/{job_id}", timeout=10)
+        response = requests.get(f"{streaming_url}/api/v1/jobs/{job_id}", timeout=10, timeout=30)
         
         if response.status_code == 200:
             data = response.json()
@@ -317,7 +317,7 @@ def queue(ctx):
     streaming_url = config['endpoints']['streaming']
     
     try:
-        response = requests.get(f"{streaming_url}/api/v1/queue", timeout=10)
+        response = requests.get(f"{streaming_url}/api/v1/queue", timeout=10, timeout=30)
         
         if response.status_code == 200:
             data = response.json()
@@ -357,7 +357,7 @@ def wait_for_job(ctx, job_id):
     
     while True:
         try:
-            response = requests.get(f"{streaming_url}/api/v1/jobs/{job_id}", timeout=10)
+            response = requests.get(f"{streaming_url}/api/v1/jobs/{job_id}", timeout=10, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -413,7 +413,7 @@ def set_config(ctx, key, value):
     payload = {key: value}
     
     try:
-        response = requests.post(f"{streaming_url}/api/v1/config", json=payload, timeout=10)
+        response = requests.post(f"{streaming_url}/api/v1/config", json=payload, timeout=10, timeout=30)
         
         if response.status_code == 200:
             click.echo(f"✓ Configuration updated: {key} = {value}")
@@ -450,7 +450,7 @@ def tail(ctx, lines, follow, level, component):
         params['component'] = component
         
     try:
-        response = requests.get(f"{streaming_url}/api/v1/logs", params=params, timeout=10)
+        response = requests.get(f"{streaming_url}/api/v1/logs", params=params, timeout=10, timeout=30)
         
         if response.status_code == 200:
             data = response.json()

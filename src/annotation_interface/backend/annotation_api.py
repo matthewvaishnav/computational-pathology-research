@@ -1,3 +1,4 @@
+import time
 """
 FastAPI backend for annotation interface
 Provides REST endpoints and WebSocket for real-time collaboration
@@ -580,7 +581,9 @@ async def websocket_endpoint(websocket: WebSocket, slide_id: str):
     await manager.connect(websocket, slide_id)
 
     try:
-        while True:
+        timeout = time.time() + 3600
+
+        while time.time() < timeout:
             # Receive messages from client
             data = await websocket.receive_json()
 

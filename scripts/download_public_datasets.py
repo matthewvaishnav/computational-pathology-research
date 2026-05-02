@@ -21,7 +21,7 @@ def download_file(url: str, output_path: Path, description: str = ""):
     """Download a file with progress bar."""
     print(f"Downloading {description or url}...")
     
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, timeout=30)
     response.raise_for_status()
     
     total_size = int(response.headers.get('content-length', 0))
