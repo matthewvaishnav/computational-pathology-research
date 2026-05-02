@@ -30,7 +30,7 @@ class StorageConfig:
     """Configuration for storage system."""
 
     # Local storage
-    temp_dir: str = "/tmp/histocore"
+    temp_dir: str = tempfile.mkdtemp(prefix="histocore_")
     cache_dir: str = "./cache"
     results_dir: str = "./results"
 
