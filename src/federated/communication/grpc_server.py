@@ -252,7 +252,7 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
             import torch
 
             buffer = io.BytesIO(request.gradients)
-            gradients = torch.load(buffer)
+            gradients = torch.load(buffer, weights_only=True)
 
             # Create ClientUpdate object
             client_update = ClientUpdate(
@@ -402,8 +402,14 @@ class SecureFLServer:
         # Initialize servicer
         self.servicer = FederatedLearningServicer(orchestrator, self.tls_manager)
 
-        # Initialize server
-        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
+        # Initialize server with message size limit (prevent DoS via oversized payloads)
+        self.server = grpc.server(
+            futures.ThreadPoolExecutor(max_workers=max_workers),
+            options=[
+                ("grpc.max_receive_message_length", 256 * 1024 * 1024),  # 256MB
+                ("grpc.max_send_message_length", 256 * 1024 * 1024),
+            ],
+        )
         add_FederatedLearningServiceServicer_to_server(self.servicer, self.server)
 
         # Add secure port with TLS

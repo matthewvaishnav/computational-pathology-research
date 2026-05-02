@@ -129,3 +129,4 @@ wandb>=0.15.0
 protobuf>=4.21.0,<5.0.0
 grpcio>=1.54.0
 grpcio-tools>=1.54.0
+defusedxml>=0.7.1

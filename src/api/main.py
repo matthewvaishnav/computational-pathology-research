@@ -522,12 +522,21 @@ async def upload_for_analysis(
     request_data: AnalysisRequest = AnalysisRequest(),
     request: Request = None,
     db: Session = Depends(get_db_session),
+    current_user: dict = Depends(get_current_user),
 ):
     """Upload image for real AI analysis with comprehensive security validation."""
 
     try:
-        # Read file content
-        file_content = await file.read()
+        # Enforce size limit before reading entire file into memory (DoS prevention)
+        max_size = 100 * 1024 * 1024  # 100MB
+        content_length = request.headers.get("content-length") if request else None
+        if content_length and int(content_length) > max_size:
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
+
+        # Read file content (bounded by max_size)
+        file_content = await file.read(max_size + 1)
+        if len(file_content) > max_size:
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
 
         # Comprehensive file validation
         safe_filename, detected_type = validate_uploaded_image(
@@ -602,7 +611,7 @@ async def upload_for_analysis(
             details=str(e),
             success=False,
         )
-        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Upload failed. Please try again.")
 
 
 async def process_real_analysis(analysis_id: str, file_path: str, file_content: bytes):
@@ -676,7 +685,7 @@ async def process_real_analysis(analysis_id: str, file_path: str, file_content: 
 
 
 @app.get("/api/v1/analyze/{analysis_id}")
-async def get_analysis_result(analysis_id: str, db: Session = Depends(get_db_session)):
+async def get_analysis_result(analysis_id: str, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)):
     """Get real analysis result from database."""
 
     try:
@@ -749,7 +758,7 @@ async def upload_dicom(file: UploadFile = File(...)):
 
 
 @app.get("/api/v1/dicom/study/{study_id}")
-async def get_dicom_study(study_id: str):
+async def get_dicom_study(study_id: str, current_user: dict = Depends(get_current_user)):
     """Get DICOM study information."""
 
     # Mock study data
@@ -768,7 +777,7 @@ async def get_dicom_study(study_id: str):
 # Case management endpoints with real database
 @app.get("/api/v1/cases")
 async def get_cases(
-    limit: int = 10, status: Optional[str] = None, db: Session = Depends(get_db_session)
+    limit: int = 10, status: Optional[str] = None, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)
 ):
     """Get list of cases from database."""
 
@@ -801,7 +810,7 @@ async def get_cases(
 
 
 @app.post("/api/v1/cases")
-async def create_case(case_data: CaseData, db: Session = Depends(get_db_session)):
+async def create_case(case_data: CaseData, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)):
     """Create a new case in database."""
 
     try:
@@ -826,7 +835,7 @@ async def create_case(case_data: CaseData, db: Session = Depends(get_db_session)
 
 
 @app.get("/api/v1/cases/{case_id}")
-async def get_case(case_id: str, db: Session = Depends(get_db_session)):
+async def get_case(case_id: str, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)):
     """Get case details from database."""
 
     try:
@@ -869,7 +878,7 @@ async def get_case(case_id: str, db: Session = Depends(get_db_session)):
 
 @app.patch("/api/v1/cases/{case_id}/status")
 async def update_case_status(
-    case_id: str, status_data: dict, db: Session = Depends(get_db_session)
+    case_id: str, status_data: dict, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)
 ):
     """Update case status in database."""
 
