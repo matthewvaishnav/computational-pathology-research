@@ -54,7 +54,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
     # Test 1: Health check
     logger.info("1. Testing health check...")
     try:
-        response = requests.get(f"{base_url}/health", timeout=10)
+        response = requests.get(f"{base_url}/health", timeout=10, timeout=30)
         if response.status_code == 200:
             health_data = response.json()
             logger.info(f"✅ Health check passed: {health_data['status']}")
@@ -74,7 +74,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
     # Test 2: Database connectivity
     logger.info("2. Testing database connectivity...")
     try:
-        response = requests.get(f"{base_url}/api/v1/system/db-health", timeout=10)
+        response = requests.get(f"{base_url}/api/v1/system/db-health", timeout=10, timeout=30)
         if response.status_code == 200:
             db_health = response.json()
             logger.info(f"✅ Database health: {db_health['status']}")
@@ -99,7 +99,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
             f"{base_url}/api/v1/analyze/upload",
             files=files,
             timeout=30
-        )
+        , timeout=30)
         
         if response.status_code == 200:
             upload_result = response.json()
@@ -114,7 +114,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
                 response = requests.get(
                     f"{base_url}/api/v1/analyze/{analysis_id}",
                     timeout=10
-                )
+                , timeout=30)
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -172,7 +172,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
             f"{base_url}/api/v1/cases",
             json=case_data,
             timeout=10
-        )
+        , timeout=30)
         
         if response.status_code == 200:
             case_result = response.json()
@@ -180,7 +180,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
             logger.info(f"✅ Case created: {case_id}")
             
             # Retrieve the case
-            response = requests.get(f"{base_url}/api/v1/cases/{case_id}", timeout=10)
+            response = requests.get(f"{base_url}/api/v1/cases/{case_id}", timeout=10, timeout=30)
             if response.status_code == 200:
                 case_details = response.json()
                 logger.info(f"✅ Case retrieved: {case_details['patient_id']}")
@@ -199,7 +199,7 @@ def test_production_system(base_url: str = "http://localhost:8000"):
     # Test 5: Analytics endpoints
     logger.info("5. Testing analytics endpoints...")
     try:
-        response = requests.get(f"{base_url}/api/v1/analytics/dashboard", timeout=10)
+        response = requests.get(f"{base_url}/api/v1/analytics/dashboard", timeout=10, timeout=30)
         if response.status_code == 200:
             dashboard_data = response.json()
             logger.info(f"✅ Dashboard data retrieved")

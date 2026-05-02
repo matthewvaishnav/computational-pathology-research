@@ -16,7 +16,9 @@ def monitor_training():
     last_epoch = 0
 
     try:
-        while True:
+        timeout = time.time() + 3600
+
+        while time.time() < timeout:
             if status_file.exists():
                 try:
                     with open(status_file, "r") as f:

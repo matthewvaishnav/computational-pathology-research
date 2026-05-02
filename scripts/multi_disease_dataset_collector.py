@@ -165,7 +165,7 @@ class MultiDiseaseDatasetCollector:
             api_url = f"https://zenodo.org/api/records/{record_id}"
             
             # Get record metadata
-            response = requests.get(api_url)
+            response = requests.get(api_url, timeout=30)
             response.raise_for_status()
             record = response.json()
             
@@ -177,7 +177,7 @@ class MultiDiseaseDatasetCollector:
                 
                 logger.info(f"Downloading {filename}...")
                 
-                response = requests.get(file_url, stream=True)
+                response = requests.get(file_url, stream=True, timeout=30)
                 response.raise_for_status()
                 
                 total_size = int(response.headers.get('content-length', 0))
@@ -211,7 +211,7 @@ class MultiDiseaseDatasetCollector:
     def _download_direct_dataset(self, disease: str, config: Dict, dataset_dir: Path) -> bool:
         """Download dataset from direct URL."""
         try:
-            response = requests.get(config['url'], stream=True)
+            response = requests.get(config['url'], stream=True, timeout=30)
             response.raise_for_status()
             
             filename = config['url'].split('/')[-1]

@@ -37,7 +37,7 @@ FIXES = {
         "imports": ["fetch_with_retry"],
         "replacements": [
             {
-                "old": "response = requests.get(url, stream=True)",
+                "old": "response = requests.get(url, stream=True, timeout=30)",
                 "new": "from src.utils.safe_operations import fetch_with_retry\n    response = fetch_with_retry(url, timeout=60, stream=True)",
             }
         ],
@@ -46,7 +46,7 @@ FIXES = {
         "imports": ["fetch_with_retry"],
         "replacements": [
             {
-                "old": "response = requests.get(url, stream=True)",
+                "old": "response = requests.get(url, stream=True, timeout=30)",
                 "new": "from src.utils.safe_operations import fetch_with_retry\n            response = fetch_with_retry(url, timeout=60, stream=True)",
             }
         ],
