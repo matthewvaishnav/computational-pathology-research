@@ -13,6 +13,9 @@ Available adapters:
 - PyTorchAdapter: Adapter for baseline PyTorch
 """
 
+from experiments.benchmark_system.adapters.clam_adapter import CLAMAdapter
 from experiments.benchmark_system.adapters.histocore_adapter import HistoCoreAdapter
+from experiments.benchmark_system.adapters.pathml_adapter import PathMLAdapter
+from experiments.benchmark_system.adapters.pytorch_adapter import PyTorchAdapter
 
-__all__ = ["HistoCoreAdapter"]
+__all__ = ["HistoCoreAdapter", "PathMLAdapter", "CLAMAdapter", "PyTorchAdapter"]
