@@ -607,16 +607,149 @@ class AutomatedRetrainingManager:
 class ModelSecurityManager:
     """Manages model security, integrity verification, and adversarial protection."""
 
-    def __init__(self, encryption_key: Optional[bytes] = None):
-        """Initialize model security manager.
+    def __init__(self, key_file: Optional[Path] = None):
+        """Initialize model security manager with persistent key management.
 
         Args:
-            encryption_key: Encryption key for model storage (generates new if None)
+            key_file: Path to encryption key file (defaults to environment variable)
         """
-        self.encryption_key = encryption_key or Fernet.generate_key()
+        self.key_file = key_file or Path(os.getenv("MODEL_KEY_FILE", "/secure/keys/model.key"))
+        self.encryption_key = self._load_or_generate_key()
         self.cipher = Fernet(self.encryption_key)
 
-        logger.info("ModelSecurityManager initialized")
+        logger.info("ModelSecurityManager initialized with persistent key storage")
+
+    def _load_or_generate_key(self) -> bytes:
+        """Load existing encryption key or generate new one from password.
+
+        Returns:
+            Encryption key bytes
+
+        Raises:
+            ValueError: If ENCRYPTION_PASSWORD not set and key file doesn't exist
+        """
+        import base64
+
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+
+        if self.key_file.exists():
+            # Load existing key
+            try:
+                with open(self.key_file, "rb") as f:
+                    key = f.read()
+                logger.info(f"Loaded encryption key from {self.key_file}")
+                return key
+            except Exception as e:
+                logger.error(f"Failed to load encryption key: {e}")
+                raise EncryptionError(f"Failed to load encryption key: {e}") from e
+        else:
+            # Generate new key from password
+            password = os.getenv("ENCRYPTION_PASSWORD")
+            if not password:
+                raise ValueError(
+                    "ENCRYPTION_PASSWORD environment variable required for key generation"
+                )
+
+            # Get deployment-specific salt (or generate one)
+            salt_file = self.key_file.parent / "salt.bin"
+            if salt_file.exists():
+                with open(salt_file, "rb") as f:
+                    salt = f.read()
+            else:
+                # Generate random salt
+                import secrets
+
+                salt = secrets.token_bytes(32)
+
+                # Save salt
+                salt_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                with open(salt_file, "wb") as f:
+                    f.write(salt)
+                os.chmod(salt_file, 0o600)
+
+            # Derive key from password using PBKDF2
+            kdf = PBKDF2(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=salt,
+                iterations=100000,
+                backend=default_backend(),
+            )
+            key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+
+            # Save key securely
+            try:
+                self.key_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                with open(self.key_file, "wb") as f:
+                    f.write(key)
+                os.chmod(self.key_file, 0o600)  # Owner read/write only
+                logger.info(f"Generated and saved encryption key to {self.key_file}")
+            except Exception as e:
+                logger.error(f"Failed to save encryption key: {e}")
+                raise EncryptionError(f"Failed to save encryption key: {e}") from e
+
+            return key
+
+    def rotate_encryption_key(self, new_password: str) -> None:
+        """Rotate encryption key (for periodic key rotation).
+
+        Args:
+            new_password: New password for key derivation
+
+        Raises:
+            EncryptionError: If key rotation fails
+        """
+        import base64
+
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+
+        try:
+            # Generate new salt
+            import secrets
+
+            salt = secrets.token_bytes(32)
+
+            # Derive new key
+            kdf = PBKDF2(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=salt,
+                iterations=100000,
+                backend=default_backend(),
+            )
+            new_key = base64.urlsafe_b64encode(kdf.derive(new_password.encode()))
+
+            # Backup old key
+            backup_file = self.key_file.with_suffix(".key.backup")
+            if self.key_file.exists():
+                import shutil
+
+                shutil.copy2(self.key_file, backup_file)
+
+            # Save new key
+            with open(self.key_file, "wb") as f:
+                f.write(new_key)
+            os.chmod(self.key_file, 0o600)
+
+            # Update salt
+            salt_file = self.key_file.parent / "salt.bin"
+            with open(salt_file, "wb") as f:
+                f.write(salt)
+            os.chmod(salt_file, 0o600)
+
+            # Update cipher
+            self.encryption_key = new_key
+            self.cipher = Fernet(new_key)
+
+            logger.info("Encryption key rotated successfully")
+
+        except Exception as e:
+            logger.error(f"Key rotation failed: {e}")
+            raise EncryptionError(f"Key rotation failed: {e}") from e
 
     def verify_model_integrity(self, model_path: str, expected_hash: str) -> bool:
         """Verify model file integrity using cryptographic hash.

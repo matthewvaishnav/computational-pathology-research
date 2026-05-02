@@ -1,0 +1,48 @@
+# Federated Learning Coordinator Dockerfile
+FROM python:3.10-slim
+
+# Metadata
+LABEL maintainer="histocore@example.com"
+LABEL description="Federated Learning Coordinator for HistoCore"
+LABEL version="1.0.0"
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+COPY requirements-federated.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-federated.txt
+
+# Copy source code
+COPY src/ ./src/
+COPY configs/ ./configs/
+
+# Create directories
+RUN mkdir -p /app/checkpoints /app/logs /app/certs /app/data
+
+# Expose ports
+EXPOSE 8080 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f https://localhost:8080/health || exit 1
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV FL_COORDINATOR_HOST=0.0.0.0
+ENV FL_COORDINATOR_PORT=8080
+
+# Run coordinator
+CMD ["python", "-m", "src.federated.production.coordinator_server", \
+     "--config", "configs/federated/coordinator.yaml"]

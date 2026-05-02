@@ -1,0 +1,43 @@
+# Prometheus configuration for Federated Learning monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'federated-learning'
+    environment: 'production'
+
+scrape_configs:
+  - job_name: 'fl-coordinator'
+    static_configs:
+      - targets: ['coordinator:9090']
+        labels:
+          component: 'coordinator'
+    metrics_path: '/metrics'
+    scheme: 'http'
+
+  - job_name: 'fl-clients'
+    static_configs:
+      - targets: 
+          - 'client-1:9090'
+          - 'client-2:9090'
+          - 'client-3:9090'
+        labels:
+          component: 'client'
+    metrics_path: '/metrics'
+    scheme: 'http'
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          component: 'monitoring'
+
+# Alerting rules
+rule_files:
+  - '/etc/prometheus/alerts.yml'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']

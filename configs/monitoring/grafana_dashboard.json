@@ -1,0 +1,211 @@
+{
+  "dashboard": {
+    "title": "Federated Learning Monitoring",
+    "tags": ["federated-learning", "histocore"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Training Progress",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_current_round",
+            "legendFormat": "Current Round",
+            "refId": "A"
+          },
+          {
+            "expr": "fl_model_version",
+            "legendFormat": "Model Version",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Round/Version"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Model Performance",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_model_loss",
+            "legendFormat": "Loss",
+            "refId": "A"
+          },
+          {
+            "expr": "fl_model_accuracy",
+            "legendFormat": "Accuracy",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Metric Value"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Client Participation",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_client_participation_total",
+            "legendFormat": "Active Clients",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Number of Clients"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Round Duration",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_round_duration_seconds",
+            "legendFormat": "Round Duration",
+            "refId": "A"
+          },
+          {
+            "expr": "fl_aggregation_time_seconds",
+            "legendFormat": "Aggregation Time",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration (seconds)"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Byzantine Detections",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 16, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(fl_byzantine_detections_total[5m])",
+            "legendFormat": "Byzantine Detection Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Detections/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Client Dropouts",
+        "type": "graph",
+        "gridPos": {"x": 8, "y": 16, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(fl_client_dropout_total[5m])",
+            "legendFormat": "Dropout Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Dropouts/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Privacy Budget (Epsilon)",
+        "type": "graph",
+        "gridPos": {"x": 16, "y": 16, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_privacy_epsilon",
+            "legendFormat": "Epsilon",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Epsilon (ε)"},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [1.0], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "last"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "name": "Privacy Budget Alert",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 8,
+        "title": "Gradient Norm",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_gradient_norm",
+            "legendFormat": "Gradient L2 Norm",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Norm"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "System Health",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "fl_current_round",
+            "refId": "A"
+          },
+          {
+            "expr": "fl_client_participation_total",
+            "refId": "B"
+          },
+          {
+            "expr": "fl_byzantine_detections_total",
+            "refId": "C"
+          },
+          {
+            "expr": "fl_client_dropout_total",
+            "refId": "D"
+          }
+        ],
+        "options": {
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        }
+      }
+    ]
+  }
+}
