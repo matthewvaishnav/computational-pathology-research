@@ -100,8 +100,13 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   </div>
   
   <div class="feature-card">
+    <h3>⚡ Real-Time WSI Streaming</h3>
+    <p>Breakthrough <30 second processing of gigapixel slides through progressive tile streaming, GPU-accelerated parallel processing (>3000 patches/s), and attention-based aggregation with early stopping. Memory-optimized pipeline (<2GB footprint) with live confidence updates and clinical dashboard. See <a href="REALTIME_STREAMING.html">streaming guide</a>.</p>
+  </div>
+  
+  <div class="feature-card">
     <h3>🔒 Federated Learning System</h3>
-    <p>First open-source federated learning framework for digital pathology with ε ≤ 1.0 differential privacy, FedAvg weighted aggregation, training orchestrator with model versioning, and drift detection. Validated 8/8 correctness properties with property-based testing. Enables privacy-preserving multi-site training across 3+ hospitals.</p>
+    <p>First open-source federated learning framework for digital pathology with ε ≤ 1.0 differential privacy, FedAvg/FedProx/FedAdam aggregation, secure aggregation with homomorphic encryption, Byzantine detection (Krum/TrimmedMean), gradient compression (4/8/16-bit quantization), fault tolerance with checkpointing, and async training support. Validated 100% correctness properties (17/17 property tests passing). Enables privacy-preserving multi-site training across 3+ hospitals. See <a href="FL_INTEGRATION.html">FL integration guide</a>.</p>
   </div>
   
   <div class="feature-card">
