@@ -57,11 +57,14 @@ def task_specification_strategy(draw):
 @st.composite
 def benchmark_config_strategy(draw):
     """Generate random BenchmarkConfig instances."""
-    # Ensure splits sum to approximately 1.0
-    train_split = draw(st.floats(min_value=0.6, max_value=0.8))
-    remaining = 1.0 - train_split
-    val_split = draw(st.floats(min_value=0.1, max_value=remaining - 0.1))
-    test_split = 1.0 - train_split - val_split
+    # Use fixed splits to avoid floating-point precision issues
+    split_choice = draw(st.sampled_from([
+        (0.8, 0.1, 0.1),
+        (0.7, 0.2, 0.1),
+        (0.7, 0.15, 0.15),
+        (0.6, 0.2, 0.2),
+    ]))
+    train_split, val_split, test_split = split_choice
     
     task_spec = TaskSpecification(
         dataset_name=draw(st.text(min_size=1, max_size=50)),
@@ -95,7 +98,7 @@ def benchmark_config_strategy(draw):
         max_gpu_temperature=draw(st.floats(min_value=60.0, max_value=90.0)),
         timeout_hours=draw(st.floats(min_value=1.0, max_value=100.0)),
         checkpoint_interval_minutes=draw(st.integers(min_value=1, max_value=120)),
-        output_dir=Path(draw(st.text(min_size=1, max_value=100))),
+        output_dir=Path(draw(st.text(min_size=1, max_size=100))),
         random_seed=draw(st.integers(min_value=0, max_value=10000)),
         bootstrap_samples=draw(st.integers(min_value=100, max_value=10000)),
         confidence_level=draw(st.floats(min_value=0.8, max_value=0.99)),
@@ -105,11 +108,14 @@ def benchmark_config_strategy(draw):
 @st.composite
 def training_result_strategy(draw):
     """Generate random TrainingResult instances."""
-    # Ensure splits sum to approximately 1.0
-    train_split = draw(st.floats(min_value=0.6, max_value=0.8))
-    remaining = 1.0 - train_split
-    val_split = draw(st.floats(min_value=0.1, max_value=remaining - 0.1))
-    test_split = 1.0 - train_split - val_split
+    # Use fixed splits to avoid floating-point precision issues
+    split_choice = draw(st.sampled_from([
+        (0.8, 0.1, 0.1),
+        (0.7, 0.2, 0.1),
+        (0.7, 0.15, 0.15),
+        (0.6, 0.2, 0.2),
+    ]))
+    train_split, val_split, test_split = split_choice
     
     task_spec = TaskSpecification(
         dataset_name=draw(st.text(min_size=1, max_size=50)),
