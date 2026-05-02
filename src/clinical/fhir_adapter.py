@@ -130,7 +130,7 @@ class FHIRAdapter:
                         "client_secret": self.config.client_secret,
                     },
                     timeout=self.config.timeout,
-                , timeout=30)
+                )
                 token_response.raise_for_status()
                 access_token = token_response.json().get("access_token")
                 self.session.headers.update({"Authorization": f"Bearer {access_token}"})

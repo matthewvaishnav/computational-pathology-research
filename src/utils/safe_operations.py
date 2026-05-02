@@ -448,7 +448,7 @@ def fetch_with_retry(url: str, timeout: int = 30, **kwargs):
     """
     import requests
     
-    response = requests.get(url, timeout=timeout, **kwargs, timeout=30)
+    response = requests.get(url, timeout=timeout, **kwargs)
     response.raise_for_status()
     return response
 
