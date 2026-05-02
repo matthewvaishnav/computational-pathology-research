@@ -38,7 +38,6 @@ ENV/
 .qodo/
 .kilo/
 .kiro/
-!.kiro/specs/
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
