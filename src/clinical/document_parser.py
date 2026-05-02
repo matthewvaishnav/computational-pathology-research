@@ -399,7 +399,7 @@ class ClinicalDocumentParser:
         proper HL7 CDA parsing libraries.
         """
         try:
-            import xml.etree.ElementTree as ET
+            import defusedxml.ElementTree as ET
 
             tree = ET.parse(file_path)
             root = tree.getroot()
