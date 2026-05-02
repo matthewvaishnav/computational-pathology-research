@@ -40,8 +40,10 @@ class MobileInferenceConfig:
     benchmark_runs: int = 100  # Benchmark iterations
 
     def __post_init__(self):
-        assert self.num_threads > 0
-        assert self.batch_size > 0
+        if not (self.num_threads > 0):
+            raise AssertionError("self.num_threads > 0")
+        if not (self.batch_size > 0):
+            raise AssertionError("self.batch_size > 0")
 
 
 @dataclass
