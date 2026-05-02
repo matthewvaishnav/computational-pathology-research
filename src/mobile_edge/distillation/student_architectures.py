@@ -27,8 +27,10 @@ class StudentConfig:
     activation: str = "relu"  # relu/swish/hardswish
 
     def __post_init__(self):
-        assert 0 < self.width_multiplier <= 1.0
-        assert 0 < self.depth_multiplier <= 1.0
+        if not (0 < self.width_multiplier <= 1.0):
+            raise AssertionError("0 < self.width_multiplier <= 1.0")
+        if not (0 < self.depth_multiplier <= 1.0):
+            raise AssertionError("0 < self.depth_multiplier <= 1.0")
 
 
 class MobileNetV3Small(nn.Module):

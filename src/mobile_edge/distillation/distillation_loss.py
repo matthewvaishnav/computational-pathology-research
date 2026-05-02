@@ -26,7 +26,8 @@ class DistillationConfig:
     feature_weight: float = 0.1  # Feature loss weight
 
     def __post_init__(self):
-        assert self.alpha + self.beta == 1.0, "alpha + beta must = 1.0"
+        if not (self.alpha + self.beta == 1.0):
+            raise ValueError("alpha + beta must = 1.0")
         if self.feature_layers is None:
             self.feature_layers = []
 

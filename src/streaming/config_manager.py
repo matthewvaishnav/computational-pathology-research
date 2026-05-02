@@ -1,5 +1,6 @@
 """Config management + validation for HistoCore streaming."""
 
+import tempfile
 import json
 import logging
 import os
@@ -106,7 +107,7 @@ class HistoCoreConfig(BaseModel):
     # Paths
     data_dir: str = Field(default="/data")
     output_dir: str = Field(default="/output")
-    temp_dir: str = Field(default="/tmp/histocore")
+    temp_dir: str = Field(default=tempfile.mkdtemp(prefix="histocore_"))
 
     class Config:
         use_enum_values = True
