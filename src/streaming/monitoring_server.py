@@ -1,3 +1,4 @@
+import time
 """Prometheus metrics HTTP server for HistoCore streaming."""
 
 import asyncio
@@ -141,7 +142,9 @@ async def main():
 
     try:
         # Keep server running
-        while True:
+        timeout = time.time() + 3600
+
+        while time.time() < timeout:
             await asyncio.sleep(1)
     except KeyboardInterrupt:
         logger.info("Shutting down...")

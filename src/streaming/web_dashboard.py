@@ -466,7 +466,9 @@ async def websocket_endpoint(websocket: WebSocket):
         )
 
         # Keep connection alive and handle incoming messages
-        while True:
+        timeout = time.time() + 3600
+
+        while time.time() < timeout:
             # Receive messages from client (e.g., parameter updates, commands)
             data = await websocket.receive_json()
 

@@ -153,7 +153,9 @@ class PerformanceValidator:
 
                 def memory_monitor():
                     nonlocal peak_memory
-                    while True:
+                    timeout = time.time() + 3600
+
+                    while time.time() < timeout:
                         current_memory = self._get_memory_usage_gb()
                         peak_memory = max(peak_memory, current_memory)
                         memory_samples.append(current_memory)

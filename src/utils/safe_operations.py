@@ -177,7 +177,7 @@ def check_gpu_memory_available(checkpoint: Dict[str, Any], threshold: float = 0.
         
         free_mem, _ = torch.cuda.mem_get_info(0)
         return checkpoint_size < free_mem * threshold
-    except:
+    except Exception as e:
         return False
 
 
@@ -275,14 +275,14 @@ def atomic_write(filepath: Path, data: Any, mode: str = 'json'):
         # Clean up temp file on failure
         try:
             os.unlink(temp_path)
-        except:
+        except Exception as e:
             pass
         raise DataSaveError(f"Atomic write failed: {e}") from e
     except Exception as e:
         # Clean up temp file on failure
         try:
             os.unlink(temp_path)
-        except:
+        except Exception as e:
             pass
         raise DataSaveError(f"Atomic write failed: {e}") from e
 
@@ -448,7 +448,7 @@ def fetch_with_retry(url: str, timeout: int = 30, **kwargs):
     """
     import requests
     
-    response = requests.get(url, timeout=timeout, **kwargs)
+    response = requests.get(url, timeout=timeout, **kwargs, timeout=30)
     response.raise_for_status()
     return response
 
@@ -532,7 +532,7 @@ def check_system_health() -> Dict[str, bool]:
         try:
             torch.cuda.current_device()
             health['gpu_functional'] = True
-        except:
+        except Exception as e:
             health['gpu_functional'] = False
     else:
         health['gpu_functional'] = False
@@ -541,14 +541,14 @@ def check_system_health() -> Dict[str, bool]:
     try:
         stat = shutil.disk_usage('/')
         health['disk_space'] = stat.free > 10 * 1024**3
-    except:
+    except Exception as e:
         health['disk_space'] = False
     
     # Check memory (require 4GB free)
     try:
         mem = psutil.virtual_memory()
         health['memory'] = mem.available > 4 * 1024**3
-    except:
+    except Exception as e:
         health['memory'] = False
     
     return health
