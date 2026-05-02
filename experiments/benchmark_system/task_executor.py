@@ -186,35 +186,64 @@ class TrainingTaskExecutor:
     def execute_training(
         self, 
         config: TrainingConfig, 
-        env: FrameworkEnvironment
+        env: FrameworkEnvironment,
+        output_dir: Optional[Path] = None,
     ) -> TrainingResult:
         """
         Run training task with metrics collection and checkpointing.
         
-        This is a placeholder implementation. The actual training execution
-        would be delegated to framework-specific adapters.
+        Delegates to framework-specific adapters for actual training execution.
         
         Args:
             config: Training configuration
             env: Framework environment
+            output_dir: Directory to save outputs (optional)
             
         Returns:
             TrainingResult with metrics and outcomes
             
         Raises:
-            NotImplementedError: This is a placeholder for actual implementation
+            ValueError: If framework is not supported
+            NotImplementedError: If adapter for framework is not yet implemented
         """
         logger.info(
             f"Executing training for {config.framework_name} "
             f"(seed={config.random_seed})"
         )
         
-        # This would be implemented by framework-specific adapters
-        # For now, raise NotImplementedError to indicate this is a placeholder
-        raise NotImplementedError(
-            "Training execution is delegated to framework-specific adapters. "
-            "See experiments/benchmark_system/adapters/ for implementations."
-        )
+        # Set default output directory
+        if output_dir is None:
+            output_dir = Path("results") / "benchmark_training" / config.framework_name
+        
+        # Delegate to framework-specific adapter
+        if config.framework_name == "HistoCore":
+            from experiments.benchmark_system.adapters.histocore_adapter import HistoCoreAdapter
+            adapter = HistoCoreAdapter(env)
+            return adapter.execute_training(
+                config.task_spec,
+                config.config_dict,
+                output_dir,
+            )
+        elif config.framework_name == "PathML":
+            raise NotImplementedError(
+                "PathML adapter not yet implemented. "
+                "See experiments/benchmark_system/adapters/pathml_adapter.py"
+            )
+        elif config.framework_name == "CLAM":
+            raise NotImplementedError(
+                "CLAM adapter not yet implemented. "
+                "See experiments/benchmark_system/adapters/clam_adapter.py"
+            )
+        elif config.framework_name == "PyTorch":
+            raise NotImplementedError(
+                "PyTorch adapter not yet implemented. "
+                "See experiments/benchmark_system/adapters/pytorch_adapter.py"
+            )
+        else:
+            raise ValueError(
+                f"Unsupported framework: {config.framework_name}. "
+                f"Supported frameworks: {list(self.FRAMEWORK_MAPPINGS.keys())}"
+            )
     
     def validate_equivalence(
         self, 
