@@ -428,7 +428,13 @@ class TrainingOrchestrator:
         with torch.no_grad():
             for param_name, param in self.global_model.named_parameters():
                 if param_name in aggregated_update:
-                    param.add_(aggregated_update[param_name])
+                    update = aggregated_update[param_name]
+                    if not torch.isfinite(update).all():
+                        raise ValueError(
+                            f"Aggregated update for '{param_name}' contains NaN or Inf. "
+                            "Aborting model update to prevent corruption."
+                        )
+                    param.add_(update)
 
         # Increment version
         if increment_version:

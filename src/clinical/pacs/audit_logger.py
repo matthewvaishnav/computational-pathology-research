@@ -670,7 +670,7 @@ class PACSAuditLogger:
     def _hash_phi(self, phi_value: str) -> str:
         # Truncated SHA-256 preserves enough entropy to cross-reference entries
         # without exposing the raw PHI value in log storage
-        return hashlib.sha256(phi_value.encode()).hexdigest()[:16]
+        return hashlib.sha256(phi_value.encode()).hexdigest()
 
     def _log_message(self, message: AuditMessage) -> str:
         with self._lock:
