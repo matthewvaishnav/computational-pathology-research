@@ -498,7 +498,7 @@ class DatasetOrganizer:
 
         timestamp = datetime.now().isoformat()
         hash_input = f"{name}_{timestamp}"
-        hash_obj = hashlib.md5(hash_input.encode())
+        hash_obj = hashlib.sha256(hash_input.encode())
 
         return hash_obj.hexdigest()[:12]
 

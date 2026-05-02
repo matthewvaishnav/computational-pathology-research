@@ -514,12 +514,12 @@ class SecurityManager:
             # Use system CA bundle if no custom bundle provided
             context.load_default_certs()
         else:
-            # Log warning if verification disabled (testing only)
+            # Still verify server certificate for security
             logger.warning(
-                "Certificate verification disabled - INSECURE, only use for testing!"
+                "Certificate hostname verification disabled - use only for testing with self-signed certs"
             )
             context.check_hostname = False
-            context.verify_mode = ssl.CERT_NONE
+            context.verify_mode = ssl.CERT_REQUIRED  # Still verify certificate chain
 
         # Configure client certificate for mutual authentication
         if security_config.mutual_authentication:

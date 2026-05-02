@@ -206,7 +206,7 @@ class Deduplicator:
     def _compute_md5(self, path: Path) -> str:
         """Compute MD5 hash"""
 
-        hash_md5 = hashlib.md5()
+        hash_md5 = hashlib.sha256()
 
         with open(path, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):

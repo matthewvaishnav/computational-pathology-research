@@ -117,7 +117,15 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 
 ### Performance Analysis
 - [PERFORMANCE.md](PERFORMANCE.html) - Optimization guide
-- **Topics**: Profiling, bottleneck analysis, GPU utilization
+- [PERFORMANCE_COMPARISON.md](PERFORMANCE_COMPARISON.html) - **8-12x speedup**: Benchmark vs PathML, CLAM
+- [INFERENCE_OPTIMIZATION.md](INFERENCE_OPTIMIZATION.html) - **2-3x faster inference**: TorchScript, quantization
+- **Topics**: Profiling, bottleneck analysis, GPU utilization, training optimization
+
+### Model Optimization
+- [QUANTIZATION.md](QUANTIZATION.html) - **INT8/FP16 quantization**: 4x compression, 2-3x speedup
+- [MULTI_GPU_TRAINING.md](MULTI_GPU_TRAINING.html) - **DistributedDataParallel**: Linear GPU scaling
+- [FOUNDATION_MODELS.md](FOUNDATION_MODELS.html) - **Pretrained models**: UNI, Phikon, CONCH
+- **Topics**: Model compression, distributed training, transfer learning
 
 ### Model Profiling
 - Inference latency measurement
