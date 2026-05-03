@@ -6,13 +6,16 @@ Implements exponential backoff, retry logic, and connection recovery.
 
 import asyncio
 import logging
-import random
+import secrets
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Callable, Any
 
 logger = logging.getLogger(__name__)
+
+# Use cryptographically secure random for security-sensitive operations
+_secure_random = secrets.SystemRandom()
 
 
 class ReconnectionStrategy(Enum):
@@ -208,7 +211,7 @@ class ReconnectionHandler:
         elif self.strategy == ReconnectionStrategy.JITTERED_BACKOFF:
             # Exponential backoff with jitter
             base_delay = self.initial_delay * (self.backoff_multiplier ** (self.attempt_count - 1))
-            jitter = base_delay * self.jitter_factor * (random.random() * 2 - 1)
+            jitter = base_delay * self.jitter_factor * (_secure_random.random() * 2 - 1)
             delay = base_delay + jitter
         
         else:
@@ -297,7 +300,7 @@ async def example_connect():
     await asyncio.sleep(0.1)
     
     # Simulate random failures
-    if random.random() < 0.7:  # 70% failure rate for demo
+    if _secure_random.random() < 0.7:  # 70% failure rate for demo
         raise ConnectionError("Simulated connection failure")
     
     logger.info("Connection established!")
