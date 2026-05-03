@@ -461,7 +461,7 @@ config = SecurityConfig(
 - [x] Web Application Firewall (WAF) integration with OWASP CRS
 - [x] Intrusion detection system (IDS) with anomaly detection and alert system
 - [x] Security information and event management (SIEM) with event correlation and incident tracking
-- [ ] Automated penetration testing in CI/CD - requires CI pipeline setup
+- [x] Automated penetration testing in CI/CD (OWASP ZAP, Bandit, Safety, Trivy)
 
 **Q4 2026:**
 - [ ] SOC 2 Type II compliance
