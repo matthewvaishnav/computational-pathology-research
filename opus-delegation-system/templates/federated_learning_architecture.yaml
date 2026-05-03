@@ -1,0 +1,61 @@
+template_id: federated_learning_architecture
+name: Federated Learning System Architecture
+category: architecture_design
+version: 1.0.0
+description: Design a federated learning system with distributed training and
+  privacy preservation
+parameters:
+  - name: system_name
+    required: true
+    type: string
+    description: Name of the federated learning system
+  - name: node_types
+    required: true
+    type: list
+    description: Types of nodes in the system (e.g., coordinator, worker, aggregator)
+  - name: aggregation_strategy
+    required: false
+    type: string
+    default: federated_averaging
+    description: Strategy for aggregating model updates
+  - name: privacy_requirements
+    required: false
+    type: string
+    default: differential_privacy
+    description: Privacy preservation requirements
+context_requirements:
+  - architecture_docs
+  - code_snippets
+  - requirements_docs
+  - constraints
+expected_artifacts:
+  - type: mermaid_diagram
+    subtype: architecture
+  - type: openapi_spec
+    format: yaml
+  - type: implementation_guide
+    granularity: detailed
+prompt_template: >-
+  Design a federated learning architecture for {{system_name}}.
+
+
+  **Node Types:** {{node_types}}
+
+  **Aggregation Strategy:** {{aggregation_strategy}}
+
+  **Privacy Requirements:** {{privacy_requirements}}
+
+
+  Please provide:
+
+  1. System architecture diagram (Mermaid) showing all node types and their
+  interactions
+
+  2. Node communication API (OpenAPI YAML) for model updates and aggregation
+
+  3. Implementation plan with dependencies and complexity estimates
+
+
+  Consider the following context:
+
+  {{context_bundle}}

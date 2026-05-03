@@ -10,3 +10,4 @@ export * from './types/core.js';
 export { ProblemClassifier } from './components/ProblemClassifier.js';
 export { ContextExtractor } from './components/ContextExtractor.js';
 export { ContextPackager } from './components/ContextPackager.js';
+export { TemplateLibrary, DelegationTemplate, TemplateParameter, TemplateUsageStats } from './components/TemplateLibrary.js';

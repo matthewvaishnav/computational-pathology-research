@@ -5,7 +5,6 @@
  */
 
 import { FileMatch, CodeSnippet, ExtractionStrategy } from './ContextExtractor.js';
-import { DelegationType, ContextType } from '../types/core.js';
 
 // Context Bundle Structure (Requirement 2.8)
 export interface ContextBundle {
@@ -296,7 +295,7 @@ export class ContextPackager {
    */
   private extractDocumentationExcerpts(
     files: FileMatch[],
-    config: PackagingConfig
+    _config: PackagingConfig
   ): DocumentationExcerpt[] {
     const excerpts: DocumentationExcerpt[] = [];
     
@@ -358,7 +357,7 @@ export class ContextPackager {
     }
     
     // Step 2: Check size after compression
-    let currentSize = this.calculateContentSize(currentSnippets, currentExcerpts);
+    const currentSize = this.calculateContentSize(currentSnippets, currentExcerpts);
     // Use smaller overhead for very small limits
     const overhead = config.maxSize < 500 ? 40 : Math.min(500, Math.max(100, config.maxSize * 0.2));
     let totalSize = currentSize + overhead;
@@ -621,7 +620,7 @@ export class ContextPackager {
     snippets: FormattedCodeSnippet[],
     excerpts: DocumentationExcerpt[],
     maxSize: number,
-    excludedFiles: Array<{ path: string; reason: string; size: number }>
+    _excludedFiles: Array<{ path: string; reason: string; size: number }>
   ): {
     snippets: FormattedCodeSnippet[];
     excerpts: DocumentationExcerpt[];
