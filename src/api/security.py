@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import magic
+import pyclamd
 from fastapi import HTTPException, Request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -355,9 +356,10 @@ def validate_dicom_file(file_content: bytes) -> None:
 
 
 def scan_for_malware(file_content: bytes) -> bool:
-    """Scan file content for malware signatures.
+    """Scan file content for malware signatures using ClamAV.
 
-    Note: This is a placeholder. In production, integrate with ClamAV or similar.
+    Attempts to connect to ClamAV daemon (clamd) for malware scanning.
+    Falls back to basic signature checks if ClamAV unavailable.
 
     Args:
         file_content: File content as bytes
@@ -365,10 +367,35 @@ def scan_for_malware(file_content: bytes) -> bool:
     Returns:
         True if file is clean, False if malware detected
     """
-    # TODO: Integrate with ClamAV or similar antivirus solution
-    # For now, perform basic checks
+    # Try ClamAV integration first
+    try:
+        # Try Unix socket first (common on Linux)
+        cd = pyclamd.ClamdUnixSocket()
+        if not cd.ping():
+            # Fall back to network socket (common on Windows/Docker)
+            cd = pyclamd.ClamdNetworkSocket()
+            if not cd.ping():
+                raise ConnectionError("ClamAV daemon not available")
+        
+        # Scan file content
+        scan_result = cd.scan_stream(file_content)
+        
+        if scan_result is None:
+            # Clean file
+            return True
+        else:
+            # Malware detected
+            logger.warning(f"ClamAV detected malware: {scan_result}")
+            return False
+            
+    except (ConnectionError, pyclamd.ConnectionError) as e:
+        logger.warning(f"ClamAV not available ({e}), falling back to basic signature checks")
+        # Fall through to basic checks
+    except Exception as e:
+        logger.error(f"ClamAV scan error: {e}, falling back to basic signature checks")
+        # Fall through to basic checks
 
-    # Check for common malware signatures
+    # Fallback: Basic signature checks
     malware_signatures = [
         b"<script",  # JavaScript injection
         b"<?php",  # PHP code injection
