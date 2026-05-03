@@ -332,5 +332,8 @@ bfg.jar
 # Kiro specs (development artifacts)
 .kiro/specs/
 
+# Opus delegation (separate project)
+opus-delegation/
+
 # Build artifacts
 build/
