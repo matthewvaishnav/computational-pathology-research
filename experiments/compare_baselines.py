@@ -71,7 +71,7 @@ def load_results(results_dir: Path) -> Dict[str, Dict]:
     """
     results = {}
 
-    for model_name in MODEL_CONFIGS.keys():
+    for model_name in MODEL_CONFIGS:
         model_dir = results_dir / model_name
         metrics_file = model_dir / "metrics.json"
 
