@@ -592,7 +592,7 @@ def benchmark_secure_aggregation(
 
     # Verify correctness (compare with plaintext aggregation)
     plaintext_sum = {}
-    for param_name in aggregated.keys():
+    for param_name in aggregated:
         plaintext_sum[param_name] = torch.zeros_like(aggregated[param_name])
         for gradients, weight in client_updates.values():
             plaintext_sum[param_name] += gradients[param_name] * weight
@@ -600,7 +600,7 @@ def benchmark_secure_aggregation(
 
     # Check accuracy
     max_error = 0.0
-    for param_name in aggregated.keys():
+    for param_name in aggregated:
         error = torch.max(torch.abs(aggregated[param_name] - plaintext_sum[param_name])).item()
         max_error = max(max_error, error)
 
@@ -652,14 +652,14 @@ if __name__ == "__main__":
 
     # Verify against plaintext
     plaintext_agg = {}
-    for param_name in aggregated.keys():
+    for param_name in aggregated:
         plaintext_agg[param_name] = torch.zeros_like(aggregated[param_name])
         for gradients, weight in client_updates.values():
             plaintext_agg[param_name] += gradients[param_name]
         plaintext_agg[param_name] /= len(client_updates)
 
     # Check accuracy
-    for param_name in aggregated.keys():
+    for param_name in aggregated:
         error = torch.max(torch.abs(aggregated[param_name] - plaintext_agg[param_name])).item()
         print(f"   {param_name} error: {error:.2e}")
 
