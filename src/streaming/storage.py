@@ -313,14 +313,60 @@ class LocalStorage:
         return None
 
     def create_temp_file(self, suffix: str = "") -> str:
-        """Create temporary file."""
+        """Create temporary file with secure permissions."""
         fd, filepath = tempfile.mkstemp(suffix=suffix, dir=self.config.temp_dir)
+        
+        # Secure file permissions immediately after creation
+        try:
+            if os.name == 'posix':
+                os.chmod(filepath, 0o600)
+            elif os.name == 'nt':
+                # Windows: Use icacls to set restrictive ACLs
+                import subprocess
+                subprocess.run(
+                    ['icacls', filepath, '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    check=True,
+                    capture_output=True
+                )
+        except Exception as e:
+            logger.warning(f"Failed to set secure permissions on temp file: {e}")
+            # Close and remove insecure temp file
+            os.close(fd)
+            try:
+                os.unlink(filepath)
+            except Exception:
+                pass
+            raise RuntimeError(f"Cannot create secure temp file: {e}")
+        
         os.close(fd)
         return filepath
 
     def create_temp_dir(self) -> str:
-        """Create temporary directory."""
-        return tempfile.mkdtemp(dir=self.config.temp_dir)
+        """Create temporary directory with secure permissions."""
+        dirpath = tempfile.mkdtemp(dir=self.config.temp_dir)
+        
+        # Secure directory permissions immediately after creation
+        try:
+            if os.name == 'posix':
+                os.chmod(dirpath, 0o700)
+            elif os.name == 'nt':
+                # Windows: Use icacls to set restrictive ACLs
+                import subprocess
+                subprocess.run(
+                    ['icacls', dirpath, '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    check=True,
+                    capture_output=True
+                )
+        except Exception as e:
+            logger.warning(f"Failed to set secure permissions on temp dir: {e}")
+            # Remove insecure temp directory
+            try:
+                shutil.rmtree(dirpath)
+            except Exception:
+                pass
+            raise RuntimeError(f"Cannot create secure temp directory: {e}")
+        
+        return dirpath
 
     def cleanup_temp_files(self, max_age_hours: Optional[int] = None) -> int:
         """Clean up old temporary files."""
