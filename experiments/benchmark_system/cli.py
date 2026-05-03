@@ -329,9 +329,13 @@ def run_command(args) -> int:
         # Resume from checkpoint if requested
         if args.resume:
             logger.info(f"Resuming from checkpoint: {args.resume}")
-            # TODO: Implement checkpoint resume logic
-            # orchestrator.checkpoint_manager.load_checkpoint(args.resume)
-            logger.warning("Checkpoint resume not yet implemented")
+            try:
+                checkpoint_data = orchestrator.checkpoint_manager.load_checkpoint(args.resume)
+                orchestrator.checkpoint_manager.resume_from_checkpoint(checkpoint_data)
+                logger.info(f"Successfully resumed from checkpoint: {args.resume}")
+            except Exception as e:
+                logger.error(f"Failed to resume from checkpoint: {e}")
+                sys.exit(1)
 
         # Run benchmark suite
         result = orchestrator.run_benchmark_suite()
@@ -518,15 +522,27 @@ def resume_command(args) -> int:
         # Initialize orchestrator
         orchestrator = BenchmarkOrchestrator(config=config)
 
-        # TODO: Restore orchestrator state from checkpoint
-        # This would involve:
-        # - Restoring completed_frameworks list
-        # - Restoring failed_frameworks list
-        # - Restoring framework_results dict
-        # - Skipping already completed frameworks
-
-        logger.warning("Full checkpoint resume not yet implemented")
-        logger.info("Starting fresh benchmark with same configuration")
+        # Restore orchestrator state from checkpoint
+        checkpoint_state = benchmark_state.get("state", {})
+        if checkpoint_state:
+            # Restore completed frameworks
+            if "completed_frameworks" in checkpoint_state:
+                orchestrator.completed_frameworks = set(checkpoint_state["completed_frameworks"])
+                logger.info(f"Restored {len(orchestrator.completed_frameworks)} completed frameworks")
+            
+            # Restore failed frameworks
+            if "failed_frameworks" in checkpoint_state:
+                orchestrator.failed_frameworks = set(checkpoint_state["failed_frameworks"])
+                logger.info(f"Restored {len(orchestrator.failed_frameworks)} failed frameworks")
+            
+            # Restore framework results
+            if "framework_results" in checkpoint_state:
+                orchestrator.framework_results = checkpoint_state["framework_results"]
+                logger.info(f"Restored results for {len(orchestrator.framework_results)} frameworks")
+            
+            logger.info("Successfully restored orchestrator state from checkpoint")
+        else:
+            logger.warning("No state found in checkpoint, starting fresh")
 
         # Run benchmark suite
         result = orchestrator.run_benchmark_suite()
