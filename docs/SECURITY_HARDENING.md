@@ -242,6 +242,7 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["30/minute"])
 - 30-minute token expiration
 - Secure token generation using `secrets` module
 - Token validation on every request
+- **CSRF Protection:** Not required - JWT Bearer tokens transmitted via Authorization header are immune to CSRF attacks (unlike cookie-based session auth). CSRF only affects state-changing requests using cookies for authentication.
 
 **Brute Force Protection:**
 - Account lockout after 5 failed attempts
@@ -449,8 +450,10 @@ config = SecurityConfig(
 ### Planned Enhancements
 
 **Q2 2026:**
-- [ ] CSRF protection for web clients (fastapi-csrf-protect)
+- [x] CSRF protection analysis (not required - JWT Bearer auth immune to CSRF)
 - [x] ClamAV integration for malware scanning
+- [x] Centralized audit logging (Elasticsearch/Splunk HEC)
+- [x] Checkpoint resume for benchmark system
 - [ ] Hardware security module (HSM) support
 - [ ] OAuth 2.0 / OIDC integration
 
