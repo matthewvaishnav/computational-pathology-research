@@ -9,7 +9,12 @@ import asyncio
 import json
 import logging
 import ssl
-import xml.etree.ElementTree as ET
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+    import warnings
+    warnings.warn("defusedxml not available, using unsafe XML parser. Install with: pip install defusedxml")
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
