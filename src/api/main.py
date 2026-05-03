@@ -1117,6 +1117,128 @@ async def subscribe_notifications(subscription_data: dict):
     return {"message": "Subscription successful"}
 
 
+# OAuth 2.0 / OIDC endpoints
+@app.get("/api/v1/auth/oauth/login")
+async def oauth_login(provider: str = "azure"):
+    """Initiate OAuth 2.0 login flow.
+    
+    Args:
+        provider: OAuth provider (azure, okta, google)
+    """
+    try:
+        from src.api.oauth import create_oauth_client
+        
+        oauth_client = create_oauth_client(provider=provider)
+        auth_url, state = oauth_client.get_authorization_url()
+        
+        log_security_event(
+            "oauth_login_initiated",
+            details=f"Provider: {provider}",
+            success=True
+        )
+        
+        return {
+            "authorization_url": auth_url,
+            "state": state,
+            "provider": provider
+        }
+        
+    except Exception as e:
+        logger.error(f"OAuth login failed: {e}")
+        log_security_event(
+            "oauth_login_failed",
+            details=f"Provider: {provider}, Error: {str(e)}",
+            success=False
+        )
+        raise HTTPException(status_code=500, detail="Failed to initiate OAuth login")
+
+
+@app.get("/api/v1/auth/oauth/callback")
+async def oauth_callback(request: Request, provider: str = "azure"):
+    """Handle OAuth 2.0 callback.
+    
+    Args:
+        provider: OAuth provider (azure, okta, google)
+    """
+    try:
+        from src.api.oauth import create_oauth_client, oauth_callback_handler
+        
+        oauth_client = create_oauth_client(provider=provider)
+        
+        # Handle callback and get user info
+        result = await oauth_callback_handler(request, oauth_client)
+        
+        userinfo = result["userinfo"]
+        access_token = result["access_token"]
+        
+        # Create or update user in database
+        db = next(get_db_session())
+        user_ops = UserOperations(db)
+        
+        # Check if user exists by email
+        email = userinfo.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Email not provided by OAuth provider")
+        
+        user = user_ops.get_user_by_email(email)
+        
+        if not user:
+            # Create new user
+            username = userinfo.get("preferred_username") or email.split("@")[0]
+            user = user_ops.create_user(
+                username=username,
+                email=email,
+                password_hash="",  # OAuth users don't have password
+                role="pathologist",  # Default role
+            )
+            db.commit()
+            logger.info(f"Created new OAuth user: {email}")
+        
+        # Generate JWT token for our API
+        from src.api.security import create_access_token
+        
+        jwt_token = create_access_token(
+            data={
+                "sub": str(user.id),
+                "username": user.username,
+                "role": user.role,
+                "oauth_provider": provider
+            }
+        )
+        
+        log_security_event(
+            "oauth_login_success",
+            username=user.username,
+            ip_address=request.client.host,
+            details=f"Provider: {provider}",
+            success=True
+        )
+        
+        return {
+            "access_token": jwt_token,
+            "token_type": "bearer",
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "role": user.role
+            },
+            "oauth_provider": provider
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OAuth callback failed: {e}")
+        log_security_event(
+            "oauth_callback_failed",
+            ip_address=request.client.host,
+            details=f"Provider: {provider}, Error: {str(e)}",
+            success=False
+        )
+        raise HTTPException(status_code=500, detail="OAuth authentication failed")
+
+
 # Error handlers
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
