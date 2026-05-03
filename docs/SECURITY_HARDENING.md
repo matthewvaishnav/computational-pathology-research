@@ -454,8 +454,8 @@ config = SecurityConfig(
 - [x] ClamAV integration for malware scanning
 - [x] Centralized audit logging (Elasticsearch/Splunk HEC)
 - [x] Checkpoint resume for benchmark system
-- [ ] Hardware security module (HSM) support
-- [ ] OAuth 2.0 / OIDC integration
+- [x] Hardware security module (HSM) support via PKCS#11
+- [x] OAuth 2.0 / OIDC integration (Azure AD, Okta, Google)
 
 **Q3 2026:**
 - [ ] Web Application Firewall (WAF) integration
