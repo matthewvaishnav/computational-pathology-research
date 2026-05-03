@@ -216,7 +216,7 @@ class SecureFLClient:
             if response.model_state_dict:
                 # Deserialize model
                 buffer = io.BytesIO(response.model_state_dict)
-                model_state = torch.load(buffer)
+                model_state = torch.load(buffer, weights_only=True)
 
                 logger.info(f"Received global model v{response.model_version} for round {round_id}")
 

@@ -202,7 +202,7 @@ class PACSConnector:
         cache_path = self.cache_dir / f"{study_uid}.pt"
         if cache_path.exists():
             logger.debug(f"Loading from cache: {cache_path}")
-            return torch.load(cache_path)
+            return torch.load(cache_path, weights_only=True)
         
         # Retrieve from PACS using existing retrieval engine
         try:

@@ -115,7 +115,7 @@ class HealthChecker:
             return True, None
 
         try:
-            checkpoint = torch.load(model_path, map_location="cpu")
+            checkpoint = torch.load(model_path, map_location="cpu", weights_only=True)
 
             if "model_state_dict" not in checkpoint:
                 return False, "Invalid checkpoint: missing model_state_dict"

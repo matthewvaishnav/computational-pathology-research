@@ -218,7 +218,7 @@ def load_checkpoint_distributed(
     Returns:
         Checkpoint dictionary
     """
-    checkpoint = torch.load(filepath, map_location=device)
+    checkpoint = torch.load(filepath, map_location=device, weights_only=True)
 
     # Load model state dict (handle DDP wrapper)
     if isinstance(model, (DataParallel, DistributedDataParallel)):

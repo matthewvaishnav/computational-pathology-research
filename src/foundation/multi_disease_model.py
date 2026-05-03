@@ -247,7 +247,7 @@ def create_foundation_model(
     model = MultiDiseaseFoundationModel(config)
 
     if pretrained_path:
-        checkpoint = torch.load(pretrained_path, map_location="cpu")
+        checkpoint = torch.load(pretrained_path, map_location="cpu", weights_only=True)
         model.load_state_dict(checkpoint["model_state_dict"])
 
     return model

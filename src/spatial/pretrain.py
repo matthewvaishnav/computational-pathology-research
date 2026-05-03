@@ -271,7 +271,7 @@ class SpatialPretrainer:
 
     def load_checkpoint(self, path: str) -> float:
         """Load model from checkpoint. Returns validation Pearson r."""
-        ckpt = torch.load(path, map_location=self.device)
+        ckpt = torch.load(path, map_location=self.device, weights_only=True)
         self.model.load_state_dict(ckpt["model_state_dict"])
         logger.info(
             f"Loaded checkpoint from {path}, val_pearson={ckpt.get('val_pearson', '?'):.4f}"

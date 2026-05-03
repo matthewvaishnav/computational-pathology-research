@@ -170,7 +170,7 @@ class UNIEncoder(FoundationModelEncoder):
         )
 
         # Load pretrained weights
-        state_dict = torch.load(checkpoint_path, map_location="cpu")
+        state_dict = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
         self.model.load_state_dict(state_dict, strict=True)
 
         if self.freeze:
