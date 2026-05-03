@@ -302,7 +302,7 @@ print("✓ Saved training_curves.png")
 
 # Test set evaluation
 print("\nEvaluating on test set...")
-checkpoint = torch.load("models/best_model.pth")
+checkpoint = torch.load("models/best_model.pth", weights_only=True)
 model.load_state_dict(checkpoint["model_state_dict"])
 classifier.load_state_dict(checkpoint["classifier_state_dict"])
 
