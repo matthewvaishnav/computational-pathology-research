@@ -449,8 +449,8 @@ class ModelQuantizer:
         if not load_path.exists():
             raise FileNotFoundError(f"Model not found: {load_path}")
 
-        # Load checkpoint
-        checkpoint = torch.load(load_path, map_location="cpu")
+        # Load checkpoint with weights_only for security
+        checkpoint = torch.load(load_path, map_location="cpu", weights_only=True)
 
         # Load state dict
         model.load_state_dict(checkpoint["model_state_dict"])
