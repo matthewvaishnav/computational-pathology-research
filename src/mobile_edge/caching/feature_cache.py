@@ -250,7 +250,7 @@ class FeatureCacheManager:
         else:
             sample_features = features
         
-        return hashlib.md5(sample_features.tobytes()).hexdigest()
+        return hashlib.sha256(sample_features.tobytes()).hexdigest()
 
     def _compute_feature_similarity(self, features1: np.ndarray, features2: np.ndarray) -> float:
         """Compute similarity between two feature arrays."""
