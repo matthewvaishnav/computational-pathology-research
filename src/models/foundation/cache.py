@@ -90,13 +90,13 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
             raise ValueError(f"No cached features found in {cache_dir}")
 
         # Load first batch to get feature dimension
-        first_batch = torch.load(self.cache_files[0])
+        first_batch = torch.load(self.cache_files[0], weights_only=True)
         self.feature_dim = first_batch["features"].shape[-1]
 
         # Build index: (file_idx, sample_idx_in_file)
         self.index = []
         for file_idx, cache_file in enumerate(self.cache_files):
-            batch_data = torch.load(cache_file)
+            batch_data = torch.load(cache_file, weights_only=True)
             batch_size = len(batch_data["labels"])
             for sample_idx in range(batch_size):
                 self.index.append((file_idx, sample_idx))
@@ -109,7 +109,7 @@ class CachedFeatureDataset(torch.utils.data.Dataset):
         cache_file = self.cache_files[file_idx]
 
         # Load batch and extract sample
-        batch_data = torch.load(cache_file)
+        batch_data = torch.load(cache_file, weights_only=True)
         features = batch_data["features"][sample_idx]
         labels = batch_data["labels"][sample_idx]
 
