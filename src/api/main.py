@@ -1188,6 +1188,123 @@ async def get_ids_statistics(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail="Failed to retrieve IDS statistics")
 
 
+# SIEM (Security Information and Event Management) endpoints
+@app.get("/api/v1/security/siem/incidents")
+async def get_siem_incidents(
+    severity: Optional[str] = None,
+    source_ip: Optional[str] = None,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user),
+):
+    """Get SIEM security incidents.
+    
+    Args:
+        severity: Filter by severity (low, medium, high, critical)
+        source_ip: Filter by source IP
+        limit: Maximum number of incidents
+    """
+    try:
+        from src.monitoring.siem import get_siem_engine
+        
+        # Only admins can view SIEM incidents
+        if current_user.role != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        siem_engine = get_siem_engine()
+        incidents = siem_engine.get_incidents(severity=severity, source_ip=source_ip, limit=limit)
+        
+        return {
+            "incidents": incidents,
+            "total": len(incidents),
+        }
+        
+    except ImportError:
+        raise HTTPException(status_code=503, detail="SIEM module not available")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get SIEM incidents: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve SIEM incidents")
+
+
+@app.get("/api/v1/security/siem/dashboard")
+async def get_siem_dashboard(current_user: dict = Depends(get_current_user)):
+    """Get SIEM dashboard data.
+    
+    Returns aggregated security metrics and statistics.
+    """
+    try:
+        from src.monitoring.siem import get_siem_engine
+        
+        # Only admins can view SIEM dashboard
+        if current_user.role != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        siem_engine = get_siem_engine()
+        dashboard = siem_engine.get_dashboard_data()
+        
+        return dashboard
+        
+    except ImportError:
+        raise HTTPException(status_code=503, detail="SIEM module not available")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get SIEM dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve SIEM dashboard")
+
+
+@app.get("/api/v1/security/siem/events")
+async def search_siem_events(
+    source: Optional[str] = None,
+    event_type: Optional[str] = None,
+    severity: Optional[str] = None,
+    source_ip: Optional[str] = None,
+    username: Optional[str] = None,
+    limit: int = 1000,
+    current_user: dict = Depends(get_current_user),
+):
+    """Search SIEM security events.
+    
+    Args:
+        source: Filter by event source (ids, waf, audit, api)
+        event_type: Filter by event type
+        severity: Filter by severity
+        source_ip: Filter by source IP
+        username: Filter by username
+        limit: Maximum number of results
+    """
+    try:
+        from src.monitoring.siem import get_siem_engine
+        
+        # Only admins can search SIEM events
+        if current_user.role != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        siem_engine = get_siem_engine()
+        events = siem_engine.search_events(
+            source=source,
+            event_type=event_type,
+            severity=severity,
+            source_ip=source_ip,
+            username=username,
+            limit=limit,
+        )
+        
+        return {
+            "events": events,
+            "total": len(events),
+        }
+        
+    except ImportError:
+        raise HTTPException(status_code=503, detail="SIEM module not available")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to search SIEM events: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search SIEM events")
+
+
 # OAuth 2.0 / OIDC endpoints
 @app.get("/api/v1/auth/oauth/login")
 async def oauth_login(provider: str = "azure"):
