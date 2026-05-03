@@ -458,10 +458,10 @@ config = SecurityConfig(
 - [x] OAuth 2.0 / OIDC integration (Azure AD, Okta, Google)
 
 **Q3 2026:**
-- [ ] Web Application Firewall (WAF) integration
-- [ ] Intrusion detection system (IDS)
-- [ ] Security information and event management (SIEM)
-- [ ] Automated penetration testing in CI/CD
+- [x] Web Application Firewall (WAF) integration with OWASP CRS
+- [ ] Intrusion detection system (IDS) - external service integration
+- [ ] Security information and event management (SIEM) - external service integration
+- [ ] Automated penetration testing in CI/CD - requires CI pipeline setup
 
 **Q4 2026:**
 - [ ] SOC 2 Type II compliance
