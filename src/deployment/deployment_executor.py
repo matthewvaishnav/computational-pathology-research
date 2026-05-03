@@ -18,6 +18,8 @@ import yaml
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
+from .validation import validate_site_id, ValidationError
+
 logger = logging.getLogger(__name__)
 
 
@@ -132,6 +134,9 @@ class DeploymentExecutor:
         Returns:
             Installation status and results
         """
+        # Validate input
+        site_id = validate_site_id(site_id)
+        
         installation_steps = [
             DeploymentStep(
                 step_id="prepare_environment",
@@ -294,6 +299,9 @@ class DeploymentExecutor:
         Returns:
             List of integration test results
         """
+        # Validate input
+        site_id = validate_site_id(site_id)
+        
         integration_tests = [
             # PACS Integration Tests
             IntegrationTest(
