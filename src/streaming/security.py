@@ -282,11 +282,8 @@ class EncryptionManager:
                 with open(key_path, "wb") as f:
                     f.write(self.master_key)
 
-            # Secure file permissions (Unix only)
-            try:
-                os.chmod(key_path, 0o600)
-            except Exception:
-                pass
+            # Secure file permissions
+            self._secure_file_permissions(key_path)
 
             logger.info("Generated new master key: %s", key_path)
 
@@ -294,6 +291,34 @@ class EncryptionManager:
         self.fernet = Fernet(self.master_key)
 
         return self.master_key
+    
+    def _secure_file_permissions(self, filepath: Path) -> None:
+        """Set secure file permissions (Unix and Windows)."""
+        try:
+            if os.name == 'posix':
+                os.chmod(filepath, 0o600)
+                logger.debug(f"Set Unix permissions 0600 on {filepath}")
+            elif os.name == 'nt':
+                # Windows: Use icacls to set restrictive ACLs
+                import subprocess
+                result = subprocess.run(
+                    ['icacls', str(filepath), '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+                logger.debug(f"Set Windows ACLs on {filepath}")
+            else:
+                logger.warning(f"Unknown OS, cannot secure permissions on {filepath}")
+        except Exception as e:
+            # CRITICAL: Fail loudly if permissions cannot be secured
+            logger.error(f"CRITICAL: Failed to secure permissions on {filepath}: {e}")
+            # Remove insecure key file
+            try:
+                filepath.unlink()
+            except Exception:
+                pass
+            raise RuntimeError(f"Cannot secure key file permissions: {e}") from e
 
     def encrypt_data(self, data: bytes) -> bytes:
         """Encrypt data using master key."""
@@ -403,14 +428,39 @@ class KeyManager:
             f.write(key)
 
         # Secure permissions
-        try:
-            os.chmod(key_path, 0o600)
-        except Exception:
-            pass
+        self._secure_file_permissions(key_path)
 
         logger.info("Generated key: %s (type=%s)", key_id, key_type)
 
         return key
+    
+    def _secure_file_permissions(self, filepath: Path) -> None:
+        """Set secure file permissions (Unix and Windows)."""
+        try:
+            if os.name == 'posix':
+                os.chmod(filepath, 0o600)
+                logger.debug(f"Set Unix permissions 0600 on {filepath}")
+            elif os.name == 'nt':
+                # Windows: Use icacls to set restrictive ACLs
+                import subprocess
+                result = subprocess.run(
+                    ['icacls', str(filepath), '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+                logger.debug(f"Set Windows ACLs on {filepath}")
+            else:
+                logger.warning(f"Unknown OS, cannot secure permissions on {filepath}")
+        except Exception as e:
+            # CRITICAL: Fail loudly if permissions cannot be secured
+            logger.error(f"CRITICAL: Failed to secure permissions on {filepath}: {e}")
+            # Remove insecure key file
+            try:
+                filepath.unlink()
+            except Exception:
+                pass
+            raise RuntimeError(f"Cannot secure key file permissions: {e}") from e
 
     def load_key(self, key_id: str) -> bytes:
         """Load encryption key."""
