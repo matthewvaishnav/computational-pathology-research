@@ -756,7 +756,7 @@ async def get_analysis_result(analysis_id: str, db: Session = Depends(get_db_ses
 
 # DICOM endpoints
 @app.post("/api/v1/dicom/upload")
-@limiter.limit("10/minute")  # Rate limit: 10 uploads per minute
+@limiter.limit("5/minute")  # Rate limit: 5 uploads per minute (reduced from 10)
 async def upload_dicom(file: UploadFile = File(...), request: Request = None):
     """Upload DICOM file."""
 
@@ -831,7 +831,7 @@ async def get_cases(
 
 
 @app.post("/api/v1/cases")
-@limiter.limit("30/minute")  # Rate limit: 30 case creations per minute
+@limiter.limit("10/minute")  # Rate limit: 10 case creations per minute (reduced from 30)
 async def create_case(case_data: CaseData, request: Request = None, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)):
     """Create a new case in database."""
 

@@ -47,7 +47,15 @@ ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/tiff", "image/bmp"]
 ALLOWED_DICOM_TYPES = ["application/dicom"]
 
 # Rate limiting configuration
-limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["30/minute"])  # Reduced from 100/minute
+
+# CSRF Protection Note:
+# For web clients (non-API), implement CSRF protection using:
+# - fastapi-csrf-protect library
+# - Double-submit cookie pattern
+# - SameSite cookie attribute (already set in session cookies)
+# API clients using JWT Bearer tokens are not vulnerable to CSRF
+# but any cookie-based authentication MUST implement CSRF protection.
 
 # Failed login tracking
 failed_login_attempts: Dict[str, Tuple[int, float]] = {}
