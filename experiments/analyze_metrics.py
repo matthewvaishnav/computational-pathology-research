@@ -343,7 +343,7 @@ def main():
     if args.checkpoint:
         checkpoint_path = Path(args.checkpoint)
         if checkpoint_path.exists():
-            checkpoint = torch.load(checkpoint_path, map_location="cpu")
+            checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
             metrics = checkpoint.get("metrics", {})
 
             logger.info("Checkpoint metrics:")

@@ -602,7 +602,7 @@ def main():
 
     # Load checkpoint
     logger.info(f"Loading checkpoint from {args.checkpoint}")
-    checkpoint = torch.load(args.checkpoint, map_location=device)
+    checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=True)
 
     # Initialize model
     logger.info("Initializing model...")
