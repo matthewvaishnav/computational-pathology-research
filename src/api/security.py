@@ -31,7 +31,13 @@ logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "CHANGE_THIS_IN_PRODUCTION_USE_ENV_VAR")
+# JWT configuration - MUST be set via environment variable
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable must be set for security. "
+        "Generate a secure key with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -506,10 +512,6 @@ def validate_security_configuration() -> None:
         RuntimeError: If critical security configuration is missing
     """
     errors = []
-
-    # Check JWT secret key
-    if SECRET_KEY == "CHANGE_THIS_IN_PRODUCTION_USE_ENV_VAR":
-        errors.append("JWT_SECRET_KEY environment variable not set - using insecure default")
 
     # Check CORS origins
     allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
