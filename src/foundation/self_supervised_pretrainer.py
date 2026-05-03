@@ -552,7 +552,7 @@ class SelfSupervisedPreTrainer:
 
     def resume_from_checkpoint(self, path: str) -> int:
         """Resume training from checkpoint"""
-        checkpoint = torch.load(path, map_location="cpu")
+        checkpoint = torch.load(path, map_location="cpu", weights_only=True)
 
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])

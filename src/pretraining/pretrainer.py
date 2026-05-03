@@ -373,7 +373,7 @@ class SelfSupervisedPretrainer:
         Returns:
             Checkpoint dictionary with metadata
         """
-        checkpoint = torch.load(checkpoint_path, map_location=device)
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
 
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.step_count = checkpoint.get("step", 0)

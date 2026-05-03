@@ -229,7 +229,7 @@ class LocalStorage:
 
     def _read_pytorch(self, filepath: str) -> Dict[str, Any]:
         """Read features from PyTorch file."""
-        loaded = torch.load(filepath)
+        loaded = torch.load(filepath, weights_only=True)
 
         data = {"features": loaded["features"].numpy()}
 

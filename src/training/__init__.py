@@ -524,7 +524,7 @@ class SupervisedTrainer:
 
     def load_checkpoint(self, checkpoint_path: str):
         """Load model from checkpoint."""
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=True)
 
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.task_head.load_state_dict(checkpoint["task_head_state_dict"])

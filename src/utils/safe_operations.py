@@ -81,7 +81,7 @@ def safe_torch_load(
     
     # Always load to CPU first to avoid OOM
     logger.info(f"Loading checkpoint to CPU: {filepath}")
-    checkpoint = torch.load(filepath, map_location='cpu')
+    checkpoint = torch.load(filepath, map_location='cpu', weights_only=True)
     
     # Move to target device if specified
     if device is not None and device.type == 'cuda':
