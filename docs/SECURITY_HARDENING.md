@@ -459,8 +459,8 @@ config = SecurityConfig(
 
 **Q3 2026:**
 - [x] Web Application Firewall (WAF) integration with OWASP CRS
-- [ ] Intrusion detection system (IDS) - external service integration
-- [ ] Security information and event management (SIEM) - external service integration
+- [x] Intrusion detection system (IDS) with anomaly detection and alert system
+- [x] Security information and event management (SIEM) with event correlation and incident tracking
 - [ ] Automated penetration testing in CI/CD - requires CI pipeline setup
 
 **Q4 2026:**
