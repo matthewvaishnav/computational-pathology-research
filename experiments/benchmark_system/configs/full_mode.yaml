@@ -1,0 +1,53 @@
+# Full Mode Configuration
+# Runs comprehensive benchmark for complete evaluation (20-40+ hours)
+
+mode: full
+
+# Training configuration
+epochs: 10
+samples: null  # Use full dataset
+batch_size: 32
+
+# Framework selection
+frameworks:
+  - HistoCore
+  - PathML
+  - CLAM
+  - PyTorch
+
+# Dataset configuration
+dataset: pcam  # PatchCamelyon dataset
+data_split:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+# Hyperparameters
+learning_rate: 0.001
+optimizer: adam
+weight_decay: 0.0001
+
+# Resource management
+gpu_memory_limit: 10.0  # GB
+temperature_threshold: 85  # Celsius
+checkpoint_interval: 1800  # 30 minutes
+
+# Output configuration
+output_dir: results/competitor_benchmarks
+save_checkpoints: true
+generate_visualizations: true
+
+# Logging
+log_level: INFO
+log_interval: 10  # minutes
+
+# Random seed for reproducibility
+random_seed: 42
+
+# Statistical testing
+confidence_level: 0.95
+bootstrap_iterations: 1000
+
+# Result validation
+enable_anomaly_detection: true
+enable_progress_validation: true

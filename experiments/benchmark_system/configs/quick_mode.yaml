@@ -1,0 +1,45 @@
+# Quick Mode Configuration
+# Runs reduced benchmark for rapid validation (3-4 hours)
+
+mode: quick
+
+# Training configuration
+epochs: 3
+samples: 1000
+batch_size: 32
+
+# Framework selection
+frameworks:
+  - HistoCore
+  - PathML
+  - CLAM
+  - PyTorch
+
+# Dataset configuration
+dataset: pcam  # PatchCamelyon dataset
+data_split:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+# Hyperparameters
+learning_rate: 0.001
+optimizer: adam
+weight_decay: 0.0001
+
+# Resource management
+gpu_memory_limit: 10.0  # GB
+temperature_threshold: 85  # Celsius
+checkpoint_interval: 1800  # 30 minutes
+
+# Output configuration
+output_dir: results/competitor_benchmarks
+save_checkpoints: true
+generate_visualizations: true
+
+# Logging
+log_level: INFO
+log_interval: 10  # minutes
+
+# Random seed for reproducibility
+random_seed: 42
