@@ -89,7 +89,7 @@ def load_checkpoint(
 
     try:
         logger.info(f"Loading checkpoint from: {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=device)
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
 
         # Import SimpleSlideClassifier from training script
         sys.path.insert(0, str(Path(__file__).parent))

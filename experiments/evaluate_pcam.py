@@ -92,7 +92,7 @@ def load_checkpoint(
 
     try:
         logger.info(f"Loading checkpoint from: {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=device)
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
 
         # Load state dicts
         feature_extractor.load_state_dict(checkpoint["feature_extractor_state_dict"])
@@ -697,7 +697,7 @@ Examples:
     try:
         # First, load checkpoint to get config
         logger.info(f"Loading checkpoint from: {args.checkpoint}")
-        checkpoint = torch.load(args.checkpoint, map_location=str(device))
+        checkpoint = torch.load(args.checkpoint, map_location=str(device), weights_only=True)
 
         if "config" not in checkpoint:
             raise RuntimeError(
