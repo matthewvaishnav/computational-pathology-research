@@ -6,6 +6,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { minimatch } from 'minimatch';
 import { DelegationType, ContextType } from '../types/core.js';
 
 // File discovery and ranking
@@ -294,6 +295,7 @@ export class ContextExtractor {
   ): Promise<CodeSnippet[]> {
     const snippets: CodeSnippet[] = [];
     let totalSize = 0;
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
     for (const file of files) {
       if (totalSize >= config.maxTotalSize) {
@@ -301,7 +303,29 @@ export class ContextExtractor {
       }
 
       try {
-        const content = await fs.promises.readFile(file.filePath, 'utf-8');
+        // Check file stats first
+        const stats = await fs.promises.lstat(file.filePath);
+        
+        // Skip symlinks
+        if (stats.isSymbolicLink()) {
+          console.warn(`Skipping symlink: ${file.filePath}`);
+          continue;
+        }
+        
+        // Check file size
+        if (stats.size > MAX_FILE_SIZE) {
+          console.warn(`Skipping large file: ${file.filePath} (${stats.size} bytes)`);
+          continue;
+        }
+        
+        // Read file and check if binary
+        const buffer = await fs.promises.readFile(file.filePath);
+        if (this.isBinary(buffer)) {
+          console.warn(`Skipping binary file: ${file.filePath}`);
+          continue;
+        }
+        
+        const content = buffer.toString('utf-8');
         const lines = content.split('\n');
         
         // For now, extract full file content with annotations
@@ -329,11 +353,26 @@ export class ContextExtractor {
           break;
         }
       } catch (error) {
+        console.warn(`Error reading file ${file.filePath}:`, error);
         continue;
       }
     }
 
     return snippets;
+  }
+
+  /**
+   * Check if buffer contains binary data
+   */
+  private isBinary(buffer: Buffer): boolean {
+    // Check first 8KB for null bytes (common in binary files)
+    const checkLength = Math.min(buffer.length, 8000);
+    for (let i = 0; i < checkLength; i++) {
+      if (buffer[i] === 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -527,68 +566,19 @@ export class ContextExtractor {
   }
 
   /**
-   * Simple glob pattern matching
+   * Simple glob pattern matching using minimatch (ReDoS-safe)
    */
   private matchesPattern(filePath: string, pattern: string): boolean {
     // Normalize path separators
     const normalizedPath = filePath.replace(/\\/g, '/');
     const normalizedPattern = pattern.replace(/\\/g, '/');
     
-    // Check pattern complexity FIRST to prevent ReDoS
-    const wildcardCount = (normalizedPattern.match(/\*/g) || []).length;
-    if (wildcardCount > 10) {
-      throw new Error('Glob pattern too complex (max 10 wildcards)');
-    }
-    
-    // Simple implementation for common patterns
-    if (normalizedPattern === '**/*') {
-      return true; // Match everything
-    }
-    
-    if (normalizedPattern.startsWith('**/') && normalizedPattern.endsWith('/**')) {
-      // Pattern like **/node_modules/**
-      const middle = normalizedPattern.slice(3, -3);
-      return normalizedPath.includes('/' + middle + '/') || 
-             normalizedPath.startsWith(middle + '/') ||
-             normalizedPath.endsWith('/' + middle);
-    }
-    
-    if (normalizedPattern.startsWith('**/')) {
-      // Pattern like **/test.ts (exact filename after **)
-      const suffix = normalizedPattern.slice(3);
-      
-      // If suffix contains wildcards, fall through to regex matching
-      if (suffix.includes('*') || suffix.includes('?')) {
-        // Fall through to regex matching below
-      } else {
-        // Exact filename match
-        return normalizedPath.endsWith('/' + suffix) || normalizedPath === suffix;
-      }
-    }
-    
-    if (normalizedPattern.endsWith('/**')) {
-      // Pattern like src/**
-      const prefix = normalizedPattern.slice(0, -3);
-      return normalizedPath.startsWith(prefix + '/') || normalizedPath === prefix;
-    }
-    
-    if (normalizedPattern.includes('**/')) {
-      // Pattern like src/**/test.ts
-      const parts = normalizedPattern.split('**/');
-      if (parts.length === 2) {
-        const [prefix, suffix] = parts;
-        return normalizedPath.startsWith(prefix) && normalizedPath.endsWith(suffix);
-      }
-    }
-    
-    // Simple wildcard matching with bounded quantifiers
-    const regexPattern = normalizedPattern
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')  // Escape regex special chars
-      .replace(/\*/g, '[^/]{0,100}')  // Bounded quantifier to prevent ReDoS
-      .replace(/\?/g, '[^/]');
-    
-    const regex = new RegExp('^' + regexPattern + '$', 'i');
-    return regex.test(normalizedPath);
+    // Use minimatch for safe glob matching
+    return minimatch(normalizedPath, normalizedPattern, {
+      nocase: true,
+      matchBase: true,
+      dot: true
+    });
   }
 
   /**
