@@ -15,6 +15,9 @@ from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
+# Security: Maximum document size to prevent memory exhaustion
+MAX_DOCUMENT_SIZE = 10 * 1024 * 1024  # 10MB
+
 
 class DocumentFormat(str, Enum):
     """Supported clinical document formats."""
@@ -387,9 +390,18 @@ class ClinicalDocumentParser:
                 return DocumentFormat.UNKNOWN
 
     def _read_text_file(self, file_path: Path) -> str:
-        """Read plain text file."""
+        """Read plain text file with size limit to prevent memory exhaustion."""
+        # Check file size before reading
+        file_size = file_path.stat().st_size
+        if file_size > MAX_DOCUMENT_SIZE:
+            raise ValueError(
+                f"Document too large: {file_size} bytes (max {MAX_DOCUMENT_SIZE} bytes). "
+                "Large documents should be processed in chunks."
+            )
+        
         with open(file_path, "r", encoding="utf-8") as f:
-            return f.read()
+            # Read with size limit as additional safety
+            return f.read(MAX_DOCUMENT_SIZE)
 
     def _parse_hl7_cda(self, file_path: Path) -> str:
         """
