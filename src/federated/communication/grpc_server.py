@@ -246,13 +246,27 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
                 context.set_details("Client not registered")
                 return UpdateAcknowledgment(success=False, message="Client not registered")
 
-            # Deserialize gradients
+            # Deserialize gradients with security validation
             import io
 
             import torch
 
             buffer = io.BytesIO(request.gradients)
-            gradients = torch.load(buffer, weights_only=True)
+            
+            # Validate payload size to prevent memory exhaustion
+            if len(request.gradients) > 512 * 1024 * 1024:  # 512MB max
+                context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+                context.set_details("Gradient payload too large")
+                return UpdateAcknowledgment(success=False, message="Payload too large")
+            
+            # Use weights_only=True to prevent arbitrary code execution
+            try:
+                gradients = torch.load(buffer, weights_only=True)
+            except Exception as e:
+                logger.error(f"Failed to deserialize gradients from {client_id}: {e}")
+                context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+                context.set_details("Invalid gradient format")
+                return UpdateAcknowledgment(success=False, message="Invalid gradient format")
 
             # Create ClientUpdate object
             client_update = ClientUpdate(

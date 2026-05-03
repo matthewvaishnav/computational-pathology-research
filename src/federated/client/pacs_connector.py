@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import torch
 from PIL import Image
 
@@ -409,7 +410,3 @@ class PACSConnector:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.shutdown()
-
-
-# Import numpy for image processing
-import numpy as np
