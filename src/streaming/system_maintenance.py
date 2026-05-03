@@ -782,10 +782,14 @@ class ZeroDowntimeUpdateManager:
                 target_path = Path(item.name)
 
                 if target_path.exists():
-                    if target_path.is_dir():
-                        shutil.rmtree(target_path)
-                    else:
-                        target_path.unlink()
+                    try:
+                        if target_path.is_dir():
+                            shutil.rmtree(target_path)
+                        else:
+                            target_path.unlink()
+                    except OSError as e:
+                        logger.warning(f"Failed to remove {target_path}: {e}")
+                        continue
 
                 if item.is_dir():
                     shutil.copytree(item, target_path)
