@@ -455,28 +455,32 @@ async def login_user(login_data: UserLogin, request: Request):
         # Check account lockout
         check_account_lockout(username)
 
+        # Add constant-time delay to prevent timing attacks for user enumeration
+        import time
+        start_time = time.time()
+
         # Validate credentials
-        if username not in users_db:
+        user_exists = username in users_db
+        if user_exists:
+            user = users_db[username]
+            password_valid = verify_password(login_data.password, user["password_hash"])
+        else:
+            # Perform dummy password check to maintain constant time
+            verify_password(login_data.password, hash_password("dummy_password_for_timing"))
+            password_valid = False
+        
+        # Ensure minimum time elapsed (prevent timing attacks)
+        elapsed = time.time() - start_time
+        if elapsed < 0.5:  # Minimum 500ms
+            time.sleep(0.5 - elapsed)
+
+        if not user_exists or not password_valid:
             record_failed_login(username)
             log_security_event(
                 "login_failed",
                 username=username,
                 ip_address=ip_address,
-                details="User not found",
-                success=False,
-            )
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-
-        user = users_db[username]
-
-        # Verify password
-        if not verify_password(login_data.password, user["password_hash"]):
-            record_failed_login(username)
-            log_security_event(
-                "login_failed",
-                username=username,
-                ip_address=ip_address,
-                details="Invalid password",
+                details="Invalid credentials",
                 success=False,
             )
             raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -694,6 +698,22 @@ async def get_analysis_result(analysis_id: str, db: Session = Depends(get_db_ses
 
         if not analysis:
             raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        # IDOR protection: Verify user has access to this analysis
+        # Check if analysis belongs to user's case or user is admin
+        if current_user.role != "admin":
+            if analysis.case_id:
+                case_ops = CaseOperations(db)
+                case = case_ops.get_case_by_id(analysis.case_id)
+                if case and case.assigned_user_id != current_user.id:
+                    log_security_event(
+                        "unauthorized_access_attempt",
+                        username=current_user.username,
+                        details=f"Attempted to access analysis {analysis_id}",
+                        success=False
+                    )
+                    raise HTTPException(status_code=403, detail="Access denied")
+            # If no case_id, only allow access to own uploads (would need user_id on analysis table)
 
         # Build response
         response = {
@@ -846,6 +866,16 @@ async def get_case(case_id: str, db: Session = Depends(get_db_session), current_
 
         if not case:
             raise HTTPException(status_code=404, detail="Case not found")
+        
+        # IDOR protection: Verify user has access to this case
+        if current_user.role != "admin" and case.assigned_user_id != current_user.id:
+            log_security_event(
+                "unauthorized_access_attempt",
+                username=current_user.username,
+                details=f"Attempted to access case {case_id}",
+                success=False
+            )
+            raise HTTPException(status_code=403, detail="Access denied")
 
         case_dict = {
             "case_id": str(case.id),
@@ -879,15 +909,36 @@ async def get_case(case_id: str, db: Session = Depends(get_db_session), current_
 
 
 @app.patch("/api/v1/cases/{case_id}/status")
+class CaseStatusUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+
+
+@app.put("/api/v1/cases/{case_id}/status")
 async def update_case_status(
-    case_id: str, status_data: dict, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)
+    case_id: str, status_data: CaseStatusUpdate, db: Session = Depends(get_db_session), current_user: dict = Depends(get_current_user)
 ):
     """Update case status in database."""
 
     try:
         case_ops = CaseOperations(db)
+        
+        # IDOR protection: Verify user has access to this case
+        case = case_ops.get_case_by_id(uuid.UUID(case_id))
+        if not case:
+            raise HTTPException(status_code=404, detail="Case not found")
+        
+        if current_user.role != "admin" and case.assigned_user_id != current_user.id:
+            log_security_event(
+                "unauthorized_access_attempt",
+                username=current_user.username,
+                details=f"Attempted to update case {case_id}",
+                success=False
+            )
+            raise HTTPException(status_code=403, detail="Access denied")
+        
         success = case_ops.update_case_status(
-            uuid.UUID(case_id), status_data.get("status"), status_data.get("notes")
+            uuid.UUID(case_id), status_data.status, status_data.notes
         )
 
         if not success:
@@ -1093,22 +1144,77 @@ def main():
             from urllib.parse import urlparse
             
             allowed_hosts = os.getenv("ALLOWED_HOSTS", "").split(",")
-            parsed = urlparse(str(request.url))
+            if not allowed_hosts or not allowed_hosts[0]:
+                logger.error("ALLOWED_HOSTS not configured for production")
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": "Server misconfiguration"}
+                )
             
-            if allowed_hosts and parsed.netloc not in allowed_hosts:
+            # Parse and validate host
+            host = request.headers.get("host", "").split(":")[0]  # Remove port
+            
+            # Reject if host contains @ (credential injection)
+            if "@" in host:
+                log_security_event(
+                    "open_redirect_attempt",
+                    ip_address=request.client.host,
+                    details=f"Host contains @: {host}",
+                    success=False
+                )
                 return JSONResponse(
                     status_code=400,
                     content={"error": "Invalid host"}
                 )
             
-            url = request.url.replace(scheme="https")
-            return RedirectResponse(url=str(url), status_code=301)
+            # Validate host is in allowed list
+            if host not in allowed_hosts:
+                log_security_event(
+                    "open_redirect_attempt",
+                    ip_address=request.client.host,
+                    details=f"Host not in allowed list: {host}",
+                    success=False
+                )
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "Invalid host"}
+                )
+            
+            # Build safe HTTPS URL
+            url = f"https://{host}{request.url.path}"
+            if request.url.query:
+                url += f"?{request.url.query}"
+            
+            return RedirectResponse(url=url, status_code=301)
         return await call_next(request)
 
-    # Add request timeout middleware
+    # Add request size limit and timeout middleware
     @app.middleware("http")
-    async def timeout_middleware(request: Request, call_next):
-        """Add timeout to all requests to prevent slowloris attacks."""
+    async def request_size_and_timeout_middleware(request: Request, call_next):
+        """Add size limit and timeout to all requests to prevent DoS attacks."""
+        # Check content-length header for size limit (10MB for non-upload endpoints)
+        content_length = request.headers.get("content-length")
+        if content_length:
+            size_mb = int(content_length) / (1024 * 1024)
+            # Allow larger uploads only for specific endpoints
+            if request.url.path.startswith("/api/v1/analyze/upload"):
+                max_size_mb = 100
+            else:
+                max_size_mb = 10
+            
+            if size_mb > max_size_mb:
+                log_security_event(
+                    "request_too_large",
+                    ip_address=request.client.host,
+                    details=f"Size: {size_mb:.1f}MB, Max: {max_size_mb}MB",
+                    success=False
+                )
+                return JSONResponse(
+                    status_code=413,
+                    content={"error": f"Request too large. Maximum size is {max_size_mb}MB"}
+                )
+        
+        # Add timeout to prevent slowloris attacks
         try:
             return await asyncio.wait_for(call_next(request), timeout=30.0)
         except asyncio.TimeoutError:
