@@ -402,7 +402,7 @@ class CheckpointLoader:
     def _infer_feature_dim(self, state_dict: Dict[str, torch.Tensor]) -> int:
         """Infer feature dimension from feature extractor state dict."""
         # Look for final layer output dimension
-        for key in state_dict.keys():
+        for key in state_dict:
             if "fc" in key.lower() or "linear" in key.lower():
                 if "weight" in key:
                     return state_dict[key].shape[0]
@@ -429,7 +429,7 @@ class CheckpointLoader:
             return state_dict["input_proj.0.weight"].shape[0]
 
         # Fallback: look for transformer hidden dimension
-        for key in state_dict.keys():
+        for key in state_dict:
             if "transformer" in key.lower() and "weight" in key:
                 return state_dict[key].shape[0]
         return 256  # Default

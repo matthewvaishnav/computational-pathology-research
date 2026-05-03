@@ -189,7 +189,7 @@ def compute_sparsification_error(
     densified = densify_gradients(sparsified)
     errors = {}
     
-    for name in original.keys():
+    for name in original:
         if name not in densified:
             continue
         

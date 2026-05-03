@@ -254,7 +254,7 @@ def compute_quantization_error(
     dequantized = dequantize_gradients(quantized)
     errors = {}
     
-    for name in original.keys():
+    for name in original:
         if name not in dequantized:
             continue
         
