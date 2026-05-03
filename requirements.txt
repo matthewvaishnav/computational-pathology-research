@@ -11,6 +11,7 @@ slowapi>=0.1.9
 python-magic>=0.4.27
 bcrypt>=4.0.1
 pyclamd>=0.4.0
+PyKCS11>=1.5.12  # HSM support via PKCS#11
 
 # Web Framework
 fastapi>=0.100.0
