@@ -262,7 +262,7 @@ class AnnotationManager:
                     "width": float(consensus_bbox[2] - consensus_bbox[0]),
                     "height": float(consensus_bbox[3] - consensus_bbox[1]),
                 },
-                "confidence": len([l for l in labels if l != -1]) / len(labels),
+                "confidence": sum(1 for l in labels if l != -1) / len(labels),
                 "num_annotators": len(annotations),
             },
             created_at=datetime.now().isoformat(),
