@@ -172,6 +172,17 @@ class SMSNotifier(NotificationChannel):
         api_key: Optional[str] = None,
         sender_id: str = "HISTOCORE",
     ):
+        # Validate gateway_url to prevent SSRF attacks
+        if gateway_url:
+            from urllib.parse import urlparse
+            parsed = urlparse(gateway_url)
+            # Only allow https and specific domains
+            if parsed.scheme != 'https':
+                raise ValueError("SMS gateway URL must use HTTPS")
+            # Block private IP ranges
+            if any(x in parsed.netloc.lower() for x in ['localhost', '127.0.0.1', '0.0.0.0', '169.254', '10.', '172.16.', '192.168.']):
+                raise ValueError("SMS gateway URL cannot point to private IP ranges")
+        
         self.gateway_url = gateway_url
         self.api_key = api_key
         self.sender_id = sender_id
