@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Callable, Union
 from dataclasses import dataclass, asdict
 from enum import Enum
+from urllib.parse import urlparse
 import base64
 
 try:
@@ -374,12 +375,48 @@ class AzureFunctionsIntegration:
         except Exception as e:
             logger.error("Failed to update app settings: %s", e)
 
+    def _validate_function_url(self, url: str) -> None:
+        """
+        Validate function URL to prevent SSRF attacks.
+        
+        Args:
+            url: URL to validate
+            
+        Raises:
+            ValueError: If URL is not in allowed domains
+        """
+        parsed = urlparse(url)
+        
+        # Define allowed domains for Azure Functions
+        allowed_domains = [
+            f"{self.config.function_app_name}.azurewebsites.net",
+            "azure-api.net",
+            "azurewebsites.net"
+        ]
+        
+        # Check if hostname ends with any allowed domain
+        hostname = parsed.netloc.lower()
+        if not any(hostname.endswith(domain) for domain in allowed_domains):
+            raise ValueError(
+                f"Function URL not in allowed domains: {url}. "
+                f"Hostname must end with one of: {allowed_domains}"
+            )
+        
+        # Ensure HTTPS
+        if parsed.scheme != "https":
+            raise ValueError(f"Function URL must use HTTPS: {url}")
+        
+        logger.debug("Function URL validated: %s", url)
+
     def invoke_function(self, invocation: FunctionInvocation) -> FunctionResult:
         """Invoke an Azure Function synchronously."""
         start_time = datetime.now()
         
         try:
             function_url = f"{self.function_app_url}/api/{invocation.function_name}"
+            
+            # Validate URL to prevent SSRF
+            self._validate_function_url(function_url)
             
             headers = {
                 "Content-Type": "application/json",
@@ -546,6 +583,10 @@ class AzureFunctionsIntegration:
             
             # Get logs from Kudu
             logs_url = f"{kudu_url}/api/logs/recent"
+            
+            # Validate URL to prevent SSRF
+            self._validate_function_url(logs_url)
+            
             response = requests.get(
                 logs_url,
                 auth=(username, password),
