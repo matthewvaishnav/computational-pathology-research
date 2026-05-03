@@ -1,70 +1,53 @@
-/**
- * Core type definitions for the Opus Delegation System
- * Implements Task 2.1, 2.2, 2.3 - Core data structures
- */
+// Core type definitions for Opus Delegation System
 
-// Delegation Types (Requirement 1.2)
-export enum DelegationType {
-  ARCHITECTURE_DESIGN = 'architecture_design',
-  API_DESIGN = 'api_design', 
-  TEST_STRATEGY = 'test_strategy',
-  INTEGRATION_DESIGN = 'integration_design',
-  REFACTORING_ANALYSIS = 'refactoring_analysis',
-  FORMAL_VERIFICATION = 'formal_verification'
-}
+export type DelegationType =
+  | 'architecture_design'
+  | 'api_design'
+  | 'test_strategy'
+  | 'integration_design'
+  | 'refactoring_analysis'
+  | 'formal_verification';
 
-// Complexity Levels (Requirement 1.4)
-export enum ComplexityLevel {
-  SIMPLE = 'simple',
-  MODERATE = 'moderate', 
-  COMPLEX = 'complex'
-}
+export type ComplexityLevel = 'simple' | 'moderate' | 'complex';
 
-// Context Types (Requirement 1.3)
-export enum ContextType {
-  CODE_SNIPPETS = 'code_snippets',
-  REQUIREMENTS_DOCS = 'requirements_docs',
-  EXISTING_DESIGNS = 'existing_designs',
-  CONSTRAINTS = 'constraints',
-  ARCHITECTURE_DOCS = 'architecture_docs',
-  API_ENDPOINTS = 'api_endpoints',
-  TEST_FILES = 'test_files',
-  EXTERNAL_INTERFACES = 'external_interfaces',
-  DEPENDENCY_GRAPHS = 'dependency_graphs'
-}
+export type ArtifactType =
+  | 'mermaid_diagram'
+  | 'openapi_specification'
+  | 'implementation_plan'
+  | 'test_strategy'
+  | 'code_snippet';
 
-// Artifact Types (Requirement 5.1-5.5)
-export enum ArtifactType {
-  MERMAID_DIAGRAM = 'mermaid_diagram',
-  OPENAPI_SPEC = 'openapi_spec',
-  IMPLEMENTATION_GUIDE = 'implementation_guide',
-  TEST_STRATEGY = 'test_strategy',
-  CODE_SNIPPET = 'code_snippet'
-}
-
-// Problem Classification (Requirements 1.1-1.6)
 export interface ProblemClassification {
   delegationType: DelegationType;
-  suitabilityScore: number; // 0-100
   complexity: ComplexityLevel;
-  requiredContextTypes: ContextType[];
-  expectedArtifactTypes: ArtifactType[];
-  estimatedRounds: number;
-  confidence: number; // 0-100
+  requiredContext: string[];
+  expectedArtifacts: ArtifactType[];
+  confidence: number;
 }
 
-// Delegation Recommendation (Requirement 1.5)
-export interface DelegationRecommendation {
-  suitable: boolean;
+export interface ClassificationResult {
+  shouldDelegate: boolean;
   classification: ProblemClassification;
-  reasoning: string;
-  contextEstimate: {
-    estimatedSize: number; // characters
-    extractionComplexity: ComplexityLevel;
-  };
+  recommendation: string;
 }
 
-// Parsed Artifact Structure (Requirement 5.7)
+export interface ExtractedFile {
+  path: string;
+  content: string;
+  type: 'code' | 'doc' | 'config';
+  relevance: number;
+  size: number;
+  lastModified?: Date;
+}
+
+export interface ContextBundle {
+  title: string;
+  markdown: string;
+  files: ExtractedFile[];
+  totalSize: number;
+  compressionApplied: boolean;
+}
+
 export interface ParsedArtifact {
   id: string;
   type: ArtifactType;
@@ -75,67 +58,62 @@ export interface ParsedArtifact {
     extractedAt: Date;
   };
   structured?: {
-    mermaid?: MermaidAST;
-    openapi?: OpenAPISpec;
-    implementationSteps?: Step[];
+    mermaid?: string;
+    openapi?: Record<string, unknown>;
+    implementationSteps?: ImplementationStep[];
   };
 }
 
-// Mermaid AST placeholder
-export interface MermaidAST {
-  type: string;
-  nodes: Array<{ id: string; label: string; type: string }>;
-  edges: Array<{ from: string; to: string; label?: string }>;
-}
-
-// OpenAPI Spec placeholder  
-export interface OpenAPISpec {
-  openapi: string;
-  info: { 
-    title: string; 
-    version: string;
-    description?: string;
-  };
-  paths: Record<string, any>;
-  components?: Record<string, any>;
-  security?: any[];
-}
-
-// Implementation Step
-export interface Step {
+export interface ImplementationStep {
   id: string;
+  phase: string;
+  title: string;
   action: string;
-  description: string;
+  file?: string;
   dependencies: string[];
   complexity: ComplexityLevel;
-  estimatedTime?: number;
+  estimate?: string;
 }
 
-// Session Management (Requirements 8.1, 8.2, 9.1)
+export interface ValidationIssue {
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+  location?: string;
+  suggestion?: string;
+}
+
+export interface ValidationResult {
+  artifactId: string;
+  artifactType: ArtifactType;
+  isValid: boolean;
+  completenessScore: number;
+  issues: ValidationIssue[];
+  suggestions: string[];
+}
+
+export interface DelegationRound {
+  roundNumber: number;
+  request: string;
+  response: string;
+  artifacts: ParsedArtifact[];
+  validation: ValidationResult[];
+  timestamp: Date;
+  contextSize: number;
+}
+
 export interface DelegationSession {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  
   problem: {
     title: string;
     description: string;
     type: DelegationType;
     complexity: ComplexityLevel;
   };
-  
-  rounds: Array<{
-    roundNumber: number;
-    request: string;
-    response: string;
-    artifacts: ParsedArtifact[];
-    validation: ValidationResult;
-    timestamp: Date;
-  }>;
-  
+  rounds: DelegationRound[];
   finalArtifacts: ParsedArtifact[];
   implementationGuide?: ImplementationGuide;
-  
   metrics: {
     totalTime: number;
     contextSize: number;
@@ -144,90 +122,74 @@ export interface DelegationSession {
   };
 }
 
-export interface DelegationRound {
-  roundNumber: number;
-  request: string;
-  response: string;
-  artifacts: ParsedArtifact[];
-  validation: ValidationResult;
-  timestamp: Date;
-}
-
-export interface SessionMetrics {
-  totalTime: number;
-  contextSize: number;
-  roundCount: number;
-  finalCompleteness: number;
-}
-
-// Validation Results (Requirement 6.6, 6.7)
-export interface ValidationResult {
-  completenessScore: number; // 0-100
-  qualityScores: {
-    completeness: number;
-    clarity: number;
-    implementability: number;
-  };
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: string[];
-  followUpQuestions: string[];
-}
-
-export interface ValidationError {
-  type: string;
-  message: string;
-  location?: string;
-  severity: 'error' | 'warning';
-}
-
-// Implementation Guide (Requirement 7.1-7.7)
 export interface ImplementationGuide {
-  id: string;
-  title: string;
-  phases: ImplementationPhase[];
+  projectName: string;
   prerequisites: string[];
-  riskRegister: Risk[];
-  generatedAt: Date;
-}
-
-export interface ImplementationPhase {
-  name: string;
-  complexity: ComplexityLevel;
   steps: ImplementationStep[];
+  testImplementation?: string;
+  riskRegister?: Array<{
+    risk: string;
+    mitigation: string;
+    owner: string;
+  }>;
 }
 
-export interface ImplementationStep {
-  id: string;
-  action: string;
-  description: string;
-  filePath?: string;
-  dependencies: string[];
-  complexity: ComplexityLevel;
-  estimatedTime?: number;
-  codeTemplate?: string;
-  artifactReferences: string[];
+export interface Template {
+  template_id: string;
+  name: string;
+  category: DelegationType;
+  version: string;
+  parameters: Array<{
+    name: string;
+    required: boolean;
+    type?: string;
+    default?: unknown;
+  }>;
+  context_requirements: string[];
+  expected_artifacts: Array<{
+    type: string;
+    subtype?: string;
+    format?: string;
+  }>;
+  prompt_template: string;
 }
 
-export interface Risk {
-  description: string;
-  mitigation: string;
-  owner?: string;
+export interface ExtractionOptions {
+  maxFiles?: number;
+  maxFileSize?: number;
+  includeTests?: boolean;
+  depth?: number;
 }
 
-// Type Guards
-export function isDelegationType(value: string): value is DelegationType {
-  return Object.values(DelegationType).includes(value as DelegationType);
+export interface PackagingOptions {
+  maxSize?: number;
+  compressionEnabled?: boolean;
+  summarizationEnabled?: boolean;
 }
 
-export function isComplexityLevel(value: string): value is ComplexityLevel {
-  return Object.values(ComplexityLevel).includes(value as ComplexityLevel);
+export interface SearchCriteria {
+  problemType?: DelegationType;
+  keywords?: string[];
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+  status?: 'active' | 'completed' | 'abandoned';
 }
 
-export function isContextType(value: string): value is ContextType {
-  return Object.values(ContextType).includes(value as ContextType);
+export interface VersionedArtifact extends ParsedArtifact {
+  version: number;
+  sessionId: string;
+  roundNumber: number;
+  previousVersion?: number;
 }
 
-export function isArtifactType(value: string): value is ArtifactType {
-  return Object.values(ArtifactType).includes(value as ArtifactType);
+export interface ArtifactDiff {
+  artifactId: string;
+  fromVersion: number;
+  toVersion: number;
+  additions: string[];
+  deletions: string[];
+  modifications: string[];
+  summary: string;
 }
