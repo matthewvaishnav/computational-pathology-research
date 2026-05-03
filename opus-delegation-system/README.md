@@ -1,107 +1,272 @@
 # Opus Delegation System
 
-A TypeScript system for delegating complex architectural problems to Claude Opus 4.5 via use.ai.
+TypeScript system for delegating complex architectural problems to Claude Opus 4.5 via use.ai. Automates context extraction, delegation request formatting, artifact parsing, and implementation guide generation.
 
-## Task 3 Implementation: Problem Classifier Component
+## Overview
 
-This implementation completes **Task 3** from the opus-delegation-system spec:
+Opus Delegation System bridges gap between Opus 4.5's superior reasoning and lack of repository access. Enables leveraging Opus for challenging design problems (federated learning architectures, PACS integration, property-based test strategies) through structured workflow.
 
-### ✅ Task 3.1: Problem Classification Engine
-- **Complexity indicator detection**: Identifies architectural scope, formal reasoning, novel patterns, integration complexity, and strategic decisions
-- **Delegation type categorization**: Classifies problems into 6 types (architecture_design, api_design, test_strategy, integration_design, refactoring_analysis, formal_verification)
-- **Delegation suitability scores**: Calculates 0-100 scores based on complexity indicators and type-specific multipliers
+## Features
 
-### ✅ Task 3.2: Context Recommendation Logic  
-- **Problem type mapping**: Maps each delegation type to required context types (architecture_docs, api_endpoints, test_files, etc.)
-- **Session complexity estimation**: Estimates simple/moderate/complex based on problem scope and type multipliers
-- **Delegation recommendations**: Generates recommendations with artifact types and estimated rounds
+### Core Components
 
-### ✅ Task 3.3: Unit Tests
-- **Classification logic tests**: Tests all 6 delegation types with various problem descriptions
-- **Context recommendation accuracy**: Validates appropriate context types are recommended
-- **Edge case handling**: Tests empty descriptions, ambiguous problems, multiple type indicators
-- **Property-based testing properties**: Validates invariants, metamorphic properties, and error conditions
-
-## Core Features
-
-### Problem Classification
-The `ProblemClassifier` analyzes problem descriptions using:
-- **Complexity Indicators** (weighted scoring):
-  - Architectural scope (30% weight)
-  - Formal reasoning (30% weight) 
-  - Novel patterns (20% weight)
-  - Integration complexity (15% weight)
-  - Strategic decisions (5% weight)
+- **Problem Classifier** - Identifies problems suitable for Opus delegation, categorizes by type
+- **Context Extractor** - Extracts relevant code/docs using semantic search and dependency analysis
+- **Context Packager** - Formats context as copy-paste ready markdown with size management
+- **Template Library** - Pre-built templates for common delegation scenarios
+- **Opus Delegator** - Generates delegation requests, manages multi-round sessions
+- **Artifact Parser** - Extracts Mermaid diagrams, OpenAPI specs, implementation guides, test strategies
+- **Artifact Validator** - Validates completeness, quality, generates follow-up questions
+- **Implementation Guide Generator** - Transforms artifacts into actionable implementation steps
+- **Session History Manager** - Tracks delegations, enables context reuse
+- **Artifact Versioning** - Versions artifacts, compares changes, supports reversion
+- **Artifact Exporter** - Exports artifacts as YAML, HTML, markdown, test templates
 
 ### Delegation Types
-Supports 6 delegation types with specific context requirements:
-- `architecture_design` → architecture_docs, existing_designs, constraints
-- `api_design` → api_endpoints, code_snippets, existing_designs  
-- `test_strategy` → test_files, code_snippets, requirements_docs
-- `integration_design` → external_interfaces, architecture_docs, constraints
-- `refactoring_analysis` → code_snippets, dependency_graphs, architecture_docs
-- `formal_verification` → code_snippets, requirements_docs, constraints
 
-### Suitability Assessment
-- **Suitability threshold**: 60+ score and 30+ confidence for delegation recommendation
-- **Complexity multipliers**: Different types have different complexity factors (formal_verification: 1.5x, refactoring: 0.8x)
-- **Context estimation**: Estimates context size (15K-50K chars) and extraction complexity
+- `architecture_design` - System structure, component relationships, data flow
+- `api_design` - Endpoint design, schemas, versioning strategy
+- `test_strategy` - Property-based tests, coverage approach
+- `integration_design` - External system integration, protocol handling
+- `refactoring_analysis` - Code restructuring, dependency untangling
+- `formal_verification` - Invariants, correctness properties
+
+### Built-in Templates
+
+- Federated learning architecture
+- PACS/DICOM integration design
+- Property-based test suite design
+- WSI streaming architecture
+- Refactoring analysis
+
+## Installation
+
+```bash
+npm install
+npm run build
+```
 
 ## Usage
 
+### Basic Workflow
+
 ```typescript
 import { ProblemClassifier } from './src/components/ProblemClassifier.js';
+import { ContextExtractor } from './src/components/ContextExtractor.js';
+import { ContextPackager } from './src/components/ContextPackager.js';
+import { OpusDelegator } from './src/components/OpusDelegator.js';
+import { ArtifactParser } from './src/components/ArtifactParser.js';
+import { ArtifactValidator } from './src/components/ArtifactValidator.js';
 
+// 1. Classify problem
 const classifier = new ProblemClassifier();
-
-const result = classifier.classifyProblem(
-  'Design a distributed microservices architecture for federated learning'
+const classification = classifier.classifyProblem(
+  'Design federated learning architecture for medical imaging'
 );
 
-console.log(result.classification.delegationType); // 'architecture_design'
-console.log(result.suitable); // true/false
-console.log(result.reasoning); // Human-readable explanation
+// 2. Extract context
+const extractor = new ContextExtractor('/path/to/repo');
+const extractedFiles = extractor.extractContext(
+  'federated learning medical imaging',
+  classification.classification.delegationType
+);
+
+// 3. Package context
+const packager = new ContextPackager();
+const contextBundle = packager.packageContext(
+  extractedFiles,
+  'Federated Learning Architecture'
+);
+
+// 4. Generate delegation request
+const delegator = new OpusDelegator();
+const session = delegator.createSession(
+  'Federated Learning Architecture',
+  'Design federated learning system',
+  classification.classification.delegationType,
+  'moderate'
+);
+
+const request = delegator.generateDelegationRequest(
+  session.id,
+  'federated_learning_architecture',
+  { system_name: 'MedicalFL' },
+  contextBundle.markdown
+);
+
+// Copy request to use.ai, get Opus response
+
+// 5. Parse Opus response
+const parser = new ArtifactParser();
+const artifacts = parser.parseResponse(opusResponse, session.id, 1);
+
+// 6. Validate artifacts
+const validator = new ArtifactValidator();
+const validationResults = validator.validateAll(artifacts);
+
+// 7. Generate implementation guide
+const guideGenerator = new ImplementationGuideGenerator();
+const guide = guideGenerator.generateGuide(artifacts, 'MedicalFL');
 ```
 
-## Requirements Satisfied
+### Session Management
 
-This implementation satisfies **Requirements 1.1-1.6** from the spec:
-- ✅ 1.1: Complexity indicator detection
-- ✅ 1.2: Delegation type categorization  
-- ✅ 1.3: Context type recommendations
-- ✅ 1.4: Session complexity estimation
-- ✅ 1.5: Delegation recommendations with artifact types
-- ✅ 1.6: Completeness property (sufficient context for implementable artifacts)
+```typescript
+import { SessionHistoryManager } from './src/components/SessionHistoryManager.js';
+
+const historyManager = new SessionHistoryManager();
+
+// Create session
+const session = historyManager.createSession(
+  'API Design',
+  'Design REST API for patient data',
+  'api_design',
+  'moderate'
+);
+
+// Add round
+historyManager.addRound(
+  session.id,
+  delegationRequest,
+  opusResponse,
+  artifacts,
+  contextSize
+);
+
+// Search sessions
+const sessions = historyManager.searchSessions({
+  problemType: 'api_design',
+  keywords: ['patient', 'REST'],
+});
+
+// Generate report
+const report = historyManager.generateSessionReport(session.id);
+```
+
+### Artifact Export
+
+```typescript
+import { ArtifactExporter } from './src/components/ArtifactExporter.js';
+
+const exporter = new ArtifactExporter('./exports');
+
+// Export Mermaid diagram
+exporter.exportMermaidDiagram(artifact, 'architecture', 'mmd');
+
+// Export OpenAPI spec
+exporter.exportOpenAPISpec(artifact, 'api-spec', 'yaml');
+exporter.exportOpenAPISpec(artifact, 'api-docs', 'html');
+
+// Export implementation guide
+exporter.exportImplementationGuide(guide, 'implementation-guide');
+
+// Export complete package
+exporter.exportDelegationPackage(
+  sessionId,
+  artifacts,
+  contextBundle,
+  guide
+);
+```
 
 ## Testing
 
-Run the test suite:
 ```bash
 npm test
 ```
 
-The implementation includes 46 comprehensive tests covering:
-- All delegation types and complexity levels
-- Context recommendation accuracy
-- Edge cases and error conditions
-- Property-based testing invariants
-
-## Next Steps
-
-This completes Task 3. The next tasks in the implementation plan are:
-- Task 4: Checkpoint - Ensure all tests pass ✅
-- Task 5: Context Extractor component
-- Task 6: Context Packager component
-- Task 7: Template Library component
-
 ## Architecture
 
-The Problem Classifier is part of the larger Opus Delegation System architecture:
+```
+┌─────────────────┐
+│ Problem Input   │
+└────────┬────────┘
+         │
+         v
+┌─────────────────┐
+│ Problem         │
+│ Classifier      │
+└────────┬────────┘
+         │
+         v
+┌─────────────────┐     ┌─────────────────┐
+│ Context         │────>│ Context         │
+│ Extractor       │     │ Packager        │
+└─────────────────┘     └────────┬────────┘
+                                 │
+                                 v
+                        ┌─────────────────┐
+                        │ Opus Delegator  │
+                        │ + Templates     │
+                        └────────┬────────┘
+                                 │
+                                 v
+                        ┌─────────────────┐
+                        │ use.ai          │
+                        │ (Manual Copy)   │
+                        └────────┬────────┘
+                                 │
+                                 v
+                        ┌─────────────────┐
+                        │ Artifact Parser │
+                        └────────┬────────┘
+                                 │
+                                 v
+                        ┌─────────────────┐
+                        │ Artifact        │
+                        │ Validator       │
+                        └────────┬────────┘
+                                 │
+                                 v
+                        ┌─────────────────┐
+                        │ Implementation  │
+                        │ Guide Generator │
+                        └────────┬────────┘
+                                 │
+                                 v
+                        ┌─────────────────┐
+                        │ Artifact        │
+                        │ Exporter        │
+                        └─────────────────┘
+```
+
+## Storage Structure
 
 ```
-Problem Description → Problem Classifier → Context Extractor → Context Packager → Opus Delegator
-                           ↓
-                    Classification + Recommendations
+.opus-delegation/
+├── config.yaml
+├── templates/
+│   └── custom_template.yaml
+└── sessions/
+    └── session-{id}/
+        ├── session.json
+        ├── context.md
+        ├── rounds/
+        │   ├── 01_request.md
+        │   ├── 01_response.md
+        │   └── 01_artifacts.json
+        └── artifacts/
+            ├── architecture.mermaid
+            └── api.yaml
 ```
 
-The classifier provides the foundation for the entire delegation workflow by determining problem suitability and required context types.
+## Requirements Satisfied
+
+Implements 18 comprehensive requirements:
+- ✅ Problem identification and classification
+- ✅ Context extraction and packaging
+- ✅ Delegation request generation
+- ✅ Template library management
+- ✅ Artifact reception and parsing
+- ✅ Artifact validation and completeness checking
+- ✅ Implementation guide generation
+- ✅ Session history and context management
+- ✅ Multi-round delegation support
+- ✅ Artifact export and integration
+- ✅ Problem-specific context extraction
+- ✅ Artifact quality assessment
+- ✅ Artifact versioning and comparison
+
+## License
+
+MIT
