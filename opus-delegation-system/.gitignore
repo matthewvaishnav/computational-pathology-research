@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.opus-delegation/
+*.log
+.DS_Store
+.env
+.vscode/
+.idea/
