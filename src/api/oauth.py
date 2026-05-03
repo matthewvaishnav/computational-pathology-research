@@ -242,49 +242,114 @@ class OAuthClient:
             raise HTTPException(status_code=500, detail="Failed to retrieve user information")
     
     def validate_id_token(self, id_token: str) -> Dict:
-        """Validate OIDC ID token.
+        """Validate OIDC ID token with proper JWKS-based signature verification.
         
         Args:
             id_token: JWT ID token from token response
             
         Returns:
             Decoded token payload
+            
+        Raises:
+            HTTPException: If token validation fails
         """
         if not self.config.jwks_uri:
-            logger.warning("JWKS URI not configured, skipping ID token validation")
-            # Decode without verification (not recommended for production)
-            return jwt.get_unverified_claims(id_token)
+            logger.error("JWKS URI not configured - cannot validate ID token")
+            raise HTTPException(
+                status_code=500,
+                detail="ID token validation not configured - JWKS URI required"
+            )
         
         try:
             # Fetch JWKS (with caching)
             jwks = self._get_jwks()
             
-            # Decode and validate token
-            # Note: python-jose doesn't support JWKS directly, need to extract key
-            # For production, use a library like authlib or implement proper JWKS handling
+            # Decode header to get key ID (kid)
+            unverified_header = jwt.get_unverified_header(id_token)
+            kid = unverified_header.get("kid")
             
-            # For now, decode without verification (SECURITY WARNING)
-            # TODO: Implement proper JWKS-based validation
-            logger.warning("ID token validation not fully implemented - decoding without verification")
-            payload = jwt.get_unverified_claims(id_token)
+            if not kid:
+                raise ValueError("No 'kid' in token header")
             
-            # Basic validation
-            if payload.get("iss") != self.config.authorization_endpoint.rsplit("/", 2)[0]:
-                raise ValueError("Invalid issuer")
+            # Find matching key in JWKS
+            signing_key = None
+            for key in jwks.get("keys", []):
+                if key.get("kid") == kid:
+                    signing_key = key
+                    break
             
-            if payload.get("aud") != self.config.client_id:
-                raise ValueError("Invalid audience")
+            if not signing_key:
+                raise ValueError(f"No matching key found for kid: {kid}")
             
-            exp = payload.get("exp")
-            if exp and datetime.utcnow().timestamp() > exp:
-                raise ValueError("Token expired")
+            # Construct RSA public key from JWK
+            from jose.backends import RSAKey
+            rsa_key = RSAKey(signing_key, algorithm="RS256")
             
-            logger.info(f"ID token validated: sub={payload.get('sub')}")
+            # Validate token with signature verification
+            # Expected issuer varies by provider
+            expected_issuer = self._get_expected_issuer()
+            
+            payload = jwt.decode(
+                id_token,
+                rsa_key.to_pem().decode("utf-8"),
+                algorithms=["RS256"],
+                audience=self.config.client_id,
+                issuer=expected_issuer,
+                options={
+                    "verify_signature": True,
+                    "verify_aud": True,
+                    "verify_iat": True,
+                    "verify_exp": True,
+                    "verify_nbf": True,
+                    "verify_iss": True,
+                    "verify_sub": True,
+                    "verify_jti": False,
+                    "verify_at_hash": False,
+                    "leeway": 0,
+                }
+            )
+            
+            # Additional validation
+            if not payload.get("sub"):
+                raise ValueError("Missing 'sub' claim")
+            
+            # Check token was issued recently (within last hour)
+            iat = payload.get("iat")
+            if iat:
+                issued_at = datetime.utcfromtimestamp(iat)
+                if datetime.utcnow() - issued_at > timedelta(hours=1):
+                    raise ValueError("Token issued too long ago")
+            
+            logger.info(f"ID token validated successfully: sub={payload.get('sub')}")
             return payload
             
-        except (JWTError, ValueError) as e:
-            logger.error(f"ID token validation failed: {e}")
-            raise HTTPException(status_code=401, detail="Invalid ID token")
+        except JWTError as e:
+            logger.error(f"JWT validation failed: {e}")
+            raise HTTPException(status_code=401, detail=f"Invalid ID token: {str(e)}")
+        except ValueError as e:
+            logger.error(f"Token validation failed: {e}")
+            raise HTTPException(status_code=401, detail=f"Invalid ID token: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error during token validation: {e}")
+            raise HTTPException(status_code=500, detail="Token validation error")
+    
+    def _get_expected_issuer(self) -> str:
+        """Get expected issuer based on provider.
+        
+        Returns:
+            Expected issuer URL
+        """
+        if self.config.provider == "azure":
+            tenant_id = os.getenv("AZURE_TENANT_ID", "common")
+            return f"https://login.microsoftonline.com/{tenant_id}/v2.0"
+        elif self.config.provider == "okta":
+            okta_domain = os.getenv("OKTA_DOMAIN")
+            return f"https://{okta_domain}/oauth2/default"
+        elif self.config.provider == "google":
+            return "https://accounts.google.com"
+        else:
+            # For generic provider, derive from authorization endpoint
+            return self.config.authorization_endpoint.rsplit("/", 2)[0]
     
     def _get_jwks(self) -> Dict:
         """Fetch JWKS from provider (with caching).
