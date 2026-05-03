@@ -636,10 +636,11 @@ The Medical AI Revolution Platform is intended to assist pathologists in the det
 ### Reporting Requirements
 Users must report any adverse events, malfunctions, or safety concerns to:
 
-- **Manufacturer**: Medical AI Revolution, Inc.
-- **Email**: safety@medical-ai-revolution.com
-- **Phone**: 1-800-XXX-XXXX (24/7 hotline)
+- **Manufacturer**: HistoCore Medical AI
+- **Email**: safety@histocore-medical.ai
+- **Phone**: +1 (650) 555-0199 (24/7 hotline)
 - **FDA**: Through MedWatch (www.fda.gov/medwatch)
+- **Online Portal**: https://safety.histocore-medical.ai/report
 
 ### Reportable Events
 - Incorrect AI results leading to patient harm
@@ -647,17 +648,24 @@ Users must report any adverse events, malfunctions, or safety concerns to:
 - Cybersecurity incidents involving patient data
 - Any unexpected device behavior or performance issues
 
+### Reporting Timeline
+- **Serious Adverse Events**: Report within 24 hours
+- **Malfunctions**: Report within 5 business days
+- **Other Issues**: Report within 30 days
+
 ## 9. Technical Support
 
 ### Support Channels
-- **Technical Helpdesk**: 1-800-XXX-XXXX (business hours)
-- **Email Support**: support@medical-ai-revolution.com
-- **Online Resources**: https://support.medical-ai-revolution.com
-- **Emergency Support**: 24/7 critical issue hotline
+- **Technical Helpdesk**: +1 (650) 555-0198 (Mon-Fri 8AM-8PM ET)
+- **Emergency Support**: +1 (650) 555-0199 (24/7 critical issues)
+- **Email Support**: support@histocore-medical.ai
+- **Online Resources**: https://support.histocore-medical.ai
+- **Customer Portal**: https://portal.histocore-medical.ai
 
 ### Training and Education
-- **Initial Training**: Comprehensive onboarding program
-- **Continuing Education**: Regular webinars and updates
+- **Initial Training**: Comprehensive onboarding program (8 hours)
+- **Continuing Education**: Quarterly webinars and updates
+- **Certification Program**: Optional pathologist certification
 - **Certification Program**: User competency certification
 - **Documentation**: Complete user manuals and guides
 """
