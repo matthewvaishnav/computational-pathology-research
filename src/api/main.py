@@ -1122,6 +1122,72 @@ async def subscribe_notifications(subscription_data: dict):
     return {"message": "Subscription successful"}
 
 
+# IDS (Intrusion Detection System) endpoints
+@app.get("/api/v1/security/ids/alerts")
+async def get_ids_alerts(
+    severity: Optional[str] = None,
+    source_ip: Optional[str] = None,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user),
+):
+    """Get IDS alerts.
+    
+    Args:
+        severity: Filter by severity (low, medium, high, critical)
+        source_ip: Filter by source IP
+        limit: Maximum number of alerts
+    """
+    try:
+        from src.monitoring.ids import get_ids_engine
+        
+        # Only admins can view IDS alerts
+        if current_user.role != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        ids_engine = get_ids_engine()
+        alerts = ids_engine.get_alerts(severity=severity, source_ip=source_ip, limit=limit)
+        
+        return {
+            "alerts": alerts,
+            "total": len(alerts),
+        }
+        
+    except ImportError:
+        raise HTTPException(status_code=503, detail="IDS module not available")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get IDS alerts: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve IDS alerts")
+
+
+@app.get("/api/v1/security/ids/statistics")
+async def get_ids_statistics(current_user: dict = Depends(get_current_user)):
+    """Get IDS statistics.
+    
+    Returns statistics about detected intrusions and alerts.
+    """
+    try:
+        from src.monitoring.ids import get_ids_engine
+        
+        # Only admins can view IDS statistics
+        if current_user.role != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        ids_engine = get_ids_engine()
+        stats = ids_engine.get_statistics()
+        
+        return stats
+        
+    except ImportError:
+        raise HTTPException(status_code=503, detail="IDS module not available")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get IDS statistics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve IDS statistics")
+
+
 # OAuth 2.0 / OIDC endpoints
 @app.get("/api/v1/auth/oauth/login")
 async def oauth_login(provider: str = "azure"):
