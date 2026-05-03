@@ -342,7 +342,7 @@ def main():
         print("Please train a model first using run_quick_demo.py")
         return
 
-    checkpoint = torch.load(MODEL_PATH, map_location=device)
+    checkpoint = torch.load(MODEL_PATH, map_location=device, weights_only=True)
 
     # Initialize model with same architecture as training
     model = MultimodalFusionModel(embed_dim=128).to(device)

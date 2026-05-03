@@ -57,7 +57,7 @@ def load_stain_normalization_model(
     """Load a stain-normalization checkpoint into eval mode."""
     config = load_stain_normalization_config(config_path)
     model = build_stain_normalization_model(config)
-    checkpoint = torch.load(checkpoint_path, map_location=str(device))
+    checkpoint = torch.load(checkpoint_path, map_location=str(device), weights_only=True)
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
     model.eval()

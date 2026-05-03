@@ -100,7 +100,7 @@ def load_pcam_models_from_checkpoint(
     checkpoint_path: str, device: torch.device
 ) -> tuple[nn.Module, nn.Module, nn.Module, Dict[str, Any]]:
     """Load the trained PCam feature extractor, encoder, head, and config."""
-    checkpoint = torch.load(checkpoint_path, map_location=str(device))
+    checkpoint = torch.load(checkpoint_path, map_location=str(device), weights_only=True)
     config = checkpoint.get("config")
     if config is None:
         raise RuntimeError("Checkpoint does not contain config; cannot reconstruct PCam models.")

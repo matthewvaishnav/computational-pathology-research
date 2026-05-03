@@ -1294,7 +1294,7 @@ def validate_checkpoint_integrity(checkpoint_path: str) -> bool:
             return False
 
         # Try to load the checkpoint
-        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
 
         # Validate required keys
         required_keys = [
@@ -1503,7 +1503,7 @@ def load_checkpoint(
         raise FileNotFoundError(error_msg)
 
     try:
-        checkpoint = torch.load(path, map_location="cpu")
+        checkpoint = torch.load(path, map_location="cpu", weights_only=True)
 
         feature_extractor.load_state_dict(checkpoint["feature_extractor_state_dict"])
         encoder.load_state_dict(checkpoint["encoder_state_dict"])
