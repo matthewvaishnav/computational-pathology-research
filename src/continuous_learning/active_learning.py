@@ -439,25 +439,24 @@ class ActiveLearningSystem:
         conn = None
         try:
             with sqlite3.connect(self.database_path) as conn:
-
                 cursor = conn.cursor()
 
-            # Cases table
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS cases (
-                    case_id TEXT PRIMARY KEY,
-                    slide_id TEXT,
-                    image_path TEXT,
-                    prediction TEXT,
-                    uncertainty_score REAL,
-                    confidence REAL,
-                    disease_type TEXT,
-                    clinical_priority REAL,
-                    metadata TEXT,
-                    identified_at TIMESTAMP,
-                    status TEXT DEFAULT 'pending'
-                )
-            """)
+                # Cases table
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS cases (
+                        case_id TEXT PRIMARY KEY,
+                        slide_id TEXT,
+                        image_path TEXT,
+                        prediction TEXT,
+                        uncertainty_score REAL,
+                        confidence REAL,
+                        disease_type TEXT,
+                        clinical_priority REAL,
+                        metadata TEXT,
+                        identified_at TIMESTAMP,
+                        status TEXT DEFAULT 'pending'
+                    )
+                """)
 
             # Annotations table
             cursor.execute("""
