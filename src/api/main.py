@@ -1087,6 +1087,18 @@ def main():
             and os.getenv("ENVIRONMENT") == "production"
             and not request.url.path.startswith("/health")
         ):
+            # Validate hostname to prevent open redirect attacks
+            from urllib.parse import urlparse
+            
+            allowed_hosts = os.getenv("ALLOWED_HOSTS", "").split(",")
+            parsed = urlparse(str(request.url))
+            
+            if allowed_hosts and parsed.netloc not in allowed_hosts:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "Invalid host"}
+                )
+            
             url = request.url.replace(scheme="https")
             return RedirectResponse(url=str(url), status_code=301)
         return await call_next(request)
