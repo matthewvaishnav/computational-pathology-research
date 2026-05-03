@@ -450,7 +450,7 @@ config = SecurityConfig(
 
 **Q2 2026:**
 - [ ] CSRF protection for web clients (fastapi-csrf-protect)
-- [ ] ClamAV integration for malware scanning
+- [x] ClamAV integration for malware scanning
 - [ ] Hardware security module (HSM) support
 - [ ] OAuth 2.0 / OIDC integration
 
