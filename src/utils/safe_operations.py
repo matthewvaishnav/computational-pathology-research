@@ -287,21 +287,59 @@ def atomic_write(filepath: Path, data: Any, mode: str = 'json'):
         raise DataSaveError(f"Atomic write failed: {e}") from e
 
 
-def safe_delete(filepath: Path, archive_dir: Optional[Path] = None):
+def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs: Optional[list[Path]] = None):
     """
-    Safe file deletion with optional archival.
+    Safe file deletion with optional archival and path validation.
     
     Fixes:
     - Issue #2: Unsafe file deletion - data loss risk
+    - Path traversal vulnerability
     
     Args:
         filepath: File to delete
         archive_dir: Optional archive directory (moves instead of deleting)
+        allowed_dirs: List of allowed parent directories (validates path stays within bounds)
+    
+    Raises:
+        ValueError: If filepath is outside allowed directories
     """
+    # Resolve to absolute path to prevent traversal
+    filepath = filepath.resolve()
+    
+    # Validate path is within allowed directories if specified
+    if allowed_dirs:
+        allowed = False
+        for allowed_dir in allowed_dirs:
+            allowed_dir = allowed_dir.resolve()
+            try:
+                filepath.relative_to(allowed_dir)
+                allowed = True
+                break
+            except ValueError:
+                continue
+        
+        if not allowed:
+            raise ValueError(f"Path outside allowed directories: {filepath}")
+    
     if not filepath.exists():
         return
     
     if archive_dir:
+        # Validate archive_dir if allowed_dirs specified
+        if allowed_dirs:
+            archive_dir = archive_dir.resolve()
+            allowed = False
+            for allowed_dir in allowed_dirs:
+                try:
+                    archive_dir.relative_to(allowed_dir.resolve())
+                    allowed = True
+                    break
+                except ValueError:
+                    continue
+            
+            if not allowed:
+                raise ValueError(f"Archive path outside allowed directories: {archive_dir}")
+        
         # Move to archive instead of deleting
         archive_dir.mkdir(parents=True, exist_ok=True)
         timestamp = time.strftime("%Y%m%d_%H%M%S")
