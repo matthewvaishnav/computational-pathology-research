@@ -4,8 +4,8 @@
  * Requirements: 2.1-2.3, 11.1-11.7
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { ContextExtractor, FileMatch, CodeSnippet, ExtractionConfig } from './ContextExtractor.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { ContextExtractor } from './ContextExtractor.js';
 import { DelegationType, ContextType } from '../types/core.js';
 
 describe('ContextExtractor', () => {
