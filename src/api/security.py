@@ -605,6 +605,9 @@ def log_security_event(
 
     # Send to centralized audit logging system if configured
     _send_to_audit_system(log_entry)
+    
+    # Send to IDS for intrusion detection
+    _send_to_ids(event_type, username, ip_address, details, success)
 
 
 def _send_to_audit_system(log_entry: Dict) -> None:
@@ -677,3 +680,40 @@ def _send_to_audit_system(log_entry: Dict) -> None:
         except Exception as e:
             # Don't fail application if audit system unavailable
             logger.debug(f"Failed to send audit log to Splunk: {e}")
+
+
+def _send_to_ids(
+    event_type: str,
+    username: Optional[str],
+    ip_address: Optional[str],
+    details: Optional[str],
+    success: bool,
+) -> None:
+    """Send security event to IDS for intrusion detection.
+    
+    Args:
+        event_type: Type of security event
+        username: Username if available
+        ip_address: Source IP address
+        details: Event details
+        success: Whether event was successful
+    """
+    try:
+        from src.monitoring.ids import get_ids_engine, create_ids_event_from_security_log
+        
+        # Only send failed events to IDS (potential attacks)
+        if not success:
+            ids_engine = get_ids_engine()
+            ids_event = create_ids_event_from_security_log(
+                event_type=event_type,
+                username=username,
+                ip_address=ip_address,
+                details=details,
+            )
+            ids_engine.process_event(ids_event)
+            
+    except ImportError:
+        logger.debug("IDS module not available")
+    except Exception as e:
+        # Don't fail application if IDS unavailable
+        logger.debug(f"Failed to send event to IDS: {e}")
