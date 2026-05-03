@@ -24,6 +24,7 @@ from src.exceptions import (
     CacheError,
     CacheSerializationError,
 )
+from src.mobile_edge.caching.safe_pickle import safe_pickle_loads
 from .metrics import (
     cache_hits_total,
     cache_misses_total,
@@ -193,9 +194,9 @@ class RedisCache:
             # Try JSON first (faster)
             return json.loads(decompressed.decode())
         except (json.JSONDecodeError, UnicodeDecodeError):
-            # Fall back to pickle
+            # Fall back to safe pickle with restricted classes
             try:
-                return pickle.loads(decompressed)
+                return safe_pickle_loads(decompressed)
             except (pickle.UnpicklingError, EOFError, AttributeError) as e:
                 logger.error("Failed to deserialize cached data: %s", e)
                 raise CacheSerializationError(f"Deserialization failed: {e}") from e
