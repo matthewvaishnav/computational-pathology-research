@@ -534,6 +534,12 @@ export class ContextExtractor {
     const normalizedPath = filePath.replace(/\\/g, '/');
     const normalizedPattern = pattern.replace(/\\/g, '/');
     
+    // Check pattern complexity FIRST to prevent ReDoS
+    const wildcardCount = (normalizedPattern.match(/\*/g) || []).length;
+    if (wildcardCount > 10) {
+      throw new Error('Glob pattern too complex (max 10 wildcards)');
+    }
+    
     // Simple implementation for common patterns
     if (normalizedPattern === '**/*') {
       return true; // Match everything
@@ -548,9 +554,16 @@ export class ContextExtractor {
     }
     
     if (normalizedPattern.startsWith('**/')) {
-      // Pattern like **/test.ts
+      // Pattern like **/test.ts (exact filename after **)
       const suffix = normalizedPattern.slice(3);
-      return normalizedPath.endsWith('/' + suffix) || normalizedPath === suffix;
+      
+      // If suffix contains wildcards, fall through to regex matching
+      if (suffix.includes('*') || suffix.includes('?')) {
+        // Fall through to regex matching below
+      } else {
+        // Exact filename match
+        return normalizedPath.endsWith('/' + suffix) || normalizedPath === suffix;
+      }
     }
     
     if (normalizedPattern.endsWith('/**')) {
@@ -568,10 +581,10 @@ export class ContextExtractor {
       }
     }
     
-    // Simple wildcard matching
+    // Simple wildcard matching with bounded quantifiers
     const regexPattern = normalizedPattern
-      .replace(/\./g, '\\.')
-      .replace(/\*/g, '[^/]*')
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')  // Escape regex special chars
+      .replace(/\*/g, '[^/]{0,100}')  // Bounded quantifier to prevent ReDoS
       .replace(/\?/g, '[^/]');
     
     const regex = new RegExp('^' + regexPattern + '$', 'i');
