@@ -578,6 +578,9 @@ def log_security_event(
 ) -> None:
     """Log security-relevant events for audit trail.
 
+    Logs to application logger and optionally sends to centralized
+    audit logging system (Elasticsearch) if configured.
+
     Args:
         event_type: Type of security event (e.g., 'login', 'access_denied', 'file_upload')
         username: Username associated with event
@@ -600,4 +603,77 @@ def log_security_event(
     else:
         logger.warning(f"Security event (failed): {log_entry}")
 
-    # TODO: Send to centralized audit logging system (e.g., Elasticsearch, Splunk)
+    # Send to centralized audit logging system if configured
+    _send_to_audit_system(log_entry)
+
+
+def _send_to_audit_system(log_entry: Dict) -> None:
+    """Send audit log entry to centralized logging system.
+    
+    Supports Elasticsearch, Splunk, or custom SIEM endpoints.
+    Fails gracefully if system unavailable.
+    
+    Args:
+        log_entry: Audit log entry dictionary
+    """
+    # Check for Elasticsearch configuration
+    es_url = os.getenv("ELASTICSEARCH_URL")
+    es_index = os.getenv("ELASTICSEARCH_AUDIT_INDEX", "security-audit")
+    es_api_key = os.getenv("ELASTICSEARCH_API_KEY")
+    
+    if es_url:
+        try:
+            import requests
+            
+            headers = {"Content-Type": "application/json"}
+            if es_api_key:
+                headers["Authorization"] = f"ApiKey {es_api_key}"
+            
+            # Send to Elasticsearch
+            response = requests.post(
+                f"{es_url}/{es_index}/_doc",
+                json=log_entry,
+                headers=headers,
+                timeout=5
+            )
+            response.raise_for_status()
+            
+        except ImportError:
+            logger.debug("requests library not available for Elasticsearch integration")
+        except Exception as e:
+            # Don't fail application if audit system unavailable
+            logger.debug(f"Failed to send audit log to Elasticsearch: {e}")
+    
+    # Check for Splunk HEC configuration
+    splunk_url = os.getenv("SPLUNK_HEC_URL")
+    splunk_token = os.getenv("SPLUNK_HEC_TOKEN")
+    
+    if splunk_url and splunk_token:
+        try:
+            import requests
+            
+            # Format for Splunk HEC
+            splunk_event = {
+                "event": log_entry,
+                "sourcetype": "_json",
+                "source": "histocore-api"
+            }
+            
+            headers = {
+                "Authorization": f"Splunk {splunk_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(
+                splunk_url,
+                json=splunk_event,
+                headers=headers,
+                timeout=5
+            )
+            response.raise_for_status()
+            
+        except ImportError:
+            logger.debug("requests library not available for Splunk integration")
+        except Exception as e:
+            # Don't fail application if audit system unavailable
+            logger.debug(f"Failed to send audit log to Splunk: {e}")
