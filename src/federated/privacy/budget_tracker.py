@@ -585,7 +585,9 @@ if __name__ == "__main__":
 
     for i, (eps, delta, mech) in enumerate(zip(epsilons, deltas, mechanisms * 2)):
         round_num = i + 1
-        client_count = np.random.randint(3, 8)
+        # Use secrets for cryptographically secure random
+        import secrets
+        client_count = secrets.randbelow(5) + 3  # Range: 3-7
 
         print(f"\n--- Round {round_num} ---")
         success = tracker.consume_budget(
