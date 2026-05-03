@@ -124,7 +124,7 @@ export class OpusDelegator {
     delegationType: DelegationType,
     contextBundle: ContextBundle,
     templateId?: string,
-    templateParams?: Record<string, any>
+    _templateParams?: Record<string, any>
   ): DelegationRequest {
     // Get template or use default
     let template: DelegationTemplate | undefined;
@@ -648,7 +648,7 @@ export class OpusDelegator {
   private generateClarifyingQuestions(
     validation: ValidationResult,
     incompleteArtifacts: Array<{ artifactId: string; artifactType: ArtifactType; missingElements: string[]; qualityIssues: string[] }>,
-    sessionState: SessionState
+    _sessionState: SessionState
   ): string[] {
     const questions: string[] = [];
 

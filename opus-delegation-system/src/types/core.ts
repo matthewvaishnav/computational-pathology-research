@@ -91,9 +91,14 @@ export interface MermaidAST {
 // OpenAPI Spec placeholder  
 export interface OpenAPISpec {
   openapi: string;
-  info: { title: string; version: string };
+  info: { 
+    title: string; 
+    version: string;
+    description?: string;
+  };
   paths: Record<string, any>;
   components?: Record<string, any>;
+  security?: any[];
 }
 
 // Implementation Step
