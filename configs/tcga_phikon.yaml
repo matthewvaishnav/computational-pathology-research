@@ -1,0 +1,81 @@
+# TCGA training with Phikon foundation model
+# Dataset: The Cancer Genome Atlas (multi-cancer classification)
+# Expected: Strong performance on diverse cancer types
+
+seed: 42
+device: cuda
+
+data:
+  dataset: tcga
+  root_dir: data/tcga
+  download: false
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  
+  # TCGA-specific settings
+  cancer_types: all  # Or specify: ['BRCA', 'LUAD', 'COAD', ...]
+  magnification: 20x
+  patch_size: 224
+  num_patches_per_slide: 1000  # Sample patches per WSI
+
+# Foundation model configuration
+foundation_model:
+  model: phikon
+  freeze: true
+  use_cache: true
+  cache_dir: cache/features/tcga_phikon
+  projector:
+    output_dim: 256
+    dropout: 0.1
+
+model:
+  wsi:
+    input_dim: 256
+    hidden_dim: 256
+    num_heads: 8
+    num_layers: 2
+    pooling: attention  # Use attention for slide-level
+  
+  embed_dim: 256
+
+# Multi-class classification
+task:
+  classification:
+    num_classes: 32  # TCGA has 32 cancer types
+    hidden_dims: [256, 128]
+    dropout: 0.2
+
+training:
+  num_epochs: 50
+  batch_size: 32  # Smaller for slide-level
+  learning_rate: 5.0e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  use_amp: true
+  
+  optimizer:
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    min_lr: 1.0e-6
+
+validation:
+  interval: 1
+  metric: val_acc
+  maximize: true
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+
+checkpoint:
+  checkpoint_dir: checkpoints/tcga_phikon
+  save_interval: 5
+  save_best: true
+
+logging:
+  log_dir: logs/tcga_phikon
+  log_interval: 20
