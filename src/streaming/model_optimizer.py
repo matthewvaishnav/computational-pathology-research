@@ -614,7 +614,10 @@ class ModelOptimizer:
             # 4. ONNX export
             onnx_path = None
             if self.onnx_optimizer:
-                onnx_path = f"/tmp/{model_name}.onnx"
+                import tempfile
+                # Use secure temp file creation to prevent race conditions
+                fd, onnx_path = tempfile.mkstemp(suffix=".onnx", prefix=f"{model_name}_")
+                os.close(fd)  # Close fd, we just need the path
 
                 # Use original model for ONNX export (before DataParallel wrapping)
                 export_model = model
@@ -624,6 +627,13 @@ class ModelOptimizer:
                 if self.onnx_optimizer.export_model(export_model, dummy_input, onnx_path):
                     optimization_info["onnx_path"] = onnx_path
                     optimization_info["optimizations_applied"].append("onnx_export")
+                else:
+                    # Clean up temp file if export failed
+                    try:
+                        os.unlink(onnx_path)
+                    except OSError:
+                        pass
+                    onnx_path = None
 
             # 5. TensorRT optimization
             if self.tensorrt_optimizer and onnx_path:
