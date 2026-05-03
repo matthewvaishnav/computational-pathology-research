@@ -1,0 +1,76 @@
+# Custom Configuration Example
+# Demonstrates advanced configuration options
+
+mode: custom
+
+# Training configuration
+epochs: 5
+samples: 5000
+batch_size: 64
+
+# Framework selection (subset)
+frameworks:
+  - HistoCore
+  - PathML
+
+# Dataset configuration
+dataset: pcam
+data_split:
+  train: 0.8
+  val: 0.1
+  test: 0.1
+
+# Hyperparameters
+learning_rate: 0.0005
+optimizer: adamw
+weight_decay: 0.001
+scheduler: cosine_annealing
+warmup_epochs: 1
+
+# Model configuration
+model_architecture: resnet50
+pretrained: true
+freeze_backbone: false
+
+# Resource management
+gpu_memory_limit: 11.0  # GB (leave 1GB buffer)
+temperature_threshold: 80  # Celsius (conservative)
+checkpoint_interval: 900  # 15 minutes (more frequent)
+
+# Output configuration
+output_dir: results/custom_benchmark
+save_checkpoints: true
+generate_visualizations: true
+save_model_weights: true
+
+# Logging
+log_level: DEBUG
+log_interval: 5  # minutes (more frequent)
+log_file: custom_benchmark.log
+
+# Random seed for reproducibility
+random_seed: 123
+
+# Statistical testing
+confidence_level: 0.99  # Higher confidence
+bootstrap_iterations: 2000  # More iterations
+
+# Result validation
+enable_anomaly_detection: true
+enable_progress_validation: true
+min_accuracy_threshold: 0.6  # Flag if below 60%
+max_loss_threshold: 2.0  # Flag if above 2.0
+
+# Error handling
+max_retries: 5
+retry_delay: 60  # seconds
+timeout: 7200  # 2 hours per framework
+
+# Notification (optional)
+notify_on_completion: false
+notification_email: null
+
+# Advanced options
+enable_mixed_precision: true
+gradient_accumulation_steps: 2
+early_stopping_patience: 3
