@@ -18,6 +18,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple, Union
 import numpy as np
 
+from .safe_pickle import safe_pickle_loads
+
 logger = logging.getLogger(__name__)
 
 
@@ -142,7 +144,7 @@ class FeatureCacheManager:
                         created_at_str, last_accessed_str, access_count, size_bytes, metadata_str = row
                         
                         # Deserialize data
-                        features = pickle.loads(features_blob)
+                        features = safe_pickle_loads(features_blob)
                         created_at = datetime.fromisoformat(created_at_str)
                         last_accessed = datetime.fromisoformat(last_accessed_str)
                         metadata = json.loads(metadata_str) if metadata_str else {}
