@@ -85,7 +85,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>🔒 Security Hardened</h3>
-    <p>TLS 1.3 encryption, input validation, rate limiting, and HIPAA compliance. All critical vulnerabilities resolved. Production-ready security.</p>
+    <p>TLS 1.3 encryption, input validation, rate limiting, and HIPAA compliance. 19 critical vulnerabilities resolved through systematic security audits. Production-ready security with path traversal protection, IDOR prevention, timing attack mitigation, and comprehensive request validation. See <a href="SECURITY_HARDENING.html">security hardening</a>.</p>
   </div>
 
   <div class="feature-card">
