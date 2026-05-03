@@ -820,7 +820,7 @@ class LongitudinalTracker(nn.Module):
             curr_risks = risk_trajectory[i]["risk_scores"]
 
             # Check each time horizon
-            for horizon in prev_risks.keys():
+            for horizon in prev_risks:
                 if horizon in curr_risks:
                     prev_risk = prev_risks[horizon]
                     curr_risk = curr_risks[horizon]
@@ -869,7 +869,7 @@ class LongitudinalTracker(nn.Module):
         last_risks = risk_trajectory[-1]["risk_scores"]
 
         changes = []
-        for horizon in first_risks.keys():
+        for horizon in first_risks:
             if horizon in last_risks:
                 change = last_risks[horizon] - first_risks[horizon]
                 changes.append(change)
@@ -941,12 +941,12 @@ class LongitudinalTracker(nn.Module):
 
         # Check risk score changes
         risk_changes = []
-        for disease_id in new_scan.risk_scores.keys():
+        for disease_id in new_scan.risk_scores:
             if disease_id in previous_scan.risk_scores:
                 prev_risks = previous_scan.risk_scores[disease_id]
                 curr_risks = new_scan.risk_scores[disease_id]
 
-                for horizon in curr_risks.keys():
+                for horizon in curr_risks:
                     if horizon in prev_risks:
                         risk_change = curr_risks[horizon] - prev_risks[horizon]
 
