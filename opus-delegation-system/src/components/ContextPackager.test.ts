@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ContextPackager, ContextBundle, PackagingConfig, CompressionOptions } from './ContextPackager.js';
+import { ContextPackager, PackagingConfig } from './ContextPackager.js';
 import { FileMatch, CodeSnippet, ExtractionStrategy } from './ContextExtractor.js';
-import { DelegationType, ContextType } from '../types/core.js';
+import { ContextType } from '../types/core.js';
 
 describe('ContextPackager', () => {
   let packager: ContextPackager;

@@ -1,0 +1,50 @@
+template_id: pacs_integration_design
+name: PACS/DICOM Integration Design
+category: integration_design
+version: 1.0.0
+description: Design integration with PACS systems using DICOM protocol
+parameters:
+  - name: pacs_system
+    required: true
+    type: string
+    description: Name of the PACS system to integrate with
+  - name: dicom_operations
+    required: true
+    type: list
+    description: DICOM operations to support (e.g., C-FIND, C-MOVE, C-STORE)
+  - name: authentication_method
+    required: false
+    type: string
+    default: AE_title
+    description: Authentication method for PACS
+  - name: data_flow
+    required: false
+    type: string
+    default: bidirectional
+    description: Data flow direction (push, pull, bidirectional)
+context_requirements:
+  - external_interfaces
+  - api_endpoints
+  - architecture_docs
+  - constraints
+expected_artifacts:
+  - type: mermaid_diagram
+    subtype: sequence
+  - type: openapi_spec
+    format: yaml
+  - type: implementation_guide
+    granularity: detailed
+prompt_template: |-
+  Design a PACS integration for {{pacs_system}}.
+
+  **DICOM Operations:** {{dicom_operations}}
+  **Authentication Method:** {{authentication_method}}
+  **Data Flow:** {{data_flow}}
+
+  Please provide:
+  1. Sequence diagram (Mermaid) showing DICOM message flow
+  2. Integration API specification (OpenAPI YAML) for PACS operations
+  3. Implementation plan including error handling and retry logic
+
+  Consider the following context:
+  {{context_bundle}}
