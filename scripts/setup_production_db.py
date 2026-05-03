@@ -32,8 +32,11 @@ def create_admin_user(db_manager: DatabaseManager):
             logger.info("Admin user already exists")
             return
         
-        # Create admin user
-        password_hash = hashlib.sha256("admin123".encode()).hexdigest()  # Change in production!
+        # Create admin user - use environment variable for password
+        admin_password = os.getenv("ADMIN_PASSWORD", "admin123")  # Default for dev only
+        if admin_password == "admin123":
+            logger.warning("Using default admin password! Set ADMIN_PASSWORD env var for production.")
+        password_hash = hashlib.sha256(admin_password.encode()).hexdigest()
         admin_user = user_ops.create_user(
             username="admin",
             email="admin@medical-ai.com",
