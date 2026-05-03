@@ -765,7 +765,10 @@ def run_model_security_demo():
         # Clean up test files
         for filepath in [dummy_model_path, encrypted_path, decrypted_path]:
             if os.path.exists(filepath):
-                os.remove(filepath)
+                try:
+                    os.remove(filepath)
+                except OSError:
+                    pass
 
     print("\nModel Security Demo Complete!")
     return security_manager

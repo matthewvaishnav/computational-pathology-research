@@ -694,7 +694,10 @@ class PACSWSIStreamingClient:
             # Clear all
             import shutil
 
-            shutil.rmtree(self.cache_dir)
+            try:
+                shutil.rmtree(self.cache_dir)
+            except OSError:
+                pass
             self.cache_dir.mkdir(parents=True, exist_ok=True)
             logger.info("Cleared all cache")
         else:
