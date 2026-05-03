@@ -243,6 +243,9 @@ class LocalStorage:
 
     def _get_feature_path(self, slide_id: str) -> str:
         """Get filepath for slide features."""
+        # Sanitize slide_id to prevent path traversal
+        slide_id = self._sanitize_slide_id(slide_id)
+        
         format_extensions = {
             "hdf5": ".h5",
             "npz": ".npz",
@@ -254,9 +257,28 @@ class LocalStorage:
 
         ext = format_extensions[self.config.feature_format]
         return os.path.join(self.config.cache_dir, f"{slide_id}_features{ext}")
+    
+    def _sanitize_slide_id(self, slide_id: str) -> str:
+        """Sanitize slide_id to prevent path traversal attacks."""
+        # Remove path separators and parent directory references
+        slide_id = slide_id.replace('/', '_').replace('\\', '_')
+        slide_id = slide_id.replace('..', '_')
+        
+        # Remove any remaining dangerous characters
+        import re
+        slide_id = re.sub(r'[^\w\-.]', '_', slide_id)
+        
+        # Ensure not empty after sanitization
+        if not slide_id or slide_id.strip('_') == '':
+            raise ValueError("Invalid slide_id: empty after sanitization")
+        
+        return slide_id
 
     def write_result(self, slide_id: str, result: Dict[str, Any]) -> str:
         """Write processing result to storage."""
+        # Sanitize slide_id to prevent path traversal
+        slide_id = self._sanitize_slide_id(slide_id)
+        
         filepath = os.path.join(self.config.results_dir, f"{slide_id}_result.json")
 
         if self.config.enable_compression:
@@ -273,6 +295,9 @@ class LocalStorage:
 
     def read_result(self, slide_id: str) -> Optional[Dict[str, Any]]:
         """Read processing result from storage."""
+        # Sanitize slide_id to prevent path traversal
+        slide_id = self._sanitize_slide_id(slide_id)
+        
         filepath = os.path.join(self.config.results_dir, f"{slide_id}_result.json")
 
         # Try compressed first
