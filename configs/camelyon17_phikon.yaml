@@ -1,0 +1,85 @@
+# CAMELYON17 training with Phikon foundation model
+# Dataset: Lymph node metastasis detection (multi-center)
+# Expected: Robust performance across hospital sites
+
+seed: 42
+device: cuda
+
+data:
+  dataset: camelyon17
+  root_dir: data/camelyon17
+  download: false
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  
+  # CAMELYON17-specific settings
+  magnification: 20x
+  patch_size: 224
+  num_patches_per_slide: 1000
+  level: 0  # Highest resolution
+  
+  # Multi-center split
+  train_centers: [0, 1, 2, 3]  # Centers 0-3 for training
+  val_centers: [4]  # Center 4 for validation
+
+# Foundation model configuration
+foundation_model:
+  model: phikon
+  freeze: true
+  use_cache: true
+  cache_dir: cache/features/camelyon17_phikon
+  projector:
+    output_dim: 256
+    dropout: 0.1
+
+model:
+  wsi:
+    input_dim: 256
+    hidden_dim: 256
+    num_heads: 8
+    num_layers: 2
+    pooling: attention
+  
+  embed_dim: 256
+
+# Binary classification (metastasis vs normal)
+task:
+  classification:
+    num_classes: 2
+    hidden_dims: [256, 128]
+    dropout: 0.2
+
+training:
+  num_epochs: 40
+  batch_size: 32
+  learning_rate: 5.0e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  use_amp: true
+  
+  optimizer:
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    min_lr: 1.0e-6
+
+validation:
+  interval: 1
+  metric: val_auc
+  maximize: true
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+
+checkpoint:
+  checkpoint_dir: checkpoints/camelyon17_phikon
+  save_interval: 5
+  save_best: true
+
+logging:
+  log_dir: logs/camelyon17_phikon
+  log_interval: 20
