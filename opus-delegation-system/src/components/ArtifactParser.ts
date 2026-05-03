@@ -310,11 +310,30 @@ export class ArtifactParser {
   }
 
   /**
+   * Safe YAML parsing with bomb protection
+   */
+  private safeParseYaml(content: string): any {
+    const MAX_SIZE = 1024 * 1024; // 1MB
+    
+    if (content.length > MAX_SIZE) {
+      throw new Error('YAML content too large');
+    }
+    
+    // Check for suspicious patterns (billion laughs attack)
+    const anchorCount = (content.match(/&/g) || []).length;
+    if (anchorCount > 100) {
+      throw new Error('Too many YAML anchors (potential bomb)');
+    }
+    
+    return parseYaml(content);
+  }
+
+  /**
    * Check if YAML content is an OpenAPI specification
    */
   private isOpenAPISpec(content: string): boolean {
     try {
-      const parsed = parseYaml(content) as any;
+      const parsed = this.safeParseYaml(content);
       return parsed && (parsed.openapi || parsed.swagger);
     } catch {
       return false;
@@ -335,7 +354,7 @@ export class ArtifactParser {
     const warnings: string[] = [];
 
     try {
-      const spec = parseYaml(content) as any;
+      const spec = this.safeParseYaml(content);
 
       // Validate OpenAPI structure
       const validationResult = this.validateOpenAPISpec(spec, startLine);
