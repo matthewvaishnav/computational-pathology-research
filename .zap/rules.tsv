@@ -1,0 +1,23 @@
+# ZAP Scanning Rules Configuration
+# Format: ID	THRESHOLD	[IGNORE]	[REASON]
+
+# Ignore false positives for development endpoints
+10202	IGNORE	IN_SCOPE	Health check endpoint - no sensitive data
+10096	IGNORE	IN_SCOPE	Timestamp disclosure - intentional for debugging
+
+# High severity rules - fail on detection
+40012	FAIL	Cross Site Scripting (Reflected)
+40014	FAIL	Cross Site Scripting (Persistent)
+40018	FAIL	SQL Injection
+90019	FAIL	Server Side Code Injection
+90020	FAIL	Remote OS Command Injection
+40029	FAIL	Path Traversal
+
+# Medium severity rules - warn
+10055	WARN	CSP Header Not Set
+10063	WARN	Feature Policy Header Not Set
+10098	WARN	Cross-Domain Misconfiguration
+
+# Info rules - ignore in CI
+10109	IGNORE	Modern Web Application
+10110	IGNORE	Dangerous JS Functions
