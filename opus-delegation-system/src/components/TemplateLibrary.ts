@@ -76,11 +76,33 @@ export class TemplateLibrary {
   }
 
   /**
+   * Validate and sanitize file path to prevent path traversal
+   * @param filePath - Path to validate
+   * @returns Sanitized absolute path
+   * @throws Error if path escapes templatesDir
+   */
+  private sanitizePath(filePath: string): string {
+    // Resolve to absolute path
+    const absolutePath = path.resolve(filePath);
+    const absoluteTemplatesDir = path.resolve(this.templatesDir);
+    
+    // Check if path is within templatesDir
+    if (!absolutePath.startsWith(absoluteTemplatesDir)) {
+      throw new Error(`Path traversal detected: ${filePath} is outside templates directory`);
+    }
+    
+    return absolutePath;
+  }
+
+  /**
    * Load a template from YAML file (Requirement 4.1)
    */
   loadTemplate(filePath: string): DelegationTemplate {
     try {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      // Sanitize path to prevent traversal
+      const safePath = this.sanitizePath(filePath);
+      
+      const fileContent = fs.readFileSync(safePath, 'utf-8');
       const template = yaml.parse(fileContent) as DelegationTemplate;
       
       // Validate template structure
@@ -346,9 +368,13 @@ export class TemplateLibrary {
     }
 
     const targetPath = filePath || path.join(this.templatesDir, `${template.template_id}.yaml`);
+    
+    // Sanitize path to prevent traversal
+    const safePath = this.sanitizePath(targetPath);
+    
     const yamlContent = yaml.stringify(template);
     
-    fs.writeFileSync(targetPath, yamlContent, 'utf-8');
+    fs.writeFileSync(safePath, yamlContent, 'utf-8');
     this.templates.set(template.template_id, template);
     
     // Initialize usage stats if not exists
