@@ -1,0 +1,151 @@
+import { describe, it, expect } from 'vitest';
+import {
+  DelegationType,
+  ComplexityLevel,
+  ContextType,
+  ArtifactType,
+  type ProblemClassification,
+  type ContextBundle,
+  type DelegationSession,
+} from './core';
+
+describe('Core Types', () => {
+  describe('Enums', () => {
+    it('should have all delegation types defined', () => {
+      expect(DelegationType.ARCHITECTURE_DESIGN).toBe('architecture_design');
+      expect(DelegationType.API_DESIGN).toBe('api_design');
+      expect(DelegationType.TEST_STRATEGY).toBe('test_strategy');
+      expect(DelegationType.INTEGRATION_DESIGN).toBe('integration_design');
+      expect(DelegationType.REFACTORING_ANALYSIS).toBe('refactoring_analysis');
+      expect(DelegationType.FORMAL_VERIFICATION).toBe('formal_verification');
+    });
+
+    it('should have all complexity levels defined', () => {
+      expect(ComplexityLevel.SIMPLE).toBe('simple');
+      expect(ComplexityLevel.MODERATE).toBe('moderate');
+      expect(ComplexityLevel.COMPLEX).toBe('complex');
+    });
+
+    it('should have all context types defined', () => {
+      expect(ContextType.CODE_SNIPPETS).toBe('code_snippets');
+      expect(ContextType.REQUIREMENTS_DOCS).toBe('requirements_docs');
+      expect(ContextType.EXISTING_DESIGNS).toBe('existing_designs');
+      expect(ContextType.CONSTRAINTS).toBe('constraints');
+    });
+
+    it('should have all artifact types defined', () => {
+      expect(ArtifactType.MERMAID_DIAGRAM).toBe('mermaid_diagram');
+      expect(ArtifactType.OPENAPI_SPEC).toBe('openapi_spec');
+      expect(ArtifactType.IMPLEMENTATION_GUIDE).toBe('implementation_guide');
+      expect(ArtifactType.TEST_STRATEGY).toBe('test_strategy');
+    });
+  });
+
+  describe('Type Guards', () => {
+    it('should validate ProblemClassification structure', () => {
+      const classification: ProblemClassification = {
+        suitable: true,
+        delegationType: DelegationType.ARCHITECTURE_DESIGN,
+        complexity: ComplexityLevel.COMPLEX,
+        requiredContextTypes: [ContextType.CODE_SNIPPETS, ContextType.ARCHITECTURE_DOCS],
+        expectedArtifacts: [ArtifactType.MERMAID_DIAGRAM, ArtifactType.IMPLEMENTATION_GUIDE],
+        suitabilityScore: 85,
+        reasoning: 'Complex architectural problem requiring system design',
+      };
+
+      expect(classification.suitable).toBe(true);
+      expect(classification.delegationType).toBe(DelegationType.ARCHITECTURE_DESIGN);
+      expect(classification.suitabilityScore).toBeGreaterThanOrEqual(0);
+      expect(classification.suitabilityScore).toBeLessThanOrEqual(100);
+    });
+
+    it('should validate ContextBundle structure', () => {
+      const bundle: ContextBundle = {
+        id: 'test-bundle-1',
+        problemDescription: 'Design a federated learning system',
+        codeSnippets: [
+          {
+            filePath: 'src/ml/model.py',
+            startLine: 1,
+            endLine: 50,
+            content: 'class Model: pass',
+            language: 'python',
+            relevance: 0.9,
+          },
+        ],
+        documentation: [],
+        constraints: ['Must support differential privacy'],
+        totalSize: 5000,
+        truncated: false,
+        manifest: [
+          {
+            source: 'src/ml/model.py',
+            type: 'code',
+            size: 1200,
+            relevance: 'high',
+          },
+        ],
+      };
+
+      expect(bundle.id).toBe('test-bundle-1');
+      expect(bundle.codeSnippets).toHaveLength(1);
+      expect(bundle.totalSize).toBeGreaterThan(0);
+      expect(bundle.truncated).toBe(false);
+    });
+
+    it('should validate DelegationSession structure', () => {
+      const now = new Date();
+      const session: DelegationSession = {
+        id: 'session-1',
+        createdAt: now,
+        updatedAt: now,
+        problem: {
+          title: 'Federated Learning Architecture',
+          description: 'Design a federated learning system',
+          type: DelegationType.ARCHITECTURE_DESIGN,
+          complexity: ComplexityLevel.COMPLEX,
+        },
+        rounds: [],
+        finalArtifacts: [],
+        metrics: {
+          totalTime: 0,
+          contextSize: 0,
+          roundCount: 0,
+          finalCompleteness: 0,
+        },
+        status: 'active',
+      };
+
+      expect(session.id).toBe('session-1');
+      expect(session.problem.type).toBe(DelegationType.ARCHITECTURE_DESIGN);
+      expect(session.status).toBe('active');
+      expect(session.rounds).toHaveLength(0);
+    });
+  });
+
+  describe('Data Validation', () => {
+    it('should ensure suitability scores are in valid range', () => {
+      const validScores = [0, 50, 100];
+      validScores.forEach((score) => {
+        expect(score).toBeGreaterThanOrEqual(0);
+        expect(score).toBeLessThanOrEqual(100);
+      });
+    });
+
+    it('should ensure relevance scores are in valid range', () => {
+      const validRelevance = [0, 0.5, 1.0];
+      validRelevance.forEach((relevance) => {
+        expect(relevance).toBeGreaterThanOrEqual(0);
+        expect(relevance).toBeLessThanOrEqual(1);
+      });
+    });
+
+    it('should ensure completeness scores are in valid range', () => {
+      const validScores = [0, 50, 100];
+      validScores.forEach((score) => {
+        expect(score).toBeGreaterThanOrEqual(0);
+        expect(score).toBeLessThanOrEqual(100);
+      });
+    });
+  });
+});

@@ -1,0 +1,75 @@
+# PANDA training with UNI foundation model
+
+seed: 42
+device: cuda
+
+data:
+  dataset: panda
+  root_dir: data/panda
+  download: false
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  magnification: 20x
+  patch_size: 224
+  num_patches_per_slide: 1000
+  level: 1
+
+foundation_model:
+  model: uni
+  freeze: true
+  use_cache: true
+  cache_dir: cache/features/panda_uni
+  projector:
+    input_dim: 1024
+    output_dim: 256
+    dropout: 0.1
+
+model:
+  wsi:
+    input_dim: 256
+    hidden_dim: 256
+    num_heads: 8
+    num_layers: 2
+    pooling: attention
+  embed_dim: 256
+
+task:
+  classification:
+    num_classes: 6
+    hidden_dims: [256, 128]
+    dropout: 0.2
+    ordinal: true
+
+training:
+  num_epochs: 40
+  batch_size: 32
+  learning_rate: 5.0e-4
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  use_amp: true
+  loss: ordinal_cross_entropy
+  optimizer:
+    betas: [0.9, 0.999]
+  scheduler:
+    min_lr: 1.0e-6
+
+validation:
+  interval: 1
+  metric: val_kappa
+  maximize: true
+
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+
+checkpoint:
+  checkpoint_dir: checkpoints/panda_uni
+  save_interval: 5
+  save_best: true
+
+logging:
+  log_dir: logs/panda_uni
+  log_interval: 20
