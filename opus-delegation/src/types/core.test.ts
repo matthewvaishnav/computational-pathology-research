@@ -7,6 +7,7 @@ import {
   type ProblemClassification,
   type ContextBundle,
   type DelegationSession,
+  type ParsedArtifact,
 } from './core';
 
 describe('Core Types', () => {
@@ -146,6 +147,98 @@ describe('Core Types', () => {
         expect(score).toBeGreaterThanOrEqual(0);
         expect(score).toBeLessThanOrEqual(100);
       });
+    });
+
+    it('should validate artifact type discriminators', () => {
+      const mermaidArtifact: ParsedArtifact = {
+        id: 'artifact-1',
+        type: ArtifactType.MERMAID_DIAGRAM,
+        content: 'graph TD\n  A --> B',
+        metadata: {
+          sourceLocation: { start: 0, end: 100 },
+          parseWarnings: [],
+          extractedAt: new Date(),
+        },
+        structured: {
+          diagramType: 'graph',
+          syntax: 'graph TD\n  A --> B',
+          valid: true,
+        },
+      };
+
+      const openApiArtifact: ParsedArtifact = {
+        id: 'artifact-2',
+        type: ArtifactType.OPENAPI_SPEC,
+        content: 'openapi: 3.0.0\ninfo:\n  title: Test API\n  version: 1.0.0',
+        metadata: {
+          sourceLocation: { start: 0, end: 100 },
+          parseWarnings: [],
+          extractedAt: new Date(),
+        },
+        structured: {
+          version: '3.0.0',
+          spec: { openapi: '3.0.0', info: { title: 'Test API', version: '1.0.0' } },
+          valid: true,
+        },
+      };
+
+      expect(mermaidArtifact.type).toBe(ArtifactType.MERMAID_DIAGRAM);
+      expect(openApiArtifact.type).toBe(ArtifactType.OPENAPI_SPEC);
+      
+      // Type discriminator should work
+      if (mermaidArtifact.structured && 'diagramType' in mermaidArtifact.structured) {
+        expect(mermaidArtifact.structured.diagramType).toBe('graph');
+      }
+      
+      if (openApiArtifact.structured && 'version' in openApiArtifact.structured) {
+        expect(openApiArtifact.structured.version).toBe('3.0.0');
+      }
+    });
+
+    it('should validate delegation type enum values', () => {
+      const allTypes = Object.values(DelegationType);
+      expect(allTypes).toContain('architecture_design');
+      expect(allTypes).toContain('api_design');
+      expect(allTypes).toContain('test_strategy');
+      expect(allTypes).toContain('integration_design');
+      expect(allTypes).toContain('refactoring_analysis');
+      expect(allTypes).toContain('formal_verification');
+      expect(allTypes).toHaveLength(6);
+    });
+
+    it('should validate complexity level enum values', () => {
+      const allLevels = Object.values(ComplexityLevel);
+      expect(allLevels).toContain('simple');
+      expect(allLevels).toContain('moderate');
+      expect(allLevels).toContain('complex');
+      expect(allLevels).toHaveLength(3);
+    });
+
+    it('should validate context type enum values', () => {
+      const allContextTypes = Object.values(ContextType);
+      expect(allContextTypes).toContain('code_snippets');
+      expect(allContextTypes).toContain('requirements_docs');
+      expect(allContextTypes).toContain('existing_designs');
+      expect(allContextTypes).toContain('constraints');
+      expect(allContextTypes).toContain('architecture_docs');
+      expect(allContextTypes).toContain('api_definitions');
+      expect(allContextTypes).toContain('test_files');
+      expect(allContextTypes).toContain('config_files');
+      expect(allContextTypes).toContain('protocol_specs');
+      expect(allContextTypes).toContain('dependency_graphs');
+      expect(allContextTypes).toHaveLength(10);
+    });
+
+    it('should validate artifact type enum values', () => {
+      const allArtifactTypes = Object.values(ArtifactType);
+      expect(allArtifactTypes).toContain('mermaid_diagram');
+      expect(allArtifactTypes).toContain('openapi_spec');
+      expect(allArtifactTypes).toContain('implementation_guide');
+      expect(allArtifactTypes).toContain('test_strategy');
+      expect(allArtifactTypes).toContain('code_snippet');
+      expect(allArtifactTypes).toContain('requirements');
+      expect(allArtifactTypes).toContain('design_doc');
+      expect(allArtifactTypes).toHaveLength(7);
     });
   });
 });
