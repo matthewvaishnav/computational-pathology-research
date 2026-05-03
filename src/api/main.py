@@ -153,6 +153,11 @@ app.add_middleware(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Add WAF middleware
+from src.api.waf import create_waf_middleware
+waf_middleware = create_waf_middleware(app)
+app.middleware("http")(waf_middleware)
+
 # Security
 security = HTTPBearer(auto_error=False)
 
