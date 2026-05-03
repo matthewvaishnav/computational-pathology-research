@@ -20,6 +20,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple, Union
 import numpy as np
 
+from .safe_pickle import safe_pickle_loads, safe_pickle_load
+
 logger = logging.getLogger(__name__)
 
 
@@ -154,7 +156,7 @@ class InferenceCacheManager:
                         created_at_str, last_accessed_str, access_count, size_bytes, metadata_str = row
                         
                         # Deserialize data
-                        result = pickle.loads(result_blob)
+                        result = safe_pickle_loads(result_blob)
                         created_at = datetime.fromisoformat(created_at_str)
                         last_accessed = datetime.fromisoformat(last_accessed_str)
                         metadata = json.loads(metadata_str)
@@ -599,7 +601,7 @@ class InferenceCacheManager:
         with self.lock:
             try:
                 with open(import_path, 'rb') as f:
-                    import_data = pickle.load(f)
+                    import_data = safe_pickle_load(f)
                 
                 imported_count = 0
                 for entry_data in import_data.get("entries", []):
