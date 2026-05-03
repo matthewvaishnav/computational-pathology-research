@@ -50,12 +50,24 @@ class DVCManager:
     def commit_snapshot(self, message: str, tag: Optional[str] = None) -> bool:
         """Commit dataset snapshot"""
 
+        # Validate inputs to prevent command injection
+        if not message or len(message) > 500:
+            self.logger.error("Invalid commit message")
+            return False
+        
+        if tag:
+            # Git tag names must be valid: alphanumeric, dash, underscore, dot, slash
+            import re
+            if not re.match(r'^[a-zA-Z0-9._/-]+$', tag) or len(tag) > 100:
+                self.logger.error("Invalid tag name")
+                return False
+
         try:
-            # Git commit
+            # Git commit - message is passed as separate argument (safe)
             subprocess.run(["git", "add", "."], cwd=self.repo_path, check=True)
             subprocess.run(["git", "commit", "-m", message], cwd=self.repo_path, check=True)
 
-            # Tag
+            # Tag - validated above
             if tag:
                 subprocess.run(["git", "tag", tag], cwd=self.repo_path, check=True)
 
@@ -67,6 +79,12 @@ class DVCManager:
 
     def checkout_version(self, version: str) -> bool:
         """Checkout dataset version"""
+
+        # Validate version to prevent command injection
+        import re
+        if not version or not re.match(r'^[a-zA-Z0-9._/-]+$', version) or len(version) > 100:
+            self.logger.error("Invalid version identifier")
+            return False
 
         try:
             subprocess.run(["git", "checkout", version], cwd=self.repo_path, check=True)
@@ -91,6 +109,12 @@ class DVCManager:
     def push_remote(self, remote: str = "origin") -> bool:
         """Push to remote"""
 
+        # Validate remote name to prevent command injection
+        import re
+        if not remote or not re.match(r'^[a-zA-Z0-9._/-]+$', remote) or len(remote) > 100:
+            self.logger.error("Invalid remote name")
+            return False
+
         try:
             subprocess.run(["git", "push", remote], cwd=self.repo_path, check=True)
             subprocess.run(["dvc", "push"], cwd=self.repo_path, check=True)
@@ -101,6 +125,12 @@ class DVCManager:
 
     def pull_remote(self, remote: str = "origin") -> bool:
         """Pull from remote"""
+
+        # Validate remote name to prevent command injection
+        import re
+        if not remote or not re.match(r'^[a-zA-Z0-9._/-]+$', remote) or len(remote) > 100:
+            self.logger.error("Invalid remote name")
+            return False
 
         try:
             subprocess.run(["git", "pull", remote], cwd=self.repo_path, check=True)
