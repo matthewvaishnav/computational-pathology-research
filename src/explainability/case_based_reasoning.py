@@ -157,20 +157,19 @@ class CaseDatabase:
         conn = None
         try:
             with sqlite3.connect(self.metadata_db_path) as conn:
-
                 cursor = conn.cursor()
 
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS cases (
-                    case_id TEXT PRIMARY KEY,
-                    slide_id TEXT,
-                    patient_id TEXT,
-                    institution TEXT,
-                    scanner_type TEXT,
-                    magnification REAL,
-                    stain_type TEXT,
-                    tissue_type TEXT,
-                    diagnosis TEXT,
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS cases (
+                        case_id TEXT PRIMARY KEY,
+                        slide_id TEXT,
+                        patient_id TEXT,
+                        institution TEXT,
+                        scanner_type TEXT,
+                        magnification REAL,
+                        stain_type TEXT,
+                        tissue_type TEXT,
+                        diagnosis TEXT,
                     grade TEXT,
                     stage TEXT,
                     molecular_markers TEXT,
@@ -210,10 +209,9 @@ class CaseDatabase:
         try:
             # Load metadata
             with sqlite3.connect(self.metadata_db_path) as conn:
-
                 cursor = conn.cursor()
-            cursor.execute("SELECT * FROM cases ORDER BY feature_idx")
-            rows = cursor.fetchall()
+                cursor.execute("SELECT * FROM cases ORDER BY feature_idx")
+                rows = cursor.fetchall()
         except Exception as e:
             if conn:
                 conn.rollback()
