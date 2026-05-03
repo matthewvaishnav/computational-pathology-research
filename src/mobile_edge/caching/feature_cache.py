@@ -6,6 +6,7 @@ by reusing computed features across similar inputs or model layers.
 """
 
 import hashlib
+import json
 import logging
 import pickle
 import sqlite3
@@ -144,7 +145,7 @@ class FeatureCacheManager:
                         features = pickle.loads(features_blob)
                         created_at = datetime.fromisoformat(created_at_str)
                         last_accessed = datetime.fromisoformat(last_accessed_str)
-                        metadata = eval(metadata_str) if metadata_str else {}
+                        metadata = json.loads(metadata_str) if metadata_str else {}
                         
                         # Create feature entry
                         entry = FeatureEntry(
