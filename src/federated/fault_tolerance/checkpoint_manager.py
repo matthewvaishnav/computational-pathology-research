@@ -220,7 +220,7 @@ class CheckpointManager:
                 return None
             
             # Load checkpoint
-            checkpoint_data = torch.load(checkpoint_path)
+            checkpoint_data = torch.load(checkpoint_path, weights_only=True)
             
             logger.info(
                 f"Loaded checkpoint from round {checkpoint_meta.round_id}, "

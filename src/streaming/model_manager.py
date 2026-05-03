@@ -443,7 +443,7 @@ class ModelHotSwapper:
 
         # Load model
         try:
-            target_model = torch.load(target_metadata.model_path)
+            target_model = torch.load(target_metadata.model_path, weights_only=True)
 
             # Swap
             success, message = self.swap_model(target_model, target_metadata, force=True)
@@ -693,8 +693,8 @@ class ModelManager:
             return False, "One or both models not found"
 
         try:
-            model_a = torch.load(metadata_a.model_path)
-            model_b = torch.load(metadata_b.model_path)
+            model_a = torch.load(metadata_a.model_path, weights_only=True)
+            model_b = torch.load(metadata_b.model_path, weights_only=True)
 
             self.ab_tester.traffic_split = traffic_split
             self.ab_tester.setup_ab_test(model_a, metadata_a, model_b, metadata_b)

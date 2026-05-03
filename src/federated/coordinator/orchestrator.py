@@ -592,7 +592,7 @@ class TrainingOrchestrator:
         if not checkpoint_path.exists():
             raise FileNotFoundError(f"Checkpoint version {version} not found")
 
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, weights_only=True)
         self.global_model.load_state_dict(checkpoint["model_state_dict"])
         
         if load_optimizer and "optimizer_state_dict" in checkpoint:

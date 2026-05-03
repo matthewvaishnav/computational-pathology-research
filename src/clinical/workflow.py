@@ -145,7 +145,7 @@ class ClinicalWorkflowSystem:
     def _load_checkpoint(self, checkpoint_path: str) -> None:
         """Load model checkpoint"""
         logger.info(f"Loading checkpoint from {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=True)
 
         if "classifier" in checkpoint:
             self.classifier.load_state_dict(checkpoint["classifier"])

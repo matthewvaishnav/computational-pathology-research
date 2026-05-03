@@ -223,7 +223,7 @@ class NucleusDetector:
         self.model.to(self.device)
 
         if checkpoint_path is not None:
-            state = torch.load(checkpoint_path, map_location=self.device)
+            state = torch.load(checkpoint_path, map_location=self.device, weights_only=True)
             self.model.load_state_dict(state)
             logger.info("Loaded NucleusDetector checkpoint: %s", checkpoint_path)
 

@@ -468,7 +468,7 @@ class MagnitudePruner:
             load_path = Path(load_path)
 
             # Load model state dict
-            state_dict = torch.load(load_path, map_location="cpu")
+            state_dict = torch.load(load_path, map_location="cpu", weights_only=True)
             model.load_state_dict(state_dict)
 
             # Load metadata

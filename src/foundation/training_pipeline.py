@@ -593,7 +593,7 @@ class FoundationModelTrainer:
     def load_checkpoint(self, filename: str) -> Dict[str, Any]:
         """Load training checkpoint"""
         checkpoint_path = Path(self.config.checkpoint_dir) / filename
-        checkpoint = torch.load(checkpoint_path, map_location=self.config.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.config.device, weights_only=True)
 
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.logger.info(f"Checkpoint loaded: {checkpoint_path}")

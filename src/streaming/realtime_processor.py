@@ -183,7 +183,7 @@ class RealTimeWSIProcessor:
                 self.logger.info(f"Loading CNN encoder from {self.config.cnn_encoder_path}")
                 try:
                     # Load custom encoder
-                    self._cnn_encoder = torch.load(self.config.cnn_encoder_path)
+                    self._cnn_encoder = torch.load(self.config.cnn_encoder_path, weights_only=True)
                 except Exception as e:
                     self.logger.warning(f"Failed to load CNN encoder: {e}. Using mock model.")
                     from .mock_models import create_mock_cnn_encoder
@@ -215,7 +215,7 @@ class RealTimeWSIProcessor:
             if self.config.attention_model_path:
                 self.logger.info(f"Loading attention model from {self.config.attention_model_path}")
                 try:
-                    self._attention_model = torch.load(self.config.attention_model_path)
+                    self._attention_model = torch.load(self.config.attention_model_path, weights_only=True)
                 except Exception as e:
                     self.logger.warning(f"Failed to load attention model: {e}. Using mock model.")
                     from .mock_models import create_mock_attention_model

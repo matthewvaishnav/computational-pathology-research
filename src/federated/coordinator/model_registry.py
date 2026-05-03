@@ -175,7 +175,7 @@ class ModelRegistry:
                 raise ValueError(f"Integrity check failed for version {version}")
         
         # Load checkpoint
-        checkpoint_data = torch.load(checkpoint_path)
+        checkpoint_data = torch.load(checkpoint_path, weights_only=True)
         
         # Reconstruct ModelCheckpoint
         checkpoint = ModelCheckpoint(
