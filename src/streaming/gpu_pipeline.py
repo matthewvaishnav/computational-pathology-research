@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Import advanced memory optimization components
 try:
+    # Advanced features still in old module (not yet extracted)
     from .memory_optimizer import (
         MemoryPoolManager,
         MemoryPoolStrategy,
