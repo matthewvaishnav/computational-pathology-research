@@ -24,7 +24,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from PIL import Image
 from slowapi import Limiter
-from slowapi.util import get_remote_address
+from slowapi.util import get_remote_address  # Keep for reference but use custom function
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,30 @@ ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/tiff", "image/bmp"]
 ALLOWED_DICOM_TYPES = ["application/dicom"]
 
 # Rate limiting configuration
-limiter = Limiter(key_func=get_remote_address, default_limits=["30/minute"])  # Reduced from 100/minute
+# Security: Use custom key function to prevent X-Forwarded-For spoofing
+def get_client_ip(request: Request) -> str:
+    """Get client IP with X-Forwarded-For validation.
+    
+    Only trusts X-Forwarded-For if request comes from trusted proxy.
+    Otherwise uses direct connection IP to prevent rate limit bypass.
+    """
+    # Get direct connection IP
+    client_host = request.client.host if request.client else "unknown"
+    
+    # Trusted proxy IPs (configure for your infrastructure)
+    trusted_proxies = set(os.getenv("TRUSTED_PROXIES", "").split(","))
+    
+    # Only trust X-Forwarded-For from known proxies
+    if client_host in trusted_proxies:
+        forwarded = request.headers.get("X-Forwarded-For")
+        if forwarded:
+            # Take first IP (original client)
+            return forwarded.split(",")[0].strip()
+    
+    # Use direct connection IP
+    return client_host
+
+limiter = Limiter(key_func=get_client_ip, default_limits=["30/minute"])  # Reduced from 100/minute
 
 # CSRF Protection Note:
 # For web clients (non-API), implement CSRF protection using:
