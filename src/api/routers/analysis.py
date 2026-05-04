@@ -24,6 +24,7 @@ from src.database import (
 )
 from src.api.dependencies import get_current_user, get_inference_engine
 from src.api.security import limiter, log_security_event, sanitize_for_log, validate_uploaded_image
+from src.api.validators import validate_file_upload
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +74,8 @@ async def upload_for_analysis(
         if len(file_content) > max_size:
             raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
 
-        # Comprehensive file validation
-        safe_filename, detected_type = validate_uploaded_image(
-            file_content, file.filename, file.content_type
-        )
+        # Comprehensive file validation using centralized validator
+        detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
 
         file_size = len(file_content)
 
@@ -298,8 +297,15 @@ async def upload_dicom(
     current_user: dict = Depends(get_current_user),
 ):
     """Upload DICOM file."""
-
-    if not file.content_type or file.content_type != "application/dicom":
+    
+    # Read file content for validation
+    file_content = await file.read()
+    
+    # Use centralized file validator for DICOM files
+    detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
+    
+    # Ensure it's actually a DICOM file
+    if detected_mime != "application/dicom":
         raise HTTPException(
             status_code=400, detail="Invalid file type. Only DICOM files are supported."
         )
@@ -309,7 +315,7 @@ async def upload_dicom(
     # Mock DICOM processing
     dicom_data = {
         "study_id": study_id,
-        "filename": file.filename,
+        "filename": safe_filename,
         "upload_time": datetime.now().isoformat(),
         "status": "processed",
     }

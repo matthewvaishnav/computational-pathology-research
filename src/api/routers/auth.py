@@ -26,6 +26,7 @@ from src.api.security import (
     record_failed_login,
     verify_password,
 )
+from src.api.validators import validate_email, validate_password
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,10 @@ class UserLogin(BaseModel):
 async def register_user(user_data: UserRegistration, request: Request):
     """Register new user with secure password hashing."""
     try:
+        # Validate email and password using centralized validators
+        validate_email(user_data.email)
+        validate_password(user_data.password)
+        
         if user_data.username in users_db:
             log_security_event(
                 "registration_failed",

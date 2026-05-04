@@ -239,7 +239,7 @@ class AuditLog(Base, TimestampMixin):
     error_message = Column(Text)
 
     # Additional metadata
-    metadata = Column(JSON)
+    event_metadata = Column(JSON)
 
     # Foreign keys
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
