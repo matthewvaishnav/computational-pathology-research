@@ -748,39 +748,112 @@ class SelfSupervisedPreTrainer:
         return {"val_samples": total_samples}
 
     def save_checkpoint(self, path: str, epoch: int):
-        """Save training checkpoint"""
+        """Save comprehensive training checkpoint"""
         checkpoint = {
             "epoch": epoch,
-            "model_state_dict": self.model.state_dict(),
+            "model_state_dict": self.model.state_dict() if not self.config.distributed 
+                               else self.model.module.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
             "scheduler_state_dict": self.scheduler.state_dict(),
             "config": self.config,
             "metrics": dict(self.metrics),
+            "random_state": torch.get_rng_state(),
+            "numpy_random_state": np.random.get_state(),
         }
 
         if hasattr(self, "momentum_encoder"):
-            checkpoint["momentum_encoder_state_dict"] = self.momentum_encoder.state_dict()
+            checkpoint["momentum_encoder_state_dict"] = (
+                self.momentum_encoder.state_dict() if not self.config.distributed
+                else self.momentum_encoder.module.state_dict()
+            )
 
-        torch.save(checkpoint, path)
+        if hasattr(self, "queue"):
+            checkpoint["queue_state"] = {
+                "queue": self.queue.queue.clone(),
+                "queue_ptr": self.queue.queue_ptr
+            }
+
+        # Save with atomic write to prevent corruption
+        temp_path = path + ".tmp"
+        torch.save(checkpoint, temp_path)
+        
+        # Atomic rename
+        if os.path.exists(temp_path):
+            if os.path.exists(path):
+                os.remove(path)
+            os.rename(temp_path, path)
+            
         self.logger.info(f"Checkpoint saved: {path}")
 
     def resume_from_checkpoint(self, path: str) -> int:
-        """Resume training from checkpoint"""
-        checkpoint = torch.load(path, map_location="cpu", weights_only=True)
+        """Resume training from checkpoint with full state restoration"""
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Checkpoint not found: {path}")
+            
+        checkpoint = torch.load(path, map_location="cpu", weights_only=False)
 
-        self.model.load_state_dict(checkpoint["model_state_dict"])
+        # Load model state
+        if self.config.distributed:
+            self.model.module.load_state_dict(checkpoint["model_state_dict"])
+        else:
+            self.model.load_state_dict(checkpoint["model_state_dict"])
+            
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         self.scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
 
+        # Load momentum encoder if exists
         if hasattr(self, "momentum_encoder") and "momentum_encoder_state_dict" in checkpoint:
-            self.momentum_encoder.load_state_dict(checkpoint["momentum_encoder_state_dict"])
+            if self.config.distributed:
+                self.momentum_encoder.module.load_state_dict(checkpoint["momentum_encoder_state_dict"])
+            else:
+                self.momentum_encoder.load_state_dict(checkpoint["momentum_encoder_state_dict"])
 
+        # Load queue state for MoCo
+        if hasattr(self, "queue") and "queue_state" in checkpoint:
+            self.queue.queue = checkpoint["queue_state"]["queue"]
+            self.queue.queue_ptr = checkpoint["queue_state"]["queue_ptr"]
+
+        # Restore random states for reproducibility
+        if "random_state" in checkpoint:
+            torch.set_rng_state(checkpoint["random_state"])
+        if "numpy_random_state" in checkpoint:
+            np.random.set_state(checkpoint["numpy_random_state"])
+
+        # Load metrics
         self.metrics = defaultdict(list, checkpoint["metrics"])
 
         epoch = checkpoint["epoch"]
         self.logger.info(f"Resumed from checkpoint: {path}, epoch: {epoch}")
 
         return epoch
+
+    def auto_resume_latest_checkpoint(self, checkpoint_dir: str = "checkpoints") -> Optional[int]:
+        """Automatically resume from the latest checkpoint if available"""
+        checkpoint_dir = Path(checkpoint_dir)
+        if not checkpoint_dir.exists():
+            return None
+            
+        # Find all checkpoint files
+        checkpoint_files = list(checkpoint_dir.glob("checkpoint_epoch_*.pth"))
+        if not checkpoint_files:
+            return None
+            
+        # Sort by epoch number
+        def extract_epoch(path):
+            try:
+                return int(path.stem.split("_")[-1])
+            except:
+                return 0
+                
+        latest_checkpoint = max(checkpoint_files, key=extract_epoch)
+        
+        try:
+            epoch = self.resume_from_checkpoint(str(latest_checkpoint))
+            self.logger.info(f"Auto-resumed from latest checkpoint: {latest_checkpoint}")
+            return epoch
+        except Exception as e:
+            self.logger.error(f"Failed to resume from {latest_checkpoint}: {e}")
+            return None
 
 
 # Example usage
