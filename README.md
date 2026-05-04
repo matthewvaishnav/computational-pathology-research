@@ -45,6 +45,39 @@ A production-grade PyTorch framework for computational pathology research and cl
 
 ## Quick Start
 
+### Easy Installation
+
+```bash
+# One-click installer (recommended)
+python install.py
+
+# Or manual install
+pip install -r requirements.txt
+pip install -e .
+```
+
+### Three Ways to Use HistoCore
+
+**1. 🖥️ Desktop GUI (Recommended)**
+```bash
+python histocore.py  # Choose option 1
+# QuPath-like interface with drag-and-drop WSI analysis
+```
+
+**2. 🌐 Web Interface**
+```bash
+python histocore.py  # Choose option 2
+# Browser-based interface at http://localhost:5000
+```
+
+**3. 💻 Command Line**
+```bash
+histocore analyze slide.svs --output results/
+histocore batch-analyze *.svs --model resnet50
+```
+
+See [USER_INTERFACES.md](USER_INTERFACES.md) for complete interface documentation.
+
 ### Installation
 
 ```bash
