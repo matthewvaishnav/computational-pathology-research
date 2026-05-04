@@ -44,6 +44,9 @@ from .cache_manager import CacheManager, CacheEntry
 # Import batch optimizer
 from .batch_optimizer import BatchOptimizer, OptimalSizes
 
+# Import monitor
+from .monitor import MemoryAlert, MemoryAnalytics, MemoryMonitor
+
 __all__ = [
     "MemoryProfiler",
     "MemorySnapshot",
@@ -52,9 +55,11 @@ __all__ = [
     "CacheEntry",
     "BatchOptimizer",
     "OptimalSizes",
+    "MemoryMonitor",
+    "MemoryAlert",
+    "MemoryAnalytics",
 ]
 
 # Components will be imported here as they are created:
-# from .monitor import MemoryMonitor
 # from .config import OptimizerConfig
 # from .coordinator import MemoryCoordinator
