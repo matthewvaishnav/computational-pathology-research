@@ -41,7 +41,15 @@ async def get_users(
     limit: int = 10,
     current_user: dict = Depends(require_admin),
 ):
-    """Get user list (admin only)."""
+    """Get user list (admin only).
+    
+    Args:
+        limit: Maximum number of users (1-1000)
+    """
+    # Validate limit to prevent DoS via excessive queries
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
     user_list = list(users.values())
     return {"users": user_list[:limit], "total": len(user_list)}
 
@@ -65,7 +73,15 @@ async def get_audit_logs(
     current_user: dict = Depends(require_admin),
     db: Session = Depends(get_db_session),
 ):
-    """Get audit logs (admin only)."""
+    """Get audit logs (admin only).
+    
+    Args:
+        limit: Maximum number of logs (1-1000)
+    """
+    # Validate limit to prevent DoS via excessive queries
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
     try:
         audit_ops = AuditOperations(db)
         logs = audit_ops.list_audit_logs(limit=limit)

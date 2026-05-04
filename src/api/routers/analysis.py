@@ -345,8 +345,16 @@ async def get_cases(
     db: Session = Depends(get_db_session),
     current_user: dict = Depends(get_current_user),
 ):
-    """Get list of cases from database."""
-
+    """Get list of cases from database.
+    
+    Args:
+        limit: Maximum number of cases (1-1000)
+        status: Filter by status
+    """
+    # Validate limit to prevent DoS via excessive queries
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
     try:
         case_ops = CaseOperations(db)
         cases = case_ops.list_cases(status=status, limit=limit)
