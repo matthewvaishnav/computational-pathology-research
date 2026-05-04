@@ -39,7 +39,11 @@ class UserRegistration(BaseModel):
     username: str
     email: str
     password: str
-    role: str = "pathologist"
+    
+    class Config:
+        # Prevent mass assignment of sensitive fields
+        # role is set server-side, not from user input
+        extra = "forbid"
 
 
 class UserLogin(BaseModel):
@@ -64,12 +68,14 @@ async def register_user(user_data: UserRegistration, request: Request):
         hashed_password = hash_password(user_data.password)
 
         user_id = str(uuid.uuid4())
+        # Role is always set to 'pathologist' for new registrations
+        # Admin roles must be assigned by existing admins
         users_db[user_data.username] = {
             "user_id": user_id,
             "username": user_data.username,
             "email": user_data.email,
             "password_hash": hashed_password,
-            "role": user_data.role,
+            "role": "pathologist",  # Default role, cannot be overridden by user
             "created_at": datetime.now().isoformat(),
         }
 
@@ -77,7 +83,7 @@ async def register_user(user_data: UserRegistration, request: Request):
             "user_registered",
             username=user_data.username,
             ip_address=request.client.host,
-            details=f"Role: {user_data.role}",
+            details="Role: pathologist (default)",
             success=True,
         )
 
