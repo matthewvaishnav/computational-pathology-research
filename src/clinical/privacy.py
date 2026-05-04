@@ -212,7 +212,7 @@ class PatientIdentifierAnonymizer:
         
         # Use HMAC-SHA256 for consistent, irreversible anonymization
         mac = hmac.new(self.secret_key, patient_id.encode(), hashlib.sha256)
-        return f"anon_{mac.hexdigest()[:32]}"  # Increased from 16 to 32
+        return f"anon_{mac.hexdigest()[:16]}"  # 16 hex chars for 21 total length
 
     def anonymize_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Anonymize patient identifiers in data dictionary."""
