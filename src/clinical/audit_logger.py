@@ -1,11 +1,5 @@
-"""
-Audit Logger Module
+"""Main audit logger for regulatory compliance."""
 
-Log writing, signing, event creation for regulatory compliance.
-Extracted from audit.py for focused responsibility.
-"""
-
-import base64
 import hashlib
 import json
 import logging
@@ -15,86 +9,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.serialization import (
-    Encoding,
-    NoEncryption,
-    PrivateFormat,
-    PublicFormat,
-)
-
-from .audit import AuditEvent, AuditEventType, AuditSeverity, SignedAuditRecord
-from .audit_query import AuditStorage
-
-logger = logging.getLogger(__name__)
-
-
-class CryptographicSigner:
-    """Handles cryptographic signing of audit records."""
-
-    def __init__(self, private_key: Optional[rsa.RSAPrivateKey] = None):
-        """Initialize with RSA private key."""
-        if private_key is None:
-            private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-
-        self.private_key = private_key
-        self.public_key = private_key.public_key()
-        self.public_key_fingerprint = self._compute_key_fingerprint()
-
-    def _compute_key_fingerprint(self) -> str:
-        """Compute fingerprint of public key."""
-        public_key_bytes = self.public_key.public_bytes(
-            encoding=Encoding.PEM, format=PublicFormat.SubjectPublicKeyInfo
-        )
-        return hashlib.sha256(public_key_bytes).hexdigest()[:16]
-
-    def sign_event(self, event: AuditEvent) -> str:
-        """Sign audit event and return base64-encoded signature."""
-        content_hash = event.get_content_hash()
-        signature = self.private_key.sign(
-            content_hash.encode(),
-            padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
-            hashes.SHA256(),
-        )
-        return base64.b64encode(signature).decode()
-
-    def verify_signature(self, event: AuditEvent, signature: str) -> bool:
-        """Verify signature of audit event."""
-        try:
-            signature_bytes = base64.b64decode(signature)
-            content_hash = event.get_content_hash()
-
-            self.public_key.verify(
-                signature_bytes,
-                content_hash.encode(),
-                padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
-                hashes.SHA256(),
-            )
-            return True
-        except (InvalidSignature, ValueError):
-            return False
-
-    def export_public_key(self) -> str:
-        """Export public key in PEM format."""
-        return self.public_key.public_bytes(
-            encoding=Encoding.PEM, format=PublicFormat.SubjectPublicKeyInfo
-        ).decode()
-
-    def export_private_key(self, password: Optional[str] = None) -> str:
-        """Export private key in PEM format."""
-        encryption_algorithm = NoEncryption()
-        if password:
-            from cryptography.hazmat.primitives.serialization import BestAvailableEncryption
-
-            encryption_algorithm = BestAvailableEncryption(password.encode())
-
-        return self.private_key.private_bytes(
-            encoding=Encoding.PEM,
-            format=PrivateFormat.PKCS8,
-            encryption_algorithm=encryption_algorithm,
-        ).decode()
+from .audit_crypto import CryptographicSigner
+from .audit_models import AuditEvent, AuditEventType, AuditSeverity, SignedAuditRecord
+from .audit_storage import AuditStorage, FileAuditStorage
 
 
 class AuditLogger:
@@ -102,11 +19,15 @@ class AuditLogger:
 
     def __init__(
         self,
-        storage: AuditStorage,
+        storage: Optional[AuditStorage] = None,
         signer: Optional[CryptographicSigner] = None,
         retention_days: int = 2555,  # 7 years for FDA compliance
     ):
         """Initialize audit logger."""
+        if storage is None:
+            storage_dir = Path.home() / ".clinical_audit_logs"
+            storage = FileAuditStorage(storage_dir)
+
         if signer is None:
             signer = CryptographicSigner()
 
@@ -144,6 +65,7 @@ class AuditLogger:
         ip_address: Optional[str] = None,
     ) -> str:
         """Log prediction operation with input/output data hashes."""
+        # Anonymize patient data in input/output
         anonymized_input = self.anonymizer.anonymize_data(input_data)
         anonymized_output = self.anonymizer.anonymize_data(output_data)
 
@@ -180,7 +102,7 @@ class AuditLogger:
         user_agent: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Log user access event."""
+        """Log user access event (authentication, data queries, report generation)."""
         severity = AuditSeverity.INFO if success else AuditSeverity.WARNING
 
         event = AuditEvent(
@@ -215,7 +137,7 @@ class AuditLogger:
         ip_address: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Log data modification event."""
+        """Log data modification event (patient data updates, report amendments)."""
         event = AuditEvent(
             event_id=self._create_event_id(),
             event_type=AuditEventType.DATA_MODIFICATION,
@@ -246,7 +168,8 @@ class AuditLogger:
         session_token: Optional[str] = None,
         model_version: Optional[str] = None,
     ) -> str:
-        """Log system error with stack trace."""
+        """Log system error with stack trace and input data state."""
+        # Anonymize input data if present
         anonymized_input = None
         input_hash = None
         if input_data:
@@ -282,7 +205,7 @@ class AuditLogger:
         model_version: str,
         user_id: Optional[str] = None,
     ) -> str:
-        """Log model training event."""
+        """Log model training event with dataset versions, hyperparameters, and metrics."""
         event = AuditEvent(
             event_id=self._create_event_id(),
             event_type=AuditEventType.MODEL_TRAINING,
@@ -310,7 +233,7 @@ class AuditLogger:
         validation_type: str,
         user_id: Optional[str] = None,
     ) -> str:
-        """Log model validation event."""
+        """Log model validation event with performance metrics."""
         event = AuditEvent(
             event_id=self._create_event_id(),
             event_type=AuditEventType.MODEL_VALIDATION,
@@ -354,7 +277,7 @@ class AuditLogger:
             return ""
 
     def verify_record_integrity(self, record: SignedAuditRecord) -> bool:
-        """Verify cryptographic signature."""
+        """Verify cryptographic signature of audit record."""
         return self.signer.verify_signature(record.event, record.signature)
 
     def get_audit_records(
@@ -386,6 +309,7 @@ class AuditLogger:
         """Get audit log statistics."""
         total_records = self.storage.get_record_count()
 
+        # Get recent records for analysis
         recent_records = self.get_audit_records(
             start_time=datetime.now() - timedelta(days=30), limit=1000
         )
@@ -415,7 +339,7 @@ class AuditLogger:
 
 
 class AuditContextManager:
-    """Context manager for automatic audit logging."""
+    """Context manager for automatic audit logging of operations."""
 
     def __init__(
         self,
@@ -441,7 +365,11 @@ class AuditContextManager:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit audit context and log results."""
+        end_time = datetime.now()
+        (end_time - self.start_time).total_seconds() * 1000
+
         if exc_type is not None:
+            # Log error
             self.audit_logger.log_system_error(
                 error_type=exc_type.__name__,
                 error_message=str(exc_val),
@@ -452,10 +380,10 @@ class AuditContextManager:
             )
             self.exception_occurred = True
 
-        return False
+        return False  # Don't suppress exceptions
 
     def log_success(self, input_data: Dict[str, Any], output_data: Dict[str, Any]):
-        """Log successful operation."""
+        """Log successful operation completion."""
         if not self.exception_occurred:
             processing_time_ms = (datetime.now() - self.start_time).total_seconds() * 1000
 
