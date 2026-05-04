@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import sqlite3
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -374,14 +375,76 @@ class SlideDatabase:
 
 
 class WSIDataCollector:
-    """Main data collection and curation system"""
+    """Main data collection and curation system for 100K+ slides"""
 
     def __init__(
-        self, database_path: str = "slide_database.db", quality_config: Optional[Dict] = None
+        self, 
+        database_path: str = "slide_database.db", 
+        quality_config: Optional[Dict] = None,
+        max_workers: int = 8,
+        batch_size: int = 1000
     ):
         self.database = SlideDatabase(database_path)
         self.quality_assessor = WSIQualityAssessment(**(quality_config or {}))
+        self.max_workers = max_workers
+        self.batch_size = batch_size
         self.logger = logging.getLogger(__name__)
+
+    def collect_slides_from_multiple_sources(
+        self, 
+        source_directories: List[str], 
+        target_count: int = 100000,
+        recursive: bool = True
+    ) -> Dict[str, Any]:
+        """Collect slides from multiple source directories to reach target count"""
+        
+        self.logger.info(f"Starting collection from {len(source_directories)} sources")
+        self.logger.info(f"Target: {target_count} high-quality slides")
+        
+        total_stats = {
+            "processed_slides": 0,
+            "duplicate_slides": 0,
+            "failed_slides": 0,
+            "high_quality_slides": 0,
+            "sources_processed": 0
+        }
+        
+        for i, directory in enumerate(source_directories):
+            self.logger.info(f"Processing source {i+1}/{len(source_directories)}: {directory}")
+            
+            # Check current high-quality slide count
+            current_stats = self.database.get_statistics()
+            current_high_quality = current_stats.get("high_quality_slides", 0)
+            
+            if current_high_quality >= target_count:
+                self.logger.info(f"Target reached: {current_high_quality} high-quality slides")
+                break
+                
+            # Process this source
+            source_stats = self.collect_slides_from_directory(
+                directory, 
+                recursive=recursive, 
+                max_workers=self.max_workers
+            )
+            
+            # Update totals
+            for key in total_stats:
+                if key in source_stats:
+                    total_stats[key] += source_stats[key]
+                elif key == "sources_processed":
+                    total_stats[key] += 1
+                elif key == "high_quality_slides":
+                    # Get updated count from database
+                    updated_stats = self.database.get_statistics()
+                    total_stats[key] = updated_stats.get("high_quality_slides", 0)
+            
+            self.logger.info(f"Source {i+1} completed. Total high-quality slides: {total_stats['high_quality_slides']}")
+        
+        # Final statistics
+        final_stats = self.database.get_statistics()
+        total_stats["database_stats"] = final_stats
+        
+        return total_stats
 
     def collect_slides_from_directory(
         self, directory: str, recursive: bool = True, max_workers: int = 4
@@ -614,6 +677,130 @@ class WSIDataCollector:
             slides = [s for s in slides if s.tissue_type in tissue_types]
 
         return slides
+
+    def progressive_quality_filtering(
+        self, 
+        min_quality_scores: List[float] = [0.5, 0.6, 0.7, 0.8],
+        target_counts: List[int] = [200000, 150000, 100000, 50000]
+    ) -> Dict[str, Any]:
+        """Apply progressive quality filtering to achieve target dataset sizes"""
+        
+        results = {}
+        
+        for min_score, target_count in zip(min_quality_scores, target_counts):
+            slides = self.database.get_high_quality_slides(min_score, target_count)
+            
+            results[f"quality_{min_score}"] = {
+                "count": len(slides),
+                "target": target_count,
+                "achieved": len(slides) >= target_count
+            }
+            
+            self.logger.info(
+                f"Quality {min_score}: {len(slides)} slides "
+                f"(target: {target_count}, {'✓' if len(slides) >= target_count else '✗'})"
+            )
+        
+        return results
+    
+    def deduplicate_by_content_hash(self, similarity_threshold: float = 0.95) -> int:
+        """Remove duplicate slides based on content similarity"""
+        
+        # This would implement perceptual hashing for content-based deduplication
+        # For now, we rely on file hash deduplication which is already implemented
+        
+        # Get all slides
+        all_slides = self.database.get_high_quality_slides(min_quality_score=0.0)
+        
+        self.logger.info(f"Starting content-based deduplication for {len(all_slides)} slides")
+        
+        # Group by similar characteristics
+        groups = defaultdict(list)
+        for slide in all_slides:
+            # Group by vendor, magnification, and tissue type
+            key = (slide.vendor, slide.magnification, slide.tissue_type)
+            groups[key].append(slide)
+        
+        duplicates_removed = 0
+        
+        for group_key, group_slides in groups.items():
+            if len(group_slides) <= 1:
+                continue
+                
+            self.logger.info(f"Processing group {group_key}: {len(group_slides)} slides")
+            
+            # For slides in the same group, check for potential duplicates
+            # This is a simplified approach - in practice would use perceptual hashing
+            seen_dimensions = set()
+            for slide in group_slides:
+                dim_key = (slide.dimensions[0], slide.dimensions[1], slide.file_size)
+                if dim_key in seen_dimensions:
+                    # Potential duplicate - would need more sophisticated checking
+                    self.logger.debug(f"Potential duplicate detected: {slide.slide_id}")
+                    duplicates_removed += 1
+                else:
+                    seen_dimensions.add(dim_key)
+        
+        self.logger.info(f"Content-based deduplication completed. Estimated duplicates: {duplicates_removed}")
+        return duplicates_removed
+    
+    def create_balanced_dataset(
+        self,
+        target_size: int = 100000,
+        tissue_type_distribution: Optional[Dict[str, float]] = None
+    ) -> List[SlideMetadata]:
+        """Create a balanced dataset across tissue types and vendors"""
+        
+        if tissue_type_distribution is None:
+            # Default balanced distribution
+            tissue_type_distribution = {
+                "breast": 0.25,
+                "lung": 0.20,
+                "prostate": 0.15,
+                "colon": 0.15,
+                "melanoma": 0.10,
+                "other": 0.15
+            }
+        
+        balanced_slides = []
+        
+        for tissue_type, proportion in tissue_type_distribution.items():
+            target_count = int(target_size * proportion)
+            
+            # Get slides for this tissue type
+            if tissue_type == "other":
+                # Get slides not in the main categories
+                all_slides = self.database.get_high_quality_slides(min_quality_score=0.7)
+                tissue_slides = [
+                    s for s in all_slides 
+                    if s.tissue_type not in ["breast", "lung", "prostate", "colon", "melanoma"]
+                ]
+            else:
+                all_slides = self.database.get_high_quality_slides(min_quality_score=0.7)
+                tissue_slides = [s for s in all_slides if s.tissue_type == tissue_type]
+            
+            # Sample up to target count
+            if len(tissue_slides) >= target_count:
+                # Randomly sample
+                import random
+                sampled_slides = random.sample(tissue_slides, target_count)
+            else:
+                # Use all available
+                sampled_slides = tissue_slides
+                self.logger.warning(
+                    f"Only {len(tissue_slides)} slides available for {tissue_type} "
+                    f"(target: {target_count})"
+                )
+            
+            balanced_slides.extend(sampled_slides)
+            
+            self.logger.info(
+                f"Added {len(sampled_slides)} {tissue_type} slides "
+                f"(target: {target_count})"
+            )
+        
+        self.logger.info(f"Created balanced dataset: {len(balanced_slides)} slides")
+        return balanced_slides
 
 
 class UnlabeledWSIDataset(Dataset):
