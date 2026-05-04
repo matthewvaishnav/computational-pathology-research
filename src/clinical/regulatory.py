@@ -48,7 +48,35 @@ __all__ = [
 # Backward-compatible aliases
 class RegulatoryDocumentationSystem(DMRManager):
     """Backward-compatible alias for DMRManager"""
-    pass
+    
+    def export_regulatory_package(self, device_name: str, device_version: str, output_path: str) -> str:
+        """Export regulatory package for device"""
+        import os
+        import shutil
+        from pathlib import Path
+        
+        # Create output directory
+        output_dir = Path(output_path)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Load DMR
+        dmr = self.load_dmr(device_name, device_version)
+        if not dmr:
+            raise ValueError(f"DMR not found for {device_name} v{device_version}")
+        
+        # Export DMR as JSON
+        dmr_path = output_dir / "dmr.json"
+        with open(dmr_path, 'w') as f:
+            json.dump(dmr.to_dict(), f, indent=2, default=str)
+        
+        # Create package structure
+        package_path = output_dir / f"{device_name}_v{device_version}_regulatory_package"
+        package_path.mkdir(exist_ok=True)
+        
+        # Copy DMR to package
+        shutil.copy2(dmr_path, package_path / "dmr.json")
+        
+        return str(package_path)
 
 
 class RiskManagementSystem(RiskManager):
