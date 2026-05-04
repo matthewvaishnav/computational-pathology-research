@@ -1,6 +1,7 @@
 """Neural network model definitions."""
 
-from .attention_mil import AttentionMIL, CLAM, TransMIL
+from .attention_mil import AttentionMIL, CLAM
+from .transmil import TransMIL
 from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
 from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .foundation import (
