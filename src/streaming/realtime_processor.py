@@ -25,7 +25,8 @@ from .attention_aggregator import (
     StreamingAttentionAggregator,
 )
 from .gpu_pipeline import GPUPipeline, ThroughputMetrics
-from .memory_optimizer import MemoryMonitor, MemorySnapshot
+from .memory.monitor import MemoryMonitor
+from .memory.profiler import MemorySnapshot
 from .progressive_visualizer import ProgressiveVisualizer, VisualizationUpdate
 from .wsi_stream_reader import StreamingMetadata, TileBatch, WSIStreamReader
 
