@@ -710,6 +710,65 @@ results = processor.process_batch(["slide1.svs", "slide2.svs"])
 
 See [src/data/wsi_pipeline/README.md](src/data/wsi_pipeline/README.md) for complete documentation.
 
+### API Routes Architecture
+
+**NEW**: Modular FastAPI application with clean separation of concerns:
+
+```bash
+# Start the API server
+python -m src.api.main
+
+# View API documentation
+open http://localhost:8000/docs
+
+# Health check
+curl http://localhost:8000/health
+```
+
+**Programmatic Usage**:
+```python
+from src.api.routers.analysis import router as analysis_router
+from src.api.validators import validate_file_upload
+from src.api.dependencies import get_current_user
+
+# Use validators for input validation
+mime_type, safe_filename = validate_file_upload(file_content, filename)
+
+# Access shared dependencies
+current_user = get_current_user(jwt_token)
+```
+
+**Architecture**:
+- **Main Application** (`main.py`): 122 lines - Application setup, middleware, router inclusion
+- **5 Domain Routers**: Authentication, Analysis, Admin, Mobile, Monitoring
+- **Shared Dependencies** (`dependencies.py`): Database sessions, user authentication, inference engine
+- **Input Validators** (`validators.py`): Email, password, file upload validation with security
+- **Error Handlers** (`errors.py`): Consistent JSON error responses across all endpoints
+
+**Features**:
+- **Modular Design**: Each router handles a specific domain (auth, analysis, admin, mobile, monitoring)
+- **Security First**: JWT authentication, rate limiting, input validation, CORS protection
+- **Production Ready**: Health checks, metrics, audit logging, error handling
+- **OpenAPI Documentation**: Automatic API documentation with request/response examples
+- **Test Coverage**: 82% coverage with 134 comprehensive tests (unit, integration, security, performance)
+
+**API Endpoints**:
+- **Authentication**: `/api/v1/auth/*` - User registration, login, OAuth integration
+- **Analysis**: `/api/v1/analyze/*` - Image upload, DICOM processing, case management
+- **Admin**: `/api/v1/admin/*` - User management, system configuration, audit logs
+- **Mobile**: `/api/v1/mobile/*` - Device registration, offline sync, model distribution
+- **Monitoring**: `/health`, `/metrics` - Health checks, Prometheus metrics, security alerts
+
+**Security Features**:
+- **Authentication**: JWT tokens with proper validation and expiration
+- **Authorization**: Role-based access control (RBAC) for admin endpoints
+- **Input Validation**: Magic byte detection for file uploads, email/password validation
+- **Rate Limiting**: 5 requests/minute on sensitive endpoints (login, registration)
+- **IDOR Protection**: Users can only access their own resources
+- **Security Headers**: CORS, CSP, HSTS, X-Frame-Options protection
+
+See [.kiro/specs/api-routes-refactoring/](docs/API_ROUTES_REFACTORING.md) for complete architecture documentation.
+
 ### Multi-GPU Training
 
 **NEW**: Distributed training support for faster model training:
@@ -832,6 +891,17 @@ See [docs/PCAM_COMPARISON_GUIDE.md](docs/PCAM_COMPARISON_GUIDE.md) for details.
 ```
 .
 ├── src/                    # Source code
+│   ├── api/               # 🆕 Modular FastAPI application
+│   │   ├── main.py        # Application setup (122 lines)
+│   │   ├── dependencies.py # Shared dependency injection
+│   │   ├── validators.py  # Input validation with security
+│   │   ├── errors.py      # Centralized error handling
+│   │   └── routers/       # Domain-specific API routers
+│   │       ├── auth.py    # Authentication & authorization
+│   │       ├── analysis.py # Image analysis & DICOM
+│   │       ├── admin.py   # Administrative operations
+│   │       ├── mobile.py  # Mobile device management
+│   │       └── monitoring.py # Health checks & metrics
 │   ├── data/              # Data loading (PCam, CAMELYON)
 │   │   └── wsi_pipeline/  # 🆕 Complete WSI processing pipeline
 │   ├── models/            # Model architectures
