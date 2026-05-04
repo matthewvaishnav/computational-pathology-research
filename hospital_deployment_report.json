@@ -1,0 +1,14 @@
+{
+  "deployment_readiness": {
+    "wsi_formats_supported": 3,
+    "openslide_available": true,
+    "gpu_acceleration": false,
+    "pacs_integration": true,
+    "performance_score": 1.0,
+    "workflow_time_seconds": 3.101407766342163
+  },
+  "recommendations": [
+    "Install CUDA for GPU acceleration"
+  ],
+  "requirements_met": true
+}
