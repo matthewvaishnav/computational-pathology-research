@@ -121,10 +121,10 @@ class TensorRTOptimizer:
             if cache_key:
                 cache_path = Path(self.config.tensorrt_cache_dir) / f"{cache_key}.trt"
                 if cache_path.exists():
-                    logger.info(f"Loading cached TensorRT engine: {}".format(cache_path))
+                    logger.info(f"Loading cached TensorRT engine: {cache_path}")
                     return self._load_engine(str(cache_path))
 
-            logger.info(f"Building TensorRT engine from ONNX: {}".format(onnx_path))
+            logger.info(f"Building TensorRT engine from ONNX: {onnx_path}")
 
             # Create builder and network
             builder = trt.Builder(trt.Logger(trt.Logger.WARNING))
@@ -138,7 +138,7 @@ class TensorRTOptimizer:
                 if not parser.parse(model.read()):
                     logger.error("Failed to parse ONNX model")
                     for error in range(parser.num_errors):
-                        logger.error(f"Parser error: {}".format(parser.get_error(error)))
+                        logger.error(f"Parser error: {parser.get_error(error)}")
                     return False
 
             # Configure builder
@@ -202,7 +202,7 @@ class TensorRTOptimizer:
                 cache_path = Path(self.config.tensorrt_cache_dir) / f"{cache_key}.trt"
                 with open(cache_path, "wb") as f:
                     f.write(engine.serialize())
-                logger.info(f"Cached TensorRT engine: {}".format(cache_path))
+                logger.info(f"Cached TensorRT engine: {cache_path}")
 
             self.engine = engine
             self._setup_inference()
@@ -210,7 +210,7 @@ class TensorRTOptimizer:
             return True
 
         except Exception as e:
-            logger.error(f"TensorRT engine build failed: {}".format(e))
+            logger.error(f"TensorRT engine build failed: {e}")
             return False
 
     def _load_engine(self, engine_path: str) -> bool:
@@ -228,12 +228,12 @@ class TensorRTOptimizer:
                 return False
 
             self._setup_inference()
-            logger.info(f"TensorRT engine loaded: {}".format(engine_path))
+            logger.info(f"TensorRT engine loaded: {engine_path}")
 
             return True
 
         except Exception as e:
-            logger.error(f"Failed to load TensorRT engine: {}".format(e))
+            logger.error(f"Failed to load TensorRT engine: {e}")
             return False
 
     def _setup_inference(self):
@@ -261,7 +261,7 @@ class TensorRTOptimizer:
             device_mem = cuda.mem_alloc(size)
             self.bindings.append(int(device_mem))
 
-            logger.debug(f"Binding {}: {} shape={} dtype={}".format(i, name, shape, dtype))
+            logger.debug(f"Binding {i}: {name} shape={shape} dtype={dtype}")
 
     @track_gpu_memory("0")
     def infer(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
@@ -366,7 +366,7 @@ class ONNXOptimizer:
                 for name in output_names:
                     dynamic_axes[name] = {0: "batch_size"}
 
-            logger.info(f"Exporting model to ONNX: {}".format(output_path))
+            logger.info(f"Exporting model to ONNX: {output_path}")
 
             torch.onnx.export(
                 model,
@@ -385,11 +385,11 @@ class ONNXOptimizer:
             onnx_model = onnx.load(output_path)
             onnx.checker.check_model(onnx_model)
 
-            logger.info(f"ONNX export successful: {}".format(output_path))
+            logger.info(f"ONNX export successful: {output_path}")
             return True
 
         except Exception as e:
-            logger.error(f"ONNX export failed: {}".format(e))
+            logger.error(f"ONNX export failed: {e}")
             return False
 
     def optimize_model(self, onnx_path: str, optimized_path: str) -> bool:
@@ -412,11 +412,11 @@ class ONNXOptimizer:
             # Save optimized model
             opt_model.save_model_to_file(optimized_path)
 
-            logger.info(f"ONNX model optimized: {} -> {}".format(onnx_path, optimized_path))
+            logger.info(f"ONNX model optimized: {onnx_path} -> {optimized_path}")
             return True
 
         except Exception as e:
-            logger.error(f"ONNX optimization failed: {}".format(e))
+            logger.error(f"ONNX optimization failed: {e}")
             return False
 
 
@@ -427,7 +427,7 @@ class QuantizationOptimizer:
         """Initialize quantization optimizer."""
         self.config = config
 
-        logger.info(f"Quantization optimizer initialized: mode={}".format(config.quantization_mode))
+        logger.info(f"Quantization optimizer initialized: mode={config.quantization_mode}")
 
     def quantize_dynamic(self, model: nn.Module) -> nn.Module:
         """Apply dynamic quantization."""
@@ -442,7 +442,7 @@ class QuantizationOptimizer:
             return quantized_model
 
         except Exception as e:
-            logger.error(f"Dynamic quantization failed: {}".format(e))
+            logger.error(f"Dynamic quantization failed: {e}")
             return model
 
     def prepare_qat(self, model: nn.Module) -> nn.Module:
@@ -460,7 +460,7 @@ class QuantizationOptimizer:
             return prepared_model
 
         except Exception as e:
-            logger.error(f"QAT preparation failed: {}".format(e))
+            logger.error(f"QAT preparation failed: {e}")
             return model
 
     def convert_qat(self, model: nn.Module) -> nn.Module:
@@ -475,7 +475,7 @@ class QuantizationOptimizer:
             return quantized_model
 
         except Exception as e:
-            logger.error(f"QAT conversion failed: {}".format(e))
+            logger.error(f"QAT conversion failed: {e}")
             return model
 
 
@@ -516,7 +516,7 @@ class MultiGPUOptimizer:
             gpu_ids = [gpu_id for gpu_id in gpu_ids if gpu_id in self.available_gpus]
 
             if len(gpu_ids) < 2:
-                logger.warning(f"Insufficient GPUs for data parallel: {}".format(gpu_ids))
+                logger.warning(f"Insufficient GPUs for data parallel: {gpu_ids}")
                 return model
 
             # Move model to first GPU
@@ -525,11 +525,11 @@ class MultiGPUOptimizer:
             # Wrap with DataParallel
             model = DataParallel(model, device_ids=gpu_ids)
 
-            logger.info(f"Data parallel enabled on GPUs: {}".format(gpu_ids))
+            logger.info(f"Data parallel enabled on GPUs: {gpu_ids}")
             return model
 
         except Exception as e:
-            logger.error(f"Data parallel setup failed: {}".format(e))
+            logger.error(f"Data parallel setup failed: {e}")
             return model
 
     def setup_distributed_parallel(self, model: nn.Module, rank: int, world_size: int) -> nn.Module:
@@ -545,11 +545,11 @@ class MultiGPUOptimizer:
             # Wrap with DistributedDataParallel
             model = DistributedDataParallel(model, device_ids=[rank])
 
-            logger.info(f"Distributed parallel enabled: rank={} world_size={}".format(rank, world_size))
+            logger.info(f"Distributed parallel enabled: rank={rank} world_size={world_size}")
             return model
 
         except Exception as e:
-            logger.error(f"Distributed parallel setup failed: {}".format(e))
+            logger.error(f"Distributed parallel setup failed: {e}")
             return model
 
 
@@ -651,7 +651,7 @@ class ModelOptimizer:
             return optimized_model, optimization_info
 
         except Exception as e:
-            logger.error(f"Model optimization failed: {}".format(e))
+            logger.error(f"Model optimization failed: {e}")
             return model, optimization_info
 
     def _apply_pytorch_optimizations(self, model: nn.Module) -> nn.Module:
@@ -665,12 +665,12 @@ class ModelOptimizer:
             # PyTorch 2.0 compile
             if self.config.enable_torch_compile and hasattr(torch, "compile"):
                 model = torch.compile(model, mode=self.config.torch_compile_mode)
-                logger.info(f"Applied torch.compile with mode: {}".format(self.config.torch_compile_mode))
+                logger.info(f"Applied torch.compile with mode: {self.config.torch_compile_mode}")
 
             return model
 
         except Exception as e:
-            logger.error(f"PyTorch optimizations failed: {}".format(e))
+            logger.error(f"PyTorch optimizations failed: {e}")
             return model
 
     def create_optimized_inference_fn(
