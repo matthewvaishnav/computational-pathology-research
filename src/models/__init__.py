@@ -1,5 +1,6 @@
 """Neural network model definitions."""
 
+from .attention_mil import AttentionMIL, CLAM, TransMIL
 from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
 from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .foundation import (
@@ -17,6 +18,7 @@ from .instance_clustering import (
     InstanceClusteringModule,
     cluster_instances,
 )
+from .mil_base import MILBase
 from .multimodal import MultimodalFusionModel
 from .pretrained import (
     PretrainedFeatureExtractor,
@@ -44,6 +46,9 @@ def __getattr__(name):
 
 
 __all__ = [
+    "AttentionMIL",
+    "CLAM",
+    "TransMIL",
     "StainNormalizationTransformer",
     "PatchEmbedding",
     "ColorFeatureEncoder",
@@ -78,4 +83,5 @@ __all__ = [
     "InstanceClusteringModule",
     "CLAMInstanceBranch",
     "cluster_instances",
+    "MILBase",
 ]
