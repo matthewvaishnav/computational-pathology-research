@@ -26,8 +26,24 @@ from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifact
 
 
 def load_baseline_model(model_path: Union[str, Path]) -> LogisticRegression:
-    """Load a trained CAMELYON feature baseline pickle."""
+    """Load a trained CAMELYON feature baseline pickle.
+    
+    Security Warning: Only load pickle files from trusted sources.
+    Pickle deserialization can execute arbitrary code.
+    """
     model_path = Path(model_path)
+    
+    # Verify file is from trusted location (results directory)
+    if not model_path.is_absolute():
+        model_path = model_path.resolve()
+    
+    # Only allow loading from results directory
+    allowed_dirs = [Path("results").resolve(), Path("checkpoints").resolve()]
+    if not any(str(model_path).startswith(str(allowed_dir)) for allowed_dir in allowed_dirs):
+        raise ValueError(
+            f"Security: Model path must be in results/ or checkpoints/ directory. Got: {model_path}"
+        )
+    
     with open(model_path, "rb") as handle:
         model = pickle.load(handle)
     if not isinstance(model, LogisticRegression):
