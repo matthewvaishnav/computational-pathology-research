@@ -19,23 +19,9 @@ from PIL import Image
 from .model_loader import ModelLoader, get_model_loader
 from .postprocessing import ResultPostprocessor
 from .preprocessing import ImagePreprocessor
+from .types import InferenceResult
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class InferenceResult:
-    """Result of model inference."""
-
-    prediction_class: str
-    confidence_score: float
-    probability_scores: Dict[str, float]
-    processing_time_ms: int
-    model_name: str
-    model_version: str
-    uncertainty_score: Optional[float] = None
-    attention_maps: Optional[Dict] = None
-    feature_importance: Optional[Dict] = None
 
 
 class InferenceEngine:
