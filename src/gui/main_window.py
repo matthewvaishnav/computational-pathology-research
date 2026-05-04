@@ -26,9 +26,9 @@ except ImportError:
 
 import numpy as np
 import matplotlib
-matplotlib.use('Qt6Agg')  # Set backend before importing pyplot
+matplotlib.use('qtagg')  # Qt backend for matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt6agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 class AnalysisWorker(QThread):
