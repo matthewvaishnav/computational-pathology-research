@@ -7,17 +7,17 @@ This module implements:
 """
 
 # Re-export all components for backward compatibility
-from .memory_gc import GCStats, SmartGarbageCollector
-from .memory_monitoring import (
+from src.streaming.memory_gc import GCStats, SmartGarbageCollector
+from src.streaming.memory_monitoring import (
     MemoryAlert,
     MemoryAnalytics,
     MemoryMonitor,
     MemoryPressureLevel,
     MemorySnapshot,
 )
-from .memory_pool import MemoryBlock, MemoryPoolManager, MemoryPoolStats
-from .memory_pool_strategy import MemoryPoolStrategy
-from .memory_prediction import MemoryPrediction, MemoryUsagePredictor
+from src.streaming.memory_pool import MemoryBlock, MemoryPoolManager, MemoryPoolStats
+from src.streaming.memory_pool_strategy import MemoryPoolStrategy
+from src.streaming.memory_prediction import MemoryPrediction, MemoryUsagePredictor
 
 __all__ = [
     # Strategy
