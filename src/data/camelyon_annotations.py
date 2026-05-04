@@ -9,12 +9,7 @@ CAMELYON-style experiments:
 - score tiles against annotation masks
 """
 
-try:
-    import defusedxml.ElementTree as ET
-except ImportError:
-    import xml.etree.ElementTree as ET
-    import warnings
-    warnings.warn("defusedxml not available, using unsafe XML parser. Install with: pip install defusedxml")
+import defusedxml.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Literal, Sequence, Tuple, Union
