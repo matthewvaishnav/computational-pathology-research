@@ -38,14 +38,18 @@ __version__ = "1.0.0"
 # Import profiler components
 from .profiler import MemoryProfiler, MemoryPressureLevel, MemorySnapshot
 
+# Import cache manager
+from .cache_manager import CacheManager, CacheEntry
+
 __all__ = [
     "MemoryProfiler",
     "MemorySnapshot",
     "MemoryPressureLevel",
+    "CacheManager",
+    "CacheEntry",
 ]
 
 # Components will be imported here as they are created:
-# from .cache_manager import CacheManager
 # from .batch_optimizer import BatchOptimizer
 # from .monitor import MemoryMonitor
 # from .config import OptimizerConfig
