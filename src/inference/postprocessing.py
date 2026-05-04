@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 import numpy as np
 import torch
 
-from .inference_engine import InferenceResult
+from .types import InferenceResult
 
 logger = logging.getLogger(__name__)
 
