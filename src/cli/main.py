@@ -41,14 +41,14 @@ def cli():
 def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, gpu, verbose):
     """Analyze a single WSI file"""
     
-    click.echo(f"🔬 HistoCore Analysis Starting...")
-    click.echo(f"📁 Input: {wsi_path}")
-    click.echo(f"📂 Output: {output}")
-    click.echo(f"🧠 Model: {model}")
+    click.echo("HistoCore Analysis Starting...")
+    click.echo(f"Input: {wsi_path}")
+    click.echo(f"Output: {output}")
+    click.echo(f"Model: {model}")
     
     if verbose:
-        click.echo(f"⚙️  Settings: patch_size={patch_size}, batch_size={batch_size}, tissue_threshold={tissue_threshold}")
-        click.echo(f"🖥️  Device: {'GPU' if gpu else 'CPU'}")
+        click.echo(f"Settings: patch_size={patch_size}, batch_size={batch_size}, tissue_threshold={tissue_threshold}")
+        click.echo(f"Device: {'GPU' if gpu else 'CPU'}")
     
     try:
         # Create output directory
@@ -56,7 +56,7 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
         
         # Import HistoCore modules
         if verbose:
-            click.echo("📦 Loading HistoCore modules...")
+            click.echo("Loading HistoCore modules...")
             
         from src.data.wsi_pipeline import BatchProcessor, ProcessingConfig
         
@@ -69,7 +69,7 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
         )
         
         # Process WSI
-        click.echo("🔄 Processing WSI patches...")
+        click.echo("Processing WSI patches...")
         with click.progressbar(length=100, label='Processing') as bar:
             processor = BatchProcessor(config, num_workers=2)
             
@@ -81,7 +81,7 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
             result = processor.process_slide(wsi_path)
         
         # Run inference (demo mode)
-        click.echo("🤖 Running AI analysis...")
+        click.echo("Running AI analysis...")
         
         # Generate demo results
         import numpy as np
@@ -100,11 +100,11 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
             json.dump(predictions, f, indent=2)
             
         # Display results
-        click.echo("\n✅ Analysis Complete!")
-        click.echo(f"🎯 Prediction: {predictions['prediction']}")
-        click.echo(f"📊 Probability: {predictions['probability']:.3f}")
-        click.echo(f"🎯 Confidence: {predictions['confidence']:.2%}")
-        click.echo(f"💾 Results saved to: {results_file}")
+        click.echo("\nAnalysis Complete!")
+        click.echo(f"Prediction: {predictions['prediction']}")
+        click.echo(f"Probability: {predictions['probability']:.3f}")
+        click.echo(f"Confidence: {predictions['confidence']:.2%}")
+        click.echo(f"Results saved to: {results_file}")
         
     except ImportError as e:
         click.echo(f"❌ Error: Missing dependencies - {e}")

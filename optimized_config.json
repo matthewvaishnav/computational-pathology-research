@@ -1,0 +1,20 @@
+{
+  "processing": {
+    "patch_size": 256,
+    "batch_size": 32,
+    "num_workers": 4,
+    "tissue_threshold": 0.5,
+    "use_gpu": false
+  },
+  "optimization": {
+    "mixed_precision": true,
+    "channels_last": true,
+    "compile_model": true,
+    "persistent_workers": true
+  },
+  "memory": {
+    "max_memory_gb": 12,
+    "cache_features": true,
+    "streaming_mode": false
+  }
+}
