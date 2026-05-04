@@ -47,6 +47,12 @@ from .batch_optimizer import BatchOptimizer, OptimalSizes
 # Import monitor
 from .monitor import MemoryAlert, MemoryAnalytics, MemoryMonitor
 
+# Import config
+from .config import OptimizerConfig
+
+# Import coordinator
+from .coordinator import MemoryCoordinator
+
 __all__ = [
     "MemoryProfiler",
     "MemorySnapshot",
@@ -58,8 +64,6 @@ __all__ = [
     "MemoryMonitor",
     "MemoryAlert",
     "MemoryAnalytics",
+    "OptimizerConfig",
+    "MemoryCoordinator",
 ]
-
-# Components will be imported here as they are created:
-# from .config import OptimizerConfig
-# from .coordinator import MemoryCoordinator
