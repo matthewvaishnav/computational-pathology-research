@@ -34,10 +34,17 @@ See Also:
 """
 
 __version__ = "1.0.0"
-__all__ = []
+
+# Import profiler components
+from .profiler import MemoryProfiler, MemoryPressureLevel, MemorySnapshot
+
+__all__ = [
+    "MemoryProfiler",
+    "MemorySnapshot",
+    "MemoryPressureLevel",
+]
 
 # Components will be imported here as they are created:
-# from .profiler import MemoryProfiler, MemorySnapshot
 # from .cache_manager import CacheManager
 # from .batch_optimizer import BatchOptimizer
 # from .monitor import MemoryMonitor
