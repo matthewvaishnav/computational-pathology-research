@@ -4,6 +4,7 @@ Implements SimCLR, MoCo, and DINO for histopathology data
 """
 
 import logging
+import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -75,10 +76,11 @@ class AugmentationConfig:
 
 
 class HistopathologyAugmentation:
-    """Histopathology-specific data augmentation"""
+    """Histopathology-specific data augmentation with advanced techniques"""
 
     def __init__(self, config: AugmentationConfig):
         self.config = config
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, image: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Apply augmentation and return two views"""
@@ -87,23 +89,35 @@ class HistopathologyAugmentation:
         return view1, view2
 
     def _augment_single(self, image: torch.Tensor) -> torch.Tensor:
-        """Apply single augmentation"""
-        # Color jitter
+        """Apply single augmentation with histopathology-specific enhancements"""
+        # Stain normalization (critical for histopathology)
+        if self.config.stain_normalize and torch.rand(1) < 0.7:
+            image = self._stain_normalize(image)
+        
+        # Color jitter (adapted for H&E staining)
         if torch.rand(1) < 0.8:
-            image = self._color_jitter(image)
+            image = self._histopathology_color_jitter(image)
 
-        # Random rotation (90, 180, 270 degrees)
+        # Random rotation (90, 180, 270 degrees - preserves tissue structure)
         if torch.rand(1) < 0.5:
             k = torch.randint(1, 4, (1,)).item()
             image = torch.rot90(image, k, dims=[-2, -1])
 
-        # Random flip
+        # Random flip (horizontal only - vertical flip less common in pathology)
         if torch.rand(1) < self.config.flip_prob:
             image = torch.flip(image, dims=[-1])
 
-        # Gaussian blur
+        # Gaussian blur (simulate focus variations)
         if torch.rand(1) < self.config.blur_prob:
             image = self._gaussian_blur(image)
+            
+        # Elastic deformation (simulate tissue deformation)
+        if torch.rand(1) < 0.3:
+            image = self._elastic_deformation(image)
+            
+        # Random erasing (simulate artifacts/bubbles)
+        if torch.rand(1) < 0.2:
+            image = self._random_erasing(image)
 
         return image
 
@@ -137,6 +151,147 @@ class HistopathologyAugmentation:
         image = image * saturation_factor + gray.unsqueeze(0) * (1 - saturation_factor)
 
         return torch.clamp(image, 0, 1)
+
+    def _stain_normalize(self, image: torch.Tensor) -> torch.Tensor:
+        """Apply stain normalization for H&E consistency"""
+        # Simplified stain normalization using color constancy
+        # In practice, would use Macenko or Reinhard normalization
+        
+        # Convert to LAB color space approximation
+        image_np = image.permute(1, 2, 0).numpy()
+        
+        # Apply simple color constancy (Gray World assumption)
+        mean_rgb = image_np.mean(axis=(0, 1))
+        target_mean = np.array([0.7, 0.5, 0.7])  # Target H&E appearance
+        
+        # Scale factors
+        scale_factors = target_mean / (mean_rgb + 1e-8)
+        scale_factors = np.clip(scale_factors, 0.5, 2.0)  # Limit scaling
+        
+        # Apply scaling
+        normalized = image_np * scale_factors
+        normalized = np.clip(normalized, 0, 1)
+        
+        return torch.from_numpy(normalized).permute(2, 0, 1).float()
+    
+    def _histopathology_color_jitter(self, image: torch.Tensor) -> torch.Tensor:
+        """Apply color jitter adapted for histopathology"""
+        # More conservative color jitter for medical images
+        
+        # Brightness (less aggressive than natural images)
+        brightness_factor = 1 + torch.rand(1) * 0.2 - 0.1  # ±10%
+        image = image * brightness_factor
+
+        # Contrast (preserve diagnostic features)
+        contrast_factor = 1 + torch.rand(1) * 0.3 - 0.15  # ±15%
+        mean = image.mean(dim=[-2, -1], keepdim=True)
+        image = (image - mean) * contrast_factor + mean
+
+        # Saturation (important for H&E differentiation)
+        saturation_factor = 1 + torch.rand(1) * 0.4 - 0.2  # ±20%
+        gray = 0.299 * image[0] + 0.587 * image[1] + 0.114 * image[2]
+        image = image * saturation_factor + gray.unsqueeze(0) * (1 - saturation_factor)
+
+        # Hue shift (small shifts to simulate staining variations)
+        hue_shift = torch.rand(1) * 0.1 - 0.05  # ±5% hue shift
+        image = self._apply_hue_shift(image, hue_shift)
+
+        return torch.clamp(image, 0, 1)
+    
+    def _apply_hue_shift(self, image: torch.Tensor, hue_shift: float) -> torch.Tensor:
+        """Apply small hue shift to simulate staining variations"""
+        # Simplified hue shift in RGB space
+        # In practice, would convert to HSV, shift hue, convert back
+        
+        # Create rotation matrix for hue shift
+        cos_h = torch.cos(hue_shift * 2 * np.pi)
+        sin_h = torch.sin(hue_shift * 2 * np.pi)
+        
+        # Apply hue rotation (simplified)
+        r, g, b = image[0], image[1], image[2]
+        
+        new_r = r * cos_h - g * sin_h
+        new_g = r * sin_h + g * cos_h
+        new_b = b  # Blue channel less affected in H&E
+        
+        return torch.stack([new_r, new_g, new_b])
+    
+    def _elastic_deformation(self, image: torch.Tensor) -> torch.Tensor:
+        """Apply elastic deformation to simulate tissue deformation"""
+        # Simplified elastic deformation using random displacement fields
+        h, w = image.shape[-2:]
+        
+        # Create random displacement field
+        displacement_x = torch.randn(h // 8, w // 8) * 2
+        displacement_y = torch.randn(h // 8, w // 8) * 2
+        
+        # Upsample displacement field
+        displacement_x = F.interpolate(
+            displacement_x.unsqueeze(0).unsqueeze(0), 
+            size=(h, w), 
+            mode='bilinear', 
+            align_corners=False
+        ).squeeze()
+        
+        displacement_y = F.interpolate(
+            displacement_y.unsqueeze(0).unsqueeze(0), 
+            size=(h, w), 
+            mode='bilinear', 
+            align_corners=False
+        ).squeeze()
+        
+        # Create sampling grid
+        grid_x, grid_y = torch.meshgrid(
+            torch.linspace(-1, 1, w),
+            torch.linspace(-1, 1, h),
+            indexing='xy'
+        )
+        
+        # Apply displacement
+        grid_x = grid_x + displacement_x / w * 0.1  # Small displacement
+        grid_y = grid_y + displacement_y / h * 0.1
+        
+        # Stack grid
+        grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(0)
+        
+        # Apply grid sampling
+        deformed = F.grid_sample(
+            image.unsqueeze(0), 
+            grid, 
+            mode='bilinear', 
+            padding_mode='reflection',
+            align_corners=False
+        ).squeeze(0)
+        
+        return deformed
+    
+    def _random_erasing(self, image: torch.Tensor) -> torch.Tensor:
+        """Apply random erasing to simulate artifacts"""
+        if torch.rand(1) < 0.5:
+            return image
+            
+        h, w = image.shape[-2:]
+        
+        # Random erasing parameters
+        area_ratio = torch.rand(1) * 0.02 + 0.01  # 1-3% of image
+        aspect_ratio = torch.rand(1) * 0.5 + 0.5   # 0.5-1.0
+        
+        # Calculate dimensions
+        area = h * w * area_ratio
+        erase_h = int(torch.sqrt(area / aspect_ratio))
+        erase_w = int(torch.sqrt(area * aspect_ratio))
+        
+        # Random position
+        top = torch.randint(0, max(1, h - erase_h), (1,)).item()
+        left = torch.randint(0, max(1, w - erase_w), (1,)).item()
+        
+        # Random fill value (simulate bubble/artifact)
+        fill_value = torch.rand(3, 1, 1) * 0.3 + 0.7  # Light colored artifacts
+        
+        # Apply erasing
+        image[:, top:top+erase_h, left:left+erase_w] = fill_value
+        
+        return image
 
     def _gaussian_blur(self, image: torch.Tensor) -> torch.Tensor:
         """Apply Gaussian blur"""
@@ -313,55 +468,91 @@ class SelfSupervisedPreTrainer:
         validation_dataset: Optional[Dataset] = None,
         num_epochs: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """Execute self-supervised pre-training"""
+        """Execute self-supervised pre-training with distributed support"""
         num_epochs = num_epochs or self.config.num_epochs
 
-        # Create data loader
+        # Initialize distributed training if configured
+        if self.config.distributed and not dist.is_initialized():
+            self._init_distributed_training()
+
+        # Wrap model for distributed training
+        if self.config.distributed:
+            self.model = torch.nn.parallel.DistributedDataParallel(
+                self.model, 
+                device_ids=[torch.cuda.current_device()],
+                find_unused_parameters=True
+            )
+
+        # Create distributed sampler if needed
+        sampler = None
+        if self.config.distributed:
+            sampler = torch.utils.data.distributed.DistributedSampler(
+                dataset,
+                num_replicas=self.config.world_size,
+                rank=self.config.rank,
+                shuffle=True
+            )
+
+        # Create data loader with distributed sampler
         dataloader = DataLoader(
             dataset,
             batch_size=self.config.batch_size,
-            shuffle=True,
+            shuffle=(sampler is None),
+            sampler=sampler,
             num_workers=4,
             pin_memory=True,
             drop_last=True,
         )
 
         self.logger.info(f"Starting {self.config.method} pre-training for {num_epochs} epochs")
+        if self.config.distributed:
+            self.logger.info(f"Distributed training: rank {self.config.rank}/{self.config.world_size}")
 
         start_time = time.time()
 
         for epoch in range(num_epochs):
             epoch_start = time.time()
 
+            # Set epoch for distributed sampler
+            if sampler is not None:
+                sampler.set_epoch(epoch)
+
             # Training
             train_metrics = self._train_epoch(dataloader, epoch)
 
-            # Validation
-            if validation_dataset is not None:
+            # Validation (only on rank 0 to avoid duplication)
+            if validation_dataset is not None and (not self.config.distributed or self.config.rank == 0):
                 val_metrics = self._validate_epoch(validation_dataset, epoch)
                 train_metrics.update(val_metrics)
 
             # Update scheduler
             self.scheduler.step()
 
-            # Logging
-            epoch_time = time.time() - epoch_start
-            self.logger.info(
-                f"Epoch {epoch+1}/{num_epochs} - "
-                f"Loss: {train_metrics['loss']:.4f} - "
-                f"Time: {epoch_time:.2f}s"
-            )
+            # Logging (only on rank 0)
+            if not self.config.distributed or self.config.rank == 0:
+                epoch_time = time.time() - epoch_start
+                self.logger.info(
+                    f"Epoch {epoch+1}/{num_epochs} - "
+                    f"Loss: {train_metrics['loss']:.4f} - "
+                    f"Time: {epoch_time:.2f}s"
+                )
 
-            # Save metrics
-            for key, value in train_metrics.items():
-                self.metrics[key].append(value)
+                # Save metrics
+                for key, value in train_metrics.items():
+                    self.metrics[key].append(value)
 
-            # Save checkpoint
-            if (epoch + 1) % self.config.save_freq == 0:
-                self.save_checkpoint(f"checkpoint_epoch_{epoch+1}.pth", epoch)
+                # Save checkpoint
+                if (epoch + 1) % self.config.save_freq == 0:
+                    self.save_checkpoint(f"checkpoint_epoch_{epoch+1}.pth", epoch)
+
+            # Synchronize processes
+            if self.config.distributed:
+                dist.barrier()
 
         total_time = time.time() - start_time
-        self.logger.info(f"Pre-training completed in {total_time:.2f}s")
+        
+        if not self.config.distributed or self.config.rank == 0:
+            self.logger.info(f"Pre-training completed in {total_time:.2f}s")
 
         return {
             "metrics": dict(self.metrics),
@@ -497,7 +688,30 @@ class SelfSupervisedPreTrainer:
 
         return loss / 2
 
-    def _update_momentum_encoder(self, epoch: int):
+    def _init_distributed_training(self):
+        """Initialize distributed training"""
+        if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+            self.config.rank = int(os.environ['RANK'])
+            self.config.world_size = int(os.environ['WORLD_SIZE'])
+        
+        # Initialize process group
+        dist.init_process_group(
+            backend='nccl' if torch.cuda.is_available() else 'gloo',
+            init_method='env://',
+            world_size=self.config.world_size,
+            rank=self.config.rank
+        )
+        
+        # Set device for current process
+        if torch.cuda.is_available():
+            torch.cuda.set_device(self.config.rank % torch.cuda.device_count())
+            self.model = self.model.cuda()
+            if hasattr(self, 'momentum_encoder'):
+                self.momentum_encoder = self.momentum_encoder.cuda()
+        
+        self.logger.info(f"Initialized distributed training: rank {self.config.rank}/{self.config.world_size}")
+
+    def _update_momentum_encoder(self, epoch: int)::
         """Update momentum encoder parameters"""
         if self.config.method == "moco":
             momentum = self.config.moco_momentum
