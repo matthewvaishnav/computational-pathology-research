@@ -7,6 +7,7 @@ Provides fixtures and setup for testing the API routers.
 import os
 import tempfile
 from typing import Generator
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -41,14 +42,29 @@ def get_test_db():
         db.close()
 
 
+# Mock password hashing functions for testing
+def mock_hash_password(password: str) -> str:
+    """Mock password hashing for testing."""
+    return f"hashed_{password}"
+
+
+def mock_verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Mock password verification for testing."""
+    return hashed_password == f"hashed_{plain_password}"
+
+
 @pytest.fixture(scope="function")
 def test_client() -> Generator[TestClient, None, None]:
-    """Create test client with mocked database."""
+    """Create test client with mocked database and security functions."""
     # Override database dependency
     app.dependency_overrides[get_db_session] = get_test_db
     
-    with TestClient(app) as client:
-        yield client
+    # Mock password hashing functions in the auth router
+    with patch('src.api.routers.auth.hash_password', side_effect=mock_hash_password), \
+         patch('src.api.routers.auth.verify_password', side_effect=mock_verify_password):
+        
+        with TestClient(app) as client:
+            yield client
     
     # Clean up
     app.dependency_overrides.clear()
