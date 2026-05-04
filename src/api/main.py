@@ -45,6 +45,14 @@ from src.api.routers import admin, analysis, auth, mobile, monitoring
 # Import dependencies
 from src.api.dependencies import get_inference_engine
 
+# Import error handlers
+from src.api.errors import (
+    http_exception_handler,
+    internal_error_handler,
+    not_found_handler,
+    validation_error_handler,
+)
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,6 +85,15 @@ app.add_middleware(
 # Add rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Register error handlers
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+app.add_exception_handler(404, not_found_handler)
+app.add_exception_handler(500, internal_error_handler)
+app.add_exception_handler(RequestValidationError, validation_error_handler)
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 
 # Add WAF middleware
 from src.api.waf import create_waf_middleware
@@ -125,17 +142,6 @@ async def startup_event():
         logger.error(f"Startup failed: {e}")
         log_security_event("system_startup", details=f"Startup failed: {e}", success=False)
         raise
-
-
-# Error handlers
-@app.exception_handler(404)
-async def not_found_handler(request, exc):
-    return JSONResponse(status_code=404, content={"detail": "Endpoint not found"})
-
-
-@app.exception_handler(500)
-async def internal_error_handler(request, exc):
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 def main():
