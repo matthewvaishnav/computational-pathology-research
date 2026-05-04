@@ -1,451 +1,394 @@
 """
-Progress tracking and monitoring for WSI processing pipeline.
+Progress tracking for WSI streaming operations.
 
-This module provides comprehensive progress tracking, ETA calculation,
-and monitoring capabilities for batch processing operations.
+This module provides comprehensive progress tracking, ETA estimation, and
+performance monitoring for WSI streaming with support for confidence-based
+early stopping and real-time callbacks.
 """
 
 import logging
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from collections import deque
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional, Tuple
 
-from tqdm import tqdm
+import numpy as np
+import psutil
+
+try:
+    import torch
+
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ProcessingStats:
-    """Statistics for processing operations."""
+class StreamingProgress:
+    """Progress information for streaming with comprehensive tracking."""
 
-    total_items: int = 0
-    completed_items: int = 0
-    failed_items: int = 0
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-
-    # Performance metrics
-    patches_processed: int = 0
-    total_processing_time: float = 0.0
-    total_file_size_mb: float = 0.0
-
-    # Error tracking
-    errors: List[str] = field(default_factory=list)
-
-    @property
-    def success_rate(self) -> float:
-        """Calculate success rate as percentage."""
-        if self.total_items == 0:
-            return 0.0
-        return (self.completed_items / self.total_items) * 100
-
-    @property
-    def failure_rate(self) -> float:
-        """Calculate failure rate as percentage."""
-        if self.total_items == 0:
-            return 0.0
-        return (self.failed_items / self.total_items) * 100
-
-    @property
-    def elapsed_time(self) -> Optional[timedelta]:
-        """Calculate elapsed time."""
-        if self.start_time is None:
-            return None
-
-        end_time = self.end_time or datetime.now()
-        return end_time - self.start_time
-
-    @property
-    def average_processing_time(self) -> float:
-        """Calculate average processing time per item."""
-        if self.completed_items == 0:
-            return 0.0
-        return self.total_processing_time / self.completed_items
-
-    @property
-    def patches_per_second(self) -> float:
-        """Calculate patches processed per second."""
-        if self.total_processing_time == 0:
-            return 0.0
-        return self.patches_processed / self.total_processing_time
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert stats to dictionary."""
-        return {
-            "total_items": self.total_items,
-            "completed_items": self.completed_items,
-            "failed_items": self.failed_items,
-            "success_rate": self.success_rate,
-            "failure_rate": self.failure_rate,
-            "patches_processed": self.patches_processed,
-            "total_processing_time": self.total_processing_time,
-            "average_processing_time": self.average_processing_time,
-            "patches_per_second": self.patches_per_second,
-            "total_file_size_mb": self.total_file_size_mb,
-            "elapsed_time": str(self.elapsed_time) if self.elapsed_time else None,
-            "start_time": self.start_time.isoformat() if self.start_time else None,
-            "end_time": self.end_time.isoformat() if self.end_time else None,
-            "error_count": len(self.errors),
-        }
+    tiles_processed: int
+    total_tiles: int
+    progress_ratio: float
+    elapsed_time: float
+    estimated_time_remaining: float
+    estimated_total_time: float
+    current_tile_size: int
+    memory_usage_gb: float
+    throughput_tiles_per_second: float
+    average_processing_time_per_tile: float
+    current_confidence: float
+    confidence_delta: float
+    early_stop_recommended: bool
+    confidence_threshold: float
+    current_stage: str
+    stage_progress: float
+    time_spent_loading: float
+    time_spent_processing: float
+    time_spent_aggregating: float
+    peak_memory_usage_gb: float
+    gpu_memory_usage_gb: float
+    cpu_utilization_percent: float
+    tiles_skipped: int
+    tiles_failed: int
+    data_quality_score: float
 
 
-class ProgressTracker:
+@dataclass
+class ProgressCallback:
+    """Callback configuration for progress updates."""
+
+    callback_func: Callable[[StreamingProgress], None]
+    update_interval: float = 1.0  # Update interval in seconds
+    min_progress_delta: float = 0.01  # Minimum progress change to trigger update (1%)
+
+
+class StreamingProgressTracker:
     """
-    Advanced progress tracker with ETA calculation and monitoring.
+    Comprehensive progress tracking for WSI streaming operations.
 
-    Provides real-time progress tracking, ETA calculation, and performance
-    monitoring for WSI processing operations.
+    Provides detailed progress tracking, ETA estimation, and performance monitoring
+    with support for confidence-based early stopping and real-time callbacks.
+
+    Features:
+    - Multi-stage progress tracking (loading, processing, aggregating)
+    - Adaptive ETA estimation with confidence intervals
+    - Performance monitoring (throughput, memory, CPU/GPU usage)
+    - Confidence tracking with early stopping recommendations
+    - Real-time progress callbacks for visualization
+    - Quality metrics tracking (failed tiles, data quality)
     """
 
     def __init__(
         self,
-        total_items: int,
-        description: str = "Processing",
-        show_progress_bar: bool = True,
-        log_interval: int = 10,
+        total_tiles: int,
+        confidence_threshold: float = 0.95,
+        target_processing_time: float = 30.0,
+        progress_callbacks: Optional[List[ProgressCallback]] = None,
     ):
         """
         Initialize progress tracker.
 
         Args:
-            total_items: Total number of items to process
-            description: Description for progress display
-            show_progress_bar: Whether to show tqdm progress bar
-            log_interval: Interval for logging progress (in items)
+            total_tiles: Total number of tiles to process
+            confidence_threshold: Confidence threshold for early stopping
+            target_processing_time: Target processing time in seconds
+            progress_callbacks: List of progress callback configurations
         """
-        self.total_items = total_items
-        self.description = description
-        self.show_progress_bar = show_progress_bar
-        self.log_interval = log_interval
+        self.total_tiles = total_tiles
+        self.confidence_threshold = confidence_threshold
+        self.target_processing_time = target_processing_time
+        self.progress_callbacks = progress_callbacks or []
 
-        # Initialize statistics
-        self.stats = ProcessingStats(total_items=total_items)
+        # Timing tracking
+        self.start_time: Optional[float] = None
+        self.stage_start_times: Dict[str, float] = {}
+        self.stage_durations: Dict[str, float] = {}
 
         # Progress tracking
-        self.current_item = 0
-        self.last_log_item = 0
+        self.tiles_processed = 0
+        self.tiles_skipped = 0
+        self.tiles_failed = 0
+        self.current_stage = "initializing"
+        self.stage_progress = 0.0
 
         # Performance tracking
-        self.item_start_times = {}
-        self.recent_processing_times = []
-        self.max_recent_times = 50  # Keep last 50 processing times for ETA
+        self.processing_times: deque = deque(maxlen=100)
+        self.throughput_history: deque = deque(maxlen=50)
+        self.memory_usage_history: deque = deque(maxlen=100)
 
-        # Progress bar
-        self.progress_bar = None
-        if self.show_progress_bar:
-            self.progress_bar = tqdm(
-                total=total_items,
-                desc=description,
-                unit="items",
-                ncols=100,
-            )
+        # Confidence tracking
+        self.confidence_history: List[Tuple[float, float]] = []
+        self.current_confidence = 0.0
+        self.confidence_delta = 0.0
+        self.early_stop_recommended = False
 
-        logger.info(f"Started progress tracking: {description} ({total_items} items)")
+        # Resource monitoring
+        self.peak_memory_usage_gb = 0.0
+        self.last_callback_time = 0.0
+        self.last_callback_progress = 0.0
 
-    def start(self) -> None:
+        logger.info(
+            f"Initialized StreamingProgressTracker: {total_tiles} tiles, "
+            f"confidence_threshold={confidence_threshold:.3f}, "
+            f"target_time={target_processing_time:.1f}s"
+        )
+
+    def start_processing(self) -> None:
         """Start progress tracking."""
-        self.stats.start_time = datetime.now()
-        logger.info(f"Processing started at {self.stats.start_time}")
+        self.start_time = time.time()
+        self.current_stage = "streaming"
+        self.stage_start_times[self.current_stage] = self.start_time
+        logger.info("Started WSI streaming progress tracking")
 
-    def start_item(self, item_id: str) -> None:
-        """
-        Mark the start of processing an item.
+    def start_stage(self, stage_name: str) -> None:
+        """Start a new processing stage."""
+        current_time = time.time()
 
-        Args:
-            item_id: Unique identifier for the item
-        """
-        self.item_start_times[item_id] = time.time()
+        if self.current_stage in self.stage_start_times:
+            stage_duration = current_time - self.stage_start_times[self.current_stage]
+            self.stage_durations[self.current_stage] = stage_duration
 
-    def complete_item(
-        self,
-        item_id: str,
-        patches_processed: int = 0,
-        file_size_mb: float = 0.0,
-        error: Optional[str] = None,
+        self.current_stage = stage_name
+        self.stage_start_times[stage_name] = current_time
+        self.stage_progress = 0.0
+        logger.debug(f"Started processing stage: {stage_name}")
+
+    def update_stage_progress(self, progress: float) -> None:
+        """Update progress within current stage."""
+        self.stage_progress = max(0.0, min(1.0, progress))
+
+    def record_tile_processed(
+        self, processing_time: float, tile_size: int, success: bool = True, skipped: bool = False
     ) -> None:
-        """
-        Mark an item as completed.
-
-        Args:
-            item_id: Unique identifier for the item
-            patches_processed: Number of patches processed for this item
-            file_size_mb: Output file size in MB
-            error: Error message if item failed
-        """
-        # Calculate processing time
-        processing_time = 0.0
-        if item_id in self.item_start_times:
-            processing_time = time.time() - self.item_start_times[item_id]
-            del self.item_start_times[item_id]
-
-            # Update recent processing times for ETA calculation
-            self.recent_processing_times.append(processing_time)
-            if len(self.recent_processing_times) > self.max_recent_times:
-                self.recent_processing_times.pop(0)
-
-        # Update statistics
-        if error:
-            self.stats.failed_items += 1
-            self.stats.errors.append(f"{item_id}: {error}")
-            logger.warning(f"Item {item_id} failed: {error}")
+        """Record processing of a tile."""
+        if success and not skipped:
+            self.tiles_processed += 1
+            self.processing_times.append(processing_time)
+            if processing_time > 0:
+                throughput = 1.0 / processing_time
+                self.throughput_history.append(throughput)
+        elif skipped:
+            self.tiles_skipped += 1
         else:
-            self.stats.completed_items += 1
-            self.stats.patches_processed += patches_processed
-            self.stats.total_file_size_mb += file_size_mb
-            logger.debug(f"Item {item_id} completed in {processing_time:.2f}s")
+            self.tiles_failed += 1
 
-        self.stats.total_processing_time += processing_time
-        self.current_item += 1
+        current_memory = self._get_current_memory_usage()
+        self.memory_usage_history.append(current_memory)
+        self.peak_memory_usage_gb = max(self.peak_memory_usage_gb, current_memory)
 
-        # Update progress bar
-        if self.progress_bar:
-            self.progress_bar.update(1)
-            self.progress_bar.set_postfix(
-                {
-                    "Success": f"{self.stats.success_rate:.1f}%",
-                    "ETA": self.get_eta_string(),
-                }
-            )
+    def update_confidence(self, confidence: float) -> None:
+        """Update confidence tracking."""
+        current_time = time.time()
 
-        # Log progress at intervals
-        if (self.current_item - self.last_log_item) >= self.log_interval:
-            self.log_progress()
-            self.last_log_item = self.current_item
-
-    def get_eta(self) -> Optional[timedelta]:
-        """
-        Calculate estimated time to completion.
-
-        Returns:
-            Estimated time remaining or None if cannot calculate
-        """
-        if not self.recent_processing_times or self.current_item == 0:
-            return None
-
-        remaining_items = self.total_items - self.current_item
-        if remaining_items <= 0:
-            return timedelta(0)
-
-        # Use average of recent processing times
-        avg_time_per_item = sum(self.recent_processing_times) / len(self.recent_processing_times)
-        eta_seconds = remaining_items * avg_time_per_item
-
-        return timedelta(seconds=eta_seconds)
-
-    def get_eta_string(self) -> str:
-        """
-        Get ETA as formatted string.
-
-        Returns:
-            Formatted ETA string
-        """
-        eta = self.get_eta()
-        if eta is None:
-            return "Unknown"
-
-        total_seconds = int(eta.total_seconds())
-        hours, remainder = divmod(total_seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-
-        if hours > 0:
-            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        if self.confidence_history:
+            self.confidence_delta = confidence - self.current_confidence
         else:
-            return f"{minutes:02d}:{seconds:02d}"
+            self.confidence_delta = 0.0
 
-    def log_progress(self) -> None:
-        """Log current progress statistics."""
-        progress_pct = (self.current_item / self.total_items) * 100
-        eta_str = self.get_eta_string()
+        self.current_confidence = confidence
+        self.confidence_history.append((current_time, confidence))
+        self._update_early_stopping_recommendation()
 
-        logger.info(
-            f"Progress: {self.current_item}/{self.total_items} "
-            f"({progress_pct:.1f}%) - "
-            f"Success: {self.stats.success_rate:.1f}% - "
-            f"ETA: {eta_str}"
+    def _update_early_stopping_recommendation(self) -> None:
+        """Update early stopping recommendation based on confidence and time."""
+        confidence_met = self.current_confidence >= self.confidence_threshold
+
+        confidence_stable = False
+        if len(self.confidence_history) >= 10:
+            recent_confidences = [c for _, c in self.confidence_history[-10:]]
+            confidence_variance = np.var(recent_confidences)
+            confidence_stable = confidence_variance < 0.001
+
+        time_pressure = False
+        if self.start_time is not None:
+            elapsed_time = time.time() - self.start_time
+            time_pressure = elapsed_time > (self.target_processing_time * 0.8)
+
+        self.early_stop_recommended = confidence_met or (
+            self.current_confidence > 0.9 and confidence_stable and time_pressure
         )
 
-    def finish(self) -> ProcessingStats:
-        """
-        Finish progress tracking and return final statistics.
+    def _get_current_memory_usage(self) -> float:
+        """Get current memory usage in GB."""
+        try:
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            return memory_info.rss / (1024**3)
+        except Exception:
+            return 0.0
 
-        Returns:
-            Final processing statistics
-        """
-        self.stats.end_time = datetime.now()
+    def _get_gpu_memory_usage(self) -> float:
+        """Get current GPU memory usage in GB."""
+        if not TORCH_AVAILABLE or not torch.cuda.is_available():
+            return 0.0
+        try:
+            return torch.cuda.memory_allocated() / (1024**3)
+        except Exception:
+            return 0.0
 
-        if self.progress_bar:
-            self.progress_bar.close()
+    def _get_cpu_utilization(self) -> float:
+        """Get current CPU utilization percentage."""
+        try:
+            return psutil.cpu_percent(interval=None)
+        except Exception:
+            return 0.0
 
-        # Log final statistics
-        elapsed = self.stats.elapsed_time
-        logger.info(
-            f"Processing completed: {self.stats.completed_items}/{self.total_items} "
-            f"successful ({self.stats.success_rate:.1f}%) in {elapsed}"
-        )
+    def _calculate_eta(self) -> Tuple[float, float]:
+        """Calculate estimated time remaining and total time."""
+        if self.start_time is None or self.tiles_processed == 0:
+            return 0.0, 0.0
 
-        if self.stats.failed_items > 0:
-            logger.warning(
-                f"Failed items: {self.stats.failed_items} ({self.stats.failure_rate:.1f}%)"
-            )
+        elapsed_time = time.time() - self.start_time
 
-        if self.stats.patches_processed > 0:
-            logger.info(
-                f"Performance: {self.stats.patches_processed} patches processed "
-                f"({self.stats.patches_per_second:.1f} patches/sec)"
-            )
+        if len(self.processing_times) >= 10:
+            recent_times = list(self.processing_times)[-20:]
+            avg_time_per_tile = np.mean(recent_times)
+        else:
+            avg_time_per_tile = elapsed_time / self.tiles_processed
 
-        return self.stats
+        effective_remaining_tiles = self.total_tiles - self.tiles_processed
+        if self.early_stop_recommended and self.current_confidence > 0.9:
+            confidence_factor = min(1.0, self.current_confidence / self.confidence_threshold)
+            early_stop_factor = 0.5 + 0.5 * (1.0 - confidence_factor)
+            effective_remaining_tiles = int(effective_remaining_tiles * early_stop_factor)
 
-    def get_current_stats(self) -> ProcessingStats:
-        """
-        Get current statistics without finishing.
+        estimated_time_remaining = effective_remaining_tiles * avg_time_per_tile
+        estimated_total_time = elapsed_time + estimated_time_remaining
 
-        Returns:
-            Current processing statistics
-        """
-        return self.stats
+        return estimated_time_remaining, estimated_total_time
 
-
-class BatchProgressMonitor:
-    """
-    Monitor for batch processing operations with multiple progress trackers.
-
-    Manages multiple concurrent progress trackers and provides
-    aggregate monitoring capabilities.
-    """
-
-    def __init__(self):
-        """Initialize batch progress monitor."""
-        self.trackers: Dict[str, ProgressTracker] = {}
-        self.start_time = None
-
-    def create_tracker(
-        self, tracker_id: str, total_items: int, description: str = "Processing", **kwargs
-    ) -> ProgressTracker:
-        """
-        Create a new progress tracker.
-
-        Args:
-            tracker_id: Unique identifier for the tracker
-            total_items: Total number of items to process
-            description: Description for progress display
-            **kwargs: Additional arguments for ProgressTracker
-
-        Returns:
-            Created progress tracker
-        """
-        tracker = ProgressTracker(total_items=total_items, description=description, **kwargs)
-
-        self.trackers[tracker_id] = tracker
-
+    def get_current_progress(self) -> StreamingProgress:
+        """Get current progress information."""
         if self.start_time is None:
-            self.start_time = datetime.now()
+            return StreamingProgress(
+                tiles_processed=0,
+                total_tiles=self.total_tiles,
+                progress_ratio=0.0,
+                elapsed_time=0.0,
+                estimated_time_remaining=0.0,
+                estimated_total_time=0.0,
+                current_tile_size=0,
+                memory_usage_gb=0.0,
+                throughput_tiles_per_second=0.0,
+                average_processing_time_per_tile=0.0,
+                current_confidence=0.0,
+                confidence_delta=0.0,
+                early_stop_recommended=False,
+                confidence_threshold=self.confidence_threshold,
+                current_stage=self.current_stage,
+                stage_progress=self.stage_progress,
+                time_spent_loading=0.0,
+                time_spent_processing=0.0,
+                time_spent_aggregating=0.0,
+                peak_memory_usage_gb=0.0,
+                gpu_memory_usage_gb=0.0,
+                cpu_utilization_percent=0.0,
+                tiles_skipped=0,
+                tiles_failed=0,
+                data_quality_score=1.0,
+            )
 
-        return tracker
+        elapsed_time = time.time() - self.start_time
+        progress_ratio = self.tiles_processed / self.total_tiles if self.total_tiles > 0 else 0.0
 
-    def get_tracker(self, tracker_id: str) -> Optional[ProgressTracker]:
-        """
-        Get existing progress tracker.
+        estimated_time_remaining, estimated_total_time = self._calculate_eta()
 
-        Args:
-            tracker_id: Tracker identifier
+        avg_throughput = np.mean(self.throughput_history) if self.throughput_history else 0.0
+        avg_processing_time = np.mean(self.processing_times) if self.processing_times else 0.0
 
-        Returns:
-            Progress tracker or None if not found
-        """
-        return self.trackers.get(tracker_id)
+        total_tiles_attempted = self.tiles_processed + self.tiles_failed + self.tiles_skipped
+        if total_tiles_attempted > 0:
+            data_quality_score = self.tiles_processed / total_tiles_attempted
+        else:
+            data_quality_score = 1.0
 
-    def get_aggregate_stats(self) -> Dict[str, Any]:
-        """
-        Get aggregate statistics across all trackers.
+        current_memory = self._get_current_memory_usage()
+        gpu_memory = self._get_gpu_memory_usage()
+        cpu_utilization = self._get_cpu_utilization()
 
-        Returns:
-            Aggregate statistics dictionary
-        """
-        total_items = sum(t.total_items for t in self.trackers.values())
-        completed_items = sum(t.stats.completed_items for t in self.trackers.values())
-        failed_items = sum(t.stats.failed_items for t in self.trackers.values())
-        patches_processed = sum(t.stats.patches_processed for t in self.trackers.values())
-        total_processing_time = sum(t.stats.total_processing_time for t in self.trackers.values())
+        time_spent_loading = self.stage_durations.get("streaming", 0.0)
+        time_spent_processing = self.stage_durations.get("processing", 0.0)
+        time_spent_aggregating = self.stage_durations.get("aggregating", 0.0)
 
-        return {
-            "total_trackers": len(self.trackers),
-            "total_items": total_items,
-            "completed_items": completed_items,
-            "failed_items": failed_items,
-            "success_rate": (completed_items / total_items * 100) if total_items > 0 else 0,
-            "patches_processed": patches_processed,
-            "patches_per_second": (
-                (patches_processed / total_processing_time) if total_processing_time > 0 else 0
-            ),
-            "elapsed_time": str(datetime.now() - self.start_time) if self.start_time else None,
-        }
+        if self.current_stage in self.stage_start_times:
+            current_stage_time = elapsed_time - self.stage_start_times[self.current_stage]
+            if self.current_stage == "streaming":
+                time_spent_loading += current_stage_time
+            elif self.current_stage == "processing":
+                time_spent_processing += current_stage_time
+            elif self.current_stage == "aggregating":
+                time_spent_aggregating += current_stage_time
 
-    def log_aggregate_progress(self) -> None:
-        """Log aggregate progress across all trackers."""
-        stats = self.get_aggregate_stats()
+        progress = StreamingProgress(
+            tiles_processed=self.tiles_processed,
+            total_tiles=self.total_tiles,
+            progress_ratio=progress_ratio,
+            elapsed_time=elapsed_time,
+            estimated_time_remaining=estimated_time_remaining,
+            estimated_total_time=estimated_total_time,
+            current_tile_size=0,
+            memory_usage_gb=current_memory,
+            throughput_tiles_per_second=avg_throughput,
+            average_processing_time_per_tile=avg_processing_time,
+            current_confidence=self.current_confidence,
+            confidence_delta=self.confidence_delta,
+            early_stop_recommended=self.early_stop_recommended,
+            confidence_threshold=self.confidence_threshold,
+            current_stage=self.current_stage,
+            stage_progress=self.stage_progress,
+            time_spent_loading=time_spent_loading,
+            time_spent_processing=time_spent_processing,
+            time_spent_aggregating=time_spent_aggregating,
+            peak_memory_usage_gb=self.peak_memory_usage_gb,
+            gpu_memory_usage_gb=gpu_memory,
+            cpu_utilization_percent=cpu_utilization,
+            tiles_skipped=self.tiles_skipped,
+            tiles_failed=self.tiles_failed,
+            data_quality_score=data_quality_score,
+        )
+
+        self._trigger_progress_callbacks(progress)
+        return progress
+
+    def _trigger_progress_callbacks(self, progress: StreamingProgress) -> None:
+        """Trigger progress callbacks if update conditions are met."""
+        current_time = time.time()
+
+        for callback_config in self.progress_callbacks:
+            time_condition = (
+                current_time - self.last_callback_time
+            ) >= callback_config.update_interval
+
+            progress_condition = (
+                abs(progress.progress_ratio - self.last_callback_progress)
+                >= callback_config.min_progress_delta
+            )
+
+            if time_condition or progress_condition:
+                try:
+                    callback_config.callback_func(progress)
+                    self.last_callback_time = current_time
+                    self.last_callback_progress = progress.progress_ratio
+                except Exception as e:
+                    logger.warning(f"Progress callback failed: {e}")
+
+    def finish_processing(self) -> StreamingProgress:
+        """Finish progress tracking and return final statistics."""
+        if self.current_stage in self.stage_start_times:
+            current_time = time.time()
+            stage_duration = current_time - self.stage_start_times[self.current_stage]
+            self.stage_durations[self.current_stage] = stage_duration
+
+        self.current_stage = "completed"
+        final_progress = self.get_current_progress()
 
         logger.info(
-            f"Batch Progress: {stats['completed_items']}/{stats['total_items']} "
-            f"({stats['success_rate']:.1f}%) - "
-            f"{stats['patches_processed']} patches "
-            f"({stats['patches_per_second']:.1f} patches/sec)"
+            f"WSI streaming completed: {self.tiles_processed}/{self.total_tiles} tiles processed "
+            f"({final_progress.progress_ratio:.1%}) in {final_progress.elapsed_time:.1f}s, "
+            f"final confidence: {self.current_confidence:.3f}"
         )
 
-    def finish_all(self) -> Dict[str, ProcessingStats]:
-        """
-        Finish all trackers and return final statistics.
-
-        Returns:
-            Dictionary of final statistics for each tracker
-        """
-        results = {}
-
-        for tracker_id, tracker in self.trackers.items():
-            results[tracker_id] = tracker.finish()
-
-        # Log final aggregate statistics
-        aggregate_stats = self.get_aggregate_stats()
-        logger.info(f"Batch processing completed: {aggregate_stats}")
-
-        return results
-
-
-# Example usage
-if __name__ == "__main__":
-    import random
-
-    # Setup logging
-    logging.basicConfig(level=logging.INFO)
-
-    # Test single progress tracker
-    tracker = ProgressTracker(
-        total_items=10,
-        description="Test Processing",
-        show_progress_bar=True,
-        log_interval=3,
-    )
-
-    tracker.start()
-
-    for i in range(10):
-        item_id = f"item_{i}"
-        tracker.start_item(item_id)
-
-        # Simulate processing
-        time.sleep(random.uniform(0.1, 0.5))
-
-        # Simulate occasional failures
-        error = "Test error" if random.random() < 0.1 else None
-
-        tracker.complete_item(
-            item_id=item_id,
-            patches_processed=random.randint(50, 200),
-            file_size_mb=random.uniform(1.0, 10.0),
-            error=error,
-        )
-
-    final_stats = tracker.finish()
-    print(f"Final stats: {final_stats.to_dict()}")
+        return final_progress
