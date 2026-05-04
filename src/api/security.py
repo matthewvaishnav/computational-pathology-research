@@ -17,19 +17,53 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
-import magic
-import pyclamd
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
+    magic = None
+
+try:
+    import pyclamd
+    CLAMAV_AVAILABLE = True
+except ImportError:
+    CLAMAV_AVAILABLE = False
+    pyclamd = None
+
 from fastapi import HTTPException, Request
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from PIL import Image
+
+try:
+    from jose import JWTError, jwt
+    JWT_AVAILABLE = True
+except ImportError:
+    JWT_AVAILABLE = False
+    JWTError = Exception
+    jwt = None
+
+try:
+    from passlib.context import CryptContext
+    PASSLIB_AVAILABLE = True
+except ImportError:
+    PASSLIB_AVAILABLE = False
+    CryptContext = None
+
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    Image = None
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # Keep for reference but use custom function
 
 logger = logging.getLogger(__name__)
 
 # Password hashing configuration
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+if PASSLIB_AVAILABLE and CryptContext:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+else:
+    pwd_context = None
 
 # JWT configuration
 # JWT configuration - MUST be set via environment variable
@@ -101,6 +135,8 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password
     """
+    if not PASSLIB_AVAILABLE or not pwd_context:
+        raise HTTPException(status_code=500, detail="Password hashing not available")
     return pwd_context.hash(password)
 
 
@@ -114,6 +150,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
+    if not PASSLIB_AVAILABLE or not pwd_context:
+        return False  # Fail safely
     return pwd_context.verify(plain_password, hashed_password)
 
 
@@ -133,6 +171,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         Encoded JWT token
     """
     to_encode = data.copy()
+
+    if not JWT_AVAILABLE or not jwt:
+        raise HTTPException(status_code=500, detail="JWT functionality not available")
 
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -157,6 +198,9 @@ def decode_access_token(token: str) -> Optional[dict]:
     Raises:
         HTTPException: If token is invalid or expired
     """
+    if not JWT_AVAILABLE or not jwt:
+        raise HTTPException(status_code=500, detail="JWT functionality not available")
+        
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
@@ -303,8 +347,21 @@ def validate_image_magic_bytes(file_content: bytes) -> str:
         HTTPException: If file is not a valid image
     """
     try:
-        # Detect actual file type using magic bytes
-        detected_type = magic.from_buffer(file_content, mime=True)
+        # Detect actual file type using magic bytes if available
+        if MAGIC_AVAILABLE and magic:
+            detected_type = magic.from_buffer(file_content, mime=True)
+        else:
+            # Fallback: try to detect from file header
+            if file_content.startswith(b'\xff\xd8\xff'):
+                detected_type = 'image/jpeg'
+            elif file_content.startswith(b'\x89PNG\r\n\x1a\n'):
+                detected_type = 'image/png'
+            elif file_content.startswith(b'GIF87a') or file_content.startswith(b'GIF89a'):
+                detected_type = 'image/gif'
+            elif file_content.startswith(b'RIFF') and b'WEBP' in file_content[:12]:
+                detected_type = 'image/webp'
+            else:
+                detected_type = 'application/octet-stream'
 
         if detected_type not in ALLOWED_IMAGE_TYPES:
             logger.warning(f"Invalid image type detected: {detected_type}")
@@ -390,33 +447,33 @@ def scan_for_malware(file_content: bytes) -> bool:
     Returns:
         True if file is clean, False if malware detected
     """
-    # Try ClamAV integration first
-    try:
-        # Try Unix socket first (common on Linux)
-        cd = pyclamd.ClamdUnixSocket()
-        if not cd.ping():
-            # Fall back to network socket (common on Windows/Docker)
-            cd = pyclamd.ClamdNetworkSocket()
+    # Try ClamAV integration first if available
+    if CLAMAV_AVAILABLE and pyclamd:
+        try:
+            # Try Unix socket first (common on Linux)
+            cd = pyclamd.ClamdUnixSocket()
             if not cd.ping():
-                raise ConnectionError("ClamAV daemon not available")
-        
-        # Scan file content
-        scan_result = cd.scan_stream(file_content)
-        
-        if scan_result is None:
-            # Clean file
-            return True
-        else:
-            # Malware detected
-            logger.warning(f"ClamAV detected malware: {scan_result}")
-            return False
+                # Fall back to network socket (common on Windows/Docker)
+                cd = pyclamd.ClamdNetworkSocket()
+                if not cd.ping():
+                    raise ConnectionError("ClamAV daemon not available")
             
-    except (ConnectionError, pyclamd.ConnectionError) as e:
-        logger.warning(f"ClamAV not available ({e}), falling back to basic signature checks")
-        # Fall through to basic checks
-    except Exception as e:
-        logger.error(f"ClamAV scan error: {e}, falling back to basic signature checks")
-        # Fall through to basic checks
+            # Scan file content
+            scan_result = cd.scan_stream(file_content)
+            
+            if scan_result is None:
+                # Clean file
+                return True
+            else:
+                # Malware detected
+                logger.warning(f"ClamAV detected malware: {scan_result}")
+                return False
+                
+        except (ConnectionError, Exception) as e:
+            logger.warning(f"ClamAV not available ({e}), falling back to basic signature checks")
+            # Fall through to basic checks
+    else:
+        logger.info("ClamAV not available, using basic signature checks")
 
     # Fallback: Basic signature checks
     malware_signatures = [
