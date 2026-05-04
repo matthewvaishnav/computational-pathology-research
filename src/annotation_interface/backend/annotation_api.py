@@ -580,12 +580,42 @@ async def websocket_endpoint(websocket: WebSocket, slide_id: str):
     """WebSocket endpoint for real-time collaboration"""
     await manager.connect(websocket, slide_id)
 
+    # Rate limiting state
+    message_count = 0
+    rate_limit_window_start = time.time()
+    MAX_MESSAGES_PER_SECOND = 10
+    MAX_MESSAGE_SIZE = 100_000  # 100KB
+
     try:
         timeout = time.time() + 3600
 
         while time.time() < timeout:
             # Receive messages from client
             data = await websocket.receive_json()
+            
+            # Validate message size to prevent DoS
+            import json
+            message_size = len(json.dumps(data))
+            if message_size > MAX_MESSAGE_SIZE:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": "Message too large"
+                })
+                continue
+            
+            # Rate limiting: reset counter every second
+            current_time = time.time()
+            if current_time - rate_limit_window_start > 1.0:
+                message_count = 0
+                rate_limit_window_start = current_time
+            
+            message_count += 1
+            if message_count > MAX_MESSAGES_PER_SECOND:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": "Rate limit exceeded"
+                })
+                continue
 
             # Echo back to all clients (for cursor position, etc.)
             await manager.broadcast(slide_id, {"type": "user_action", "data": data})
