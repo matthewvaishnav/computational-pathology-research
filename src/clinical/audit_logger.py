@@ -1,0 +1,469 @@
+"""
+Audit Logger Module
+
+Log writing, signing, event creation for regulatory compliance.
+Extracted from audit.py for focused responsibility.
+"""
+
+import base64
+import hashlib
+import json
+import logging
+import secrets
+import traceback
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    NoEncryption,
+    PrivateFormat,
+    PublicFormat,
+)
+
+from .audit import AuditEvent, AuditEventType, AuditSeverity, SignedAuditRecord
+from .audit_query import AuditStorage
+
+logger = logging.getLogger(__name__)
+
+
+class CryptographicSigner:
+    """Handles cryptographic signing of audit records."""
+
+    def __init__(self, private_key: Optional[rsa.RSAPrivateKey] = None):
+        """Initialize with RSA private key."""
+        if private_key is None:
+            private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+        self.private_key = private_key
+        self.public_key = private_key.public_key()
+        self.public_key_fingerprint = self._compute_key_fingerprint()
+
+    def _compute_key_fingerprint(self) -> str:
+        """Compute fingerprint of public key."""
+        public_key_bytes = self.public_key.public_bytes(
+            encoding=Encoding.PEM, format=PublicFormat.SubjectPublicKeyInfo
+        )
+        return hashlib.sha256(public_key_bytes).hexdigest()[:16]
+
+    def sign_event(self, event: AuditEvent) -> str:
+        """Sign audit event and return base64-encoded signature."""
+        content_hash = event.get_content_hash()
+        signature = self.private_key.sign(
+            content_hash.encode(),
+            padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+            hashes.SHA256(),
+        )
+        return base64.b64encode(signature).decode()
+
+    def verify_signature(self, event: AuditEvent, signature: str) -> bool:
+        """Verify signature of audit event."""
+        try:
+            signature_bytes = base64.b64decode(signature)
+            content_hash = event.get_content_hash()
+
+            self.public_key.verify(
+                signature_bytes,
+                content_hash.encode(),
+                padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+                hashes.SHA256(),
+            )
+            return True
+        except (InvalidSignature, ValueError):
+            return False
+
+    def export_public_key(self) -> str:
+        """Export public key in PEM format."""
+        return self.public_key.public_bytes(
+            encoding=Encoding.PEM, format=PublicFormat.SubjectPublicKeyInfo
+        ).decode()
+
+    def export_private_key(self, password: Optional[str] = None) -> str:
+        """Export private key in PEM format."""
+        encryption_algorithm = NoEncryption()
+        if password:
+            from cryptography.hazmat.primitives.serialization import BestAvailableEncryption
+
+            encryption_algorithm = BestAvailableEncryption(password.encode())
+
+        return self.private_key.private_bytes(
+            encoding=Encoding.PEM,
+            format=PrivateFormat.PKCS8,
+            encryption_algorithm=encryption_algorithm,
+        ).decode()
+
+
+class AuditLogger:
+    """Main audit logger for regulatory compliance."""
+
+    def __init__(
+        self,
+        storage: AuditStorage,
+        signer: Optional[CryptographicSigner] = None,
+        retention_days: int = 2555,  # 7 years for FDA compliance
+    ):
+        """Initialize audit logger."""
+        if signer is None:
+            signer = CryptographicSigner()
+
+        self.storage = storage
+        self.signer = signer
+        self.retention_days = retention_days
+        self.logger = logging.getLogger(__name__)
+
+        # Initialize anonymizer for patient data
+        from .privacy import PatientIdentifierAnonymizer
+
+        self.anonymizer = PatientIdentifierAnonymizer()
+
+    def _create_event_id(self) -> str:
+        """Generate unique event ID."""
+        return f"audit_{secrets.token_hex(16)}"
+
+    def _hash_data(self, data: Any) -> str:
+        """Create hash of data for integrity verification."""
+        if isinstance(data, dict):
+            data_str = json.dumps(data, sort_keys=True)
+        else:
+            data_str = str(data)
+
+        return hashlib.sha256(data_str.encode()).hexdigest()
+
+    def log_prediction_operation(
+        self,
+        user_id: Optional[str],
+        session_token: Optional[str],
+        input_data: Dict[str, Any],
+        output_data: Dict[str, Any],
+        model_version: str,
+        processing_time_ms: float,
+        ip_address: Optional[str] = None,
+    ) -> str:
+        """Log prediction operation with input/output data hashes."""
+        anonymized_input = self.anonymizer.anonymize_data(input_data)
+        anonymized_output = self.anonymizer.anonymize_data(output_data)
+
+        event = AuditEvent(
+            event_id=self._create_event_id(),
+            event_type=AuditEventType.PREDICTION_OPERATION,
+            timestamp=datetime.now(),
+            user_id=user_id,
+            session_token=session_token,
+            severity=AuditSeverity.INFO,
+            description=f"Prediction operation completed in {processing_time_ms:.2f}ms",
+            details={
+                "input_data": anonymized_input,
+                "output_data": anonymized_output,
+                "processing_time_ms": processing_time_ms,
+            },
+            input_data_hash=self._hash_data(input_data),
+            output_data_hash=self._hash_data(output_data),
+            model_version=model_version,
+            ip_address=ip_address,
+        )
+
+        return self._store_signed_event(event)
+
+    def log_user_access(
+        self,
+        event_type: str,
+        user_id: str,
+        session_token: Optional[str],
+        resource: str,
+        action: str,
+        success: bool,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Log user access event."""
+        severity = AuditSeverity.INFO if success else AuditSeverity.WARNING
+
+        event = AuditEvent(
+            event_id=self._create_event_id(),
+            event_type=AuditEventType.USER_ACCESS,
+            timestamp=datetime.now(),
+            user_id=user_id,
+            session_token=session_token,
+            severity=severity,
+            description=f"User {action} on {resource}: {'SUCCESS' if success else 'FAILED'}",
+            details={
+                "event_type": event_type,
+                "resource": resource,
+                "action": action,
+                "success": success,
+                **(details or {}),
+            },
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
+        return self._store_signed_event(event)
+
+    def log_data_modification(
+        self,
+        user_id: str,
+        session_token: Optional[str],
+        resource: str,
+        modification_type: str,
+        old_data_hash: Optional[str],
+        new_data_hash: Optional[str],
+        ip_address: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Log data modification event."""
+        event = AuditEvent(
+            event_id=self._create_event_id(),
+            event_type=AuditEventType.DATA_MODIFICATION,
+            timestamp=datetime.now(),
+            user_id=user_id,
+            session_token=session_token,
+            severity=AuditSeverity.INFO,
+            description=f"Data modification: {modification_type} on {resource}",
+            details={
+                "resource": resource,
+                "modification_type": modification_type,
+                "old_data_hash": old_data_hash,
+                "new_data_hash": new_data_hash,
+                **(details or {}),
+            },
+            ip_address=ip_address,
+        )
+
+        return self._store_signed_event(event)
+
+    def log_system_error(
+        self,
+        error_type: str,
+        error_message: str,
+        stack_trace: Optional[str] = None,
+        input_data: Optional[Dict[str, Any]] = None,
+        user_id: Optional[str] = None,
+        session_token: Optional[str] = None,
+        model_version: Optional[str] = None,
+    ) -> str:
+        """Log system error with stack trace."""
+        anonymized_input = None
+        input_hash = None
+        if input_data:
+            anonymized_input = self.anonymizer.anonymize_data(input_data)
+            input_hash = self._hash_data(input_data)
+
+        event = AuditEvent(
+            event_id=self._create_event_id(),
+            event_type=AuditEventType.SYSTEM_ERROR,
+            timestamp=datetime.now(),
+            user_id=user_id,
+            session_token=session_token,
+            severity=AuditSeverity.ERROR,
+            description=f"System error: {error_type} - {error_message}",
+            details={
+                "error_type": error_type,
+                "error_message": error_message,
+                "stack_trace": stack_trace,
+                "input_data": anonymized_input,
+            },
+            input_data_hash=input_hash,
+            model_version=model_version,
+        )
+
+        return self._store_signed_event(event)
+
+    def log_model_training(
+        self,
+        dataset_version: str,
+        hyperparameters: Dict[str, Any],
+        performance_metrics: Dict[str, float],
+        training_duration_minutes: float,
+        model_version: str,
+        user_id: Optional[str] = None,
+    ) -> str:
+        """Log model training event."""
+        event = AuditEvent(
+            event_id=self._create_event_id(),
+            event_type=AuditEventType.MODEL_TRAINING,
+            timestamp=datetime.now(),
+            user_id=user_id,
+            session_token=None,
+            severity=AuditSeverity.INFO,
+            description=f"Model training completed for version {model_version}",
+            details={
+                "dataset_version": dataset_version,
+                "hyperparameters": hyperparameters,
+                "performance_metrics": performance_metrics,
+                "training_duration_minutes": training_duration_minutes,
+            },
+            model_version=model_version,
+        )
+
+        return self._store_signed_event(event)
+
+    def log_model_validation(
+        self,
+        model_version: str,
+        validation_dataset: str,
+        performance_metrics: Dict[str, float],
+        validation_type: str,
+        user_id: Optional[str] = None,
+    ) -> str:
+        """Log model validation event."""
+        event = AuditEvent(
+            event_id=self._create_event_id(),
+            event_type=AuditEventType.MODEL_VALIDATION,
+            timestamp=datetime.now(),
+            user_id=user_id,
+            session_token=None,
+            severity=AuditSeverity.INFO,
+            description=f"Model validation completed: {validation_type} for {model_version}",
+            details={
+                "validation_dataset": validation_dataset,
+                "performance_metrics": performance_metrics,
+                "validation_type": validation_type,
+            },
+            model_version=model_version,
+        )
+
+        return self._store_signed_event(event)
+
+    def _store_signed_event(self, event: AuditEvent) -> str:
+        """Sign and store audit event."""
+        try:
+            signature = self.signer.sign_event(event)
+
+            signed_record = SignedAuditRecord(
+                event=event,
+                signature=signature,
+                public_key_fingerprint=self.signer.public_key_fingerprint,
+            )
+
+            success = self.storage.store_record(signed_record)
+
+            if success:
+                self.logger.info(f"Stored audit event {event.event_id}")
+                return event.event_id
+            else:
+                self.logger.error(f"Failed to store audit event {event.event_id}")
+                return ""
+
+        except Exception as e:
+            self.logger.error(f"Failed to sign and store audit event: {e}")
+            return ""
+
+    def verify_record_integrity(self, record: SignedAuditRecord) -> bool:
+        """Verify cryptographic signature."""
+        return self.signer.verify_signature(record.event, record.signature)
+
+    def get_audit_records(
+        self,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        event_type: Optional[AuditEventType] = None,
+        user_id: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> List[SignedAuditRecord]:
+        """Retrieve audit records with filtering."""
+        return self.storage.retrieve_records(start_time, end_time, event_type, user_id, limit)
+
+    def export_audit_logs(
+        self,
+        output_path: Path,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+        format: str = "json",
+    ) -> bool:
+        """Export audit logs for regulatory submissions."""
+        return self.storage.export_records(output_path, start_time, end_time, format)
+
+    def cleanup_old_logs(self) -> int:
+        """Clean up audit logs older than retention period."""
+        return self.storage.cleanup_old_records(self.retention_days)
+
+    def get_audit_statistics(self) -> Dict[str, Any]:
+        """Get audit log statistics."""
+        total_records = self.storage.get_record_count()
+
+        recent_records = self.get_audit_records(
+            start_time=datetime.now() - timedelta(days=30), limit=1000
+        )
+
+        event_type_counts = {}
+        severity_counts = {}
+        user_activity = {}
+
+        for record in recent_records:
+            event_type = record.event.event_type.value
+            severity = record.event.severity.value
+            user_id = record.event.user_id or "system"
+
+            event_type_counts[event_type] = event_type_counts.get(event_type, 0) + 1
+            severity_counts[severity] = severity_counts.get(severity, 0) + 1
+            user_activity[user_id] = user_activity.get(user_id, 0) + 1
+
+        return {
+            "total_records": total_records,
+            "recent_records_30_days": len(recent_records),
+            "event_type_distribution": event_type_counts,
+            "severity_distribution": severity_counts,
+            "top_users": dict(sorted(user_activity.items(), key=lambda x: x[1], reverse=True)[:10]),
+            "retention_days": self.retention_days,
+            "storage_type": type(self.storage).__name__,
+        }
+
+
+class AuditContextManager:
+    """Context manager for automatic audit logging."""
+
+    def __init__(
+        self,
+        audit_logger: AuditLogger,
+        operation_type: str,
+        user_id: Optional[str] = None,
+        session_token: Optional[str] = None,
+        model_version: Optional[str] = None,
+    ):
+        """Initialize audit context."""
+        self.audit_logger = audit_logger
+        self.operation_type = operation_type
+        self.user_id = user_id
+        self.session_token = session_token
+        self.model_version = model_version
+        self.start_time = None
+        self.exception_occurred = False
+
+    def __enter__(self):
+        """Enter audit context."""
+        self.start_time = datetime.now()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit audit context and log results."""
+        if exc_type is not None:
+            self.audit_logger.log_system_error(
+                error_type=exc_type.__name__,
+                error_message=str(exc_val),
+                stack_trace=traceback.format_exc(),
+                user_id=self.user_id,
+                session_token=self.session_token,
+                model_version=self.model_version,
+            )
+            self.exception_occurred = True
+
+        return False
+
+    def log_success(self, input_data: Dict[str, Any], output_data: Dict[str, Any]):
+        """Log successful operation."""
+        if not self.exception_occurred:
+            processing_time_ms = (datetime.now() - self.start_time).total_seconds() * 1000
+
+            self.audit_logger.log_prediction_operation(
+                user_id=self.user_id,
+                session_token=self.session_token,
+                input_data=input_data,
+                output_data=output_data,
+                model_version=self.model_version or "unknown",
+                processing_time_ms=processing_time_ms,
+            )
