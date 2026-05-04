@@ -21,7 +21,8 @@ import numpy as np
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from clinical.treatment_response import TreatmentResponseAnalyzer, TreatmentResponseMetrics
+from clinical.treatment_facade import TreatmentResponseAnalyzer
+from clinical.treatment_response import TreatmentResponseMetrics
 from clinical.longitudinal import (
     LongitudinalTracker,
     PatientTimeline,
