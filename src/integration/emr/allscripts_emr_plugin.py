@@ -11,12 +11,7 @@ import hashlib
 import json
 import logging
 import ssl
-try:
-    import defusedxml.ElementTree as ET
-except ImportError:
-    import xml.etree.ElementTree as ET
-    import warnings
-    warnings.warn("defusedxml not available, using unsafe XML parser. Install with: pip install defusedxml")
+import defusedxml.ElementTree as ET
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
