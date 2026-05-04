@@ -128,8 +128,12 @@ async def get_ids_alerts(
     Args:
         severity: Filter by severity (low, medium, high, critical)
         source_ip: Filter by source IP
-        limit: Maximum number of alerts
+        limit: Maximum number of alerts (1-1000)
     """
+    # Validate limit to prevent DoS via excessive queries
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
     try:
         from src.monitoring.ids import get_ids_engine
         
@@ -163,8 +167,12 @@ async def get_siem_incidents(
     Args:
         severity: Filter by severity (low, medium, high, critical)
         source_ip: Filter by source IP
-        limit: Maximum number of incidents
+        limit: Maximum number of incidents (1-1000)
     """
+    # Validate limit to prevent DoS via excessive queries
+    if limit < 1 or limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    
     try:
         from src.monitoring.siem import get_siem_engine
         
