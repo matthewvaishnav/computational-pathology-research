@@ -228,7 +228,7 @@ if __name__ == "__main__":
         sys.exit(1)
 '''
     
-    with open("installer_main.py", "w") as f:
+    with open("installer_main.py", "w", encoding="utf-8") as f:
         f.write(installer_code)
     
     print("✓ Created installer script")
