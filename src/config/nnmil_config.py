@@ -91,6 +91,7 @@ class nnMILConfig:
     weight_decay: float = 1e-4
     num_epochs: int = 100
     patience: int = 10
+    use_amp: bool = True  # Mixed precision training
     
     # Data configuration
     bag_length: int = 512

@@ -75,6 +75,10 @@ class nnMILTrainer:
             'epoch_time': []
         }
         
+        # Mixed precision training (AMP)
+        self.use_amp = config.use_amp if hasattr(config, 'use_amp') else True
+        self.scaler = torch.cuda.amp.GradScaler() if self.use_amp and self.device == 'cuda' else None
+        
         # Setup optimizer and scheduler
         self._setup_optimizer()
         self._setup_scheduler()
@@ -91,6 +95,8 @@ class nnMILTrainer:
         self.logger.info(f"nnMILTrainer initialized on {self.device}")
         self.logger.info(f"Effective batch size: {self.effective_batch_size}")
         self.logger.info(f"Gradient accumulation steps: {self.accumulation_steps}")
+        if self.use_amp:
+            self.logger.info("Mixed precision training (AMP) enabled")
     
     def _setup_optimizer(self):
         """Setup optimizer with learning rate scaling."""
@@ -303,29 +309,41 @@ class nnMILTrainer:
             # Move batch to device
             batch = self._move_batch_to_device(batch)
             
-            # Forward pass
-            if hasattr(self.model, 'forward_with_attention'):
-                logits, attention_weights = self.model.forward_with_attention(
-                    batch.features, batch.masks
-                )
+            # Forward pass with autocast
+            with torch.cuda.amp.autocast(enabled=self.use_amp):
+                if hasattr(self.model, 'forward_with_attention'):
+                    logits, attention_weights = self.model.forward_with_attention(
+                        batch.features, batch.masks
+                    )
+                else:
+                    logits = self.model(batch.features, batch.masks)
+                
+                # Compute loss
+                loss = self.criterion(logits, batch.labels)
+                
+                # Scale loss for gradient accumulation
+                loss = loss / self.accumulation_steps
+            
+            # Backward pass with scaler
+            if self.scaler is not None:
+                self.scaler.scale(loss).backward()
             else:
-                logits = self.model(batch.features, batch.masks)
-            
-            # Compute loss
-            loss = self.criterion(logits, batch.labels)
-            
-            # Scale loss for gradient accumulation
-            loss = loss / self.accumulation_steps
-            
-            # Backward pass
-            loss.backward()
+                loss.backward()
             
             # Update weights every accumulation_steps
             if (batch_idx + 1) % self.accumulation_steps == 0:
                 # Gradient clipping
+                if self.scaler is not None:
+                    self.scaler.unscale_(self.optimizer)
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
                 
-                self.optimizer.step()
+                # Optimizer step
+                if self.scaler is not None:
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                else:
+                    self.optimizer.step()
+                
                 self.optimizer.zero_grad()
                 
                 # Log batch metrics
@@ -337,8 +355,14 @@ class nnMILTrainer:
         
         # Handle remaining gradients
         if num_batches % self.accumulation_steps != 0:
+            if self.scaler is not None:
+                self.scaler.unscale_(self.optimizer)
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
-            self.optimizer.step()
+            if self.scaler is not None:
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                self.optimizer.step()
             self.optimizer.zero_grad()
         
         return total_loss / num_batches
