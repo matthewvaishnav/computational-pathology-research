@@ -357,10 +357,12 @@ export class OpusDelegator {
     // Update artifact version history (Task 9.3)
     this.updateArtifactVersionHistory(sessionState, artifacts, roundNumber);
 
-    // Update final artifacts if validation passed
-    if (validation.isValid) {
+    // Update final artifacts if all validations passed
+    const allValid = validation.every(v => v.isValid);
+    if (allValid) {
       sessionState.session.finalArtifacts = artifacts;
-      sessionState.session.metrics.finalCompleteness = validation.completenessScore;
+      const avgCompleteness = validation.reduce((sum, v) => sum + v.completenessScore, 0) / validation.length;
+      sessionState.session.metrics.finalCompleteness = avgCompleteness;
     }
   }
 
