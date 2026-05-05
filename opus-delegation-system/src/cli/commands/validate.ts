@@ -30,18 +30,18 @@ export const validateCommand = new Command('validate')
 
       console.log('\n=== Validation Results ===\n');
       results.forEach((result) => {
-        console.log(`${result.artifactType}:`);
+        console.log(`${result.artifactType || 'Unknown'}:`);
         console.log(`  Valid: ${result.isValid ? 'Yes' : 'No'}`);
         console.log(`  Completeness: ${result.completenessScore}%`);
 
-        if (result.issues.length > 0) {
+        if (result.issues && result.issues.length > 0) {
           console.log('  Issues:');
           result.issues.forEach((issue) => {
             console.log(`    - [${issue.severity}] ${issue.message}`);
           });
         }
 
-        if (result.suggestions.length > 0) {
+        if (result.suggestions && result.suggestions.length > 0) {
           console.log('  Suggestions:');
           result.suggestions.forEach((suggestion) => {
             console.log(`    - ${suggestion}`);

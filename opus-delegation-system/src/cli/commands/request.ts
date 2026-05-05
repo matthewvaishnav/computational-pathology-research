@@ -27,18 +27,11 @@ export const requestCommand = new Command('request')
       
       // Create a minimal context bundle for now
       const contextBundle = {
-        problemTitle: session.problem.title,
-        problemDescription: session.problem.description,
-        codeSnippets: [],
-        documentationExcerpts: [],
-        configFiles: [],
+        title: session.problem.title,
+        markdown: `# ${session.problem.title}\n\n${session.problem.description}`,
+        files: [],
         totalSize: 0,
-        compressionApplied: false,
-        manifest: {
-          includedFiles: [],
-          excludedFiles: [],
-          extractionStrategy: 'minimal'
-        }
+        compressionApplied: false
       };
       
       const request = delegator.generateDelegationRequest(
