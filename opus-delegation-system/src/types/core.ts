@@ -140,7 +140,7 @@ export interface ParsedArtifact {
     };
   };
   structured?: {
-    mermaid?: string;
+    mermaid?: MermaidAST;
     openapi?: Record<string, unknown>;
     implementationSteps?: ImplementationStep[];
   };
