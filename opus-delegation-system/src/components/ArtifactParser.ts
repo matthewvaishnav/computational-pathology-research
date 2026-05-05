@@ -500,7 +500,7 @@ export class ArtifactParser {
     const steps: ImplementationStep[] = [];
     const lines = content.split('\n');
 
-    let currentStep: Partial<Step> | null = null;
+    let currentStep: Partial<ImplementationStep> | null = null;
     let stepCounter = 0;
 
     for (const line of lines) {
@@ -558,7 +558,7 @@ export class ArtifactParser {
   /**
    * Finalize a step with default values
    */
-  private finalizeStep(step: Partial<Step>, index: number): ImplementationStep {
+  private finalizeStep(step: Partial<ImplementationStep>, index: number): ImplementationStep {
     return {
       id: `step-${index + 1}`,
       phase: 'implementation',
@@ -567,7 +567,7 @@ export class ArtifactParser {
       description: step.description || '',
       dependencies: step.dependencies || [],
       complexity: step.complexity || ComplexityLevel.SIMPLE,
-      estimate: step.estimatedTime,
+      estimate: step.estimate,
     };
   }
 
