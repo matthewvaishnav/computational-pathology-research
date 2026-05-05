@@ -26,10 +26,11 @@ export const contextCommand = new Command('context')
       console.log(`Problem: ${session.problem.description}`);
       console.log(`Type: ${session.problem.type}`);
 
-      const extractor = new ContextExtractor(repo);
-      const files = extractor.extractContext(
-        session.problem.description,
+      const extractor = new ContextExtractor();
+      const files = await extractor.extractContext(
         session.problem.type,
+        session.problem.description,
+        repo,
         { depth: deep ? 3 : 1 }
       );
 
