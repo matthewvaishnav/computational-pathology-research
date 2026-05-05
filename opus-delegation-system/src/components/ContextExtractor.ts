@@ -569,6 +569,12 @@ export class ContextExtractor {
    * Simple glob pattern matching using minimatch (ReDoS-safe)
    */
   private matchesPattern(filePath: string, pattern: string): boolean {
+    // ReDoS protection: reject patterns with too many wildcards
+    const wildcardCount = (pattern.match(/\*+/g) || []).length;
+    if (wildcardCount > 10) {
+      throw new Error(`Pattern too complex: ${pattern} (too many wildcards)`);
+    }
+    
     // Normalize path separators
     const normalizedPath = filePath.replace(/\\/g, '/');
     const normalizedPattern = pattern.replace(/\\/g, '/');
