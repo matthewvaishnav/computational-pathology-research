@@ -162,7 +162,8 @@ export class ImplementationGuideGenerator {
     }
 
     // Create data model steps
-    if (openapi.components?.schemas) {
+    const components = openapi.components as any;
+    if (components?.schemas) {
       steps.push({
         id: 'impl-data-models',
         action: 'Define data models',
@@ -173,10 +174,10 @@ export class ImplementationGuideGenerator {
     }
 
     // Create endpoint implementation steps
-    const paths = Object.keys(openapi.paths);
+    const paths = Object.keys(openapi.paths) as string[];
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i];
-      const pathItem = openapi.paths[path];
+      const pathItem = (openapi.paths as any)[path];
       const methods = Object.keys(pathItem).filter((k) =>
         ['get', 'post', 'put', 'patch', 'delete'].includes(k)
       );
@@ -189,7 +190,7 @@ export class ImplementationGuideGenerator {
           id: `impl-endpoint-${operationId}`,
           action: `Implement ${method.toUpperCase()} ${path}`,
           description: operation.summary || operation.description || `Implement ${method} endpoint for ${path}`,
-          dependencies: openapi.components?.schemas ? ['impl-data-models'] : [],
+          dependencies: components?.schemas ? ['impl-data-models'] : [],
           complexity: ComplexityLevel.MODERATE,
         });
       }
@@ -468,8 +469,9 @@ export class ImplementationGuideGenerator {
     }
 
     // Map schemas to interfaces
-    if (openapi.components?.schemas) {
-      for (const [schemaName, schema] of Object.entries(openapi.components.schemas)) {
+    const components = openapi.components as any;
+    if (components?.schemas) {
+      for (const [schemaName, schema] of Object.entries(components.schemas)) {
         mappings.push({
           artifactReference: `OpenAPI schema: ${schemaName}`,
           targetFilePath: `src/types/${this.toKebabCase(schemaName)}.ts`,
@@ -480,7 +482,7 @@ export class ImplementationGuideGenerator {
     }
 
     // Map endpoints to route handlers
-    for (const [path, pathItem] of Object.entries(openapi.paths)) {
+    for (const [path, pathItem] of Object.entries(openapi.paths as any)) {
       const methods = Object.keys(pathItem).filter((k) =>
         ['get', 'post', 'put', 'patch', 'delete'].includes(k)
       );
