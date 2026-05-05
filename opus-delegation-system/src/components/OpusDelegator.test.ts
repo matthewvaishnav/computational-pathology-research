@@ -1,6 +1,15 @@
 /**
  * Unit tests for Opus Delegator Component
- * Tests Task 9.1, 9.2, 9.3, 9.4 - Delegation request generation, multi-round tracking, follow-up generation
+ * Tests Task 9.5 - Comprehensive unit tests for Opus Delegator
+ * Requirements: 3.1-3.7 (Delegation Request Generation), 9.1-9.7 (Multi-Round Delegation Support)
+ * 
+ * Test Coverage:
+ * - Delegation request generation (3.1, 3.2, 3.3, 3.6)
+ * - Context bundle integration (3.4, 3.5)
+ * - Multi-round session management (9.1, 9.2, 9.3, 9.4, 9.5)
+ * - Automatic follow-up generation (9.6)
+ * - Session completion detection (9.7)
+ * - Property-based testing patterns and invariants
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -831,4 +840,613 @@ describe('OpusDelegator', () => {
       expect(history).toEqual([]);
     });
   });
+
+  // ========== ADDITIONAL COMPREHENSIVE TESTS FOR TASK 9.5 ==========
+
+  describe('Property-Based Testing Patterns', () => {
+    describe('Delegation Request Generation Invariants (Requirement 3)', () => {
+      it('should always include problem description, context bundle, and expected artifacts (Invariant)', () => {
+        const contextBundle = createTestContextBundle();
+        
+        // Test with delegation types that have corresponding templates
+        const delegationTypesWithTemplates = [
+          { type: DelegationType.ARCHITECTURE_DESIGN, template: 'federated_learning_architecture' },
+          { type: DelegationType.INTEGRATION_DESIGN, template: 'pacs_integration_design' },
+          { type: DelegationType.TEST_STRATEGY, template: 'property_based_test_suite' },
+          { type: DelegationType.REFACTORING_ANALYSIS, template: 'refactoring_analysis' }
+        ];
+
+        for (const { type, template } of delegationTypesWithTemplates) {
+          const request = delegator.generateDelegationRequest(
+            `session-${type}`,
+            'Test Problem',
+            'Test description',
+            type,
+            contextBundle,
+            template
+          );
+
+          // Invariant: All delegation requests include required fields
+          expect(request.problemDescription).toBeDefined();
+          expect(request.problemDescription.length).toBeGreaterThan(0);
+          expect(request.contextBundle).toBeDefined();
+          expect(request.expectedArtifacts.length).toBeGreaterThan(0);
+        }
+      });
+
+      it('should generate valid markdown format (Invariant)', () => {
+        const contextBundle = createTestContextBundle();
+        const request = delegator.generateDelegationRequest(
+          'session-1',
+          'Test Problem',
+          'Test description',
+          DelegationType.ARCHITECTURE_DESIGN,
+          contextBundle
+        );
+
+        const formatted = delegator.formatDelegationRequestAsText(request);
+
+        // Invariant: Delegation request format is valid markdown
+        expect(formatted).toContain('# Delegation Request:');
+        expect(formatted).toContain('## Objective');
+        expect(formatted).toContain('## Expected Artifacts');
+        expect(formatted).toContain('## Context');
+        
+        // Should have proper markdown structure
+        const lines = formatted.split('\n');
+        const headerLines = lines.filter(line => line.startsWith('#'));
+        expect(headerLines.length).toBeGreaterThan(0);
+      });
+
+      it('should produce more specific artifact requirements with detailed descriptions (Metamorphic)', () => {
+        const contextBundle = createTestContextBundle();
+        
+        const simpleRequest = delegator.generateDelegationRequest(
+          'session-1',
+          'Simple Problem',
+          'Simple description',
+          DelegationType.ARCHITECTURE_DESIGN,
+          contextBundle,
+          'federated_learning_architecture'
+        );
+
+        const detailedRequest = delegator.generateDelegationRequest(
+          'session-2',
+          'Complex Federated Learning Architecture',
+          'Design a comprehensive federated learning system with multiple node types, privacy-preserving aggregation, and fault tolerance mechanisms',
+          DelegationType.ARCHITECTURE_DESIGN,
+          contextBundle,
+          'federated_learning_architecture'
+        );
+
+        // Metamorphic: More detailed problem descriptions should produce more specific requirements
+        expect(detailedRequest.questionsToAddress.length).toBeGreaterThanOrEqual(simpleRequest.questionsToAddress.length);
+        expect(detailedRequest.expectedArtifacts.length).toBeGreaterThanOrEqual(simpleRequest.expectedArtifacts.length);
+      });
+    });
+
+    describe('Multi-Round Session Invariants (Requirement 9)', () => {
+      it('should reference previous round artifacts in follow-up requests (Invariant)', () => {
+        const session = delegator.initializeSession(
+          'Test',
+          'Test problem',
+          DelegationType.ARCHITECTURE_DESIGN
+        );
+
+        const artifacts: ParsedArtifact[] = [
+          createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'graph TD\nA-->B')
+        ];
+
+        const validation: ValidationResult = {
+          completenessScore: 70,
+          qualityScores: { completeness: 70, clarity: 70, implementability: 70 },
+          isValid: false,
+          errors: [],
+          warnings: [],
+          followUpQuestions: ['Need more details']
+        };
+
+        delegator.addRound(session.id, 'Request 1', 'Response 1', artifacts, validation);
+        const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
+
+        // Invariant: Each round references previous round's artifacts
+        expect(followUp.artifactReferences).toBeDefined();
+        expect(followUp.artifactReferences!.length).toBeGreaterThan(0);
+        expect(followUp.previousRoundSummary).toBeDefined();
+        expect(followUp.roundNumber).toBe(2);
+      });
+
+      it('should maintain or increase artifact completeness across rounds (Invariant)', () => {
+        const session = delegator.initializeSession(
+          'Test',
+          'Test problem',
+          DelegationType.ARCHITECTURE_DESIGN
+        );
+
+        const artifacts1 = [createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'basic content')];
+        const validation1: ValidationResult = {
+          completenessScore: 60,
+          qualityScores: { completeness: 60, clarity: 60, implementability: 60 },
+          isValid: false,
+          errors: [],
+          warnings: [],
+          followUpQuestions: []
+        };
+
+        delegator.addRound(session.id, 'Request 1', 'Response 1', artifacts1, validation1);
+
+        const artifacts2 = [createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'enhanced content with more details')];
+        const validation2: ValidationResult = {
+          completenessScore: 80,
+          qualityScores: { completeness: 80, clarity: 75, implementability: 70 },
+          isValid: true,
+          errors: [],
+          warnings: [],
+          followUpQuestions: []
+        };
+
+        delegator.addRound(session.id, 'Request 2', 'Response 2', artifacts2, validation2);
+
+        const updatedSession = delegator.getSession(session.id);
+        
+        // Invariant: Artifact completeness score increases or stays same across rounds
+        expect(updatedSession!.rounds[1].validation.completenessScore)
+          .toBeGreaterThanOrEqual(updatedSession!.rounds[0].validation.completenessScore);
+      });
+
+      it('should produce more detailed artifacts with more rounds (Metamorphic)', () => {
+        const session = delegator.initializeSession(
+          'Test',
+          'Test problem',
+          DelegationType.ARCHITECTURE_DESIGN
+        );
+
+        // Round 1 - Basic artifact
+        const artifact1 = createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'graph TD\nA-->B');
+        const validation1: ValidationResult = {
+          completenessScore: 50,
+          qualityScores: { completeness: 50, clarity: 50, implementability: 50 },
+          isValid: false,
+          errors: [],
+          warnings: [],
+          followUpQuestions: []
+        };
+
+        delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], validation1);
+
+        // Round 2 - Enhanced artifact
+        const artifact2 = createTestArtifact(
+          ArtifactType.MERMAID_DIAGRAM, 
+          'graph TD\nA[Component A]-->B[Component B]\nB-->C[Component C]\nA-->D[Database]'
+        );
+        const validation2: ValidationResult = {
+          completenessScore: 85,
+          qualityScores: { completeness: 85, clarity: 80, implementability: 75 },
+          isValid: true,
+          errors: [],
+          warnings: [],
+          followUpQuestions: []
+        };
+
+        delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], validation2);
+
+        const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
+        
+        // Metamorphic: More rounds produce more detailed artifacts
+        expect(history[1].artifact.content.length).toBeGreaterThan(history[0].artifact.content.length);
+        expect(history.length).toBe(2);
+      });
+    });
+  });
+
+  describe('Context Bundle Integration (Requirements 3.4, 3.5)', () => {
+    it('should include context bundle in delegation request', () => {
+      const contextBundle = createTestContextBundle([
+        { path: 'src/main.ts', content: 'console.log("test")' },
+        { path: 'src/utils.ts', content: 'export function helper() {}' }
+      ]);
+
+      const request = delegator.generateDelegationRequest(
+        'session-1',
+        'Test Problem',
+        'Test description',
+        DelegationType.ARCHITECTURE_DESIGN,
+        contextBundle
+      );
+
+      // Requirement 3.4: Include Context_Bundle with all relevant code and documentation
+      expect(request.contextBundle).toBeDefined();
+      expect(request.contextBundle.length).toBeGreaterThan(0);
+    });
+
+    it('should provide artifact structure guidance', () => {
+      const contextBundle = createTestContextBundle();
+      const request = delegator.generateDelegationRequest(
+        'session-1',
+        'Test Problem',
+        'Test description',
+        DelegationType.ARCHITECTURE_DESIGN,
+        contextBundle
+      );
+
+      // Requirement 3.5: Provide guidance on artifact structure
+      for (const artifact of request.expectedArtifacts) {
+        expect(artifact.structureGuidance).toBeDefined();
+        expect(artifact.structureGuidance.length).toBeGreaterThan(0);
+      }
+
+      for (const formatReq of request.outputFormatRequirements) {
+        expect(formatReq.instructions).toBeDefined();
+        expect(formatReq.instructions.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('Session Completion Detection (Requirement 9.5, 9.7)', () => {
+    it('should detect completion when all criteria are met', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.ARCHITECTURE_DESIGN
+      );
+
+      // Add required artifacts with high quality scores
+      const artifacts: ParsedArtifact[] = [
+        createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'complete diagram'),
+        createTestArtifact(ArtifactType.IMPLEMENTATION_GUIDE, 'complete guide')
+      ];
+
+      const validation: ValidationResult = {
+        completenessScore: 90,
+        qualityScores: {
+          completeness: 90,
+          clarity: 85,
+          implementability: 80
+        },
+        isValid: true,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+
+      // Requirement 9.5: Detect when Opus has provided sufficient detail
+      const isComplete = delegator.detectSessionCompletion(session.id, validation);
+      expect(isComplete).toBe(true);
+    });
+
+    it('should recommend ending session when completion criteria met', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.API_DESIGN
+      );
+
+      const artifacts: ParsedArtifact[] = [
+        createTestArtifact(ArtifactType.OPENAPI_SPEC, 'complete API spec'),
+        createTestArtifact(ArtifactType.IMPLEMENTATION_GUIDE, 'complete guide')
+      ];
+
+      const validation: ValidationResult = {
+        completenessScore: 95,
+        qualityScores: {
+          completeness: 95,
+          clarity: 90,
+          implementability: 85
+        },
+        isValid: true,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+
+      // Should recommend ending the session
+      const isComplete = delegator.detectSessionCompletion(session.id, validation);
+      expect(isComplete).toBe(true);
+    });
+  });
+
+  describe('Automatic Follow-up Generation (Requirement 9.6)', () => {
+    it('should automatically generate clarifying questions for incomplete artifacts', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.ARCHITECTURE_DESIGN
+      );
+
+      const artifacts: ParsedArtifact[] = [
+        createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'incomplete diagram')
+      ];
+
+      const validation: ValidationResult = {
+        completenessScore: 60,
+        qualityScores: { completeness: 60, clarity: 65, implementability: 55 },
+        isValid: false,
+        errors: [
+          {
+            type: 'missing_element',
+            message: 'Missing component descriptions',
+            location: 'artifact-1',
+            severity: 'error'
+          }
+        ],
+        warnings: [],
+        followUpQuestions: [
+          'What are the responsibilities of each component?',
+          'How do components communicate?'
+        ]
+      };
+
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+
+      // Requirement 9.6: Automatically generate clarifying questions for next round
+      const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
+
+      expect(followUp.questionsToAddress.length).toBeGreaterThan(0);
+      expect(followUp.questionsToAddress).toContain('What are the responsibilities of each component?');
+      expect(followUp.questionsToAddress).toContain('How do components communicate?');
+    });
+
+    it('should generate refinement requests for quality issues', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.INTEGRATION_DESIGN
+      );
+
+      const artifacts: ParsedArtifact[] = [
+        createTestArtifact(ArtifactType.OPENAPI_SPEC, 'basic API spec')
+      ];
+
+      const validation: ValidationResult = {
+        completenessScore: 75,
+        qualityScores: { completeness: 75, clarity: 60, implementability: 65 },
+        isValid: false,
+        errors: [
+          {
+            type: 'quality_issue',
+            message: 'Missing error response schemas',
+            location: 'artifact-1',
+            severity: 'warning'
+          }
+        ],
+        warnings: [],
+        followUpQuestions: ['Please add error handling details', 'What retry mechanisms should be implemented?']
+      };
+
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
+
+      expect(followUp.questionsToAddress.length).toBeGreaterThan(0);
+      expect(followUp.questionsToAddress).toContain('Please add error handling details');
+    });
+  });
+
+  describe('Conversation Context Management (Requirement 9.2)', () => {
+    it('should maintain conversation context across rounds', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.ARCHITECTURE_DESIGN
+      );
+
+      // Round 1
+      const request1 = 'What are the main components? How do they interact?';
+      const response1 = 'The system has three main components: A, B, and C...';
+      const artifacts1 = [createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'basic diagram')];
+      const validation1: ValidationResult = {
+        completenessScore: 60,
+        qualityScores: { completeness: 60, clarity: 60, implementability: 60 },
+        isValid: false,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      delegator.addRound(session.id, request1, response1, artifacts1, validation1);
+
+      // Round 2
+      const request2 = 'Please add more details about component interactions';
+      const response2 = 'Component A communicates with B via REST API...';
+      const artifacts2 = [createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'detailed diagram')];
+      const validation2: ValidationResult = {
+        completenessScore: 85,
+        qualityScores: { completeness: 85, clarity: 80, implementability: 75 },
+        isValid: true,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      delegator.addRound(session.id, request2, response2, artifacts2, validation2);
+
+      // Requirement 9.2: Maintain conversation context across rounds
+      const updatedSession = delegator.getSession(session.id);
+      expect(updatedSession!.rounds.length).toBe(2);
+      expect(updatedSession!.rounds[0].request).toBe(request1);
+      expect(updatedSession!.rounds[0].response).toBe(response1);
+      expect(updatedSession!.rounds[1].request).toBe(request2);
+      expect(updatedSession!.rounds[1].response).toBe(response2);
+    });
+  });
+
+  describe('Artifact Version History (Requirement 9.4)', () => {
+    it('should track artifact refinements across rounds', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.ARCHITECTURE_DESIGN
+      );
+
+      // Round 1 - Initial version
+      const artifact1 = createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'graph TD\nA-->B');
+      const validation1: ValidationResult = {
+        completenessScore: 50,
+        qualityScores: { completeness: 50, clarity: 50, implementability: 50 },
+        isValid: false,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], validation1);
+
+      // Round 2 - Refined version
+      const artifact2 = createTestArtifact(
+        ArtifactType.MERMAID_DIAGRAM, 
+        'graph TD\nA[Frontend]-->B[API Gateway]\nB-->C[Database]'
+      );
+      const validation2: ValidationResult = {
+        completenessScore: 80,
+        qualityScores: { completeness: 80, clarity: 75, implementability: 70 },
+        isValid: true,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], validation2);
+
+      // Requirement 9.4: Track which artifacts were refined in each round
+      const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
+      
+      expect(history.length).toBe(2);
+      expect(history[0].version).toBe(1);
+      expect(history[0].roundNumber).toBe(1);
+      expect(history[1].version).toBe(2);
+      expect(history[1].roundNumber).toBe(2);
+      expect(history[1].changes).toBeDefined();
+    });
+  });
+
+  describe('Error Handling and Edge Cases', () => {
+    it('should handle empty context bundles gracefully', () => {
+      const emptyContextBundle: ContextBundle = {
+        problemTitle: 'Test',
+        problemSummary: 'Test',
+        codeSnippets: [],
+        documentationExcerpts: [],
+        constraints: [],
+        contextManifest: { sources: [], totalFiles: 0, totalSize: 0 },
+        totalSize: 0,
+        compressionApplied: false
+      };
+
+      const request = delegator.generateDelegationRequest(
+        'session-1',
+        'Test Problem',
+        'Test description',
+        DelegationType.ARCHITECTURE_DESIGN,
+        emptyContextBundle
+      );
+
+      expect(request).toBeDefined();
+      expect(request.contextBundle).toBeDefined();
+    });
+
+    it('should handle sessions with no rounds', () => {
+      const session = delegator.initializeSession(
+        'Test',
+        'Test problem',
+        DelegationType.ARCHITECTURE_DESIGN
+      );
+
+      const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
+      expect(history).toEqual([]);
+
+      const validation: ValidationResult = {
+        completenessScore: 0,
+        qualityScores: { completeness: 0, clarity: 0, implementability: 0 },
+        isValid: false,
+        errors: [],
+        warnings: [],
+        followUpQuestions: []
+      };
+
+      const isComplete = delegator.detectSessionCompletion(session.id, validation);
+      expect(isComplete).toBe(false);
+    });
+
+    it('should handle different delegation types appropriately', () => {
+      const contextBundle = createTestContextBundle();
+      const delegationTypesWithTemplates = [
+        { type: DelegationType.ARCHITECTURE_DESIGN, template: 'federated_learning_architecture' },
+        { type: DelegationType.INTEGRATION_DESIGN, template: 'pacs_integration_design' },
+        { type: DelegationType.TEST_STRATEGY, template: 'property_based_test_suite' },
+        { type: DelegationType.REFACTORING_ANALYSIS, template: 'refactoring_analysis' }
+      ];
+
+      for (const { type, template } of delegationTypesWithTemplates) {
+        const session = delegator.initializeSession(
+          `Test ${type}`,
+          `Test problem for ${type}`,
+          type
+        );
+
+        expect(session.problem.type).toBe(type);
+        
+        const request = delegator.generateDelegationRequest(
+          session.id,
+          `Test ${type}`,
+          `Test description for ${type}`,
+          type,
+          contextBundle,
+          template
+        );
+
+        expect(request.expectedArtifacts.length).toBeGreaterThan(0);
+        expect(request.questionsToAddress.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  // ========== HELPER FUNCTIONS ==========
+
+  function createTestContextBundle(codeSnippets?: Array<{ path: string; content: string }>): ContextBundle {
+    return {
+      problemTitle: 'Test Problem',
+      problemSummary: 'Test summary',
+      codeSnippets: codeSnippets?.map(snippet => ({
+        filePath: snippet.path,
+        content: snippet.content,
+        startLine: 1,
+        endLine: 10,
+        language: 'typescript'
+      })) || [],
+      documentationExcerpts: [
+        {
+          source: 'docs/architecture.md',
+          content: 'System architecture overview',
+          relevance: 'high'
+        }
+      ],
+      constraints: ['Performance requirement: < 100ms response time', 'Security: OAuth 2.0 authentication'],
+      contextManifest: {
+        sources: [
+          { path: 'src/main.ts', type: 'code', size: 1024, relevance: 'high' },
+          { path: 'docs/architecture.md', type: 'documentation', size: 2048, relevance: 'medium' }
+        ],
+        totalFiles: 2,
+        totalSize: 3072
+      },
+      totalSize: 3072,
+      compressionApplied: false
+    };
+  }
+
+  function createTestArtifact(type: ArtifactType, content: string): ParsedArtifact {
+    return {
+      id: `artifact-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type,
+      content,
+      metadata: {
+        sourceLocation: { start: 0, end: content.length },
+        parseWarnings: [],
+        extractedAt: new Date()
+      }
+    };
+  }
 });

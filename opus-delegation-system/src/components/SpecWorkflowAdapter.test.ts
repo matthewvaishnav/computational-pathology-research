@@ -1300,16 +1300,14 @@ describe('SpecWorkflowAdapter', () => {
 
   describe('consistency validation helpers', () => {
     it('should extract key terms from document content', () => {
-      const content = `
-        # User Management System
-        
-        ## Authentication Module
-        
-        **JWT Tokens** are used for authentication.
-        **User Roles** define access levels.
-        
-        ### Database Schema
-      `;
+      const content = `# User Management System
+
+## Authentication Module
+
+**JWT Tokens** are used for authentication.
+**User Roles** define access levels.
+
+### Database Schema`;
 
       const terms = (adapter as any).extractKeyTerms(content);
 
@@ -1397,8 +1395,7 @@ describe('SpecWorkflowAdapter', () => {
       expect(innovations).toContain('Real-time streaming with sub-second latency');
       expect(innovations).toContain('Novel caching algorithm reduces memory by 50%');
     });
-  });
-});
+    it('should generate tasks from Mermaid architecture diagrams', async () => {
       const mermaidDiagram: ParsedArtifact = {
         id: 'arch-diagram-1',
         type: 'mermaid_diagram',
