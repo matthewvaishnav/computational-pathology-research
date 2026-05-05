@@ -10,6 +10,7 @@ import {
   DelegationRound, 
   ParsedArtifact,
   ValidationResult,
+  ExtendedValidationResult,
   ComplexityLevel,
   ArtifactType
 } from '../types/core.js';
@@ -323,7 +324,7 @@ export class OpusDelegator {
     request: string,
     response: string,
     artifacts: ParsedArtifact[],
-    validation: ValidationResult
+    validation: ExtendedValidationResult[]
   ): void {
     const sessionState = this.activeSessions.get(sessionId);
     if (!sessionState) {
@@ -338,7 +339,8 @@ export class OpusDelegator {
       response,
       artifacts,
       validation,
-      timestamp: new Date()
+      timestamp: new Date(),
+      contextSize: 0
     };
 
     sessionState.session.rounds.push(round);
@@ -624,7 +626,7 @@ export class OpusDelegator {
 
       // Extract issues from validation errors
       for (const error of validation.errors) {
-        if (error.location?.includes(artifact.id)) {
+        if (error.field && error.field.includes(artifact.id)) {
           if (error.message.includes('missing')) {
             missingElements.push(error.message);
           } else {
