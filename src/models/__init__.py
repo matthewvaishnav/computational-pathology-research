@@ -1,7 +1,9 @@
 """Neural network model definitions."""
 
 from .attention_mil import AttentionMIL, CLAM
+from .nnmil import nnMIL
 from .transmil import TransMIL
+from .foundation_adapter import FoundationModelAdapter
 from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
 from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .foundation import (
@@ -49,7 +51,9 @@ def __getattr__(name):
 __all__ = [
     "AttentionMIL",
     "CLAM",
+    "nnMIL",
     "TransMIL",
+    "FoundationModelAdapter",
     "StainNormalizationTransformer",
     "PatchEmbedding",
     "ColorFeatureEncoder",
