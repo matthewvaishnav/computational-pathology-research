@@ -30,7 +30,7 @@ export const guideCommand = new Command('guide')
       const projectName = name || session.problem.title;
       const guide = generator.generateGuide(session.finalArtifacts, projectName);
 
-      const markdown = generator.formatGuideAsMarkdown(guide);
+      const markdown = generator.exportAsMarkdown(guide);
 
       if (output) {
         const fs = await import('fs');
