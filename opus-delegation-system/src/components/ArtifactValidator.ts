@@ -11,7 +11,7 @@ import {
   ValidationError,
   MermaidAST,
   OpenAPISpec,
-  Step,
+  ImplementationStep,
 } from '../types/core.js';
 
 /**

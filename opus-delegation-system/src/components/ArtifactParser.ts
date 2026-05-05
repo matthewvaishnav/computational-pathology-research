@@ -4,7 +4,7 @@
  * Requirements: 5.1-5.8
  */
 
-import { ArtifactType, ParsedArtifact, MermaidAST, OpenAPISpec, Step, ComplexityLevel } from '../types/core.js';
+import { ArtifactType, ParsedArtifact, MermaidAST, OpenAPISpec, ImplementationStep, ComplexityLevel } from '../types/core.js';
 import { parse as parseYaml } from 'yaml';
 
 /**
