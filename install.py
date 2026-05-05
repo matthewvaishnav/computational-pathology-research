@@ -1,184 +1,197 @@
 #!/usr/bin/env python3
 """
-HistoCore Quick Installer
-One-command setup for all platforms
+HistoCore One-Click Installer
+Just run: python install.py
 """
 
-import os
 import sys
+import os
 import subprocess
 import platform
+from pathlib import Path
 
-def check_python():
-    """Check Python version"""
-    if sys.version_info < (3, 9):
+def print_header():
+    """Print installation header"""
+    print("\n" + "="*60)
+    print("🔬 HistoCore Installer")
+    print("Production-grade computational pathology framework")
+    print("="*60 + "\n")
+
+def check_python_version():
+    """Check if Python version is compatible"""
+    version = sys.version_info
+    print(f"🐍 Python version: {version.major}.{version.minor}.{version.micro}")
+    
+    if version < (3, 9):
         print("❌ Python 3.9+ required")
-        print(f"Current: {sys.version}")
+        print("💡 Download from: https://python.org/downloads/")
         return False
-    print(f"✅ Python {sys.version.split()[0]}")
+    
+    print("✅ Python version OK")
     return True
 
-def install_dependencies():
-    """Install core dependencies"""
-    print("📦 Installing dependencies...")
+def check_system():
+    """Check system information"""
+    print(f"💻 System: {platform.system()} {platform.release()}")
+    print(f"🏗️  Architecture: {platform.machine()}")
     
-    deps = [
-        "torch>=2.0.0",
-        "torchvision>=0.15.0",
-        "numpy>=1.24.0",
-        "matplotlib>=3.7.0",
-        "flask>=3.0.0",
-        "click>=8.0.0",
-        "PyQt6>=6.4.0",
-        "scikit-learn>=1.2.0",
-        "opencv-python>=4.7.0",
-        "h5py>=3.8.0",
-        "tqdm>=4.65.0"
-    ]
-    
+    # Check for CUDA
     try:
-        subprocess.run([
-            sys.executable, "-m", "pip", "install", "--upgrade"
-        ] + deps, check=True)
-        print("✅ Core dependencies installed")
-        return True
-    except subprocess.CalledProcessError:
-        print("❌ Failed to install dependencies")
-        return False
-
-def install_optional():
-    """Install optional dependencies"""
-    print("📦 Installing optional dependencies...")
-    
-    optional = [
-        "openslide-python>=1.2.0",
-        "pydicom>=2.3.0",
-        "jupyter>=1.0.0"
-    ]
-    
-    for dep in optional:
-        try:
-            subprocess.run([
-                sys.executable, "-m", "pip", "install", dep
-            ], check=True, capture_output=True)
-            print(f"✅ {dep.split('>=')[0]}")
-        except subprocess.CalledProcessError:
-            print(f"⚠️  {dep.split('>=')[0]} (optional)")
-
-def create_shortcuts():
-    """Create desktop shortcuts"""
-    system = platform.system()
-    
-    if system == "Windows":
-        # Windows shortcut
-        try:
-            import winshell
-            from win32com.client import Dispatch
-            
-            desktop = winshell.desktop()
-            path = os.path.join(desktop, "HistoCore.lnk")
-            target = sys.executable
-            wDir = os.getcwd()
-            icon = target
-            
-            shell = Dispatch('WScript.Shell')
-            shortcut = shell.CreateShortCut(path)
-            shortcut.Targetpath = target
-            shortcut.Arguments = "histocore.py"
-            shortcut.WorkingDirectory = wDir
-            shortcut.IconLocation = icon
-            shortcut.save()
-            
-            print("✅ Windows shortcut created")
-        except ImportError:
-            print("⚠️  Windows shortcut (install pywin32)")
-    
-    elif system == "Darwin":
-        # macOS alias
-        print("💡 macOS: Add to Applications manually")
-    
-    elif system == "Linux":
-        # Linux desktop file
-        desktop_dir = os.path.expanduser("~/.local/share/applications")
-        os.makedirs(desktop_dir, exist_ok=True)
-        
-        desktop_content = f"""[Desktop Entry]
-Version=1.0
-Type=Application
-Name=HistoCore
-Comment=Computational pathology framework
-Exec={sys.executable} {os.path.join(os.getcwd(), 'histocore.py')}
-Icon=applications-science
-Terminal=false
-Categories=Science;Education;
-"""
-        
-        with open(os.path.join(desktop_dir, "histocore.desktop"), "w") as f:
-            f.write(desktop_content)
-        
-        print("✅ Linux desktop file created")
-
-def test_installation():
-    """Test installation"""
-    print("🧪 Testing installation...")
-    
-    try:
-        # Test imports
         import torch
-        import numpy
-        import matplotlib
-        import flask
-        import click
-        print("✅ Core imports work")
-        
-        # Test GUI (optional)
+        if torch.cuda.is_available():
+            print(f"🎮 CUDA available: {torch.cuda.get_device_name(0)}")
+        else:
+            print("⚠️  CUDA not available - CPU mode only")
+    except ImportError:
+        print("⚠️  PyTorch not installed yet")
+
+def install_dependencies():
+    """Install all dependencies"""
+    print("\n📦 Installing dependencies...")
+    
+    # Upgrade pip first
+    print("🔧 Upgrading pip...")
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "--upgrade", "pip"
+        ])
+    except subprocess.CalledProcessError:
+        print("⚠️  Could not upgrade pip")
+    
+    # Install from requirements.txt
+    requirements_file = Path("requirements.txt")
+    if requirements_file.exists():
+        print("📋 Installing from requirements.txt...")
         try:
-            import PyQt6
-            print("✅ GUI available")
-        except ImportError:
-            print("⚠️  GUI not available")
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install", "-r", "requirements.txt"
+            ])
+            print("✅ Core dependencies installed")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to install dependencies: {e}")
+            return False
+    else:
+        print("⚠️  requirements.txt not found")
+        print("📦 Installing minimal dependencies...")
         
-        # Test medical imaging (optional)
+        minimal_deps = [
+            "torch>=2.0.0",
+            "torchvision>=0.15.0",
+            "numpy>=1.24.0",
+            "opencv-python>=4.7.0",
+            "scikit-learn>=1.2.0",
+            "matplotlib>=3.6.0",
+            "click>=8.0.0",
+            "tqdm>=4.64.0"
+        ]
+        
         try:
-            import openslide
-            print("✅ WSI support available")
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install"
+            ] + minimal_deps)
+            print("✅ Minimal dependencies installed")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to install minimal dependencies: {e}")
+            return False
+    
+    # Install package in development mode
+    print("🔧 Installing HistoCore package...")
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "-e", "."
+        ])
+        print("✅ HistoCore package installed")
+    except subprocess.CalledProcessError:
+        print("⚠️  Could not install package in development mode")
+    
+    return True
+
+def verify_installation():
+    """Verify installation was successful"""
+    print("\n🔍 Verifying installation...")
+    
+    required_packages = [
+        "torch",
+        "torchvision", 
+        "numpy",
+        "cv2",
+        "sklearn",
+        "matplotlib",
+        "click",
+        "tqdm"
+    ]
+    
+    missing = []
+    for package in required_packages:
+        try:
+            __import__(package)
+            print(f"✅ {package}")
         except ImportError:
-            print("⚠️  WSI support limited")
-        
-        return True
-        
-    except ImportError as e:
-        print(f"❌ Import failed: {e}")
+            print(f"❌ {package}")
+            missing.append(package)
+    
+    if missing:
+        print(f"\n⚠️  Missing packages: {', '.join(missing)}")
         return False
+    
+    print("\n✅ All required packages installed!")
+    return True
+
+def show_next_steps():
+    """Show next steps after installation"""
+    print("\n" + "="*60)
+    print("🎉 Installation Complete!")
+    print("="*60)
+    print("\n📚 Next Steps:")
+    print()
+    print("1. 🖥️  Launch GUI:")
+    print("   python histocore.py")
+    print()
+    print("2. 💻 Use CLI:")
+    print("   histocore analyze slide.svs --output results/")
+    print("   histocore demo --quick")
+    print()
+    print("3. 🌐 Launch Web Interface:")
+    print("   histocore web")
+    print()
+    print("4. 📖 Read Documentation:")
+    print("   https://github.com/matthewvaishnav/histocore")
+    print()
+    print("5. 🎓 Try Tutorial:")
+    print("   python examples/quickstart.py")
+    print()
 
 def main():
-    """Main installer"""
-    print("🔬 HistoCore Quick Installer")
-    print("=" * 40)
+    """Main installer function"""
+    print_header()
     
-    # Check Python
-    if not check_python():
+    # Check Python version
+    if not check_python_version():
         return 1
+    
+    # Check system
+    check_system()
+    
+    # Ask for confirmation
+    print("\n" + "="*60)
+    response = input("📦 Install HistoCore? (y/n): ").strip().lower()
+    if response not in ['y', 'yes']:
+        print("❌ Installation cancelled")
+        return 0
     
     # Install dependencies
     if not install_dependencies():
+        print("\n❌ Installation failed")
         return 1
     
-    # Install optional
-    install_optional()
-    
-    # Create shortcuts
-    create_shortcuts()
-    
-    # Test installation
-    if not test_installation():
+    # Verify installation
+    if not verify_installation():
+        print("\n⚠️  Installation incomplete")
+        print("💡 Try: pip install -r requirements.txt")
         return 1
     
-    print("\n✅ Installation complete!")
-    print("\n🚀 Quick start:")
-    print("  python histocore.py")
-    print("  python -m src.cli.main --help")
-    print("  python -m src.web.app")
+    # Show next steps
+    show_next_steps()
     
     return 0
 
