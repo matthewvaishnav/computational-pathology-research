@@ -12,3 +12,4 @@ export { ImplementationGuideGenerator } from './components/ImplementationGuideGe
 export { SessionHistoryManager } from './components/SessionHistoryManager.js';
 export { ArtifactVersioning } from './components/ArtifactVersioning.js';
 export { ArtifactExporter } from './components/ArtifactExporter.js';
+export { SpecWorkflowAdapter } from './components/SpecWorkflowAdapter.js';
