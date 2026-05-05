@@ -76,6 +76,7 @@ async def upload_for_analysis(
 
         # Comprehensive file validation using centralized validator
         detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
+        detected_type = detected_mime  # Alias for consistency
 
         file_size = len(file_content)
 
