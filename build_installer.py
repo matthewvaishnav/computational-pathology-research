@@ -60,7 +60,7 @@ def check_python():
         print("ERROR: Python 3.9+ required")
         return False
     
-    print("✓ Python version OK")
+    print("OK: Python version compatible")
     return True
 
 
@@ -74,7 +74,7 @@ def download_histocore():
     
     try:
         urllib.request.urlretrieve(url, zip_path)
-        print("✓ Download complete")
+        print("OK: Download complete")
         return zip_path
     except Exception as e:
         print(f"ERROR: Download failed - {e}")
@@ -101,7 +101,7 @@ def extract_histocore(zip_path):
                                 "computational-pathology-research-main")
         os.rename(extracted, install_dir)
         
-        print(f"✓ Installed to: {install_dir}")
+        print(f"OK: Installed to: {install_dir}")
         return install_dir
     except Exception as e:
         print(f"ERROR: Extraction failed - {e}")
@@ -120,7 +120,7 @@ def install_dependencies(install_dir):
             sys.executable, "-m", "pip", "install", 
             "-r", requirements, "--quiet"
         ])
-        print("✓ Dependencies installed")
+        print("OK: Dependencies installed")
         return True
     except Exception as e:
         print(f"ERROR: Dependency installation failed - {e}")
@@ -136,7 +136,7 @@ def install_package(install_dir):
             sys.executable, "-m", "pip", "install", 
             "-e", install_dir, "--quiet"
         ])
-        print("✓ Package installed")
+        print("OK: Package installed")
         return True
     except Exception as e:
         print(f"ERROR: Package installation failed - {e}")
@@ -162,7 +162,7 @@ def create_shortcuts(install_dir):
         desktop_launcher = os.path.join(desktop, "HistoCore.bat")
         shutil.copy(launcher, desktop_launcher)
         
-        print(f"✓ Shortcut created on desktop")
+        print(f"OK: Shortcut created on desktop")
         return True
     except Exception as e:
         print(f"WARNING: Could not create shortcuts - {e}")
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     with open("installer_main.py", "w", encoding="utf-8") as f:
         f.write(installer_code)
     
-    print("✓ Created installer script")
+    print("OK: Created installer script")
 
 
 def build_exe():
@@ -251,7 +251,7 @@ def build_exe():
     
     try:
         subprocess.check_call(cmd)
-        print("✓ Executable built successfully")
+        print("OK: Executable built successfully")
         return True
     except Exception as e:
         print(f"ERROR: Build failed - {e}")
@@ -273,7 +273,7 @@ def cleanup():
         if os.path.exists(d):
             shutil.rmtree(d)
     
-    print("✓ Cleanup complete")
+    print("OK: Cleanup complete")
 
 
 def main():
