@@ -174,7 +174,7 @@ class AzureFunctionsIntegration:
                 )
                 logger.info("Function app %s already exists", self.config.function_app_name)
                 return True
-            except:
+            except Exception:
                 pass  # App doesn't exist, create it
 
             # Create App Service Plan for the function app
@@ -440,7 +440,7 @@ class AzureFunctionsIntegration:
             if response.status_code == 200:
                 try:
                     response_data = response.json()
-                except:
+                except (ValueError, requests.exceptions.JSONDecodeError):
                     response_data = {"result": response.text}
                     
                 return FunctionResult(
@@ -500,7 +500,7 @@ class AzureFunctionsIntegration:
                     if response.status == 200:
                         try:
                             response_data = await response.json()
-                        except:
+                        except (ValueError, aiohttp.ContentTypeError):
                             response_data = {"result": response_text}
                             
                         return FunctionResult(

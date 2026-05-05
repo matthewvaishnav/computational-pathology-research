@@ -842,7 +842,7 @@ class SelfSupervisedPreTrainer:
         def extract_epoch(path):
             try:
                 return int(path.stem.split("_")[-1])
-            except:
+            except (ValueError, IndexError):
                 return 0
                 
         latest_checkpoint = max(checkpoint_files, key=extract_epoch)
