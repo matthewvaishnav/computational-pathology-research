@@ -31,7 +31,7 @@ export const contextCommand = new Command('context')
         session.problem.type,
         session.problem.description,
         repo,
-        { depth: deep ? 3 : 1 }
+        { maxFiles: deep ? 100 : 50 }
       );
 
       console.log(`\nExtracted ${files.files.length} files`);
