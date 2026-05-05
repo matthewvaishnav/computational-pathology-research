@@ -271,7 +271,7 @@ class GracefulThread(threading.Thread):
             logger.info(f"Thread '{self.name}' started")
             self._target(self)
         
-        except ThreadingError:
+        except ThreadingError as e:
             self._exception = e
             raise
         except Exception as e:
