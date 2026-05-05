@@ -1,0 +1,18 @@
+# Configuration for biomarker detection (binary classification)
+inherit_from: base.yaml
+
+# Task configuration
+task_type: classification
+num_classes: 2  # Positive/negative biomarker
+learning_rate: 3e-4
+sampler_type: balanced
+
+# Standard training for binary classification
+num_epochs: 100
+patience: 10
+
+# Standard bag length
+bag_length: 512
+
+# Standard uncertainty
+num_mc_samples: 10
