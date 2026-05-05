@@ -78,6 +78,7 @@ export class ArtifactValidator {
     if (!mermaid) {
       errors.push({
         type: 'missing_structure',
+        field: 'mermaid',
         message: 'Mermaid diagram structure not found',
         severity: 'error',
       });
@@ -97,6 +98,7 @@ export class ArtifactValidator {
 
       errors.push({
         type: 'missing_node_labels',
+        field: 'nodes',
         message: `${nodesWithoutLabels.length} node(s) missing labels: ${nodesWithoutLabels.map((n) => n.id).join(', ')}`,
         severity: 'error',
       });
@@ -186,6 +188,7 @@ export class ArtifactValidator {
     if (!openapi) {
       errors.push({
         type: 'missing_structure',
+        field: 'openapi',
         message: 'OpenAPI specification structure not found',
         severity: 'error',
       });
@@ -204,6 +207,7 @@ export class ArtifactValidator {
       completenessScore -= 50;
       errors.push({
         type: 'missing_endpoints',
+        field: 'paths',
         message: 'No API endpoints defined',
         severity: 'error',
       });
@@ -216,7 +220,7 @@ export class ArtifactValidator {
     let endpointsWithoutExamples = 0;
 
     for (const path of pathKeys) {
-      const pathItem = paths[path];
+      const pathItem = paths[path] as Record<string, any>;
       const methods = ['get', 'post', 'put', 'patch', 'delete'];
 
       for (const method of methods) {
@@ -288,7 +292,8 @@ export class ArtifactValidator {
     }
 
     // Check for API documentation
-    if (!openapi.info?.description || openapi.info.description.trim().length < 20) {
+    const info = openapi.info as any;
+    if (!info?.description || info.description.trim().length < 20) {
       clarityScore -= 10;
       warnings.push('API description is missing or too brief. Consider adding a comprehensive description.');
     }
@@ -318,6 +323,7 @@ export class ArtifactValidator {
     if (!steps || steps.length === 0) {
       errors.push({
         type: 'missing_steps',
+        field: 'implementationSteps',
         message: 'No implementation steps found',
         severity: 'error',
       });
@@ -356,6 +362,7 @@ export class ArtifactValidator {
       implementabilityScore -= 30;
       errors.push({
         type: 'circular_dependencies',
+        field: 'dependencies',
         message: `Circular dependencies detected: ${circularDeps.join(' -> ')}`,
         severity: 'error',
       });
@@ -465,6 +472,7 @@ export class ArtifactValidator {
       completenessScore -= 30;
       errors.push({
         type: 'missing_test_types',
+        field: 'testTypes',
         message: 'No test types specified (unit, integration, e2e)',
         severity: 'error',
       });
@@ -611,7 +619,7 @@ export class ArtifactValidator {
   /**
    * Detect circular dependencies in steps
    */
-  private detectCircularDependencies(steps: Step[]): string[] {
+  private detectCircularDependencies(steps: ImplementationStep[]): string[] {
     const graph = new Map<string, string[]>();
 
     // Build dependency graph
