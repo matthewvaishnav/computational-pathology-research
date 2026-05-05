@@ -34,10 +34,16 @@ export const contextCommand = new Command('context')
         { depth: deep ? 3 : 1 }
       );
 
-      console.log(`\nExtracted ${files.length} files`);
+      console.log(`\nExtracted ${files.files.length} files`);
 
       const packager = new ContextPackager();
-      const bundle = packager.packageContext(files, session.problem.title);
+      const bundle = await packager.packageContext(
+        session.problem.title,
+        session.problem.description,
+        files.files,
+        files.snippets,
+        files.strategy
+      );
 
       console.log(`Context size: ${bundle.totalSize} characters`);
       console.log(`Compression applied: ${bundle.compressionApplied ? 'Yes' : 'No'}`);
