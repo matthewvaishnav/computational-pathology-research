@@ -21,6 +21,8 @@ import boto3
 import botocore
 from botocore.exceptions import ClientError, NoCredentialsError
 
+logger = logging.getLogger(__name__)
+
 from ..plugin_interface import CloudPlugin, PluginCapability
 from ..plugin_manager import PluginMetadata
 
