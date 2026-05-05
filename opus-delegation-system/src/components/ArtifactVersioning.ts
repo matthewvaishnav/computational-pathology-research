@@ -184,14 +184,14 @@ export class ArtifactVersioning {
     // Find added nodes
     for (const node of newMermaid.nodes) {
       if (!oldNodeIds.has(node.id)) {
-        diff.nodesAdded.push({ id: node.id, label: node.label });
+        diff.nodesAdded.push({ id: node.id, label: node.label || '' });
       }
     }
 
     // Find removed nodes
     for (const node of oldMermaid.nodes) {
       if (!newNodeIds.has(node.id)) {
-        diff.nodesRemoved.push({ id: node.id, label: node.label });
+        diff.nodesRemoved.push({ id: node.id, label: node.label || '' });
       }
     }
 
@@ -201,8 +201,8 @@ export class ArtifactVersioning {
       if (oldNode && oldNode.label !== newNode.label) {
         diff.nodesModified.push({
           id: newNode.id,
-          oldLabel: oldNode.label,
-          newLabel: newNode.label,
+          oldLabel: oldNode.label || '',
+          newLabel: newNode.label || '',
         });
       }
     }
