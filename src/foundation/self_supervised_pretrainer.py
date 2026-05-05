@@ -711,7 +711,7 @@ class SelfSupervisedPreTrainer:
         
         self.logger.info(f"Initialized distributed training: rank {self.config.rank}/{self.config.world_size}")
 
-    def _update_momentum_encoder(self, epoch: int)::
+    def _update_momentum_encoder(self, epoch: int):
         """Update momentum encoder parameters"""
         if self.config.method == "moco":
             momentum = self.config.moco_momentum
