@@ -32,6 +32,9 @@ from cryptography.fernet import Fernet, MultiFernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+# Import Role and Permission from privacy module for type hints
+from src.clinical.privacy import Role, Permission
+
 logger = logging.getLogger(__name__)
 
 
@@ -298,7 +301,7 @@ class EnhancedRBACManager:
         self.logger = logging.getLogger(__name__)
 
     def create_session_atomic(
-        self, user_id: str, role: "Role", ip_address: Optional[str] = None
+        self, user_id: str, role: Role, ip_address: Optional[str] = None
     ) -> str:
         """Create session with atomic operation (prevents race conditions)"""
         with self._lock:
@@ -383,8 +386,8 @@ class EnhancedUserSession:
     """Enhanced user session with security features"""
 
     user_id: str
-    role: "Role"
-    permissions: Set["Permission"]
+    role: Role
+    permissions: Set[Permission]
     created_at: datetime
     last_activity: datetime
     session_token: str
