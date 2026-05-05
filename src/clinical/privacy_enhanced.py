@@ -306,7 +306,36 @@ class EnhancedRBACManager:
             session_token = SecureSessionToken.generate()
 
             # Create session
-            from .privacy import Role, Permission, ROLE_PERMISSIONS
+            from src.clinical.privacy import Role, Permission
+
+            # Get role permissions mapping
+            ROLE_PERMISSIONS = {
+                Role.ADMIN: {
+                    Permission.READ_PATIENT_DATA,
+                    Permission.WRITE_PATIENT_DATA,
+                    Permission.DELETE_PATIENT_DATA,
+                    Permission.EXPORT_DATA,
+                    Permission.VIEW_AUDIT_LOGS,
+                    Permission.MANAGE_USERS,
+                    Permission.CONFIGURE_SYSTEM,
+                },
+                Role.PHYSICIAN: {
+                    Permission.READ_PATIENT_DATA,
+                    Permission.WRITE_PATIENT_DATA,
+                    Permission.EXPORT_DATA,
+                },
+                Role.RESEARCHER: {
+                    Permission.READ_PATIENT_DATA,
+                    Permission.EXPORT_DATA,
+                },
+                Role.TECHNICIAN: {
+                    Permission.READ_PATIENT_DATA,
+                    Permission.WRITE_PATIENT_DATA,
+                },
+                Role.VIEWER: {
+                    Permission.READ_PATIENT_DATA,
+                },
+            }
 
             permissions = ROLE_PERMISSIONS.get(role, set())
 
