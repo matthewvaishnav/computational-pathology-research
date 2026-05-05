@@ -22,6 +22,8 @@ import aiohttp
 import zeep
 from zeep import wsse
 
+logger = logging.getLogger(__name__)
+
 from ..plugin_interface import EMRPlugin, PluginCapability
 from ..plugin_manager import PluginMetadata
 
