@@ -12,6 +12,7 @@ Provides comprehensive monitoring and observability for HistoCore using Azure Mo
 
 import json
 import logging
+import queue
 import time
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Union
