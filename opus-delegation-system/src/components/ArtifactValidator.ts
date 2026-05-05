@@ -200,7 +200,7 @@ export class ArtifactValidator {
     let implementabilityScore = 100;
 
     // Check all endpoints have request/response schemas
-    const paths = openapi.paths || {};
+    const paths = (openapi.paths || {}) as Record<string, any>;
     const pathKeys = Object.keys(paths);
 
     if (pathKeys.length === 0) {
