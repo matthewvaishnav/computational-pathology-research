@@ -265,13 +265,13 @@ export class ArtifactParser {
 
     // Extract diagram type
     const typeMatch = firstLine.match(/^(graph|flowchart|sequenceDiagram|classDiagram)\s*/);
-    const type = typeMatch ? typeMatch[1] : 'unknown';
+    const diagramType = typeMatch ? typeMatch[1] : 'unknown';
 
     const nodes: Array<{ id: string; label: string; type: string }> = [];
     const edges: Array<{ from: string; to: string; label?: string }> = [];
 
     // Parse nodes and edges for graph/flowchart
-    if (type === 'graph' || type === 'flowchart') {
+    if (diagramType === 'graph' || diagramType === 'flowchart') {
       for (const line of lines.slice(1)) {
         // Node definition: A[Label] or A(Label) or A{Label}
         const nodeMatch = line.match(/([A-Za-z0-9_]+)([\[\(\{])(.*?)([\]\)\}])/);
@@ -290,7 +290,7 @@ export class ArtifactParser {
       }
     }
 
-    return { type, nodes, edges };
+    return { type: diagramType, nodes, edges };
   }
 
   /**
@@ -378,7 +378,7 @@ export class ArtifactParser {
           extractedAt: new Date(),
         },
         structured: {
-          openapi: spec as OpenAPISpec,
+          openapi: spec as Record<string, unknown>,
         },
       };
     } catch (error) {
@@ -496,8 +496,8 @@ export class ArtifactParser {
    * Parse implementation steps from markdown content
    * Extracts step hierarchy and dependencies
    */
-  private parseImplementationSteps(content: string): Step[] {
-    const steps: Step[] = [];
+  private parseImplementationSteps(content: string): ImplementationStep[] {
+    const steps: ImplementationStep[] = [];
     const lines = content.split('\n');
 
     let currentStep: Partial<Step> | null = null;
@@ -558,14 +558,16 @@ export class ArtifactParser {
   /**
    * Finalize a step with default values
    */
-  private finalizeStep(step: Partial<Step>, index: number): Step {
+  private finalizeStep(step: Partial<Step>, index: number): ImplementationStep {
     return {
       id: `step-${index + 1}`,
+      phase: 'implementation',
+      title: step.action || '',
       action: step.action || '',
       description: step.description || '',
       dependencies: step.dependencies || [],
       complexity: step.complexity || ComplexityLevel.SIMPLE,
-      estimatedTime: step.estimatedTime,
+      estimate: step.estimatedTime,
     };
   }
 
