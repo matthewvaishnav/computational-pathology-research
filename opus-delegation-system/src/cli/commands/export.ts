@@ -37,7 +37,7 @@ export const exportCommand = new Command('export')
         }
 
         if (
-          artifact.type === 'openapi_specification' &&
+          artifact.type === 'openapi_spec' &&
           (format === 'all' || format === 'yaml')
         ) {
           exporter.exportOpenAPISpec(artifact, `api-${artifact.id}`, 'yaml');
@@ -45,7 +45,7 @@ export const exportCommand = new Command('export')
         }
 
         if (
-          artifact.type === 'openapi_specification' &&
+          artifact.type === 'openapi_spec' &&
           (format === 'all' || format === 'html')
         ) {
           exporter.exportOpenAPISpec(artifact, `api-docs-${artifact.id}`, 'html');
