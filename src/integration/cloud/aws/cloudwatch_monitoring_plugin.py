@@ -18,6 +18,8 @@ from typing import Any, Dict, List, Optional, Union
 import aioboto3
 import boto3
 import botocore
+
+logger = logging.getLogger(__name__)
 from botocore.exceptions import ClientError, NoCredentialsError
 
 from ..plugin_interface import MonitoringPlugin, PluginCapability
