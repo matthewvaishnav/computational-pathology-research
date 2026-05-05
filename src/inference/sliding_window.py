@@ -53,7 +53,8 @@ class SlidingWindowInference:
         window_size: int,
         stride: Optional[int] = None,
         device: Optional[str] = None,
-        enable_uncertainty: bool = True
+        enable_uncertainty: bool = True,
+        use_flash_attention: bool = True
     ):
         self.model = model
         self.window_size = window_size
@@ -62,6 +63,7 @@ class SlidingWindowInference:
             'cuda' if torch.cuda.is_available() else 'cpu'
         )
         self.enable_uncertainty = enable_uncertainty
+        self.use_flash_attention = use_flash_attention and hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         
         # Validate parameters
         if self.window_size <= 0:
