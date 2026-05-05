@@ -483,12 +483,12 @@ export class ImplementationGuideGenerator {
 
     // Map endpoints to route handlers
     for (const [path, pathItem] of Object.entries(openapi.paths as any)) {
-      const methods = Object.keys(pathItem).filter((k) =>
+      const methods = Object.keys(pathItem as any).filter((k: string) =>
         ['get', 'post', 'put', 'patch', 'delete'].includes(k)
       );
 
       for (const method of methods) {
-        const operation = pathItem[method];
+        const operation = (pathItem as any)[method];
         const routeName = this.pathToRouteName(path, method);
 
         mappings.push({
