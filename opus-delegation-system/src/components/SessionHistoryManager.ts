@@ -166,6 +166,7 @@ export class SessionHistoryManager {
       request,
       response,
       artifacts,
+      validation: [],
       timestamp: new Date(),
       contextSize,
     };
@@ -298,7 +299,7 @@ export class SessionHistoryManager {
   public trackArtifactUsage(
     sessionId: string,
     artifactId: string,
-    status: 'implemented' | 'modified' | 'rejected'
+    status: 'not_implemented' | 'in_progress' | 'implemented' | 'modified'
   ): void {
     const session = this.sessionIndex.get(sessionId);
     if (!session) {
