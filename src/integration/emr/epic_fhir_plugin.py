@@ -27,6 +27,8 @@ from fhir.resources.operationoutcome import OperationOutcome
 from fhir.resources.patient import Patient
 from fhir.resources.servicerequest import ServiceRequest
 
+logger = logging.getLogger(__name__)
+
 from ..plugin_interface import EMRPlugin, PluginCapability
 from ..plugin_manager import PluginMetadata
 
