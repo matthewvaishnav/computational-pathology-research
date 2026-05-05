@@ -20,9 +20,22 @@ import {
   ComplexityLevel, 
   ArtifactType,
   ParsedArtifact,
-  ValidationResult
+  ValidationResult,
+  ExtendedValidationResult
 } from '../types/core.js';
 import { ContextBundle } from './ContextPackager.js';
+
+// Helper function to convert ValidationResult to ExtendedValidationResult array
+function toExtendedValidation(
+  validation: ValidationResult,
+  artifacts: ParsedArtifact[]
+): ExtendedValidationResult[] {
+  return artifacts.map(artifact => ({
+    ...validation,
+    artifactId: artifact.id,
+    artifactType: artifact.type
+  }));
+}
 
 describe('OpusDelegator', () => {
   let delegator: OpusDelegator;
@@ -358,7 +371,9 @@ describe('OpusDelegator', () => {
         }
       ];
 
-      const validation: ValidationResult = {
+      const validation: ExtendedValidationResult[] = [{
+        artifactId: 'artifact-1',
+        artifactType: ArtifactType.MERMAID_DIAGRAM,
         completenessScore: 85,
         qualityScores: {
           completeness: 85,
@@ -369,7 +384,7 @@ describe('OpusDelegator', () => {
         errors: [],
         warnings: [],
         followUpQuestions: []
-      };
+      }];
 
       delegator.addRound(
         session.id,
@@ -420,7 +435,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       const updated = delegator.getSession(session.id);
       expect(updated?.finalArtifacts).toEqual(artifacts);
@@ -454,7 +469,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], validation);
+      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], toExtendedValidation(validation, [artifact1]));
 
       const artifact2: ParsedArtifact = {
         id: 'artifact-2',
@@ -467,7 +482,7 @@ describe('OpusDelegator', () => {
         }
       };
 
-      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], validation);
+      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], toExtendedValidation(validation, [artifact2]));
 
       const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
       expect(history.length).toBe(2);
@@ -490,7 +505,7 @@ describe('OpusDelegator', () => {
       };
 
       expect(() => {
-        delegator.addRound('nonexistent', 'Request', 'Response', artifacts, validation);
+        delegator.addRound('nonexistent', 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
       }).toThrow('Session not found');
     });
   });
@@ -536,7 +551,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: ['What are the component responsibilities?']
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
 
@@ -568,7 +583,7 @@ describe('OpusDelegator', () => {
         ]
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
 
@@ -605,7 +620,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
 
@@ -675,7 +690,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       const isComplete = delegator.detectSessionCompletion(session.id, validation);
       expect(isComplete).toBe(true);
@@ -701,7 +716,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', [], validation);
+      delegator.addRound(session.id, 'Request', 'Response', [], toExtendedValidation(validation, []));
 
       const isComplete = delegator.detectSessionCompletion(session.id, validation);
       expect(isComplete).toBe(false);
@@ -727,7 +742,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', [], validation);
+      delegator.addRound(session.id, 'Request', 'Response', [], toExtendedValidation(validation, []));
 
       const isComplete = delegator.detectSessionCompletion(session.id, validation);
       expect(isComplete).toBe(false);
@@ -751,7 +766,7 @@ describe('OpusDelegator', () => {
 
       // Add 5 rounds (max rounds = 5)
       for (let i = 0; i < 5; i++) {
-        delegator.addRound(session.id, 'Request', 'Response', [], validation);
+        delegator.addRound(session.id, 'Request', 'Response', [], toExtendedValidation(validation, []));
       }
 
       const isComplete = delegator.detectSessionCompletion(session.id, validation);
@@ -812,8 +827,8 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], validation);
-      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], validation);
+      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], toExtendedValidation(validation, [artifact1]));
+      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], toExtendedValidation(validation, [artifact2]));
 
       const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
 
@@ -946,7 +961,7 @@ describe('OpusDelegator', () => {
           followUpQuestions: ['Need more details']
         };
 
-        delegator.addRound(session.id, 'Request 1', 'Response 1', artifacts, validation);
+        delegator.addRound(session.id, 'Request 1', 'Response 1', artifacts, toExtendedValidation(validation, artifacts));
         const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
 
         // Invariant: Each round references previous round's artifacts
@@ -973,7 +988,7 @@ describe('OpusDelegator', () => {
           followUpQuestions: []
         };
 
-        delegator.addRound(session.id, 'Request 1', 'Response 1', artifacts1, validation1);
+        delegator.addRound(session.id, 'Request 1', 'Response 1', artifacts1, toExtendedValidation(validation1, artifacts1));
 
         const artifacts2 = [createTestArtifact(ArtifactType.MERMAID_DIAGRAM, 'enhanced content with more details')];
         const validation2: ValidationResult = {
@@ -985,13 +1000,13 @@ describe('OpusDelegator', () => {
           followUpQuestions: []
         };
 
-        delegator.addRound(session.id, 'Request 2', 'Response 2', artifacts2, validation2);
+        delegator.addRound(session.id, 'Request 2', 'Response 2', artifacts2, toExtendedValidation(validation2, artifacts2));
 
         const updatedSession = delegator.getSession(session.id);
         
         // Invariant: Artifact completeness score increases or stays same across rounds
-        expect(updatedSession!.rounds[1].validation.completenessScore)
-          .toBeGreaterThanOrEqual(updatedSession!.rounds[0].validation.completenessScore);
+        expect(updatedSession!.rounds[1].validation[0].completenessScore)
+          .toBeGreaterThanOrEqual(updatedSession!.rounds[0].validation[0].completenessScore);
       });
 
       it('should produce more detailed artifacts with more rounds (Metamorphic)', () => {
@@ -1012,7 +1027,7 @@ describe('OpusDelegator', () => {
           followUpQuestions: []
         };
 
-        delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], validation1);
+        delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], toExtendedValidation(validation1, [artifact1]));
 
         // Round 2 - Enhanced artifact
         const artifact2 = createTestArtifact(
@@ -1028,7 +1043,7 @@ describe('OpusDelegator', () => {
           followUpQuestions: []
         };
 
-        delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], validation2);
+        delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], toExtendedValidation(validation2, [artifact2]));
 
         const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
         
@@ -1109,7 +1124,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       // Requirement 9.5: Detect when Opus has provided sufficient detail
       const isComplete = delegator.detectSessionCompletion(session.id, validation);
@@ -1141,7 +1156,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       // Should recommend ending the session
       const isComplete = delegator.detectSessionCompletion(session.id, validation);
@@ -1180,7 +1195,7 @@ describe('OpusDelegator', () => {
         ]
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
 
       // Requirement 9.6: Automatically generate clarifying questions for next round
       const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
@@ -1217,7 +1232,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: ['Please add error handling details', 'What retry mechanisms should be implemented?']
       };
 
-      delegator.addRound(session.id, 'Request', 'Response', artifacts, validation);
+      delegator.addRound(session.id, 'Request', 'Response', artifacts, toExtendedValidation(validation, artifacts));
       const followUp = delegator.generateFollowUpRequest(session.id, validation, artifacts);
 
       expect(followUp.questionsToAddress.length).toBeGreaterThan(0);
@@ -1246,7 +1261,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, request1, response1, artifacts1, validation1);
+      delegator.addRound(session.id, request1, response1, artifacts1, toExtendedValidation(validation1, artifacts1));
 
       // Round 2
       const request2 = 'Please add more details about component interactions';
@@ -1261,7 +1276,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, request2, response2, artifacts2, validation2);
+      delegator.addRound(session.id, request2, response2, artifacts2, toExtendedValidation(validation2, artifacts2));
 
       // Requirement 9.2: Maintain conversation context across rounds
       const updatedSession = delegator.getSession(session.id);
@@ -1292,7 +1307,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], validation1);
+      delegator.addRound(session.id, 'Request 1', 'Response 1', [artifact1], toExtendedValidation(validation1, [artifact1]));
 
       // Round 2 - Refined version
       const artifact2 = createTestArtifact(
@@ -1308,7 +1323,7 @@ describe('OpusDelegator', () => {
         followUpQuestions: []
       };
 
-      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], validation2);
+      delegator.addRound(session.id, 'Request 2', 'Response 2', [artifact2], toExtendedValidation(validation2, [artifact2]));
 
       // Requirement 9.4: Track which artifacts were refined in each round
       const history = delegator.getArtifactVersionHistory(session.id, ArtifactType.MERMAID_DIAGRAM);
