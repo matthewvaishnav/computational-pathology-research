@@ -18,6 +18,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import aiohttp
 from cryptography.fernet import Fernet
 
+logger = logging.getLogger(__name__)
+
 from ..plugin_interface import LISPlugin, PluginCapability
 from ..plugin_manager import PluginMetadata
 
