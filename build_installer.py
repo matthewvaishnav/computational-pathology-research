@@ -242,7 +242,7 @@ def build_exe():
     cmd = [
         "pyinstaller",
         "--onefile",                    # Single executable
-        "--windowed",                   # No console (use --console for debugging)
+        "--console",                    # Show console for debugging
         "--name=HistoCore-Installer",   # Output name
         "--icon=NONE",                  # No icon (add later if desired)
         "--clean",                      # Clean cache
