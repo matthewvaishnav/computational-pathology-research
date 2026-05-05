@@ -1,0 +1,41 @@
+{
+  "timestamp": "unknown",
+  "overall_coverage": 0.0,
+  "coverage_threshold": 80.0,
+  "threshold_met": false,
+  "module_coverage": {
+    "src/api/main.py": 0.0,
+    "src/api/routers/auth.py": 0.0,
+    "src/api/routers/analysis.py": 0.0,
+    "src/api/routers/admin.py": 0.0,
+    "src/api/routers/mobile.py": 0.0,
+    "src/api/routers/monitoring.py": 0.0,
+    "src/api/dependencies.py": 0.0,
+    "src/api/validators.py": 0.0,
+    "src/api/errors.py": 0.0,
+    "src/api/security.py": 0.0,
+    "src/api/middleware.py": 0.0
+  },
+  "uncovered_lines": {
+    "src/api/main.py": [],
+    "src/api/routers/auth.py": [],
+    "src/api/routers/analysis.py": [],
+    "src/api/routers/admin.py": [],
+    "src/api/routers/mobile.py": [],
+    "src/api/routers/monitoring.py": [],
+    "src/api/dependencies.py": [],
+    "src/api/validators.py": [],
+    "src/api/errors.py": [],
+    "src/api/security.py": [],
+    "src/api/middleware.py": []
+  },
+  "summary": {
+    "total_modules": 11,
+    "modules_above_threshold": 0,
+    "total_uncovered_lines": 0,
+    "modules_with_gaps": 0
+  },
+  "recommendations": [
+    "Increase overall coverage from 0.00% to 80.0%"
+  ]
+}
