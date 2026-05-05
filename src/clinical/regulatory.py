@@ -191,13 +191,13 @@ class RegulatoryComplianceManager:
         # Generate V&V report
         try:
             vv_report = self.vv_system.generate_vv_report(device_name, device_version)
-        except:
+        except Exception:
             vv_report = {"status": "no_tests_found"}
 
         # Load risk analysis
         try:
             risk_analysis = self.risk_management.load_risk_analysis(device_name, device_version)
-        except:
+        except Exception:
             risk_analysis = {}
 
         # Create submission directory

@@ -215,7 +215,7 @@ class AzureMonitorIntegration:
                     try:
                         metric = self.metrics_queue.get_nowait()
                         metrics_batch.append(metric)
-                    except:
+                    except queue.Empty:
                         break
                 
                 if metrics_batch:
@@ -227,7 +227,7 @@ class AzureMonitorIntegration:
                     try:
                         log_entry = self.logs_queue.get_nowait()
                         logs_batch.append(log_entry)
-                    except:
+                    except queue.Empty:
                         break
                 
                 if logs_batch:
@@ -600,7 +600,7 @@ class AzureMonitorIntegration:
                 try:
                     metric = self.metrics_queue.get_nowait()
                     metrics_batch.append(metric)
-                except:
+                except queue.Empty:
                     break
             
             if metrics_batch:
@@ -612,7 +612,7 @@ class AzureMonitorIntegration:
                 try:
                     log_entry = self.logs_queue.get_nowait()
                     logs_batch.append(log_entry)
-                except:
+                except queue.Empty:
                     break
             
             if logs_batch:

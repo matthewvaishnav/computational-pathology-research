@@ -975,7 +975,7 @@ class UnlabeledWSIDataset(Dataset):
         for slide in self.slide_handles.values():
             try:
                 slide.close()
-            except:
+            except Exception:
                 pass
 
 
