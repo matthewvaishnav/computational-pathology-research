@@ -20,6 +20,8 @@ from hl7apy import core, parse_message
 from hl7apy.core import Component, Field, Message, Segment
 from hl7apy.exceptions import ChildNotFound, InvalidName
 
+logger = logging.getLogger(__name__)
+
 
 class HL7MessageType(Enum):
     """HL7 message types"""
