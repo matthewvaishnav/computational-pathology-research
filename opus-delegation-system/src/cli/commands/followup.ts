@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { OpusDelegator } from '../../components/OpusDelegator.js';
+import { TemplateLibrary } from '../../components/TemplateLibrary.js';
 import { SessionHistoryManager } from '../../components/SessionHistoryManager.js';
 
 export const followupCommand = new Command('followup')
@@ -26,16 +27,22 @@ export const followupCommand = new Command('followup')
       }
 
       const lastRound = session.rounds[session.rounds.length - 1];
-      const delegator = new OpusDelegator();
-      const followup = delegator.generateFollowUpRequest(sessionId, lastRound.validation);
+      
+      const templateLibrary = new TemplateLibrary();
+      const delegator = new OpusDelegator(templateLibrary);
+      const followup = delegator.generateFollowUpRequest(
+        sessionId, 
+        lastRound.validation[0], // Take first validation result
+        lastRound.artifacts
+      );
 
       if (output) {
         const fs = await import('fs');
-        fs.writeFileSync(output, followup);
+        fs.writeFileSync(output, JSON.stringify(followup, null, 2));
         console.log(`Follow-up request written to: ${output}`);
       } else {
         console.log('\n=== Follow-up Request ===\n');
-        console.log(followup);
+        console.log(JSON.stringify(followup, null, 2));
       }
 
       console.log('\n\nCopy to use.ai and paste response');
