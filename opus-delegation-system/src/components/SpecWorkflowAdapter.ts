@@ -3444,36 +3444,6 @@ export class SpecWorkflowAdapter {
   }
 
   /**
-   * Generate .config.kiro file with workflow type and spec metadata
-   * 
-   * Requirements: 16.5
-   */
-  async generateConfig(
-    artifacts: ParsedArtifact[],
-    options: ConfigGenerationOptions = {}
-  ): Promise<ConfigKiro> {
-    const {
-      specId = this.generateSpecId(),
-      workflowType = this.determineWorkflowType(artifacts),
-      specType = this.determineSpecType(artifacts),
-      projectName
-    } = options;
-
-    const config: ConfigKiro = {
-      specId,
-      workflowType,
-      specType,
-      metadata: {
-        generatedAt: new Date(),
-        sourceArtifacts: artifacts.map(a => a.id),
-        projectName
-      }
-    };
-
-    return config;
-  }
-
-  /**
    * Generate a unique spec ID (UUID v4)
    */
   private generateSpecId(): string {
