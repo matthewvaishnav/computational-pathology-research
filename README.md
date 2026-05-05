@@ -47,14 +47,24 @@ A production-grade PyTorch framework for computational pathology research and cl
 
 ### Easy Installation
 
+**Windows Users** (Recommended):
 ```bash
-# One-click installer (recommended)
+# Download and run the installer
+# https://github.com/matthewvaishnav/computational-pathology-research/releases/latest
+# Double-click HistoCore-Installer.exe
+```
+
+**All Platforms**:
+```bash
+# One-click Python installer
 python install.py
 
 # Or manual install
 pip install -r requirements.txt
 pip install -e .
 ```
+
+See [WINDOWS_DEFENDER_FIX.md](WINDOWS_DEFENDER_FIX.md) if Windows Defender blocks the installer.
 
 ### Three Ways to Use HistoCore
 
