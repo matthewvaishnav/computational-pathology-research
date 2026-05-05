@@ -1,16 +1,15 @@
-"""Inference module for HistoCore."""
+"""
+Inference components for nnMIL Multiple Instance Learning.
 
-from .inference_engine import InferenceEngine
-from .model_loader import get_model_loader
-from .streaming import StreamingInference, create_streaming_inference
-from .types import InferenceResult, BatchInferenceResult, StreamingInferenceResult
+This package provides inference utilities including:
+- SlidingWindowInference: Process large bags with overlapping windows
+- UncertaintyEstimator: Quantify prediction uncertainty
+"""
+
+from .sliding_window import SlidingWindowInference
+from .uncertainty import UncertaintyEstimator
 
 __all__ = [
-    "InferenceEngine", 
-    "get_model_loader",
-    "StreamingInference", 
-    "create_streaming_inference",
-    "InferenceResult",
-    "BatchInferenceResult", 
-    "StreamingInferenceResult"
+    "SlidingWindowInference",
+    "UncertaintyEstimator",
 ]
