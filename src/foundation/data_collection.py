@@ -804,7 +804,7 @@ class WSIDataCollector:
 
 
 class UnlabeledWSIDataset(Dataset):
-    """PyTorch dataset for unlabeled WSI data"""
+    """PyTorch dataset for unlabeled WSI data with efficient I/O"""
 
     def __init__(
         self,
@@ -813,27 +813,71 @@ class UnlabeledWSIDataset(Dataset):
         patches_per_slide: int = 100,
         level: int = 0,
         transform=None,
+        cache_patches: bool = False,
+        prefetch_factor: int = 2,
+        num_workers: int = 4
     ):
         self.slide_metadata = slide_metadata
         self.patch_size = patch_size
         self.patches_per_slide = patches_per_slide
         self.level = level
         self.transform = transform
+        self.cache_patches = cache_patches
+        self.prefetch_factor = prefetch_factor
+        self.num_workers = num_workers
 
         # Pre-compute patch coordinates for each slide
         self.patch_coordinates = []
+        self.slide_handles = {}  # Keep slide handles open for efficiency
+        self.patch_cache = {} if cache_patches else None
+        
         self._precompute_coordinates()
+        self._initialize_slide_handles()
 
     def _precompute_coordinates(self):
-        """Pre-compute random patch coordinates for each slide"""
-        for metadata in self.slide_metadata:
+        """Pre-compute random patch coordinates for each slide with tissue detection"""
+        self.logger = logging.getLogger(__name__)
+        
+        for i, metadata in enumerate(self.slide_metadata):
             try:
                 slide = openslide.OpenSlide(metadata.file_path)
                 level_dimensions = slide.level_dimensions[self.level]
 
-                # Generate random coordinates
+                # Get thumbnail for tissue detection
+                thumbnail = slide.get_thumbnail((512, 512))
+                thumbnail_array = np.array(thumbnail)
+                
+                # Create tissue mask
+                tissue_mask = self._create_tissue_mask(thumbnail_array)
+                
+                # Scale tissue mask to level dimensions
+                mask_scale_x = level_dimensions[0] / thumbnail_array.shape[1]
+                mask_scale_y = level_dimensions[1] / thumbnail_array.shape[0]
+
+                # Generate coordinates preferentially in tissue regions
                 coords = []
-                for _ in range(self.patches_per_slide):
+                attempts = 0
+                max_attempts = self.patches_per_slide * 10
+                
+                while len(coords) < self.patches_per_slide and attempts < max_attempts:
+                    x = np.random.randint(0, max(1, level_dimensions[0] - self.patch_size))
+                    y = np.random.randint(0, max(1, level_dimensions[1] - self.patch_size))
+                    
+                    # Check if patch center is in tissue region
+                    mask_x = int((x + self.patch_size // 2) / mask_scale_x)
+                    mask_y = int((y + self.patch_size // 2) / mask_scale_y)
+                    
+                    mask_x = min(mask_x, tissue_mask.shape[1] - 1)
+                    mask_y = min(mask_y, tissue_mask.shape[0] - 1)
+                    
+                    # Accept patch if in tissue region or with some probability for background
+                    if tissue_mask[mask_y, mask_x] or np.random.random() < 0.1:
+                        coords.append((x, y))
+                    
+                    attempts += 1
+
+                # Fill remaining coordinates randomly if needed
+                while len(coords) < self.patches_per_slide:
                     x = np.random.randint(0, max(1, level_dimensions[0] - self.patch_size))
                     y = np.random.randint(0, max(1, level_dimensions[1] - self.patch_size))
                     coords.append((x, y))
@@ -842,8 +886,32 @@ class UnlabeledWSIDataset(Dataset):
                 slide.close()
 
             except Exception as e:
-                logging.warning(f"Error processing slide {metadata.slide_id}: {e}")
+                self.logger.warning(f"Error processing slide {metadata.slide_id}: {e}")
                 self.patch_coordinates.append([])
+
+    def _create_tissue_mask(self, thumbnail: np.ndarray) -> np.ndarray:
+        """Create binary tissue mask from thumbnail"""
+        # Convert to HSV for better tissue detection
+        hsv = cv2.cvtColor(thumbnail, cv2.COLOR_RGB2HSV)
+        
+        # Create tissue mask (exclude white/light backgrounds)
+        tissue_mask = (hsv[:, :, 1] > 20) & (hsv[:, :, 2] < 240)
+        
+        # Morphological operations to clean up mask
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        tissue_mask = cv2.morphologyEx(tissue_mask.astype(np.uint8), cv2.MORPH_OPEN, kernel)
+        tissue_mask = cv2.morphologyEx(tissue_mask, cv2.MORPH_CLOSE, kernel)
+        
+        return tissue_mask.astype(bool)
+
+    def _initialize_slide_handles(self):
+        """Initialize slide handles for efficient access"""
+        if len(self.slide_metadata) <= 100:  # Only for smaller datasets
+            for metadata in self.slide_metadata:
+                try:
+                    self.slide_handles[metadata.slide_id] = openslide.OpenSlide(metadata.file_path)
+                except Exception as e:
+                    self.logger.warning(f"Failed to open slide {metadata.slide_id}: {e}")
 
     def __len__(self) -> int:
         return sum(len(coords) for coords in self.patch_coordinates)
@@ -859,15 +927,29 @@ class UnlabeledWSIDataset(Dataset):
                 break
             patch_idx -= len(coords)
 
+        # Check cache first
+        if self.patch_cache is not None:
+            cache_key = (slide_idx, patch_idx)
+            if cache_key in self.patch_cache:
+                return self.patch_cache[cache_key]
+
         # Load patch
         metadata = self.slide_metadata[slide_idx]
         x, y = self.patch_coordinates[slide_idx][patch_idx]
 
         try:
-            slide = openslide.OpenSlide(metadata.file_path)
+            # Use cached slide handle if available
+            if metadata.slide_id in self.slide_handles:
+                slide = self.slide_handles[metadata.slide_id]
+            else:
+                slide = openslide.OpenSlide(metadata.file_path)
+
             patch = slide.read_region((x, y), self.level, (self.patch_size, self.patch_size))
             patch = patch.convert("RGB")
-            slide.close()
+            
+            # Close slide if not cached
+            if metadata.slide_id not in self.slide_handles:
+                slide.close()
 
             # Convert to tensor
             patch_array = np.array(patch)
@@ -876,12 +958,25 @@ class UnlabeledWSIDataset(Dataset):
             if self.transform:
                 patch_tensor = self.transform(patch_tensor)
 
+            # Cache if enabled
+            if self.patch_cache is not None:
+                cache_key = (slide_idx, patch_idx)
+                self.patch_cache[cache_key] = patch_tensor
+
             return patch_tensor
 
         except Exception as e:
-            logging.warning(f"Error loading patch from {metadata.slide_id}: {e}")
+            self.logger.warning(f"Error loading patch from {metadata.slide_id}: {e}")
             # Return random patch as fallback
             return torch.randn(3, self.patch_size, self.patch_size)
+
+    def __del__(self):
+        """Clean up slide handles"""
+        for slide in self.slide_handles.values():
+            try:
+                slide.close()
+            except:
+                pass
 
 
 # Example usage
@@ -911,3 +1006,85 @@ if __name__ == "__main__":
     for batch in dataloader:
         print(f"Batch shape: {batch.shape}")
         break
+
+
+class HighPerformanceDataLoader:
+    """High-performance data loader factory for large-scale training"""
+    
+    @staticmethod
+    def create_pretraining_dataloader(
+        slide_metadata: List[SlideMetadata],
+        batch_size: int = 256,
+        num_workers: int = 8,
+        pin_memory: bool = True,
+        prefetch_factor: int = 2,
+        persistent_workers: bool = True,
+        patch_size: int = 224,
+        patches_per_slide: int = 100,
+        cache_patches: bool = False
+    ) -> DataLoader:
+        """Create optimized dataloader for pre-training"""
+        
+        dataset = UnlabeledWSIDataset(
+            slide_metadata=slide_metadata,
+            patch_size=patch_size,
+            patches_per_slide=patches_per_slide,
+            cache_patches=cache_patches,
+            prefetch_factor=prefetch_factor,
+            num_workers=num_workers
+        )
+        
+        # Custom collate function for better memory efficiency
+        def collate_fn(batch):
+            return torch.stack(batch)
+        
+        dataloader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            prefetch_factor=prefetch_factor,
+            persistent_workers=persistent_workers,
+            drop_last=True,
+            collate_fn=collate_fn
+        )
+        
+        return dataloader
+    
+    @staticmethod
+    def create_distributed_dataloader(
+        slide_metadata: List[SlideMetadata],
+        batch_size: int = 256,
+        num_workers: int = 8,
+        world_size: int = 1,
+        rank: int = 0,
+        **kwargs
+    ) -> DataLoader:
+        """Create distributed dataloader for multi-GPU training"""
+        
+        dataset = UnlabeledWSIDataset(
+            slide_metadata=slide_metadata,
+            **kwargs
+        )
+        
+        # Create distributed sampler
+        sampler = torch.utils.data.distributed.DistributedSampler(
+            dataset,
+            num_replicas=world_size,
+            rank=rank,
+            shuffle=True,
+            drop_last=True
+        )
+        
+        dataloader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            sampler=sampler,
+            num_workers=num_workers,
+            pin_memory=True,
+            persistent_workers=True,
+            drop_last=True
+        )
+        
+        return dataloader
