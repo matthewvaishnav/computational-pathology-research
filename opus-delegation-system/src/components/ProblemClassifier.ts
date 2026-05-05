@@ -265,7 +265,9 @@ export class ProblemClassifier {
     
     return {
       suitable,
+      shouldDelegate: suitable,
       classification,
+      recommendation: suitable ? 'Delegate to Opus' : 'Handle locally',
       reasoning,
       contextEstimate
     };
