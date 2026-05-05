@@ -978,6 +978,7 @@ class TestSQLiteCleanup:
     def test_connection_closed_on_exception(self, temp_db):
         """Test connection is closed even when exception occurs."""
         from src.utils.safe_operations import safe_db_transaction
+        from src.exceptions import DatabaseError
         from pathlib import Path
         
         conn_ref = None
@@ -988,7 +989,7 @@ class TestSQLiteCleanup:
                 cursor.execute("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)")
                 # Force an error
                 raise ValueError("Test error")
-        except ValueError:
+        except DatabaseError:
             pass
         
         # Verify connection is closed
@@ -998,6 +999,7 @@ class TestSQLiteCleanup:
     def test_rollback_on_exception(self, temp_db):
         """Test rollback occurs when exception is raised."""
         from src.utils.safe_operations import safe_db_transaction
+        from src.exceptions import DatabaseError
         from pathlib import Path
         
         # Create table first
@@ -1012,7 +1014,7 @@ class TestSQLiteCleanup:
                 cursor = conn.cursor()
                 cursor.execute("INSERT INTO test (value) VALUES ('should_rollback')")
                 raise ValueError("Test error")
-        except ValueError:
+        except DatabaseError:
             pass
         
         # Verify rollback occurred - only initial value should exist
