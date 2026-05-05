@@ -165,13 +165,31 @@ export interface ValidationIssue {
   suggestion?: string;
 }
 
+export interface ValidationError {
+  type: string;
+  field?: string;
+  message: string;
+  severity: 'error' | 'warning';
+  lineNumber?: number;
+}
+
+export interface QualityScores {
+  completeness: number;
+  clarity: number;
+  implementability: number;
+}
+
 export interface ValidationResult {
-  artifactId: string;
-  artifactType: ArtifactType;
+  artifactId?: string;
+  artifactType?: ArtifactType;
   isValid: boolean;
   completenessScore: number;
-  issues: ValidationIssue[];
-  suggestions: string[];
+  qualityScores: QualityScores;
+  issues?: ValidationIssue[];
+  suggestions?: string[];
+  errors: ValidationError[];
+  warnings: string[];
+  followUpQuestions: string[];
 }
 
 export interface DelegationRound {
@@ -289,13 +307,8 @@ export interface ArtifactDiff {
 }
 
 // Additional missing types
-export interface ValidationError {
-  field: string;
-  message: string;
-  severity: 'error' | 'warning';
-}
-
 export interface MermaidAST {
+  type?: string;
   nodes: Array<{
     id: string;
     label?: string;
@@ -324,28 +337,21 @@ export interface OpenAPISpec {
 
 export interface Step {
   id: string;
-  title: string;
+  title?: string;
   description: string;
   action: string;
   dependencies: string[];
   complexity: ComplexityLevel;
+  estimatedTime?: string;
 }
 
 export type SessionComplexity = 'simple' | 'moderate' | 'complex';
 
 // Update ValidationResult to include missing properties
-export interface QualityScores {
-  completeness: number;
-  clarity: number;
-  implementability: number;
-}
-
 // Extend ValidationResult with missing properties
 export interface ExtendedValidationResult extends ValidationResult {
-  errors: ValidationIssue[];
-  warnings: ValidationIssue[];
-  qualityScores: QualityScores;
-  followUpQuestions: string[];
+  artifactId: string;
+  artifactType: ArtifactType;
 }
 
 // Update DelegationRequest interface
