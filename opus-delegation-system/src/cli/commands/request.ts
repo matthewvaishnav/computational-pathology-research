@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { OpusDelegator } from '../../components/OpusDelegator.js';
+import { TemplateLibrary } from '../../components/TemplateLibrary.js';
 import { SessionHistoryManager } from '../../components/SessionHistoryManager.js';
 
 export const requestCommand = new Command('request')
@@ -21,21 +22,41 @@ export const requestCommand = new Command('request')
         process.exit(1);
       }
 
-      const delegator = new OpusDelegator();
+      const templateLibrary = new TemplateLibrary();
+      const delegator = new OpusDelegator(templateLibrary);
+      
+      // Create a minimal context bundle for now
+      const contextBundle = {
+        problemTitle: session.problem.title,
+        problemDescription: session.problem.description,
+        codeSnippets: [],
+        documentationExcerpts: [],
+        configFiles: [],
+        totalSize: 0,
+        compressionApplied: false,
+        manifest: {
+          includedFiles: [],
+          excludedFiles: [],
+          extractionStrategy: 'minimal'
+        }
+      };
+      
       const request = delegator.generateDelegationRequest(
         sessionId,
-        template || session.problem.type,
-        {},
-        '' // Context bundle would be loaded here
+        session.problem.title,
+        session.problem.description,
+        session.problem.type,
+        contextBundle,
+        template
       );
 
       if (output) {
         const fs = await import('fs');
-        fs.writeFileSync(output, request);
+        fs.writeFileSync(output, JSON.stringify(request, null, 2));
         console.log(`Request written to: ${output}`);
       } else {
         console.log('\n=== Delegation Request ===\n');
-        console.log(request);
+        console.log(JSON.stringify(request, null, 2));
       }
 
       console.log('\n\nCopy request to use.ai and paste Opus response');
