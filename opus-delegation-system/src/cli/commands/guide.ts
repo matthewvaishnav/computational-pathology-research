@@ -41,7 +41,7 @@ export const guideCommand = new Command('guide')
         console.log(markdown);
       }
 
-      console.log(`\n${guide.steps.length} implementation steps generated`);
+      console.log(`\n${guide.phases.reduce((sum, p) => sum + p.steps.length, 0)} implementation steps generated`);
       console.log(`Next: opus-delegate export --session ${sessionId}`);
     } catch (error) {
       console.error('Error generating guide:', error);
