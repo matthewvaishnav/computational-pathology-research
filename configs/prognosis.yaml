@@ -1,0 +1,23 @@
+# Configuration for prognosis prediction (survival analysis)
+inherit_from: base.yaml
+
+# Task configuration
+task_type: survival
+num_classes: 1  # Survival output
+learning_rate: 1e-4  # Lower LR for survival
+sampler_type: survival
+
+# Extended training for survival
+num_epochs: 200
+patience: 20
+
+# Larger bag length for prognostic features
+bag_length: 1024
+
+# Enhanced uncertainty for prognosis
+num_mc_samples: 30
+enable_uncertainty: true
+
+# Multi-scale for comprehensive analysis
+multi_scale: true
+fusion_type: early

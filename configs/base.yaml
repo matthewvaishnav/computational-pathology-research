@@ -1,0 +1,27 @@
+# Base nnMIL configuration
+# This file contains default parameters that can be inherited by task-specific configs
+
+# Model architecture
+feature_dim: 1024  # UNI features
+hidden_dim: 256
+dropout: 0.25
+multi_scale: false
+fusion_type: early
+
+# Training configuration
+batch_size: 32
+weight_decay: 1e-4
+num_epochs: 100
+patience: 10
+
+# Data configuration
+bag_length: 512
+
+# Inference configuration
+enable_uncertainty: true
+num_mc_samples: 10
+
+# Logging and checkpointing
+log_interval: 10
+checkpoint_interval: 5
+save_best_only: true

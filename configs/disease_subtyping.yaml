@@ -1,0 +1,22 @@
+# Configuration for disease subtyping (classification)
+inherit_from: base.yaml
+
+# Task configuration
+task_type: classification
+num_classes: 4  # Example: 4 disease subtypes
+learning_rate: 3e-4
+sampler_type: balanced
+
+# Task-specific training
+num_epochs: 150
+patience: 15
+
+# Multi-scale processing for better subtyping
+multi_scale: true
+fusion_type: late
+
+# Larger bag length for complex subtyping
+bag_length: 1024
+
+# Enhanced uncertainty for clinical decisions
+num_mc_samples: 20
