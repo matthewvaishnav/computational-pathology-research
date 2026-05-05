@@ -273,6 +273,7 @@ export class OpusDelegator {
       id: this.generateSessionId(),
       createdAt: new Date(),
       updatedAt: new Date(),
+      status: 'active',
       problem: {
         title: problemTitle,
         description: problemDescription,
