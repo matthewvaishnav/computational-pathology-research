@@ -96,8 +96,9 @@ Matthew_Vaishnav_Harvard_Style_Resume.pdf
 job_search_automation.py
 venv_gpu/
 
-# Auto-generated checkpoint/summary docs (but allow OPTIMIZATION*.md)
+# Auto-generated checkpoint/summary docs (but allow OPTIMIZATION*.md and FINAL_STATS_SUMMARY.md)
 !OPTIMIZATION*.md
+!FINAL_STATS_SUMMARY.md
 CHECKPOINT_*.md
 *_CHECKPOINT*.md
 *_CHECKPOINT_*.md
