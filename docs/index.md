@@ -35,27 +35,27 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 <div class="features-grid">
   <div class="feature-card">
     <h3>⚡ 8-12x Faster Training</h3>
-    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 2-3 hours. See <a href="PERFORMANCE_COMPARISON.html">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
+    <p>Optimized PyTorch pipeline reduces training from 20-40 hours to 2-3 hours. See <a href="PERFORMANCE_COMPARISON">performance comparison</a> vs PathML, CLAM, and baseline PyTorch.</p>
   </div>
   
   <div class="feature-card">
     <h3>🚀 2-3x Faster Inference</h3>
-    <p>TorchScript compilation and batch processing for production deployment. Cross-platform support (Python, C++, mobile). See <a href="INFERENCE_OPTIMIZATION.html">inference optimization</a>.</p>
+    <p>TorchScript compilation and batch processing for production deployment. Cross-platform support (Python, C++, mobile). See <a href="INFERENCE_OPTIMIZATION">inference optimization</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>⚡ Multi-GPU Training</h3>
-    <p>DistributedDataParallel (DDP) for linear scaling with num GPUs. Single-node and multi-node support. See <a href="MULTI_GPU_TRAINING.html">multi-GPU training</a>.</p>
+    <p>DistributedDataParallel (DDP) for linear scaling with num GPUs. Single-node and multi-node support. See <a href="MULTI_GPU_TRAINING">multi-GPU training</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>🎯 Foundation Models</h3>
-    <p>State-of-the-art pretrained models (UNI, Phikon) for superior feature representations. Better accuracy with less training data. See <a href="FOUNDATION_MODELS.html">foundation models</a>.</p>
+    <p>State-of-the-art pretrained models (UNI, Phikon) for superior feature representations. Better accuracy with less training data. See <a href="FOUNDATION_MODELS">foundation models</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>📊 95.37% Validation AUC</h3>
-    <p>95.37% validation AUC, 93.100% validation AUC on real PCam data (262K samples). 85.26% test accuracy with bootstrap confidence intervals. See <a href="PCAM_REAL_RESULTS.html">real results</a>.</p>
+    <p>95.37% validation AUC, 93.100% validation AUC on real PCam data (262K samples). 85.26% test accuracy with bootstrap confidence intervals. See <a href="PCAM_REAL_RESULTS">real results</a>.</p>
   </div>
   
   <div class="feature-card">
@@ -70,27 +70,27 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>📦 Model Quantization</h3>
-    <p>INT8/FP16 quantization for 4x smaller models and 2-3x faster inference. Dynamic and static quantization support. See <a href="QUANTIZATION.html">quantization guide</a>.</p>
+    <p>INT8/FP16 quantization for 4x smaller models and 2-3x faster inference. Dynamic and static quantization support. See <a href="QUANTIZATION">quantization guide</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>🔍 Distributed Tracing</h3>
-    <p>OpenTelemetry integration for production monitoring. Trace requests across services with Jaeger/Zipkin. See <a href="DISTRIBUTED_TRACING.html">tracing guide</a>.</p>
+    <p>OpenTelemetry integration for production monitoring. Trace requests across services with Jaeger/Zipkin. See <a href="DISTRIBUTED_TRACING">tracing guide</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>☸️ Kubernetes Ready</h3>
-    <p>Production Helm charts with auto-scaling, health checks, and rolling updates. Multi-environment support. See <a href="DEPLOYMENT.html">deployment guide</a>.</p>
+    <p>Production Helm charts with auto-scaling, health checks, and rolling updates. Multi-environment support. See <a href="DEPLOYMENT">deployment guide</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>🔒 Security Hardened</h3>
-    <p>TLS 1.3 encryption, input validation, rate limiting, and HIPAA compliance. 19 critical vulnerabilities resolved through systematic security audits. Production-ready security with path traversal protection, IDOR prevention, timing attack mitigation, and comprehensive request validation. See <a href="SECURITY_HARDENING.html">security hardening</a>.</p>
+    <p>TLS 1.3 encryption, input validation, rate limiting, and HIPAA compliance. 19 critical vulnerabilities resolved through systematic security audits. Production-ready security with path traversal protection, IDOR prevention, timing attack mitigation, and comprehensive request validation. See <a href="SECURITY_HARDENING">security hardening</a>.</p>
   </div>
 
   <div class="feature-card">
     <h3>📊 Competitor Benchmarking</h3>
-    <p>Automated benchmark system comparing HistoCore against PathML, CLAM, and baseline PyTorch. Isolated virtual environments, identical task specs, reproducible results. See <a href="BENCHMARK_SYSTEM.html">benchmark system</a>.</p>
+    <p>Automated benchmark system comparing HistoCore against PathML, CLAM, and baseline PyTorch. Isolated virtual environments, identical task specs, reproducible results. See <a href="BENCHMARK_SYSTEM">benchmark system</a>.</p>
   </div>
 </div>
 
@@ -106,12 +106,12 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>⚡ Real-Time WSI Streaming</h3>
-    <p>Breakthrough <30 second processing of gigapixel slides through progressive tile streaming, GPU-accelerated parallel processing (>3000 patches/s), and attention-based aggregation with early stopping. Memory-optimized pipeline (<2GB footprint) with live confidence updates and clinical dashboard. See <a href="REALTIME_STREAMING.html">streaming guide</a>.</p>
+    <p>Breakthrough <30 second processing of gigapixel slides through progressive tile streaming, GPU-accelerated parallel processing (>3000 patches/s), and attention-based aggregation with early stopping. Memory-optimized pipeline (<2GB footprint) with live confidence updates and clinical dashboard. See <a href="REALTIME_STREAMING">streaming guide</a>.</p>
   </div>
   
   <div class="feature-card">
     <h3>🔒 Federated Learning System</h3>
-    <p>First open-source federated learning framework for digital pathology with ε ≤ 1.0 differential privacy, FedAvg/FedProx/FedAdam aggregation, secure aggregation with homomorphic encryption, Byzantine detection (Krum/TrimmedMean), gradient compression (4/8/16-bit quantization), fault tolerance with checkpointing, and async training support. Validated 100% correctness properties (17/17 property tests passing). Enables privacy-preserving multi-site training across 3+ hospitals. See <a href="FL_INTEGRATION.html">FL integration guide</a>.</p>
+    <p>First open-source federated learning framework for digital pathology with ε ≤ 1.0 differential privacy, FedAvg/FedProx/FedAdam aggregation, secure aggregation with homomorphic encryption, Byzantine detection (Krum/TrimmedMean), gradient compression (4/8/16-bit quantization), fault tolerance with checkpointing, and async training support. Validated 100% correctness properties (17/17 property tests passing). Enables privacy-preserving multi-site training across 3+ hospitals. See <a href="FL_INTEGRATION">FL integration guide</a>.</p>
   </div>
   
   <div class="feature-card">
@@ -172,23 +172,23 @@ Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
 ## Documentation
 
 <div class="doc-links">
-  <a href="GETTING_STARTED.html" class="doc-link">Getting Started</a>
-  <a href="ARCHITECTURE.html" class="doc-link">🏗️ Architecture</a>
-  <a href="PERFORMANCE_COMPARISON.html" class="doc-link">📊 Performance vs Competitors</a>
-  <a href="BENCHMARK_SYSTEM.html" class="doc-link">🏆 Competitor Benchmark System</a>
-  <a href="OPTIMIZATION_SUMMARY.html" class="doc-link">⚡ Training Optimizations (8-12x)</a>
-  <a href="INFERENCE_OPTIMIZATION.html" class="doc-link">🚀 Inference Optimization (2-3x)</a>
-  <a href="MULTI_GPU_TRAINING.html" class="doc-link">⚡ Multi-GPU Training (DDP)</a>
-  <a href="FOUNDATION_MODELS.html" class="doc-link">🎯 Foundation Models (UNI, Phikon)</a>
-  <a href="START_NOW_RTX4070.html" class="doc-link">RTX 4070 Guide</a>
-  <a href="EXPERIMENTS.html" class="doc-link">Run Experiments</a>
-  <a href="MODEL_INTERPRETABILITY.html" class="doc-link">Model Interpretability</a>
-  <a href="CLINICAL_WORKFLOW_INTEGRATION.html" class="doc-link">Clinical Integration</a>
-  <a href="PACS_INTEGRATION.html" class="doc-link">🏥 PACS Integration</a>
-  <a href="COMPREHENSIVE_DATASET_TESTING.html" class="doc-link">Dataset Testing</a>
-  <a href="regulatory_compliance.html" class="doc-link">Regulatory Compliance</a>
-  <a href="API_REFERENCE.html" class="doc-link">API Reference</a>
-  <a href="DOCS_INDEX.html" class="doc-link">Full Documentation</a>
+  <a href="GETTING_STARTED" class="doc-link">Getting Started</a>
+  <a href="ARCHITECTURE" class="doc-link">🏗️ Architecture</a>
+  <a href="PERFORMANCE_COMPARISON" class="doc-link">📊 Performance vs Competitors</a>
+  <a href="BENCHMARK_SYSTEM" class="doc-link">🏆 Competitor Benchmark System</a>
+  <a href="OPTIMIZATION_SUMMARY" class="doc-link">⚡ Training Optimizations (8-12x)</a>
+  <a href="INFERENCE_OPTIMIZATION" class="doc-link">🚀 Inference Optimization (2-3x)</a>
+  <a href="MULTI_GPU_TRAINING" class="doc-link">⚡ Multi-GPU Training (DDP)</a>
+  <a href="FOUNDATION_MODELS" class="doc-link">🎯 Foundation Models (UNI, Phikon)</a>
+  <a href="START_NOW_RTX4070" class="doc-link">RTX 4070 Guide</a>
+  <a href="EXPERIMENTS" class="doc-link">Run Experiments</a>
+  <a href="MODEL_INTERPRETABILITY" class="doc-link">Model Interpretability</a>
+  <a href="CLINICAL_WORKFLOW_INTEGRATION" class="doc-link">Clinical Integration</a>
+  <a href="PACS_INTEGRATION" class="doc-link">🏥 PACS Integration</a>
+  <a href="COMPREHENSIVE_DATASET_TESTING" class="doc-link">Dataset Testing</a>
+  <a href="regulatory_compliance" class="doc-link">Regulatory Compliance</a>
+  <a href="API_REFERENCE" class="doc-link">API Reference</a>
+  <a href="DOCS_INDEX" class="doc-link">Full Documentation</a>
 </div>
 
 ---
@@ -204,7 +204,7 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-See the [Getting Started Guide](GETTING_STARTED.html) for detailed instructions.
+See the [Getting Started Guide](GETTING_STARTED) for detailed instructions.
 
 ---
 
