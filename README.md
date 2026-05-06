@@ -290,6 +290,42 @@ See [docs/CAMELYON_TRAINING_STATUS.md](docs/CAMELYON_TRAINING_STATUS.md) for det
 
 > **📊 Architecture**: See [System Architecture](docs/ARCHITECTURE.md) for comprehensive visual documentation with detailed component diagrams.
 
+### 🧬 PathologyFL: Unique Federated Learning Innovation
+
+**HistoCore's PathologyFL** introduces hierarchical medical expertise aggregation - the first federated learning approach designed specifically for computational pathology:
+
+```python
+from src.federated.pathology_fl_coordinator import PathologyFLCoordinator
+from src.federated.pathology_fl_client import PathologyFLClient
+
+# Coordinator with medical expertise weighting
+coordinator = PathologyFLCoordinator("configs/pathology_fl_config.yaml")
+
+# Register hospitals with medical metadata
+coordinator.register_hospital("mayo_clinic", {
+    "hospital_type": "cancer_center",
+    "annual_cases": 15000,
+    "cancer_specialties": ["breast", "lung", "prostate"],
+    "diagnostic_accuracy": 0.96,
+    "years_experience": 20
+})
+
+# Client with slide quality assessment
+client = PathologyFLClient("mayo_clinic", "client_config.yaml")
+model_updates, quality_metrics = client.train_local_model(train_loader)
+```
+
+**Key Innovations**:
+- **Medical Hierarchy Weighting**: Cancer centers get 2x weight vs rural hospitals
+- **Specialty Bonuses**: Breast cancer specialists get higher weight for breast cases
+- **Quality-Aware Aggregation**: Slide quality affects contribution weight
+- **Cancer-Type Specific**: Different strategies for breast, lung, prostate cancers
+
+**Competitive Advantage**:
+- **vs Standard FL**: Generic averaging → Medical expertise weighting
+- **vs TensorFlow FL**: General purpose → Pathology-optimized
+- **vs PySyft**: Privacy-focused → Medical workflow integration
+
 ### Performance Optimizations
 
 **Production-grade training optimizations** for maximum efficiency:
