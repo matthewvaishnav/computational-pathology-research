@@ -1,39 +1,229 @@
 # PathologyFL Configuration Template
+# Production-ready federated learning for digital pathology
 
+# Coordinator Configuration
 coordinator:
-  expertise_weight: 0.5
-  quality_weight: 0.3
-  num_rounds: 10
-  min_clients: 3
-  max_clients: 50
+  host: "0.0.0.0"
+  port: 8080
+  max_clients: 1000
+  min_clients_per_round: 3
+  max_rounds: 100
+  
+  # Aggregation settings
+  aggregation:
+    algorithm: "fedavg"  # fedavg, fedprox, fedadam
+    weighting: "medical_expertise"  # uniform, medical_expertise, data_size
+    byzantine_tolerance: true
+    outlier_detection_threshold: 3.0
+    
+  # Privacy settings
+  privacy:
+    differential_privacy: true
+    epsilon: 1.0
+    delta: 1e-5
+    noise_multiplier: 1.1
+    max_grad_norm: 1.0
+    
+  # Performance settings
+  performance:
+    batch_size: 32
+    compression: true
+    compression_ratio: 0.1
+    cache_size: 1000
+    parallel_workers: 4
 
-hospitals:
-  cancer_centers:
-    base_weight: 2.0
-    specialty_bonus: 1.5
-  teaching_hospitals:
-    base_weight: 1.5
-    specialty_bonus: 1.3
-  community_hospitals:
-    base_weight: 1.0
-    specialty_bonus: 1.1
-  rural_hospitals:
-    base_weight: 0.8
-    specialty_bonus: 1.0
+# Hospital Client Configuration  
+client:
+  coordinator_url: "https://pathology-fl.example.com:8080"
+  hospital_id: "hospital_001"
+  
+  # Hospital metadata
+  metadata:
+    hospital_type: "cancer_center"  # cancer_center, teaching_hospital, community
+    annual_cases: 15000
+    cancer_specialties: ["breast", "lung", "prostate"]
+    diagnostic_accuracy: 0.94
+    years_experience: 20
+    pathologist_count: 12
+    
+  # Training settings
+  training:
+    local_epochs: 5
+    learning_rate: 0.001
+    batch_size: 16
+    optimizer: "adam"
+    weight_decay: 1e-4
+    
+  # Data settings
+  data:
+    slide_format: "svs"  # svs, tiff, ndpi, dicom
+    patch_size: 256
+    magnification: "20x"  # 10x, 20x, 40x
+    stain_normalization: true
+    quality_threshold: 0.8
+    
+  # Security settings
+  security:
+    tls_enabled: true
+    certificate_path: "/etc/ssl/certs/client.crt"
+    private_key_path: "/etc/ssl/private/client.key"
+    verify_coordinator: true
+    
+  # Quality assessment
+  quality:
+    image_sharpness_threshold: 0.7
+    stain_consistency_threshold: 0.6
+    artifact_level_threshold: 0.3
+    tissue_coverage_threshold: 0.8
 
-quality_thresholds:
-  image_sharpness: 0.7
-  stain_consistency: 0.6
-  label_confidence: 0.8
-  artifact_level: 0.3
+# Model Configuration
+model:
+  architecture: "attention_mil"  # attention_mil, clam, transmil
+  
+  # Feature extractor
+  feature_extractor:
+    backbone: "resnet50"  # resnet50, densenet121, efficientnet_b0
+    pretrained: true
+    freeze_backbone: true
+    feature_dim: 2048
+    
+  # MIL aggregator
+  mil_aggregator:
+    hidden_dim: 256
+    attention_dim: 128
+    num_classes: 2
+    dropout: 0.3
+    gated_attention: true
+    
+  # Training parameters
+  training_params:
+    max_patches_per_slide: 1000
+    patch_sampling: "random"  # random, grid, attention_guided
+    augmentation: true
+    mixed_precision: true
 
-cancer_types:
-  breast:
-    hormone_receptor_bonus: 1.2
-    volume_threshold: 2000
-  lung:
-    histology_bonus: 1.3
-    volume_threshold: 3000
-  prostate:
-    gleason_bonus: 1.4
-    volume_threshold: 1500
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # File logging
+  file:
+    enabled: true
+    path: "/var/log/pathology_fl/pathology_fl.log"
+    max_size: "100MB"
+    backup_count: 5
+    
+  # Console logging
+  console:
+    enabled: true
+    colored: true
+    
+  # Audit logging
+  audit:
+    enabled: true
+    path: "/var/log/pathology_fl/audit.log"
+    retention_days: 2555  # 7 years for HIPAA compliance
+
+# Monitoring Configuration
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+    
+  # Performance metrics
+  performance:
+    track_memory: true
+    track_cpu: true
+    track_gpu: true
+    track_network: true
+    
+  # Medical metrics
+  medical:
+    track_accuracy: true
+    track_sensitivity: true
+    track_specificity: true
+    track_auc: true
+    
+  # Alerts
+  alerts:
+    enabled: true
+    email_recipients: ["admin@hospital.org"]
+    slack_webhook: "https://hooks.slack.com/services/..."
+    
+    # Alert thresholds
+    thresholds:
+      accuracy_drop: 0.05
+      client_dropout_rate: 0.5
+      memory_usage: 0.9
+      disk_usage: 0.8
+
+# Storage Configuration
+storage:
+  # Model storage
+  models:
+    path: "/data/pathology_fl/models"
+    backup_enabled: true
+    backup_interval: "24h"
+    retention_days: 90
+    
+  # Data storage
+  data:
+    path: "/data/pathology_fl/slides"
+    cache_path: "/tmp/pathology_fl/cache"
+    max_cache_size: "10GB"
+    
+  # Database
+  database:
+    type: "postgresql"  # postgresql, mysql, sqlite
+    host: "localhost"
+    port: 5432
+    database: "pathology_fl"
+    username: "pathology_fl_user"
+    password: "${PATHOLOGY_FL_DB_PASSWORD}"
+    
+# Deployment Configuration
+deployment:
+  # Docker settings
+  docker:
+    image: "pathology-fl:latest"
+    registry: "registry.hospital.org"
+    pull_policy: "Always"
+    
+  # Kubernetes settings
+  kubernetes:
+    namespace: "pathology-fl"
+    replicas: 3
+    resources:
+      requests:
+        cpu: "1000m"
+        memory: "2Gi"
+      limits:
+        cpu: "4000m"
+        memory: "8Gi"
+        
+  # Health checks
+  health:
+    liveness_probe:
+      path: "/health"
+      initial_delay: 30
+      period: 10
+    readiness_probe:
+      path: "/ready"
+      initial_delay: 5
+      period: 5
+
+# Development Configuration
+development:
+  debug: false
+  profiling: false
+  synthetic_data: false
+  mock_hospitals: 0
+  
+  # Testing
+  testing:
+    unit_tests: true
+    integration_tests: true
+    performance_tests: true
+    security_tests: true
