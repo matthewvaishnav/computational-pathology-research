@@ -1,0 +1,39 @@
+# PathologyFL Configuration Template
+
+coordinator:
+  expertise_weight: 0.5
+  quality_weight: 0.3
+  num_rounds: 10
+  min_clients: 3
+  max_clients: 50
+
+hospitals:
+  cancer_centers:
+    base_weight: 2.0
+    specialty_bonus: 1.5
+  teaching_hospitals:
+    base_weight: 1.5
+    specialty_bonus: 1.3
+  community_hospitals:
+    base_weight: 1.0
+    specialty_bonus: 1.1
+  rural_hospitals:
+    base_weight: 0.8
+    specialty_bonus: 1.0
+
+quality_thresholds:
+  image_sharpness: 0.7
+  stain_consistency: 0.6
+  label_confidence: 0.8
+  artifact_level: 0.3
+
+cancer_types:
+  breast:
+    hormone_receptor_bonus: 1.2
+    volume_threshold: 2000
+  lung:
+    histology_bonus: 1.3
+    volume_threshold: 3000
+  prostate:
+    gleason_bonus: 1.4
+    volume_threshold: 1500
