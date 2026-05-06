@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any
 
-from src.analysis.models import SecurityAnalysis
+from .models import SecurityAnalysis
 
 
 logger = logging.getLogger(__name__)
