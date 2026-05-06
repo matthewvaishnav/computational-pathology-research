@@ -325,41 +325,78 @@ class DeploymentValidator:
         return score
     
     def _assess_ci_cd_pipeline(self) -> float:
-        """Assess CI/CD pipeline completeness."""
+        """
+        Assess CI/CD pipeline completeness.
+        
+        Checks:
+        - Build, test, deploy stages
+        - Security scanning (bandit, safety, etc.)
+        - Code quality checks (linting, type checking)
+        - Artifact management
+        
+        Returns:
+            Score 0-100 based on CI/CD completeness
+        """
         workflows_dir = self.project_path / '.github' / 'workflows'
         
         if not workflows_dir.exists():
             logger.info("No GitHub workflows found")
             return 0.0
         
-        score = 0.0
         yaml_files = list(workflows_dir.glob('*.yaml')) + list(workflows_dir.glob('*.yml'))
         
         if not yaml_files:
             return 0.0
         
-        # Check for CI/CD stages
+        score = 0.0
         all_content = ""
+        workflow_configs = []
+        
+        # Parse all workflows
         for yaml_file in yaml_files:
             try:
-                all_content += yaml_file.read_text()
-            except (OSError, UnicodeDecodeError):
+                content = yaml_file.read_text()
+                all_content += content.lower()
+                
+                # Parse YAML for structured analysis
+                with open(yaml_file, 'r') as f:
+                    config = yaml.safe_load(f)
+                    if config:
+                        workflow_configs.append(config)
+            except (OSError, UnicodeDecodeError, yaml.YAMLError) as e:
+                logger.warning(f"Failed to parse {yaml_file}: {e}")
                 continue
         
-        # CI/CD stages checklist
+        # Essential CI/CD stages (60 pts)
         stages = [
-            ('checkout', 'Code checkout', 15),
-            ('test', 'Testing stage', 25),
-            ('build', 'Build stage', 20),
-            ('docker', 'Docker build', 15),
+            ('checkout', 'Code checkout', 10),
+            ('test', 'Testing stage', 20),
+            ('build', 'Build stage', 15),
             ('deploy', 'Deployment stage', 15),
-            ('security', 'Security scanning', 10),
         ]
         
         for keyword, description, points in stages:
-            if keyword in all_content.lower():
+            if keyword in all_content:
                 score += points
                 logger.debug(f"✓ {description}")
+            else:
+                logger.debug(f"✗ Missing {description}")
+        
+        # Security and quality checks (40 pts)
+        quality_checks = [
+            (['bandit', 'security', 'safety', 'snyk'], 'Security scanning', 15),
+            (['lint', 'pylint', 'flake8', 'ruff'], 'Code linting', 10),
+            (['mypy', 'type', 'pyright'], 'Type checking', 5),
+            (['docker', 'container'], 'Container build', 5),
+            (['artifact', 'upload'], 'Artifact management', 5),
+        ]
+        
+        for keywords, description, points in quality_checks:
+            if any(kw in all_content for kw in keywords):
+                score += points
+                logger.debug(f"✓ {description}")
+            else:
+                logger.debug(f"✗ Missing {description}")
         
         return min(100.0, score)
     
