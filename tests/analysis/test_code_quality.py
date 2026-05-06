@@ -459,12 +459,14 @@ class PoorlyDocumentedClass:
         
         scanner = CodeQualityScanner(str(self.project_path))
         
-        # Test the placeholder implementation
+        # Test the actual implementation
         doc_coverage = scanner._measure_documentation_coverage()
         
-        # Currently returns 0.0 as placeholder
-        # When implemented, this should calculate actual coverage
-        assert doc_coverage == 0.0
+        # Should calculate actual coverage based on sample files
+        # well_documented.py: 1 class + 3 methods = 4 documented items out of 4 total = 100%
+        # poorly_documented.py: 0 documented items out of 3 total = 0%
+        # Overall: 4 documented out of 7 total = ~57%
+        assert 50.0 <= doc_coverage <= 60.0
         
         # TODO: When documentation coverage is implemented, update this test
         # to verify it correctly measures:
