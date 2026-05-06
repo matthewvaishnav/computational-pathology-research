@@ -25,29 +25,20 @@ from slowapi.errors import RateLimitExceeded
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Import database components
+# Database and monitoring
 from src.database import initialize_database
-
-# Import tracing
 from src.monitoring.tracing import get_tracer
 
-# Import security utilities
+# API components
+from src.api.dependencies import get_inference_engine
+from src.api.errors import http_exception_handler
+from src.api.routers import admin, analysis, auth, mobile, monitoring
 from src.api.security import (
     get_security_headers,
     limiter,
     log_security_event,
     validate_security_configuration,
 )
-
-# Import routers
-from src.api.routers import admin, analysis, auth, mobile, monitoring
-
-# Import dependencies
-from src.api.dependencies import get_inference_engine
-
-# Import error handlers
-from src.api.errors import (
-    http_exception_handler,
     internal_error_handler,
     not_found_handler,
     validation_error_handler,
