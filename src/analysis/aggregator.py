@@ -205,7 +205,7 @@ class ResultAggregator:
         
         # Normalize by actual weights used (in case some analyzers failed)
         if total_weight > 0:
-            final_score = total_score / total_weight * 100
+            final_score = total_score / total_weight
         else:
             final_score = 0.0
         
