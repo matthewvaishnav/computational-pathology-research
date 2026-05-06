@@ -9,7 +9,7 @@ import logging
 from typing import List, Dict, Any, Set
 from collections import defaultdict
 
-from src.analysis.models import (
+from .models import (
     AnalysisResult,
     Issue,
     Severity,
