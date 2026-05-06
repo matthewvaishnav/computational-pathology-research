@@ -196,7 +196,7 @@ python ../experiments/train_pcam.py --config ../experiments/configs/pcam_ultra_f
 | Fast Improved | 3.1 hours | 94.2% | RTX 4070 | 18M |
 | Full Scale | 5.5 hours | 94.5% | RTX 4070 | 25M |
 
-See [Performance Comparison](../docs/PERFORMANCE_COMPARISON.html) for detailed benchmarks vs competitors.
+See [Performance Comparison](../docs/PERFORMANCE_COMPARISON) for detailed benchmarks vs competitors.
 
 ---
 

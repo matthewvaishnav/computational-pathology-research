@@ -458,7 +458,7 @@ python scripts/download_foundation_models.py --model uni
 
 ## See Also
 
-- [Training Optimizations](OPTIMIZATION_SUMMARY.html) - 2.5x faster training
-- [Inference Optimization](INFERENCE_OPTIMIZATION.html) - 2-3x faster inference
-- [Performance Comparison](PERFORMANCE_COMPARISON.html) - Benchmarks
-- [Getting Started](GETTING_STARTED.html) - Setup guide
+- [Training Optimizations](OPTIMIZATION_SUMMARY) - 2.5x faster training
+- [Inference Optimization](INFERENCE_OPTIMIZATION) - 2-3x faster inference
+- [Performance Comparison](PERFORMANCE_COMPARISON) - Benchmarks
+- [Getting Started](GETTING_STARTED) - Setup guide

@@ -116,9 +116,9 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 ## Performance and Optimization
 
 ### Performance Analysis
-- [PERFORMANCE.md](PERFORMANCE.html) - Optimization guide
-- [PERFORMANCE_COMPARISON.md](PERFORMANCE_COMPARISON.html) - **8-12x speedup**: Benchmark vs PathML, CLAM
-- [INFERENCE_OPTIMIZATION.md](INFERENCE_OPTIMIZATION.html) - **2-3x faster inference**: TorchScript, quantization
+- [PERFORMANCE.md](PERFORMANCE) - Optimization guide
+- [PERFORMANCE_COMPARISON.md](PERFORMANCE_COMPARISON) - **8-12x speedup**: Benchmark vs PathML, CLAM
+- [INFERENCE_OPTIMIZATION.md](INFERENCE_OPTIMIZATION) - **2-3x faster inference**: TorchScript, quantization
 - **Topics**: Profiling, bottleneck analysis, GPU utilization, training optimization
 
 ### Model Optimization

@@ -295,6 +295,6 @@ python scripts/batch_inference.py \
 
 ## See Also
 
-- [Training Optimizations](OPTIMIZATION_SUMMARY.html) - 2.5x faster training
-- [Performance Comparison](PERFORMANCE_COMPARISON.html) - Benchmarks vs competitors
-- [Getting Started](GETTING_STARTED.html) - Setup and installation
+- [Training Optimizations](OPTIMIZATION_SUMMARY) - 2.5x faster training
+- [Performance Comparison](PERFORMANCE_COMPARISON) - Benchmarks vs competitors
+- [Getting Started](GETTING_STARTED) - Setup and installation
