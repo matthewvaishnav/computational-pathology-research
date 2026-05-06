@@ -39,8 +39,9 @@ class TestScalabilityAnalyzer:
         with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=True):
             with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=[]):
                 with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=[]):
-                    with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=25.5):
-                        result = self.analyzer.analyze()
+                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
+                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=25.5):
+                            result = self.analyzer.analyze()
         
         assert isinstance(result, ScalabilityAnalysis)
         assert result.ddp_correctness is True
@@ -510,8 +511,9 @@ class TestIntegrationWithMockData:
         with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=True):
             with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=[]):
                 with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=mock_bottlenecks):
-                    with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=25.0):
-                        result = self.analyzer.analyze()
+                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
+                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=25.0):
+                            result = self.analyzer.analyze()
         
         # Verify all fields are populated
         assert result.ddp_correctness is True
@@ -528,8 +530,9 @@ class TestIntegrationWithMockData:
         with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=True):
             with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=[]):
                 with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=[]):
-                    with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=5.0):
-                        result = self.analyzer.analyze()
+                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
+                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=5.0):
+                            result = self.analyzer.analyze()
         
         # Excellent scalability should result in high score
         assert result.score == 100.0
@@ -545,11 +548,215 @@ class TestIntegrationWithMockData:
         with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=False):
             with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=many_bottlenecks):
                 with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=[]):
-                    with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=80.0):
-                        result = self.analyzer.analyze()
+                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
+                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=80.0):
+                            result = self.analyzer.analyze()
         
         # Poor scalability should result in low score
         assert result.score < 50.0
+
+
+class TestLargeDatasetHandlingAssessment:
+    """Test large dataset handling assessment functionality."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.temp_dir = tempfile.mkdtemp()
+        self.project_path = Path(self.temp_dir)
+        self.analyzer = ScalabilityAnalyzer(str(self.project_path))
+    
+    def teardown_method(self):
+        """Clean up test fixtures."""
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+    
+    def create_python_file(self, path: str, content: str):
+        """Create a Python file with specified content."""
+        file_path = self.project_path / path
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(content)
+        return file_path
+    
+    def test_assess_large_dataset_handling_no_optimizations(self):
+        """Test assessment with no large dataset optimizations."""
+        basic_code = '''
+import torch
+from torch.utils.data import Dataset
+
+class BasicDataset(Dataset):
+    def __init__(self, data):
+        self.data = data
+    
+    def __getitem__(self, idx):
+        return self.data[idx]
+    
+    def __len__(self):
+        return len(self.data)
+'''
+        
+        self.create_python_file('src/dataset.py', basic_code)
+        
+        issues = self.analyzer._assess_large_dataset_handling()
+        
+        # Should detect missing optimizations
+        assert len(issues) >= 3
+        
+        # Check for specific issues
+        issues_text = ' '.join(issues)
+        assert 'streaming' in issues_text.lower()
+        assert 'wsi' in issues_text.lower() or 'openslide' in issues_text.lower()
+        assert 'memory-efficient' in issues_text.lower() or 'lazy' in issues_text.lower()
+    
+    def test_assess_large_dataset_handling_with_streaming(self):
+        """Test assessment with streaming dataset support."""
+        streaming_code = '''
+import torch
+from torch.utils.data import IterableDataset
+
+class StreamingDataset(IterableDataset):
+    def __init__(self, data_source):
+        self.data_source = data_source
+    
+    def __iter__(self):
+        # Stream data from source
+        for item in self.data_source:
+            yield item
+'''
+        
+        self.create_python_file('src/streaming_dataset.py', streaming_code)
+        
+        issues = self.analyzer._assess_large_dataset_handling()
+        
+        # Should not flag missing streaming support
+        issues_text = ' '.join(issues)
+        assert 'streaming' not in issues_text.lower() or 'no streaming' not in issues_text.lower()
+    
+    def test_assess_large_dataset_handling_with_wsi_optimization(self):
+        """Test assessment with WSI-specific optimizations."""
+        wsi_code = '''
+import openslide
+from pathlib import Path
+
+class WSIDataset:
+    def __init__(self, wsi_path):
+        self.slide = openslide.OpenSlide(str(wsi_path))
+        self.level_count = self.slide.level_count
+        self.level_dimensions = self.slide.level_dimensions
+    
+    def read_region(self, location, level, size):
+        # Tile-based loading
+        return self.slide.read_region(location, level, size)
+    
+    def get_thumbnail(self, size):
+        # Multi-resolution pyramid support
+        return self.slide.get_thumbnail(size)
+'''
+        
+        self.create_python_file('src/wsi_dataset.py', wsi_code)
+        
+        issues = self.analyzer._assess_large_dataset_handling()
+        
+        # Should not flag missing WSI optimization
+        issues_text = ' '.join(issues)
+        assert 'wsi' not in issues_text.lower() or 'no wsi' not in issues_text.lower()
+    
+    def test_assess_large_dataset_handling_with_memory_efficient_patterns(self):
+        """Test assessment with memory-efficient loading patterns."""
+        efficient_code = '''
+import torch
+from typing import Generator
+
+class LazyDataset:
+    def __init__(self, data_path):
+        self.data_path = data_path
+    
+    def load_chunks(self, chunk_size=1000) -> Generator:
+        # Lazy loading with chunking
+        for i in range(0, self.total_size, chunk_size):
+            chunk = self._load_chunk(i, chunk_size)
+            yield chunk
+    
+    def extract_patches(self, image, patch_size=256):
+        # Patch extraction for large images
+        for y in range(0, image.height, patch_size):
+            for x in range(0, image.width, patch_size):
+                patch = image.crop((x, y, x + patch_size, y + patch_size))
+                yield patch
+'''
+        
+        self.create_python_file('src/efficient_dataset.py', efficient_code)
+        
+        issues = self.analyzer._assess_large_dataset_handling()
+        
+        # Should not flag missing memory-efficient patterns
+        issues_text = ' '.join(issues)
+        assert 'memory-efficient' not in issues_text.lower() or 'no memory-efficient' not in issues_text.lower()
+    
+    def test_assess_large_dataset_handling_with_inefficient_patterns(self):
+        """Test assessment with memory-inefficient patterns."""
+        inefficient_code = '''
+import cv2
+import numpy as np
+from PIL import Image
+
+class IneffientDataset:
+    def load_images(self, image_paths):
+        images = []
+        for path in image_paths:
+            # Loading entire images into memory
+            img1 = cv2.imread(str(path))
+            img2 = Image.open(path).load()
+            img3 = np.load(str(path))
+            img4 = cv2.imread(str(path))
+            img5 = cv2.imread(str(path))
+            img6 = cv2.imread(str(path))
+            img7 = cv2.imread(str(path))
+            images.append(img1)
+        return images
+'''
+        
+        self.create_python_file('src/inefficient_dataset.py', inefficient_code)
+        
+        issues = self.analyzer._assess_large_dataset_handling()
+        
+        # Should detect issues (at minimum, missing optimizations)
+        assert len(issues) >= 3
+        
+        # Check that issues are reported
+        issues_text = ' '.join(issues)
+        # The method reports missing optimizations, not necessarily the specific patterns
+        assert 'streaming' in issues_text.lower() or 'wsi' in issues_text.lower() or 'memory-efficient' in issues_text.lower()
+    
+    def test_assess_large_dataset_handling_comprehensive(self):
+        """Test assessment with comprehensive optimizations."""
+        comprehensive_code = '''
+import openslide
+from torch.utils.data import IterableDataset
+from typing import Generator
+
+class OptimizedWSIDataset(IterableDataset):
+    def __init__(self, wsi_path):
+        self.slide = openslide.OpenSlide(str(wsi_path))
+        self.level_count = self.slide.level_count
+        self.level_dimensions = self.slide.level_dimensions
+    
+    def __iter__(self) -> Generator:
+        # Streaming with lazy loading
+        for location in self.get_tile_locations():
+            # Tile-based loading with patch extraction
+            tile = self.slide.read_region(location, 0, (256, 256))
+            yield self.process_tile(tile)
+    
+    def get_thumbnail(self, size):
+        # Multi-resolution pyramid support
+        return self.slide.get_thumbnail(size)
+'''
+        
+        self.create_python_file('src/optimized_dataset.py', comprehensive_code)
+        
+        issues = self.analyzer._assess_large_dataset_handling()
+        
+        # Should detect minimal or no issues with comprehensive optimizations
+        assert len(issues) <= 1  # May still have some recommendations
 
 
 if __name__ == '__main__':

@@ -46,6 +46,10 @@ class ScalabilityAnalyzer:
         data_loading_bottlenecks = self._detect_data_loading_bottlenecks()
         memory_bottlenecks.extend(data_loading_bottlenecks)
         
+        # Large dataset handling assessment
+        large_dataset_issues = self._assess_large_dataset_handling()
+        memory_bottlenecks.extend(large_dataset_issues)
+        
         # Communication overhead
         comm_overhead = self._estimate_communication_overhead()
         
@@ -238,6 +242,140 @@ class ScalabilityAnalyzer:
                         f"DataLoader in {file_path.name} uses custom collate_fn "
                         f"(potential serialization bottleneck)"
                     )
+    
+    def _assess_large_dataset_handling(self) -> List[str]:
+        """
+        Assess large dataset handling for >1TB datasets and gigapixel WSI processing.
+        
+        Analyzes:
+        - Streaming data loading patterns (IterableDataset, streaming loaders)
+        - WSI-specific optimizations (tile-based loading, lazy loading, OpenSlide usage)
+        - Memory-inefficient patterns (loading entire images, no chunking)
+        - Gigapixel image handling (patch extraction, multi-resolution pyramids)
+        
+        Returns:
+            List of large dataset handling issues/recommendations
+        """
+        issues = []
+        
+        # Patterns to detect
+        streaming_patterns = [
+            ('IterableDataset', 'Streaming dataset support'),
+            ('StreamingDataset', 'Streaming dataset support'),
+            ('streaming=True', 'Streaming mode enabled'),
+        ]
+        
+        wsi_optimization_patterns = [
+            ('openslide', 'OpenSlide library for WSI'),
+            ('OpenSlide', 'OpenSlide library for WSI'),
+            ('read_region', 'Tile-based WSI loading'),
+            ('get_thumbnail', 'Multi-resolution pyramid support'),
+            ('level_count', 'Multi-resolution pyramid support'),
+            ('level_dimensions', 'Multi-resolution pyramid support'),
+        ]
+        
+        memory_efficient_patterns = [
+            ('lazy', 'Lazy loading pattern'),
+            ('chunk', 'Chunked data loading'),
+            ('tile', 'Tile-based processing'),
+            ('patch', 'Patch extraction'),
+            ('generator', 'Generator-based loading'),
+            ('yield', 'Generator-based loading'),
+        ]
+        
+        memory_inefficient_patterns = [
+            ('.load()', 'Loading entire image into memory'),
+            ('Image.open', 'PIL Image loading (may load entire image)'),
+            ('cv2.imread', 'OpenCV imread (loads entire image)'),
+            ('np.load', 'NumPy load (loads entire array)'),
+        ]
+        
+        # Track findings
+        has_streaming = False
+        has_wsi_optimization = False
+        has_memory_efficient = False
+        inefficient_patterns_found = []
+        
+        # Scan Python files
+        for py_file in self.project_path.rglob('*.py'):
+            if '.venv' in str(py_file) or '__pycache__' in str(py_file):
+                continue
+            
+            try:
+                content = py_file.read_text(encoding='utf-8')
+                
+                # Check for streaming patterns
+                for pattern, description in streaming_patterns:
+                    if pattern in content:
+                        has_streaming = True
+                        logger.info(f"Found {description} in {py_file.name}")
+                        break
+                
+                # Check for WSI optimization patterns
+                for pattern, description in wsi_optimization_patterns:
+                    if pattern in content:
+                        has_wsi_optimization = True
+                        logger.info(f"Found {description} in {py_file.name}")
+                        break
+                
+                # Check for memory-efficient patterns
+                for pattern, description in memory_efficient_patterns:
+                    if pattern in content:
+                        has_memory_efficient = True
+                        break
+                
+                # Check for memory-inefficient patterns
+                for pattern, description in memory_inefficient_patterns:
+                    if pattern in content:
+                        count = content.count(pattern)
+                        if count > 5:  # Threshold for concern
+                            inefficient_patterns_found.append(
+                                (description, count, py_file.name)
+                            )
+            
+            except (UnicodeDecodeError, OSError):
+                continue
+        
+        # Generate recommendations based on findings
+        if not has_streaming:
+            issues.append(
+                "No streaming dataset support detected (IterableDataset, StreamingDataset). "
+                "For >1TB datasets, implement streaming data loading to avoid loading entire dataset into memory."
+            )
+        
+        if not has_wsi_optimization:
+            issues.append(
+                "No WSI-specific optimizations detected (OpenSlide, tile-based loading). "
+                "For gigapixel WSI processing, implement tile-based loading with OpenSlide or similar library."
+            )
+        
+        if not has_memory_efficient:
+            issues.append(
+                "No memory-efficient loading patterns detected (lazy loading, chunking, generators). "
+                "Implement lazy loading or chunked processing for large datasets."
+            )
+        
+        # Report memory-inefficient patterns
+        for description, count, filename in inefficient_patterns_found:
+            issues.append(
+                f"Memory-inefficient pattern detected: {description} "
+                f"({count} occurrences in {filename}). "
+                f"Consider using tile-based or streaming loading instead."
+            )
+        
+        # Check for multi-resolution pyramid support
+        has_pyramid_support = any(
+            pattern in str(self.project_path.rglob('*.py'))
+            for pattern in ['level_count', 'level_dimensions', 'get_thumbnail']
+        )
+        
+        if has_wsi_optimization and not has_pyramid_support:
+            issues.append(
+                "WSI library detected but no multi-resolution pyramid support found. "
+                "Implement multi-resolution processing for efficient gigapixel image handling."
+            )
+        
+        return issues
     
     def _estimate_communication_overhead(self) -> float:
         """
