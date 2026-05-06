@@ -11,7 +11,7 @@ import toml
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from src.analysis.models import DependencyAnalysis
+from .models import DependencyAnalysis
 
 
 logger = logging.getLogger(__name__)
