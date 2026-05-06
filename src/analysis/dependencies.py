@@ -48,12 +48,16 @@ class DependencyAuditor:
         # Outdated packages
         outdated_packages = self._find_outdated_packages()
         
+        # Dependency bloat detection
+        unused_deps, redundant_deps = self._detect_dependency_bloat(dependencies)
+        
         # License issues
         license_issues = self._validate_licenses()
         
         # Calculate overall score
         score = self._calculate_dependency_score(
-            total_deps, len(vulnerabilities), len(outdated_packages), len(license_issues)
+            total_deps, len(vulnerabilities), len(outdated_packages), 
+            len(license_issues), len(unused_deps), len(redundant_deps)
         )
         
         return DependencyAnalysis(
@@ -61,7 +65,9 @@ class DependencyAuditor:
             vulnerabilities=vulnerabilities,
             outdated_packages=outdated_packages,
             license_issues=license_issues,
-            score=score
+            score=score,
+            unused_dependencies=unused_deps,
+            redundant_dependencies=redundant_deps
         )
     
     def _parse_dependencies(self) -> List[Dict[str, str]]:
@@ -234,7 +240,12 @@ class DependencyAuditor:
         return 'medium'  # Default severity
     
     def _find_outdated_packages(self) -> List[str]:
-        """Find outdated packages using pip list --outdated."""
+        """
+        Find outdated packages using pip list --outdated.
+        
+        Prioritizes security updates over feature updates by checking
+        for security patches in new versions.
+        """
         outdated = []
         
         try:
@@ -250,17 +261,250 @@ class DependencyAuditor:
             if result.returncode == 0 and result.stdout:
                 data = json.loads(result.stdout)
                 
+                # Sort packages by priority (security updates first)
+                security_updates = []
+                feature_updates = []
+                
                 for package in data:
                     package_name = package.get('name', 'unknown')
                     current_version = package.get('version', 'unknown')
                     latest_version = package.get('latest_version', 'unknown')
+                    package_type = package.get('latest_filetype', 'wheel')
                     
-                    outdated.append(f"{package_name} ({current_version} -> {latest_version})")
+                    # Check if this might be a security update
+                    is_security_update = self._is_security_update(
+                        package_name, current_version, latest_version
+                    )
+                    
+                    package_info = {
+                        'name': package_name,
+                        'current_version': current_version,
+                        'latest_version': latest_version,
+                        'type': package_type,
+                        'is_security': is_security_update,
+                        'upgrade_command': f"pip install --upgrade {package_name}=={latest_version}"
+                    }
+                    
+                    if is_security_update:
+                        security_updates.append(package_info)
+                    else:
+                        feature_updates.append(package_info)
+                
+                # Format output with security updates first
+                for package in security_updates:
+                    outdated.append(
+                        f"🔒 {package['name']} ({package['current_version']} -> {package['latest_version']}) [SECURITY]"
+                    )
+                
+                for package in feature_updates:
+                    outdated.append(
+                        f"{package['name']} ({package['current_version']} -> {package['latest_version']})"
+                    )
         
         except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError) as e:
             logger.warning(f"Failed to check outdated packages: {e}")
         
         return outdated[:30]  # Limit to 30 packages
+    
+    def _is_security_update(self, package_name: str, current_version: str, latest_version: str) -> bool:
+        """
+        Determine if an update is likely a security patch.
+        
+        Uses heuristics to identify security updates:
+        - Patch version bumps (x.y.z -> x.y.z+1)
+        - Known security-focused packages
+        - Version patterns indicating security fixes
+        """
+        try:
+            # Parse version numbers
+            current_parts = [int(x) for x in current_version.split('.') if x.isdigit()]
+            latest_parts = [int(x) for x in latest_version.split('.') if x.isdigit()]
+            
+            if len(current_parts) >= 3 and len(latest_parts) >= 3:
+                # Check if it's a patch version bump (major.minor.patch)
+                if (current_parts[0] == latest_parts[0] and 
+                    current_parts[1] == latest_parts[1] and 
+                    latest_parts[2] > current_parts[2]):
+                    return True
+            
+            # Security-focused packages that should be prioritized
+            security_packages = {
+                'cryptography', 'pycryptodome', 'requests', 'urllib3', 'certifi',
+                'pillow', 'lxml', 'pyyaml', 'jinja2', 'werkzeug', 'flask',
+                'django', 'sqlalchemy', 'psycopg2', 'pymongo', 'redis',
+                'paramiko', 'pyopenssl', 'bcrypt', 'passlib'
+            }
+            
+            if package_name.lower() in security_packages:
+                return True
+            
+            # Check for security-related version patterns
+            version_indicators = ['security', 'sec', 'cve', 'vuln', 'patch', 'fix']
+            latest_lower = latest_version.lower()
+            
+            for indicator in version_indicators:
+                if indicator in latest_lower:
+                    return True
+        
+        except (ValueError, IndexError):
+            # If version parsing fails, assume it's not a security update
+            pass
+        
+        return False
+    
+    def _detect_dependency_bloat(self, dependencies: List[Dict[str, str]]) -> tuple[List[str], List[str]]:
+        """
+        Detect unused and redundant dependencies.
+        
+        Returns:
+            Tuple of (unused_dependencies, redundant_dependencies)
+        """
+        unused_deps = []
+        redundant_deps = []
+        
+        try:
+            # Get list of imported packages from codebase
+            imported_packages = self._get_imported_packages()
+            
+            # Check for unused dependencies
+            for dep in dependencies:
+                dep_name = dep['name'].lower()
+                
+                # Skip common build/dev dependencies
+                if dep_name in {'pip', 'setuptools', 'wheel', 'build', 'twine', 'pytest', 'coverage'}:
+                    continue
+                
+                # Check if package is imported anywhere
+                is_used = False
+                
+                # Check direct import
+                if dep_name in imported_packages:
+                    is_used = True
+                
+                # Check common name variations
+                name_variations = [
+                    dep_name.replace('-', '_'),  # package-name -> package_name
+                    dep_name.replace('_', '-'),  # package_name -> package-name
+                    dep_name.split('-')[0],      # first part of hyphenated name
+                    dep_name.split('_')[0]       # first part of underscored name
+                ]
+                
+                for variation in name_variations:
+                    if variation in imported_packages:
+                        is_used = True
+                        break
+                
+                # Check for common package aliases
+                package_aliases = {
+                    'pillow': 'pil',
+                    'pyyaml': 'yaml',
+                    'beautifulsoup4': 'bs4',
+                    'python-dateutil': 'dateutil',
+                    'msgpack-python': 'msgpack',
+                    'pycryptodome': 'crypto'
+                }
+                
+                if dep_name in package_aliases:
+                    if package_aliases[dep_name] in imported_packages:
+                        is_used = True
+                
+                if not is_used:
+                    unused_deps.append(f"{dep['name']} (from {dep['source']})")
+            
+            # Detect redundant packages (overlapping functionality)
+            redundant_deps = self._find_redundant_packages(dependencies)
+        
+        except Exception as e:
+            logger.warning(f"Failed to detect dependency bloat: {e}")
+        
+        return unused_deps[:20], redundant_deps[:10]  # Limit results
+    
+    def _get_imported_packages(self) -> set[str]:
+        """Get set of all imported package names from the codebase."""
+        imported = set()
+        
+        try:
+            src_dir = self.project_path / 'src'
+            if not src_dir.exists():
+                return imported
+            
+            python_files = list(src_dir.rglob('*.py'))
+            
+            for py_file in python_files:
+                try:
+                    with open(py_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Parse import statements
+                    import ast
+                    tree = ast.parse(content)
+                    
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.Import):
+                            for alias in node.names:
+                                # Extract top-level package name
+                                package = alias.name.split('.')[0]
+                                imported.add(package.lower())
+                        
+                        elif isinstance(node, ast.ImportFrom):
+                            if node.module:
+                                # Extract top-level package name
+                                package = node.module.split('.')[0]
+                                imported.add(package.lower())
+                
+                except (SyntaxError, UnicodeDecodeError) as e:
+                    logger.warning(f"Failed to parse {py_file}: {e}")
+                    continue
+        
+        except Exception as e:
+            logger.warning(f"Failed to scan imports: {e}")
+        
+        return imported
+    
+    def _find_redundant_packages(self, dependencies: List[Dict[str, str]]) -> List[str]:
+        """Find packages with overlapping functionality."""
+        redundant = []
+        
+        # Define groups of packages with overlapping functionality
+        overlapping_groups = [
+            # HTTP clients
+            {'requests', 'urllib3', 'httpx', 'aiohttp'},
+            # JSON libraries
+            {'simplejson', 'ujson', 'orjson'},
+            # Date/time libraries
+            {'python-dateutil', 'arrow', 'pendulum'},
+            # Image processing
+            {'pillow', 'opencv-python', 'imageio', 'scikit-image'},
+            # Data manipulation
+            {'pandas', 'polars', 'dask'},
+            # Testing frameworks
+            {'pytest', 'unittest2', 'nose', 'nose2'},
+            # Async libraries
+            {'asyncio', 'trio', 'curio'},
+            # Serialization
+            {'pickle', 'dill', 'cloudpickle'},
+            # Configuration
+            {'configparser', 'pyyaml', 'toml', 'json5'},
+            # Logging
+            {'loguru', 'structlog', 'colorlog'},
+            # CLI frameworks
+            {'click', 'argparse', 'fire', 'typer'},
+            # Web frameworks
+            {'flask', 'fastapi', 'django', 'tornado'},
+            # Database ORMs
+            {'sqlalchemy', 'peewee', 'tortoise-orm'},
+            # Validation
+            {'pydantic', 'marshmallow', 'cerberus', 'schema'}
+        ]
+        
+        dep_names = {dep['name'].lower() for dep in dependencies}
+        
+        for group in overlapping_groups:
+            found_in_group = group.intersection(dep_names)
+            if len(found_in_group) > 1:
+                redundant.append(f"Overlapping functionality: {', '.join(sorted(found_in_group))}")
+        
+        return redundant
     
     def _validate_licenses(self) -> List[str]:
         """Validate license compatibility using pip-licenses."""
@@ -307,7 +551,9 @@ class DependencyAuditor:
         total_deps: int,
         vuln_count: int,
         outdated_count: int,
-        license_issues_count: int
+        license_issues_count: int,
+        unused_count: int = 0,
+        redundant_count: int = 0
     ) -> float:
         """
         Calculate dependency health score (0-100).
@@ -316,6 +562,8 @@ class DependencyAuditor:
         - Vulnerabilities: -20 points per critical, -10 per high, -5 per medium, -2 per low
         - Outdated packages: -1 point per outdated package
         - License issues: -5 points per problematic license
+        - Unused dependencies: -2 points per unused dependency
+        - Redundant packages: -3 points per redundant group
         - Base score: 100
         """
         score = 100.0
@@ -330,5 +578,11 @@ class DependencyAuditor:
         
         # Penalize license issues
         score -= license_issues_count * 5
+        
+        # Penalize unused dependencies
+        score -= unused_count * 2
+        
+        # Penalize redundant packages
+        score -= redundant_count * 3
         
         return max(0.0, min(100.0, round(score, 2)))

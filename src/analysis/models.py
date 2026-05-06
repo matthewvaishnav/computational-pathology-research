@@ -126,6 +126,8 @@ class DependencyAnalysis:
     vulnerabilities: List[Dict[str, Any]] = field(default_factory=list)
     outdated_packages: List[str] = field(default_factory=list)
     license_issues: List[str] = field(default_factory=list)
+    unused_dependencies: List[str] = field(default_factory=list)
+    redundant_dependencies: List[str] = field(default_factory=list)
     score: float = 0.0
 
 
