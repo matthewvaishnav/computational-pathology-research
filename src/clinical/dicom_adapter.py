@@ -550,12 +550,66 @@ class DICOMAdapter:
             This is a placeholder implementation. Full PACS integration
             requires pynetdicom library and proper DICOM networking setup.
         """
-        # Placeholder for PACS query functionality
-        # Full implementation would use pynetdicom for C-FIND operations
-        raise NotImplementedError(
-            "PACS query/retrieve requires pynetdicom library and network configuration. "
-            "This is a placeholder for future implementation."
-        )
+        try:
+            from pynetdicom import AE, debug_logger
+            from pydicom.dataset import Dataset
+            
+            # Configure DICOM networking
+            ae = AE(ae_title=ae_title)
+            ae.add_requested_context('1.2.840.10008.5.1.4.1.2.1.1')  # Patient Root Query/Retrieve
+            ae.add_requested_context('1.2.840.10008.5.1.4.1.2.2.1')  # Study Root Query/Retrieve
+            
+            # Build query dataset
+            query_ds = Dataset()
+            query_ds.QueryRetrieveLevel = 'SERIES'
+            
+            # Set query parameters
+            if patient_id:
+                query_ds.PatientID = patient_id
+            if study_date:
+                query_ds.StudyDate = study_date
+            if modality:
+                query_ds.Modality = modality
+            if series_description:
+                query_ds.SeriesDescription = series_description
+                
+            # Required return keys
+            query_ds.PatientName = ''
+            query_ds.StudyInstanceUID = ''
+            query_ds.SeriesInstanceUID = ''
+            query_ds.NumberOfSeriesRelatedInstances = ''
+            
+            # Perform C-FIND
+            results = []
+            assoc = ae.associate(pacs_host, pacs_port)
+            
+            if assoc.is_established:
+                responses = assoc.send_c_find(query_ds, '1.2.840.10008.5.1.4.1.2.2.1')
+                
+                for status, identifier in responses:
+                    if status and status.Status == 0x0000 and identifier:
+                        results.append({
+                            'patient_id': getattr(identifier, 'PatientID', ''),
+                            'patient_name': str(getattr(identifier, 'PatientName', '')),
+                            'study_uid': getattr(identifier, 'StudyInstanceUID', ''),
+                            'series_uid': getattr(identifier, 'SeriesInstanceUID', ''),
+                            'modality': getattr(identifier, 'Modality', ''),
+                            'series_description': getattr(identifier, 'SeriesDescription', ''),
+                            'num_instances': int(getattr(identifier, 'NumberOfSeriesRelatedInstances', 0))
+                        })
+                
+                assoc.release()
+                logger.info(f"PACS query returned {len(results)} series")
+                return results
+            else:
+                raise ConnectionError(f"Failed to establish PACS association with {pacs_host}:{pacs_port}")
+                
+        except ImportError:
+            logger.error("pynetdicom library required for PACS operations")
+            raise ImportError("Install pynetdicom: pip install pynetdicom")
+        except Exception as e:
+            logger.error(f"PACS query failed: {e}")
+            raise RuntimeError(f"PACS query operation failed: {e}")
 
     def retrieve_from_pacs(
         self,
@@ -586,12 +640,93 @@ class DICOMAdapter:
             This is a placeholder implementation. Full PACS integration
             requires pynetdicom library and proper DICOM networking setup.
         """
-        # Placeholder for PACS retrieve functionality
-        # Full implementation would use pynetdicom for C-MOVE operations
-        raise NotImplementedError(
-            "PACS query/retrieve requires pynetdicom library and network configuration. "
-            "This is a placeholder for future implementation."
-        )
+        try:
+            from pynetdicom import AE, StoragePresentationContexts
+            from pynetdicom.sop_class import StudyRootQueryRetrieveInformationModelMove
+            from pydicom.dataset import Dataset
+            import os
+            
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Configure DICOM networking for retrieve
+            ae = AE(ae_title=ae_title)
+            ae.add_requested_context(StudyRootQueryRetrieveInformationModelMove)
+            
+            # Add storage contexts to receive files
+            ae.presentation_contexts.extend(StoragePresentationContexts)
+            
+            # Build retrieve dataset
+            retrieve_ds = Dataset()
+            retrieve_ds.QueryRetrieveLevel = 'SERIES' if series_uid else 'STUDY'
+            retrieve_ds.StudyInstanceUID = study_uid
+            if series_uid:
+                retrieve_ds.SeriesInstanceUID = series_uid
+            
+            retrieved_files = []
+            
+            def handle_store(event):
+                """Handle incoming DICOM files during C-MOVE."""
+                ds = event.dataset
+                ds.file_meta = event.file_meta
+                
+                # Generate filename
+                sop_uid = ds.SOPInstanceUID
+                filename = f"{sop_uid}.dcm"
+                filepath = output_dir / filename
+                
+                # Save file
+                ds.save_as(filepath, write_like_original=False)
+                retrieved_files.append(filepath)
+                
+                return 0x0000  # Success
+            
+            # Bind storage handler
+            ae.on_c_store = handle_store
+            
+            # Start SCP to receive files
+            scp = ae.start_server(('', 0), block=False)  # Use any available port
+            move_port = scp.address[1]
+            
+            try:
+                # Establish association for C-MOVE
+                assoc = ae.associate(pacs_host, pacs_port)
+                
+                if assoc.is_established:
+                    # Send C-MOVE request
+                    responses = assoc.send_c_move(
+                        retrieve_ds, 
+                        ae_title,  # Move destination (our AE title)
+                        StudyRootQueryRetrieveInformationModelMove
+                    )
+                    
+                    # Process responses
+                    for status, identifier in responses:
+                        if status and status.Status in [0x0000, 0xFF00]:  # Success or pending
+                            continue
+                        elif status and status.Status != 0x0000:
+                            logger.warning(f"C-MOVE warning/error: {status.Status:04X}")
+                    
+                    assoc.release()
+                    
+                    # Wait a moment for any remaining transfers
+                    import time
+                    time.sleep(2)
+                    
+                    logger.info(f"Retrieved {len(retrieved_files)} DICOM files to {output_dir}")
+                    return retrieved_files
+                else:
+                    raise ConnectionError(f"Failed to establish PACS association with {pacs_host}:{pacs_port}")
+                    
+            finally:
+                scp.shutdown()
+                
+        except ImportError:
+            logger.error("pynetdicom library required for PACS operations")
+            raise ImportError("Install pynetdicom: pip install pynetdicom")
+        except Exception as e:
+            logger.error(f"PACS retrieve failed: {e}")
+            raise RuntimeError(f"PACS retrieve operation failed: {e}")
 
     def supports_transfer_syntax(self, transfer_syntax_uid: str) -> bool:
         """

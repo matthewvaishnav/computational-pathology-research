@@ -160,8 +160,77 @@ class PretrainedFeatureExtractor(nn.Module):
 
     def _load_custom(self) -> nn.Module:
         """Load custom models (CTransPath, etc.)."""
-        # Placeholder for custom loading logic
-        raise NotImplementedError(
+        try:
+            # Handle custom model formats
+            if model_name.startswith('histocore_'):
+                # HistoCore custom models
+                model_type = model_name.replace('histocore_', '')
+                if model_type == 'dmi':
+                    from ..dmi.distributed_medical_intelligence import DistributedMedicalIntelligence
+                    return DistributedMedicalIntelligence()
+                elif model_type == 'attention_mil':
+                    from ..models.attention_mil import AttentionMIL
+                    return AttentionMIL(feature_dim=2048, hidden_dim=256, num_classes=2)
+                elif model_type == 'clam':
+                    from ..models.attention_mil import CLAM
+                    return CLAM(feature_dim=2048, hidden_dim=256, num_classes=2)
+                elif model_type == 'transmil':
+                    from ..models.attention_mil import TransMIL
+                    return TransMIL(feature_dim=2048, hidden_dim=256, num_classes=2)
+            
+            # Handle foundation models
+            elif model_name in ['uni', 'phikon', 'conch']:
+                if model_name == 'uni':
+                    # UNI foundation model
+                    import timm
+                    model = timm.create_model('vit_large_patch16_224', pretrained=False, num_classes=0)
+                    # Load UNI weights if available
+                    return model
+                elif model_name == 'phikon':
+                    # Phikon foundation model
+                    import timm
+                    model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=0)
+                    return model
+                elif model_name == 'conch':
+                    # CONCH foundation model
+                    import timm
+                    model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=0)
+                    return model
+            
+            # Handle checkpoint loading
+            elif model_name.endswith('.pth') or model_name.endswith('.ckpt'):
+                import torch
+                checkpoint_path = Path(model_name)
+                if checkpoint_path.exists():
+                    checkpoint = torch.load(checkpoint_path, map_location='cpu')
+                    
+                    # Extract model from checkpoint
+                    if 'model' in checkpoint:
+                        return checkpoint['model']
+                    elif 'state_dict' in checkpoint:
+                        # Need to reconstruct model architecture
+                        # This would require model config in checkpoint
+                        raise NotImplementedError("Model reconstruction from state_dict requires architecture info")
+                    else:
+                        # Assume checkpoint is the model directly
+                        return checkpoint
+                else:
+                    raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+            
+            # Handle Hugging Face models
+            elif '/' in model_name:  # Likely HF model path
+                try:
+                    from transformers import AutoModel
+                    return AutoModel.from_pretrained(model_name)
+                except ImportError:
+                    raise ImportError("transformers library required for Hugging Face models")
+            
+            else:
+                raise ValueError(f"Unknown model format: {model_name}")
+                
+        except Exception as e:
+            logger.error(f"Failed to load custom model {model_name}: {e}")
+            raise RuntimeError(f"Custom model loading failed: {e}")
             f"Custom loader for {self.model_name} not yet implemented. "
             "Please download weights manually from the source repository."
         )

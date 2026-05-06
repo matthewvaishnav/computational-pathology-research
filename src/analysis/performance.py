@@ -85,13 +85,169 @@ class PerformanceProfiler:
     
     def _detect_bottlenecks(self) -> List[Dict[str, Any]]:
         """Detect performance bottlenecks (placeholder)."""
-        # TODO: Implement actual bottleneck detection using profiling
+        try:
+            import psutil
+            import time
+            import threading
+            from collections import defaultdict
+            
+            bottlenecks = []
+            
+            # CPU bottleneck detection
+            cpu_percent = psutil.cpu_percent(interval=1)
+            if cpu_percent > 80:
+                bottlenecks.append({
+                    "type": "CPU",
+                    "severity": "high" if cpu_percent > 90 else "medium",
+                    "value": cpu_percent,
+                    "description": f"CPU usage at {cpu_percent:.1f}%",
+                    "recommendation": "Consider reducing batch size or using GPU acceleration"
+                })
+            
+            # Memory bottleneck detection
+            memory = psutil.virtual_memory()
+            if memory.percent > 80:
+                bottlenecks.append({
+                    "type": "Memory",
+                    "severity": "high" if memory.percent > 90 else "medium", 
+                    "value": memory.percent,
+                    "description": f"Memory usage at {memory.percent:.1f}%",
+                    "recommendation": "Reduce batch size or enable gradient checkpointing"
+                })
+            
+            # Disk I/O bottleneck detection
+            disk_io = psutil.disk_io_counters()
+            if disk_io:
+                # Simple heuristic: if read/write bytes are very high
+                total_io = disk_io.read_bytes + disk_io.write_bytes
+                if total_io > 1e9:  # > 1GB I/O
+                    bottlenecks.append({
+                        "type": "Disk I/O",
+                        "severity": "medium",
+                        "value": total_io / 1e9,
+                        "description": f"High disk I/O: {total_io/1e9:.1f} GB",
+                        "recommendation": "Use SSD storage or implement data caching"
+                    })
+            
+            # GPU bottleneck detection (if available)
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    gpu_memory = torch.cuda.memory_allocated() / torch.cuda.max_memory_allocated()
+                    if gpu_memory > 0.8:
+                        bottlenecks.append({
+                            "type": "GPU Memory",
+                            "severity": "high" if gpu_memory > 0.9 else "medium",
+                            "value": gpu_memory * 100,
+                            "description": f"GPU memory usage at {gpu_memory*100:.1f}%",
+                            "recommendation": "Reduce batch size or use gradient accumulation"
+                        })
+            except:
+                pass
+            
+            return {
+                "bottlenecks": bottlenecks,
+                "timestamp": time.time(),
+                "system_info": {
+                    "cpu_count": psutil.cpu_count(),
+                    "memory_total": memory.total / 1e9,
+                    "gpu_available": torch.cuda.is_available() if 'torch' in locals() else False
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Bottleneck detection failed: {e}")
+            return {"error": str(e), "bottlenecks": []}
         logger.info("Bottleneck detection not yet implemented")
         return []
     
     def _measure_memory_usage(self) -> tuple[float, float]:
         """Measure memory usage (placeholder)."""
-        # TODO: Implement memory profiling
+        try:
+            import psutil
+            import gc
+            import sys
+            from collections import defaultdict
+            
+            # Force garbage collection
+            gc.collect()
+            
+            # Get current memory usage
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            
+            # Get Python object memory usage
+            object_counts = defaultdict(int)
+            object_sizes = defaultdict(int)
+            
+            for obj in gc.get_objects():
+                obj_type = type(obj).__name__
+                object_counts[obj_type] += 1
+                try:
+                    object_sizes[obj_type] += sys.getsizeof(obj)
+                except:
+                    pass
+            
+            # Sort by memory usage
+            top_objects = sorted(
+                [(obj_type, size, count) for obj_type, (size, count) in 
+                 zip(object_sizes.keys(), zip(object_sizes.values(), object_counts.values()))],
+                key=lambda x: x[1], reverse=True
+            )[:10]
+            
+            # GPU memory profiling (if available)
+            gpu_memory = {}
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    gpu_memory = {
+                        "allocated": torch.cuda.memory_allocated(),
+                        "cached": torch.cuda.memory_reserved(),
+                        "max_allocated": torch.cuda.max_memory_allocated(),
+                        "device_count": torch.cuda.device_count()
+                    }
+            except:
+                pass
+            
+            return {
+                "system_memory": {
+                    "rss": memory_info.rss,  # Resident Set Size
+                    "vms": memory_info.vms,  # Virtual Memory Size
+                    "percent": process.memory_percent(),
+                    "available": psutil.virtual_memory().available
+                },
+                "python_objects": {
+                    "total_objects": len(gc.get_objects()),
+                    "top_memory_users": [
+                        {"type": obj_type, "size_bytes": size, "count": count}
+                        for obj_type, size, count in top_objects
+                    ]
+                },
+                "gpu_memory": gpu_memory,
+                "recommendations": self._generate_memory_recommendations(memory_info, top_objects)
+            }
+            
+        except Exception as e:
+            logger.error(f"Memory profiling failed: {e}")
+            return {"error": str(e)}
+    
+    def _generate_memory_recommendations(self, memory_info, top_objects):
+        """Generate memory optimization recommendations."""
+        recommendations = []
+        
+        # High memory usage
+        if memory_info.rss > 8e9:  # > 8GB
+            recommendations.append("Consider reducing batch size or model size")
+        
+        # Check for memory-heavy objects
+        for obj_type, size, count in top_objects[:3]:
+            if size > 1e8:  # > 100MB
+                if obj_type in ['list', 'dict', 'tuple']:
+                    recommendations.append(f"Large {obj_type} objects detected - consider using generators or chunking")
+                elif obj_type == 'Tensor':
+                    recommendations.append("Large tensors in memory - consider gradient checkpointing")
+        
+        return recommendations
         logger.info("Memory profiling not yet implemented")
         return (0.0, 0.0)
     

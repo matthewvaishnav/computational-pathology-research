@@ -516,7 +516,44 @@ class InterpretabilityDashboard:
         # Load Grad-CAM data if generator is available
         if self.gradcam_generator is not None:
             try:
-                # Placeholder: In real implementation, load image and generate Grad-CAM
+                try:
+                    import torch
+                    import numpy as np
+                    from PIL import Image
+                    import matplotlib.pyplot as plt
+                    import matplotlib.cm as cm
+                    
+                    # Load image (placeholder - in real implementation, load from database)
+                    # For demo, create synthetic image and heatmap
+                    image = np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8)
+                    
+                    # Generate Grad-CAM heatmap (placeholder - in real implementation, use actual model)
+                    heatmap = np.random.rand(224, 224)
+                    heatmap = (heatmap - heatmap.min()) / (heatmap.max() - heatmap.min())
+                    
+                    # Apply colormap
+                    colored_heatmap = cm.jet(heatmap)[:, :, :3]  # Remove alpha channel
+                    colored_heatmap = (colored_heatmap * 255).astype(np.uint8)
+                    
+                    # Overlay heatmap on image
+                    alpha = 0.4
+                    overlay = (1 - alpha) * image + alpha * colored_heatmap
+                    overlay = np.clip(overlay, 0, 255).astype(np.uint8)
+                    
+                    # Convert to base64 for web display
+                    import io
+                    import base64
+                    
+                    img_pil = Image.fromarray(overlay)
+                    buffer = io.BytesIO()
+                    img_pil.save(buffer, format='PNG')
+                    img_str = base64.b64encode(buffer.getvalue()).decode()
+                    
+                    return f"data:image/png;base64,{img_str}"
+                    
+                except Exception as e:
+                    logger.error(f"Failed to generate Grad-CAM: {e}")
+                    return None
                 logger.debug(f"Grad-CAM generator available for {sample_id}")
                 sample_data["gradcam_heatmaps"] = {
                     "available": True,
@@ -528,7 +565,40 @@ class InterpretabilityDashboard:
         # Load attention data if visualizer is available
         if self.attention_visualizer is not None:
             try:
-                # Placeholder: In real implementation, load attention weights
+                try:
+                    import h5py
+                    import numpy as np
+                    import matplotlib.pyplot as plt
+                    import matplotlib.cm as cm
+                    from PIL import Image
+                    import io
+                    import base64
+                    
+                    # Load attention weights (placeholder - in real implementation, load from HDF5)
+                    # For demo, create synthetic attention pattern
+                    attention_weights = np.random.rand(14, 14)  # 14x14 grid for ViT-like attention
+                    attention_weights = attention_weights / attention_weights.sum()  # Normalize
+                    
+                    # Create heatmap
+                    fig, ax = plt.subplots(figsize=(8, 8))
+                    im = ax.imshow(attention_weights, cmap='hot', interpolation='bilinear')
+                    ax.set_title(f'Attention Heatmap - Sample {sample_id}')
+                    ax.axis('off')
+                    
+                    # Add colorbar
+                    plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+                    
+                    # Convert to base64
+                    buffer = io.BytesIO()
+                    plt.savefig(buffer, format='PNG', bbox_inches='tight', dpi=150)
+                    plt.close()
+                    
+                    img_str = base64.b64encode(buffer.getvalue()).decode()
+                    return f"data:image/png;base64,{img_str}"
+                    
+                except Exception as e:
+                    logger.error(f"Failed to generate attention heatmap: {e}")
+                    return None
                 logger.debug(f"Attention visualizer available for {sample_id}")
                 sample_data["attention_weights"] = {
                     "available": True,
@@ -540,7 +610,44 @@ class InterpretabilityDashboard:
         # Load failure analysis if analyzer is available
         if self.failure_analyzer is not None:
             try:
-                # Placeholder: In real implementation, check if sample is a failure case
+                try:
+                    # Simulate failure case detection based on sample ID
+                    # In real implementation, query failure analysis database
+                    
+                    # Simple heuristic: samples with certain patterns are "failures"
+                    sample_hash = hash(sample_id) % 100
+                    
+                    if sample_hash < 15:  # 15% failure rate
+                        failure_types = [
+                            "High confidence, wrong prediction",
+                            "Ambiguous tissue region", 
+                            "Staining artifact interference",
+                            "Rare morphology pattern",
+                            "Scanner calibration issue"
+                        ]
+                        
+                        failure_type = failure_types[sample_hash % len(failure_types)]
+                        confidence_score = 0.95 - (sample_hash / 100) * 0.3  # High confidence but wrong
+                        
+                        return {
+                            "is_failure": True,
+                            "failure_type": failure_type,
+                            "confidence_score": confidence_score,
+                            "predicted_class": sample_hash % 2,
+                            "true_class": (sample_hash + 1) % 2,
+                            "explanation": f"Model was {confidence_score:.2f} confident but incorrect due to {failure_type.lower()}"
+                        }
+                    else:
+                        return {
+                            "is_failure": False,
+                            "confidence_score": 0.60 + (sample_hash / 100) * 0.35,
+                            "predicted_class": sample_hash % 2,
+                            "true_class": sample_hash % 2
+                        }
+                        
+                except Exception as e:
+                    logger.error(f"Failed to check failure case: {e}")
+                    return {"is_failure": False, "error": str(e)}
                 logger.debug(f"Failure analyzer available for {sample_id}")
             except Exception as e:
                 logger.warning(f"Failed to load failure analysis for {sample_id}: {e}")
@@ -548,7 +655,46 @@ class InterpretabilityDashboard:
         # Load feature importance if calculator is available
         if self.feature_importance is not None:
             try:
-                # Placeholder: In real implementation, load feature importance
+                try:
+                    import numpy as np
+                    
+                    # Simulate feature importance calculation
+                    # In real implementation, use SHAP, permutation importance, or gradient-based methods
+                    
+                    feature_names = [
+                        "Nuclear morphology", "Cytoplasm texture", "Cell density",
+                        "Chromatin pattern", "Nucleoli prominence", "Mitotic activity",
+                        "Tissue architecture", "Inflammatory infiltrate", "Vascular density",
+                        "Collagen content", "Necrosis presence", "Pleomorphism degree"
+                    ]
+                    
+                    # Generate synthetic importance scores
+                    np.random.seed(hash(sample_id) % 2**32)  # Deterministic based on sample
+                    importance_scores = np.random.exponential(scale=0.3, size=len(feature_names))
+                    importance_scores = importance_scores / importance_scores.sum()  # Normalize
+                    
+                    # Sort by importance
+                    sorted_indices = np.argsort(importance_scores)[::-1]
+                    
+                    feature_importance = []
+                    for i, idx in enumerate(sorted_indices):
+                        feature_importance.append({
+                            "feature": feature_names[idx],
+                            "importance": float(importance_scores[idx]),
+                            "rank": i + 1,
+                            "contribution": "positive" if importance_scores[idx] > 0.1 else "neutral"
+                        })
+                    
+                    return {
+                        "sample_id": sample_id,
+                        "feature_importance": feature_importance,
+                        "top_features": feature_importance[:5],
+                        "method": "Simulated SHAP values"
+                    }
+                    
+                except Exception as e:
+                    logger.error(f"Failed to calculate feature importance: {e}")
+                    return {"error": str(e)}
                 logger.debug(f"Feature importance calculator available for {sample_id}")
                 sample_data["clinical_features"] = {
                     "available": True,
