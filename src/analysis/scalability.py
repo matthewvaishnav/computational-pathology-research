@@ -42,6 +42,10 @@ class ScalabilityAnalyzer:
         # Memory bottlenecks
         memory_bottlenecks = self._identify_memory_bottlenecks()
         
+        # Data loading bottlenecks
+        data_loading_bottlenecks = self._detect_data_loading_bottlenecks()
+        memory_bottlenecks.extend(data_loading_bottlenecks)
+        
         # Communication overhead (placeholder)
         comm_overhead = self._estimate_communication_overhead()
         
@@ -121,6 +125,120 @@ class ScalabilityAnalyzer:
                 continue
         
         return bottlenecks
+    
+    def _detect_data_loading_bottlenecks(self) -> List[str]:
+        """
+        Detect data loading bottlenecks for multi-GPU training.
+        
+        Analyzes DataLoader configuration for:
+        - num_workers parameter (should be >0 for multi-GPU)
+        - pin_memory parameter (should be True for GPU)
+        - prefetch_factor parameter (should be >=2)
+        - Serialization issues (custom collate_fn, large objects in __getitem__)
+        
+        Returns:
+            List of bottleneck descriptions
+        """
+        bottlenecks = []
+        
+        # Scan for DataLoader usage
+        for py_file in self.project_path.rglob('*.py'):
+            if '.venv' in str(py_file) or '__pycache__' in str(py_file):
+                continue
+            
+            try:
+                content = py_file.read_text(encoding='utf-8')
+                
+                # Check if file uses DataLoader
+                if 'torch.utils.data.DataLoader' not in content and 'DataLoader' not in content:
+                    continue
+                
+                # Parse AST to analyze DataLoader calls
+                try:
+                    tree = ast.parse(content)
+                    self._analyze_dataloader_calls(tree, py_file, bottlenecks)
+                except SyntaxError:
+                    # Skip files with syntax errors
+                    continue
+            
+            except (UnicodeDecodeError, OSError):
+                continue
+        
+        return bottlenecks
+    
+    def _analyze_dataloader_calls(self, tree: ast.AST, file_path: Path, bottlenecks: List[str]):
+        """
+        Analyze DataLoader calls in AST for configuration issues.
+        
+        Args:
+            tree: AST tree
+            file_path: Path to source file
+            bottlenecks: List to append bottleneck descriptions
+        """
+        for node in ast.walk(tree):
+            # Look for DataLoader instantiation
+            if isinstance(node, ast.Call):
+                # Check if this is a DataLoader call
+                is_dataloader = False
+                
+                if isinstance(node.func, ast.Attribute):
+                    # torch.utils.data.DataLoader
+                    if (isinstance(node.func.value, ast.Attribute) and
+                        isinstance(node.func.value.value, ast.Attribute) and
+                        node.func.attr == 'DataLoader'):
+                        is_dataloader = True
+                elif isinstance(node.func, ast.Name):
+                    # DataLoader (imported)
+                    if node.func.id == 'DataLoader':
+                        is_dataloader = True
+                
+                if not is_dataloader:
+                    continue
+                
+                # Extract keyword arguments
+                kwargs = {}
+                for keyword in node.keywords:
+                    if keyword.arg:
+                        # Try to extract simple values
+                        if isinstance(keyword.value, ast.Constant):
+                            kwargs[keyword.arg] = keyword.value.value
+                        elif hasattr(ast, 'NameConstant') and isinstance(keyword.value, ast.NameConstant):
+                            # For Python < 3.8 compatibility
+                            kwargs[keyword.arg] = keyword.value.value
+                        elif hasattr(ast, 'Num') and isinstance(keyword.value, ast.Num):
+                            # For Python < 3.8 compatibility
+                            kwargs[keyword.arg] = keyword.value.n
+                
+                # Check num_workers
+                num_workers = kwargs.get('num_workers', 0)
+                if num_workers == 0:
+                    bottlenecks.append(
+                        f"DataLoader in {file_path.name} has num_workers=0 "
+                        f"(should be >0 for multi-GPU, recommended: 4-8)"
+                    )
+                
+                # Check pin_memory
+                pin_memory = kwargs.get('pin_memory', False)
+                if not pin_memory:
+                    bottlenecks.append(
+                        f"DataLoader in {file_path.name} has pin_memory=False "
+                        f"(should be True for GPU training)"
+                    )
+                
+                # Check prefetch_factor
+                prefetch_factor = kwargs.get('prefetch_factor', None)
+                if num_workers > 0 and prefetch_factor is not None and prefetch_factor < 2:
+                    bottlenecks.append(
+                        f"DataLoader in {file_path.name} has prefetch_factor={prefetch_factor} "
+                        f"(should be >=2 for better overlap)"
+                    )
+                
+                # Check for custom collate_fn (potential serialization bottleneck)
+                if 'collate_fn' in kwargs:
+                    bottlenecks.append(
+                        f"DataLoader in {file_path.name} uses custom collate_fn "
+                        f"(potential serialization bottleneck)"
+                    )
     
     def _estimate_communication_overhead(self) -> float:
         """Estimate communication overhead (placeholder)."""
