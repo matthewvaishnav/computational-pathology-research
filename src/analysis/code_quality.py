@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
-from src.analysis.models import CodeQualityAnalysis
+from .models import CodeQualityAnalysis
 
 
 logger = logging.getLogger(__name__)
