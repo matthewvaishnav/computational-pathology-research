@@ -21,13 +21,13 @@ from prometheus_client import (
 class StreamingMetrics:
     """Centralized metrics collection for streaming pipeline."""
 
-    def __init__(self, registry: Optional[CollectorRegistry] = None):
+    def __init__(self, registry: Optional[CollectorRegistry] = None) -> None:
         self.registry = registry or CollectorRegistry()
         self._setup_metrics()
         self._gpu_monitor_thread = None
         self._monitoring = False
 
-    def _setup_metrics(self):
+    def _setup_metrics(self) -> None:
         """Initialize all Prometheus metrics."""
 
         # Processing metrics
@@ -184,7 +184,7 @@ class StreamingMetrics:
             }
         )
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Start background monitoring thread."""
         if self._monitoring:
             return
@@ -193,13 +193,13 @@ class StreamingMetrics:
         self._gpu_monitor_thread = threading.Thread(target=self._monitor_resources, daemon=True)
         self._gpu_monitor_thread.start()
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         """Stop background monitoring."""
         self._monitoring = False
         if self._gpu_monitor_thread:
             self._gpu_monitor_thread.join(timeout=1.0)
 
-    def _monitor_resources(self):
+    def _monitor_resources(self) -> None:
         """Background thread to monitor system resources."""
         while self._monitoring:
             try:

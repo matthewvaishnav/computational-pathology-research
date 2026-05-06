@@ -22,6 +22,7 @@ from prometheus_client.exposition import CONTENT_TYPE_LATEST
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+# Local imports grouped together
 from ..aggregator.factory import AggregatorFactory
 from ..common.data_models import ClientUpdate
 from ..coordinator.orchestrator import TrainingOrchestrator
