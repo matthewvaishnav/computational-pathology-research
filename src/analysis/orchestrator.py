@@ -29,6 +29,7 @@ from src.analysis.models import (
 from src.analysis.architecture import ArchitectureAnalyzer
 from src.analysis.performance import PerformanceProfiler
 from src.analysis.coverage import CoverageAnalyzer
+from src.analysis.code_quality import CodeQualityScanner
 
 
 # Configure logging
@@ -145,11 +146,13 @@ class AnalysisOrchestrator:
             return CoverageAnalysis(line_coverage=0.0, branch_coverage=0.0, score=0.0)
     
     def _create_stub_code_quality_analysis(self) -> CodeQualityAnalysis:
-        """Create stub code quality analysis (placeholder)."""
-        return CodeQualityAnalysis(
-            average_complexity=0.0,
-            score=0.0
-        )
+        """Create code quality analysis using real scanner."""
+        try:
+            scanner = CodeQualityScanner(str(self.project_path))
+            return scanner.analyze()
+        except Exception as e:
+            logger.error(f"Code quality scanner failed: {e}")
+            return CodeQualityAnalysis(average_complexity=0.0, score=0.0)
     
     def _create_stub_dependency_analysis(self) -> DependencyAnalysis:
         """Create stub dependency analysis (placeholder)."""
