@@ -13,7 +13,7 @@
 
 Advanced PyTorch framework providing state-of-the-art attention-based Multiple Instance Learning (MIL), **revolutionary Distributed Medical Intelligence (DMI)** with medical expertise weighting achieving **89.1% improvement** in rare cancer detection, **first open-source pathology-specific federated learning** with differential privacy, **production-ready PACS integration** with multi-vendor support, comprehensive model interpretability tools, clinical workflow integration with DICOM/FHIR support, and robust testing infrastructure (**4,196 tests**, 100+ property-based tests) for whole-slide image analysis and clinical deployment.
 
-> **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
+> **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/FRAMEWORK_OVERVIEW.md](docs/FRAMEWORK_OVERVIEW.md) for a complete introduction to HistoCore, or [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
 
 ## Latest Updates (May 2026)
 
