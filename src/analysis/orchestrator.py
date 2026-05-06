@@ -28,6 +28,7 @@ from src.analysis.models import (
 )
 from src.analysis.architecture import ArchitectureAnalyzer
 from src.analysis.performance import PerformanceProfiler
+from src.analysis.coverage import CoverageAnalyzer
 
 
 # Configure logging
@@ -135,12 +136,13 @@ class AnalysisOrchestrator:
             return PerformanceAnalysis(gpu_utilization=0.0, score=0.0)
     
     def _create_stub_coverage_analysis(self) -> CoverageAnalysis:
-        """Create stub coverage analysis (placeholder)."""
-        return CoverageAnalysis(
-            line_coverage=0.0,
-            branch_coverage=0.0,
-            score=0.0
-        )
+        """Create coverage analysis using real analyzer."""
+        try:
+            analyzer = CoverageAnalyzer(str(self.project_path))
+            return analyzer.analyze()
+        except Exception as e:
+            logger.error(f"Coverage analyzer failed: {e}")
+            return CoverageAnalysis(line_coverage=0.0, branch_coverage=0.0, score=0.0)
     
     def _create_stub_code_quality_analysis(self) -> CodeQualityAnalysis:
         """Create stub code quality analysis (placeholder)."""
