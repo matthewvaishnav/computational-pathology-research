@@ -324,19 +324,20 @@ class RegressionDetector:
             result['security_regression_critical'] = True
         
         # New hardcoded secrets
-        baseline_secrets = set(baseline.security.hardcoded_secrets)
-        current_secrets = set(current.security.hardcoded_secrets)
-        new_secrets = current_secrets - baseline_secrets
+        # hardcoded_secrets is a list of dicts, so we need to compare by converting to tuples
+        baseline_secret_keys = {(s.get('file', ''), s.get('line', 0)) for s in baseline.security.hardcoded_secrets}
+        current_secret_keys = {(s.get('file', ''), s.get('line', 0)) for s in current.security.hardcoded_secrets}
+        new_secret_keys = current_secret_keys - baseline_secret_keys
         
-        if new_secrets:
+        if new_secret_keys:
             result['critical_regressions'] = result.get('critical_regressions', [])
             result['critical_regressions'].append({
                 'type': 'security_regression',
                 'metric': 'hardcoded_secrets',
                 'current': len(current.security.hardcoded_secrets),
                 'baseline': len(baseline.security.hardcoded_secrets),
-                'new_secrets': list(new_secrets)[:3],  # Show first 3
-                'message': f"{len(new_secrets)} new hardcoded secrets detected"
+                'new_secrets': [f"{file}:{line}" for file, line in list(new_secret_keys)[:3]],  # Show first 3
+                'message': f"{len(new_secret_keys)} new hardcoded secrets detected"
             })
             result['security_regression_critical'] = True
         
@@ -362,7 +363,7 @@ class RegressionDetector:
             'hardcoded_secrets': {
                 'current': len(current.security.hardcoded_secrets),
                 'baseline': len(baseline.security.hardcoded_secrets),
-                'new_secrets': len(new_secrets)
+                'new_secrets': len(new_secret_keys)
             },
             'hipaa_compliance': {
                 'current': current.security.hipaa_compliance_score,
