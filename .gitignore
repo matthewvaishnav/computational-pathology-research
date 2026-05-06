@@ -145,9 +145,10 @@ wandb/
 # MLflow
 mlruns/
 
-# Data files
-data/
-datasets/
+# Data files (but keep essential test files and configs)
+data/raw/
+data/downloads/
+data/cache/
 *.h5
 *.hdf5
 *.npz
@@ -155,27 +156,35 @@ datasets/
 *.pkl
 *.pickle
 
-# Medical imaging files
+# Medical imaging files (but keep small test files)
 *.dcm
-*.dicom
-*.svs
-*.tiff
-*.tif
-*.ndpi
-*.vms
-*.vmu
-*.scn
+# Keep test files under 100MB
+# test_wsi.svs and test_wsi.tiff are kept for testing
 
-# Checkpoints and models
-checkpoints/
-models/
+# Large medical imaging files
+data/*.svs
+data/*.tiff
+data/*.tif
+data/*.ndpi
+data/*.vms
+data/*.vmu
+data/*.scn
+
+# Checkpoints and models (but keep structure)
+checkpoints/*.pth
+checkpoints/*.pt
+checkpoints/*.ckpt
+models/*.pth
+models/*.pt
+models/*.ckpt
 weights/
 saved_models/
 
-# Results and outputs
-results/
-outputs/
-experiments/
+# Results and outputs (but keep structure)
+results/*/
+outputs/*/
+!results/.gitkeep
+!outputs/.gitkeep
 plots/
 figures/
 
