@@ -30,6 +30,10 @@ from src.analysis.architecture import ArchitectureAnalyzer
 from src.analysis.performance import PerformanceProfiler
 from src.analysis.coverage import CoverageAnalyzer
 from src.analysis.code_quality import CodeQualityScanner
+from src.analysis.dependencies import DependencyAuditor
+from src.analysis.deployment import DeploymentValidator
+from src.analysis.security import SecurityScanner
+from src.analysis.scalability import ScalabilityAnalyzer
 
 
 # Configure logging
@@ -155,36 +159,40 @@ class AnalysisOrchestrator:
             return CodeQualityAnalysis(average_complexity=0.0, score=0.0)
     
     def _create_stub_dependency_analysis(self) -> DependencyAnalysis:
-        """Create stub dependency analysis (placeholder)."""
-        return DependencyAnalysis(
-            total_dependencies=0,
-            score=0.0
-        )
+        """Create dependency analysis using real auditor."""
+        try:
+            auditor = DependencyAuditor(str(self.project_path))
+            return auditor.analyze()
+        except Exception as e:
+            logger.error(f"Dependency auditor failed: {e}")
+            return DependencyAnalysis(total_dependencies=0, score=0.0)
     
     def _create_stub_deployment_analysis(self) -> DeploymentAnalysis:
-        """Create stub deployment analysis (placeholder)."""
-        return DeploymentAnalysis(
-            dockerfile_score=0.0,
-            k8s_readiness=0.0,
-            ci_cd_completeness=0.0,
-            monitoring_score=0.0,
-            score=0.0
-        )
+        """Create deployment analysis using real validator."""
+        try:
+            validator = DeploymentValidator(str(self.project_path))
+            return validator.analyze()
+        except Exception as e:
+            logger.error(f"Deployment validator failed: {e}")
+            return DeploymentAnalysis(dockerfile_score=0.0, k8s_readiness=0.0, ci_cd_completeness=0.0, monitoring_score=0.0, score=0.0)
     
     def _create_stub_security_analysis(self) -> SecurityAnalysis:
-        """Create stub security analysis (placeholder)."""
-        return SecurityAnalysis(
-            hipaa_compliance_score=0.0,
-            score=0.0
-        )
+        """Create security analysis using real scanner."""
+        try:
+            scanner = SecurityScanner(str(self.project_path))
+            return scanner.analyze()
+        except Exception as e:
+            logger.error(f"Security scanner failed: {e}")
+            return SecurityAnalysis(hipaa_compliance_score=0.0, score=0.0)
     
     def _create_stub_scalability_analysis(self) -> ScalabilityAnalysis:
-        """Create stub scalability analysis (placeholder)."""
-        return ScalabilityAnalysis(
-            ddp_correctness=False,
-            scaling_efficiency='unknown',
-            score=0.0
-        )
+        """Create scalability analysis using real analyzer."""
+        try:
+            analyzer = ScalabilityAnalyzer(str(self.project_path))
+            return analyzer.analyze()
+        except Exception as e:
+            logger.error(f"Scalability analyzer failed: {e}")
+            return ScalabilityAnalysis(ddp_correctness=False, scaling_efficiency='unknown', score=0.0)
     
     def analyze_project(self, parallel: bool = True) -> AnalysisResult:
         """
