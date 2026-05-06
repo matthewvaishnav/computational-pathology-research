@@ -79,8 +79,12 @@ class ReportGenerator:
     
     def _generate_header(self, result: AnalysisResult) -> str:
         """Generate report header."""
-        timestamp = datetime.fromisoformat(result.timestamp.replace('Z', '+00:00'))
-        formatted_time = timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')
+        try:
+            timestamp = datetime.fromisoformat(result.timestamp.replace('Z', '+00:00'))
+            formatted_time = timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')
+        except (ValueError, AttributeError):
+            # Fallback for invalid timestamps
+            formatted_time = result.timestamp
         
         return f"""# HistoCore Project Optimization Analysis Report
 
@@ -504,7 +508,7 @@ For questions or support, please refer to the project documentation.
         
         # Try to convert using pandoc
         try:
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as md_file:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False, encoding='utf-8') as md_file:
                 md_file.write(markdown_content)
                 md_file.flush()
                 
