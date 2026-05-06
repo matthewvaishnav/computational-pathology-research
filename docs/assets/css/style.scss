@@ -952,6 +952,20 @@ section a:not(.doc-link) {
   }
 }
 
+/* ─── Medium screens (961px-1200px) - Intermediate responsive breakpoint ─── */
+@media (min-width: 961px) and (max-width: 1200px) {
+  header {
+    width: 280px;
+    padding: 25px 15px 15px;
+  }
+  
+  section {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 40px 50px 50px;
+  }
+}
+
 /* ─── Tablet + mobile (≤960px) ─── */
 @media (max-width: 960px) {
   body {
