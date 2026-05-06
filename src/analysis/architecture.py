@@ -13,7 +13,7 @@ from collections import defaultdict
 import subprocess
 import json
 
-from src.analysis.models import (
+from .models import (
     ArchitectureAnalysis,
     Issue,
     Severity,
