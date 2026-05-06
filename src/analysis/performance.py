@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from src.analysis.models import PerformanceAnalysis
+from .models import PerformanceAnalysis
 
 
 logger = logging.getLogger(__name__)
