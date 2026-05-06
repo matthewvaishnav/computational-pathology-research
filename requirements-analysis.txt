@@ -1,0 +1,38 @@
+# Analysis System Dependencies
+# Required tools for HistoCore Project Optimization Analysis System
+
+# Core dependencies
+jsonschema>=4.17.0      # JSON schema validation
+tenacity>=8.2.0         # Retry logic for subprocess calls
+
+# Static analysis tools
+radon>=5.1.0            # Complexity and maintainability metrics
+pylint>=2.17.0          # Code quality and style
+flake8>=6.0.0           # Style violations
+mypy>=1.0.0             # Type checking
+bandit>=1.7.5           # Security vulnerabilities
+
+# Dependency analysis
+safety>=2.3.0           # Dependency CVE scanning
+pip-audit>=2.5.0        # Dependency vulnerability scanning
+pip-licenses>=4.3.0     # License compatibility
+
+# Testing and coverage
+pytest>=7.3.0           # Test framework
+pytest-cov>=4.1.0       # Test coverage
+coverage>=7.2.0         # Coverage data processing
+hypothesis>=6.75.0      # Property-based testing
+
+# Performance profiling
+py-spy>=0.3.14          # Sampling profiler
+
+# Deployment validation
+hadolint-py>=2.12.0     # Dockerfile linting
+
+# Visualization
+matplotlib>=3.7.0       # Static charts
+plotly>=5.14.0          # Interactive charts
+pandas>=2.0.0           # Data processing
+
+# Reporting
+tabulate>=0.9.0         # Table formatting
