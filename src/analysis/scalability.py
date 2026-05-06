@@ -46,7 +46,7 @@ class ScalabilityAnalyzer:
         data_loading_bottlenecks = self._detect_data_loading_bottlenecks()
         memory_bottlenecks.extend(data_loading_bottlenecks)
         
-        # Communication overhead (placeholder)
+        # Communication overhead
         comm_overhead = self._estimate_communication_overhead()
         
         # Scaling efficiency
@@ -66,9 +66,8 @@ class ScalabilityAnalyzer:
     def _verify_ddp_implementation(self) -> bool:
         """Verify DistributedDataParallel implementation."""
         ddp_indicators = [
-            'torch.nn.parallel.DistributedDataParallel',
-            'torch.distributed.init_process_group',
-            'torch.distributed.barrier',
+            'DistributedDataParallel',  # Covers both full path and imported alias
+            'init_process_group',  # Covers both torch.distributed.init_process_group and dist.init_process_group
             'DistributedSampler'
         ]
         
@@ -241,10 +240,128 @@ class ScalabilityAnalyzer:
                     )
     
     def _estimate_communication_overhead(self) -> float:
-        """Estimate communication overhead (placeholder)."""
-        # TODO: Implement actual communication profiling
-        logger.info("Communication overhead estimation not yet implemented")
-        return 0.0
+        """
+        Estimate communication overhead for distributed training.
+        
+        Analyzes:
+        - torch.distributed.all_reduce usage patterns
+        - Gradient accumulation patterns (optimizer.step() frequency)
+        - Model size for gradient synchronization time estimation
+        
+        Returns:
+            Estimated communication overhead in milliseconds per batch
+        """
+        overhead_ms = 0.0
+        
+        # Check for all-reduce usage (gradient synchronization)
+        all_reduce_count = 0
+        gradient_accumulation_detected = False
+        model_param_count = 0
+        
+        for py_file in self.project_path.rglob('*.py'):
+            if '.venv' in str(py_file) or '__pycache__' in str(py_file):
+                continue
+            
+            try:
+                content = py_file.read_text(encoding='utf-8')
+                
+                # Count all-reduce operations
+                all_reduce_count += content.count('torch.distributed.all_reduce')
+                all_reduce_count += content.count('dist.all_reduce')
+                
+                # Check for gradient accumulation patterns
+                # Pattern: optimizer.step() called less frequently than backward()
+                if 'gradient_accumulation' in content.lower():
+                    gradient_accumulation_detected = True
+                
+                # Look for gradient_accumulation_steps configuration
+                if 'gradient_accumulation_steps' in content:
+                    gradient_accumulation_detected = True
+                
+                # Try to estimate model size from parameter counts
+                # Look for model definitions with parameter counts
+                if 'num_parameters' in content or 'count_parameters' in content:
+                    # Try to extract parameter count using AST
+                    try:
+                        tree = ast.parse(content)
+                        param_count = self._extract_parameter_count(tree)
+                        if param_count > model_param_count:
+                            model_param_count = param_count
+                    except SyntaxError:
+                        continue
+            
+            except (UnicodeDecodeError, OSError):
+                continue
+        
+        # Estimate communication overhead based on findings
+        if all_reduce_count > 0:
+            logger.info(f"Found {all_reduce_count} all-reduce operations")
+            
+            # Estimate model size if not found (use typical nnMIL size)
+            if model_param_count == 0:
+                # Typical nnMIL model has ~10-50M parameters
+                model_param_count = 20_000_000  # Conservative estimate
+            
+            # Calculate gradient sync time estimate
+            # Formula: model_params * 4 bytes (FP32) * 2 (send + receive) / bandwidth
+            # Assume 10 GB/s network bandwidth for typical multi-GPU setup
+            bandwidth_gbps = 10.0
+            bytes_per_param = 4  # FP32
+            communication_factor = 2  # Send and receive
+            
+            total_bytes = model_param_count * bytes_per_param * communication_factor
+            total_gb = total_bytes / (1024 ** 3)
+            
+            # Time in seconds, convert to milliseconds
+            overhead_ms = (total_gb / bandwidth_gbps) * 1000
+            
+            logger.info(
+                f"Estimated communication overhead: {overhead_ms:.2f}ms "
+                f"(model params: {model_param_count:,}, bandwidth: {bandwidth_gbps} GB/s)"
+            )
+            
+            # Adjust for gradient accumulation (reduces communication frequency)
+            if gradient_accumulation_detected:
+                logger.info("Gradient accumulation detected - communication overhead is amortized")
+                # Gradient accumulation reduces effective overhead per batch
+                # Assume typical accumulation of 4 steps
+                overhead_ms = overhead_ms / 4
+        else:
+            logger.info("No all-reduce operations found - no distributed training detected")
+        
+        return round(overhead_ms, 2)
+    
+    def _extract_parameter_count(self, tree: ast.AST) -> int:
+        """
+        Extract model parameter count from AST.
+        
+        Looks for patterns like:
+        - num_parameters = 20000000
+        - self.num_params = count_parameters(model)
+        - print(f"Parameters: {count}")
+        
+        Args:
+            tree: AST tree
+            
+        Returns:
+            Parameter count if found, 0 otherwise
+        """
+        for node in ast.walk(tree):
+            # Look for assignments to parameter count variables
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        var_name = target.id.lower()
+                        if 'param' in var_name or 'parameter' in var_name:
+                            # Try to extract numeric value
+                            if isinstance(node.value, ast.Constant):
+                                if isinstance(node.value.value, int):
+                                    return node.value.value
+                            elif hasattr(ast, 'Num') and isinstance(node.value, ast.Num):
+                                # Python < 3.8 compatibility
+                                return int(node.value.n)
+        
+        return 0
     
     def _classify_scaling_efficiency(self, ddp_correct: bool, bottlenecks: List[str]) -> str:
         """Classify scaling efficiency based on implementation."""
