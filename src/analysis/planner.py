@@ -11,7 +11,7 @@ from collections import defaultdict, deque
 import json
 from datetime import datetime, timedelta
 
-from src.analysis.models import (
+from .models import (
     AnalysisResult,
     OptimizationPlan,
     Task,
