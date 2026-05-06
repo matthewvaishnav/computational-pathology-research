@@ -4,22 +4,21 @@ HistoCore: Production-grade computational pathology framework
 Simple Python API for training and inference on histopathology data.
 """
 
-from .models import nnMIL, AttentionMIL, CLAM
-from .data import PCamDataset, CAMELYONSlideDataset
-from .training import train, evaluate
-from .foundation import load_foundation_model
-
 __version__ = "1.0.0"
-__all__ = [
-    "nnMIL", 
-    "AttentionMIL", 
-    "CLAM",
-    "PCamDataset", 
-    "CAMELYONSlideDataset",
-    "train", 
-    "evaluate",
-    "load_foundation_model"
-]
+
+# Lazy imports to avoid dependency issues
+def _lazy_import():
+    """Lazy import to avoid loading heavy dependencies on import."""
+    global nnMIL, AttentionMIL, CLAM, PCamDataset, CAMELYONSlideDataset, train, evaluate, load_foundation_model
+    
+    try:
+        from .models import nnMIL, AttentionMIL, CLAM
+        from .data import PCamDataset, CAMELYONSlideDataset
+        from .training import train, evaluate
+        from .foundation import load_foundation_model
+    except ImportError as e:
+        print(f"⚠️  Some dependencies not available: {e}")
+        print("💡 Install with: pip install -r requirements-core.txt")
 
 # Quick start functions
 def quick_train(dataset="pcam", model="nnmil", epochs=10, **kwargs):
@@ -35,6 +34,7 @@ def quick_train(dataset="pcam", model="nnmil", epochs=10, **kwargs):
     Returns:
         Trained model and results
     """
+    _lazy_import()
     from .training import QuickTrainer
     trainer = QuickTrainer(dataset=dataset, model=model, epochs=epochs, **kwargs)
     return trainer.train()
@@ -50,6 +50,17 @@ def benchmark(model_name="histocore", output_dir="results/"):
     Returns:
         Benchmark results dictionary
     """
-    from .benchmarks import BenchmarkRunner
-    runner = BenchmarkRunner(model_name=model_name, output_dir=output_dir)
-    return runner.run_all()
+    _lazy_import()
+    try:
+        from .benchmarks import BenchmarkRunner
+        runner = BenchmarkRunner(model_name=model_name, output_dir=output_dir)
+        return runner.run_all()
+    except ImportError:
+        print("⚠️  Benchmark module not available")
+        return {"error": "Benchmark dependencies not installed"}
+
+# Make functions available at module level
+__all__ = [
+    "quick_train", 
+    "benchmark"
+]
