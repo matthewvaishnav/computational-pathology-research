@@ -26,7 +26,7 @@ def test_project():
 
         # Create test Python files with various issues
         (tmpdir / "large_file.py").write_text(
-            '"""Large file for testing."""\n' + "def func():\n    pass\n" * 200
+            '"""Large file for testing."""\n' + "def func():\n    pass\n" * 300  # 901 lines total
         )
 
         (tmpdir / "complex_function.py").write_text(
@@ -129,7 +129,7 @@ class TestEndToEndAnalysis:
         # Should detect large_file.py
         assert result.architecture.total_files > 0
         large_files = result.architecture.large_files
-        assert any("large_file.py" in str(f.get("file", "")) for f in large_files)
+        assert any("large_file.py" in str(f.get("path", "")) for f in large_files)
 
     def test_analysis_detects_complexity(self, test_project):
         """Analysis detects high complexity functions."""
@@ -140,7 +140,7 @@ class TestEndToEndAnalysis:
         assert result.code_quality.average_complexity > 0
         complex_funcs = result.code_quality.high_complexity_functions
         assert any(
-            "complex_function" in str(f.get("function", "")) for f in complex_funcs
+            "complex_function" in str(f.get("name", "")) for f in complex_funcs
         )
 
     def test_analysis_detects_duplication(self, test_project):
