@@ -7,7 +7,7 @@ Analyzes distributed training, data loading, and memory bottlenecks.
 import ast
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 
 from src.analysis.models import ScalabilityAnalysis
 
@@ -56,6 +56,11 @@ class ScalabilityAnalyzer:
         # Scaling efficiency
         scaling_efficiency = self._classify_scaling_efficiency(ddp_correct, memory_bottlenecks)
         
+        # Generate scaling recommendations
+        recommendations = self.generate_scaling_recommendations(
+            ddp_correct, memory_bottlenecks, comm_overhead, scaling_efficiency
+        )
+        
         # Calculate score
         score = self._calculate_scalability_score(ddp_correct, memory_bottlenecks, scaling_efficiency)
         
@@ -64,7 +69,8 @@ class ScalabilityAnalyzer:
             scaling_efficiency=scaling_efficiency,
             memory_bottlenecks=memory_bottlenecks,
             communication_overhead_ms=comm_overhead,
-            score=score
+            score=score,
+            recommendations=recommendations
         )
     
     def _verify_ddp_implementation(self) -> bool:
@@ -547,3 +553,279 @@ class ScalabilityAnalyzer:
         # "unknown" gets 0 points
         
         return max(0.0, min(100.0, round(score, 2)))
+    
+    def generate_scaling_recommendations(
+        self,
+        ddp_correct: bool,
+        bottlenecks: List[str],
+        comm_overhead: float,
+        scaling_efficiency: str
+    ) -> Dict[str, Any]:
+        """
+        Generate scaling recommendations based on analysis results.
+        
+        Provides:
+        - Granular scaling efficiency classification
+        - Specific optimization strategies
+        - Speedup estimates for 2/4/8 GPU configurations
+        
+        Args:
+            ddp_correct: Whether DDP is correctly implemented
+            bottlenecks: List of identified bottlenecks
+            comm_overhead: Communication overhead in milliseconds
+            scaling_efficiency: Current scaling efficiency classification
+        
+        Returns:
+            Dictionary containing:
+            - efficiency_classification: Granular classification
+            - optimization_strategies: List of specific strategies
+            - speedup_estimates: Dict with 2/4/8 GPU speedup estimates
+            - priority_actions: Ordered list of recommended actions
+        """
+        recommendations = {
+            'efficiency_classification': self._classify_scaling_efficiency_granular(
+                ddp_correct, bottlenecks, comm_overhead
+            ),
+            'optimization_strategies': [],
+            'speedup_estimates': {},
+            'priority_actions': []
+        }
+        
+        # Generate optimization strategies based on findings
+        strategies = []
+        priority_actions = []
+        
+        # Strategy 1: DDP implementation
+        if not ddp_correct:
+            strategies.append({
+                'category': 'distributed_training',
+                'issue': 'No DistributedDataParallel (DDP) implementation detected',
+                'recommendation': 'Implement DDP for multi-GPU training',
+                'implementation': (
+                    'Use torch.nn.parallel.DistributedDataParallel to wrap your model. '
+                    'Initialize process group with torch.distributed.init_process_group(). '
+                    'Use DistributedSampler for data loading.'
+                ),
+                'expected_benefit': 'Enable multi-GPU training with near-linear scaling',
+                'effort': 'medium'
+            })
+            priority_actions.append('Implement DistributedDataParallel (DDP) for multi-GPU support')
+        
+        # Strategy 2: Data loading bottlenecks
+        data_loading_issues = [b for b in bottlenecks if 'DataLoader' in b or 'num_workers' in b or 'pin_memory' in b]
+        if data_loading_issues:
+            strategies.append({
+                'category': 'data_loading',
+                'issue': 'Data loading bottlenecks detected',
+                'recommendation': 'Optimize DataLoader configuration',
+                'implementation': (
+                    'Set num_workers=4-8 for parallel data loading. '
+                    'Enable pin_memory=True for faster GPU transfers. '
+                    'Set prefetch_factor=2 for better overlap. '
+                    'Use persistent_workers=True to avoid worker respawn overhead.'
+                ),
+                'expected_benefit': '2-4x faster data loading, reduced GPU idle time',
+                'effort': 'low'
+            })
+            priority_actions.append('Increase DataLoader num_workers and enable pin_memory')
+        
+        # Strategy 3: Communication overhead
+        if comm_overhead > 50.0:  # High communication overhead
+            strategies.append({
+                'category': 'communication',
+                'issue': f'High communication overhead detected ({comm_overhead:.2f}ms per batch)',
+                'recommendation': 'Implement gradient accumulation to reduce communication frequency',
+                'implementation': (
+                    'Accumulate gradients over multiple batches before synchronization. '
+                    'Set gradient_accumulation_steps=4-8 to reduce all-reduce frequency. '
+                    'Only call optimizer.step() every N batches.'
+                ),
+                'expected_benefit': f'Reduce communication overhead by {min(75, int(comm_overhead / 10))}%',
+                'effort': 'low'
+            })
+            priority_actions.append('Implement gradient accumulation to reduce communication overhead')
+        
+        # Strategy 4: Large dataset handling
+        large_dataset_issues = [b for b in bottlenecks if 'streaming' in b.lower() or 'wsi' in b.lower() or 'memory' in b.lower()]
+        if large_dataset_issues:
+            strategies.append({
+                'category': 'large_datasets',
+                'issue': 'Large dataset handling issues detected',
+                'recommendation': 'Implement streaming and WSI-specific optimizations',
+                'implementation': (
+                    'Use IterableDataset for streaming large datasets (>1TB). '
+                    'Implement tile-based loading with OpenSlide for WSI processing. '
+                    'Use lazy loading and chunked processing for gigapixel images. '
+                    'Leverage multi-resolution pyramids for efficient WSI handling.'
+                ),
+                'expected_benefit': 'Support datasets >1TB, reduce memory footprint by 10-100x',
+                'effort': 'high'
+            })
+            priority_actions.append('Implement streaming data loading and WSI optimizations')
+        
+        # Strategy 5: Memory bottlenecks
+        memory_issues = [b for b in bottlenecks if 'tensor' in b.lower() or 'cuda' in b.lower() or 'gpu' in b.lower()]
+        if memory_issues:
+            strategies.append({
+                'category': 'memory_optimization',
+                'issue': 'Memory bottlenecks detected',
+                'recommendation': 'Optimize memory usage patterns',
+                'implementation': (
+                    'Use gradient checkpointing to trade compute for memory. '
+                    'Enable mixed precision training (AMP) to reduce memory by 2x. '
+                    'Minimize explicit .cuda() transfers, use device placement. '
+                    'Use torch.no_grad() context for inference to save memory.'
+                ),
+                'expected_benefit': 'Reduce memory usage by 30-50%, enable larger batch sizes',
+                'effort': 'medium'
+            })
+            priority_actions.append('Optimize memory usage with gradient checkpointing and AMP')
+        
+        recommendations['optimization_strategies'] = strategies
+        recommendations['priority_actions'] = priority_actions
+        
+        # Generate speedup estimates
+        recommendations['speedup_estimates'] = self._estimate_speedup(
+            ddp_correct, len(bottlenecks), scaling_efficiency
+        )
+        
+        return recommendations
+    
+    def _classify_scaling_efficiency_granular(
+        self,
+        ddp_correct: bool,
+        bottlenecks: List[str],
+        comm_overhead: float
+    ) -> str:
+        """
+        Classify scaling efficiency with granular categories.
+        
+        Categories:
+        - excellent_linear: Near-perfect linear scaling (>95% efficiency)
+        - good_linear: Good linear scaling (85-95% efficiency)
+        - sub_linear_moderate: Moderate sub-linear scaling (70-85% efficiency)
+        - sub_linear_poor: Poor sub-linear scaling (50-70% efficiency)
+        - non_scalable: Cannot scale effectively (<50% efficiency)
+        - unknown: Cannot determine (no DDP implementation)
+        
+        Args:
+            ddp_correct: Whether DDP is correctly implemented
+            bottlenecks: List of identified bottlenecks
+            comm_overhead: Communication overhead in milliseconds
+        
+        Returns:
+            Granular scaling efficiency classification
+        """
+        if not ddp_correct:
+            return "unknown"
+        
+        # Calculate efficiency score based on bottlenecks and communication overhead
+        bottleneck_count = len(bottlenecks)
+        
+        # Excellent linear: No bottlenecks, low communication overhead
+        if bottleneck_count == 0 and comm_overhead < 20.0:
+            return "excellent_linear"
+        
+        # Good linear: Few bottlenecks, moderate communication overhead
+        if bottleneck_count <= 1 and comm_overhead < 40.0:
+            return "good_linear"
+        
+        # Sub-linear moderate: Some bottlenecks, moderate communication overhead
+        if bottleneck_count <= 3 and comm_overhead < 60.0:
+            return "sub_linear_moderate"
+        
+        # Sub-linear poor: Many bottlenecks or high communication overhead
+        if bottleneck_count <= 5 or comm_overhead < 100.0:
+            return "sub_linear_poor"
+        
+        # Non-scalable: Too many bottlenecks or very high communication overhead
+        return "non_scalable"
+    
+    def _estimate_speedup(
+        self,
+        ddp_correct: bool,
+        bottleneck_count: int,
+        scaling_efficiency: str
+    ) -> Dict[str, Dict[str, Any]]:
+        """
+        Estimate speedup for 2/4/8 GPU configurations.
+        
+        Estimates based on:
+        - Linear scaling: Near-theoretical speedup (2x/4x/8x)
+        - Sub-linear: Reduced speedup based on bottleneck count
+        - Unknown: Cannot estimate without DDP
+        
+        Args:
+            ddp_correct: Whether DDP is correctly implemented
+            bottleneck_count: Number of identified bottlenecks
+            scaling_efficiency: Current scaling efficiency classification
+        
+        Returns:
+            Dictionary with speedup estimates for 2/4/8 GPUs
+        """
+        estimates = {}
+        
+        if not ddp_correct:
+            # Cannot estimate without DDP
+            for gpu_count in [2, 4, 8]:
+                estimates[f'{gpu_count}_gpus'] = {
+                    'speedup': 'N/A',
+                    'efficiency': 'N/A',
+                    'note': 'DDP implementation required for multi-GPU training'
+                }
+            return estimates
+        
+        # Calculate efficiency factor based on bottlenecks
+        # Perfect scaling = 1.0, each bottleneck reduces efficiency
+        efficiency_factor = max(0.5, 1.0 - (bottleneck_count * 0.08))
+        
+        # Adjust efficiency factor based on scaling efficiency classification
+        if scaling_efficiency == "linear":
+            efficiency_factor = max(efficiency_factor, 0.95)
+        elif scaling_efficiency == "sub-linear":
+            efficiency_factor = min(efficiency_factor, 0.85)
+        
+        # Calculate speedup for each GPU configuration
+        for gpu_count in [2, 4, 8]:
+            # Theoretical speedup
+            theoretical_speedup = float(gpu_count)
+            
+            # Actual speedup accounting for efficiency loss
+            # Efficiency degrades slightly with more GPUs due to communication overhead
+            gpu_efficiency_penalty = 1.0 - (0.02 * (gpu_count - 2))  # 2% penalty per additional GPU
+            actual_efficiency = efficiency_factor * gpu_efficiency_penalty
+            actual_speedup = theoretical_speedup * actual_efficiency
+            
+            # Calculate efficiency percentage
+            efficiency_pct = (actual_speedup / theoretical_speedup) * 100
+            
+            estimates[f'{gpu_count}_gpus'] = {
+                'speedup': f'{actual_speedup:.2f}x',
+                'efficiency': f'{efficiency_pct:.1f}%',
+                'theoretical': f'{theoretical_speedup:.1f}x',
+                'note': self._get_speedup_note(efficiency_pct, bottleneck_count)
+            }
+        
+        return estimates
+    
+    def _get_speedup_note(self, efficiency_pct: float, bottleneck_count: int) -> str:
+        """
+        Generate explanatory note for speedup estimate.
+        
+        Args:
+            efficiency_pct: Scaling efficiency percentage
+            bottleneck_count: Number of identified bottlenecks
+        
+        Returns:
+            Explanatory note
+        """
+        if efficiency_pct >= 95:
+            return "Excellent scaling efficiency"
+        elif efficiency_pct >= 85:
+            return "Good scaling efficiency"
+        elif efficiency_pct >= 70:
+            return f"Moderate scaling efficiency ({bottleneck_count} bottleneck(s) detected)"
+        elif efficiency_pct >= 50:
+            return f"Poor scaling efficiency ({bottleneck_count} bottleneck(s) detected)"
+        else:
+            return f"Significant bottlenecks prevent effective scaling ({bottleneck_count} issues)"
