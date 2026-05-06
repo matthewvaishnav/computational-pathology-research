@@ -1,0 +1,87 @@
+# Optional Dependencies
+-r requirements-core.txt
+
+# GUI Dependencies
+PyQt6>=6.4.0,<7.0.0
+click>=8.0.0,<9.0.0
+
+# Cloud Integration (Azure)
+azure-identity>=1.15.0,<2.0.0
+azure-mgmt-web>=7.0.0,<8.0.0
+azure-mgmt-monitor>=6.0.0,<7.0.0
+azure-mgmt-loganalytics>=13.0.0,<14.0.0
+azure-storage-blob>=12.19.0,<13.0.0
+azure-monitor-opentelemetry>=1.2.0,<2.0.0
+azure-monitor-ingestion>=1.0.0,<2.0.0
+opencensus-ext-azure>=1.1.0,<2.0.0
+aiohttp>=3.9.0,<4.0.0
+
+# HSM Support
+PyKCS11>=1.5.12,<2.0.0
+
+# Advanced ML Models
+timm>=0.9.0,<1.0.0
+umap-learn>=0.5.0,<1.0.0
+torch-geometric>=2.3.0,<3.0.0
+
+# Federated Learning
+flwr[simulation]>=1.5.0,<2.0.0
+
+# Causal Inference
+econml>=0.14.0,<1.0.0
+dowhy>=0.9.0,<1.0.0
+
+# Spatial Transcriptomics
+anndata>=0.9.0,<1.0.0
+scanpy>=1.9.0,<2.0.0
+
+# Vector Search
+faiss-cpu>=1.7.4,<2.0.0
+redis==7.4.0
+
+# Experiment Tracking
+wandb>=0.15.0,<1.0.0
+
+# Extended Format Support (Bio-Formats)
+# python-bioformats>=4.1.0,<5.0.0
+# python-javabridge>=4.0.0,<5.0.0
+
+# Additional Analysis
+seaborn>=0.12.0,<1.0.0
+plotly>=5.14.0,<6.0.0
+lifelines>=0.27.0,<1.0.0
+networkx>=3.0,<4.0.0
+scipy>=1.11.0,<2.0.0
+tabulate>=0.10.0,<1.0.0
+
+# gRPC and Networking
+grpcio>=1.56.0,<2.0.0
+grpcio-tools>=1.56.0,<2.0.0
+protobuf>=4.21.0,<5.0.0
+defusedxml>=0.7.1,<1.0.0
+
+# PACS Integration
+pynetdicom>=2.0.0,<3.0.0
+pyopenssl>=23.0.0,<25.0.0
+certifi>=2023.0.0,<2025.0.0
+
+# Additional Tools
+slowapi==0.1.9
+python-multipart>=0.0.6,<1.0.0
+requests>=2.31.0,<3.0.0
+flask>=3.0.0,<4.0.0
+python-magic>=0.4.27,<1.0.0
+bcrypt>=4.0.1,<5.0.0
+pyclamd>=0.4.0,<1.0.0
+opencv-python>=4.7.0,<5.0.0
+wsidicom>=0.9.0,<1.0.0
+stardist>=0.8.3,<1.0.0
+csbdeep>=0.7.2,<1.0.0
+hydra-core>=1.3.0,<2.0.0
+anthropic>=0.30.0,<1.0.0
+
+# Platform-specific
+openslide-bin>=4.0.0; sys_platform == 'darwin'
+
+# Python version compatibility
+tomli>=2.0.0,<3.0.0; python_version < '3.11'
