@@ -11,7 +11,7 @@ from typing import Dict, List, Any, Optional, Tuple
 import json
 from datetime import datetime
 
-from src.analysis.models import AnalysisResult
+from .models import AnalysisResult
 
 logger = logging.getLogger(__name__)
 
