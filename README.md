@@ -68,25 +68,37 @@ See [WINDOWS_DEFENDER_FIX.md](WINDOWS_DEFENDER_FIX.md) if Windows Defender block
 
 ### Three Ways to Use HistoCore
 
-**1. 🖥️ Desktop GUI (Recommended)**
-```bash
-python histocore.py  # Choose option 1
-# QuPath-like interface with drag-and-drop WSI analysis
+**1. 🐍 Python API (Recommended)**
+```python
+import histocore
+
+# Quick training
+results = histocore.quick_train(dataset="pcam", model="nnmil", epochs=10)
+print(f"Accuracy: {results['best_accuracy']:.3f}")
+
+# Benchmark against foundation models
+benchmark = histocore.benchmark(model_name="histocore")
 ```
 
-**2. 🌐 Web Interface**
+**2. 💻 Command Line**
 ```bash
-python histocore.py  # Choose option 2
-# Browser-based interface at http://localhost:5000
+# Train a model
+histocore train --dataset pcam --model nnmil --epochs 20
+
+# Run benchmark
+histocore benchmark --model-name histocore --output results/
+
+# Evaluate model
+histocore evaluate --checkpoint model.pth --dataset pcam
 ```
 
-**3. 💻 Command Line**
+**3. 📓 Jupyter Notebook**
 ```bash
-histocore analyze slide.svs --output results/
-histocore batch-analyze *.svs --model resnet50
+# Open interactive notebook
+jupyter notebook examples/quickstart.ipynb
 ```
 
-See [USER_INTERFACES.md](USER_INTERFACES.md) for complete interface documentation.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/matthewvaishnav/histocore/blob/main/examples/quickstart.ipynb)
 
 ### Installation
 

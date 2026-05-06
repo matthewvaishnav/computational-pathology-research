@@ -1,7 +1,55 @@
-"""Computational Pathology Research Repository
+"""
+HistoCore: Production-grade computational pathology framework
 
-This package implements novel multimodal fusion architectures for analyzing
-whole-slide images (WSI), genomic features, and clinical text.
+Simple Python API for training and inference on histopathology data.
 """
 
-__version__ = "0.1.0"
+from .models import nnMIL, AttentionMIL, CLAM
+from .data import PCamDataset, CAMELYONSlideDataset
+from .training import train, evaluate
+from .foundation import load_foundation_model
+
+__version__ = "1.0.0"
+__all__ = [
+    "nnMIL", 
+    "AttentionMIL", 
+    "CLAM",
+    "PCamDataset", 
+    "CAMELYONSlideDataset",
+    "train", 
+    "evaluate",
+    "load_foundation_model"
+]
+
+# Quick start functions
+def quick_train(dataset="pcam", model="nnmil", epochs=10, **kwargs):
+    """
+    Quick training with sensible defaults.
+    
+    Args:
+        dataset: "pcam" or "camelyon"
+        model: "nnmil", "attention", or "clam"
+        epochs: Number of training epochs
+        **kwargs: Additional training arguments
+    
+    Returns:
+        Trained model and results
+    """
+    from .training import QuickTrainer
+    trainer = QuickTrainer(dataset=dataset, model=model, epochs=epochs, **kwargs)
+    return trainer.train()
+
+def benchmark(model_name="histocore", output_dir="results/"):
+    """
+    Run benchmark comparison against foundation models.
+    
+    Args:
+        model_name: Name for your model in results
+        output_dir: Directory to save results
+    
+    Returns:
+        Benchmark results dictionary
+    """
+    from .benchmarks import BenchmarkRunner
+    runner = BenchmarkRunner(model_name=model_name, output_dir=output_dir)
+    return runner.run_all()
