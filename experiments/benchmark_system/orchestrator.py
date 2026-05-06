@@ -322,44 +322,11 @@ class BenchmarkOrchestrator:
             training_config = self.task_executor.configure_task(task_spec, framework)
             logger.info(f"Task configured for {framework}")
             
-            # Start metrics collection
-            self.metrics_collector.start_collection(
-                framework=framework,
-                metadata={
-                    "task_spec": task_spec.__dict__,
-                    "config": training_config.config_dict,
-                }
-            )
-            logger.info(f"Metrics collection started for {framework}")
-            
             # Get framework environment
             env = self.framework_environments[framework]
             
-            # Execute training with timeout enforcement (Requirement 5.8)
-            timeout_seconds = self.config.timeout_hours * 3600
-            error_context = ErrorContext(
-                framework_name=framework,
-                error=Exception("Placeholder"),
-                error_category=ErrorCategory.RUNTIME,
-            )
-            
-            try:
-                # Note: Actual training execution would be delegated to framework-specific adapters
-                # For now, this is a placeholder that raises NotImplementedError
-                result = self.task_executor.execute_training(training_config, env)
-                
-            except NotImplementedError:
-                # This is expected until framework adapters are implemented
-                logger.warning(
-                    f"Training execution not implemented for {framework}. "
-                    f"Framework adapters need to be implemented."
-                )
-                raise
-            
-            # Finalize metrics collection
-            metrics_path = self.config.output_dir / f"{framework}_metrics.json"
-            aggregated_metrics = self.metrics_collector.finalize_collection(metrics_path)
-            logger.info(f"Metrics finalized for {framework}")
+            # Execute training (adapters handle metrics collection internally)
+            result = self.task_executor.execute_training(training_config, env)
             
             # Validate result
             validation_report = self.result_validator.validate_training_result(result)
