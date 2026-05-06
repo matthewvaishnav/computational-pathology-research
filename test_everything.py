@@ -1,403 +1,108 @@
 #!/usr/bin/env python3
-"""
-HistoCore Comprehensive Test Suite - Test everything that can be tested
-"""
+"""Comprehensive test runner for all HistoCore stress tests."""
 
-import os
 import sys
-import json
-import tempfile
-from pathlib import Path
+import time
 import subprocess
+from pathlib import Path
 
-def test_imports():
-    """Test core imports work."""
-    print("📦 Testing Core Imports...")
-    results = {"passed": 0, "failed": 0, "details": []}
+def run_test_suite(test_file: str, description: str) -> bool:
+    """Run a test suite and return success status."""
+    print(f"\n{'='*60}")
+    print(f"🧪 {description}")
+    print(f"{'='*60}")
     
-    # Test basic Python imports
-    try:
-        import json
-        import pathlib
-        import tempfile
-        import subprocess
-        results["passed"] += 1
-        results["details"].append("✅ Standard library imports work")
-    except Exception as e:
-        results["failed"] += 1
-        results["details"].append(f"❌ Standard library import failed: {e}")
+    start_time = time.time()
     
-    # Test HistoCore structure exists
     try:
-        src_path = Path("src")
-        if src_path.exists():
-            results["passed"] += 1
-            results["details"].append("✅ HistoCore src/ directory exists")
+        result = subprocess.run([sys.executable, test_file], 
+                              capture_output=True, text=True, timeout=300)
+        
+        elapsed = time.time() - start_time
+        
+        if result.returncode == 0:
+            print(f"✅ {description}: PASSED ({elapsed:.1f}s)")
+            return True
         else:
-            results["failed"] += 1
-            results["details"].append("❌ HistoCore src/ directory missing")
-    except Exception as e:
-        results["failed"] += 1
-        results["details"].append(f"❌ Directory check failed: {e}")
-    
-    return results
-
-def test_file_operations():
-    """Test file operations work."""
-    print("📁 Testing File Operations...")
-    results = {"passed": 0, "failed": 0, "details": []}
-    
-    try:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_path = Path(temp_dir)
-            
-            # Test file creation
-            test_file = temp_path / "test.txt"
-            test_file.write_text("test content")
-            
-            if test_file.exists():
-                results["passed"] += 1
-                results["details"].append("✅ File creation works")
-            else:
-                results["failed"] += 1
-                results["details"].append("❌ File creation failed")
-            
-            # Test file reading
-            content = test_file.read_text()
-            if content == "test content":
-                results["passed"] += 1
-                results["details"].append("✅ File reading works")
-            else:
-                results["failed"] += 1
-                results["details"].append("❌ File reading failed")
-            
-            # Test JSON operations
-            json_file = temp_path / "test.json"
-            test_data = {"key": "value", "number": 42}
-            
-            with open(json_file, 'w') as f:
-                json.dump(test_data, f)
-            
-            with open(json_file, 'r') as f:
-                loaded_data = json.load(f)
-            
-            if loaded_data == test_data:
-                results["passed"] += 1
-                results["details"].append("✅ JSON operations work")
-            else:
-                results["failed"] += 1
-                results["details"].append("❌ JSON operations failed")
-                
-    except Exception as e:
-        results["failed"] += 1
-        results["details"].append(f"❌ File operations test failed: {e}")
-    
-    return results
-
-def test_pathology_fl():
-    """Test PathologyFL components."""
-    print("🧬 Testing PathologyFL...")
-    results = {"passed": 0, "failed": 0, "details": []}
-    
-    try:
-        # Test PathologyFL demo exists and runs
-        if Path("pathology_fl_demo.py").exists():
-            result = subprocess.run([sys.executable, "pathology_fl_demo.py"], 
-                                  capture_output=True, text=True, timeout=30)
-            
-            if result.returncode == 0:
-                results["passed"] += 1
-                results["details"].append("✅ PathologyFL demo runs successfully")
-            else:
-                results["failed"] += 1
-                results["details"].append(f"❌ PathologyFL demo failed: {result.stderr}")
-        else:
-            results["failed"] += 1
-            results["details"].append("❌ PathologyFL demo file missing")
+            print(f"❌ {description}: FAILED ({elapsed:.1f}s)")
+            if result.stderr:
+                print(f"Error: {result.stderr[:200]}...")
+            return False
             
     except subprocess.TimeoutExpired:
-        results["failed"] += 1
-        results["details"].append("❌ PathologyFL demo timed out")
+        print(f"⏰ {description}: TIMEOUT (>300s)")
+        return False
     except Exception as e:
-        results["failed"] += 1
-        results["details"].append(f"❌ PathologyFL test failed: {e}")
-    
-    return results
+        print(f"💥 {description}: ERROR - {e}")
+        return False
 
-def test_stress_tests():
-    """Test existing stress test components."""
-    print("🔥 Testing Stress Test Components...")
-    results = {"passed": 0, "failed": 0, "details": []}
+def main():
+    """Run all comprehensive stress tests."""
+    print("🚀 HistoCore Comprehensive Stress Testing Suite")
+    print("=" * 60)
+    print("Testing every edge case, corner case, and production scenario")
+    print("=" * 60)
     
-    stress_tests = [
-        "basic_stress_test.py",
-        "test_cli_edge_cases.py", 
-        "test_property_based.py",
-        "test_training_stress.py",
-        "test_security_penetration.py",
-        "test_memory_pressure.py",
-        "test_concurrency_chaos.py",
-        "test_filesystem_edge.py",
-        "test_malicious_fuzzing.py",
-        "test_production_load.py"
+    # Define all test suites
+    test_suites = [
+        ("basic_stress_test.py", "Basic System Stress Tests"),
+        ("test_cli_edge_cases.py", "CLI Edge Case Testing"),
+        ("test_property_based.py", "Property-Based Testing"),
+        ("test_training_stress.py", "Training Pipeline Stress"),
+        ("test_federated_network_failures.py", "Federated Learning Network Failures"),
+        ("test_pacs_dicom_edge_cases.py", "PACS DICOM Edge Cases"),
+        ("test_security_penetration.py", "Security Penetration Testing"),
+        ("test_memory_pressure.py", "Memory Pressure Testing"),
+        ("test_concurrency_chaos.py", "Concurrency Chaos Testing"),
+        ("test_filesystem_edge.py", "File System Edge Cases"),
+        ("test_malicious_fuzzing.py", "Malicious Input Fuzzing"),
+        ("test_performance_regression.py", "Performance Regression Testing"),
+        ("test_cross_platform.py", "Cross-Platform Compatibility"),
+        ("test_database_corruption.py", "Database Corruption Recovery"),
+        ("test_production_load.py", "Production Load Simulation"),
+        ("test_hybrid_architecture.py", "Hybrid Architecture Integration"),
     ]
     
-    for test_file in stress_tests:
-        try:
-            if Path(test_file).exists():
-                # Quick syntax check
-                result = subprocess.run([sys.executable, "-m", "py_compile", test_file],
-                                      capture_output=True, text=True)
-                
-                if result.returncode == 0:
-                    results["passed"] += 1
-                    results["details"].append(f"✅ {test_file} syntax valid")
-                else:
-                    results["failed"] += 1
-                    results["details"].append(f"❌ {test_file} syntax error")
-            else:
-                results["failed"] += 1
-                results["details"].append(f"❌ {test_file} missing")
-                
-        except Exception as e:
-            results["failed"] += 1
-            results["details"].append(f"❌ {test_file} check failed: {e}")
+    # Run all test suites
+    passed = 0
+    total_start = time.time()
     
-    return results
-
-def test_configuration_files():
-    """Test configuration and setup files."""
-    print("⚙️ Testing Configuration Files...")
-    results = {"passed": 0, "failed": 0, "details": []}
-    
-    config_files = [
-        ("README.md", "README exists"),
-        ("pyproject.toml", "PyProject config exists"),
-        ("requirements-core.txt", "Core requirements exist"),
-        ("setup_pypi.py", "PyPI setup exists"),
-        ("MANIFEST.in", "Package manifest exists")
-    ]
-    
-    for file_path, description in config_files:
-        try:
-            if Path(file_path).exists():
-                # Check file is not empty
-                content = Path(file_path).read_text()
-                if len(content.strip()) > 0:
-                    results["passed"] += 1
-                    results["details"].append(f"✅ {description}")
-                else:
-                    results["failed"] += 1
-                    results["details"].append(f"❌ {file_path} is empty")
-            else:
-                results["failed"] += 1
-                results["details"].append(f"❌ {file_path} missing")
-                
-        except Exception as e:
-            results["failed"] += 1
-            results["details"].append(f"❌ {file_path} check failed: {e}")
-    
-    return results
-
-def test_documentation():
-    """Test documentation completeness."""
-    print("📚 Testing Documentation...")
-    results = {"passed": 0, "failed": 0, "details": []}
-    
-    doc_files = [
-        "STRESS_TEST_RESULTS.md",
-        "ADVANCED_STRESS_TEST_RESULTS.md", 
-        "PATHOLOGY_FL_DESIGN.md",
-        "UPLOAD_READY.md",
-        "PYPI_GUIDE.md"
-    ]
-    
-    for doc_file in doc_files:
-        try:
-            if Path(doc_file).exists():
-                content = Path(doc_file).read_text()
-                if len(content) > 1000:  # Substantial content
-                    results["passed"] += 1
-                    results["details"].append(f"✅ {doc_file} comprehensive")
-                else:
-                    results["failed"] += 1
-                    results["details"].append(f"❌ {doc_file} too short")
-            else:
-                results["failed"] += 1
-                results["details"].append(f"❌ {doc_file} missing")
-                
-        except Exception as e:
-            results["failed"] += 1
-            results["details"].append(f"❌ {doc_file} check failed: {e}")
-    
-    return results
-
-def test_package_structure():
-    """Test package structure integrity."""
-    print("📦 Testing Package Structure...")
-    results = {"passed": 0, "failed": 0, "details": []}
-    
-    required_dirs = [
-        "src",
-        "src/federated", 
-        "configs",
-        "examples",
-        "docs"
-    ]
-    
-    for dir_path in required_dirs:
-        try:
-            if Path(dir_path).exists() and Path(dir_path).is_dir():
-                results["passed"] += 1
-                results["details"].append(f"✅ {dir_path}/ directory exists")
-            else:
-                results["failed"] += 1
-                results["details"].append(f"❌ {dir_path}/ directory missing")
-                
-        except Exception as e:
-            results["failed"] += 1
-            results["details"].append(f"❌ {dir_path} check failed: {e}")
-    
-    # Check for key files in src/
-    key_files = [
-        "src/__init__.py",
-        "src/federated/pathology_fl.py",
-        "src/federated/pathology_fl_coordinator.py",
-        "src/federated/pathology_fl_client.py"
-    ]
-    
-    for file_path in key_files:
-        try:
-            if Path(file_path).exists():
-                results["passed"] += 1
-                results["details"].append(f"✅ {file_path} exists")
-            else:
-                results["failed"] += 1
-                results["details"].append(f"❌ {file_path} missing")
-                
-        except Exception as e:
-            results["failed"] += 1
-            results["details"].append(f"❌ {file_path} check failed: {e}")
-    
-    return results
-
-def test_git_repository():
-    """Test git repository status."""
-    print("🔄 Testing Git Repository...")
-    results = {"passed": 0, "failed": 0, "details": []}
-    
-    try:
-        # Check if .git exists
-        if Path(".git").exists():
-            results["passed"] += 1
-            results["details"].append("✅ Git repository initialized")
-            
-            # Check git status
-            result = subprocess.run(["git", "status", "--porcelain"], 
-                                  capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                results["passed"] += 1
-                results["details"].append("✅ Git status accessible")
-                
-                # Check for recent commits
-                result = subprocess.run(["git", "log", "--oneline", "-5"], 
-                                      capture_output=True, text=True)
-                
-                if result.returncode == 0 and result.stdout.strip():
-                    results["passed"] += 1
-                    results["details"].append("✅ Git commit history exists")
-                else:
-                    results["failed"] += 1
-                    results["details"].append("❌ No git commit history")
-            else:
-                results["failed"] += 1
-                results["details"].append("❌ Git status failed")
+    for test_file, description in test_suites:
+        if Path(test_file).exists():
+            if run_test_suite(test_file, description):
+                passed += 1
         else:
-            results["failed"] += 1
-            results["details"].append("❌ Not a git repository")
-            
-    except Exception as e:
-        results["failed"] += 1
-        results["details"].append(f"❌ Git test failed: {e}")
+            print(f"⚠️ {description}: SKIPPED (file not found)")
     
-    return results
-
-def run_comprehensive_tests():
-    """Run all possible tests."""
-    print("🚀 HistoCore Comprehensive Test Suite")
-    print("=" * 60)
+    total_elapsed = time.time() - total_start
     
-    all_tests = [
-        ("Core Imports", test_imports),
-        ("File Operations", test_file_operations),
-        ("PathologyFL", test_pathology_fl),
-        ("Stress Tests", test_stress_tests),
-        ("Configuration", test_configuration_files),
-        ("Documentation", test_documentation),
-        ("Package Structure", test_package_structure),
-        ("Git Repository", test_git_repository)
-    ]
-    
-    total_passed = 0
-    total_failed = 0
-    all_results = {}
-    
-    for test_name, test_func in all_tests:
-        try:
-            results = test_func()
-            all_results[test_name] = results
-            total_passed += results["passed"]
-            total_failed += results["failed"]
-        except Exception as e:
-            print(f"❌ {test_name} test crashed: {e}")
-            total_failed += 1
-            all_results[test_name] = {
-                "passed": 0, 
-                "failed": 1, 
-                "details": [f"❌ Test crashed: {e}"]
-            }
-    
-    # Summary
+    # Final summary
     print("\n" + "=" * 60)
-    print("📊 COMPREHENSIVE TEST RESULTS")
-    print("=" * 60)
-    print(f"✅ Total Passed: {total_passed}")
-    print(f"❌ Total Failed: {total_failed}")
-    print(f"📈 Pass Rate: {total_passed/(total_passed+total_failed)*100:.1f}%")
-    
-    # Detailed results
-    for test_name, results in all_results.items():
-        print(f"\n📋 {test_name.upper()}:")
-        print(f"  ✅ Passed: {results['passed']}")
-        print(f"  ❌ Failed: {results['failed']}")
-        
-        # Show first few details
-        for detail in results["details"][:3]:
-            print(f"    {detail}")
-        if len(results["details"]) > 3:
-            print(f"    ... and {len(results['details']) - 3} more")
-    
-    # Final assessment
-    print("\n" + "=" * 60)
-    print("🏁 FINAL ASSESSMENT")
+    print("📊 COMPREHENSIVE STRESS TEST RESULTS")
     print("=" * 60)
     
-    pass_rate = total_passed / (total_passed + total_failed) * 100
+    print(f"Total Test Suites: {len(test_suites)}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {len(test_suites) - passed}")
+    print(f"Success Rate: {passed/len(test_suites)*100:.1f}%")
+    print(f"Total Time: {total_elapsed/60:.1f} minutes")
     
-    if pass_rate >= 90:
-        print("🏆 EXCELLENT - HistoCore is highly robust")
-    elif pass_rate >= 80:
-        print("✅ GOOD - HistoCore is solid with minor issues")
-    elif pass_rate >= 70:
-        print("⚠️ FAIR - HistoCore needs some improvements")
+    if passed == len(test_suites):
+        print("\n🏆 ALL STRESS TESTS PASSED!")
+        print("🚀 HistoCore is production-ready and bulletproof!")
+        print("💪 Ready for high-paying job applications!")
+    elif passed >= len(test_suites) * 0.9:
+        print(f"\n🥈 EXCELLENT: {passed}/{len(test_suites)} tests passed!")
+        print("🚀 HistoCore is highly robust with minor issues to address")
+    elif passed >= len(test_suites) * 0.8:
+        print(f"\n🥉 GOOD: {passed}/{len(test_suites)} tests passed!")
+        print("⚠️ Some stress test failures need attention")
     else:
-        print("❌ POOR - HistoCore needs significant work")
+        print(f"\n❌ NEEDS WORK: {passed}/{len(test_suites)} tests passed!")
+        print("🔧 Significant issues found - requires debugging")
     
-    print(f"📊 Overall Quality Score: {pass_rate:.1f}%")
-    
-    return pass_rate >= 80
+    return passed == len(test_suites)
 
 if __name__ == "__main__":
-    success = run_comprehensive_tests()
+    success = main()
     sys.exit(0 if success else 1)
