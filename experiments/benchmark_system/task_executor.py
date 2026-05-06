@@ -241,9 +241,12 @@ class TrainingTaskExecutor:
                 output_dir,
             )
         elif config.framework_name == "PyTorch":
-            raise NotImplementedError(
-                "PyTorch adapter not yet implemented. "
-                "See experiments/benchmark_system/adapters/pytorch_adapter.py"
+            from experiments.benchmark_system.adapters.pytorch_adapter import PyTorchAdapter
+            adapter = PyTorchAdapter(env)
+            return adapter.execute_training(
+                config.task_spec,
+                config.config_dict,
+                output_dir,
             )
         else:
             raise ValueError(
