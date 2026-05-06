@@ -226,7 +226,7 @@ class CaseDatabase:
             self.cases = []
             self.case_id_to_idx = {}
 
-                for row in rows:
+            for row in rows:
                     metadata = CaseMetadata(
                         case_id=row[0],
                         slide_id=row[1],
