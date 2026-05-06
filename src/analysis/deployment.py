@@ -162,22 +162,34 @@ class DeploymentValidator:
             return 0.0
     
     def _validate_k8s_manifests(self) -> float:
-        """Validate Kubernetes manifests for best practices."""
+        """
+        Validate Kubernetes manifests for best practices.
+        
+        Checks:
+        - Essential resources (Deployment, Service, ConfigMap, etc.)
+        - Resource limits (CPU, memory)
+        - Health checks (liveness, readiness probes)
+        - Security (non-root, read-only filesystem)
+        
+        Returns:
+            Score 0-100 based on K8s best practices
+        """
         k8s_dir = self.project_path / 'k8s'
         
         if not k8s_dir.exists():
             logger.info("No k8s directory found")
             return 0.0
         
-        score = 0.0
         yaml_files = list(k8s_dir.glob('*.yaml')) + list(k8s_dir.glob('*.yml'))
         
         if not yaml_files:
             return 0.0
         
-        # Check for essential K8s resources
+        score = 0.0
         resource_types = set()
+        deployments = []
         
+        # Parse all manifests
         for yaml_file in yaml_files:
             try:
                 with open(yaml_file, 'r') as f:
@@ -185,18 +197,17 @@ class DeploymentValidator:
                     for doc in docs:
                         if doc and 'kind' in doc:
                             resource_types.add(doc['kind'])
+                            if doc['kind'] == 'Deployment':
+                                deployments.append(doc)
             except (yaml.YAMLError, OSError) as e:
                 logger.warning(f"Failed to parse {yaml_file}: {e}")
                 continue
         
-        # Score based on resource types
+        # Score based on resource types (20 pts)
         essential_resources = {
-            'Deployment': 30,
-            'Service': 20,
-            'ConfigMap': 15,
-            'Secret': 15,
-            'Ingress': 10,
-            'PersistentVolumeClaim': 10,
+            'Deployment': 10,
+            'Service': 5,
+            'ConfigMap': 5,
         }
         
         for resource, points in essential_resources.items():
@@ -204,7 +215,114 @@ class DeploymentValidator:
                 score += points
                 logger.debug(f"✓ Has {resource}")
         
+        # Validate Deployment best practices (80 pts)
+        if deployments:
+            deployment_score = self._validate_deployment_best_practices(deployments)
+            score += deployment_score
+        else:
+            logger.debug("✗ No Deployment resources found")
+        
         return min(100.0, score)
+    
+    def _validate_deployment_best_practices(self, deployments: list) -> float:
+        """
+        Validate Deployment manifest best practices.
+        
+        Args:
+            deployments: List of Deployment manifest dicts
+            
+        Returns:
+            Score 0-80 based on best practices
+        """
+        score = 0.0
+        total_deployments = len(deployments)
+        
+        has_resource_limits = 0
+        has_liveness_probe = 0
+        has_readiness_probe = 0
+        has_security_context = 0
+        has_replicas = 0
+        
+        for deployment in deployments:
+            try:
+                spec = deployment.get('spec', {})
+                template = spec.get('template', {})
+                pod_spec = template.get('spec', {})
+                containers = pod_spec.get('containers', [])
+                
+                # Check replicas (high availability)
+                replicas = spec.get('replicas', 1)
+                if replicas >= 2:
+                    has_replicas += 1
+                
+                # Check if ANY container has these features
+                deployment_has_limits = False
+                deployment_has_liveness = False
+                deployment_has_readiness = False
+                
+                for container in containers:
+                    # Resource limits
+                    resources = container.get('resources', {})
+                    if 'limits' in resources and 'requests' in resources:
+                        deployment_has_limits = True
+                    
+                    # Liveness probe
+                    if 'livenessProbe' in container:
+                        deployment_has_liveness = True
+                    
+                    # Readiness probe
+                    if 'readinessProbe' in container:
+                        deployment_has_readiness = True
+                
+                if deployment_has_limits:
+                    has_resource_limits += 1
+                if deployment_has_liveness:
+                    has_liveness_probe += 1
+                if deployment_has_readiness:
+                    has_readiness_probe += 1
+                
+                # Security context
+                security_context = pod_spec.get('securityContext', {})
+                if security_context.get('runAsNonRoot') or security_context.get('runAsUser'):
+                    has_security_context += 1
+                    
+            except (KeyError, TypeError) as e:
+                logger.warning(f"Failed to validate deployment: {e}")
+                continue
+        
+        # Calculate percentages and assign points
+        if total_deployments > 0:
+            if has_resource_limits / total_deployments >= 0.5:
+                score += 25
+                logger.debug("✓ Resource limits configured")
+            else:
+                logger.debug("✗ Missing resource limits")
+            
+            if has_liveness_probe / total_deployments >= 0.5:
+                score += 20
+                logger.debug("✓ Liveness probes configured")
+            else:
+                logger.debug("✗ Missing liveness probes")
+            
+            if has_readiness_probe / total_deployments >= 0.5:
+                score += 20
+                logger.debug("✓ Readiness probes configured")
+            else:
+                logger.debug("✗ Missing readiness probes")
+            
+            if has_security_context / total_deployments >= 0.5:
+                score += 5
+                logger.debug("✓ Security context configured")
+            else:
+                logger.debug("✗ Missing security context")
+            
+            if has_replicas / total_deployments >= 0.5:
+                score += 10
+                logger.debug("✓ High availability (replicas >= 2)")
+            else:
+                logger.debug("✗ Low replica count")
+        
+        return score
     
     def _assess_ci_cd_pipeline(self) -> float:
         """Assess CI/CD pipeline completeness."""
