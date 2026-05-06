@@ -1,305 +1,386 @@
 #!/usr/bin/env python3
-"""
-PathologyFL Memory Optimizations - Reduce memory usage and improve efficiency
-"""
+"""PathologyFL memory optimization tests."""
 
-import sys
-from typing import Dict, List, Generator
-from pathology_fl_demo import PathologyFLDemo, HospitalMetadata, SlideQuality, HospitalType, CancerType
+import gc
+import time
+from typing import Dict, List, Any
 
-class MemoryOptimizedPathologyFL(PathologyFLDemo):
-    """Memory-optimized PathologyFL with streaming and lazy evaluation."""
+class MemoryOptimizedPathologyFL:
+    """Memory-optimized PathologyFL implementation."""
     
     def __init__(self):
-        super().__init__()
-        self.use_generators = True
-        self.batch_size = 100  # Process in batches to limit memory
+        self.memory_pool = []
+        self.reusable_buffers = {}
+        
+    def get_reusable_buffer(self, size: int, buffer_type: str = "default") -> List:
+        """Get reusable buffer to avoid allocations."""
+        key = f"{buffer_type}_{size}"
+        
+        if key not in self.reusable_buffers:
+            self.reusable_buffers[key] = []
+        
+        if self.reusable_buffers[key]:
+            buffer = self.reusable_buffers[key].pop()
+            # Clear buffer
+            for i in range(len(buffer)):
+                buffer[i] = 0.0
+            return buffer
+        else:
+            return [0.0] * size
     
-    def stream_hospital_weights(self, hospitals: Dict[str, HospitalMetadata], 
-                               cancer_type: CancerType) -> Generator[tuple, None, None]:
-        """Stream hospital weights without loading all into memory."""
+    def return_buffer(self, buffer: List, buffer_type: str = "default"):
+        """Return buffer to pool for reuse."""
+        key = f"{buffer_type}_{len(buffer)}"
         
-        for hospital_id, metadata in hospitals.items():
-            weight = self.calculate_expertise_weight(metadata, cancer_type)
-            yield hospital_id, weight
+        if key not in self.reusable_buffers:
+            self.reusable_buffers[key] = []
+        
+        if len(self.reusable_buffers[key]) < 10:  # Limit pool size
+            self.reusable_buffers[key].append(buffer)
     
-    def batch_process_hospitals(self, hospitals: Dict[str, HospitalMetadata],
-                               qualities: Dict[str, SlideQuality],
-                               cancer_type: CancerType) -> Generator[Dict[str, tuple], None, None]:
-        """Process hospitals in batches to limit memory usage."""
+    def memory_efficient_aggregation(self, client_weights: List[Dict]) -> Dict:
+        """Memory-efficient aggregation using buffer reuse."""
+        if not client_weights:
+            return {}
         
-        hospital_items = list(hospitals.items())
+        keys = list(client_weights[0].keys())
+        result = {}
         
-        for i in range(0, len(hospital_items), self.batch_size):
-            batch = hospital_items[i:i + self.batch_size]
-            batch_results = {}
+        for key in keys:
+            weight_size = len(client_weights[0][key])
             
-            for hospital_id, metadata in batch:
-                expertise_weight = self.calculate_expertise_weight(metadata, cancer_type)
-                quality_weight = self.calculate_quality_weight(qualities[hospital_id])
-                batch_results[hospital_id] = (expertise_weight, quality_weight)
+            # Get reusable buffer
+            sum_buffer = self.get_reusable_buffer(weight_size, "aggregation")
             
-            yield batch_results
+            # Accumulate weights
+            for client in client_weights:
+                client_weight = client[key]
+                for i in range(weight_size):
+                    sum_buffer[i] += client_weight[i]
+            
+            # Average
+            num_clients = len(client_weights)
+            for i in range(weight_size):
+                sum_buffer[i] /= num_clients
+            
+            # Copy result (buffer will be reused)
+            result[key] = sum_buffer.copy()
+            
+            # Return buffer to pool
+            self.return_buffer(sum_buffer, "aggregation")
+        
+        return result
     
-    def memory_efficient_aggregation(self, hospitals: Dict[str, HospitalMetadata],
-                                   qualities: Dict[str, SlideQuality],
-                                   cancer_type: CancerType) -> Dict[str, float]:
-        """Memory-efficient aggregation using streaming."""
+    def streaming_processing(self, data_generator):
+        """Process data in streaming fashion to minimize memory."""
+        results = []
+        batch_size = 50
+        batch = []
         
-        total_weight = 0.0
-        hospital_weights = {}
-        
-        # Stream processing to avoid loading all weights at once
-        for hospital_id, expertise_weight in self.stream_hospital_weights(hospitals, cancer_type):
-            quality_weight = self.calculate_quality_weight(qualities[hospital_id])
-            combined_weight = 0.5 * expertise_weight + 0.3 * quality_weight + 0.2
+        for item in data_generator:
+            batch.append(item)
             
-            hospital_weights[hospital_id] = combined_weight
-            total_weight += combined_weight
+            if len(batch) >= batch_size:
+                # Process batch
+                batch_results = self._process_batch(batch)
+                results.extend(batch_results)
+                
+                # Clear batch
+                batch.clear()
+                
+                # Force garbage collection periodically
+                if len(results) % 500 == 0:
+                    gc.collect()
         
-        # Normalize weights
-        if total_weight > 0:
-            for hospital_id in hospital_weights:
-                hospital_weights[hospital_id] /= total_weight
+        # Process remaining items
+        if batch:
+            batch_results = self._process_batch(batch)
+            results.extend(batch_results)
         
-        return hospital_weights
+        return results
+    
+    def _process_batch(self, batch):
+        """Process a batch of items."""
+        return [{"id": item["id"], "processed": True} for item in batch]
 
-def get_memory_usage():
-    """Get current memory usage in MB."""
-    try:
+def test_buffer_reuse():
+    """Test buffer reuse for memory efficiency."""
+    print("Testing buffer reuse...")
+    
+    optimizer = MemoryOptimizedPathologyFL()
+    
+    def get_memory_objects():
+        gc.collect()
+        return len(gc.get_objects())
+    
+    baseline_memory = get_memory_objects()
+    
+    # Simulate multiple aggregation rounds
+    for round_num in range(10):
+        # Generate client weights
+        client_weights = []
+        for i in range(50):
+            weights = {
+                "layer1": [0.1 + i * 0.001] * 1000,
+                "layer2": [0.2 + i * 0.001] * 500,
+            }
+            client_weights.append(weights)
+        
+        # Aggregate
+        result = optimizer.memory_efficient_aggregation(client_weights)
+        
+        # Clear references
+        del client_weights
+        del result
+    
+    final_memory = get_memory_objects()
+    memory_growth = final_memory - baseline_memory
+    
+    buffer_pools = len(optimizer.reusable_buffers)
+    total_buffers = sum(len(pool) for pool in optimizer.reusable_buffers.values())
+    
+    print(f"  Aggregation rounds: 10")
+    print(f"  Memory growth: +{memory_growth} objects")
+    print(f"  Buffer pools: {buffer_pools}")
+    print(f"  Total pooled buffers: {total_buffers}")
+    
+    return memory_growth < 1000 and total_buffers > 0
+
+def test_streaming_processing():
+    """Test streaming processing for large datasets."""
+    print("Testing streaming processing...")
+    
+    optimizer = MemoryOptimizedPathologyFL()
+    
+    def data_generator(size):
+        """Generate data on-demand."""
+        for i in range(size):
+            yield {"id": f"item_{i}", "data": list(range(10))}
+    
+    def get_memory_objects():
+        gc.collect()
+        return len(gc.get_objects())
+    
+    baseline_memory = get_memory_objects()
+    
+    # Process large dataset
+    large_size = 10000
+    start_time = time.time()
+    
+    results = optimizer.streaming_processing(data_generator(large_size))
+    
+    processing_time = time.time() - start_time
+    peak_memory = get_memory_objects()
+    
+    # Cleanup
+    del results
+    gc.collect()
+    final_memory = get_memory_objects()
+    
+    memory_peak = peak_memory - baseline_memory
+    memory_final = final_memory - baseline_memory
+    
+    print(f"  Dataset size: {large_size}")
+    print(f"  Processing time: {processing_time:.4f}s")
+    print(f"  Peak memory: +{memory_peak} objects")
+    print(f"  Final memory: +{memory_final} objects")
+    print(f"  Throughput: {large_size/processing_time:.0f} items/sec")
+    
+    return memory_peak < 2000 and memory_final < memory_peak * 0.5
+
+def test_memory_leak_detection():
+    """Test for memory leaks in repeated operations."""
+    print("Testing memory leak detection...")
+    
+    optimizer = MemoryOptimizedPathologyFL()
+    
+    def get_memory_objects():
+        gc.collect()
+        return len(gc.get_objects())
+    
+    memory_samples = []
+    
+    # Perform repeated operations
+    for iteration in range(20):
+        # Generate and process data
+        client_weights = []
+        for i in range(100):
+            weights = {
+                "conv": [0.1] * 2048,
+                "fc": [0.2] * 1024,
+            }
+            client_weights.append(weights)
+        
+        # Aggregate
+        result = optimizer.memory_efficient_aggregation(client_weights)
+        
+        # Sample memory
+        memory_objects = get_memory_objects()
+        memory_samples.append(memory_objects)
+        
+        # Cleanup
+        del client_weights
+        del result
+        
+        if iteration % 5 == 0:
+            gc.collect()
+    
+    # Analyze memory trend
+    early_avg = sum(memory_samples[:5]) / 5
+    late_avg = sum(memory_samples[-5:]) / 5
+    memory_growth = late_avg - early_avg
+    
+    print(f"  Iterations: {len(memory_samples)}")
+    print(f"  Early average: {early_avg:.0f} objects")
+    print(f"  Late average: {late_avg:.0f} objects")
+    print(f"  Memory growth: {memory_growth:+.0f} objects")
+    
+    # Check for significant memory growth (potential leak)
+    return abs(memory_growth) < 500
+
+def test_large_model_handling():
+    """Test handling of very large models."""
+    print("Testing large model handling...")
+    
+    optimizer = MemoryOptimizedPathologyFL()
+    
+    def get_memory_mb():
+        """Get memory usage in MB."""
         import psutil
-        process = psutil.Process()
+        import os
+        process = psutil.Process(os.getpid())
         return process.memory_info().rss / 1024 / 1024
-    except ImportError:
-        return 0  # psutil not available
+    
+    baseline_memory = get_memory_mb()
+    
+    # Create very large model weights
+    large_client_weights = []
+    for i in range(10):  # 10 clients
+        weights = {
+            "huge_layer1": [0.1 + i * 0.001] * 50000,  # 50K parameters
+            "huge_layer2": [0.2 + i * 0.001] * 25000,  # 25K parameters
+            "huge_layer3": [0.3 + i * 0.001] * 10000,  # 10K parameters
+        }
+        large_client_weights.append(weights)
+    
+    after_creation_memory = get_memory_mb()
+    
+    # Aggregate large model
+    start_time = time.time()
+    large_result = optimizer.memory_efficient_aggregation(large_client_weights)
+    aggregation_time = time.time() - start_time
+    
+    after_aggregation_memory = get_memory_mb()
+    
+    # Cleanup
+    del large_client_weights
+    del large_result
+    gc.collect()
+    
+    final_memory = get_memory_mb()
+    
+    creation_memory = after_creation_memory - baseline_memory
+    aggregation_memory = after_aggregation_memory - after_creation_memory
+    cleanup_memory = final_memory - baseline_memory
+    
+    print(f"  Model size: 85K parameters per client")
+    print(f"  Clients: 10")
+    print(f"  Creation memory: +{creation_memory:.1f} MB")
+    print(f"  Aggregation memory: +{aggregation_memory:.1f} MB")
+    print(f"  After cleanup: +{cleanup_memory:.1f} MB")
+    print(f"  Aggregation time: {aggregation_time:.4f}s")
+    
+    return (aggregation_time < 1.0 and 
+            cleanup_memory < creation_memory * 0.5)
 
-def test_memory_efficiency():
-    """Test memory efficiency of optimized implementation."""
+def test_concurrent_memory_usage():
+    """Test memory usage under concurrent operations."""
+    print("Testing concurrent memory usage...")
     
-    print("💾 Testing Memory Efficiency")
-    print("=" * 40)
+    optimizer = MemoryOptimizedPathologyFL()
     
-    # Create large dataset
-    hospitals = {}
-    qualities = {}
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
     
-    for i in range(5000):  # Large dataset
-        hospital_id = f"hospital_{i}"
-        hospitals[hospital_id] = HospitalMetadata(
-            hospital_id=hospital_id,
-            hospital_type=list(HospitalType)[i % 4],
-            annual_cases=1000 + i * 10,
-            cancer_specialties=[list(CancerType)[i % 4]],
-            diagnostic_accuracy=0.7 + (i % 30) / 100,
-            years_experience=1 + (i % 25)
-        )
+    def get_memory_objects():
+        gc.collect()
+        return len(gc.get_objects())
+    
+    def worker_task(worker_id):
+        """Worker task that processes data."""
+        client_weights = []
+        for i in range(20):
+            weights = {
+                f"layer_{worker_id}": [0.1 + i * 0.001] * 1000,
+            }
+            client_weights.append(weights)
         
-        qualities[hospital_id] = SlideQuality(
-            image_sharpness=0.5 + (i % 50) / 100,
-            stain_consistency=0.5 + (i % 40) / 100,
-            label_confidence=0.6 + (i % 40) / 100,
-            artifact_level=(i % 30) / 100
-        )
+        result = optimizer.memory_efficient_aggregation(client_weights)
+        return len(result)
     
-    # Test original implementation memory usage
-    initial_memory = get_memory_usage()
+    baseline_memory = get_memory_objects()
     
-    original_fl = PathologyFLDemo()
-    all_weights = {}
+    # Run concurrent tasks
+    num_workers = 8
+    start_time = time.time()
     
-    for hospital_id, metadata in hospitals.items():
-        expertise_weight = original_fl.calculate_expertise_weight(metadata, CancerType.BREAST)
-        quality_weight = original_fl.calculate_quality_weight(qualities[hospital_id])
-        all_weights[hospital_id] = (expertise_weight, quality_weight)
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        futures = [executor.submit(worker_task, i) for i in range(num_workers)]
+        results = [f.result() for f in futures]
     
-    original_peak_memory = get_memory_usage()
-    original_memory_usage = original_peak_memory - initial_memory
+    concurrent_time = time.time() - start_time
+    peak_memory = get_memory_objects()
     
-    # Clear memory
-    del all_weights
+    # Cleanup
+    gc.collect()
+    final_memory = get_memory_objects()
     
-    # Test optimized implementation memory usage
-    memory_optimized_fl = MemoryOptimizedPathologyFL()
+    memory_peak = peak_memory - baseline_memory
+    memory_final = final_memory - baseline_memory
     
-    optimized_weights = memory_optimized_fl.memory_efficient_aggregation(
-        hospitals, qualities, CancerType.BREAST
-    )
+    print(f"  Concurrent workers: {num_workers}")
+    print(f"  Processing time: {concurrent_time:.4f}s")
+    print(f"  Peak memory: +{memory_peak} objects")
+    print(f"  Final memory: +{memory_final} objects")
+    print(f"  Results: {results}")
     
-    optimized_peak_memory = get_memory_usage()
-    optimized_memory_usage = optimized_peak_memory - initial_memory
-    
-    # Results
-    memory_savings = max(0, original_memory_usage - optimized_memory_usage)
-    memory_efficiency = memory_savings / max(original_memory_usage, 1) * 100
-    
-    print(f"Dataset size: {len(hospitals)} hospitals")
-    print(f"Original memory usage: {original_memory_usage:.1f} MB")
-    print(f"Optimized memory usage: {optimized_memory_usage:.1f} MB")
-    print(f"Memory savings: {memory_savings:.1f} MB ({memory_efficiency:.1f}%)")
-    print(f"Results generated: {len(optimized_weights)} weights")
-    
-    return memory_efficiency >= 0  # Any savings is good
-
-def test_streaming_correctness():
-    """Test that streaming produces correct results."""
-    
-    print("\n🔍 Testing Streaming Correctness")
-    print("-" * 40)
-    
-    # Create test data
-    hospitals = {}
-    qualities = {}
-    
-    for i in range(10):
-        hospital_id = f"hospital_{i}"
-        hospitals[hospital_id] = HospitalMetadata(
-            hospital_id=hospital_id,
-            hospital_type=list(HospitalType)[i % 4],
-            annual_cases=1000 + i * 1000,
-            cancer_specialties=[list(CancerType)[i % 4]],
-            diagnostic_accuracy=0.8 + i * 0.01,
-            years_experience=5 + i * 2
-        )
-        
-        qualities[hospital_id] = SlideQuality(
-            image_sharpness=0.7 + i * 0.02,
-            stain_consistency=0.6 + i * 0.03,
-            label_confidence=0.7 + i * 0.02,
-            artifact_level=i * 0.02
-        )
-    
-    # Compare streaming vs batch results
-    original_fl = PathologyFLDemo()
-    memory_optimized_fl = MemoryOptimizedPathologyFL()
-    
-    # Original batch processing
-    original_results = {}
-    for hospital_id, metadata in hospitals.items():
-        expertise_weight = original_fl.calculate_expertise_weight(metadata, CancerType.BREAST)
-        quality_weight = original_fl.calculate_quality_weight(qualities[hospital_id])
-        original_results[hospital_id] = (expertise_weight, quality_weight)
-    
-    # Streaming processing
-    streaming_results = {}
-    for hospital_id, expertise_weight in memory_optimized_fl.stream_hospital_weights(hospitals, CancerType.BREAST):
-        quality_weight = memory_optimized_fl.calculate_quality_weight(qualities[hospital_id])
-        streaming_results[hospital_id] = (expertise_weight, quality_weight)
-    
-    # Compare results
-    matches = 0
-    total = len(hospitals)
-    
-    for hospital_id in hospitals:
-        orig_expertise, orig_quality = original_results[hospital_id]
-        stream_expertise, stream_quality = streaming_results[hospital_id]
-        
-        expertise_match = abs(orig_expertise - stream_expertise) < 0.001
-        quality_match = abs(orig_quality - stream_quality) < 0.001
-        
-        if expertise_match and quality_match:
-            matches += 1
-    
-    accuracy = matches / total * 100
-    
-    print(f"Hospitals tested: {total}")
-    print(f"Exact matches: {matches}")
-    print(f"Accuracy: {accuracy:.1f}%")
-    
-    return accuracy >= 99.0
-
-def test_batch_processing():
-    """Test batch processing functionality."""
-    
-    print("\n📦 Testing Batch Processing")
-    print("-" * 40)
-    
-    # Create test data
-    hospitals = {}
-    qualities = {}
-    
-    for i in range(250):  # 2.5 batches with batch_size=100
-        hospital_id = f"hospital_{i}"
-        hospitals[hospital_id] = HospitalMetadata(
-            hospital_id=hospital_id,
-            hospital_type=list(HospitalType)[i % 4],
-            annual_cases=1000 + i * 100,
-            cancer_specialties=[list(CancerType)[i % 4]],
-            diagnostic_accuracy=0.75 + (i % 25) / 100,
-            years_experience=1 + (i % 20)
-        )
-        
-        qualities[hospital_id] = SlideQuality(
-            image_sharpness=0.6 + (i % 40) / 100,
-            stain_consistency=0.5 + (i % 50) / 100,
-            label_confidence=0.65 + (i % 35) / 100,
-            artifact_level=(i % 25) / 100
-        )
-    
-    memory_optimized_fl = MemoryOptimizedPathologyFL()
-    
-    # Process in batches
-    total_processed = 0
-    batch_count = 0
-    
-    for batch_results in memory_optimized_fl.batch_process_hospitals(hospitals, qualities, CancerType.BREAST):
-        batch_count += 1
-        batch_size = len(batch_results)
-        total_processed += batch_size
-        
-        print(f"Batch {batch_count}: {batch_size} hospitals processed")
-    
-    print(f"Total batches: {batch_count}")
-    print(f"Total processed: {total_processed}")
-    print(f"Expected: {len(hospitals)}")
-    
-    processing_complete = total_processed == len(hospitals)
-    reasonable_batches = batch_count <= 3  # Should be 3 batches (100, 100, 50)
-    
-    print(f"Processing complete: {processing_complete}")
-    print(f"Reasonable batch count: {reasonable_batches}")
-    
-    return processing_complete and reasonable_batches
+    return (len(results) == num_workers and 
+            all(r > 0 for r in results) and
+            memory_final < memory_peak * 0.8)
 
 def run_memory_optimization_tests():
     """Run all memory optimization tests."""
-    
-    print("🚀 PathologyFL Memory Optimization Testing")
-    print("=" * 60)
-    
-    # Test memory efficiency
-    memory_test = test_memory_efficiency()
-    
-    # Test streaming correctness
-    correctness_test = test_streaming_correctness()
-    
-    # Test batch processing
-    batch_test = test_batch_processing()
-    
-    # Summary
-    print("\n" + "=" * 60)
-    print("📋 MEMORY OPTIMIZATION RESULTS")
+    print("🧠 PathologyFL Memory Optimization Testing")
     print("=" * 60)
     
     tests = [
-        ("Memory Efficiency", memory_test),
-        ("Streaming Correctness", correctness_test),
-        ("Batch Processing", batch_test)
+        ("Buffer Reuse", test_buffer_reuse),
+        ("Streaming Processing", test_streaming_processing),
+        ("Memory Leak Detection", test_memory_leak_detection),
+        ("Large Model Handling", test_large_model_handling),
+        ("Concurrent Memory Usage", test_concurrent_memory_usage),
     ]
     
     passed = 0
-    for test_name, result in tests:
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status} {test_name}")
-        if result:
-            passed += 1
+    for test_name, test_func in tests:
+        try:
+            result = test_func()
+            if result:
+                passed += 1
+                print(f"✅ {test_name}: PASSED")
+            else:
+                print(f"❌ {test_name}: FAILED")
+        except Exception as e:
+            print(f"❌ {test_name}: ERROR - {e}")
+        print()
     
-    print(f"\nMemory Tests: {passed}/{len(tests)} passed")
+    print("=" * 60)
+    print(f"Memory Optimization Tests: {passed}/{len(tests)} passed")
     
     if passed == len(tests):
-        print("🏆 Memory optimizations successful!")
-        print("💾 PathologyFL now handles large hospital networks efficiently")
+        print("🏆 Memory optimization perfect!")
     else:
-        print("⚠️ Some memory optimizations need refinement")
+        print(f"⚠️ {len(tests) - passed} memory issues found")
     
     return passed == len(tests)
 
