@@ -26,6 +26,7 @@ from src.analysis.models import (
     SecurityAnalysis,
     ScalabilityAnalysis,
 )
+from src.analysis.architecture import ArchitectureAnalyzer
 
 
 # Configure logging
@@ -115,11 +116,13 @@ class AnalysisOrchestrator:
             return (name, None, e)
     
     def _create_stub_architecture_analysis(self) -> ArchitectureAnalysis:
-        """Create stub architecture analysis (placeholder)."""
-        return ArchitectureAnalysis(
-            total_files=0,
-            score=0.0
-        )
+        """Create architecture analysis using real analyzer."""
+        try:
+            analyzer = ArchitectureAnalyzer(str(self.project_path))
+            return analyzer.analyze()
+        except Exception as e:
+            logger.error(f"Architecture analyzer failed: {e}")
+            return ArchitectureAnalysis(total_files=0, score=0.0)
     
     def _create_stub_performance_analysis(self) -> PerformanceAnalysis:
         """Create stub performance analysis (placeholder)."""
