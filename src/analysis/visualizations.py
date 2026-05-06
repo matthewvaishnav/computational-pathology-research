@@ -32,8 +32,8 @@ except ImportError:
     logger = logging.getLogger(__name__)
     logger.warning("plotly not available - interactive charts disabled")
 
-from src.analysis.models import AnalysisResult
-from src.analysis.aggregator import ResultAggregator
+from .models import AnalysisResult
+from .aggregator import ResultAggregator
 
 logger = logging.getLogger(__name__)
 
