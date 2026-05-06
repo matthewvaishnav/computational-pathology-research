@@ -10,7 +10,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any
 
-from src.analysis.models import CoverageAnalysis
+from .models import CoverageAnalysis
 
 
 logger = logging.getLogger(__name__)
