@@ -194,6 +194,18 @@ class AnalysisOrchestrator:
             logger.error(f"Scalability analyzer failed: {e}")
             return ScalabilityAnalysis(ddp_correctness=False, scaling_efficiency='unknown', score=0.0)
     
+    def analyze(self, parallel: bool = True) -> AnalysisResult:
+        """
+        Run all analyzers and aggregate results (alias for analyze_project).
+        
+        Args:
+            parallel: Run analyzers in parallel (default: True)
+            
+        Returns:
+            Aggregated AnalysisResult
+        """
+        return self.analyze_project(parallel)
+    
     def analyze_project(self, parallel: bool = True) -> AnalysisResult:
         """
         Run all analyzers and aggregate results.
