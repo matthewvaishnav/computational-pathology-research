@@ -1,38 +1,183 @@
-# Analysis System Dependencies
-# Required tools for HistoCore Project Optimization Analysis System
+# HistoCore Project Optimization Analysis System Dependencies
+# Complete set of tools and libraries for comprehensive project analysis
 
-# Core dependencies
-jsonschema>=4.17.0      # JSON schema validation
-tenacity>=8.2.0         # Retry logic for subprocess calls
+# ============================================================================
+# CORE DEPENDENCIES (Required)
+# ============================================================================
 
-# Static analysis tools
-radon>=5.1.0            # Complexity and maintainability metrics
-pylint>=2.17.0          # Code quality and style
-flake8>=6.0.0           # Style violations
-mypy>=1.0.0             # Type checking
-bandit>=1.7.5           # Security vulnerabilities
+# Data validation and serialization
+jsonschema>=4.17.0      # JSON schema validation for analysis results
+pydantic>=1.10.0        # Data validation and settings management
 
-# Dependency analysis
+# Retry and error handling
+tenacity>=8.2.0         # Retry logic for subprocess calls and external tools
+
+# ============================================================================
+# STATIC ANALYSIS TOOLS (Core Analysis)
+# ============================================================================
+
+# Code complexity and maintainability
+radon>=5.1.0            # Cyclomatic complexity, maintainability index
+mccabe>=0.7.0           # McCabe complexity checker
+
+# Code quality and style
+pylint>=2.17.0          # Comprehensive code quality analysis
+flake8>=6.0.0           # Style guide enforcement (PEP 8)
+pycodestyle>=2.10.0     # Python style guide checker
+pyflakes>=3.0.0         # Logical error detection
+autopep8>=2.0.0         # Automatic PEP 8 formatting
+
+# Type checking
+mypy>=1.0.0             # Static type checking
+typing-extensions>=4.5.0 # Extended typing support
+
+# Security analysis
+bandit>=1.7.5           # Security vulnerability scanner
+semgrep>=1.21.0         # Static analysis for security patterns
+
+# ============================================================================
+# DEPENDENCY ANALYSIS TOOLS
+# ============================================================================
+
+# Vulnerability scanning
 safety>=2.3.0           # Dependency CVE scanning
-pip-audit>=2.5.0        # Dependency vulnerability scanning
-pip-licenses>=4.3.0     # License compatibility
+pip-audit>=2.5.0        # Comprehensive dependency vulnerability scanning
+cyclonedx-bom>=3.11.0   # Software Bill of Materials generation
 
-# Testing and coverage
-pytest>=7.3.0           # Test framework
-pytest-cov>=4.1.0       # Test coverage
-coverage>=7.2.0         # Coverage data processing
-hypothesis>=6.75.0      # Property-based testing
+# License analysis
+pip-licenses>=4.3.0     # License compatibility checking
+licensecheck>=2023.1.1  # License validation
 
-# Performance profiling
-py-spy>=0.3.14          # Sampling profiler
+# Dependency management
+pipdeptree>=2.7.0       # Dependency tree visualization
+pip-tools>=6.13.0       # Dependency management utilities
 
-# Deployment validation
-hadolint-py>=2.12.0     # Dockerfile linting
+# ============================================================================
+# TESTING AND COVERAGE TOOLS
+# ============================================================================
 
-# Visualization
-matplotlib>=3.7.0       # Static charts
-plotly>=5.14.0          # Interactive charts
-pandas>=2.0.0           # Data processing
+# Test frameworks
+pytest>=7.3.0           # Primary test framework
+pytest-cov>=4.1.0       # Coverage plugin for pytest
+pytest-xdist>=3.2.0     # Parallel test execution
+pytest-mock>=3.10.0     # Mocking utilities
 
-# Reporting
-tabulate>=0.9.0         # Table formatting
+# Coverage analysis
+coverage>=7.2.0         # Coverage measurement and reporting
+coverage-badge>=1.1.0   # Coverage badge generation
+
+# Property-based testing
+hypothesis>=6.75.0      # Property-based testing framework
+
+# ============================================================================
+# PERFORMANCE PROFILING TOOLS
+# ============================================================================
+
+# CPU profiling
+py-spy>=0.3.14          # Sampling profiler for Python
+cProfile                # Built-in profiler (standard library)
+line_profiler>=4.0.0    # Line-by-line profiling
+
+# Memory profiling
+memory-profiler>=0.60.0 # Memory usage profiling
+pympler>=0.9            # Memory analysis toolkit
+
+# ============================================================================
+# DEPLOYMENT AND INFRASTRUCTURE VALIDATION
+# ============================================================================
+
+# Container analysis
+hadolint-py>=2.12.0     # Dockerfile linting and best practices
+
+# Kubernetes validation
+kubeval>=0.16.1         # Kubernetes manifest validation (if available)
+
+# CI/CD analysis
+yamllint>=1.31.0        # YAML file linting for CI/CD configs
+
+# ============================================================================
+# VISUALIZATION AND REPORTING
+# ============================================================================
+
+# Static visualization
+matplotlib>=3.7.0       # Static charts and plots
+seaborn>=0.12.0         # Statistical data visualization
+pillow>=9.5.0           # Image processing for charts
+
+# Interactive visualization
+plotly>=5.14.0          # Interactive charts and dashboards
+dash>=2.10.0            # Web-based dashboards
+
+# Data processing
+pandas>=2.0.0           # Data manipulation and analysis
+numpy>=1.24.0           # Numerical computing
+
+# Report generation
+jinja2>=3.1.0           # Template engine for reports
+markdown>=3.4.0         # Markdown processing
+weasyprint>=59.0        # HTML to PDF conversion
+reportlab>=4.0.0        # PDF generation
+
+# Table formatting
+tabulate>=0.9.0         # ASCII table formatting
+rich>=13.3.0            # Rich text and beautiful formatting
+
+# ============================================================================
+# OPTIONAL TOOLS (Enhanced Features)
+# ============================================================================
+
+# Advanced static analysis
+vulture>=2.7            # Dead code detection
+pyroma>=4.2             # Package quality rating
+check-manifest>=0.49    # Manifest file validation
+
+# Documentation analysis
+pydocstyle>=6.3.0       # Docstring style checking
+interrogate>=1.5.0      # Documentation coverage
+
+# Git analysis
+gitpython>=3.1.0        # Git repository analysis
+pygount>=1.6.0          # Source code line counting
+
+# Network and API analysis
+requests>=2.28.0        # HTTP library for API calls
+urllib3>=1.26.0         # HTTP client
+
+# ============================================================================
+# DEVELOPMENT AND TESTING UTILITIES
+# ============================================================================
+
+# Test data generation
+faker>=18.9.0           # Fake data generation for testing
+factory-boy>=3.2.0      # Test fixture generation
+
+# Snapshot testing
+pytest-snapshot>=0.9.0  # Snapshot testing for reports
+
+# Performance benchmarking
+pytest-benchmark>=4.0.0 # Performance regression testing
+
+# ============================================================================
+# INSTALLATION NOTES
+# ============================================================================
+
+# To install all dependencies:
+#   pip install -r requirements-analysis.txt
+#
+# To install core dependencies only:
+#   pip install jsonschema pydantic tenacity radon pylint bandit safety pytest-cov
+#
+# To install with visualization support:
+#   pip install -r requirements-analysis.txt matplotlib plotly weasyprint
+#
+# For CI/CD environments (minimal):
+#   pip install jsonschema radon pylint bandit safety pytest-cov tabulate
+#
+# System dependencies (Ubuntu/Debian):
+#   sudo apt-get install pandoc wkhtmltopdf graphviz
+#
+# System dependencies (macOS):
+#   brew install pandoc wkhtmltopdf graphviz
+#
+# System dependencies (Windows):
+#   choco install pandoc wkhtmltopdf graphviz
