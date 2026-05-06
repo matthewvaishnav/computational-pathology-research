@@ -1,5 +1,5 @@
 title: HistoCore
-description: Production-grade PyTorch framework for computational pathology research with 3,006 tests, 8-12x training optimization, federated learning, and PACS integration
+description: Production-grade PyTorch framework for computational pathology research with 4,740 tests, 8-12x training optimization, federated learning, and PACS integration
 theme: jekyll-theme-minimal
 logo: /assets/logo.svg?v=2
 show_downloads: true
@@ -9,12 +9,15 @@ github:
   owner_name: Matthew Vaishnav
   owner_url: https://github.com/matthewvaishnav
 
+# Clean URLs (remove .html extension)
+permalink: pretty
+
 # Navigation
 navigation:
   - title: Home
     url: /
   - title: Documentation
-    url: /DOCS_INDEX.html
+    url: /DOCS_INDEX
   - title: GitHub
     url: https://github.com/matthewvaishnav/computational-pathology-research
 
@@ -31,4 +34,15 @@ relative_links:
 markdown: kramdown
 kramdown:
   input: GFM
-  syntax_highlighter: none
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+# Exclude from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
