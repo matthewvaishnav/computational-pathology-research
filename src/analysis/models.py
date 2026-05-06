@@ -161,6 +161,7 @@ class ScalabilityAnalysis:
     memory_bottlenecks: List[str] = field(default_factory=list)
     communication_overhead_ms: float = 0.0
     score: float = 0.0
+    recommendations: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
