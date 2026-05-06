@@ -27,6 +27,7 @@ from src.analysis.models import (
     ScalabilityAnalysis,
 )
 from src.analysis.architecture import ArchitectureAnalyzer
+from src.analysis.performance import PerformanceProfiler
 
 
 # Configure logging
@@ -125,11 +126,13 @@ class AnalysisOrchestrator:
             return ArchitectureAnalysis(total_files=0, score=0.0)
     
     def _create_stub_performance_analysis(self) -> PerformanceAnalysis:
-        """Create stub performance analysis (placeholder)."""
-        return PerformanceAnalysis(
-            gpu_utilization=0.0,
-            score=0.0
-        )
+        """Create performance analysis using real profiler."""
+        try:
+            profiler = PerformanceProfiler(str(self.project_path))
+            return profiler.analyze()
+        except Exception as e:
+            logger.error(f"Performance profiler failed: {e}")
+            return PerformanceAnalysis(gpu_utilization=0.0, score=0.0)
     
     def _create_stub_coverage_analysis(self) -> CoverageAnalysis:
         """Create stub coverage analysis (placeholder)."""
