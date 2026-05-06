@@ -1,0 +1,129 @@
+"""
+Constants and configuration values used throughout HistoCore.
+
+This module centralizes magic numbers, thresholds, and configuration constants
+to improve maintainability and reduce code duplication.
+"""
+
+# Memory Management Constants
+DEFAULT_MAX_MEMORY_GB = 1.0
+DEFAULT_MIN_MEMORY_GB = 0.2
+MEMORY_PRESSURE_THRESHOLD = 0.8  # 80% memory usage triggers cleanup
+MEMORY_TARGET_USAGE = 0.6  # Target 60% memory usage after cleanup
+COMPRESSION_THRESHOLD_MB = 100.0
+
+# Buffer and Cache Settings
+DEFAULT_BUFFER_SIZE = 8
+MAX_BUFFER_SIZE = 64
+DEFAULT_TILE_SIZE = 256
+MAX_TILE_SIZE = 2048
+MIN_TILE_SIZE = 256
+CACHE_TTL_SECONDS = 3600  # 1 hour
+
+# Performance Thresholds
+MIN_PATCH_EXTRACTION_RATE = 100  # patches/sec
+MIN_GPU_FEATURE_RATE = 500  # patches/sec
+MIN_CPU_FEATURE_RATE = 50  # patches/sec
+MIN_TISSUE_DETECTION_RATE = 1000  # patches/sec
+MIN_HDF5_WRITE_SPEED = 10  # MB/sec
+
+# Timeout and Retry Settings
+DEFAULT_TIMEOUT_SECONDS = 30.0
+MAX_RETRIES = 3
+RETRY_DELAY_SECONDS = 1.0
+CONNECTION_TIMEOUT = 60.0
+
+# Quality Control Thresholds
+MIN_TISSUE_THRESHOLD = 0.5
+MAX_BLUR_THRESHOLD = 100.0
+MIN_COLOR_VARIANCE = 0.01
+COMPRESSION_QUALITY = 95
+
+# Monitoring and Metrics
+METRICS_RETENTION_HOURS = 168  # 1 week
+MONITORING_INTERVAL_SECONDS = 60.0
+GC_FREQUENCY = 10  # Run garbage collection every N operations
+ALERT_THRESHOLD_SECONDS = 300  # 5 minutes
+
+# Clinical Workflow Constants
+TARGET_UPTIME_PERCENT = 99.9
+TARGET_RESPONSE_TIME_MS = 500.0
+TARGET_THROUGHPUT_RPS = 100.0
+MAX_CONCURRENT_USERS = 50
+
+# Security and Authentication
+SESSION_TIMEOUT_MINUTES = 30
+MAX_LOGIN_ATTEMPTS = 5
+PASSWORD_MIN_LENGTH = 8
+TOKEN_EXPIRY_HOURS = 24
+
+# File and Data Processing
+MAX_FILE_SIZE_MB = 1000  # 1GB
+CHUNK_SIZE_BYTES = 8192  # 8KB
+MAX_BATCH_SIZE = 128
+DEFAULT_BATCH_SIZE = 32
+
+# Network and Communication
+DEFAULT_PORT = 8080
+MAX_CONNECTIONS = 100
+KEEPALIVE_TIMEOUT = 30
+REQUEST_TIMEOUT = 60
+
+# Federated Learning Constants
+MIN_CLIENTS_FOR_TRAINING = 3
+MAX_TRAINING_ROUNDS = 100
+CONVERGENCE_THRESHOLD = 0.001
+PRIVACY_EPSILON = 1.0  # Differential privacy parameter
+
+# Model Training Constants
+DEFAULT_LEARNING_RATE = 1e-3
+DEFAULT_WEIGHT_DECAY = 1e-4
+DEFAULT_DROPOUT = 0.3
+MAX_EPOCHS = 100
+EARLY_STOPPING_PATIENCE = 10
+
+# Visualization Constants
+DEFAULT_FIGURE_SIZE = (10, 8)
+DEFAULT_DPI = 100
+MAX_ZOOM_LEVEL = 10.0
+COLORMAP_ALPHA = 0.7
+
+# Error Handling
+MAX_ERROR_RETRIES = 3
+ERROR_BACKOFF_SECONDS = 2.0
+MAX_ERROR_LOG_SIZE = 1000
+
+# Resource Limits
+MAX_CPU_PERCENT = 80.0
+MAX_MEMORY_PERCENT = 85.0
+MAX_DISK_PERCENT = 90.0
+MIN_FREE_DISK_GB = 5.0
+
+# Age Group Thresholds (for clinical validation)
+YOUNG_ADULT_MAX_AGE = 39
+MIDDLE_AGED_MAX_AGE = 64
+ELDERLY_MAX_AGE = 79
+# 80+ is geriatric
+
+# Disease Prevalence (per 100,000 population)
+BREAST_CANCER_PREVALENCE = 126.8
+LUNG_CANCER_PREVALENCE = 58.3
+PROSTATE_CANCER_PREVALENCE = 109.5
+COLORECTAL_CANCER_PREVALENCE = 38.6
+
+# Image Processing Constants
+JPEG_QUALITY = 95
+PNG_COMPRESSION = 6
+THUMBNAIL_SIZE = (1024, 1024)
+PATCH_OVERLAP = 0.0  # No overlap by default
+
+# Statistical Constants
+CONFIDENCE_LEVEL = 0.95  # 95% confidence intervals
+BOOTSTRAP_SAMPLES = 1000
+SIGNIFICANCE_LEVEL = 0.05
+MIN_SAMPLE_SIZE = 30
+
+# Logging Constants
+LOG_ROTATION_SIZE_MB = 100
+LOG_RETENTION_DAYS = 30
+MAX_LOG_FILES = 10

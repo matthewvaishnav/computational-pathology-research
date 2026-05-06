@@ -397,3 +397,73 @@ def memoize(func: Callable[..., T]) -> Callable[..., T]:
         return cache[key]
     
     return wrapper
+
+
+def handle_errors(default_return: Any = None, log_level: str = "error", 
+                 reraise: bool = False, error_message: Optional[str] = None):
+    """
+    Enhanced error handling decorator with configurable behavior.
+    
+    Args:
+        default_return: Value to return on error (if not reraising)
+        log_level: Logging level for errors ("debug", "info", "warning", "error", "critical")
+        reraise: Whether to reraise the exception after logging
+        error_message: Custom error message template
+    
+    Example:
+        @handle_errors(default_return=[], log_level="warning", reraise=False)
+        def get_data():
+            # might fail
+            return risky_operation()
+    """
+    def decorator(func: Callable[..., T]) -> Callable[..., Union[T, Any]]:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Union[T, Any]:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                # Log the error at specified level
+                log_func = getattr(logger, log_level.lower(), logger.error)
+                message = error_message or f"Error in {func.__name__}: {e}"
+                log_func(message)
+                
+                # Reraise if requested
+                if reraise:
+                    raise
+                
+                # Return default value
+                return default_return
+        return wrapper
+    return decorator
+
+
+@contextmanager
+def error_context(operation: str, cleanup_func: Optional[Callable] = None, 
+                 reraise: bool = True):
+    """
+    Context manager for error handling with optional cleanup.
+    
+    Args:
+        operation: Name of the operation for logging
+        cleanup_func: Optional cleanup function to call on error
+        reraise: Whether to reraise exceptions after cleanup
+    
+    Example:
+        with error_context("file processing", cleanup_func=close_files):
+            process_file()
+    """
+    try:
+        yield
+    except Exception as e:
+        logger.error(f"Error during {operation}: {e}")
+        
+        # Run cleanup if provided
+        if cleanup_func:
+            try:
+                cleanup_func()
+            except Exception as cleanup_error:
+                logger.error(f"Error during cleanup for {operation}: {cleanup_error}")
+        
+        # Reraise if requested
+        if reraise:
+            raise
