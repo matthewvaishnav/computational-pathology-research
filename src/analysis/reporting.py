@@ -12,8 +12,8 @@ from typing import Dict, List, Any, Optional
 import subprocess
 import tempfile
 
-from src.analysis.models import AnalysisResult, Issue, Priority, Severity
-from src.analysis.aggregator import ResultAggregator
+from .models import AnalysisResult, Issue, Priority, Severity
+from .aggregator import ResultAggregator
 
 logger = logging.getLogger(__name__)
 
