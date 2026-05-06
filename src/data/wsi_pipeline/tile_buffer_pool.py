@@ -31,6 +31,18 @@ from PIL import Image
 
 from .exceptions import ProcessingError, ResourceError
 from ..utils.common import log_operation, format_bytes
+from ..utils.constants import (
+    DEFAULT_MAX_MEMORY_GB,
+    DEFAULT_MIN_MEMORY_GB,
+    DEFAULT_BUFFER_SIZE,
+    MAX_BUFFER_SIZE,
+    MEMORY_PRESSURE_THRESHOLD,
+    MEMORY_TARGET_USAGE,
+    COMPRESSION_THRESHOLD_MB,
+    GC_FREQUENCY,
+    MIN_TILE_SIZE,
+    MAX_TILE_SIZE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,25 +51,24 @@ logger = logging.getLogger(__name__)
 class TileBufferConfig:
     """Optimized configuration for tile buffer pool."""
 
-    # Memory limits (reduced defaults for better memory efficiency)
-    max_memory_gb: float = 1.0  # Maximum memory usage in GB (reduced from 2.0)
-    min_memory_gb: float = 0.2  # Minimum memory allocation in GB (reduced from 0.5)
+    # Memory limits (using constants)
+    max_memory_gb: float = DEFAULT_MAX_MEMORY_GB
+    min_memory_gb: float = DEFAULT_MIN_MEMORY_GB
 
-    # Buffer settings (optimized for memory efficiency)
-    initial_buffer_size: int = 8  # Initial number of tiles to buffer (reduced from 16)
-    max_buffer_size: int = 64  # Maximum buffer size (new limit)
+    # Buffer settings (using constants)
+    initial_buffer_size: int = DEFAULT_BUFFER_SIZE
+    max_buffer_size: int = MAX_BUFFER_SIZE
     
-    # Memory optimization settings
-    enable_compression: bool = True  # Enable tile compression for inactive tiles
-    compression_threshold_mb: float = 100.0  # Compress tiles when memory usage exceeds this
-    memory_pressure_threshold: float = 0.8  # Trigger cleanup at 80% memory usage
-    gc_frequency: int = 10  # Run garbage collection every N operations
+    # Memory optimization settings (using constants)
+    enable_compression: bool = True
+    compression_threshold_mb: float = COMPRESSION_THRESHOLD_MB
+    memory_pressure_threshold: float = MEMORY_PRESSURE_THRESHOLD
+    gc_frequency: int = GC_FREQUENCY
     
-    # Adaptive sizing
-    enable_adaptive_sizing: bool = True  # Enable adaptive tile sizing
-    min_tile_size: int = 256  # Minimum tile size
-    max_tile_size: int = 2048  # Maximum tile size
-    max_buffer_size: int = 128  # Maximum number of tiles in buffer
+    # Adaptive sizing (using constants)
+    enable_adaptive_sizing: bool = True
+    min_tile_size: int = MIN_TILE_SIZE
+    max_tile_size: int = MAX_TILE_SIZE
     tile_size: int = 1024  # Default tile size in pixels
 
     # Adaptive tile sizing
@@ -1057,8 +1068,8 @@ class TileBufferPool:
             current_memory = self.get_memory_usage()
             max_memory = self.config.max_memory_gb * 1024**3
             
-            # If over 80% memory usage, start cleanup
-            if current_memory > max_memory * 0.8:
+            # If over memory pressure threshold, start cleanup
+            if current_memory > max_memory * self.config.memory_pressure_threshold:
                 # Sort tiles by last access time (LRU)
                 sorted_tiles = sorted(
                     self._tiles.items(),
@@ -1066,7 +1077,7 @@ class TileBufferPool:
                 )
                 
                 evicted = 0
-                target_memory = max_memory * 0.6  # Target 60% usage
+                target_memory = max_memory * MEMORY_TARGET_USAGE
                 
                 for tile_key, metadata in sorted_tiles:
                     if current_memory <= target_memory:
