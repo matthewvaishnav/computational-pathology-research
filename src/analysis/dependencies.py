@@ -67,7 +67,8 @@ class DependencyAuditor:
             license_issues=license_issues,
             score=score,
             unused_dependencies=unused_deps,
-            redundant_dependencies=redundant_deps
+            redundant_dependencies=redundant_deps,
+            security_report=self._generate_security_report(vulnerabilities, outdated_packages)
         )
     
     def _parse_dependencies(self) -> List[Dict[str, str]]:
@@ -505,6 +506,172 @@ class DependencyAuditor:
                 redundant.append(f"Overlapping functionality: {', '.join(sorted(found_in_group))}")
         
         return redundant
+    
+    def _generate_security_report(self, vulnerabilities: List[Dict[str, Any]], outdated_packages: List[str]) -> Dict[str, Any]:
+        """
+        Generate comprehensive security report with upgrade paths and CVSS scores.
+        
+        Returns:
+            Security report with vulnerabilities, upgrade commands, and workarounds
+        """
+        report = {
+            'summary': {
+                'total_vulnerabilities': len(vulnerabilities),
+                'critical_count': 0,
+                'high_count': 0,
+                'medium_count': 0,
+                'low_count': 0
+            },
+            'vulnerabilities_by_severity': {
+                'critical': [],
+                'high': [],
+                'medium': [],
+                'low': []
+            },
+            'upgrade_commands': [],
+            'workarounds': [],
+            'security_updates': []
+        }
+        
+        # Categorize vulnerabilities by severity
+        for vuln in vulnerabilities:
+            severity = vuln.get('severity', 'medium')
+            report['summary'][f'{severity}_count'] += 1
+            
+            # Add CVSS score if available
+            cvss_score = self._extract_cvss_score(vuln.get('vulnerability_id', ''))
+            
+            vuln_detail = {
+                'package': vuln.get('package', 'unknown'),
+                'version': vuln.get('version', 'unknown'),
+                'vulnerability_id': vuln.get('vulnerability_id', 'unknown'),
+                'description': vuln.get('description', ''),
+                'cvss_score': cvss_score,
+                'fixed_versions': vuln.get('fixed_versions', []),
+                'upgrade_command': self._generate_upgrade_command(
+                    vuln.get('package', ''), 
+                    vuln.get('fixed_versions', [])
+                ),
+                'workaround': self._suggest_workaround(vuln)
+            }
+            
+            report['vulnerabilities_by_severity'][severity].append(vuln_detail)
+        
+        # Generate upgrade commands for security updates
+        security_packages = []
+        for package_info in outdated_packages:
+            if '🔒' in package_info and '[SECURITY]' in package_info:
+                # Extract package name from formatted string
+                package_name = package_info.split(' ')[1]  # Skip emoji
+                security_packages.append(package_name)
+        
+        if security_packages:
+            report['upgrade_commands'].append({
+                'type': 'security_batch_update',
+                'command': f"pip install --upgrade {' '.join(security_packages)}",
+                'description': 'Batch update all packages with security fixes',
+                'packages': security_packages
+            })
+        
+        # Add individual upgrade commands for critical vulnerabilities
+        for vuln in report['vulnerabilities_by_severity']['critical']:
+            if vuln['upgrade_command']:
+                report['upgrade_commands'].append({
+                    'type': 'critical_fix',
+                    'command': vuln['upgrade_command'],
+                    'description': f"Fix critical vulnerability {vuln['vulnerability_id']} in {vuln['package']}",
+                    'package': vuln['package'],
+                    'vulnerability_id': vuln['vulnerability_id']
+                })
+        
+        # Generate workarounds for unpatchable issues
+        unpatchable_vulns = [
+            vuln for vuln in vulnerabilities 
+            if not vuln.get('fixed_versions') or len(vuln.get('fixed_versions', [])) == 0
+        ]
+        
+        for vuln in unpatchable_vulns:
+            workaround = self._suggest_workaround(vuln)
+            if workaround:
+                report['workarounds'].append({
+                    'package': vuln.get('package', 'unknown'),
+                    'vulnerability_id': vuln.get('vulnerability_id', 'unknown'),
+                    'workaround': workaround,
+                    'risk_level': vuln.get('severity', 'medium')
+                })
+        
+        return report
+    
+    def _extract_cvss_score(self, vulnerability_id: str) -> Optional[float]:
+        """Extract CVSS score from vulnerability ID or description."""
+        try:
+            # Try to extract CVSS score from CVE databases (simplified)
+            if 'CVE-' in vulnerability_id:
+                # In a real implementation, this would query CVE databases
+                # For now, return a placeholder based on severity patterns
+                if 'critical' in vulnerability_id.lower():
+                    return 9.0
+                elif 'high' in vulnerability_id.lower():
+                    return 7.5
+                elif 'medium' in vulnerability_id.lower():
+                    return 5.0
+                elif 'low' in vulnerability_id.lower():
+                    return 2.0
+        except Exception:
+            pass
+        
+        return None
+    
+    def _generate_upgrade_command(self, package_name: str, fixed_versions: List[str]) -> Optional[str]:
+        """Generate pip upgrade command for a vulnerable package."""
+        if not package_name or not fixed_versions:
+            return None
+        
+        # Use the latest fixed version
+        latest_fix = fixed_versions[-1] if fixed_versions else None
+        if latest_fix:
+            # Clean version string (remove operators like >=, etc.)
+            clean_version = latest_fix.replace('>=', '').replace('>', '').replace('==', '').strip()
+            return f"pip install --upgrade {package_name}>={clean_version}"
+        
+        return f"pip install --upgrade {package_name}"
+    
+    def _suggest_workaround(self, vulnerability: Dict[str, Any]) -> Optional[str]:
+        """Suggest workarounds for vulnerabilities that can't be easily patched."""
+        package = vulnerability.get('package', '').lower()
+        vuln_id = vulnerability.get('vulnerability_id', '')
+        description = vulnerability.get('description', '').lower()
+        
+        # Common workarounds based on vulnerability types
+        if 'injection' in description or 'sql' in description:
+            return "Use parameterized queries and input validation. Consider using an ORM with built-in protections."
+        
+        elif 'xss' in description or 'cross-site' in description:
+            return "Implement proper input sanitization and output encoding. Use Content Security Policy (CSP) headers."
+        
+        elif 'deserialization' in description or 'pickle' in description:
+            return "Avoid deserializing untrusted data. Use safe serialization formats like JSON instead of pickle."
+        
+        elif 'path traversal' in description or 'directory' in description:
+            return "Validate and sanitize file paths. Use allowlists for permitted directories and filenames."
+        
+        elif package in ['pillow', 'pil']:
+            return "Validate image files before processing. Consider using image processing in sandboxed environments."
+        
+        elif package in ['requests', 'urllib3']:
+            return "Verify SSL certificates and use the latest TLS versions. Implement request timeouts."
+        
+        elif package in ['pyyaml', 'yaml']:
+            return "Use yaml.safe_load() instead of yaml.load(). Avoid loading YAML from untrusted sources."
+        
+        elif 'denial of service' in description or 'dos' in description:
+            return "Implement rate limiting and resource usage monitoring. Set appropriate timeouts."
+        
+        # Generic workarounds
+        if not vulnerability.get('fixed_versions'):
+            return "Consider using an alternative package or implementing additional security controls around this dependency."
+        
+        return None
     
     def _validate_licenses(self) -> List[str]:
         """Validate license compatibility using pip-licenses."""

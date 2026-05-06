@@ -128,6 +128,7 @@ class DependencyAnalysis:
     license_issues: List[str] = field(default_factory=list)
     unused_dependencies: List[str] = field(default_factory=list)
     redundant_dependencies: List[str] = field(default_factory=list)
+    security_report: Dict[str, Any] = field(default_factory=dict)
     score: float = 0.0
 
 
