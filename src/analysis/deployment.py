@@ -10,7 +10,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
-from src.analysis.models import DeploymentAnalysis
+from .models import DeploymentAnalysis
 
 
 logger = logging.getLogger(__name__)
