@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Any
 
-from src.analysis.models import ScalabilityAnalysis
+from .models import ScalabilityAnalysis
 
 
 logger = logging.getLogger(__name__)
