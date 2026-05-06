@@ -1,32 +1,28 @@
 """
-Tile Buffer Pool for Real-Time WSI Streaming.
+Optimized Tile Buffer Pool for Real-Time WSI Streaming.
 
-This module implements a configurable memory-limited buffer pool for WSI tiles
-that enables efficient tile caching and reuse during streaming operations.
-Part of the WSIStreamReader class implementation for progressive tile loading.
+This module implements a memory-efficient buffer pool for WSI tiles with
+advanced memory management, compression, and adaptive sizing capabilities.
 
-Key Features:
-- Configurable memory limits (0.5-32GB range)
-- Efficient tile allocation and deallocation
-- Memory pressure detection and response
-- Thread-safe operations for concurrent access
-- LRU eviction policy for optimal cache utilization
-- Adaptive sizing based on available memory
-
-Requirements Addressed:
-- REQ-2.2.1: Memory usage below 2GB during processing
-- REQ-1.1.2: Progressive tile streaming with configurable buffer sizes
-- REQ-1.1.3: Adaptive tile sizing based on available memory
+Key Optimizations:
+- Lazy tile loading and unloading
+- Automatic memory pressure detection
+- Tile compression for inactive tiles
+- Memory pool reuse to reduce allocations
+- Adaptive buffer sizing based on available memory
+- Efficient cleanup and garbage collection
 """
 
 import gc
 import logging
 import threading
 import time
+import weakref
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
+import zlib
 
 import numpy as np
 import psutil
@@ -34,20 +30,33 @@ import torch
 from PIL import Image
 
 from .exceptions import ProcessingError, ResourceError
+from ..utils.common import log_operation, format_bytes
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class TileBufferConfig:
-    """Configuration for tile buffer pool."""
+    """Optimized configuration for tile buffer pool."""
 
-    # Memory limits
-    max_memory_gb: float = 2.0  # Maximum memory usage in GB
-    min_memory_gb: float = 0.5  # Minimum memory allocation in GB
+    # Memory limits (reduced defaults for better memory efficiency)
+    max_memory_gb: float = 1.0  # Maximum memory usage in GB (reduced from 2.0)
+    min_memory_gb: float = 0.2  # Minimum memory allocation in GB (reduced from 0.5)
 
-    # Buffer settings
-    initial_buffer_size: int = 16  # Initial number of tiles to buffer
+    # Buffer settings (optimized for memory efficiency)
+    initial_buffer_size: int = 8  # Initial number of tiles to buffer (reduced from 16)
+    max_buffer_size: int = 64  # Maximum buffer size (new limit)
+    
+    # Memory optimization settings
+    enable_compression: bool = True  # Enable tile compression for inactive tiles
+    compression_threshold_mb: float = 100.0  # Compress tiles when memory usage exceeds this
+    memory_pressure_threshold: float = 0.8  # Trigger cleanup at 80% memory usage
+    gc_frequency: int = 10  # Run garbage collection every N operations
+    
+    # Adaptive sizing
+    enable_adaptive_sizing: bool = True  # Enable adaptive tile sizing
+    min_tile_size: int = 256  # Minimum tile size
+    max_tile_size: int = 2048  # Maximum tile size
     max_buffer_size: int = 128  # Maximum number of tiles in buffer
     tile_size: int = 1024  # Default tile size in pixels
 
@@ -1038,6 +1047,42 @@ class TileBufferPool:
             recommended_size = current_size
 
         return recommended_size
+
+    def optimize_memory_usage(self):
+        """Optimize memory usage through intelligent cleanup and compression."""
+        def _optimize():
+            if not self._tiles:
+                return
+            
+            current_memory = self.get_memory_usage()
+            max_memory = self.config.max_memory_gb * 1024**3
+            
+            # If over 80% memory usage, start cleanup
+            if current_memory > max_memory * 0.8:
+                # Sort tiles by last access time (LRU)
+                sorted_tiles = sorted(
+                    self._tiles.items(),
+                    key=lambda x: x[1].last_accessed
+                )
+                
+                evicted = 0
+                target_memory = max_memory * 0.6  # Target 60% usage
+                
+                for tile_key, metadata in sorted_tiles:
+                    if current_memory <= target_memory:
+                        break
+                    
+                    current_memory -= self._calculate_tile_memory_size(metadata.data)
+                    del self._tiles[tile_key]
+                    evicted += 1
+                
+                if evicted > 0:
+                    logger.info(f"Memory optimization: evicted {evicted} tiles")
+            
+            # Force garbage collection to free memory
+            gc.collect()
+        
+        return self._with_lock(_optimize)
 
     def __enter__(self):
         """Context manager entry."""
