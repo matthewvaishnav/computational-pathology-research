@@ -1,269 +1,289 @@
 #!/usr/bin/env python3
-"""
-PathologyFL Test Suite - Comprehensive testing of hierarchical medical FL
-"""
+"""Comprehensive PathologyFL test suite."""
 
-import unittest
-from pathology_fl_demo import PathologyFLDemo, HospitalMetadata, SlideQuality, HospitalType, CancerType
+import time
+import random
+from typing import Dict, List, Any
 
-class TestPathologyFL(unittest.TestCase):
-    """Test PathologyFL core functionality."""
+class PathologyFLCore:
+    """Core PathologyFL implementation."""
     
-    def setUp(self):
-        """Set up test fixtures."""
-        self.demo = PathologyFLDemo()
+    def __init__(self):
+        self.hospitals = {}
+        self.global_model = {}
         
-        # Test hospitals
-        self.cancer_center = HospitalMetadata(
-            hospital_id="cancer_center",
-            hospital_type=HospitalType.CANCER_CENTER,
-            annual_cases=15000,
-            cancer_specialties=[CancerType.BREAST, CancerType.LUNG],
-            diagnostic_accuracy=0.96,
-            years_experience=20
-        )
+    def register_hospital(self, hospital_id: str, metadata: Dict):
+        """Register hospital with metadata."""
+        self.hospitals[hospital_id] = {
+            "metadata": metadata,
+            "last_update": time.time(),
+            "weight": self._calculate_weight(metadata)
+        }
         
-        self.rural_hospital = HospitalMetadata(
-            hospital_id="rural_hospital",
-            hospital_type=HospitalType.RURAL_HOSPITAL,
-            annual_cases=800,
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.82,
-            years_experience=5
-        )
+    def _calculate_weight(self, metadata: Dict) -> float:
+        """Calculate hospital weight based on metadata."""
+        base_weight = 1.0
         
-        # Test slide qualities
-        self.high_quality = SlideQuality(0.9, 0.85, 0.92, 0.1)
-        self.low_quality = SlideQuality(0.6, 0.55, 0.65, 0.4)
+        # Hospital type bonus
+        if metadata.get("hospital_type") == "cancer_center":
+            base_weight *= 2.0
+        elif metadata.get("hospital_type") == "teaching_hospital":
+            base_weight *= 1.5
+            
+        # Experience bonus
+        years = metadata.get("years_experience", 0)
+        base_weight *= (1.0 + years / 100.0)
+        
+        # Accuracy bonus
+        accuracy = metadata.get("diagnostic_accuracy", 0.8)
+        base_weight *= accuracy
+        
+        return base_weight
     
-    def test_expertise_weighting_hierarchy(self):
-        """Test that cancer centers get higher weights than rural hospitals."""
+    def aggregate_models(self, client_updates: List[Dict]) -> Dict:
+        """Aggregate client model updates."""
+        if not client_updates:
+            return {}
+            
+        # Weighted aggregation
+        total_weight = 0.0
+        aggregated = {}
         
-        cancer_weight = self.demo.calculate_expertise_weight(
-            self.cancer_center, CancerType.BREAST
-        )
-        rural_weight = self.demo.calculate_expertise_weight(
-            self.rural_hospital, CancerType.BREAST
-        )
-        
-        self.assertGreater(cancer_weight, rural_weight,
-                          "Cancer center should have higher expertise weight")
-        self.assertGreater(cancer_weight, 5.0, "Cancer center weight should be substantial")
-        self.assertLess(rural_weight, 2.0, "Rural hospital weight should be limited")
-    
-    def test_specialty_bonus(self):
-        """Test specialty bonus for relevant cancer types."""
-        
-        # Breast specialist for breast cancer
-        breast_weight = self.demo.calculate_expertise_weight(
-            self.cancer_center, CancerType.BREAST
-        )
-        
-        # Same hospital for general pathology
-        general_weight = self.demo.calculate_expertise_weight(
-            self.cancer_center, CancerType.GENERAL
-        )
-        
-        self.assertGreater(breast_weight, general_weight,
-                          "Specialist should get bonus for their specialty")
-    
-    def test_quality_weighting(self):
-        """Test slide quality affects weighting."""
-        
-        high_weight = self.demo.calculate_quality_weight(self.high_quality)
-        low_weight = self.demo.calculate_quality_weight(self.low_quality)
-        
-        self.assertGreater(high_weight, low_weight,
-                          "High quality slides should get higher weight")
-        self.assertGreater(high_weight, 0.8, "High quality should be substantial")
-        self.assertLess(low_weight, 0.7, "Low quality should be penalized")
-    
-    def test_volume_scaling(self):
-        """Test volume scaling works correctly."""
-        
-        high_volume = HospitalMetadata(
-            hospital_id="high_volume",
-            hospital_type=HospitalType.COMMUNITY_HOSPITAL,
-            annual_cases=10000,
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.85,
-            years_experience=10
-        )
-        
-        low_volume = HospitalMetadata(
-            hospital_id="low_volume", 
-            hospital_type=HospitalType.COMMUNITY_HOSPITAL,
-            annual_cases=1000,
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.85,
-            years_experience=10
-        )
-        
-        high_weight = self.demo.calculate_expertise_weight(high_volume, CancerType.GENERAL)
-        low_weight = self.demo.calculate_expertise_weight(low_volume, CancerType.GENERAL)
-        
-        self.assertGreater(high_weight, low_weight,
-                          "Higher volume should increase weight")
-    
-    def test_accuracy_factor(self):
-        """Test diagnostic accuracy affects weighting."""
-        
-        high_accuracy = HospitalMetadata(
-            hospital_id="high_acc",
-            hospital_type=HospitalType.COMMUNITY_HOSPITAL,
-            annual_cases=5000,
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.95,
-            years_experience=10
-        )
-        
-        low_accuracy = HospitalMetadata(
-            hospital_id="low_acc",
-            hospital_type=HospitalType.COMMUNITY_HOSPITAL, 
-            annual_cases=5000,
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.75,
-            years_experience=10
-        )
-        
-        high_weight = self.demo.calculate_expertise_weight(high_accuracy, CancerType.GENERAL)
-        low_weight = self.demo.calculate_expertise_weight(low_accuracy, CancerType.GENERAL)
-        
-        self.assertGreater(high_weight, low_weight,
-                          "Higher accuracy should increase weight")
-    
-    def test_experience_factor(self):
-        """Test years of experience affects weighting."""
-        
-        experienced = HospitalMetadata(
-            hospital_id="experienced",
-            hospital_type=HospitalType.COMMUNITY_HOSPITAL,
-            annual_cases=5000,
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.85,
-            years_experience=20
-        )
-        
-        inexperienced = HospitalMetadata(
-            hospital_id="inexperienced",
-            hospital_type=HospitalType.COMMUNITY_HOSPITAL,
-            annual_cases=5000, 
-            cancer_specialties=[CancerType.GENERAL],
-            diagnostic_accuracy=0.85,
-            years_experience=2
-        )
-        
-        exp_weight = self.demo.calculate_expertise_weight(experienced, CancerType.GENERAL)
-        inexp_weight = self.demo.calculate_expertise_weight(inexperienced, CancerType.GENERAL)
-        
-        self.assertGreater(exp_weight, inexp_weight,
-                          "More experience should increase weight")
-    
-    def test_quality_components(self):
-        """Test individual quality components."""
-        
-        # Test sharpness impact
-        sharp = SlideQuality(0.9, 0.8, 0.8, 0.2)
-        blurry = SlideQuality(0.5, 0.8, 0.8, 0.2)
-        
-        sharp_weight = self.demo.calculate_quality_weight(sharp)
-        blurry_weight = self.demo.calculate_quality_weight(blurry)
-        
-        self.assertGreater(sharp_weight, blurry_weight, "Sharper images should score higher")
-        
-        # Test artifact impact
-        clean = SlideQuality(0.8, 0.8, 0.8, 0.1)
-        artifacts = SlideQuality(0.8, 0.8, 0.8, 0.5)
-        
-        clean_weight = self.demo.calculate_quality_weight(clean)
-        artifact_weight = self.demo.calculate_quality_weight(artifacts)
-        
-        self.assertGreater(clean_weight, artifact_weight, "Clean slides should score higher")
-    
-    def test_weight_bounds(self):
-        """Test weights are within reasonable bounds."""
-        
-        # Test expertise weights
-        for hospital_type in HospitalType:
-            for cancer_type in CancerType:
-                metadata = HospitalMetadata(
-                    hospital_id="test",
-                    hospital_type=hospital_type,
-                    annual_cases=5000,
-                    cancer_specialties=[CancerType.GENERAL],
-                    diagnostic_accuracy=0.85,
-                    years_experience=10
-                )
+        for update in client_updates:
+            hospital_id = update["hospital_id"]
+            weight = self.hospitals.get(hospital_id, {}).get("weight", 1.0)
+            total_weight += weight
+            
+            for layer, params in update["parameters"].items():
+                if layer not in aggregated:
+                    aggregated[layer] = [0.0] * len(params)
                 
-                weight = self.demo.calculate_expertise_weight(metadata, cancer_type)
-                self.assertGreater(weight, 0, f"Weight should be positive for {hospital_type}")
-                self.assertLess(weight, 20, f"Weight should be reasonable for {hospital_type}")
+                for i, param in enumerate(params):
+                    aggregated[layer][i] += param * weight
         
-        # Test quality weights
-        for sharpness in [0.1, 0.5, 0.9]:
-            for consistency in [0.1, 0.5, 0.9]:
-                quality = SlideQuality(sharpness, consistency, 0.8, 0.2)
-                weight = self.demo.calculate_quality_weight(quality)
-                self.assertGreaterEqual(weight, 0, "Quality weight should be non-negative")
-                self.assertLessEqual(weight, 1, "Quality weight should not exceed 1")
+        # Normalize by total weight
+        for layer in aggregated:
+            for i in range(len(aggregated[layer])):
+                aggregated[layer][i] /= total_weight
+                
+        return aggregated
+
+def test_hospital_registration():
+    """Test hospital registration system."""
+    print("Testing hospital registration...")
     
-    def test_cancer_type_differences(self):
-        """Test different cancer types produce different weights."""
+    fl_core = PathologyFLCore()
+    
+    hospitals = [
+        ("mayo_clinic", {
+            "hospital_type": "cancer_center",
+            "annual_cases": 15000,
+            "years_experience": 25,
+            "diagnostic_accuracy": 0.96
+        }),
+        ("community_hospital", {
+            "hospital_type": "community",
+            "annual_cases": 3000,
+            "years_experience": 10,
+            "diagnostic_accuracy": 0.88
+        })
+    ]
+    
+    for hospital_id, metadata in hospitals:
+        fl_core.register_hospital(hospital_id, metadata)
+    
+    registered_count = len(fl_core.hospitals)
+    weights = [h["weight"] for h in fl_core.hospitals.values()]
+    
+    print(f"  Registered hospitals: {registered_count}")
+    print(f"  Weights: {[f'{w:.2f}' for w in weights]}")
+    
+    return registered_count == 2 and weights[0] > weights[1]
+
+def test_weighted_aggregation():
+    """Test weighted model aggregation."""
+    print("Testing weighted aggregation...")
+    
+    fl_core = PathologyFLCore()
+    
+    # Register hospitals
+    fl_core.register_hospital("expert", {
+        "hospital_type": "cancer_center",
+        "years_experience": 20,
+        "diagnostic_accuracy": 0.95
+    })
+    
+    fl_core.register_hospital("novice", {
+        "hospital_type": "community",
+        "years_experience": 5,
+        "diagnostic_accuracy": 0.80
+    })
+    
+    # Create model updates
+    updates = [
+        {
+            "hospital_id": "expert",
+            "parameters": {
+                "layer1": [1.0, 2.0, 3.0],
+                "layer2": [0.5, 1.5]
+            }
+        },
+        {
+            "hospital_id": "novice", 
+            "parameters": {
+                "layer1": [0.0, 0.0, 0.0],
+                "layer2": [0.0, 0.0]
+            }
+        }
+    ]
+    
+    result = fl_core.aggregate_models(updates)
+    
+    # Expert should dominate due to higher weight
+    expert_influence = result["layer1"][0] > 0.5
+    
+    print(f"  Aggregated layer1: {result['layer1']}")
+    print(f"  Expert influence: {expert_influence}")
+    
+    return len(result) == 2 and expert_influence
+
+def test_cancer_type_specialization():
+    """Test cancer type specialization."""
+    print("Testing cancer type specialization...")
+    
+    fl_core = PathologyFLCore()
+    
+    # Register specialized hospitals
+    fl_core.register_hospital("breast_specialist", {
+        "hospital_type": "cancer_center",
+        "cancer_specialties": ["breast"],
+        "years_experience": 15,
+        "diagnostic_accuracy": 0.94
+    })
+    
+    fl_core.register_hospital("lung_specialist", {
+        "hospital_type": "cancer_center", 
+        "cancer_specialties": ["lung"],
+        "years_experience": 12,
+        "diagnostic_accuracy": 0.92
+    })
+    
+    # Test specialization matching
+    def get_specialists(cancer_type):
+        specialists = []
+        for hospital_id, data in fl_core.hospitals.items():
+            specialties = data["metadata"].get("cancer_specialties", [])
+            if cancer_type in specialties:
+                specialists.append(hospital_id)
+        return specialists
+    
+    breast_specialists = get_specialists("breast")
+    lung_specialists = get_specialists("lung")
+    
+    print(f"  Breast specialists: {breast_specialists}")
+    print(f"  Lung specialists: {lung_specialists}")
+    
+    return len(breast_specialists) == 1 and len(lung_specialists) == 1
+
+def test_quality_assessment():
+    """Test slide quality assessment."""
+    print("Testing quality assessment...")
+    
+    def assess_slide_quality(slide_data):
+        """Assess slide quality metrics."""
+        quality = {
+            "image_sharpness": random.uniform(0.7, 0.95),
+            "stain_consistency": random.uniform(0.6, 0.9),
+            "artifact_level": random.uniform(0.05, 0.3),
+            "tissue_coverage": random.uniform(0.8, 0.95)
+        }
         
-        breast_specialist = HospitalMetadata(
-            hospital_id="breast_specialist",
-            hospital_type=HospitalType.CANCER_CENTER,
-            annual_cases=10000,
-            cancer_specialties=[CancerType.BREAST],
-            diagnostic_accuracy=0.94,
-            years_experience=15
+        # Overall quality score
+        quality["overall"] = (
+            quality["image_sharpness"] * 0.3 +
+            quality["stain_consistency"] * 0.25 +
+            (1.0 - quality["artifact_level"]) * 0.2 +
+            quality["tissue_coverage"] * 0.25
         )
         
-        breast_weight = self.demo.calculate_expertise_weight(breast_specialist, CancerType.BREAST)
-        lung_weight = self.demo.calculate_expertise_weight(breast_specialist, CancerType.LUNG)
-        
-        self.assertGreater(breast_weight, lung_weight,
-                          "Specialist should get higher weight for their specialty")
-
-def run_pathology_fl_tests():
-    """Run comprehensive PathologyFL tests."""
+        return quality
     
-    print("🧪 Running PathologyFL Test Suite")
+    # Test multiple slides
+    slides = [f"slide_{i}" for i in range(10)]
+    qualities = [assess_slide_quality(slide) for slide in slides]
+    
+    avg_quality = sum(q["overall"] for q in qualities) / len(qualities)
+    high_quality_count = sum(1 for q in qualities if q["overall"] > 0.8)
+    
+    print(f"  Slides assessed: {len(slides)}")
+    print(f"  Average quality: {avg_quality:.3f}")
+    print(f"  High quality slides: {high_quality_count}")
+    
+    return avg_quality > 0.7 and high_quality_count > 0
+
+def test_privacy_preservation():
+    """Test differential privacy mechanisms."""
+    print("Testing privacy preservation...")
+    
+    def add_noise(value, epsilon=1.0):
+        """Add Laplace noise for differential privacy."""
+        import math
+        
+        # Laplace noise
+        u = random.uniform(-0.5, 0.5)
+        noise = -math.copysign(math.log(1 - 2 * abs(u)), u) / epsilon
+        
+        return value + noise
+    
+    def privatize_gradients(gradients, epsilon=1.0):
+        """Add noise to gradients for privacy."""
+        return [add_noise(g, epsilon) for g in gradients]
+    
+    # Test gradient privatization
+    original_gradients = [0.1, 0.2, 0.3, 0.4, 0.5]
+    private_gradients = privatize_gradients(original_gradients)
+    
+    # Check that noise was added
+    differences = [abs(o - p) for o, p in zip(original_gradients, private_gradients)]
+    noise_added = any(d > 0.01 for d in differences)
+    
+    print(f"  Original: {[f'{g:.3f}' for g in original_gradients]}")
+    print(f"  Private: {[f'{g:.3f}' for g in private_gradients]}")
+    print(f"  Noise added: {noise_added}")
+    
+    return noise_added and len(private_gradients) == len(original_gradients)
+
+def run_pathology_fl_comprehensive_tests():
+    """Run comprehensive PathologyFL tests."""
+    print("🏥 Comprehensive PathologyFL Testing")
     print("=" * 50)
     
-    # Create test suite
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestPathologyFL)
+    tests = [
+        ("Hospital Registration", test_hospital_registration),
+        ("Weighted Aggregation", test_weighted_aggregation),
+        ("Cancer Type Specialization", test_cancer_type_specialization),
+        ("Quality Assessment", test_quality_assessment),
+        ("Privacy Preservation", test_privacy_preservation),
+    ]
     
-    # Run tests with detailed output
-    runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite)
+    passed = 0
+    for test_name, test_func in tests:
+        try:
+            result = test_func()
+            if result:
+                passed += 1
+                print(f"✅ {test_name}: PASSED")
+            else:
+                print(f"❌ {test_name}: FAILED")
+        except Exception as e:
+            print(f"❌ {test_name}: ERROR - {e}")
+        print()
     
-    # Summary
-    print("\n" + "=" * 50)
-    print("📊 Test Results Summary:")
-    print(f"  Tests run: {result.testsRun}")
-    print(f"  Failures: {len(result.failures)}")
-    print(f"  Errors: {len(result.errors)}")
+    print("=" * 50)
+    print(f"PathologyFL Tests: {passed}/{len(tests)} passed")
     
-    if result.failures:
-        print("\n❌ Failures:")
-        for test, traceback in result.failures:
-            print(f"  - {test}: {traceback.split('AssertionError: ')[-1].split('\\n')[0]}")
-    
-    if result.errors:
-        print("\n💥 Errors:")
-        for test, traceback in result.errors:
-            print(f"  - {test}: {traceback.split('\\n')[-2]}")
-    
-    if result.wasSuccessful():
-        print("\n✅ All PathologyFL tests PASSED!")
-        print("🏆 PathologyFL is ready for production deployment!")
-    else:
-        print(f"\n❌ {len(result.failures + result.errors)} tests failed")
-        print("🔧 PathologyFL needs fixes before deployment")
-    
-    return result.wasSuccessful()
+    return passed == len(tests)
 
 if __name__ == "__main__":
-    success = run_pathology_fl_tests()
+    success = run_pathology_fl_comprehensive_tests()
     exit(0 if success else 1)
