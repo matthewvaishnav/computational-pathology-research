@@ -1,0 +1,46 @@
+[
+  {
+    "phase": "Phase 1: Reality Check (Months 1-3)",
+    "tasks": [
+      "Partner with single hospital for pilot study",
+      "Get IRB approval for human subjects research",
+      "Implement basic PACS integration",
+      "Train 2-3 pathologists on system"
+    ],
+    "cost": "$50,000-100,000",
+    "risk": "Medium"
+  },
+  {
+    "phase": "Phase 2: Parameter Optimization (Months 4-9)",
+    "tasks": [
+      "Collect real diagnostic data from pilot hospital",
+      "Grid search optimization of all parameters",
+      "A/B test DMI vs FL on real cases",
+      "Implement failure mode detection"
+    ],
+    "cost": "$100,000-200,000",
+    "risk": "High"
+  },
+  {
+    "phase": "Phase 3: Multi-site Validation (Months 10-24)",
+    "tasks": [
+      "Expand to 3-5 hospitals",
+      "Implement Byzantine fault tolerance",
+      "Regulatory pre-submission to FDA",
+      "Clinical trial design and execution"
+    ],
+    "cost": "$500,000-1,000,000",
+    "risk": "Very High"
+  },
+  {
+    "phase": "Phase 4: Commercial Deployment (Months 25-36)",
+    "tasks": [
+      "FDA 510(k) submission",
+      "Scale to 50+ hospitals",
+      "Production monitoring and maintenance",
+      "Post-market surveillance"
+    ],
+    "cost": "$1,000,000-5,000,000",
+    "risk": "Extreme"
+  }
+]
