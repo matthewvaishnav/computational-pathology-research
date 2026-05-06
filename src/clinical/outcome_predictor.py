@@ -8,6 +8,9 @@ Extracted from treatment_response.py for focused responsibility.
 """
 
 import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -15,29 +18,101 @@ from scipy import stats
 
 from .longitudinal import PatientTimeline, ScanRecord, TreatmentEvent, TreatmentResponseCategory
 
-# Import from original file to avoid circular import
-try:
-    from .treatment_response import TreatmentResponseMetrics, UnexpectedResponseType
-except ImportError:
-    # Fallback definitions if needed
-    from dataclasses import dataclass, field
-    from datetime import datetime
-    from enum import Enum
-    
-    class UnexpectedResponseType(str, Enum):
-        """Types of unexpected treatment responses."""
-        RAPID_PROGRESSION = "rapid_progression"
-        TREATMENT_RESISTANCE = "treatment_resistance"
-        SPONTANEOUS_REMISSION = "spontaneous_remission"
-        DELAYED_RESPONSE = "delayed_response"
-        PARADOXICAL_RESPONSE = "paradoxical_response"
-    
-    @dataclass
-    class TreatmentResponseMetrics:
-        """Placeholder for TreatmentResponseMetrics."""
-        pass
-
 logger = logging.getLogger(__name__)
+
+
+class UnexpectedResponseType(str, Enum):
+    """Types of unexpected treatment responses."""
+
+    RAPID_PROGRESSION = "rapid_progression"  # Faster progression than expected
+    TREATMENT_RESISTANCE = "treatment_resistance"  # No response to effective treatment
+    SPONTANEOUS_REMISSION = "spontaneous_remission"  # Improvement without treatment
+    DELAYED_RESPONSE = "delayed_response"  # Response much later than expected
+    PARADOXICAL_RESPONSE = "paradoxical_response"  # Worsening with effective treatment
+
+
+@dataclass
+class TreatmentResponseMetrics:
+    """Comprehensive treatment response metrics."""
+
+    # Basic response information
+    treatment_id: str
+    patient_id_hash: str
+    response_category: TreatmentResponseCategory
+    response_kinetics: "ResponseKinetics"
+    treatment_date: datetime
+
+    # Temporal metrics
+    baseline_scan_date: Optional[datetime] = None
+    response_scan_date: Optional[datetime] = None
+    days_to_response: Optional[int] = None
+
+    # Disease state metrics
+    baseline_disease_state: Optional[str] = None
+    response_disease_state: Optional[str] = None
+    disease_state_change: Optional[Dict[str, str]] = None
+
+    # Probability metrics
+    baseline_probability: Optional[float] = None
+    response_probability: Optional[float] = None
+    probability_change: Optional[float] = None
+    probability_change_percent: Optional[float] = None
+
+    # Biological response metrics
+    response_magnitude: Optional[float] = None  # Quantified response strength
+    response_consistency: Optional[float] = None  # Consistency across disease states
+    response_durability_score: Optional[float] = None  # Predicted durability
+
+    # Kinetics modeling
+    expected_response_time: Optional[int] = None  # Days
+    response_time_deviation: Optional[float] = None  # Standard deviations from expected
+    kinetics_confidence: Optional[float] = None  # Confidence in kinetics classification
+
+    # Unexpected response detection
+    is_unexpected: bool = False
+    unexpected_type: Optional[UnexpectedResponseType] = None
+    unexpected_score: Optional[float] = None  # 0-1 score for how unexpected
+
+    # Additional metadata
+    treatment_type: Optional[str] = None
+    treatment_regimen: Optional[str] = None
+    patient_factors: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            "treatment_id": self.treatment_id,
+            "patient_id_hash": self.patient_id_hash,
+            "response_category": self.response_category.value,
+            "response_kinetics": self.response_kinetics.value,
+            "treatment_date": self.treatment_date.isoformat(),
+            "baseline_scan_date": (
+                self.baseline_scan_date.isoformat() if self.baseline_scan_date else None
+            ),
+            "response_scan_date": (
+                self.response_scan_date.isoformat() if self.response_scan_date else None
+            ),
+            "days_to_response": self.days_to_response,
+            "baseline_disease_state": self.baseline_disease_state,
+            "response_disease_state": self.response_disease_state,
+            "disease_state_change": self.disease_state_change,
+            "baseline_probability": self.baseline_probability,
+            "response_probability": self.response_probability,
+            "probability_change": self.probability_change,
+            "probability_change_percent": self.probability_change_percent,
+            "response_magnitude": self.response_magnitude,
+            "response_consistency": self.response_consistency,
+            "response_durability_score": self.response_durability_score,
+            "expected_response_time": self.expected_response_time,
+            "response_time_deviation": self.response_time_deviation,
+            "kinetics_confidence": self.kinetics_confidence,
+            "is_unexpected": self.is_unexpected,
+            "unexpected_type": self.unexpected_type.value if self.unexpected_type else None,
+            "unexpected_score": self.unexpected_score,
+            "treatment_type": self.treatment_type,
+            "treatment_regimen": self.treatment_regimen,
+            "patient_factors": self.patient_factors,
+        }
 
 
 class OutcomePredictor:

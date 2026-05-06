@@ -116,6 +116,7 @@ class CodeQualityAnalysis:
     documentation_coverage: float = 0.0
     pylint_score: float = 0.0
     score: float = 0.0
+    fix_suggestions: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
