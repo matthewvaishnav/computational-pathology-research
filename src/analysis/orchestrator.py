@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Callable, Any
 import subprocess
 import logging
 
-from src.analysis.models import (
+from .models import (
     AnalysisResult,
     ArchitectureAnalysis,
     PerformanceAnalysis,
@@ -26,14 +26,14 @@ from src.analysis.models import (
     SecurityAnalysis,
     ScalabilityAnalysis,
 )
-from src.analysis.architecture import ArchitectureAnalyzer
-from src.analysis.performance import PerformanceProfiler
-from src.analysis.coverage import CoverageAnalyzer
-from src.analysis.code_quality import CodeQualityScanner
-from src.analysis.dependencies import DependencyAuditor
-from src.analysis.deployment import DeploymentValidator
-from src.analysis.security import SecurityScanner
-from src.analysis.scalability import ScalabilityAnalyzer
+from .architecture import ArchitectureAnalyzer
+from .performance import PerformanceProfiler
+from .coverage import CoverageAnalyzer
+from .code_quality import CodeQualityScanner
+from .dependencies import DependencyAuditor
+from .deployment import DeploymentValidator
+from .security import SecurityScanner
+from .scalability import ScalabilityAnalyzer
 
 
 # Configure logging
