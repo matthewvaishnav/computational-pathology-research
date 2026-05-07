@@ -44,7 +44,15 @@ def extract_wsi_patches(
     if stride is None:
         stride = patch_size
 
+    # Validate input dimensions
+    if len(wsi_image.shape) < 2:
+        raise ValueError("Invalid image dimensions")
+    
     height, width = wsi_image.shape[:2]
+    
+    # Validate patch size
+    if patch_size <= 0 or patch_size > min(height, width):
+        raise ValueError(f"Invalid patch_size: {patch_size}")
     patches = []
     coordinates = []
 
