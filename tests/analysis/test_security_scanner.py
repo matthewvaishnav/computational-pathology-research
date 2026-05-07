@@ -581,6 +581,7 @@ class TestIntegrationWithMockData:
         assert result.hipaa_compliance_score == 70.0
         assert len(result.hardcoded_secrets) == 1
         assert result.hardcoded_secrets[0]['type'] == 'api_key'
+        assert result.hardcoded_secrets[0]['file'] == 'src/config.py'
         assert len(result.injection_risks) == 1
         
         # Verify score calculation
