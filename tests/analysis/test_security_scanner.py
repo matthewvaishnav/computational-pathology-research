@@ -479,6 +479,17 @@ class TestSecurityScoreCalculation:
         )
 
         assert isinstance(score, float)
+
+    def test_calculate_security_score_without_tls_issues(self):
+        """Test security score calculation keeps backward compatibility."""
+        score = self.scanner._calculate_security_score(
+            vulnerabilities=[],
+            hipaa_score=80.0,
+            secrets=[],
+            injection_risks=[]
+        )
+
+        assert isinstance(score, float)
     
     def test_calculate_security_score_poor(self):
         """Test security score calculation with poor security."""
