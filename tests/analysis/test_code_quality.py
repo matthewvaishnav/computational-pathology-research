@@ -393,7 +393,7 @@ def process_data_v2(data):
         # When implemented, this should detect the duplication
         assert duplication_pct == 0.0
         
-        # TODO: When duplication detection is implemented, update this test
+        # Note: When duplication detection is implemented, update this test
         # to verify it detects the >80% similarity between the two functions
     
     def test_documentation_coverage_with_sample_code(self):
@@ -468,7 +468,7 @@ class PoorlyDocumentedClass:
         # Overall: 4 documented out of 7 total = ~57%
         assert 50.0 <= doc_coverage <= 60.0
         
-        # TODO: When documentation coverage is implemented, update this test
+        # Note: When documentation coverage is implemented, update this test
         # to verify it correctly measures:
         # - well_documented.py should have ~100% coverage
         # - poorly_documented.py should have ~0% coverage
