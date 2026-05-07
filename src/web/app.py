@@ -134,4 +134,11 @@ def run_demo_analysis(filepath: str, config: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # SECURITY: Never run with debug=True in production
+    # Debug mode exposes sensitive information and allows code execution
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    
+    if debug_mode and os.getenv("ENVIRONMENT") == "production":
+        raise RuntimeError("Debug mode cannot be enabled in production")
+    
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
