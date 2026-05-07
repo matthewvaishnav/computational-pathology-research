@@ -4,9 +4,14 @@ HistoCore: Production-grade computational pathology framework
 Simple Python API for training and inference on histopathology data.
 """
 
-from .models import nnMIL, AttentionMIL, CLAM
-from .data import MultimodalDataset, UniversalSlideReader
-from .training import train, evaluate
+# Conditional imports to avoid torch dependency in analysis tests
+try:
+    from .models import nnMIL, AttentionMIL, CLAM
+    from .data import MultimodalDataset, UniversalSlideReader
+    from .training import train, evaluate
+except ImportError:
+    # Analysis tests don't need torch models
+    pass
 
 __version__ = "1.0.0"
 __all__ = [
