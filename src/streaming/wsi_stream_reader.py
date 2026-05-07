@@ -568,6 +568,13 @@ class WSIStreamReader:
 
         self.deepzoom = None
         gc.collect()
+    
+    def __del__(self):
+        """Ensure cleanup even if close() not called."""
+        try:
+            self._cleanup()
+        except Exception as e:
+            logger.error(f"Error during __del__ cleanup: {e}")
 
     def __enter__(self):
         """Context manager entry."""
