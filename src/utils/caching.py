@@ -273,7 +273,7 @@ def cached_method(cache_size: int = 100, ttl_seconds: int = CACHE_TTL_SECONDS):
         def wrapper(self, *args, **kwargs) -> T:
             # Create cache key from arguments
             key_data = (func.__name__, args, tuple(sorted(kwargs.items())))
-            key = hashlib.md5(str(key_data).encode()).hexdigest()
+            key = hashlib.sha256(str(key_data).encode()).hexdigest()
             
             # Try to get from cache
             result = cache.get(key)
@@ -314,7 +314,7 @@ def cached_function(cache_size: int = 100, ttl_seconds: int = CACHE_TTL_SECONDS)
         def wrapper(*args, **kwargs) -> T:
             # Create cache key from arguments
             key_data = (func.__name__, args, tuple(sorted(kwargs.items())))
-            key = hashlib.md5(str(key_data).encode()).hexdigest()
+            key = hashlib.sha256(str(key_data).encode()).hexdigest()
             
             # Try to get from cache
             result = cache.get(key)
