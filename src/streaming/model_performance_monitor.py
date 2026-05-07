@@ -445,10 +445,15 @@ class ModelPerformanceMonitor:
         """Check for performance degradation and generate alerts."""
         # Check accuracy threshold
         if current_metrics.accuracy < self.monitoring_config["accuracy_threshold"]:
+            threshold = self.monitoring_config['accuracy_threshold']
+            message = (
+                f"Model accuracy ({current_metrics.accuracy:.3f}) "
+                f"below threshold ({threshold:.3f})"
+            )
             await self._generate_alert(
                 alert_type="accuracy_degradation",
                 severity=AlertSeverity.CRITICAL,
-                message=f"Model accuracy ({current_metrics.accuracy:.3f}) below threshold ({self.monitoring_config['accuracy_threshold']:.3f})",
+                message=message,
                 metrics={
                     "accuracy": current_metrics.accuracy,
                     "threshold": self.monitoring_config["accuracy_threshold"],
@@ -494,11 +499,16 @@ class ModelPerformanceMonitor:
 
         # Accuracy-based retraining trigger
         if current_metrics.accuracy < self.monitoring_config["retraining_threshold"]:
+            threshold = self.monitoring_config['retraining_threshold']
+            justification = (
+                f"Accuracy ({current_metrics.accuracy:.3f}) "
+                f"below retraining threshold ({threshold:.3f})"
+            )
             recommendations.append(
                 RetrainingRecommendation(
                     trigger=RetrainingTrigger.ACCURACY_THRESHOLD,
                     priority=9,  # High priority
-                    justification=f"Accuracy ({current_metrics.accuracy:.3f}) below retraining threshold ({self.monitoring_config['retraining_threshold']:.3f})",
+                    justification=justification,
                     estimated_improvement=0.05,  # Estimated 5% improvement
                     training_data_requirements={
                         "minimum_samples": 10000,
@@ -535,11 +545,16 @@ class ModelPerformanceMonitor:
             )
 
             if recent_performance < historical_performance - 0.02:  # 2% degradation
+                degradation_pct = ((historical_performance - recent_performance) * 100)
+                justification = (
+                    f"Performance degraded by {degradation_pct:.1f}% "
+                    f"over recent period"
+                )
                 recommendations.append(
                     RetrainingRecommendation(
                         trigger=RetrainingTrigger.PERFORMANCE_DEGRADATION,
                         priority=6,  # Medium priority
-                        justification=f"Performance degraded by {((historical_performance - recent_performance) * 100):.1f}% over recent period",
+                        justification=justification,
                         estimated_improvement=0.04,  # Estimated 4% improvement
                         training_data_requirements={
                             "minimum_samples": 12000,
