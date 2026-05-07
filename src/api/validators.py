@@ -82,16 +82,16 @@ def validate_password(password: str) -> bool:
     if not password or not isinstance(password, str):
         raise HTTPException(status_code=400, detail="Password is required")
     
-    if len(password) < 8:
+    if len(password) < MIN_PASSWORD_LENGTH:
         raise HTTPException(
             status_code=400, 
-            detail="Password must be at least 8 characters long"
+            detail=f"Password must be at least {MIN_PASSWORD_LENGTH} characters long"
         )
     
-    if len(password) > 128:  # Prevent DoS via extremely long passwords
+    if len(password) > MAX_PASSWORD_LENGTH:
         raise HTTPException(
             status_code=400, 
-            detail="Password must be less than 128 characters"
+            detail=f"Password must be less than {MAX_PASSWORD_LENGTH} characters"
         )
     
     # Check for required character types
