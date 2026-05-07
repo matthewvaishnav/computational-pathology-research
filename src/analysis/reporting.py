@@ -169,11 +169,13 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         section = f"## Critical Issues ({len(result.critical_issues)})\n\n"
         
+        # Build issues efficiently
+        issue_lines = []
         for i, issue in enumerate(result.critical_issues, 1):
             priority_emoji = "🔴" if issue.priority == Priority.P0 else "🟡"
             severity_emoji = "🚨" if issue.severity == Severity.CRITICAL else "⚠️"
             
-            section += f"""### {i}. {issue.title} {priority_emoji} {severity_emoji}
+            issue_lines.append(f"""### {i}. {issue.title} {priority_emoji} {severity_emoji}
 
 **File:** `{issue.file_path}`{f" (Line {issue.line_number})" if issue.line_number else ""}  
 **Category:** {issue.category}  
@@ -184,8 +186,9 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
 
 **Recommendation:** {issue.recommendation}
 
-"""
+""")
         
+        section += ''.join(issue_lines)
         return section
     
     def _generate_architecture_section(self, arch, summary: Dict[str, Any]) -> str:
