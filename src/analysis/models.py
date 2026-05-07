@@ -7,10 +7,19 @@ Defines core data structures for analysis results, issues, and optimization plan
 import json
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, TypedDict
 from enum import Enum
 import jsonschema
 from jsonschema import validate, ValidationError
+
+
+class SecretFinding(TypedDict):
+    """Structured hardcoded secret finding."""
+    type: str
+    severity: str
+    file: str
+    line: int
+    description: str
 
 
 class Severity(str, Enum):
