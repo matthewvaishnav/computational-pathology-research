@@ -231,7 +231,7 @@ def trace_span(
             raise
 
 
-def add_span_attributes(**attributes):
+def add_span_attributes(**attributes: Any) -> None:
     """Add attributes to current span."""
     current_span = trace.get_current_span()
     if current_span.is_recording():
@@ -239,7 +239,7 @@ def add_span_attributes(**attributes):
             current_span.set_attribute(key, value)
 
 
-def add_span_event(name: str, attributes: Optional[Dict[str, Any]] = None):
+def add_span_event(name: str, attributes: Optional[Dict[str, Any]] = None) -> None:
     """Add event to current span."""
     current_span = trace.get_current_span()
     if current_span.is_recording():
@@ -253,7 +253,7 @@ def get_trace_context() -> Dict[str, str]:
     return context
 
 
-def set_trace_context(context: Dict[str, str]):
+def set_trace_context(context: Dict[str, str]) -> Any:
     """Set trace context from propagated headers."""
     return extract(context)
 
