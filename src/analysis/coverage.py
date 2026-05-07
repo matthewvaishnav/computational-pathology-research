@@ -165,6 +165,7 @@ class CoverageAnalyzer:
                         if isinstance(node, ast.ExceptHandler):
                             if hasattr(node, 'lineno') and node.lineno in missing_lines:
                                 untested.append(f"{filepath}:{node.lineno} (exception handler)")
+                                logger.debug(f"Found untested exception handler: {filepath}:{node.lineno}")
                         
                         # Find security-sensitive function calls
                         if isinstance(node, ast.Call):
@@ -174,8 +175,10 @@ class CoverageAnalyzer:
                                       ['auth', 'encrypt', 'decrypt', 'validate', 'sanitize']):
                                     if hasattr(node, 'lineno') and node.lineno in missing_lines:
                                         untested.append(f"{filepath}:{node.lineno} (security: {func_name})")
+                                        logger.debug(f"Found untested security function: {func_name} at {filepath}:{node.lineno}")
                 
-                except (SyntaxError, UnicodeDecodeError):
+                except (SyntaxError, UnicodeDecodeError) as e:
+                    logger.debug(f"Failed to parse {filepath}: {e}")
                     continue
             
             # Clean up
