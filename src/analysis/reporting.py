@@ -57,14 +57,30 @@ class ReportGenerator:
         sections.append(self._generate_critical_issues(result))
         
         # Detailed Analysis by Dimension
-        sections.append(self._generate_architecture_section(result.architecture, summaries['architecture']))
-        sections.append(self._generate_performance_section(result.performance, summaries['performance']))
-        sections.append(self._generate_coverage_section(result.coverage, summaries['coverage']))
-        sections.append(self._generate_code_quality_section(result.code_quality, summaries['code_quality']))
-        sections.append(self._generate_dependencies_section(result.dependencies, summaries['dependencies']))
-        sections.append(self._generate_deployment_section(result.deployment, summaries['deployment']))
-        sections.append(self._generate_security_section(result.security, summaries['security']))
-        sections.append(self._generate_scalability_section(result.scalability, summaries['scalability']))
+        sections.append(
+            self._generate_architecture_section(result.architecture, summaries['architecture'])
+        )
+        sections.append(
+            self._generate_performance_section(result.performance, summaries['performance'])
+        )
+        sections.append(
+            self._generate_coverage_section(result.coverage, summaries['coverage'])
+        )
+        sections.append(
+            self._generate_code_quality_section(result.code_quality, summaries['code_quality'])
+        )
+        sections.append(
+            self._generate_dependencies_section(result.dependencies, summaries['dependencies'])
+        )
+        sections.append(
+            self._generate_deployment_section(result.deployment, summaries['deployment'])
+        )
+        sections.append(
+            self._generate_security_section(result.security, summaries['security'])
+        )
+        sections.append(
+            self._generate_scalability_section(result.scalability, summaries['scalability'])
+        )
         
         # Prioritized Task List
         sections.append(self._generate_task_list(result, top_issues))
