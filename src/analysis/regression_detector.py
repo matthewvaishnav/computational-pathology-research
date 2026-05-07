@@ -1,651 +1,634 @@
 """
 Regression Detector for HistoCore Project Optimization Analysis System.
 
-Compares current analysis results against baseline to detect regressions in
-coverage, performance, security, and other quality metrics for CI/CD integration.
+Compares baseline vs current analysis results to detect regressions in:
+- Test coverage (>2% decrease)
+- Performance metrics (>10% slowdown)
+- Security vulnerabilities (new CVEs)
 """
 
-import logging
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
 import json
-from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass, field
+from enum import Enum
 
 from .models import AnalysisResult
 
-logger = logging.getLogger(__name__)
+
+class RegressionType(str, Enum):
+    """Types of regressions that can be detected."""
+    COVERAGE = "coverage"
+    PERFORMANCE = "performance"
+    SECURITY = "security"
+    CODE_QUALITY = "code_quality"
+
+
+class RegressionSeverity(str, Enum):
+    """Severity levels for regressions."""
+    CRITICAL = "critical"  # Blocks CI
+    HIGH = "high"  # Warning
+    MEDIUM = "medium"  # Info
+    LOW = "low"  # Info
+
+
+@dataclass
+class Regression:
+    """Individual regression finding."""
+    type: RegressionType
+    severity: RegressionSeverity
+    metric: str
+    baseline_value: float
+    current_value: float
+    change_percentage: float
+    description: str
+    root_cause: str = ""
+    recommendation: str = ""
+
+
+@dataclass
+class RegressionReport:
+    """Comprehensive regression analysis report."""
+    has_regressions: bool
+    critical_regressions: List[Regression] = field(default_factory=list)
+    high_regressions: List[Regression] = field(default_factory=list)
+    medium_regressions: List[Regression] = field(default_factory=list)
+    low_regressions: List[Regression] = field(default_factory=list)
+    improvements: List[Regression] = field(default_factory=list)
+    summary: str = ""
+
+    def should_fail_ci(self) -> bool:
+        """Determine if CI build should fail based on critical regressions."""
+        return len(self.critical_regressions) > 0
+
+    def get_all_regressions(self) -> List[Regression]:
+        """Get all regressions sorted by severity."""
+        return (self.critical_regressions + self.high_regressions +
+                self.medium_regressions + self.low_regressions)
 
 
 class RegressionDetector:
-    """Detects regressions by comparing current results against baseline."""
+    """
+    Detects regressions by comparing baseline and current analysis results.
     
-    def __init__(self):
-        """Initialize regression detector."""
-        self.thresholds = {
-            'coverage_line_decrease': 2.0,      # % decrease that triggers failure
-            'coverage_branch_decrease': 2.0,
-            'performance_slowdown': 10.0,       # % slowdown that triggers failure
-            'security_new_vulnerabilities': 0,   # Any new vulnerability fails
-            'overall_score_decrease': 5.0,      # Overall score decrease threshold
-            'memory_increase': 15.0,            # % memory increase threshold
-        }
-    
+    Thresholds:
+    - Coverage: >2% decrease is critical
+    - Performance: >10% slowdown is critical
+    - Security: Any new CVE is critical
+    """
+
+    def __init__(
+        self,
+        coverage_threshold: float = 2.0,
+        performance_threshold: float = 10.0
+    ):
+        """
+        Initialize regression detector.
+        
+        Args:
+            coverage_threshold: Coverage decrease % to flag as critical (default: 2.0)
+            performance_threshold: Performance slowdown % to flag as critical (default: 10.0)
+        """
+        self.coverage_threshold = coverage_threshold
+        self.performance_threshold = performance_threshold
+
     def detect_regressions(
         self,
-        current: AnalysisResult,
-        baseline_path: str
-    ) -> Dict[str, Any]:
+        baseline: AnalysisResult,
+        current: AnalysisResult
+    ) -> RegressionReport:
         """
-        Detect regressions by comparing current results against baseline.
+        Compare baseline vs current analysis results and detect regressions.
         
         Args:
-            current: Current analysis results
-            baseline_path: Path to baseline analysis JSON file
+            baseline: Baseline analysis results (e.g., from main branch)
+            current: Current analysis results (e.g., from PR branch)
             
         Returns:
-            Dictionary with regression analysis results
+            RegressionReport with all detected regressions and improvements
         """
-        logger.info(f"Detecting regressions against baseline: {baseline_path}")
-        
-        # Load baseline results
-        baseline = self._load_baseline(baseline_path)
-        if not baseline:
-            return self._create_no_baseline_result(current)
-        
-        # Perform regression analysis
-        regressions = {
-            'has_regressions': False,
-            'critical_regressions': [],
-            'warnings': [],
-            'improvements': [],
-            'summary': {},
-            'should_fail_ci': False,
-            'baseline_timestamp': baseline.timestamp,
-            'current_timestamp': current.timestamp,
-            'comparison_details': {}
-        }
-        
-        # Check each dimension for regressions
-        regressions.update(self._check_coverage_regressions(current, baseline))
-        regressions.update(self._check_performance_regressions(current, baseline))
-        regressions.update(self._check_security_regressions(current, baseline))
-        regressions.update(self._check_quality_regressions(current, baseline))
-        regressions.update(self._check_overall_score_regression(current, baseline))
-        
-        # Determine if CI should fail
-        regressions['should_fail_ci'] = (
-            len(regressions['critical_regressions']) > 0 or
-            regressions.get('coverage_regression_critical', False) or
-            regressions.get('security_regression_critical', False) or
-            regressions.get('performance_regression_critical', False)
-        )
-        
-        regressions['has_regressions'] = (
-            len(regressions['critical_regressions']) > 0 or
-            len(regressions['warnings']) > 0
-        )
-        
+        regressions: List[Regression] = []
+        improvements: List[Regression] = []
+
+        # Detect coverage regressions
+        coverage_results = self._detect_coverage_regressions(baseline, current)
+        regressions.extend(coverage_results[0])
+        improvements.extend(coverage_results[1])
+
+        # Detect performance regressions
+        perf_results = self._detect_performance_regressions(baseline, current)
+        regressions.extend(perf_results[0])
+        improvements.extend(perf_results[1])
+
+        # Detect security regressions
+        security_results = self._detect_security_regressions(baseline, current)
+        regressions.extend(security_results[0])
+        improvements.extend(security_results[1])
+
+        # Detect code quality regressions
+        quality_results = self._detect_code_quality_regressions(baseline, current)
+        regressions.extend(quality_results[0])
+        improvements.extend(quality_results[1])
+
+        # Categorize by severity
+        critical = [r for r in regressions if r.severity == RegressionSeverity.CRITICAL]
+        high = [r for r in regressions if r.severity == RegressionSeverity.HIGH]
+        medium = [r for r in regressions if r.severity == RegressionSeverity.MEDIUM]
+        low = [r for r in regressions if r.severity == RegressionSeverity.LOW]
+
         # Generate summary
-        regressions['summary'] = self._generate_regression_summary(regressions, current, baseline)
-        
-        logger.info(f"Regression analysis complete. "
-                   f"Critical: {len(regressions['critical_regressions'])}, "
-                   f"Warnings: {len(regressions['warnings'])}, "
-                   f"Should fail CI: {regressions['should_fail_ci']}")
-        
-        return regressions
-    
-    def _load_baseline(self, baseline_path: str) -> Optional[AnalysisResult]:
-        """Load baseline analysis results from JSON file."""
-        try:
-            baseline_file = Path(baseline_path)
-            if not baseline_file.exists():
-                logger.warning(f"Baseline file not found: {baseline_path}")
-                return None
-            
-            json_content = baseline_file.read_text(encoding='utf-8')
-            baseline = AnalysisResult.from_json(json_content, validate_schema=False)
-            logger.info(f"Loaded baseline from {baseline_path} (timestamp: {baseline.timestamp})")
-            return baseline
-            
-        except Exception as e:
-            logger.error(f"Failed to load baseline from {baseline_path}: {e}")
-            return None
-    
-    def _create_no_baseline_result(self, current: AnalysisResult) -> Dict[str, Any]:
-        """Create result when no baseline is available."""
-        return {
-            'has_regressions': False,
-            'critical_regressions': [],
-            'warnings': ['No baseline available for comparison'],
-            'improvements': [],
-            'summary': {
-                'message': 'No baseline available - this will become the new baseline',
-                'current_score': current.overall_score
-            },
-            'should_fail_ci': False,
-            'baseline_timestamp': None,
-            'current_timestamp': current.timestamp,
-            'comparison_details': {}
-        }
-    
-    def _check_coverage_regressions(
+        summary = self._generate_summary(critical, high, medium, low, improvements)
+
+        return RegressionReport(
+            has_regressions=len(regressions) > 0,
+            critical_regressions=critical,
+            high_regressions=high,
+            medium_regressions=medium,
+            low_regressions=low,
+            improvements=improvements,
+            summary=summary
+        )
+
+    def _detect_coverage_regressions(
         self,
-        current: AnalysisResult,
-        baseline: AnalysisResult
-    ) -> Dict[str, Any]:
-        """Check for test coverage regressions."""
-        result = {
-            'coverage_regression_critical': False,
-            'comparison_details': {}
-        }
-        
-        # Line coverage regression
-        line_diff = current.coverage.line_coverage - baseline.coverage.line_coverage
-        if line_diff < -self.thresholds['coverage_line_decrease']:
-            result['critical_regressions'] = result.get('critical_regressions', [])
-            result['critical_regressions'].append({
-                'type': 'coverage_regression',
-                'metric': 'line_coverage',
-                'current': current.coverage.line_coverage,
-                'baseline': baseline.coverage.line_coverage,
-                'change': line_diff,
-                'threshold': -self.thresholds['coverage_line_decrease'],
-                'message': f"Line coverage decreased by {abs(line_diff):.1f}% "
-                          f"({baseline.coverage.line_coverage:.1f}% → {current.coverage.line_coverage:.1f}%)"
-            })
-            result['coverage_regression_critical'] = True
-        elif line_diff > 1.0:  # Improvement
-            result['improvements'] = result.get('improvements', [])
-            result['improvements'].append({
-                'type': 'coverage_improvement',
-                'metric': 'line_coverage',
-                'change': line_diff,
-                'message': f"Line coverage improved by {line_diff:.1f}%"
-            })
-        
-        # Branch coverage regression
-        branch_diff = current.coverage.branch_coverage - baseline.coverage.branch_coverage
-        if branch_diff < -self.thresholds['coverage_branch_decrease']:
-            result['critical_regressions'] = result.get('critical_regressions', [])
-            result['critical_regressions'].append({
-                'type': 'coverage_regression',
-                'metric': 'branch_coverage',
-                'current': current.coverage.branch_coverage,
-                'baseline': baseline.coverage.branch_coverage,
-                'change': branch_diff,
-                'threshold': -self.thresholds['coverage_branch_decrease'],
-                'message': f"Branch coverage decreased by {abs(branch_diff):.1f}% "
-                          f"({baseline.coverage.branch_coverage:.1f}% → {current.coverage.branch_coverage:.1f}%)"
-            })
-            result['coverage_regression_critical'] = True
-        elif branch_diff > 1.0:  # Improvement
-            result['improvements'] = result.get('improvements', [])
-            result['improvements'].append({
-                'type': 'coverage_improvement',
-                'metric': 'branch_coverage',
-                'change': branch_diff,
-                'message': f"Branch coverage improved by {branch_diff:.1f}%"
-            })
-        
-        # New untested critical paths
-        new_untested = set(current.coverage.untested_critical_paths) - set(baseline.coverage.untested_critical_paths)
-        if new_untested:
-            result['warnings'] = result.get('warnings', [])
-            result['warnings'].append({
-                'type': 'new_untested_paths',
-                'count': len(new_untested),
-                'paths': list(new_untested)[:5],  # Show first 5
-                'message': f"{len(new_untested)} new untested critical paths detected"
-            })
-        
-        # Store comparison details
-        result['comparison_details']['coverage'] = {
-            'line_coverage': {
-                'current': current.coverage.line_coverage,
-                'baseline': baseline.coverage.line_coverage,
-                'change': line_diff
-            },
-            'branch_coverage': {
-                'current': current.coverage.branch_coverage,
-                'baseline': baseline.coverage.branch_coverage,
-                'change': branch_diff
-            },
-            'untested_paths': {
-                'current': len(current.coverage.untested_critical_paths),
-                'baseline': len(baseline.coverage.untested_critical_paths),
-                'new_paths': len(new_untested)
-            }
-        }
-        
-        return result
-    
-    def _check_performance_regressions(
+        baseline: AnalysisResult,
+        current: AnalysisResult
+    ) -> Tuple[List[Regression], List[Regression]]:
+        """Detect test coverage regressions."""
+        regressions = []
+        improvements = []
+
+        # Line coverage
+        baseline_line = baseline.coverage.line_coverage
+        current_line = current.coverage.line_coverage
+        line_change = current_line - baseline_line
+
+        if line_change < 0:
+            severity = (RegressionSeverity.CRITICAL if abs(line_change) >= self.coverage_threshold
+                       else RegressionSeverity.HIGH)
+            regressions.append(Regression(
+                type=RegressionType.COVERAGE,
+                severity=severity,
+                metric="line_coverage",
+                baseline_value=baseline_line,
+                current_value=current_line,
+                change_percentage=line_change,
+                description=f"Line coverage decreased by {abs(line_change):.1f}%",
+                root_cause="New code added without tests or existing tests removed",
+                recommendation="Add tests for uncovered code paths"
+            ))
+        elif line_change > 0:
+            improvements.append(Regression(
+                type=RegressionType.COVERAGE,
+                severity=RegressionSeverity.LOW,
+                metric="line_coverage",
+                baseline_value=baseline_line,
+                current_value=current_line,
+                change_percentage=line_change,
+                description=f"Line coverage improved by {line_change:.1f}%"
+            ))
+
+        # Branch coverage
+        baseline_branch = baseline.coverage.branch_coverage
+        current_branch = current.coverage.branch_coverage
+        branch_change = current_branch - baseline_branch
+
+        if branch_change < 0:
+            severity = (RegressionSeverity.CRITICAL if abs(branch_change) >= self.coverage_threshold
+                       else RegressionSeverity.HIGH)
+            regressions.append(Regression(
+                type=RegressionType.COVERAGE,
+                severity=severity,
+                metric="branch_coverage",
+                baseline_value=baseline_branch,
+                current_value=current_branch,
+                change_percentage=branch_change,
+                description=f"Branch coverage decreased by {abs(branch_change):.1f}%",
+                root_cause="New conditional logic added without tests",
+                recommendation="Add tests for all code branches"
+            ))
+        elif branch_change > 0:
+            improvements.append(Regression(
+                type=RegressionType.COVERAGE,
+                severity=RegressionSeverity.LOW,
+                metric="branch_coverage",
+                baseline_value=baseline_branch,
+                current_value=current_branch,
+                change_percentage=branch_change,
+                description=f"Branch coverage improved by {branch_change:.1f}%"
+            ))
+
+        return regressions, improvements
+
+    def _detect_performance_regressions(
         self,
-        current: AnalysisResult,
-        baseline: AnalysisResult
-    ) -> Dict[str, Any]:
-        """Check for performance regressions."""
-        result = {
-            'performance_regression_critical': False,
-            'comparison_details': {}
-        }
-        
-        # GPU utilization regression
-        gpu_diff = current.performance.gpu_utilization - baseline.performance.gpu_utilization
-        if gpu_diff < -self.thresholds['performance_slowdown']:
-            result['critical_regressions'] = result.get('critical_regressions', [])
-            result['critical_regressions'].append({
-                'type': 'performance_regression',
-                'metric': 'gpu_utilization',
-                'current': current.performance.gpu_utilization,
-                'baseline': baseline.performance.gpu_utilization,
-                'change': gpu_diff,
-                'message': f"GPU utilization decreased by {abs(gpu_diff):.1f}% "
-                          f"({baseline.performance.gpu_utilization:.1f}% → {current.performance.gpu_utilization:.1f}%)"
-            })
-            result['performance_regression_critical'] = True
-        
-        # Memory usage regression
-        if baseline.performance.memory_usage_peak_gb > 0:
-            memory_change_pct = ((current.performance.memory_usage_peak_gb - baseline.performance.memory_usage_peak_gb) 
-                               / baseline.performance.memory_usage_peak_gb * 100)
-            if memory_change_pct > self.thresholds['memory_increase']:
-                result['critical_regressions'] = result.get('critical_regressions', [])
-                result['critical_regressions'].append({
-                    'type': 'performance_regression',
-                    'metric': 'memory_usage',
-                    'current': current.performance.memory_usage_peak_gb,
-                    'baseline': baseline.performance.memory_usage_peak_gb,
-                    'change_pct': memory_change_pct,
-                    'message': f"Peak memory usage increased by {memory_change_pct:.1f}% "
-                              f"({baseline.performance.memory_usage_peak_gb:.1f}GB → {current.performance.memory_usage_peak_gb:.1f}GB)"
-                })
-                result['performance_regression_critical'] = True
-        
+        baseline: AnalysisResult,
+        current: AnalysisResult
+    ) -> Tuple[List[Regression], List[Regression]]:
+        """Detect performance regressions."""
+        regressions = []
+        improvements = []
+
+        # GPU utilization
+        baseline_gpu = baseline.performance.gpu_utilization
+        current_gpu = current.performance.gpu_utilization
+
+        if baseline_gpu > 0:  # Only compare if baseline has GPU data
+            gpu_change = ((current_gpu - baseline_gpu) / baseline_gpu) * 100
+
+            if gpu_change < -self.performance_threshold:
+                regressions.append(Regression(
+                    type=RegressionType.PERFORMANCE,
+                    severity=RegressionSeverity.CRITICAL,
+                    metric="gpu_utilization",
+                    baseline_value=baseline_gpu,
+                    current_value=current_gpu,
+                    change_percentage=gpu_change,
+                    description=f"GPU utilization decreased by {abs(gpu_change):.1f}%",
+                    root_cause="Inefficient GPU operations or increased CPU bottlenecks",
+                    recommendation="Profile GPU kernels and optimize data loading"
+                ))
+            elif gpu_change > self.performance_threshold:
+                improvements.append(Regression(
+                    type=RegressionType.PERFORMANCE,
+                    severity=RegressionSeverity.LOW,
+                    metric="gpu_utilization",
+                    baseline_value=baseline_gpu,
+                    current_value=current_gpu,
+                    change_percentage=gpu_change,
+                    description=f"GPU utilization improved by {gpu_change:.1f}%"
+                ))
+
+        # Memory usage
+        baseline_mem = baseline.performance.memory_usage_peak_gb
+        current_mem = current.performance.memory_usage_peak_gb
+
+        if baseline_mem > 0:
+            mem_change = ((current_mem - baseline_mem) / baseline_mem) * 100
+
+            if mem_change > self.performance_threshold:
+                regressions.append(Regression(
+                    type=RegressionType.PERFORMANCE,
+                    severity=RegressionSeverity.HIGH,
+                    metric="memory_usage_peak_gb",
+                    baseline_value=baseline_mem,
+                    current_value=current_mem,
+                    change_percentage=mem_change,
+                    description=f"Peak memory usage increased by {mem_change:.1f}%",
+                    root_cause="Memory leaks or inefficient data structures",
+                    recommendation="Profile memory allocations and optimize data handling"
+                ))
+            elif mem_change < -self.performance_threshold:
+                improvements.append(Regression(
+                    type=RegressionType.PERFORMANCE,
+                    severity=RegressionSeverity.LOW,
+                    metric="memory_usage_peak_gb",
+                    baseline_value=baseline_mem,
+                    current_value=current_mem,
+                    change_percentage=mem_change,
+                    description=f"Peak memory usage decreased by {abs(mem_change):.1f}%"
+                ))
+
         # New bottlenecks
-        baseline_bottleneck_funcs = {b.get('function', '') for b in baseline.performance.bottlenecks}
-        current_bottleneck_funcs = {b.get('function', '') for b in current.performance.bottlenecks}
-        new_bottlenecks = current_bottleneck_funcs - baseline_bottleneck_funcs
-        
+        baseline_bottlenecks = {b.get('operation', '') for b in baseline.performance.bottlenecks}
+        current_bottlenecks = {b.get('operation', '') for b in current.performance.bottlenecks}
+        new_bottlenecks = current_bottlenecks - baseline_bottlenecks
+
         if new_bottlenecks:
-            result['warnings'] = result.get('warnings', [])
-            result['warnings'].append({
-                'type': 'new_bottlenecks',
-                'count': len(new_bottlenecks),
-                'functions': list(new_bottlenecks)[:5],
-                'message': f"{len(new_bottlenecks)} new performance bottlenecks detected"
-            })
-        
-        # Store comparison details
-        result['comparison_details']['performance'] = {
-            'gpu_utilization': {
-                'current': current.performance.gpu_utilization,
-                'baseline': baseline.performance.gpu_utilization,
-                'change': gpu_diff
-            },
-            'memory_peak_gb': {
-                'current': current.performance.memory_usage_peak_gb,
-                'baseline': baseline.performance.memory_usage_peak_gb,
-                'change': current.performance.memory_usage_peak_gb - baseline.performance.memory_usage_peak_gb
-            },
-            'bottlenecks': {
-                'current': len(current.performance.bottlenecks),
-                'baseline': len(baseline.performance.bottlenecks),
-                'new_bottlenecks': len(new_bottlenecks)
-            }
-        }
-        
-        return result
-    
-    def _check_security_regressions(
+            regressions.append(Regression(
+                type=RegressionType.PERFORMANCE,
+                severity=RegressionSeverity.HIGH,
+                metric="bottlenecks",
+                baseline_value=len(baseline_bottlenecks),
+                current_value=len(current_bottlenecks),
+                change_percentage=0.0,
+                description=f"New performance bottlenecks detected: {', '.join(new_bottlenecks)}",
+                root_cause="Inefficient operations introduced in new code",
+                recommendation="Profile and optimize slow operations"
+            ))
+
+        return regressions, improvements
+
+    def _detect_security_regressions(
         self,
-        current: AnalysisResult,
-        baseline: AnalysisResult
-    ) -> Dict[str, Any]:
-        """Check for security regressions."""
-        result = {
-            'security_regression_critical': False,
-            'comparison_details': {}
-        }
-        
-        # New vulnerabilities
-        vuln_diff = len(current.security.vulnerabilities) - len(baseline.security.vulnerabilities)
-        if vuln_diff > self.thresholds['security_new_vulnerabilities']:
-            result['critical_regressions'] = result.get('critical_regressions', [])
-            result['critical_regressions'].append({
-                'type': 'security_regression',
-                'metric': 'vulnerabilities',
-                'current': len(current.security.vulnerabilities),
-                'baseline': len(baseline.security.vulnerabilities),
-                'change': vuln_diff,
-                'message': f"{vuln_diff} new security vulnerabilities detected"
-            })
-            result['security_regression_critical'] = True
-        
-        # New hardcoded secrets
-        # hardcoded_secrets is a list of dicts, so we need to compare by converting to tuples
-        baseline_secret_keys = {(s.get('file', ''), s.get('line', 0)) for s in baseline.security.hardcoded_secrets}
-        current_secret_keys = {(s.get('file', ''), s.get('line', 0)) for s in current.security.hardcoded_secrets}
-        new_secret_keys = current_secret_keys - baseline_secret_keys
-        
-        if new_secret_keys:
-            result['critical_regressions'] = result.get('critical_regressions', [])
-            result['critical_regressions'].append({
-                'type': 'security_regression',
-                'metric': 'hardcoded_secrets',
-                'current': len(current.security.hardcoded_secrets),
-                'baseline': len(baseline.security.hardcoded_secrets),
-                'new_secrets': [f"{file}:{line}" for file, line in list(new_secret_keys)[:3]],  # Show first 3
-                'message': f"{len(new_secret_keys)} new hardcoded secrets detected"
-            })
-            result['security_regression_critical'] = True
-        
-        # HIPAA compliance regression
-        hipaa_diff = current.security.hipaa_compliance_score - baseline.security.hipaa_compliance_score
-        if hipaa_diff < -5.0:  # 5% decrease threshold
-            result['warnings'] = result.get('warnings', [])
-            result['warnings'].append({
-                'type': 'hipaa_regression',
-                'current': current.security.hipaa_compliance_score,
-                'baseline': baseline.security.hipaa_compliance_score,
-                'change': hipaa_diff,
-                'message': f"HIPAA compliance score decreased by {abs(hipaa_diff):.1f}%"
-            })
-        
-        # Store comparison details
-        result['comparison_details']['security'] = {
-            'vulnerabilities': {
-                'current': len(current.security.vulnerabilities),
-                'baseline': len(baseline.security.vulnerabilities),
-                'change': vuln_diff
-            },
-            'hardcoded_secrets': {
-                'current': len(current.security.hardcoded_secrets),
-                'baseline': len(baseline.security.hardcoded_secrets),
-                'new_secrets': len(new_secret_keys)
-            },
-            'hipaa_compliance': {
-                'current': current.security.hipaa_compliance_score,
-                'baseline': baseline.security.hipaa_compliance_score,
-                'change': hipaa_diff
-            }
-        }
-        
-        return result
-    
-    def _check_quality_regressions(
+        baseline: AnalysisResult,
+        current: AnalysisResult
+    ) -> Tuple[List[Regression], List[Regression]]:
+        """Detect security regressions."""
+        regressions = []
+        improvements = []
+
+        # Vulnerability count
+        baseline_vulns = len(baseline.security.vulnerabilities)
+        current_vulns = len(current.security.vulnerabilities)
+
+        if current_vulns > baseline_vulns:
+            new_vuln_count = current_vulns - baseline_vulns
+            regressions.append(Regression(
+                type=RegressionType.SECURITY,
+                severity=RegressionSeverity.CRITICAL,
+                metric="vulnerabilities",
+                baseline_value=baseline_vulns,
+                current_value=current_vulns,
+                change_percentage=0.0,
+                description=f"{new_vuln_count} new security vulnerabilities detected",
+                root_cause="New vulnerable code or dependencies introduced",
+                recommendation="Review and fix security vulnerabilities immediately"
+            ))
+        elif current_vulns < baseline_vulns:
+            fixed_count = baseline_vulns - current_vulns
+            improvements.append(Regression(
+                type=RegressionType.SECURITY,
+                severity=RegressionSeverity.LOW,
+                metric="vulnerabilities",
+                baseline_value=baseline_vulns,
+                current_value=current_vulns,
+                change_percentage=0.0,
+                description=f"{fixed_count} security vulnerabilities fixed"
+            ))
+
+        # New CVEs in dependencies
+        baseline_cves = {v.get('cve_id', '') for v in baseline.dependencies.vulnerabilities}
+        current_cves = {v.get('cve_id', '') for v in current.dependencies.vulnerabilities}
+        new_cves = current_cves - baseline_cves
+
+        if new_cves:
+            regressions.append(Regression(
+                type=RegressionType.SECURITY,
+                severity=RegressionSeverity.CRITICAL,
+                metric="dependency_cves",
+                baseline_value=len(baseline_cves),
+                current_value=len(current_cves),
+                change_percentage=0.0,
+                description=f"New CVEs in dependencies: {', '.join(new_cves)}",
+                root_cause="Vulnerable dependencies added or updated",
+                recommendation="Update dependencies to patched versions"
+            ))
+
+        # Hardcoded secrets
+        baseline_secrets = len(baseline.security.hardcoded_secrets)
+        current_secrets = len(current.security.hardcoded_secrets)
+
+        if current_secrets > baseline_secrets:
+            new_secret_count = current_secrets - baseline_secrets
+            regressions.append(Regression(
+                type=RegressionType.SECURITY,
+                severity=RegressionSeverity.CRITICAL,
+                metric="hardcoded_secrets",
+                baseline_value=baseline_secrets,
+                current_value=current_secrets,
+                change_percentage=0.0,
+                description=f"{new_secret_count} new hardcoded secrets detected",
+                root_cause="Secrets committed to codebase",
+                recommendation="Remove secrets and use environment variables"
+            ))
+
+        return regressions, improvements
+
+    def _detect_code_quality_regressions(
         self,
-        current: AnalysisResult,
-        baseline: AnalysisResult
-    ) -> Dict[str, Any]:
-        """Check for code quality regressions."""
-        result = {'comparison_details': {}}
-        
-        # Complexity regression
-        complexity_diff = current.code_quality.average_complexity - baseline.code_quality.average_complexity
-        if complexity_diff > 2.0:  # Significant complexity increase
-            result['warnings'] = result.get('warnings', [])
-            result['warnings'].append({
-                'type': 'complexity_regression',
-                'current': current.code_quality.average_complexity,
-                'baseline': baseline.code_quality.average_complexity,
-                'change': complexity_diff,
-                'message': f"Average complexity increased by {complexity_diff:.1f}"
-            })
-        
-        # Documentation coverage regression
-        doc_diff = current.code_quality.documentation_coverage - baseline.code_quality.documentation_coverage
-        if doc_diff < -5.0:  # 5% decrease threshold
-            result['warnings'] = result.get('warnings', [])
-            result['warnings'].append({
-                'type': 'documentation_regression',
-                'current': current.code_quality.documentation_coverage,
-                'baseline': baseline.code_quality.documentation_coverage,
-                'change': doc_diff,
-                'message': f"Documentation coverage decreased by {abs(doc_diff):.1f}%"
-            })
-        
-        # Store comparison details
-        result['comparison_details']['code_quality'] = {
-            'average_complexity': {
-                'current': current.code_quality.average_complexity,
-                'baseline': baseline.code_quality.average_complexity,
-                'change': complexity_diff
-            },
-            'documentation_coverage': {
-                'current': current.code_quality.documentation_coverage,
-                'baseline': baseline.code_quality.documentation_coverage,
-                'change': doc_diff
-            }
-        }
-        
-        return result
-    
-    def _check_overall_score_regression(
+        baseline: AnalysisResult,
+        current: AnalysisResult
+    ) -> Tuple[List[Regression], List[Regression]]:
+        """Detect code quality regressions."""
+        regressions = []
+        improvements = []
+
+        # Average complexity
+        baseline_complexity = baseline.code_quality.average_complexity
+        current_complexity = current.code_quality.average_complexity
+
+        if baseline_complexity > 0:
+            complexity_change = ((current_complexity - baseline_complexity) / baseline_complexity) * 100
+
+            if complexity_change > 20:  # >20% increase in complexity
+                regressions.append(Regression(
+                    type=RegressionType.CODE_QUALITY,
+                    severity=RegressionSeverity.MEDIUM,
+                    metric="average_complexity",
+                    baseline_value=baseline_complexity,
+                    current_value=current_complexity,
+                    change_percentage=complexity_change,
+                    description=f"Average complexity increased by {complexity_change:.1f}%",
+                    root_cause="Complex logic added without refactoring",
+                    recommendation="Refactor complex functions into smaller units"
+                ))
+            elif complexity_change < -20:
+                improvements.append(Regression(
+                    type=RegressionType.CODE_QUALITY,
+                    severity=RegressionSeverity.LOW,
+                    metric="average_complexity",
+                    baseline_value=baseline_complexity,
+                    current_value=current_complexity,
+                    change_percentage=complexity_change,
+                    description=f"Average complexity decreased by {abs(complexity_change):.1f}%"
+                ))
+
+        # Duplication percentage
+        baseline_dup = baseline.code_quality.duplication_percentage
+        current_dup = current.code_quality.duplication_percentage
+        dup_change = current_dup - baseline_dup
+
+        if dup_change > 5:  # >5% increase in duplication
+            regressions.append(Regression(
+                type=RegressionType.CODE_QUALITY,
+                severity=RegressionSeverity.MEDIUM,
+                metric="duplication_percentage",
+                baseline_value=baseline_dup,
+                current_value=current_dup,
+                change_percentage=dup_change,
+                description=f"Code duplication increased by {dup_change:.1f}%",
+                root_cause="Copy-paste code instead of refactoring",
+                recommendation="Extract duplicated code into reusable functions"
+            ))
+        elif dup_change < -5:
+            improvements.append(Regression(
+                type=RegressionType.CODE_QUALITY,
+                severity=RegressionSeverity.LOW,
+                metric="duplication_percentage",
+                baseline_value=baseline_dup,
+                current_value=current_dup,
+                change_percentage=dup_change,
+                description=f"Code duplication decreased by {abs(dup_change):.1f}%"
+            ))
+
+        return regressions, improvements
+
+    def _generate_summary(
         self,
-        current: AnalysisResult,
-        baseline: AnalysisResult
-    ) -> Dict[str, Any]:
-        """Check for overall score regression."""
-        result = {'comparison_details': {}}
-        
-        score_diff = current.overall_score - baseline.overall_score
-        if score_diff < -self.thresholds['overall_score_decrease']:
-            result['critical_regressions'] = result.get('critical_regressions', [])
-            result['critical_regressions'].append({
-                'type': 'overall_score_regression',
-                'current': current.overall_score,
-                'baseline': baseline.overall_score,
-                'change': score_diff,
-                'threshold': -self.thresholds['overall_score_decrease'],
-                'message': f"Overall score decreased by {abs(score_diff):.1f} points "
-                          f"({baseline.overall_score:.1f} → {current.overall_score:.1f})"
-            })
-        elif score_diff > 2.0:  # Significant improvement
-            result['improvements'] = result.get('improvements', [])
-            result['improvements'].append({
-                'type': 'overall_score_improvement',
-                'change': score_diff,
-                'message': f"Overall score improved by {score_diff:.1f} points"
-            })
-        
-        # Store comparison details
-        result['comparison_details']['overall'] = {
-            'score': {
-                'current': current.overall_score,
-                'baseline': baseline.overall_score,
-                'change': score_diff
-            }
-        }
-        
-        return result
-    
-    def _generate_regression_summary(
-        self,
-        regressions: Dict[str, Any],
-        current: AnalysisResult,
-        baseline: AnalysisResult
-    ) -> Dict[str, Any]:
-        """Generate human-readable regression summary."""
-        summary = {
-            'status': 'PASS' if not regressions['should_fail_ci'] else 'FAIL',
-            'message': '',
-            'critical_count': len(regressions['critical_regressions']),
-            'warning_count': len(regressions['warnings']),
-            'improvement_count': len(regressions['improvements']),
-            'score_change': current.overall_score - baseline.overall_score,
-            'baseline_date': baseline.timestamp,
-            'analysis_date': current.timestamp
-        }
-        
-        # Generate status message
-        if regressions['should_fail_ci']:
-            summary['message'] = f"❌ REGRESSION DETECTED: {summary['critical_count']} critical issues found"
-        elif regressions['warnings']:
-            summary['message'] = f"⚠️ WARNINGS: {summary['warning_count']} potential issues detected"
-        elif regressions['improvements']:
-            summary['message'] = f"✅ IMPROVEMENTS: {summary['improvement_count']} metrics improved"
-        else:
-            summary['message'] = "✅ NO REGRESSIONS: All metrics stable or improved"
-        
-        return summary
-    
+        critical: List[Regression],
+        high: List[Regression],
+        medium: List[Regression],
+        low: List[Regression],
+        improvements: List[Regression]
+    ) -> str:
+        """Generate human-readable summary of regression analysis."""
+        lines = []
+
+        if critical:
+            lines.append(f"🚨 {len(critical)} CRITICAL regressions detected:")
+            for r in critical:
+                lines.append(f"  - {r.description}")
+
+        if high:
+            lines.append(f"⚠️  {len(high)} HIGH severity regressions detected:")
+            for r in high:
+                lines.append(f"  - {r.description}")
+
+        if medium:
+            lines.append(f"ℹ️  {len(medium)} MEDIUM severity regressions detected:")
+            for r in medium:
+                lines.append(f"  - {r.description}")
+
+        if improvements:
+            lines.append(f"✅ {len(improvements)} improvements detected:")
+            for imp in improvements[:5]:  # Show top 5 improvements
+                lines.append(f"  - {imp.description}")
+
+        if not (critical or high or medium or low):
+            lines.append("✅ No regressions detected - all metrics stable or improved")
+
+        return "\n".join(lines)
+
     def generate_diff_report(
         self,
+        baseline: AnalysisResult,
         current: AnalysisResult,
-        baseline_path: str,
-        format: str = 'markdown'
+        report: RegressionReport
     ) -> str:
         """
-        Generate detailed diff report comparing current vs baseline.
+        Generate side-by-side comparison report (baseline vs current).
         
         Args:
+            baseline: Baseline analysis results
             current: Current analysis results
-            baseline_path: Path to baseline analysis
-            format: Output format ('markdown', 'json', 'text')
+            report: Regression report
             
         Returns:
-            Formatted diff report
+            Formatted diff report in Markdown
         """
-        regressions = self.detect_regressions(current, baseline_path)
-        
-        if format == 'json':
-            return json.dumps(regressions, indent=2, default=str)
-        elif format == 'markdown':
-            return self._generate_markdown_diff_report(regressions, current)
-        else:  # text
-            return self._generate_text_diff_report(regressions, current)
-    
-    def _generate_markdown_diff_report(
-        self,
-        regressions: Dict[str, Any],
-        current: AnalysisResult
-    ) -> str:
-        """Generate Markdown diff report."""
-        lines = []
-        
-        # Header
-        lines.append("# Regression Analysis Report")
-        lines.append("")
-        lines.append(f"**Status:** {regressions['summary']['status']}")
-        lines.append(f"**Message:** {regressions['summary']['message']}")
-        lines.append(f"**Analysis Date:** {current.timestamp}")
-        if regressions['baseline_timestamp']:
-            lines.append(f"**Baseline Date:** {regressions['baseline_timestamp']}")
-        lines.append("")
-        
-        # Summary
-        lines.append("## Summary")
-        lines.append("")
-        lines.append(f"- **Critical Regressions:** {regressions['summary']['critical_count']}")
-        lines.append(f"- **Warnings:** {regressions['summary']['warning_count']}")
-        lines.append(f"- **Improvements:** {regressions['summary']['improvement_count']}")
-        lines.append(f"- **Score Change:** {regressions['summary']['score_change']:+.1f}")
-        lines.append("")
-        
-        # Critical regressions
-        if regressions['critical_regressions']:
-            lines.append("## 🚨 Critical Regressions")
-            lines.append("")
-            for reg in regressions['critical_regressions']:
-                lines.append(f"### {reg['type'].replace('_', ' ').title()}")
-                lines.append(f"**Message:** {reg['message']}")
-                if 'current' in reg and 'baseline' in reg:
-                    lines.append(f"**Values:** {reg['baseline']} → {reg['current']}")
-                lines.append("")
-        
-        # Warnings
-        if regressions['warnings']:
-            lines.append("## ⚠️ Warnings")
-            lines.append("")
-            for warning in regressions['warnings']:
-                lines.append(f"- {warning.get('message', 'Warning detected')}")
-            lines.append("")
-        
-        # Improvements
-        if regressions['improvements']:
-            lines.append("## ✅ Improvements")
-            lines.append("")
-            for improvement in regressions['improvements']:
-                lines.append(f"- {improvement.get('message', 'Improvement detected')}")
-            lines.append("")
-        
-        # Detailed comparison
-        if regressions['comparison_details']:
-            lines.append("## Detailed Comparison")
-            lines.append("")
-            for dimension, details in regressions['comparison_details'].items():
-                lines.append(f"### {dimension.title()}")
-                lines.append("")
-                for metric, values in details.items():
-                    if isinstance(values, dict) and 'current' in values:
-                        change = values.get('change', 0)
-                        change_str = f"{change:+.1f}" if isinstance(change, (int, float)) else str(change)
-                        lines.append(f"- **{metric}:** {values['baseline']} → {values['current']} ({change_str})")
-                lines.append("")
-        
+        lines = [
+            "# Regression Analysis Report",
+            "",
+            f"**Baseline**: {baseline.git_commit[:8]} ({baseline.timestamp})",
+            f"**Current**: {current.git_commit[:8]} ({current.timestamp})",
+            "",
+            "## Summary",
+            "",
+            report.summary,
+            "",
+            "## Detailed Comparison",
+            "",
+            "### Coverage Metrics",
+            "",
+            "| Metric | Baseline | Current | Change |",
+            "|--------|----------|---------|--------|",
+            f"| Line Coverage | {baseline.coverage.line_coverage:.1f}% | "
+            f"{current.coverage.line_coverage:.1f}% | "
+            f"{self._format_change(current.coverage.line_coverage - baseline.coverage.line_coverage)} |",
+            f"| Branch Coverage | {baseline.coverage.branch_coverage:.1f}% | "
+            f"{current.coverage.branch_coverage:.1f}% | "
+            f"{self._format_change(current.coverage.branch_coverage - baseline.coverage.branch_coverage)} |",
+            "",
+            "### Performance Metrics",
+            "",
+            "| Metric | Baseline | Current | Change |",
+            "|--------|----------|---------|--------|",
+            f"| GPU Utilization | {baseline.performance.gpu_utilization:.1f}% | "
+            f"{current.performance.gpu_utilization:.1f}% | "
+            f"{self._format_change(current.performance.gpu_utilization - baseline.performance.gpu_utilization)} |",
+            f"| Peak Memory (GB) | {baseline.performance.memory_usage_peak_gb:.2f} | "
+            f"{current.performance.memory_usage_peak_gb:.2f} | "
+            f"{self._format_change(current.performance.memory_usage_peak_gb - baseline.performance.memory_usage_peak_gb)} |",
+            "",
+            "### Security Metrics",
+            "",
+            "| Metric | Baseline | Current | Change |",
+            "|--------|----------|---------|--------|",
+            f"| Vulnerabilities | {len(baseline.security.vulnerabilities)} | "
+            f"{len(current.security.vulnerabilities)} | "
+            f"{self._format_change(len(current.security.vulnerabilities) - len(baseline.security.vulnerabilities))} |",
+            f"| Hardcoded Secrets | {len(baseline.security.hardcoded_secrets)} | "
+            f"{len(current.security.hardcoded_secrets)} | "
+            f"{self._format_change(len(current.security.hardcoded_secrets) - len(baseline.security.hardcoded_secrets))} |",
+            "",
+            "### Code Quality Metrics",
+            "",
+            "| Metric | Baseline | Current | Change |",
+            "|--------|----------|---------|--------|",
+            f"| Avg Complexity | {baseline.code_quality.average_complexity:.2f} | "
+            f"{current.code_quality.average_complexity:.2f} | "
+            f"{self._format_change(current.code_quality.average_complexity - baseline.code_quality.average_complexity)} |",
+            f"| Duplication % | {baseline.code_quality.duplication_percentage:.1f}% | "
+            f"{current.code_quality.duplication_percentage:.1f}% | "
+            f"{self._format_change(current.code_quality.duplication_percentage - baseline.code_quality.duplication_percentage)} |",
+            "",
+        ]
+
+        # Add regression details
+        if report.get_all_regressions():
+            lines.extend([
+                "## Regressions",
+                "",
+            ])
+
+            for regression in report.get_all_regressions():
+                lines.extend([
+                    f"### {regression.severity.value.upper()}: {regression.description}",
+                    "",
+                    f"**Type**: {regression.type.value}",
+                    f"**Metric**: {regression.metric}",
+                    f"**Change**: {regression.change_percentage:.1f}%",
+                    "",
+                    f"**Root Cause**: {regression.root_cause}",
+                    "",
+                    f"**Recommendation**: {regression.recommendation}",
+                    "",
+                ])
+
         return "\n".join(lines)
-    
-    def _generate_text_diff_report(
-        self,
-        regressions: Dict[str, Any],
-        current: AnalysisResult
-    ) -> str:
-        """Generate plain text diff report."""
-        lines = []
-        
-        lines.append("REGRESSION ANALYSIS REPORT")
-        lines.append("=" * 50)
-        lines.append("")
-        lines.append(f"Status: {regressions['summary']['status']}")
-        lines.append(f"Message: {regressions['summary']['message']}")
-        lines.append("")
-        
-        if regressions['critical_regressions']:
-            lines.append("CRITICAL REGRESSIONS:")
-            for reg in regressions['critical_regressions']:
-                lines.append(f"  - {reg['message']}")
-            lines.append("")
-        
-        if regressions['warnings']:
-            lines.append("WARNINGS:")
-            for warning in regressions['warnings']:
-                lines.append(f"  - {warning.get('message', 'Warning detected')}")
-            lines.append("")
-        
-        if regressions['improvements']:
-            lines.append("IMPROVEMENTS:")
-            for improvement in regressions['improvements']:
-                lines.append(f"  - {improvement.get('message', 'Improvement detected')}")
-            lines.append("")
-        
-        return "\n".join(lines)
-    
-    def should_fail_build(self, regression_result: Dict[str, Any]) -> Tuple[bool, str]:
+
+    def _format_change(self, value: float) -> str:
+        """Format change value with color indicators."""
+        if value > 0:
+            return f"🔴 +{value:.2f}"
+        elif value < 0:
+            return f"🟢 {value:.2f}"
+        else:
+            return "⚪ 0.00"
+
+    def exit_code_for_ci(self, report: RegressionReport) -> int:
         """
-        Determine if build should fail based on regression analysis.
+        Return appropriate exit code for CI build.
         
         Args:
-            regression_result: Result from detect_regressions()
+            report: Regression report
             
         Returns:
-            Tuple of (should_fail, reason)
+            0 if no critical regressions, 1 if critical regressions detected
         """
-        if regression_result['should_fail_ci']:
-            reasons = []
-            if regression_result.get('coverage_regression_critical'):
-                reasons.append("critical coverage regression")
-            if regression_result.get('security_regression_critical'):
-                reasons.append("critical security regression")
-            if regression_result.get('performance_regression_critical'):
-                reasons.append("critical performance regression")
-            
-            critical_count = len(regression_result['critical_regressions'])
-            if critical_count > 0:
-                reasons.append(f"{critical_count} critical regressions")
-            
-            reason = "Build failed due to: " + ", ".join(reasons)
-            return True, reason
+        return 1 if report.should_fail_ci() else 0
+
+    @staticmethod
+    def load_baseline(baseline_path: str) -> AnalysisResult:
+        """
+        Load baseline analysis results from JSON file.
         
-        return False, "No critical regressions detected"
+        Args:
+            baseline_path: Path to baseline JSON file
+            
+        Returns:
+            AnalysisResult object
+            
+        Raises:
+            FileNotFoundError: If baseline file doesn't exist
+            ValueError: If JSON is invalid
+        """
+        path = Path(baseline_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Baseline file not found: {baseline_path}")
+
+        with open(path, 'r', encoding='utf-8') as f:
+            json_str = f.read()
+
+        return AnalysisResult.from_json(json_str)
