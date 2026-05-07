@@ -342,7 +342,12 @@ class ModelSecurityManager:
             # Create Fernet cipher
             cipher = Fernet(self.encryption_key)
 
-            # Read model file
+            # Read model file with size limit
+            max_size = 5 * 1024 * 1024 * 1024  # 5GB
+            file_size = os.path.getsize(model_path)
+            if file_size > max_size:
+                raise ValueError(f"Model too large: {file_size} bytes")
+            
             with open(model_path, "rb") as f:
                 model_data = f.read()
 
