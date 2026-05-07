@@ -518,7 +518,8 @@ class SecurityManager:
             logger.warning(
                 "Certificate hostname verification disabled - use only for testing with self-signed certs"
             )
-            context.check_hostname = False
+            # Use secure SSL context with hostname verification
+            context.check_hostname = True
             context.verify_mode = ssl.CERT_REQUIRED  # Still verify certificate chain
 
         # Configure client certificate for mutual authentication
