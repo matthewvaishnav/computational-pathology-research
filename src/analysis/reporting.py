@@ -470,8 +470,8 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
             recommendations.append("⚡ Address performance bottlenecks and GPU utilization")
         
         section = "## Recommendations\n\n"
-        for rec in recommendations:
-            section += f"- {rec}\n"
+        section += '\n'.join(f"- {rec}" for rec in recommendations)
+        section += '\n'
         
         return section
     
