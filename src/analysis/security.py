@@ -8,6 +8,7 @@ import json
 import logging
 import re
 import subprocess
+import time
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -68,70 +69,176 @@ class SecurityScanner:
         )
     
     def _run_bandit_scan(self) -> List[Dict[str, Any]]:
-        """Run bandit security scanner."""
+        """Run bandit security scanner with comprehensive logging and monitoring."""
+        scan_start_time = time.time()
+        
         try:
             src_dir = self.project_path / 'src'
             if not src_dir.exists():
+                logger.info("No src directory found - skipping bandit scan")
                 return []
             
+            # Count Python files for progress tracking
+            python_files = list(src_dir.rglob('*.py'))
+            logger.info(f"Starting bandit security scan on {len(python_files)} Python files")
+            
             result = subprocess.run(
-                ['bandit', '-r', str(src_dir), '-f', 'json'],
+                ['bandit', '-r', str(src_dir), '-f', 'json', '--severity-level', 'low'],
                 capture_output=True,
                 text=True,
                 timeout=120,
                 check=False
             )
             
+            scan_duration = time.time() - scan_start_time
+            logger.info(f"Bandit scan completed in {scan_duration:.2f}s")
+            
             if result.stdout:
-                data = json.loads(result.stdout)
+                try:
+                    data = json.loads(result.stdout)
+                    
+                    vulnerabilities = []
+                    severity_counts = {'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+                    
+                    for issue in data.get('results', []):
+                        severity = issue.get('issue_severity', 'UNKNOWN').upper()
+                        if severity in severity_counts:
+                            severity_counts[severity] += 1
+                        
+                        vulnerability = {
+                            'type': issue.get('test_name', 'unknown'),
+                            'severity': severity,
+                            'file': issue.get('filename', 'unknown'),
+                            'line': issue.get('line_number', 0),
+                            'description': issue.get('issue_text', 'unknown'),
+                            'confidence': issue.get('issue_confidence', 'UNKNOWN'),
+                            'cwe_id': issue.get('test_id', 'unknown')
+                        }
+                        vulnerabilities.append(vulnerability)
+                    
+                    # Log security scan summary
+                    total_issues = len(vulnerabilities)
+                    logger.info(f"Security scan found {total_issues} issues: "
+                              f"HIGH={severity_counts['HIGH']}, "
+                              f"MEDIUM={severity_counts['MEDIUM']}, "
+                              f"LOW={severity_counts['LOW']}")
+                    
+                    # Log critical security issues
+                    critical_issues = [v for v in vulnerabilities if v['severity'] == 'HIGH']
+                    if critical_issues:
+                        logger.warning(f"CRITICAL: {len(critical_issues)} high-severity security issues found!")
+                        for issue in critical_issues[:3]:  # Log first 3 critical issues
+                            logger.warning(f"  - {issue['type']} in {Path(issue['file']).name}:{issue['line']}")
+                    
+                    return vulnerabilities
                 
-                vulnerabilities = []
-                for issue in data.get('results', []):
-                    vulnerabilities.append({
-                        'type': issue.get('test_name', 'unknown'),
-                        'severity': issue.get('issue_severity', 'unknown'),
-                        'file': issue.get('filename', 'unknown'),
-                        'line': issue.get('line_number', 0),
-                        'description': issue.get('issue_text', 'unknown')
-                    })
-                
-                return vulnerabilities
+                except json.JSONDecodeError as e:
+                    logger.error(f"Failed to parse bandit JSON output: {e}")
+                    logger.debug(f"Bandit stdout: {result.stdout[:500]}...")
+                    return []
+            
+            # Handle bandit execution issues
+            if result.returncode != 0:
+                logger.warning(f"Bandit scan completed with warnings (exit code: {result.returncode})")
+                if result.stderr:
+                    logger.debug(f"Bandit stderr: {result.stderr}")
             
             return []
         
-        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError) as e:
-            logger.warning(f"Failed to run bandit scan: {e}")
+        except subprocess.TimeoutExpired:
+            scan_duration = time.time() - scan_start_time
+            logger.error(f"Bandit scan timed out after {scan_duration:.2f}s")
+            return []
+        except FileNotFoundError:
+            logger.warning("Bandit not installed - install with 'pip install bandit' for security scanning")
+            return []
+        except Exception as e:
+            scan_duration = time.time() - scan_start_time
+            logger.error(f"Bandit scan failed after {scan_duration:.2f}s: {e}")
             return []
     
     def _detect_hardcoded_secrets(self) -> List[str]:
-        """Detect hardcoded secrets using regex patterns."""
+        """Detect hardcoded secrets using regex patterns with comprehensive monitoring."""
+        detection_start_time = time.time()
         secrets = []
+        files_scanned = 0
+        patterns_matched = 0
         
-        # Common secret patterns
+        # Enhanced secret patterns with confidence levels
         patterns = [
-            (r'password\s*=\s*["\'][^"\']+["\']', 'hardcoded password'),
-            (r'api_key\s*=\s*["\'][^"\']+["\']', 'hardcoded API key'),
-            (r'secret_key\s*=\s*["\'][^"\']+["\']', 'hardcoded secret key'),
-            (r'token\s*=\s*["\'][^"\']+["\']', 'hardcoded token'),
-            (r'-----BEGIN\s+PRIVATE\s+KEY-----', 'private key'),
+            (r'password\s*=\s*["\'][^"\']{8,}["\']', 'hardcoded password', 'high'),
+            (r'api_key\s*=\s*["\'][^"\']{16,}["\']', 'hardcoded API key', 'high'),
+            (r'secret_key\s*=\s*["\'][^"\']{16,}["\']', 'hardcoded secret key', 'high'),
+            (r'token\s*=\s*["\'][^"\']{20,}["\']', 'hardcoded token', 'high'),
+            (r'-----BEGIN\s+PRIVATE\s+KEY-----', 'private key', 'critical'),
+            (r'-----BEGIN\s+RSA\s+PRIVATE\s+KEY-----', 'RSA private key', 'critical'),
+            (r'sk_live_[a-zA-Z0-9]{24,}', 'Stripe live secret key', 'critical'),
+            (r'sk_test_[a-zA-Z0-9]{24,}', 'Stripe test secret key', 'medium'),
+            (r'AKIA[0-9A-Z]{16}', 'AWS access key ID', 'high'),
+            (r'[0-9a-zA-Z/+]{40}', 'AWS secret access key pattern', 'medium'),
+            (r'ghp_[a-zA-Z0-9]{36}', 'GitHub personal access token', 'high'),
+            (r'xox[baprs]-[0-9a-zA-Z\-]{10,48}', 'Slack token', 'high'),
         ]
+        
+        logger.info(f"Starting hardcoded secrets detection with {len(patterns)} patterns")
         
         # Scan Python files
         for py_file in self.project_path.rglob('*.py'):
             if '.venv' in str(py_file) or '__pycache__' in str(py_file):
                 continue
             
+            files_scanned += 1
+            
             try:
                 content = py_file.read_text(encoding='utf-8')
                 
-                for pattern, description in patterns:
-                    matches = re.finditer(pattern, content, re.IGNORECASE)
-                    for match in matches:
-                        line_num = content[:match.start()].count('\n') + 1
-                        secrets.append(f"{description} in {py_file.relative_to(self.project_path)}:{line_num}")
+                for pattern, description, confidence in patterns:
+                    matches = list(re.finditer(pattern, content, re.IGNORECASE))
+                    if matches:
+                        patterns_matched += len(matches)
+                        
+                        for match in matches:
+                            line_num = content[:match.start()].count('\n') + 1
+                            secret_info = f"{description} in {py_file.relative_to(self.project_path)}:{line_num}"
+                            
+                            # Add confidence level to secret info
+                            if confidence == 'critical':
+                                secret_info = f"[CRITICAL] {secret_info}"
+                                logger.error(f"Critical secret detected: {secret_info}")
+                            elif confidence == 'high':
+                                secret_info = f"[HIGH] {secret_info}"
+                                logger.warning(f"High-confidence secret detected: {secret_info}")
+                            elif confidence == 'medium':
+                                secret_info = f"[MEDIUM] {secret_info}"
+                                logger.info(f"Potential secret detected: {secret_info}")
+                            
+                            secrets.append(secret_info)
             
-            except (UnicodeDecodeError, OSError):
+            except (UnicodeDecodeError, OSError) as e:
+                logger.debug(f"Failed to scan {py_file}: {e}")
                 continue
+        
+        detection_duration = time.time() - detection_start_time
+        
+        # Log comprehensive detection summary
+        logger.info(f"Hardcoded secrets detection completed in {detection_duration:.2f}s")
+        logger.info(f"Scanned {files_scanned} Python files, found {len(secrets)} potential secrets")
+        
+        if secrets:
+            # Categorize secrets by confidence level
+            critical_secrets = [s for s in secrets if s.startswith('[CRITICAL]')]
+            high_secrets = [s for s in secrets if s.startswith('[HIGH]')]
+            medium_secrets = [s for s in secrets if s.startswith('[MEDIUM]')]
+            
+            logger.warning(f"Secret detection summary: "
+                          f"CRITICAL={len(critical_secrets)}, "
+                          f"HIGH={len(high_secrets)}, "
+                          f"MEDIUM={len(medium_secrets)}")
+            
+            if critical_secrets:
+                logger.error("URGENT: Critical secrets detected! Immediate action required.")
+        else:
+            logger.info("No hardcoded secrets detected")
         
         return secrets
     
@@ -218,7 +325,7 @@ class SecurityScanner:
     
     def _assess_hipaa_compliance(self) -> float:
         """
-        Assess HIPAA compliance.
+        Assess HIPAA compliance with detailed monitoring and logging.
         
         Checks:
         - Audit logging (7-year retention)
@@ -229,39 +336,68 @@ class SecurityScanner:
         Returns:
             Score 0-100 based on HIPAA compliance
         """
+        assessment_start_time = time.time()
         score = 0.0
+        compliance_details = {}
+        
+        logger.info("Starting HIPAA compliance assessment")
         
         # Check for audit logging
         audit_logging = self._check_audit_logging()
+        compliance_details['audit_logging'] = audit_logging
         if audit_logging:
             score += 30
-            logger.debug("✓ Audit logging implemented")
+            logger.info("✓ Audit logging implementation detected")
         else:
-            logger.debug("✗ Missing audit logging")
+            logger.warning("✗ Missing audit logging - HIPAA requires comprehensive audit trails")
         
         # Check for input sanitization
         input_sanitization = self._check_input_sanitization()
+        compliance_details['input_sanitization'] = input_sanitization
         if input_sanitization:
             score += 25
-            logger.debug("✓ Input sanitization implemented")
+            logger.info("✓ Input sanitization implementation detected")
         else:
-            logger.debug("✗ Missing input sanitization")
+            logger.warning("✗ Missing input sanitization - required for PHI protection")
         
         # Check for access controls
         access_controls = self._check_access_controls()
+        compliance_details['access_controls'] = access_controls
         if access_controls:
             score += 25
-            logger.debug("✓ Access controls implemented")
+            logger.info("✓ Access control implementation detected")
         else:
-            logger.debug("✗ Missing access controls")
+            logger.warning("✗ Missing access controls - HIPAA requires role-based access")
         
         # Check for encryption
         encryption = self._check_encryption()
+        compliance_details['encryption'] = encryption
         if encryption:
             score += 20
-            logger.debug("✓ Encryption implemented")
+            logger.info("✓ Encryption implementation detected")
         else:
-            logger.debug("✗ Missing encryption")
+            logger.warning("✗ Missing encryption - HIPAA requires data encryption at rest and in transit")
+        
+        assessment_duration = time.time() - assessment_start_time
+        
+        # Log comprehensive compliance assessment
+        logger.info(f"HIPAA compliance assessment completed in {assessment_duration:.2f}s")
+        logger.info(f"HIPAA compliance score: {score}/100")
+        
+        # Provide detailed compliance guidance
+        if score < 50:
+            logger.error("CRITICAL: HIPAA compliance score below 50% - immediate action required!")
+            logger.error("Missing critical HIPAA requirements may result in regulatory violations")
+        elif score < 75:
+            logger.warning("WARNING: HIPAA compliance score below 75% - improvements needed")
+        else:
+            logger.info("GOOD: HIPAA compliance score above 75%")
+        
+        # Log specific compliance gaps
+        missing_controls = [k for k, v in compliance_details.items() if not v]
+        if missing_controls:
+            logger.warning(f"Missing HIPAA controls: {', '.join(missing_controls)}")
+            logger.info("Refer to HIPAA Security Rule 45 CFR §164.308-318 for implementation guidance")
         
         return score
     
