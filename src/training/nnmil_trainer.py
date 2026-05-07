@@ -530,7 +530,16 @@ class nnMILTrainer:
         
         checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
         
-        # Load model state
+        # Load model state with validation
+        if 'model_state_dict' not in checkpoint:
+            raise ValueError("Invalid checkpoint: missing model_state_dict")
+        
+        # Validate state dict keys match model
+        model_keys = set(self.model.state_dict().keys())
+        checkpoint_keys = set(checkpoint['model_state_dict'].keys())
+        if not checkpoint_keys.issubset(model_keys):
+            logger.warning("Checkpoint contains unexpected keys")
+        
         self.model.load_state_dict(checkpoint['model_state_dict'])
         
         # Load optimizer state
