@@ -19,7 +19,7 @@ import queue
 import threading
 import time
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Generic, Optional, Set, TypeVar
+from typing import Any, Callable, Dict, Generator, Generic, List, Optional, Set, Tuple, TypeVar
 
 from src.exceptions import ThreadingError
 
@@ -59,7 +59,7 @@ class TimeoutLock:
         self._owner = None
         self._acquire_time = None
     
-    def __enter__(self):
+    def __enter__(self) -> 'TimeoutLock':
         """Acquire lock with timeout."""
         acquired = self._lock.acquire(timeout=self.timeout)
         
@@ -74,7 +74,7 @@ class TimeoutLock:
         logger.debug(f"Lock '{self.name}' acquired by {self._owner}")
         return self
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Release lock."""
         hold_time = time.time() - self._acquire_time if self._acquire_time else 0
         
@@ -265,7 +265,7 @@ class GracefulThread(threading.Thread):
         self._cleanup_callback = cleanup_callback
         self._exception = None
     
-    def run(self):
+    def run(self) -> None:
         """Run target with exception handling and cleanup."""
         try:
             logger.info(f"Thread '{self.name}' started")
@@ -392,33 +392,33 @@ class ThreadSafeDict(Generic[K, V]):
         with self._lock:
             return self._dict.pop(key, default)
     
-    def update(self, other: Dict[K, V]):
+    def update(self, other: Dict[K, V]) -> None:
         """Update dictionary."""
         with self._lock:
             self._dict.update(other)
     
-    def clear(self):
+    def clear(self) -> None:
         """Clear dictionary."""
         with self._lock:
             self._dict.clear()
     
-    def keys(self):
+    def keys(self) -> List[K]:
         """Get keys (returns copy)."""
         with self._lock:
             return list(self._dict.keys())
     
-    def values(self):
+    def values(self) -> List[V]:
         """Get values (returns copy)."""
         with self._lock:
             return list(self._dict.values())
     
-    def items(self):
+    def items(self) -> List[Tuple[K, V]]:
         """Get items (returns copy)."""
         with self._lock:
             return list(self._dict.items())
     
     @contextmanager
-    def lock(self):
+    def lock(self) -> Generator[Dict[K, V], None, None]:
         """Context manager for batch operations."""
         with self._lock:
             yield self._dict
