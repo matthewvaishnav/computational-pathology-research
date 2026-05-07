@@ -66,6 +66,16 @@ app.state.start_time = time.time()
 # Add CORS middleware with environment-specific origins
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
+# Request ID middleware for tracing
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+
+app.add_middleware(RequestIDMiddleware)
+
 # Add HTTPS redirect in production
 if os.getenv("ENVIRONMENT", "development") == "production":
     app.add_middleware(HTTPSRedirectMiddleware)
