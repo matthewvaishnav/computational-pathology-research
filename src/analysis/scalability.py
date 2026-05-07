@@ -14,6 +14,12 @@ from .models import ScalabilityAnalysis
 
 logger = logging.getLogger(__name__)
 
+# Constants
+MILLISECONDS_PER_SECOND = 1000
+BYTES_PER_GB = 1024 ** 3
+MAX_SCORE = 100.0
+MIN_SCORE = 0.0
+
 
 class ScalabilityAnalyzer:
     """Analyzes scalability characteristics."""
@@ -454,10 +460,10 @@ class ScalabilityAnalyzer:
             communication_factor = 2  # Send and receive
             
             total_bytes = model_param_count * bytes_per_param * communication_factor
-            total_gb = total_bytes / (1024 ** 3)
+            total_gb = total_bytes / BYTES_PER_GB
             
             # Time in seconds, convert to milliseconds
-            overhead_ms = (total_gb / bandwidth_gbps) * 1000
+            overhead_ms = (total_gb / bandwidth_gbps) * MILLISECONDS_PER_SECOND
             
             logger.info(
                 f"Estimated communication overhead: {overhead_ms:.2f}ms "
@@ -552,7 +558,7 @@ class ScalabilityAnalyzer:
             score += 10.0
         # "unknown" gets 0 points
         
-        return max(0.0, min(100.0, round(score, 2)))
+        return max(MIN_SCORE, min(MAX_SCORE, round(score, 2)))
     
     def generate_scaling_recommendations(
         self,
