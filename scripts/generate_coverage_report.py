@@ -11,7 +11,15 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Tuple
-import xml.etree.ElementTree as ET
+
+# Use defusedxml to prevent XXE attacks
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    # Fallback with warning
+    import xml.etree.ElementTree as ET
+    import warnings
+    warnings.warn("defusedxml not available, XML parsing may be vulnerable to XXE attacks")
 
 
 class CoverageReporter:
