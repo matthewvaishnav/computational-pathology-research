@@ -36,9 +36,9 @@ class TestSecurityScanner:
     
     def test_analyze_returns_security_analysis(self):
         """Test that analyze() returns a SecurityAnalysis object."""
-        with patch.object(self.scanner, '_run_bandit', return_value=[]):
-            with patch.object(self.scanner, '_detect_injection_vulnerabilities', return_value=[]):
-                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=True):
+        with patch.object(self.scanner, '_run_bandit_scan', return_value=[]):
+            with patch.object(self.scanner, '_detect_injection_risks', return_value=[]):
+                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=[]):
                     with patch.object(self.scanner, '_detect_hardcoded_secrets', return_value=[]):
                         with patch.object(self.scanner, '_assess_hipaa_compliance', return_value=85.0):
                             result = self.scanner.analyze()
@@ -95,7 +95,7 @@ class TestBanditIntegration:
         mock_run.return_value.returncode = 0
         mock_run.return_value.stdout = json.dumps(bandit_output)
         
-        vulnerabilities = self.scanner._run_bandit()
+        vulnerabilities = self.scanner._run_bandit_scan()
         
         assert len(vulnerabilities) == 2
         
@@ -122,7 +122,7 @@ class TestBanditIntegration:
         mock_run.return_value.returncode = 0
         mock_run.return_value.stdout = json.dumps(bandit_output)
         
-        vulnerabilities = self.scanner._run_bandit()
+        vulnerabilities = self.scanner._run_bandit_scan()
         
         assert vulnerabilities == []
     
@@ -132,7 +132,7 @@ class TestBanditIntegration:
         mock_run.return_value.returncode = 1
         mock_run.return_value.stdout = ""
         
-        vulnerabilities = self.scanner._run_bandit()
+        vulnerabilities = self.scanner._run_bandit_scan()
         
         assert vulnerabilities == []
     
@@ -142,7 +142,7 @@ class TestBanditIntegration:
         mock_run.return_value.returncode = 0
         mock_run.return_value.stdout = "invalid json {"
         
-        vulnerabilities = self.scanner._run_bandit()
+        vulnerabilities = self.scanner._run_bandit_scan()
         
         assert vulnerabilities == []
 
@@ -190,7 +190,7 @@ def get_user_safe(user_id):
         
         self.create_python_file('src/database.py', vulnerable_code)
         
-        injection_risks = self.scanner._detect_injection_vulnerabilities()
+        injection_risks = self.scanner._detect_injection_risks()
         
         # Should detect SQL injection in vulnerable function
         assert len(injection_risks) >= 1
@@ -223,7 +223,7 @@ def process_file_safe(filename):
         
         self.create_python_file('src/processor.py', vulnerable_code)
         
-        injection_risks = self.scanner._detect_injection_vulnerabilities()
+        injection_risks = self.scanner._detect_injection_risks()
         
         # Should detect command injection vulnerabilities
         command_injection_found = any(
@@ -252,7 +252,7 @@ def safe_calculation():
         
         self.create_python_file('src/dynamic.py', vulnerable_code)
         
-        injection_risks = self.scanner._detect_injection_vulnerabilities()
+        injection_risks = self.scanner._detect_injection_risks()
         
         # Should detect eval/exec vulnerabilities
         eval_exec_found = any(
@@ -280,7 +280,7 @@ def process_file_safe(filename):
         
         self.create_python_file('src/safe_code.py', safe_code)
         
-        injection_risks = self.scanner._detect_injection_vulnerabilities()
+        injection_risks = self.scanner._detect_injection_risks()
         
         # Should not detect any injection risks in safe code
         assert len(injection_risks) == 0
@@ -465,9 +465,20 @@ class TestSecurityScoreCalculation:
             secrets=[],
             injection_risks=[]
         )
-        
+
         # Perfect security should result in high score
         assert score >= 95.0
+
+    def test_calculate_security_score_without_tls_issues(self):
+        """Test security score calculation keeps backward compatibility."""
+        score = self.scanner._calculate_security_score(
+            vulnerabilities=[],
+            hipaa_score=80.0,
+            secrets=[],
+            injection_risks=[]
+        )
+
+        assert isinstance(score, float)
     
     def test_calculate_security_score_poor(self):
         """Test security score calculation with poor security."""
@@ -545,9 +556,9 @@ class TestIntegrationWithMockData:
         ]
         
         # Mock all the detection methods
-        with patch.object(self.scanner, '_run_bandit', return_value=mock_vulnerabilities):
-            with patch.object(self.scanner, '_detect_injection_vulnerabilities', return_value=mock_injection_risks):
-                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=True):
+        with patch.object(self.scanner, '_run_bandit_scan', return_value=mock_vulnerabilities):
+            with patch.object(self.scanner, '_detect_injection_risks', return_value=mock_injection_risks):
+                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=[]):
                     with patch.object(self.scanner, '_detect_hardcoded_secrets', return_value=mock_secrets):
                         with patch.object(self.scanner, '_assess_hipaa_compliance', return_value=70.0):
                             
@@ -565,9 +576,9 @@ class TestIntegrationWithMockData:
     
     def test_analysis_with_high_security(self):
         """Test analysis with high security (few issues)."""
-        with patch.object(self.scanner, '_run_bandit', return_value=[]):
-            with patch.object(self.scanner, '_detect_injection_vulnerabilities', return_value=[]):
-                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=True):
+        with patch.object(self.scanner, '_run_bandit_scan', return_value=[]):
+            with patch.object(self.scanner, '_detect_injection_risks', return_value=[]):
+                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=[]):
                     with patch.object(self.scanner, '_detect_hardcoded_secrets', return_value=[]):
                         with patch.object(self.scanner, '_assess_hipaa_compliance', return_value=95.0):
                             
@@ -592,9 +603,9 @@ class TestIntegrationWithMockData:
             {'type': 'sql_injection'}, {'type': 'command_injection'}
         ]
         
-        with patch.object(self.scanner, '_run_bandit', return_value=many_vulnerabilities):
-            with patch.object(self.scanner, '_detect_injection_vulnerabilities', return_value=many_injection_risks):
-                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=False):
+        with patch.object(self.scanner, '_run_bandit_scan', return_value=many_vulnerabilities):
+            with patch.object(self.scanner, '_detect_injection_risks', return_value=many_injection_risks):
+                with patch.object(self.scanner, '_validate_tls_ssl_config', return_value=['TLS issue']):
                     with patch.object(self.scanner, '_detect_hardcoded_secrets', return_value=many_secrets):
                         with patch.object(self.scanner, '_assess_hipaa_compliance', return_value=40.0):
                             

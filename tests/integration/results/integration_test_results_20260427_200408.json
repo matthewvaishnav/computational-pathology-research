@@ -1,0 +1,46 @@
+{
+  "summary": {
+    "total_tests": 10,
+    "passed_tests": 9,
+    "failed_tests": 1,
+    "success_rate": 90.0,
+    "duration_seconds": 7.707988,
+    "start_time": "2026-04-27T20:04:00.488127",
+    "end_time": "2026-04-27T20:04:08.196115"
+  },
+  "configuration": {
+    "test_suites": {
+      "workflow": true,
+      "api_endpoints": false,
+      "performance": false
+    },
+    "docker": {
+      "auto_start": false
+    },
+    "base_url": "http://localhost:8000",
+    "timeout": 300,
+    "results_dir": "tests/integration/results",
+    "save_results": true,
+    "generate_fixtures": false,
+    "cleanup_fixtures": true
+  },
+  "results": {
+    "workflow": {
+      "Health Check": true,
+      "API Documentation": true,
+      "Image Upload & Analysis": true,
+      "DICOM Integration": false,
+      "Performance Benchmarks": true,
+      "Error Handling": true,
+      "Database Operations": true,
+      "Monitoring Endpoints": true,
+      "CI/CD Integration": true,
+      "Security Headers": true
+    }
+  },
+  "environment": {
+    "python_version": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "win32",
+    "base_url": "http://localhost:8000"
+  }
+}

@@ -1,0 +1,91 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - CI Foundation Model Tests Execute Without Slow Marker
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: For deterministic bugs, scope the property to the concrete failing case(s) to ensure reproducibility
+  - Test that foundation model tests in `tests/test_foundation_models.py` are collected when running `pytest tests/test_foundation_models.py --collect-only -m "not property"`
+  - Test that foundation model tests (e.g., `test_phikon_load`, `test_phikon_forward`, `test_load_phikon`) do NOT have `@pytest.mark.slow` decorator
+  - Test that CI pytest command in `.github/workflows/ci.yml` uses `-m "not property"` (missing "and not slow")
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found: foundation model tests are collected and would execute in CI, causing timeout due to ~350MB model downloads
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-CI Test Execution Behavior Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-CI test execution contexts
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Property-based testing generates many test cases for stronger guarantees
+  - Test that local `pytest tests/test_foundation_models.py -v` executes all tests including foundation model tests
+  - Test that `pytest tests/test_foundation_models.py -m "not slow" -v` on unfixed code shows no tests are skipped (slow marker not yet applied)
+  - Test that projector tests (e.g., `test_projector_init`, `test_projector_forward`) run quickly without model downloads
+  - Test that other CI jobs (lint, type-check, security, docker, docs, quick-demo, coverage-report) are unchanged
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [x] 3. Fix for CI foundation model test timeout
+
+  - [x] 3.1 Add @pytest.mark.slow decorator to foundation model tests
+    - Add `@pytest.mark.slow` decorator to `TestPhikonEncoder.test_phikon_load`
+    - Add `@pytest.mark.slow` decorator to `TestPhikonEncoder.test_phikon_forward`
+    - Add `@pytest.mark.slow` decorator to `TestPhikonEncoder.test_phikon_extract_features`
+    - Add `@pytest.mark.slow` decorator to `TestLoadFoundationModel.test_load_phikon`
+    - Add `@pytest.mark.slow` decorator to `TestLoadFoundationModel.test_load_with_freeze_false`
+    - Add `@pytest.mark.slow` decorator to `TestFoundationModelIntegration.test_encoder_projector_pipeline`
+    - Add `@pytest.mark.slow` decorator to `TestFoundationModelIntegration.test_batch_processing`
+    - Do NOT add `@pytest.mark.slow` to `TestFeatureProjector` tests (they don't download models)
+    - _Bug_Condition: isBugCondition(input) where input.pytestCommand == "pytest tests/ -v -m \"not property\"" AND input.testFile == "tests/test_foundation_models.py" AND NOT hasSlowMarker(input.testFunction) AND testInstantiatesFoundationModel(input.testFunction)_
+    - _Expected_Behavior: Foundation model tests are marked with @pytest.mark.slow decorator, enabling CI to skip them with -m "not property and not slow"_
+    - _Preservation: Local test execution with pytest tests/ continues to run all tests including slow foundation model tests; projector tests continue running in CI_
+    - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.3_
+
+  - [x] 3.2 Update CI pytest command to exclude slow tests
+    - Update `.github/workflows/ci.yml` test job "Run tests" step (line ~48)
+    - Change pytest command from `pytest tests/ -v -m "not property" --cov=src --cov-report=xml --cov-report=term`
+    - To: `pytest tests/ -v -m "not property and not slow" --cov=src --cov-report=xml --cov-report=term`
+    - Update `.github/workflows/ci.yml` coverage-report job "Generate coverage report" step (line ~238)
+    - Change pytest command from `pytest tests/ -m "not property" --cov=src --cov-report=html --cov-report=term`
+    - To: `pytest tests/ -m "not property and not slow" --cov=src --cov-report=html --cov-report=term`
+    - _Bug_Condition: isBugCondition(input) where CI pytest command does not exclude slow tests_
+    - _Expected_Behavior: CI pytest command includes -m "not property and not slow" to skip both property-based and slow tests_
+    - _Preservation: Other CI jobs (lint, type-check, security, docker, docs, quick-demo) remain unchanged; property-based test exclusion continues to work_
+    - _Requirements: 2.3, 2.4, 3.4, 3.5_
+
+  - [x] 3.3 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - CI Foundation Model Tests Skipped With Slow Marker
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - Verify that foundation model tests have `@pytest.mark.slow` decorator
+    - Verify that CI pytest command includes `-m "not property and not slow"`
+    - Verify that `pytest tests/test_foundation_models.py --collect-only -m "not property and not slow"` skips foundation model tests
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.4 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-CI Test Execution Behavior Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - Verify that local `pytest tests/test_foundation_models.py -v` still executes all tests including foundation model tests
+    - Verify that `pytest tests/test_foundation_models.py -m "not slow" -v` now skips foundation model tests but runs projector tests
+    - Verify that projector tests still run in CI with `-m "not property and not slow"`
+    - Verify that other CI jobs remain unchanged
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run `pytest tests/test_foundation_models.py::TestFeatureProjector -m "not property and not slow" -v` locally to verify projector tests execute
+  - Run `pytest tests/test_foundation_models.py --collect-only -m "not property and not slow"` to verify foundation model tests are skipped
+  - Run `pytest tests/test_foundation_models.py -v` locally to verify all tests can still be run when no markers are specified
+  - Trigger CI workflow to verify test job completes successfully in < 10 minutes without timeout
+  - Ensure all tests pass, ask the user if questions arise.

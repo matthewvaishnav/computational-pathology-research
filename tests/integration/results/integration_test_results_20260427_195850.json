@@ -1,0 +1,37 @@
+{
+  "summary": {
+    "total_tests": 1,
+    "passed_tests": 0,
+    "failed_tests": 1,
+    "success_rate": 0.0,
+    "duration_seconds": 2.064368,
+    "start_time": "2026-04-27T19:58:48.008436",
+    "end_time": "2026-04-27T19:58:50.072804"
+  },
+  "configuration": {
+    "test_suites": {
+      "workflow": true,
+      "api_endpoints": false,
+      "performance": false
+    },
+    "docker": {
+      "auto_start": false
+    },
+    "base_url": "http://localhost:8000",
+    "timeout": 300,
+    "results_dir": "tests/integration/results",
+    "save_results": true,
+    "generate_fixtures": false,
+    "cleanup_fixtures": true
+  },
+  "results": {
+    "workflow": {
+      "workflow_error": false
+    }
+  },
+  "environment": {
+    "python_version": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "win32",
+    "base_url": "http://localhost:8000"
+  }
+}
