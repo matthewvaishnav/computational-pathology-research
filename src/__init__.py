@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 # Quick start functions
-def quick_train(dataset="pcam", model="nnmil", epochs=10, **kwargs):
+def quick_train(dataset: str = "pcam", model: str = "nnmil", epochs: int = 10, **kwargs) -> dict:
     """
     Quick training with sensible defaults.
     
@@ -42,7 +42,7 @@ def quick_train(dataset="pcam", model="nnmil", epochs=10, **kwargs):
     trainer = QuickTrainer(dataset=dataset, model=model, epochs=epochs, **kwargs)
     return trainer.train()
 
-def benchmark(model_name="histocore", output_dir="results/"):
+def benchmark(model_name: str = "histocore", output_dir: str = "results/") -> dict:
     """
     Run benchmark comparison against foundation models.
     
