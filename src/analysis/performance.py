@@ -65,27 +65,58 @@ class PerformanceProfiler:
         )
     
     def _measure_gpu_utilization(self) -> float:
-        """Measure GPU utilization using nvidia-smi."""
-        try:
-            result = subprocess.run(
-                ['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
-                capture_output=True,
-                text=True,
-                timeout=10,
-                check=False
-            )
-            
-            if result.returncode == 0:
-                # Parse first GPU utilization
-                lines = result.stdout.strip().splitlines()
-                if lines:
-                    return float(lines[0])
-            
-            return 0.0
+        """Measure GPU utilization using nvidia-smi with timeout handling and retry logic."""
+        max_retries = 3
+        retry_delay = 1.0
         
-        except (subprocess.TimeoutExpired, FileNotFoundError, ValueError) as e:
-            logger.debug(f"Failed to measure GPU utilization: {e}")
-            return 0.0
+        for attempt in range(max_retries):
+            try:
+                result = subprocess.run(
+                    ['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    check=False
+                )
+                
+                if result.returncode == 0:
+                    # Parse first GPU utilization
+                    lines = result.stdout.strip().splitlines()
+                    if lines:
+                        utilization = float(lines[0])
+                        logger.debug(f"GPU utilization: {utilization}% (attempt {attempt + 1})")
+                        return utilization
+                else:
+                    logger.warning(f"nvidia-smi returned code {result.returncode}: {result.stderr}")
+                
+                # If we get here, the command failed but didn't timeout
+                if attempt < max_retries - 1:
+                    logger.debug(f"Retrying GPU utilization measurement in {retry_delay}s...")
+                    import time
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+            
+            except subprocess.TimeoutExpired:
+                logger.warning(f"nvidia-smi timeout on attempt {attempt + 1}")
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+            except FileNotFoundError:
+                logger.debug("nvidia-smi not found - no GPU or NVIDIA drivers not installed")
+                return 0.0
+            except ValueError as e:
+                logger.warning(f"Failed to parse GPU utilization: {e}")
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+            except Exception as e:
+                logger.error(f"Unexpected error measuring GPU utilization: {e}")
+                return 0.0
+        
+        logger.warning(f"Failed to measure GPU utilization after {max_retries} attempts")
+        return 0.0
     
     def _detect_bottlenecks(self) -> List[Dict[str, Any]]:
         """Detect performance bottlenecks (placeholder)."""
@@ -266,10 +297,11 @@ class PerformanceProfiler:
     
     def _generate_flame_graph(self) -> str:
         """
-        Generate flame graph visualization for performance profiling.
+        Generate flame graph visualization for performance profiling with enhanced error handling.
         
         Uses cProfile to generate profiling data and converts to
-        flame graph format for visualization.
+        flame graph format for visualization. Includes timeout handling
+        and graceful fallbacks for different profiling tools.
         
         Returns:
             Path to generated flame graph SVG file, or empty string if failed
@@ -287,7 +319,8 @@ class PerformanceProfiler:
             profile_file = output_dir / 'profile.stats'
             flamegraph_file = output_dir / 'flamegraph.svg'
             
-            # Check if py-spy is available
+            # Check if py-spy is available with timeout
+            has_pyspy = False
             try:
                 result = subprocess.run(
                     ['py-spy', '--version'],
@@ -296,56 +329,105 @@ class PerformanceProfiler:
                     check=False
                 )
                 has_pyspy = result.returncode == 0
-            except FileNotFoundError:
+                if has_pyspy:
+                    logger.debug("py-spy available for flame graph generation")
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                logger.debug("py-spy not available or timed out")
                 has_pyspy = False
             
             if has_pyspy:
-                # Use py-spy for live profiling
+                # Use py-spy for live profiling with enhanced timeout handling
                 logger.info("Using py-spy for flame graph generation")
                 
-                # Generate flame graph from current process
-                result = subprocess.run(
-                    ['py-spy', 'record', '-o', str(flamegraph_file), '--format', 'flamegraph', 
-                     '--duration', '10', '--pid', str(subprocess.os.getpid())],
-                    capture_output=True,
-                    timeout=15,
-                    check=False
-                )
+                try:
+                    # Generate flame graph from current process with shorter duration
+                    result = subprocess.run(
+                        ['py-spy', 'record', '-o', str(flamegraph_file), '--format', 'flamegraph', 
+                         '--duration', '5', '--pid', str(os.getpid())],
+                        capture_output=True,
+                        timeout=10,  # Shorter timeout for reliability
+                        check=False
+                    )
+                    
+                    if result.returncode == 0 and flamegraph_file.exists():
+                        logger.info(f"Flame graph generated: {flamegraph_file}")
+                        return str(flamegraph_file)
+                    else:
+                        logger.warning(f"py-spy failed with return code {result.returncode}: {result.stderr}")
                 
-                if result.returncode == 0 and flamegraph_file.exists():
-                    logger.info(f"Flame graph generated: {flamegraph_file}")
-                    return str(flamegraph_file)
+                except subprocess.TimeoutExpired:
+                    logger.warning("py-spy profiling timed out, falling back to cProfile")
+                except Exception as e:
+                    logger.warning(f"py-spy profiling failed: {e}, falling back to cProfile")
             
-            # Fallback: Use cProfile and generate text report
-            logger.info("py-spy not available, using cProfile fallback")
+            # Fallback: Use cProfile and generate text report with timeout protection
+            logger.info("Using cProfile fallback for profiling")
             
-            # Create a simple profiling report
+            # Create a simple profiling report with timeout
             profiler = cProfile.Profile()
             profiler.enable()
             
-            # Profile for a short duration (simulate work)
+            # Profile for a short duration (simulate work) with timeout protection
             import time
-            time.sleep(0.1)
+            import signal
             
-            profiler.disable()
+            def timeout_handler(signum, frame):
+                raise TimeoutError("Profiling timeout")
             
-            # Save stats
-            profiler.dump_stats(str(profile_file))
+            try:
+                # Set up timeout for profiling (Windows doesn't support SIGALRM)
+                if hasattr(signal, 'SIGALRM'):
+                    signal.signal(signal.SIGALRM, timeout_handler)
+                    signal.alarm(2)  # 2 second timeout
+                
+                time.sleep(0.1)  # Brief profiling period
+                
+                if hasattr(signal, 'SIGALRM'):
+                    signal.alarm(0)  # Cancel timeout
+                
+            except TimeoutError:
+                logger.warning("Profiling timed out")
+            except Exception as e:
+                logger.debug(f"Profiling simulation error: {e}")
+            finally:
+                profiler.disable()
             
-            # Generate text report
-            stats = pstats.Stats(str(profile_file))
-            stats.sort_stats('cumulative')
+            # Save stats with error handling
+            try:
+                profiler.dump_stats(str(profile_file))
+                
+                # Generate text report
+                stats = pstats.Stats(str(profile_file))
+                stats.sort_stats('cumulative')
+                
+                report_file = output_dir / 'profile_report.txt'
+                with open(report_file, 'w') as f:
+                    stats.stream = f
+                    stats.print_stats(50)  # Top 50 functions
+                
+                logger.info(f"Profile report generated: {report_file}")
+                return str(report_file)
             
-            report_file = output_dir / 'profile_report.txt'
-            with open(report_file, 'w') as f:
-                stats.stream = f
-                stats.print_stats(50)  # Top 50 functions
-            
-            logger.info(f"Profile report generated: {report_file}")
-            return str(report_file)
+            except Exception as e:
+                logger.warning(f"Failed to save profiling stats: {e}")
+                
+                # Final fallback: create a simple performance summary
+                summary_file = output_dir / 'performance_summary.txt'
+                try:
+                    with open(summary_file, 'w') as f:
+                        f.write("Performance Analysis Summary\n")
+                        f.write("=" * 30 + "\n")
+                        f.write(f"Analysis time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write("Note: Detailed profiling failed, basic analysis only\n")
+                    
+                    logger.info(f"Basic performance summary created: {summary_file}")
+                    return str(summary_file)
+                except Exception as e:
+                    logger.error(f"Failed to create performance summary: {e}")
+                    return ""
         
         except Exception as e:
-            logger.debug(f"Flame graph generation error: {e}")
+            logger.error(f"Flame graph generation failed completely: {e}")
             return ""
     
     def _calculate_performance_score(
