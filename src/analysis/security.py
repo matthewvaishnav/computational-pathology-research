@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from typing import List, Dict, Any
 
-from .models import SecurityAnalysis
+from .models import SecurityAnalysis, SecretFinding
 
 
 logger = logging.getLogger(__name__)
@@ -157,7 +157,7 @@ class SecurityScanner:
             logger.error(f"Bandit scan failed after {scan_duration:.2f}s: {e}")
             return []
     
-    def _detect_hardcoded_secrets(self) -> List[str]:
+    def _detect_hardcoded_secrets(self) -> List[SecretFinding]:
         """Detect hardcoded secrets using regex patterns with comprehensive monitoring."""
         detection_start_time = time.time()
         secrets = []
@@ -166,18 +166,18 @@ class SecurityScanner:
         
         # Enhanced secret patterns with confidence levels
         patterns = [
-            (r'password\s*=\s*["\'][^"\']{8,}["\']', 'hardcoded password', 'high'),
-            (r'api_key\s*=\s*["\'][^"\']{16,}["\']', 'hardcoded API key', 'high'),
-            (r'secret_key\s*=\s*["\'][^"\']{16,}["\']', 'hardcoded secret key', 'high'),
-            (r'token\s*=\s*["\'][^"\']{20,}["\']', 'hardcoded token', 'high'),
-            (r'-----BEGIN\s+PRIVATE\s+KEY-----', 'private key', 'critical'),
-            (r'-----BEGIN\s+RSA\s+PRIVATE\s+KEY-----', 'RSA private key', 'critical'),
-            (r'sk_live_[a-zA-Z0-9]{24,}', 'Stripe live secret key', 'critical'),
-            (r'sk_test_[a-zA-Z0-9]{24,}', 'Stripe test secret key', 'medium'),
-            (r'AKIA[0-9A-Z]{16}', 'AWS access key ID', 'high'),
-            (r'[0-9a-zA-Z/+]{40}', 'AWS secret access key pattern', 'medium'),
-            (r'ghp_[a-zA-Z0-9]{36}', 'GitHub personal access token', 'high'),
-            (r'xox[baprs]-[0-9a-zA-Z\-]{10,48}', 'Slack token', 'high'),
+            (r'password\s*=\s*["\'][^"\']{8,}["\']', 'password', 'high'),
+            (r'api_key\s*=\s*["\'][^"\']{16,}["\']', 'api_key', 'high'),
+            (r'secret_key\s*=\s*["\'][^"\']{16,}["\']', 'secret_key', 'high'),
+            (r'token\s*=\s*["\'][^"\']{20,}["\']', 'token', 'high'),
+            (r'-----BEGIN\s+PRIVATE\s+KEY-----', 'private_key', 'critical'),
+            (r'-----BEGIN\s+RSA\s+PRIVATE\s+KEY-----', 'rsa_private_key', 'critical'),
+            (r'sk_live_[a-zA-Z0-9]{24,}', 'stripe_live_key', 'critical'),
+            (r'sk_test_[a-zA-Z0-9]{24,}', 'stripe_test_key', 'medium'),
+            (r'AKIA[0-9A-Z]{16}', 'aws_access_key', 'high'),
+            (r'[0-9a-zA-Z/+]{40}', 'aws_secret_key', 'medium'),
+            (r'ghp_[a-zA-Z0-9]{36}', 'github_token', 'high'),
+            (r'xox[baprs]-[0-9a-zA-Z\-]{10,48}', 'slack_token', 'high'),
         ]
         
         logger.info(f"Starting hardcoded secrets detection with {len(patterns)} patterns")
@@ -192,27 +192,32 @@ class SecurityScanner:
             try:
                 content = py_file.read_text(encoding='utf-8')
                 
-                for pattern, description, confidence in patterns:
+                for pattern, secret_type, confidence in patterns:
                     matches = list(re.finditer(pattern, content, re.IGNORECASE))
                     if matches:
                         patterns_matched += len(matches)
                         
                         for match in matches:
                             line_num = content[:match.start()].count('\n') + 1
-                            secret_info = f"{description} in {py_file.relative_to(self.project_path)}:{line_num}"
                             
-                            # Add confidence level to secret info
+                            secret_dict = {
+                                'type': secret_type,
+                                'severity': confidence.upper(),
+                                'file': str(py_file.relative_to(self.project_path)),
+                                'line': line_num,
+                                'description': f"Hardcoded {secret_type.replace('_', ' ')} detected"
+                            }
+                            
+                            # Log based on confidence level
+                            log_msg = f"{confidence.upper()} {secret_type} in {py_file.relative_to(self.project_path)}:{line_num}"
                             if confidence == 'critical':
-                                secret_info = f"[CRITICAL] {secret_info}"
-                                logger.error(f"Critical secret detected: {secret_info}")
+                                logger.error(f"Critical secret detected: [CRITICAL] {log_msg}")
                             elif confidence == 'high':
-                                secret_info = f"[HIGH] {secret_info}"
-                                logger.warning(f"High-confidence secret detected: {secret_info}")
+                                logger.warning(f"High-confidence secret detected: [HIGH] {log_msg}")
                             elif confidence == 'medium':
-                                secret_info = f"[MEDIUM] {secret_info}"
-                                logger.info(f"Potential secret detected: {secret_info}")
+                                logger.info(f"Potential secret detected: [MEDIUM] {log_msg}")
                             
-                            secrets.append(secret_info)
+                            secrets.append(secret_dict)
             
             except (UnicodeDecodeError, OSError) as e:
                 logger.debug(f"Failed to scan {py_file}: {e}")
@@ -225,10 +230,10 @@ class SecurityScanner:
         logger.info(f"Scanned {files_scanned} Python files, found {len(secrets)} potential secrets")
         
         if secrets:
-            # Categorize secrets by confidence level
-            critical_secrets = [s for s in secrets if s.startswith('[CRITICAL]')]
-            high_secrets = [s for s in secrets if s.startswith('[HIGH]')]
-            medium_secrets = [s for s in secrets if s.startswith('[MEDIUM]')]
+            # Categorize secrets by severity level
+            critical_secrets = [s for s in secrets if s['severity'] == 'CRITICAL']
+            high_secrets = [s for s in secrets if s['severity'] == 'HIGH']
+            medium_secrets = [s for s in secrets if s['severity'] == 'MEDIUM']
             
             logger.warning(f"Secret detection summary: "
                           f"CRITICAL={len(critical_secrets)}, "
@@ -401,6 +406,33 @@ class SecurityScanner:
         
         return score
     
+    def _generate_hipaa_checklist(self) -> Dict[str, Any]:
+        """Generate HIPAA compliance checklist."""
+        checklist = {
+            'audit_logging': {
+                'implemented': self._check_audit_logging(),
+                'requirement': 'Maintain audit logs for 7 years with tamper-evident storage',
+                'priority': 'critical'
+            },
+            'input_sanitization': {
+                'implemented': self._check_input_sanitization(),
+                'requirement': 'Sanitize all user inputs to prevent injection attacks',
+                'priority': 'high'
+            },
+            'access_controls': {
+                'implemented': self._check_access_controls(),
+                'requirement': 'Implement role-based access controls for PHI',
+                'priority': 'critical'
+            },
+            'encryption': {
+                'implemented': self._check_encryption(),
+                'requirement': 'Encrypt PHI at rest and in transit using AES-256',
+                'priority': 'critical'
+            }
+        }
+        
+        return checklist
+    
     def _check_audit_logging(self) -> bool:
         """Check for audit logging implementation."""
         # Look for audit logging patterns
@@ -498,7 +530,7 @@ class SecurityScanner:
     def _calculate_security_score(
         self,
         vulnerabilities: List[Dict[str, Any]],
-        secrets: List[str],
+        secrets: List[Dict[str, Any]],
         injection_risks: List[Dict[str, Any]],
         tls_issues: List[Dict[str, Any]],
         hipaa_score: float
