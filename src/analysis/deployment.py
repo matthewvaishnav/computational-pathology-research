@@ -401,10 +401,75 @@ class DeploymentValidator:
         return min(100.0, score)
     
     def _calculate_monitoring_score(self) -> float:
-        """Calculate monitoring and logging setup score (placeholder)."""
-        # TODO: Check for monitoring configuration
-        logger.info("Monitoring assessment not yet implemented")
-        return 50.0  # Default neutral score
+        """
+        Calculate monitoring and logging setup score.
+        
+        Checks for:
+        - Prometheus metrics endpoints
+        - Logging configuration
+        - Health check endpoints
+        - Distributed tracing setup
+        
+        Returns:
+            Score from 0-100
+        """
+        score = 0.0
+        
+        try:
+            # Check for Prometheus metrics (25 points)
+            prometheus_files = list(self.project_path.rglob('*prometheus*.py'))
+            prometheus_files += list(self.project_path.rglob('*metrics*.py'))
+            
+            if prometheus_files:
+                score += 25.0
+                logger.debug("Found Prometheus/metrics files")
+            
+            # Check for logging configuration (25 points)
+            logging_configs = []
+            for pattern in ['logging.yaml', 'logging.json', 'logging.conf', 'logconfig.py']:
+                logging_configs.extend(list(self.project_path.rglob(pattern)))
+            
+            if logging_configs:
+                score += 25.0
+                logger.debug("Found logging configuration")
+            
+            # Check for health check endpoints (25 points)
+            health_check_found = False
+            for py_file in self.project_path.rglob('*.py'):
+                try:
+                    content = py_file.read_text()
+                    if any(endpoint in content for endpoint in ['/health', '/healthz', '/ready', '/liveness']):
+                        health_check_found = True
+                        break
+                except (UnicodeDecodeError, PermissionError):
+                    continue
+            
+            if health_check_found:
+                score += 25.0
+                logger.debug("Found health check endpoints")
+            
+            # Check for distributed tracing (25 points)
+            tracing_keywords = ['opentelemetry', 'jaeger', 'zipkin', 'trace', 'span']
+            tracing_found = False
+            
+            for py_file in self.project_path.rglob('*.py'):
+                try:
+                    content = py_file.read_text()
+                    if any(keyword in content.lower() for keyword in tracing_keywords):
+                        tracing_found = True
+                        break
+                except (UnicodeDecodeError, PermissionError):
+                    continue
+            
+            if tracing_found:
+                score += 25.0
+                logger.debug("Found distributed tracing setup")
+        
+        except Exception as e:
+            logger.debug(f"Monitoring score calculation error: {e}")
+            return 50.0  # Default neutral score
+        
+        return score
     
     def _calculate_deployment_score(
         self,
