@@ -8,12 +8,11 @@ executive summaries, detailed analysis, and prioritized task lists.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Optional
 import subprocess
 import tempfile
 
 from .models import AnalysisResult, Priority, Severity
-from .aggregator import ResultAggregator
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class ReportGenerator:
     
     def __init__(self):
         """Initialize report generator."""
-        self.aggregator = ResultAggregator()
+        pass
     
     def generate_markdown(self, result: AnalysisResult) -> str:
         """
@@ -37,10 +36,6 @@ class ReportGenerator:
         """
         logger.info("Generating Markdown report...")
         
-        # Get dimension summaries
-        summaries = self.aggregator.get_dimension_summary(result)
-        top_issues = self.aggregator.get_top_issues_by_dimension(result)
-        
         # Build report sections
         sections = []
         
@@ -48,45 +43,26 @@ class ReportGenerator:
         sections.append(self._generate_header(result))
         
         # Executive Summary
-        sections.append(self._generate_executive_summary(result, summaries))
+        sections.append(self._generate_executive_summary(result))
         
-        # Overall Metrics
-        sections.append(self._generate_overall_metrics(result, summaries))
+        # Key Metrics
+        sections.append(self._generate_key_metrics(result))
         
         # Critical Issues
         sections.append(self._generate_critical_issues(result))
         
         # Detailed Analysis by Dimension
-        sections.append(
-            self._generate_architecture_section(result.architecture, summaries['architecture'])
-        )
-        sections.append(
-            self._generate_performance_section(result.performance, summaries['performance'])
-        )
-        sections.append(
-            self._generate_coverage_section(result.coverage, summaries['coverage'])
-        )
-        sections.append(
-            self._generate_code_quality_section(result.code_quality, summaries['code_quality'])
-        )
-        sections.append(
-            self._generate_dependencies_section(result.dependencies, summaries['dependencies'])
-        )
-        sections.append(
-            self._generate_deployment_section(result.deployment, summaries['deployment'])
-        )
-        sections.append(
-            self._generate_security_section(result.security, summaries['security'])
-        )
-        sections.append(
-            self._generate_scalability_section(result.scalability, summaries['scalability'])
-        )
+        sections.append(self._generate_architecture_section(result))
+        sections.append(self._generate_performance_section(result))
+        sections.append(self._generate_coverage_section(result))
+        sections.append(self._generate_code_quality_section(result))
+        sections.append(self._generate_dependencies_section(result))
+        sections.append(self._generate_deployment_section(result))
+        sections.append(self._generate_security_section(result))
+        sections.append(self._generate_scalability_section(result))
         
         # Prioritized Task List
-        sections.append(self._generate_task_list(result, top_issues))
-        
-        # Recommendations
-        sections.append(self._generate_recommendations(result, summaries))
+        sections.append(self._generate_task_list(result))
         
         # Footer
         sections.append(self._generate_footer(result))
@@ -99,30 +75,44 @@ class ReportGenerator:
             timestamp = datetime.fromisoformat(result.timestamp.replace('Z', '+00:00'))
             formatted_time = timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')
         except (ValueError, AttributeError):
-            # Fallback for invalid timestamps
             formatted_time = result.timestamp
         
-        return f"""# HistoCore Project Optimization Analysis Report
+        return f"""# HistoCore Optimization Analysis Report
 
 **Generated:** {formatted_time}  
-**Project:** {result.project_path}  
-**Git Commit:** `{result.git_commit}`  
+**Commit:** `{result.git_commit}`  
 **Overall Score:** {result.overall_score:.1f}/100 {self._get_score_emoji(result.overall_score)}
-
----"""
+"""
     
-    def _generate_executive_summary(self, result: AnalysisResult, summaries: Dict[str, Dict[str, Any]]) -> str:
+    def _generate_executive_summary(self, result: AnalysisResult) -> str:
         """Generate executive summary."""
         # Count issues by severity
-        critical_count = len([i for i in result.critical_issues if i.severity == Severity.CRITICAL])
-        high_count = len([i for i in result.critical_issues if i.severity == Severity.HIGH])
+        critical_count = sum(1 for i in result.critical_issues if i.severity == Severity.CRITICAL)
+        high_count = sum(1 for i in result.critical_issues if i.severity == Severity.HIGH)
         
-        # Get worst performing dimensions
-        worst_dims = sorted(summaries.items(), key=lambda x: x[1]['score'])[:3]
+        # Identify worst dimensions
+        dim_scores = [
+            ('architecture', result.architecture.score),
+            ('performance', result.performance.score),
+            ('coverage', result.coverage.score),
+            ('code_quality', result.code_quality.score),
+            ('dependencies', result.dependencies.score),
+            ('deployment', result.deployment.score),
+            ('security', result.security.score),
+            ('scalability', result.scalability.score)
+        ]
+        worst_dims = sorted(dim_scores, key=lambda x: x[1])[:3]
+        
+        health_status = (
+            "excellent" if result.overall_score >= 80 else
+            "good" if result.overall_score >= 60 else
+            "needs improvement" if result.overall_score >= 40 else
+            "critical"
+        )
         
         summary = f"""## Executive Summary
 
-This analysis evaluated the HistoCore computational pathology project across 8 dimensions of software quality. The project achieved an **overall score of {result.overall_score:.1f}/100**, indicating {"excellent" if result.overall_score >= 80 else "good" if result.overall_score >= 60 else "needs improvement" if result.overall_score >= 40 else "critical"} health.
+This analysis evaluated the HistoCore computational pathology project across 8 dimensions of software quality. The project achieved an **overall score of {result.overall_score:.1f}/100**, indicating **{health_status}** health.
 
 ### Key Findings
 
@@ -131,7 +121,6 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
 - **Top concerns:** {', '.join([dim.replace('_', ' ').title() for dim, _ in worst_dims])}
 
 ### Immediate Actions Required
-
 """
         
         # Add top 3 critical issues
@@ -140,43 +129,23 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         return summary
     
-    def _generate_overall_metrics(self, result: AnalysisResult, summaries: Dict[str, Dict[str, Any]]) -> str:
-        """Generate overall metrics table."""
-        metrics = """## Overall Metrics
+    def _generate_key_metrics(self, result: AnalysisResult) -> str:
+        """Generate key metrics table."""
+        metrics = """## Key Metrics
 
-| Dimension | Score | Status | Key Metric |
-|-----------|-------|--------|------------|"""
+| Dimension | Score | Key Metric |
+|-----------|-------|------------|"""
         
-        for dim_name, summary in summaries.items():
-            score = summary['score']
-            status = summary['status'].replace('_', ' ').title()
-            
-            # Get key metric for each dimension
-            key_metric = self._get_key_metric(dim_name, summary)
-            
-            metrics += f"\n| {dim_name.replace('_', ' ').title()} | {score:.1f}/100 | {status} | {key_metric} |"
+        metrics += f"\n| Architecture | {result.architecture.score:.1f}/100 | {len(result.architecture.large_files)} large files |"
+        metrics += f"\n| Performance | {result.performance.score:.1f}/100 | {result.performance.gpu_utilization:.1f}% GPU utilization |"
+        metrics += f"\n| Coverage | {result.coverage.score:.1f}/100 | {result.coverage.line_coverage:.1f}% line coverage |"
+        metrics += f"\n| Code Quality | {result.code_quality.score:.1f}/100 | {result.code_quality.average_complexity:.1f} avg complexity |"
+        metrics += f"\n| Dependencies | {result.dependencies.score:.1f}/100 | {len(result.dependencies.vulnerabilities)} vulnerabilities |"
+        metrics += f"\n| Deployment | {result.deployment.score:.1f}/100 | {result.deployment.ci_cd_completeness:.1f}% CI/CD complete |"
+        metrics += f"\n| Security | {result.security.score:.1f}/100 | {len(result.security.vulnerabilities)} security issues |"
+        metrics += f"\n| Scalability | {result.scalability.score:.1f}/100 | DDP: {'✓' if result.scalability.ddp_correctness else '✗'} |"
         
         return metrics
-    
-    def _get_key_metric(self, dimension: str, summary: Dict[str, Any]) -> str:
-        """Get the most important metric for each dimension."""
-        if dimension == 'architecture':
-            return f"{summary['large_files_count']} large files"
-        elif dimension == 'performance':
-            return f"{summary['gpu_utilization']:.1f}% GPU utilization"
-        elif dimension == 'coverage':
-            return f"{summary['line_coverage']:.1f}% line coverage"
-        elif dimension == 'code_quality':
-            return f"{summary['average_complexity']:.1f} avg complexity"
-        elif dimension == 'dependencies':
-            return f"{summary['vulnerabilities_count']} vulnerabilities"
-        elif dimension == 'deployment':
-            return f"{summary['ci_cd_completeness']:.1f}% CI/CD complete"
-        elif dimension == 'security':
-            return f"{summary['vulnerabilities_count']} security issues"
-        elif dimension == 'scalability':
-            return f"DDP: {'✓' if summary['ddp_correctness'] else '✗'}"
-        return "N/A"
     
     def _generate_critical_issues(self, result: AnalysisResult) -> str:
         """Generate critical issues section."""
@@ -188,8 +157,8 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         # Build issues efficiently
         issue_lines = []
         for i, issue in enumerate(result.critical_issues, 1):
-            priority_emoji = "🔴" if issue.priority == Priority.P0 else "🟡"
-            severity_emoji = "🚨" if issue.severity == Severity.CRITICAL else "⚠️"
+            priority_emoji = "🔴" if issue.priority == Priority.P0 else "🟡" if issue.priority == Priority.P1 else "🟢"
+            severity_emoji = "🚨" if issue.severity == Severity.CRITICAL else "⚠️" if issue.severity == Severity.HIGH else "ℹ️"
             
             issue_lines.append(f"""### {i}. {issue.title} {priority_emoji} {severity_emoji}
 
@@ -207,11 +176,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         section += ''.join(issue_lines)
         return section
     
-    def _generate_architecture_section(self, arch, summary: Dict[str, Any]) -> str:
+    def _generate_architecture_section(self, result: AnalysisResult) -> str:
         """Generate architecture analysis section."""
+        arch = result.architecture
         section = f"""## Architecture Analysis
 
-**Score:** {arch.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {arch.score:.1f}/100
 
 ### Metrics
 - **Total Files:** {arch.total_files:,}
@@ -239,11 +209,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         return section
     
-    def _generate_performance_section(self, perf, summary: Dict[str, Any]) -> str:
+    def _generate_performance_section(self, result: AnalysisResult) -> str:
         """Generate performance analysis section."""
+        perf = result.performance
         section = f"""## Performance Analysis
 
-**Score:** {perf.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {perf.score:.1f}/100
 
 ### Metrics
 - **GPU Utilization:** {perf.gpu_utilization:.1f}%
@@ -256,10 +227,10 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         if perf.bottlenecks:
             for bottleneck in perf.bottlenecks[:10]:
-                func_name = bottleneck.get('function', 'unknown')
+                operation = bottleneck.get('operation', 'unknown')
                 time_ms = bottleneck.get('time_ms', 0)
-                file_path = bottleneck.get('file', 'unknown')
-                section += f"- `{func_name}` in `{file_path}` ({time_ms:.1f}ms)\n"
+                percentage = bottleneck.get('percentage', 0)
+                section += f"- `{operation}` ({time_ms:.1f}ms, {percentage:.1f}% of total)\n"
         else:
             section += "✅ No significant bottlenecks detected\n"
         
@@ -268,11 +239,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         return section
     
-    def _generate_coverage_section(self, cov, summary: Dict[str, Any]) -> str:
+    def _generate_coverage_section(self, result: AnalysisResult) -> str:
         """Generate coverage analysis section."""
+        cov = result.coverage
         section = f"""## Test Coverage Analysis
 
-**Score:** {cov.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {cov.score:.1f}/100
 
 ### Metrics
 - **Line Coverage:** {cov.line_coverage:.1f}%
@@ -304,11 +276,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         return section
     
-    def _generate_code_quality_section(self, qual, summary: Dict[str, Any]) -> str:
+    def _generate_code_quality_section(self, result: AnalysisResult) -> str:
         """Generate code quality section."""
+        qual = result.code_quality
         section = f"""## Code Quality Analysis
 
-**Score:** {qual.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {qual.score:.1f}/100
 
 ### Metrics
 - **Average Complexity:** {qual.average_complexity:.1f}
@@ -331,11 +304,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         return section
     
-    def _generate_dependencies_section(self, deps, summary: Dict[str, Any]) -> str:
+    def _generate_dependencies_section(self, result: AnalysisResult) -> str:
         """Generate dependencies section."""
+        deps = result.dependencies
         section = f"""## Dependencies Analysis
 
-**Score:** {deps.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {deps.score:.1f}/100
 
 ### Metrics
 - **Total Dependencies:** {deps.total_dependencies}
@@ -350,8 +324,8 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
             for vuln in deps.vulnerabilities[:10]:
                 package = vuln.get('package', 'unknown')
                 severity = vuln.get('severity', 'unknown')
-                cve = vuln.get('cve', 'N/A')
-                section += f"- `{package}` - {severity} ({cve})\n"
+                cve_id = vuln.get('cve_id', 'N/A')
+                section += f"- `{package}` - {severity} ({cve_id})\n"
         else:
             section += "✅ No security vulnerabilities detected\n"
         
@@ -362,11 +336,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         return section
     
-    def _generate_deployment_section(self, deploy, summary: Dict[str, Any]) -> str:
+    def _generate_deployment_section(self, result: AnalysisResult) -> str:
         """Generate deployment section."""
+        deploy = result.deployment
         return f"""## Deployment Analysis
 
-**Score:** {deploy.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {deploy.score:.1f}/100
 
 ### Metrics
 - **Dockerfile Score:** {deploy.dockerfile_score:.1f}/100
@@ -381,11 +356,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
 - Enhance CI/CD pipeline security
 """
     
-    def _generate_security_section(self, sec, summary: Dict[str, Any]) -> str:
+    def _generate_security_section(self, result: AnalysisResult) -> str:
         """Generate security section."""
+        sec = result.security
         section = f"""## Security Analysis
 
-**Score:** {sec.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {sec.score:.1f}/100
 
 ### Metrics
 - **Security Vulnerabilities:** {len(sec.vulnerabilities)}
@@ -406,18 +382,21 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         if sec.hardcoded_secrets:
             section += f"\n### Hardcoded Secrets ({len(sec.hardcoded_secrets)})\n"
             for secret in sec.hardcoded_secrets[:5]:
-                section += f"- `{secret}`\n"
+                secret_type = secret.get('type', 'unknown')
+                secret_file = secret.get('file', 'unknown')
+                section += f"- `{secret_type}` in `{secret_file}`\n"
         
         if not sec.vulnerabilities and not sec.hardcoded_secrets:
             section += "✅ No major security issues detected\n"
         
         return section
     
-    def _generate_scalability_section(self, scale, summary: Dict[str, Any]) -> str:
+    def _generate_scalability_section(self, result: AnalysisResult) -> str:
         """Generate scalability section."""
+        scale = result.scalability
         return f"""## Scalability Analysis
 
-**Score:** {scale.score:.1f}/100 ({summary['status'].replace('_', ' ').title()})
+**Score:** {scale.score:.1f}/100
 
 ### Metrics
 - **DDP Implementation:** {'✓ Correct' if scale.ddp_correctness else '✗ Issues detected'}
@@ -431,7 +410,7 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
 - {"Reduce communication overhead" if scale.communication_overhead_ms > 100 else "Communication overhead is acceptable"}
 """
     
-    def _generate_task_list(self, result: AnalysisResult, top_issues: Dict[str, List[Dict[str, Any]]]) -> str:
+    def _generate_task_list(self, result: AnalysisResult) -> str:
         """Generate prioritized task list."""
         section = """## Prioritized Task List
 
@@ -459,35 +438,15 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         else:
             section += "✅ No P1 tasks\n\n"
         
-        return section
-    
-    def _generate_recommendations(self, result: AnalysisResult, summaries: Dict[str, Dict[str, Any]]) -> str:
-        """Generate overall recommendations."""
-        recommendations = []
-        
-        # Score-based recommendations
-        if result.overall_score < 40:
-            recommendations.append("🚨 **Critical**: Immediate architectural review required")
-        elif result.overall_score < 60:
-            recommendations.append("⚠️ **High Priority**: Focus on security and testing improvements")
-        elif result.overall_score < 80:
-            recommendations.append("📈 **Medium Priority**: Optimize performance and code quality")
+        section += "### P2 - Medium Priority (Next Sprint)\n"
+        p2_tasks = [issue for issue in result.critical_issues if issue.priority == Priority.P2]
+        if p2_tasks:
+            task_lines = []
+            for i, task in enumerate(p2_tasks[:5], 1):  # Top 5
+                task_lines.append(f"{i}. **{task.title}** ({task.effort_hours:.1f}h, {task.role.value})\n")
+            section += ''.join(task_lines)
         else:
-            recommendations.append("✅ **Good Health**: Focus on continuous improvement")
-        
-        # Dimension-specific recommendations
-        if summaries['security']['score'] < 60:
-            recommendations.append("🔒 Prioritize security vulnerabilities and HIPAA compliance")
-        
-        if summaries['coverage']['score'] < 70:
-            recommendations.append("🧪 Increase test coverage, especially for critical paths")
-        
-        if summaries['performance']['score'] < 60:
-            recommendations.append("⚡ Address performance bottlenecks and GPU utilization")
-        
-        section = "## Recommendations\n\n"
-        section += '\n'.join(f"- {rec}" for rec in recommendations)
-        section += '\n'
+            section += "✅ No P2 tasks\n"
         
         return section
     
@@ -497,7 +456,8 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
 
 **Report generated by HistoCore Project Optimization Analysis System**  
 **Timestamp:** {result.timestamp}  
-**Analysis Duration:** {len(result.critical_issues)} issues analyzed across 8 dimensions
+**Git Commit:** `{result.git_commit}`  
+**Analysis Coverage:** {len(result.critical_issues)} issues analyzed across 8 dimensions
 
 For questions or support, please refer to the project documentation.
 """
@@ -545,11 +505,11 @@ For questions or support, please refer to the project documentation.
                     return output_path
                 else:
                     # Convert to HTML string
-                    result = subprocess.run([
+                    result_proc = subprocess.run([
                         'pandoc', md_file.name, '-t', 'html',
                         '--standalone'
                     ], capture_output=True, text=True, check=True)
-                    return result.stdout
+                    return result_proc.stdout
                     
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             logger.warning(f"Pandoc conversion failed: {e}")
@@ -559,13 +519,13 @@ For questions or support, please refer to the project documentation.
 <head>
     <title>HistoCore Analysis Report</title>
     <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; }}
+        body {{ font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }}
         h1, h2, h3 {{ color: #333; }}
-        table {{ border-collapse: collapse; width: 100%; }}
+        table {{ border-collapse: collapse; width: 100%; margin: 20px 0; }}
         th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
         th {{ background-color: #f2f2f2; }}
-        code {{ background-color: #f4f4f4; padding: 2px 4px; }}
-        pre {{ background-color: #f4f4f4; padding: 10px; overflow-x: auto; }}
+        code {{ background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; }}
+        pre {{ background-color: #f4f4f4; padding: 10px; overflow-x: auto; border-radius: 5px; }}
     </style>
 </head>
 <body>
@@ -598,7 +558,7 @@ For questions or support, please refer to the project documentation.
             html_content = self.generate_html(result)
             
             # Convert HTML to PDF using weasyprint or pandoc
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as html_file:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as html_file:
                 html_file.write(html_content)
                 html_file.flush()
                 
