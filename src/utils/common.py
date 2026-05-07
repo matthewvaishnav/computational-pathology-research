@@ -147,10 +147,16 @@ def retry_on_failure(
                 except exceptions as e:
                     last_exception = e
                     if attempt == max_retries:
-                        logger.error(f"Function {func.__name__} failed after {max_retries} retries: {e}")
+                        logger.error(
+                            "Function %s failed after %d retries: %s",
+                            func.__name__, max_retries, e
+                        )
                         raise
                     
-                    logger.warning(f"Function {func.__name__} failed (attempt {attempt + 1}/{max_retries + 1}): {e}. Retrying in {current_delay}s")
+                    logger.warning(
+                        "Function %s failed (attempt %d/%d): %s. Retrying in %ss",
+                        func.__name__, attempt + 1, max_retries + 1, e, current_delay
+                    )
                     time.sleep(current_delay)
                     current_delay *= backoff_factor
             
