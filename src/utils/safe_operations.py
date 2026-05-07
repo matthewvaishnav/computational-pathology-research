@@ -23,9 +23,10 @@ from collections import deque
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Optional, Tuple
 
 import psutil
+import requests
 import torch
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -230,7 +231,7 @@ def check_disk_space(filepath: Path, required_bytes: int, buffer_factor: float =
         raise ResourceError(f"Failed to check disk space: {e}") from e
 
 
-def atomic_write(filepath: Path, data: Any, mode: str = 'json'):
+def atomic_write(filepath: Path, data: Any, mode: str = 'json') -> None:
     """
     Atomic file write to prevent corruption.
     
@@ -287,7 +288,7 @@ def atomic_write(filepath: Path, data: Any, mode: str = 'json'):
         raise DataSaveError(f"Atomic write failed: {e}") from e
 
 
-def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs: Optional[list[Path]] = None):
+def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs: Optional[list[Path]] = None) -> bool:
     """
     Safe file deletion with optional archival and path validation.
     
@@ -429,7 +430,7 @@ def create_verified_backup(source: Path, backup: Path) -> bool:
 
 
 @contextmanager
-def safe_db_transaction(db_path: Path):
+def safe_db_transaction(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
     """
     Context manager for safe database transactions.
     
@@ -469,7 +470,7 @@ def safe_db_transaction(db_path: Path):
     wait=wait_exponential(multiplier=1, min=4, max=10),
     reraise=True
 )
-def fetch_with_retry(url: str, timeout: int = 30, **kwargs):
+def fetch_with_retry(url: str, timeout: int = 30, **kwargs) -> requests.Response:
     """
     Fetch URL with exponential backoff retry.
     
