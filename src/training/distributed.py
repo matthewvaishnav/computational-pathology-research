@@ -232,7 +232,7 @@ def load_checkpoint_distributed(
     return checkpoint
 
 
-def synchronize():
+def synchronize() -> None:
     """Synchronize all processes in distributed training."""
     if dist.is_available() and dist.is_initialized():
         dist.barrier()

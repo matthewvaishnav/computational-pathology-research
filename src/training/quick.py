@@ -198,12 +198,12 @@ class QuickTrainer:
         
         return results
 
-def train(dataset="pcam", model="nnmil", epochs=10, **kwargs):
+def train(dataset: str = "pcam", model: str = "nnmil", epochs: int = 10, **kwargs) -> dict:
     """Simple training function."""
     trainer = QuickTrainer(dataset=dataset, model=model, epochs=epochs, **kwargs)
     return trainer.train()
 
-def evaluate(checkpoint_path, dataset="pcam", output_dir="results/"):
+def evaluate(checkpoint_path: str, dataset: str = "pcam", output_dir: str = "results/") -> dict:
     """Evaluate a trained model."""
     # Implementation would go here
     # For now, return dummy results
