@@ -7,7 +7,7 @@ import os
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError, validator
@@ -274,16 +274,16 @@ def get_config() -> HistoCoreConfig:
     return get_config_manager().get()
 
 
-def reload_config():
+def reload_config() -> Dict[str, Any]:
     """Reload config from file."""
     return get_config_manager().load()
 
 
-def update_config(updates: Dict[str, Any]):
+def update_config(updates: Dict[str, Any]) -> None:
     """Update config values."""
     get_config_manager().update(updates)
 
 
-def watch_config(callback):
+def watch_config(callback: Callable[[Dict[str, Any]], None]) -> None:
     """Watch config changes."""
     get_config_manager().watch(callback)
