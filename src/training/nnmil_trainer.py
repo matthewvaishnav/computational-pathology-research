@@ -558,12 +558,18 @@ class nnMILTrainer:
         if not self.training_history['train_loss']:
             return {}
         
+        final_val_metric = (
+            self.training_history['val_metric'][-1]
+            if self.training_history['val_metric']
+            else None
+        )
+        
         return {
             'total_epochs': len(self.training_history['train_loss']),
             'best_metric': self.best_metric,
             'final_train_loss': self.training_history['train_loss'][-1],
             'final_val_loss': self.training_history['val_loss'][-1] if self.training_history['val_loss'] else None,
-            'final_val_metric': self.training_history['val_metric'][-1] if self.training_history['val_metric'] else None,
+            'final_val_metric': final_val_metric,
             'total_training_time': sum(self.training_history['epoch_time']),
             'avg_epoch_time': sum(self.training_history['epoch_time']) / len(self.training_history['epoch_time'])
         }
