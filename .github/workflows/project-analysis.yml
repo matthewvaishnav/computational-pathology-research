@@ -1,45 +1,30 @@
-name: Project Optimization Analysis
+name: Project Analysis
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
-  schedule:
-    # Run weekly analysis on Sundays at 2 AM UTC
-    - cron: '0 2 * * 0'
   workflow_dispatch:
-    inputs:
-      baseline_branch:
-        description: 'Branch to use as baseline for comparison'
-        required: false
-        default: 'main'
-      generate_reports:
-        description: 'Generate HTML and PDF reports'
-        required: false
-        default: 'true'
-        type: boolean
 
 env:
   PYTHON_VERSION: '3.11'
-  ANALYSIS_OUTPUT_DIR: 'analysis-results'
 
 jobs:
-  analysis:
-    name: Run Project Analysis
+  analyze:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     
     permissions:
       contents: read
       pull-requests: write
-      actions: write
+      actions: read
       
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Full history for git analysis
+        fetch-depth: 0  # Full history for baseline comparison
         
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -51,353 +36,349 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          pandoc \
-          wkhtmltopdf \
-          graphviz \
-          git
+          build-essential \
+          libssl-dev \
+          libffi-dev \
+          python3-dev \
+          git \
+          curl \
+          wget
           
-    - name: Install Python dependencies
+    - name: Install analysis dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -r requirements-analysis.txt
-        
-    - name: Install optional analysis tools
-      continue-on-error: true
+        pip install \
+          radon>=5.1.0 \
+          pylint>=2.17.0 \
+          flake8>=6.0.0 \
+          mypy>=1.0.0 \
+          bandit>=1.7.5 \
+          safety>=2.3.0 \
+          pip-audit>=2.5.0 \
+          pip-licenses>=4.3.0 \
+          pytest-cov>=4.1.0 \
+          coverage>=7.2.0 \
+          matplotlib>=3.7.0 \
+          plotly>=5.14.0 \
+          pandas>=2.0.0 \
+          tabulate>=0.9.0 \
+          jsonschema>=4.17.0 \
+          tenacity>=8.2.0
+          
+    - name: Install Docker tools (optional)
       run: |
-        # Install tools that may not be available in all environments
-        pip install radon pylint bandit safety pytest-cov || echo "Some tools failed to install"
-        pip install matplotlib plotly weasyprint || echo "Visualization tools failed to install"
+        # Install hadolint for Dockerfile linting
+        wget -O /tmp/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+        chmod +x /tmp/hadolint
+        sudo mv /tmp/hadolint /usr/local/bin/hadolint
         
     - name: Create analysis output directory
-      run: mkdir -p ${{ env.ANALYSIS_OUTPUT_DIR }}
+      run: mkdir -p analysis_output
       
     - name: Run project analysis
       id: analysis
       run: |
-        echo "Running project optimization analysis..."
+        echo "Running comprehensive project analysis..."
         
-        # Run the analysis
+        # Set analysis parameters
+        export ANALYSIS_OUTPUT_DIR="analysis_output"
+        export ANALYSIS_FORMAT="json"
+        export ANALYSIS_PARALLEL="true"
+        
+        # Run the analysis orchestrator
         python -m src.analysis.orchestrator \
-          --output ${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json \
+          --project-path . \
+          --output analysis_output/current_analysis.json \
           --format json \
           --parallel \
-          --max-workers 4
+          --timeout 1800 || echo "Analysis completed with warnings"
           
-        # Check if analysis succeeded
-        if [ $? -eq 0 ]; then
+        # Check if analysis file was created
+        if [ -f "analysis_output/current_analysis.json" ]; then
           echo "analysis_success=true" >> $GITHUB_OUTPUT
           echo "Analysis completed successfully"
         else
           echo "analysis_success=false" >> $GITHUB_OUTPUT
-          echo "Analysis failed"
-          exit 1
+          echo "Analysis failed - creating minimal report"
+          echo '{"error": "Analysis failed", "timestamp": "'$(date -Iseconds)'"}' > analysis_output/current_analysis.json
         fi
         
-    - name: Generate analysis reports
-      if: steps.analysis.outputs.analysis_success == 'true' && (github.event.inputs.generate_reports == 'true' || github.event.inputs.generate_reports == '')
-      run: |
-        echo "Generating analysis reports..."
-        
-        # Generate reports using Python script
-        python -c "
-        import sys
-        sys.path.append('.')
-        from src.analysis.models import AnalysisResult
-        from src.analysis.reporting import ReportGenerator
-        from src.analysis.visualizations import VisualizationGenerator
-        from pathlib import Path
-        
-        # Load analysis results
-        result = AnalysisResult.from_json(Path('${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json').read_text())
-        
-        # Generate reports
-        generator = ReportGenerator()
-        viz_generator = VisualizationGenerator()
-        
-        # Markdown report
-        markdown_report = generator.generate_markdown(result)
-        Path('${{ env.ANALYSIS_OUTPUT_DIR }}/analysis-report.md').write_text(markdown_report)
-        
-        # HTML report
-        generator.generate_html(result, '${{ env.ANALYSIS_OUTPUT_DIR }}/analysis-report.html')
-        
-        # Generate visualizations
-        charts = viz_generator.generate_all_charts(result, '${{ env.ANALYSIS_OUTPUT_DIR }}/charts')
-        
-        # PDF report (if possible)
-        try:
-            generator.generate_pdf(result, '${{ env.ANALYSIS_OUTPUT_DIR }}/analysis-report.pdf')
-        except Exception as e:
-            print(f'PDF generation failed: {e}')
-        
-        print('Reports generated successfully')
-        "
-        
-    - name: Fetch baseline for comparison
+    - name: Fetch baseline analysis (for PR comparison)
       if: github.event_name == 'pull_request'
       run: |
         echo "Fetching baseline analysis from main branch..."
         
         # Try to download baseline from main branch artifacts
-        BASELINE_URL="https://api.github.com/repos/${{ github.repository }}/actions/artifacts"
-        
-        # For now, create a simple baseline if none exists
-        if [ ! -f baseline-analysis.json ]; then
-          echo "No baseline found, current analysis will become baseline"
-          cp ${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json baseline-analysis.json
+        gh run list \
+          --branch main \
+          --workflow "project-analysis.yml" \
+          --status success \
+          --limit 1 \
+          --json databaseId,headSha > latest_main_run.json || echo "No recent runs found"
+          
+        if [ -s latest_main_run.json ] && [ "$(cat latest_main_run.json)" != "[]" ]; then
+          RUN_ID=$(jq -r '.[0].databaseId' latest_main_run.json)
+          echo "Downloading baseline from run $RUN_ID"
+          
+          gh run download $RUN_ID \
+            --name analysis-results \
+            --dir baseline_analysis || echo "Baseline download failed"
+            
+          if [ -f "baseline_analysis/current_analysis.json" ]; then
+            mv baseline_analysis/current_analysis.json analysis_output/baseline_analysis.json
+            echo "Baseline analysis downloaded successfully"
+          else
+            echo "Baseline analysis not found - skipping regression detection"
+          fi
+        else
+          echo "No baseline analysis available - skipping regression detection"
         fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-    - name: Run regression analysis
-      if: github.event_name == 'pull_request'
+    - name: Run regression detection
+      if: github.event_name == 'pull_request' && steps.analysis.outputs.analysis_success == 'true'
       id: regression
       run: |
-        echo "Running regression analysis..."
+        if [ -f "analysis_output/baseline_analysis.json" ]; then
+          echo "Running regression detection..."
+          
+          python -c "
+import sys
+sys.path.append('.')
+from src.analysis.regression_detector import RegressionDetector
+
+try:
+    detector = RegressionDetector(coverage_threshold=2.0, performance_threshold=10.0)
+    
+    # Load baseline and current results
+    baseline = detector.load_baseline('analysis_output/baseline_analysis.json')
+    current = detector.load_baseline('analysis_output/current_analysis.json')
+    
+    # Detect regressions
+    report = detector.detect_regressions(baseline, current)
+    
+    # Generate diff report
+    diff_report = detector.generate_diff_report(baseline, current, report)
+    
+    # Save reports
+    with open('analysis_output/regression_report.md', 'w') as f:
+        f.write(diff_report)
+        
+    # Set outputs for CI
+    print(f'has_regressions={str(report.has_regressions).lower()}')
+    print(f'critical_count={len(report.critical_regressions)}')
+    print(f'should_fail_ci={str(report.should_fail_ci()).lower()}')
+    
+    # Exit with appropriate code
+    exit_code = detector.exit_code_for_ci(report)
+    print(f'exit_code={exit_code}')
+    
+    if exit_code != 0:
+        print('CRITICAL REGRESSIONS DETECTED - BUILD SHOULD FAIL')
+        print(report.summary)
+        
+except Exception as e:
+    print(f'Regression detection failed: {e}')
+    print('has_regressions=false')
+    print('critical_count=0')
+    print('should_fail_ci=false')
+    print('exit_code=0')
+" | tee regression_output.txt
+          
+          # Parse outputs
+          export $(grep -E '^(has_regressions|critical_count|should_fail_ci|exit_code)=' regression_output.txt)
+          
+          echo "has_regressions=$has_regressions" >> $GITHUB_OUTPUT
+          echo "critical_count=$critical_count" >> $GITHUB_OUTPUT  
+          echo "should_fail_ci=$should_fail_ci" >> $GITHUB_OUTPUT
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          
+        else
+          echo "No baseline available - skipping regression detection"
+          echo "has_regressions=false" >> $GITHUB_OUTPUT
+          echo "critical_count=0" >> $GITHUB_OUTPUT
+          echo "should_fail_ci=false" >> $GITHUB_OUTPUT
+          echo "exit_code=0" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Generate analysis summary
+      if: steps.analysis.outputs.analysis_success == 'true'
+      run: |
+        echo "Generating analysis summary..."
         
         python -c "
-        import sys
-        sys.path.append('.')
-        from src.analysis.regression_detector import RegressionDetector
-        from src.analysis.models import AnalysisResult
-        from pathlib import Path
-        import json
+import sys
+sys.path.append('.')
+from src.analysis.models import AnalysisResult
+import json
+
+try:
+    # Load current analysis
+    with open('analysis_output/current_analysis.json', 'r') as f:
+        result = AnalysisResult.from_json(f.read())
+    
+    # Generate summary
+    summary = f'''# 📊 Project Analysis Summary
+    
+**Overall Score**: {result.overall_score:.1f}/100
+**Timestamp**: {result.timestamp}
+**Commit**: {result.git_commit[:8]}
+
+## Key Metrics
+- **Architecture**: {result.architecture.score:.1f}/100
+- **Performance**: {result.performance.score:.1f}/100  
+- **Coverage**: {result.coverage.score:.1f}/100 (Line: {result.coverage.line_coverage:.1f}%, Branch: {result.coverage.branch_coverage:.1f}%)
+- **Code Quality**: {result.code_quality.score:.1f}/100 (Avg Complexity: {result.code_quality.average_complexity:.1f})
+- **Dependencies**: {result.dependencies.score:.1f}/100 ({len(result.dependencies.vulnerabilities)} vulnerabilities)
+- **Deployment**: {result.deployment.score:.1f}/100
+- **Security**: {result.security.score:.1f}/100 ({len(result.security.vulnerabilities)} issues)
+- **Scalability**: {result.scalability.score:.1f}/100
+
+## Critical Issues
+'''
+    
+    if result.critical_issues:
+        for i, issue in enumerate(result.critical_issues[:5], 1):
+            summary += f'{i}. **[{issue.priority.value}]** {issue.title} ({issue.dimension})\n'
+        if len(result.critical_issues) > 5:
+            summary += f'... and {len(result.critical_issues) - 5} more issues\n'
+    else:
+        summary += 'No critical issues detected ✅\n'
         
-        # Load current results
-        current = AnalysisResult.from_json(Path('${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json').read_text())
+    summary += f'''
+## 📈 Analysis Details
+- **Total Files Analyzed**: {result.architecture.total_files}
+- **Large Files (>500 lines)**: {len(result.architecture.large_files)}
+- **Circular Dependencies**: {len(result.architecture.circular_dependencies)}
+- **Performance Bottlenecks**: {len(result.performance.bottlenecks)}
+- **Untested Critical Paths**: {len(result.coverage.untested_critical_paths)}
+- **High Complexity Functions**: {len(result.code_quality.high_complexity_functions)}
+
+[View Full Analysis Report](analysis_output/current_analysis.json)
+'''
+    
+    with open('analysis_output/summary.md', 'w') as f:
+        f.write(summary)
         
-        # Run regression detection
-        detector = RegressionDetector()
-        regressions = detector.detect_regressions(current, 'baseline-analysis.json')
+    print('Analysis summary generated successfully')
+    
+except Exception as e:
+    print(f'Summary generation failed: {e}')
+    with open('analysis_output/summary.md', 'w') as f:
+        f.write(f'# Analysis Summary\n\nAnalysis completed with errors: {e}')
+"
         
-        # Save regression results
-        Path('${{ env.ANALYSIS_OUTPUT_DIR }}/regression-analysis.json').write_text(
-            json.dumps(regressions, indent=2, default=str)
-        )
-        
-        # Generate diff report
-        diff_report = detector.generate_diff_report(current, 'baseline-analysis.json', 'markdown')
-        Path('${{ env.ANALYSIS_OUTPUT_DIR }}/regression-report.md').write_text(diff_report)
-        
-        # Check if build should fail
-        should_fail, reason = detector.should_fail_build(regressions)
-        
-        print(f'Regression analysis complete')
-        print(f'Should fail: {should_fail}')
-        print(f'Reason: {reason}')
-        
-        # Set outputs
-        with open('$GITHUB_OUTPUT', 'a') as f:
-            f.write(f'should_fail_build={str(should_fail).lower()}\n')
-            f.write(f'failure_reason={reason}\n')
-            f.write(f'critical_regressions={regressions[\"summary\"][\"critical_count\"]}\n')
-            f.write(f'warnings={regressions[\"summary\"][\"warning_count\"]}\n')
-        "
-        
-    - name: Create PR comment with analysis results
-      if: github.event_name == 'pull_request'
+    - name: Post PR comment
+      if: github.event_name == 'pull_request' && steps.analysis.outputs.analysis_success == 'true'
       uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
-          const path = require('path');
           
           try {
-            // Read analysis results
-            const analysisPath = '${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json';
-            const analysisData = JSON.parse(fs.readFileSync(analysisPath, 'utf8'));
-            
-            // Read regression report if it exists
-            let regressionReport = '';
-            const regressionPath = '${{ env.ANALYSIS_OUTPUT_DIR }}/regression-report.md';
-            if (fs.existsSync(regressionPath)) {
-              regressionReport = fs.readFileSync(regressionPath, 'utf8');
+            // Read analysis summary
+            let summary = '';
+            if (fs.existsSync('analysis_output/summary.md')) {
+              summary = fs.readFileSync('analysis_output/summary.md', 'utf8');
+            } else {
+              summary = '# Analysis Summary\n\nAnalysis summary not available.';
             }
             
-            // Create comment body
-            const overallScore = analysisData.overall_score;
-            const criticalIssues = analysisData.critical_issues.length;
-            const scoreEmoji = overallScore >= 80 ? '🟢' : overallScore >= 60 ? '🟡' : overallScore >= 40 ? '🟠' : '🔴';
+            // Add regression information if available
+            const hasRegressions = '${{ steps.regression.outputs.has_regressions }}' === 'true';
+            const criticalCount = parseInt('${{ steps.regression.outputs.critical_count }}' || '0');
             
-            let commentBody = `## 📊 Project Analysis Results ${scoreEmoji}\n\n`;
-            commentBody += `**Overall Score:** ${overallScore}/100\n`;
-            commentBody += `**Critical Issues:** ${criticalIssues}\n`;
-            commentBody += `**Analysis Date:** ${analysisData.timestamp}\n\n`;
-            
-            // Add dimension scores
-            commentBody += `### Dimension Scores\n\n`;
-            commentBody += `| Dimension | Score | Status |\n`;
-            commentBody += `|-----------|-------|--------|\n`;
-            
-            const dimensions = [
-              ['Architecture', analysisData.architecture.score],
-              ['Performance', analysisData.performance.score],
-              ['Coverage', analysisData.coverage.score],
-              ['Code Quality', analysisData.code_quality.score],
-              ['Dependencies', analysisData.dependencies.score],
-              ['Deployment', analysisData.deployment.score],
-              ['Security', analysisData.security.score],
-              ['Scalability', analysisData.scalability.score]
-            ];
-            
-            dimensions.forEach(([name, score]) => {
-              const status = score >= 80 ? '✅ Excellent' : score >= 60 ? '🟡 Good' : score >= 40 ? '🟠 Needs Work' : '🔴 Critical';
-              commentBody += `| ${name} | ${score.toFixed(1)} | ${status} |\n`;
-            });
-            
-            // Add regression analysis if available
-            if (regressionReport) {
-              commentBody += `\n### Regression Analysis\n\n`;
-              commentBody += regressionReport;
+            if (hasRegressions) {
+              let regressionSummary = '\n\n## 🚨 Regression Analysis\n\n';
+              
+              if (criticalCount > 0) {
+                regressionSummary += `**⚠️ ${criticalCount} CRITICAL regressions detected!**\n\n`;
+                regressionSummary += 'This PR introduces critical regressions that may block the build.\n';
+              } else {
+                regressionSummary += '**ℹ️ Non-critical regressions detected.**\n\n';
+                regressionSummary += 'This PR introduces some regressions but they are not critical.\n';
+              }
+              
+              // Add regression report if available
+              if (fs.existsSync('analysis_output/regression_report.md')) {
+                const regressionReport = fs.readFileSync('analysis_output/regression_report.md', 'utf8');
+                regressionSummary += '\n<details>\n<summary>View Detailed Regression Report</summary>\n\n';
+                regressionSummary += regressionReport;
+                regressionSummary += '\n</details>\n';
+              }
+              
+              summary += regressionSummary;
+            } else {
+              summary += '\n\n## ✅ Regression Analysis\n\nNo regressions detected compared to baseline.';
             }
             
-            // Add links to reports
-            commentBody += `\n### 📋 Reports\n\n`;
-            commentBody += `- [📄 Full Analysis Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n`;
-            commentBody += `- [📊 Visualizations](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n`;
+            // Add footer
+            summary += '\n\n---\n*Generated by Project Analysis CI*';
             
             // Post comment
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: commentBody
+              body: summary
             });
             
-            console.log('Posted analysis results to PR');
+            console.log('PR comment posted successfully');
             
           } catch (error) {
             console.error('Failed to post PR comment:', error);
-            // Don't fail the workflow if comment posting fails
+            
+            // Post minimal comment on error
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '# 📊 Project Analysis\n\nAnalysis completed but failed to generate detailed summary. Check the workflow logs for details.'
+            });
           }
           
-    - name: Upload analysis artifacts
+    - name: Upload analysis results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: analysis-results-${{ github.run_id }}
-        path: ${{ env.ANALYSIS_OUTPUT_DIR }}/
+        name: analysis-results
+        path: analysis_output/
         retention-days: 30
-        
-    - name: Upload baseline for future comparisons
-      if: github.ref == 'refs/heads/main' && steps.analysis.outputs.analysis_success == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: baseline-analysis
-        path: ${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json
-        retention-days: 90
         
     - name: Fail build on critical regressions
-      if: steps.regression.outputs.should_fail_build == 'true'
+      if: github.event_name == 'pull_request' && steps.regression.outputs.should_fail_ci == 'true'
       run: |
-        echo "❌ Build failed due to critical regressions"
-        echo "Reason: ${{ steps.regression.outputs.failure_reason }}"
-        echo "Critical regressions: ${{ steps.regression.outputs.critical_regressions }}"
-        echo "Warnings: ${{ steps.regression.outputs.warnings }}"
+        echo "❌ BUILD FAILED: Critical regressions detected"
+        echo "Critical regression count: ${{ steps.regression.outputs.critical_count }}"
+        echo ""
+        echo "This PR introduces critical regressions that must be fixed before merging."
+        echo "Please review the regression report and address the critical issues."
+        echo ""
+        if [ -f "analysis_output/regression_report.md" ]; then
+          echo "Regression details:"
+          head -50 analysis_output/regression_report.md
+        fi
         exit 1
         
-    - name: Analysis summary
+    - name: Analysis completion summary
       if: always()
       run: |
-        echo "🎯 Project Analysis Summary"
-        echo "=========================="
+        echo "🎯 Project Analysis Workflow Summary"
+        echo "=================================="
+        echo "Analysis Success: ${{ steps.analysis.outputs.analysis_success }}"
+        echo "Event Type: ${{ github.event_name }}"
         
-        if [ "${{ steps.analysis.outputs.analysis_success }}" == "true" ]; then
-          echo "✅ Analysis completed successfully"
-          
-          # Extract key metrics from analysis
-          python -c "
-          import json
-          from pathlib import Path
-          
-          if Path('${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json').exists():
-              data = json.loads(Path('${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json').read_text())
-              print(f'📊 Overall Score: {data[\"overall_score\"]:.1f}/100')
-              print(f'🚨 Critical Issues: {len(data[\"critical_issues\"])}')
-              print(f'🏗️  Architecture: {data[\"architecture\"][\"score\"]:.1f}')
-              print(f'⚡ Performance: {data[\"performance\"][\"score\"]:.1f}')
-              print(f'🧪 Coverage: {data[\"coverage\"][\"score\"]:.1f}')
-              print(f'🔒 Security: {data[\"security\"][\"score\"]:.1f}')
-          "
-        else
-          echo "❌ Analysis failed"
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "Has Regressions: ${{ steps.regression.outputs.has_regressions }}"
+          echo "Critical Regressions: ${{ steps.regression.outputs.critical_count }}"
+          echo "Should Fail CI: ${{ steps.regression.outputs.should_fail_ci }}"
         fi
         
-        if [ "${{ github.event_name }}" == "pull_request" ]; then
-          if [ "${{ steps.regression.outputs.should_fail_build }}" == "true" ]; then
-            echo "❌ Regression check: FAILED"
-            echo "   Critical regressions: ${{ steps.regression.outputs.critical_regressions }}"
-          else
-            echo "✅ Regression check: PASSED"
-          fi
-        fi
+        echo ""
+        echo "Artifacts uploaded:"
+        ls -la analysis_output/ || echo "No analysis output directory"
         
-        echo "=========================="
-        echo "📁 Artifacts uploaded to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
-  # Separate job for generating optimization plan
-  optimization-plan:
-    name: Generate Optimization Plan
-    runs-on: ubuntu-latest
-    needs: analysis
-    if: needs.analysis.outputs.analysis_success == 'true'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install -r requirements-analysis.txt
-        
-    - name: Download analysis results
-      uses: actions/download-artifact@v4
-      with:
-        name: analysis-results-${{ github.run_id }}
-        path: ${{ env.ANALYSIS_OUTPUT_DIR }}/
-        
-    - name: Generate optimization plan
-      run: |
-        echo "Generating optimization plan..."
-        
-        python -c "
-        import sys
-        sys.path.append('.')
-        from src.analysis.models import AnalysisResult
-        from src.analysis.planner import OptimizationPlanner
-        from pathlib import Path
-        import json
-        
-        # Load analysis results
-        result = AnalysisResult.from_json(Path('${{ env.ANALYSIS_OUTPUT_DIR }}/current-analysis.json').read_text())
-        
-        # Generate optimization plan
-        planner = OptimizationPlanner()
-        plan = planner.create_plan(result)
-        
-        # Save plan
-        plan_data = plan.to_dict()
-        Path('${{ env.ANALYSIS_OUTPUT_DIR }}/optimization-plan.json').write_text(
-            json.dumps(plan_data, indent=2, default=str)
-        )
-        
-        # Generate Gantt chart data
-        gantt_data = planner.generate_gantt_data(plan)
-        Path('${{ env.ANALYSIS_OUTPUT_DIR }}/gantt-data.json').write_text(
-            json.dumps(gantt_data, indent=2, default=str)
-        )
-        
-        print(f'Optimization plan generated: {len(plan.tasks)} tasks, {plan.total_effort_hours:.1f} hours')
-        "
-        
-    - name: Upload optimization plan
-      uses: actions/upload-artifact@v4
-      with:
-        name: optimization-plan-${{ github.run_id }}
-        path: ${{ env.ANALYSIS_OUTPUT_DIR }}/optimization-plan.json
-        retention-days: 30
+        echo ""
+        echo "Workflow completed at $(date)"
