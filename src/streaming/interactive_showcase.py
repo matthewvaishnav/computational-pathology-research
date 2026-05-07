@@ -7,6 +7,7 @@ Features live processing, real-time visualization, and interactive controls.
 
 import asyncio
 import json
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -19,6 +20,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .demo_scenarios import DemoDataGenerator, DemoScenario, DemoScenarioRunner, SyntheticSlide
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="HistoCore Interactive Showcase",
@@ -603,13 +606,13 @@ def run_showcase(host: str = "0.0.0.0", port: int = 8000, gpu_ids: List[int] = [
     global demo_runner
     demo_runner = DemoScenarioRunner(gpu_ids=gpu_ids)
 
-    print("\n" + "=" * 60)
-    print("HISTOCORE INTERACTIVE SHOWCASE")
-    print("=" * 60)
-    print(f"\nStarting server on http://{host}:{port}")
-    print(f"GPU IDs: {gpu_ids}")
-    print("\nOpen your browser and navigate to the URL above")
-    print("Press Ctrl+C to stop\n")
+    logger.info("=" * 60)
+    logger.info("HISTOCORE INTERACTIVE SHOWCASE")
+    logger.info("=" * 60)
+    logger.info("Starting server on http://%s:%d", host, port)
+    logger.info("GPU IDs: %s", gpu_ids)
+    logger.info("Open your browser and navigate to the URL above")
+    logger.info("Press Ctrl+C to stop")
 
     uvicorn.run(app, host=host, port=port)
 
