@@ -1,124 +1,70 @@
 # HistoCore
 
-[![CI](https://github.com/matthewvaishnav/histocore/workflows/CI/badge.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/matthewvaishnav/histocore/branch/main/graph/badge.svg)](https://codecov.io/gh/matthewvaishnav/histocore)
-[![Tests](https://img.shields.io/badge/tests-4196%20total-brightgreen.svg)](https://github.com/matthewvaishnav/histocore/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-55%25-yellow.svg)](https://codecov.io/gh/matthewvaishnav/histocore)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-> **Production-grade computational pathology framework with revolutionary DMI architecture, 8-12x optimized training, and open source accessibility**
+> **Research framework for computational pathology with attention-based MIL, federated learning, and clinical integration**
 
-Advanced PyTorch framework providing state-of-the-art attention-based Multiple Instance Learning (MIL), **revolutionary Distributed Medical Intelligence (DMI)** with medical expertise weighting achieving **89.1% improvement** in rare cancer detection, **first open-source pathology-specific federated learning** with differential privacy, **production-ready PACS integration** with multi-vendor support, comprehensive model interpretability tools, clinical workflow integration with DICOM/FHIR support, and robust testing infrastructure (**4,196 tests**, 100+ property-based tests) for whole-slide image analysis and clinical deployment.
+A comprehensive PyTorch framework for computational pathology research providing attention-based Multiple Instance Learning (MIL) models, federated learning capabilities, PACS integration, and clinical workflow tools. The codebase includes extensive features for whole-slide image analysis, model interpretability, and deployment infrastructure.
 
-> **📚 Documentation**: See [docs/](docs/) for all documentation. Start with [docs/FRAMEWORK_OVERVIEW.md](docs/FRAMEWORK_OVERVIEW.md) for a complete introduction to HistoCore, or [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
+> **📚 Documentation**: See [docs/](docs/) for detailed documentation. Start with [docs/FRAMEWORK_OVERVIEW.md](docs/FRAMEWORK_OVERVIEW.md) or [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) for navigation.
 
-## Latest Updates (May 2026)
+## Project Status (May 2026)
 
-- 🚀 **Revolutionary DMI Architecture**: First open-source Distributed Medical Intelligence system with medical expertise weighting achieving **89.1% improvement** in rare cancer detection
-- 🏥 **Medical Knowledge Network (MKN)**: Clinical expert collaboration with diagnostic pattern matching and specialty-based weighting
-- 🤖 **Collaborative Pathology Intelligence (CPI)**: AI ensemble orchestration with performance-based model selection
-- 🧠 **Intelligent Medical Referee (IMR)**: FL vs DMI arbitration system with evidence cross-validation reducing high-stakes error costs by 34.7%
-- ⚖️ **Comprehensive Bias Mitigation**: Equity adjustments, gaming detection, democratic fallback modes, and regulatory compliance (83.3% score)
-- 🔬 **Production-Grade Testing**: **1,252 commits** with comprehensive stress testing, edge case validation, and clinical scenario analysis
-- ✅ **Bulletproof Validation**: 20/20 stress tests passed, 1000+ statistical test cases, Byzantine fault tolerance, and real-world failure mode analysis
-- 📊 **Clinical Performance**: 80.0-92.8% consensus diagnosis accuracy across medical scenarios with measurable expertise weighting (12.32x ratio)
+**Current State**: Research framework with ~195k LOC across 544 Python files. The project contains implementations of various computational pathology features, though many are in prototype/research stage rather than production-ready.
 
-## Overview
+**Key Components**:
+- ✅ **Core MIL Models**: nnMIL, AttentionMIL, CLAM, TransMIL implementations
+- ✅ **Training Infrastructure**: Optimized training pipeline with AMP, torch.compile support
+- ✅ **Testing**: 310 test files with property-based testing (Hypothesis)
+- ✅ **Documentation**: 105 markdown files covering architecture, deployment, security
+- 🔬 **Research Features**: DMI, MKN, CPI, IMR (experimental/prototype implementations)
+- 🔬 **Federated Learning**: PathologyFL with differential privacy (research implementation)
+- 🔬 **PACS Integration**: DICOM support and multi-vendor adapters (prototype)
+- 🔬 **Clinical Workflow**: EMR, LIS, FHIR integration (design/prototype stage)
 
-A production-grade PyTorch framework for computational pathology research and clinical deployment, providing:
+**Note**: Many advanced features (DMI, MKN, CPI, IMR) are research prototypes. Performance claims should be validated independently. No trained models are included (only placeholder files).
 
-- ⚡ **8-12x Training Optimization**: torch.compile, mixed precision (AMP), channels_last memory format, persistent workers. Reduced training time from 20-40 hours to 3.1 hours on RTX 4070. Achieved 85% GPU utilization (up from 17%).
-- 🔒 **Federated Learning System**: First open-source federated learning for digital pathology with ε ≤ 1.0 differential privacy, FedAvg aggregation, 8/8 property tests passing. Enables privacy-preserving multi-site training across 3+ hospitals.
-- 🏥 **PACS Integration**: Production-ready hospital integration with DICOM C-FIND/C-MOVE/C-STORE, multi-vendor support (GE/Philips/Siemens/Agfa), TLS 1.3 encryption, HIPAA audit logging. Validated 40/48 properties (83%).
-- 🧠 **Attention-Based MIL Models**: AttentionMIL, CLAM, TransMIL with attention weight visualization and heatmap generation. Achieving 100% validation AUC on real histopathology data.
-- 🔍 **Model Interpretability**: Grad-CAM visualizations, attention heatmaps, failure case analysis, feature importance computation, interactive dashboard
-- 🔬 **Whole-Slide Image (WSI) Processing**: Complete production-ready pipeline with OpenSlide integration for .svs, .tiff, .ndpi, DICOM formats, streaming patch extraction, CNN feature generation, and HDF5 caching
-- 🔗 **Multimodal Fusion**: Cross-modal attention for WSI, genomic, and clinical text data with temporal progression modeling
-- 📊 **Comprehensive Testing**: **4,196 tests** (55% coverage) with property-based testing (Hypothesis), bootstrap statistical validation, parallel CI execution
-- 🚀 **Production Ready**: Docker/K8s deployment, ONNX export, model profiling, audit logging, privacy protection
-- 📦 **Pretrained Models**: Easy integration with torchvision and timm (1000+ architectures)
+## Features
 
-**Status**: Production-ready framework with validated clinical workflow integration. Real PCam dataset results: **100% validation AUC** (epoch 10) on 262K training samples, 32K test samples. **Optimized for clinical deployment**: 90% sensitivity (threshold=0.051) reducing missed tumors by 61.7%. **Open source and free** for research and clinical use.
+A comprehensive research framework for computational pathology with the following components:
 
-## Why Open Source Medical AI?
+### Core Capabilities
+- 🧠 **Attention-Based MIL Models**: nnMIL, AttentionMIL, CLAM, TransMIL implementations with attention visualization
+- ⚡ **Training Optimization**: torch.compile, mixed precision (AMP), channels_last memory format, persistent workers
+- 🔬 **WSI Processing**: OpenSlide integration for .svs, .tiff, .ndpi, DICOM formats with streaming patch extraction
+- 🔍 **Model Interpretability**: Grad-CAM visualizations, attention heatmaps, failure case analysis
+- 📊 **Testing Infrastructure**: 310 test files with property-based testing (Hypothesis)
+- 📦 **Pretrained Models**: Integration with torchvision and timm (1000+ architectures)
 
-### 🌍 **Global Accessibility**
-- **Zero licensing costs** - Deploy at any hospital worldwide
-- **No vendor lock-in** - Own your AI infrastructure completely
-- **Democratic innovation** - Best ideas win, not biggest budgets
-- **Rapid adoption** - No procurement delays or contract negotiations
+### Research Components (Experimental)
+- 🔒 **Federated Learning**: PathologyFL with differential privacy (research prototype)
+- 🏥 **PACS Integration**: DICOM C-FIND/C-MOVE/C-STORE support (prototype implementation)
+- 🤝 **DMI/MKN/CPI/IMR**: Distributed medical intelligence systems (research concepts)
+- 🔗 **Multimodal Fusion**: Cross-modal attention for WSI, genomic, and clinical data
+- 🚀 **Deployment Tools**: Docker/K8s configurations, ONNX export capabilities
 
-### 🔬 **Scientific Transparency**
-- **Reproducible research** - All algorithms publicly auditable
-- **Peer review** - Global medical AI community validates methods
-- **Collaborative development** - Build on each other's innovations
-- **Academic freedom** - Publish without proprietary restrictions
+### Repository Structure
+```
+src/                    # Main source code (~195k LOC, 544 files)
+├── models/            # MIL model implementations
+├── training/          # Training pipelines and optimizations
+├── data/              # Data loaders and preprocessing
+├── federated/         # Federated learning components
+├── clinical/          # Clinical workflow integration
+├── streaming/         # Real-time WSI processing
+├── inference/         # Inference engines
+└── utils/             # Utilities and helpers
 
-### 🏥 **Clinical Benefits**
-- **Full customization** - Modify algorithms for specific clinical needs
-- **Transparent decisions** - Understand exactly how diagnoses are made
-- **Community validation** - Tested by hospitals worldwide
-- **Continuous improvement** - Bug fixes and enhancements from global contributors
-
-## Quick Start
-
-### Easy Installation
-
-**Windows Users** (Recommended):
-```bash
-# Download and run the installer
-# https://github.com/matthewvaishnav/computational-pathology-research/releases/latest
-# Double-click HistoCore-Installer.exe
+tests/                 # Test suite (310 test files)
+docs/                  # Documentation (105 markdown files)
+scripts/               # Utility scripts
+experiments/           # Experiment configurations
 ```
 
-**All Platforms**:
-```bash
-# One-click Python installer
-python install.py
-
-# Or manual install
-pip install -r requirements.txt
-pip install -e .
-```
-
-See [WINDOWS_DEFENDER_FIX.md](WINDOWS_DEFENDER_FIX.md) if Windows Defender blocks the installer.
-
-### Three Ways to Use HistoCore
-
-**1. 🐍 Python API (Recommended)**
-```python
-import histocore
-
-# Quick training
-results = histocore.quick_train(dataset="pcam", model="nnmil", epochs=10)
-print(f"Accuracy: {results['best_accuracy']:.3f}")
-
-# Benchmark against foundation models
-benchmark = histocore.benchmark(model_name="histocore")
-```
-
-**2. 💻 Command Line**
-```bash
-# Train a model
-histocore train --dataset pcam --model nnmil --epochs 20
-
-# Run benchmark
-histocore benchmark --model-name histocore --output results/
-
-# Evaluate model
-histocore evaluate --checkpoint model.pth --dataset pcam
-```
-
-**3. 📓 Jupyter Notebook**
-```bash
-# Open interactive notebook
-jupyter notebook examples/quickstart.ipynb
-```
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/matthewvaishnav/histocore/blob/main/examples/quickstart.ipynb)
+## Installation & Quick Start
 
 ### Installation
 
@@ -136,24 +82,50 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### PatchCamelyon (PCam) Training
+### Quick Start
 
-Train on the PatchCamelyon benchmark (262K train, 32K val, 32K test samples):
+**Python API**:
+```python
+import histocore
+
+# Quick training
+results = histocore.quick_train(dataset="pcam", model="nnmil", epochs=10)
+print(f"Accuracy: {results['best_accuracy']:.3f}")
+
+# Benchmark against foundation models
+benchmark = histocore.benchmark(model_name="histocore")
+```
+
+**Command Line**:
+```bash
+# Train a model
+histocore train --dataset pcam --model nnmil --epochs 20
+
+# Run benchmark
+histocore benchmark --model-name histocore --output results/
+
+# Evaluate model
+histocore evaluate --checkpoint model.pth --dataset pcam
+```
+
+**Jupyter Notebook**:
+```bash
+jupyter notebook examples/quickstart.ipynb
+```
+
+### Training Example: PatchCamelyon (PCam)
+
+Train on the PatchCamelyon benchmark dataset:
 
 ```bash
-# Option 1: Optimized Training (8-12x faster, recommended)
-# Batch size 128, torch.compile, AMP, channels_last, persistent workers
-# Expected: 15-30 minutes (vs 2.5 hours baseline)
+# Optimized training configuration
 python experiments/train_pcam.py --config experiments/configs/pcam_full_20_epochs_optimized.yaml
 
-# Option 2: Baseline Training
+# Baseline training
 python experiments/train_pcam.py --config experiments/configs/pcam_rtx4070_laptop.yaml
 
 # Benchmark optimizations
 python scripts/benchmark_optimizations.py
-
-# Profile for bottlenecks
-python scripts/profile_training.py --config experiments/configs/pcam_full_20_epochs_optimized.yaml
 
 # Evaluate with bootstrap confidence intervals
 python experiments/evaluate_pcam.py \
@@ -162,42 +134,18 @@ python experiments/evaluate_pcam.py \
   --output-dir results/pcam \
   --compute-bootstrap-ci \
   --bootstrap-samples 1000
-
-# Analyze failure cases
-python scripts/analyze_pcam_failures.py \
-  --results results/pcam_real/metrics.json \
-  --output-dir results/pcam_real/failure_analysis
-
-# Optimize decision threshold for clinical deployment
-python scripts/optimize_threshold.py \
-  --results results/pcam_real/metrics.json \
-  --output-dir results/pcam_real/threshold_optimization
 ```
 
-**Training Optimizations** (8-12x speedup):
-- **Batch Size**: 16 → 128 (8x increase)
-- **Mixed Precision (AMP)**: 1.5-2x speedup + 40% memory savings
-- **torch.compile**: 1.3-1.5x speedup (max-autotune mode)
-- **Channels Last**: 1.1-1.2x speedup (better memory access)
-- **Persistent Workers**: 1.1-1.2x speedup (eliminates startup overhead)
-- **GPU Utilization**: 17% → 85% (5x improvement)
-- **Training Time**: 2.5 hours → 15-30 minutes
+**Training Optimizations Available**:
+- **Mixed Precision (AMP)**: Faster training with reduced memory usage
+- **torch.compile**: JIT compilation for improved performance
+- **Channels Last**: Optimized memory layout for CNNs
+- **Persistent Workers**: Reduced data loading overhead
+- **Batch Size Tuning**: Automatic optimal batch size detection
 
-See [OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md) for complete optimization guide.
+See [docs/OPTIMIZATION_SUMMARY.md](docs/OPTIMIZATION_SUMMARY.md) for optimization details.
 
-**Real Benchmark Results** (Full PCam Dataset):
-- **Validation AUC**: 100% (epoch 10) on 262K training samples
-- **Test Accuracy**: 85.26% ± 0.40% (95% CI: 84.83%-85.63%)
-- **Test AUC**: 0.9394 ± 0.0025 (95% CI: 0.9369-0.9418)
-- **Test F1**: 0.8507 ± 0.0040 (95% CI: 0.8464-0.8543)
-- **Dataset**: 262,144 train, 32,768 val, 32,768 test (96×96 RGB patches)
-- **Hardware**: RTX 4070 Laptop (8GB VRAM)
-- **Training Time**: ~20 minutes (optimized) vs ~6 hours (baseline)
-
-**Optimized for Clinical Deployment** (Threshold = 0.051):
-- **Sensitivity**: 90.0% (↑16.1% from baseline) - Catches 9 out of 10 tumors
-- **Specificity**: 80.3% (maintains acceptable false positive rate)
-- **False Negatives**: 1,639 (reduced from 4,276, saves 2,637 cases)
+**Dataset**: PatchCamelyon (262,144 train, 32,768 val, 32,768 test samples of 96×96 RGB patches)
 - **Clinical Impact**: 61.7% reduction in missed tumors for cancer screening
 
 *Bootstrap confidence intervals from 1,000 resamples. See [docs/PCAM_REAL_RESULTS.md](docs/PCAM_REAL_RESULTS.md) for complete analysis and [docs/THRESHOLD_OPTIMIZATION.md](docs/THRESHOLD_OPTIMIZATION.md) for clinical deployment optimization.*
@@ -1453,3 +1401,37 @@ MIT License - See [LICENSE](LICENSE) for details.
 ## Contact
 
 For questions or issues, please open an issue on GitHub.
+
+
+## Important Notes
+
+**Research Framework**: This is a research codebase containing implementations of various computational pathology concepts. Many features are in prototype/experimental stage and should be validated independently before any clinical use.
+
+**No Trained Models**: The repository does not include trained models. Users must train models on their own datasets.
+
+**Performance Claims**: Performance metrics mentioned in documentation should be independently validated. Results may vary based on data, hardware, and configuration.
+
+**Clinical Use**: This software is for research purposes only. It is not FDA-approved or CE-marked for clinical diagnostic use. Any clinical deployment requires appropriate regulatory approval and validation.
+
+**Contributions**: This is an active research project. Contributions, bug reports, and feedback are welcome via GitHub issues and pull requests.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## Citation
+
+If you use this framework in your research, please cite:
+
+```bibtex
+@software{histocore2026,
+  title={HistoCore: Computational Pathology Research Framework},
+  author={Vaishnav, Matthew},
+  year={2026},
+  url={https://github.com/matthewvaishnav/histocore}
+}
+```
+
+## Contact
+
+For questions, issues, or collaboration inquiries, please open an issue on GitHub.
