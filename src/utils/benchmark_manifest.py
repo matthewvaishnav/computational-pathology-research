@@ -89,10 +89,10 @@ class BenchmarkManifest:
                     json.dump(asdict(e), f, separators=(",", ":"))
                     f.write("\n")
             return True
-        else:
-            # Append new entry
-            self.add_entry(entry)
-            return False
+        
+        # Append new entry
+        self.add_entry(entry)
+        return False
 
     def read_all(self) -> list[BenchmarkEntry]:
         """Read all benchmark entries from the manifest.
