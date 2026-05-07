@@ -56,7 +56,7 @@ class AllscriptsPatient:
     middle_name: Optional[str]
     date_of_birth: datetime
     gender: str
-    ssn: Optional[str] = None
+    ssn: Optional[str] = None  # WARNING: SSN should be encrypted at rest and in transit
     phone_home: Optional[str] = None
     phone_work: Optional[str] = None
     email: Optional[str] = None
