@@ -99,11 +99,26 @@ def get_client_ip(request: Request) -> str:
     Only trusts X-Forwarded-For if request comes from trusted proxy.
     Otherwise uses direct connection IP to prevent rate limit bypass.
     """
+    import ipaddress
+    
     # Get direct connection IP
     client_host = request.client.host if request.client else "unknown"
     
     # Trusted proxy IPs (configure for your infrastructure)
-    trusted_proxies = set(os.getenv("TRUSTED_PROXIES", "").split(","))
+    trusted_proxies_str = os.getenv("TRUSTED_PROXIES", "")
+    trusted_proxies = set()
+    
+    # Validate and parse trusted proxy IPs
+    for ip_str in trusted_proxies_str.split(","):
+        ip_str = ip_str.strip()
+        if not ip_str:
+            continue
+        try:
+            # Validate IP address format
+            ipaddress.ip_address(ip_str)
+            trusted_proxies.add(ip_str)
+        except ValueError:
+            logger.warning(f"Invalid trusted proxy IP address: {ip_str}")
     
     # Only trust X-Forwarded-For from known proxies
     if client_host in trusted_proxies:
