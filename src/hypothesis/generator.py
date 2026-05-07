@@ -181,11 +181,14 @@ or mechanistically novel hypotheses."""
             int(s): int((subtype_labels == s).sum()) for s in np.unique(subtype_labels)
         }
 
-        tme_summary = ""
+        tme_parts = []
         if tme_compositions:
             for i, tme in enumerate(tme_compositions):
-                tme_summary += f"\n  Subtype {i}: TIL density={tme.get('til_density', 'N/A'):.2%}, "
-                tme_summary += f"phenotype={tme.get('immune_phenotype', 'N/A')}"
+                tme_parts.append(
+                    f"\n  Subtype {i}: TIL density={tme.get('til_density', 'N/A'):.2%}, "
+                    f"phenotype={tme.get('immune_phenotype', 'N/A')}"
+                )
+        tme_summary = "".join(tme_parts)
 
         prompt = f"""Cancer type: {self.cancer_type}
 
