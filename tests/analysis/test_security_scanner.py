@@ -213,7 +213,8 @@ def process_file(filename):
     os.system(f"cat {filename}")
     
 def process_file_unsafe(filename):
-    # Another vulnerable pattern
+    # Another vulnerable pattern - INTENTIONALLY VULNERABLE FOR TESTING
+    # DO NOT USE IN PRODUCTION CODE
     subprocess.call(f"ls -la {filename}", shell=True)
 
 def process_file_safe(filename):
