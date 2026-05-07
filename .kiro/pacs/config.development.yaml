@@ -1,0 +1,118 @@
+# PACS Integration System - Development Configuration
+# This configuration is for local development and testing
+
+profile: development
+
+# PACS Endpoints Configuration (using test PACS server)
+pacs_endpoints:
+  test_pacs:
+    endpoint_id: "test_pacs"
+    ae_title: "HISTOCORE_DEV"
+    host: "localhost"
+    port: 11112
+    vendor: "GE"
+    description: "Local test PACS server"
+    
+    security:
+      tls_enabled: false  # Disabled for local development
+      tls_version: "1.3"
+      certificate_path: null
+      client_cert_path: null
+      client_key_path: null
+      ca_bundle_path: null
+      verify_certificates: false
+      mutual_authentication: false
+    
+    performance:
+      connection_timeout: 10
+      query_timeout: 10
+      retrieval_timeout: 60
+      storage_timeout: 30
+      max_retries: 3
+      initial_backoff_seconds: 1
+
+# Performance Configuration (reduced for development)
+performance:
+  max_concurrent_studies: 5
+  connection_pool_size: 3
+  max_transfer_rate_mbps: 10
+  disk_space_threshold_gb: 5
+
+# Storage Configuration (local paths)
+storage:
+  local_cache_path: "./data/pacs_cache"
+  max_cache_size_gb: 10
+  cleanup_threshold_gb: 2
+  auto_cleanup_enabled: true
+  retention_days: 7
+
+# Workflow Configuration
+workflow:
+  poll_interval: "1m"  # 1 minute for faster testing
+  auto_start_polling: false  # Manual start in development
+  priority_processing_enabled: true
+  max_processing_time_minutes: 30
+
+# Error Handling Configuration
+error_handling:
+  max_retries: 3
+  initial_backoff_seconds: 1
+  max_backoff_seconds: 10
+  exponential_backoff_multiplier: 2
+  dead_letter_queue_path: "./data/dlq"
+  dead_letter_queue_max_size: 100
+  auto_retry_enabled: true
+  retry_interval_minutes: 5
+
+# Failover Configuration (disabled for single endpoint)
+failover:
+  enabled: false
+  health_check_interval_seconds: 30
+  failure_threshold: 2
+  recovery_threshold: 1
+  auto_failover_enabled: false
+
+# Audit Logging Configuration
+audit:
+  enabled: true
+  log_directory: "./logs/pacs_audit"
+  retention_days: 30
+  enable_encryption: false  # Disabled for development
+  encryption_key_path: null
+  log_format: "json"
+  include_phi_details: false  # Use mock data in development
+  tamper_evident_enabled: false
+
+# Notification Configuration (mock/disabled)
+notifications:
+  enabled: false
+  
+  email:
+    enabled: false
+    smtp_host: "localhost"
+    smtp_port: 1025  # MailHog or similar
+    smtp_use_tls: false
+    smtp_username: null
+    smtp_password_env: null
+    from_address: "dev@localhost"
+    admin_addresses:
+      - "admin@localhost"
+    pathologist_addresses:
+      - "pathologist@localhost"
+  
+  sms:
+    enabled: false
+  
+  hl7:
+    enabled: false
+
+# Logging Configuration (verbose for development)
+logging:
+  level: "DEBUG"
+  format: "text"
+  output: "console"
+  file_path: "./logs/pacs_service.log"
+  max_file_size_mb: 10
+  backup_count: 3
+  include_timestamps: true
+  include_thread_info: true

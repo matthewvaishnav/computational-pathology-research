@@ -592,9 +592,9 @@ class TestOptimizationPlan:
         
         result = plan.to_gantt_chart()
         
-        # Currently returns placeholder message
+        # Currently returns message when no tasks
         assert isinstance(result, str)
-        assert "not yet implemented" in result.lower()
+        assert "no tasks to visualize" in result.lower()
     
     def test_optimization_plan_to_dict(self):
         """Test OptimizationPlan.to_dict() method."""

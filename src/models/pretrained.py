@@ -231,9 +231,6 @@ class PretrainedFeatureExtractor(nn.Module):
         except Exception as e:
             logger.error(f"Failed to load custom model {model_name}: {e}")
             raise RuntimeError(f"Custom model loading failed: {e}")
-            f"Custom loader for {self.model_name} not yet implemented. "
-            "Please download weights manually from the source repository."
-        )
 
     def forward(self, patches: torch.Tensor) -> torch.Tensor:
         """
