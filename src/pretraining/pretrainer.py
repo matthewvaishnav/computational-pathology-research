@@ -287,12 +287,11 @@ class SelfSupervisedPretrainer:
 
                 # Log progress
                 if (batch_idx + 1) % log_interval == 0:
-                    log_msg = (
+                    log_parts = [
                         f"Epoch [{epoch+1}/{num_epochs}] Step [{batch_idx+1}/{len(dataloader)}]"
-                    )
-                    for key, value in loss_dict.items():
-                        log_msg += f" {key}: {value:.4f}"
-                    logger.info(log_msg)
+                    ]
+                    log_parts.extend(f"{key}: {value:.4f}" for key, value in loss_dict.items())
+                    logger.info(" ".join(log_parts))
 
             # Compute epoch averages
             for key in epoch_losses:
