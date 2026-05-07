@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional
 import subprocess
 import tempfile
 
-from .models import AnalysisResult, Issue, Priority, Severity
+from .models import AnalysisResult, Priority, Severity
 from .aggregator import ResultAggregator
 
 logger = logging.getLogger(__name__)
