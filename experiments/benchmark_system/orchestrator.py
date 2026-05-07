@@ -322,6 +322,21 @@ class BenchmarkOrchestrator:
             training_config = self.task_executor.configure_task(task_spec, framework)
             logger.info(f"Task configured for {framework}")
             
+            # Add max_samples config for medium benchmark (10k-50k samples)
+            # For quick mode with real PCam data
+            if self.config.mode == "quick":
+                # Medium benchmark: 10k train, 5k val, 5k test
+                training_config.config_dict["max_samples_train"] = 10000
+                training_config.config_dict["max_samples_val"] = 5000
+                training_config.config_dict["max_samples_test"] = 5000
+                logger.info("Configured medium benchmark: 10k train, 5k val, 5k test")
+            else:
+                # Full mode: use all PCam data (262k train, 32k val, 32k test)
+                training_config.config_dict["max_samples_train"] = None
+                training_config.config_dict["max_samples_val"] = None
+                training_config.config_dict["max_samples_test"] = None
+                logger.info("Configured full benchmark: all PCam data")
+            
             # Get framework environment
             env = self.framework_environments[framework]
             

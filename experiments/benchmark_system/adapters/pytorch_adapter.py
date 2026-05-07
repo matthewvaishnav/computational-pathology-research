@@ -288,9 +288,7 @@ class PyTorchAdapter:
         """
         Create data loaders for training, validation, and testing.
         
-        For benchmarking purposes, this creates synthetic data loaders.
-        In a real implementation, this would load actual datasets based on
-        task_spec.dataset_name and task_spec.data_root.
+        Loads real PCam data from H5 files for benchmarking.
         
         Args:
             task_spec: Task specification
@@ -299,55 +297,26 @@ class PyTorchAdapter:
         Returns:
             Tuple of (train_loader, val_loader, test_loader)
         """
-        # For benchmarking, create synthetic data
-        # In production, this would load real datasets
+        from experiments.benchmark_system.pcam_dataset import create_pcam_loaders
         
-        # Calculate split sizes
-        total_samples = 1000  # Synthetic dataset size
-        train_size = int(total_samples * task_spec.train_split)
-        val_size = int(total_samples * task_spec.val_split)
-        test_size = total_samples - train_size - val_size
+        # Get max samples from config (for medium benchmark: 10k-50k)
+        max_samples_train = config_dict.get("max_samples_train", None)
+        max_samples_val = config_dict.get("max_samples_val", None)
+        max_samples_test = config_dict.get("max_samples_test", None)
         
-        # Create synthetic data (features and labels)
-        feature_dim = task_spec.feature_dim
-        num_classes = task_spec.num_classes
-        
-        # Training data
-        train_features = torch.randn(train_size, feature_dim)
-        train_labels = torch.randint(0, num_classes, (train_size,))
-        train_dataset = TensorDataset(train_features, train_labels)
-        train_loader = DataLoader(
-            train_dataset,
+        # Create PCam data loaders
+        train_loader, val_loader, test_loader = create_pcam_loaders(
+            data_root=task_spec.data_root,
             batch_size=task_spec.batch_size,
-            shuffle=True,
-            num_workers=0,
-        )
-        
-        # Validation data
-        val_features = torch.randn(val_size, feature_dim)
-        val_labels = torch.randint(0, num_classes, (val_size,))
-        val_dataset = TensorDataset(val_features, val_labels)
-        val_loader = DataLoader(
-            val_dataset,
-            batch_size=task_spec.batch_size,
-            shuffle=False,
-            num_workers=0,
-        )
-        
-        # Test data
-        test_features = torch.randn(test_size, feature_dim)
-        test_labels = torch.randint(0, num_classes, (test_size,))
-        test_dataset = TensorDataset(test_features, test_labels)
-        test_loader = DataLoader(
-            test_dataset,
-            batch_size=task_spec.batch_size,
-            shuffle=False,
+            max_samples_train=max_samples_train,
+            max_samples_val=max_samples_val,
+            max_samples_test=max_samples_test,
             num_workers=0,
         )
         
         logger.info(
-            f"Created data loaders - Train: {train_size}, "
-            f"Val: {val_size}, Test: {test_size}"
+            f"Created PCam data loaders - Train: {len(train_loader.dataset)}, "
+            f"Val: {len(val_loader.dataset)}, Test: {len(test_loader.dataset)}"
         )
         
         return train_loader, val_loader, test_loader
@@ -361,7 +330,7 @@ class PyTorchAdapter:
         Create model, optimizer, and loss criterion.
         
         This uses the simplest possible PyTorch implementation:
-        - Basic feedforward neural network
+        - Basic CNN for PCam images (3x96x96)
         - Standard PyTorch optimizers
         - CrossEntropyLoss for classification
         
@@ -372,16 +341,28 @@ class PyTorchAdapter:
         Returns:
             Tuple of (model, optimizer, criterion)
         """
-        # Create a simple feedforward model for benchmarking
+        # Create a simple CNN model for PCam images (3x96x96)
         # This is the baseline - no fancy architectures
         model = nn.Sequential(
-            nn.Linear(task_spec.feature_dim, 256),
+            # Conv block 1: 3x96x96 -> 32x48x48
+            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            # Conv block 2: 32x48x48 -> 64x24x24
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            # Conv block 3: 64x24x24 -> 128x12x12
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            # Flatten: 128x12x12 -> 18432
+            nn.Flatten(),
+            # FC layers
+            nn.Linear(128 * 12 * 12, 256),
             nn.ReLU(),
             nn.Dropout(0.1),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(128, task_spec.num_classes),
+            nn.Linear(256, task_spec.num_classes),
         )
         model = model.to(self.device)
         
