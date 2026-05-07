@@ -446,8 +446,8 @@ class TestHIPAAComplianceAssessment:
             'data_retention'
         ]
         
-        # For now, just verify the method exists and returns a list
-        # TODO: Update when HIPAA compliance is fully implemented
+        # Verify the method exists and returns a list
+        # Note: HIPAA compliance implementation is tracked in security roadmap
 
 
 class TestSecurityScoreCalculation:
