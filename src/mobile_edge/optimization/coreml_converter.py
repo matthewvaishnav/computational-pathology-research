@@ -40,7 +40,7 @@ class CoreMLConfig:
     model_license: str = ""  # License
 
     def __post_init__(self):
-        if not (self.compute_precision in ["float32", "float16"):
+        if not (self.compute_precision in ["float32", "float16"]):
             raise ValueError("mixed")
         if not (self.quantization_bits in [8, 16]):
             raise AssertionError("self.quantization_bits in [8, 16]")

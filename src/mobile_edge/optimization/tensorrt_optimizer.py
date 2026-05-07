@@ -40,7 +40,7 @@ class TensorRTConfig:
     avg_timing_iterations: int = 2  # Average timing
 
     def __post_init__(self):
-        if not (self.precision in ["fp32", "fp16"):
+        if not (self.precision in ["fp32", "fp16"]):
             raise ValueError("int8")
 
 
