@@ -121,6 +121,121 @@ def validate_password(password: str) -> bool:
 
 def validate_file_upload(file_content: bytes, filename: str) -> Tuple[str, str]:
     """
+    Validate uploaded file for security.
+    
+    Args:
+        file_content: File content as bytes
+        filename: Original filename
+        
+    Returns:
+        Tuple of (mime_type, safe_filename)
+        
+    Raises:
+        HTTPException: If file validation fails
+    """
+    from src.api.security import secure_filename, validate_file_size, validate_image_magic_bytes
+    
+    # Validate file size
+    validate_file_size(file_content)
+    
+    # Validate magic bytes
+    mime_type = validate_image_magic_bytes(file_content)
+    
+    # Sanitize filename
+    safe_name = secure_filename(filename)
+    
+    return mime_type, safe_name
+
+
+def validate_patient_id(patient_id: str) -> bool:
+    """
+    Validate patient ID format.
+    
+    Args:
+        patient_id: Patient identifier
+        
+    Returns:
+        True if valid
+        
+    Raises:
+        HTTPException: If invalid format
+    """
+    if not patient_id or not isinstance(patient_id, str):
+        raise HTTPException(status_code=400, detail="Patient ID is required")
+    
+    # Alphanumeric with hyphens/underscores only
+    if not re.match(r'^[A-Za-z0-9_-]+$', patient_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Patient ID must contain only alphanumeric characters, hyphens, and underscores"
+        )
+    
+    if len(patient_id) > 50:
+        raise HTTPException(status_code=400, detail="Patient ID too long")
+    
+    return True
+
+
+def validate_case_id(case_id: str) -> bool:
+    """
+    Validate case ID format.
+    
+    Args:
+        case_id: Case identifier
+        
+    Returns:
+        True if valid
+        
+    Raises:
+        HTTPException: If invalid format
+    """
+    if not case_id or not isinstance(case_id, str):
+        raise HTTPException(status_code=400, detail="Case ID is required")
+    
+    # Alphanumeric with hyphens/underscores only
+    if not re.match(r'^[A-Za-z0-9_-]+$', case_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Case ID must contain only alphanumeric characters, hyphens, and underscores"
+        )
+    
+    if len(case_id) > 50:
+        raise HTTPException(status_code=400, detail="Case ID too long")
+    
+    return True
+
+
+def sanitize_sql_identifier(identifier: str) -> str:
+    """
+    Sanitize SQL identifier (table/column name).
+    
+    ONLY use for identifiers, NEVER for values.
+    For values, always use parameterized queries.
+    
+    Args:
+        identifier: SQL identifier
+        
+    Returns:
+        Sanitized identifier
+        
+    Raises:
+        ValueError: If identifier contains invalid characters
+    """
+    # Only allow alphanumeric and underscore
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
+        raise ValueError(f"Invalid SQL identifier: {identifier}")
+    
+    # Prevent SQL keywords
+    sql_keywords = {
+        'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'CREATE',
+        'ALTER', 'TABLE', 'FROM', 'WHERE', 'JOIN', 'UNION'
+    }
+    
+    if identifier.upper() in sql_keywords:
+        raise ValueError(f"SQL keyword not allowed as identifier: {identifier}")
+    
+    return identifier
+    """
     Validate uploaded file content and determine file type.
     
     Performs security checks:
