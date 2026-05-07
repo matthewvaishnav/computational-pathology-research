@@ -545,6 +545,9 @@ class SecurityScanner:
         - Secure TLS/SSL: 10%
         - HIPAA compliance: 10%
         """
+        if tls_issues is None:
+            tls_issues = []
+
         score = 0.0
         
         # Vulnerability penalty (critical: -35, high: -20, medium: -10, low: -5)
