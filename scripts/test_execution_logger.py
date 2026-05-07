@@ -351,9 +351,7 @@ class TestExecutionLogger:
 
                 # Reproduction steps
                 report += "#### Reproduction Steps\n\n"
-                for step in failure["reproduction_steps"]:
-                    report += step + "\n"
-                report += "\n"
+                report += '\n'.join(failure["reproduction_steps"]) + "\n\n"
 
                 # Suggested fixes
                 if failure["suggested_fixes"]:
