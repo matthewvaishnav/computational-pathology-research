@@ -80,6 +80,10 @@ class ModelLoader:
             model = self._create_pcam_model()
 
             # Load state dict
+            # Validate and load checkpoint
+            if not isinstance(checkpoint, dict):
+                raise ValueError("Invalid checkpoint: must be a dictionary")
+            
             if "model_state_dict" in checkpoint:
                 model.load_state_dict(checkpoint["model_state_dict"])
             else:
