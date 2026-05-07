@@ -69,9 +69,19 @@ else:
 # JWT configuration - MUST be set via environment variable for production
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if not SECRET_KEY:
-    # For testing, use a default key with warning
-    SECRET_KEY = "test-key-not-for-production-use-only"
-    logger.warning("Using default JWT secret key - NOT FOR PRODUCTION USE")
+    # Fail fast in production
+    if os.getenv("ENVIRONMENT", "development").lower() == "production":
+        raise RuntimeError(
+            "JWT_SECRET_KEY environment variable must be set in production. "
+            "Generate with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+        )
+    # For development/testing only - generate temporary key
+    import secrets
+    SECRET_KEY = secrets.token_urlsafe(32)
+    logger.warning(
+        "Generated temporary JWT secret key for development. "
+        "Set JWT_SECRET_KEY environment variable for production."
+    )
     
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
