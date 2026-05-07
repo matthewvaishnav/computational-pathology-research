@@ -38,6 +38,7 @@ class ArchitectureAnalyzer:
         self.project_path = Path(project_path).resolve()
         self.python_files: List[Path] = []
         self.import_graph: Dict[str, Set[str]] = defaultdict(set)
+        self._file_cache: Dict[str, Any] = {}  # Cache for expensive operations
         
     def analyze(self) -> ArchitectureAnalysis:
         """
@@ -98,11 +99,16 @@ class ArchitectureAnalyzer:
         
         for py_file in self.python_files:
             try:
-                content = py_file.read_text(encoding='utf-8')
-                tree = ast.parse(content, filename=str(py_file))
-                
-                # Get module name relative to project root
-                module_name = self._get_module_name(py_file)
+                # Check cache first
+                cache_key = f"ast_{py_file}"
+                if cache_key in self._file_cache:
+                    tree, module_name = self._file_cache[cache_key]
+                else:
+                    content = py_file.read_text(encoding='utf-8')
+                    tree = ast.parse(content, filename=str(py_file))
+                    module_name = self._get_module_name(py_file)
+                    # Cache the parsed AST and module name
+                    self._file_cache[cache_key] = (tree, module_name)
                 
                 # Extract imports
                 for node in ast.walk(tree):
