@@ -233,7 +233,16 @@ class PerformanceProfiler:
             return {"error": str(e)}
     
     def _generate_memory_recommendations(self, memory_info, top_objects):
-        """Generate memory optimization recommendations."""
+        """
+        Generate memory optimization recommendations based on profiling data.
+        
+        Args:
+            memory_info: Process memory information from psutil
+            top_objects: List of (type, size, count) tuples for largest objects
+            
+        Returns:
+            List of recommendation strings
+        """
         recommendations = []
         
         # High memory usage
