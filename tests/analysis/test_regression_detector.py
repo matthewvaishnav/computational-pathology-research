@@ -1,19 +1,19 @@
 """
-Unit tests for Regression Detector.
+Unit tests for RegressionDetector.
 
-Tests coverage regression detection, performance regression detection,
-security regression detection, and CI failure logic.
-Requirements: 12.2, 12.3, 12.4, 12.6
+Tests coverage, performance, security, and code quality regression detection.
 """
 
 import pytest
-import json
-import tempfile
-import os
 from datetime import datetime
-from unittest.mock import patch, mock_open
 
-from src.analysis.regression_detector import RegressionDetector
+from src.analysis.regression_detector import (
+    RegressionDetector,
+    RegressionType,
+    RegressionSeverity,
+    Regression,
+    RegressionReport
+)
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
@@ -23,1406 +23,486 @@ from src.analysis.models import (
     DependencyAnalysis,
     DeploymentAnalysis,
     SecurityAnalysis,
-    ScalabilityAnalysis,
-    Issue,
-    Severity
+    ScalabilityAnalysis
 )
 
 
-class TestRegressionDetector:
-    """Test suite for RegressionDetector."""
-    
-    def setup_method(self):
-        """Set up test fixtures."""
-        self.detector = RegressionDetector()
-        self.baseline_result = self._create_baseline_result()
-        self.current_result = self._create_current_result()
-    
-    def _create_baseline_result(self) -> AnalysisResult:
-        """Create a baseline analysis result for testing."""
-        return AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="baseline123",
-            architecture=ArchitectureAnalysis(
-                total_files=100,
-                large_files=[],
-                circular_dependencies=[],
-                coupling_metrics={},
-                solid_violations=[],
-                score=80.0
-            ),
-            performance=PerformanceAnalysis(
-                gpu_utilization=75.0,
-                memory_usage_peak_gb=12.0,
-                bottlenecks=[
-                    {"function": "baseline_func", "time_ms": 500, "percentage": 25.0}
-                ],
-                flame_graph_path="",
-                score=75.0
-            ),
-            coverage=CoverageAnalysis(
-                line_coverage=85.0,
-                branch_coverage=80.0,
-                untested_critical_paths=[],
-                missing_property_tests=[],
-                flaky_tests=[],
-                score=82.0
-            ),
-            code_quality=CodeQualityAnalysis(
-                average_complexity=8.0,
-                high_complexity_functions=[],
-                duplication_percentage=5.0,
-                documentation_coverage=75.0,
-                pylint_score=8.5,
-                score=78.0
-            ),
-            dependencies=DependencyAnalysis(
-                total_dependencies=30,
-                outdated_packages=[],
-                vulnerabilities=[],
-                unused_dependencies=[],
-                license_issues=[],
-                score=85.0
-            ),
-            deployment=DeploymentAnalysis(
-                dockerfile_score=80.0,
-                k8s_readiness=75.0,
-                ci_cd_completeness=85.0,
-                monitoring_score=70.0,
-                score=77.5
-            ),
-            security=SecurityAnalysis(
-                vulnerabilities=[],
-                hardcoded_secrets=[],
-                tls_issues=[],
-                hipaa_compliance_score=85.0,
-                score=85.0
-            ),
-            scalability=ScalabilityAnalysis(
-                ddp_correctness=True,
-                memory_bottlenecks=[],
-                communication_overhead_ms=20.0,
-                scaling_efficiency="linear",
-                recommendations={},
-                score=80.0
-            ),
-            overall_score=80.0,
-            critical_issues=[]
+def create_baseline_result():
+    """Create baseline analysis result for testing."""
+    return AnalysisResult(
+        timestamp=datetime.now().isoformat(),
+        project_path="/test/project",
+        git_commit="a" * 40,
+        architecture=ArchitectureAnalysis(score=80.0),
+        performance=PerformanceAnalysis(
+            gpu_utilization=85.0,
+            memory_usage_peak_gb=8.0,
+            bottlenecks=[{"operation": "data_loading", "time_ms": 100}],
+            score=75.0
+        ),
+        coverage=CoverageAnalysis(
+            line_coverage=70.0,
+            branch_coverage=65.0,
+            score=70.0
+        ),
+        code_quality=CodeQualityAnalysis(
+            average_complexity=5.0,
+            duplication_percentage=10.0,
+            score=75.0
+        ),
+        dependencies=DependencyAnalysis(
+            vulnerabilities=[{"cve_id": "CVE-2023-0001"}],
+            score=80.0
+        ),
+        deployment=DeploymentAnalysis(score=85.0),
+        security=SecurityAnalysis(
+            vulnerabilities=[{"type": "sql_injection", "severity": "high"}],
+            hardcoded_secrets=[],
+            score=70.0
+        ),
+        scalability=ScalabilityAnalysis(score=80.0),
+        overall_score=75.0
+    )
+
+
+@pytest.fixture
+def baseline_result():
+    """Create baseline analysis result for testing."""
+    return create_baseline_result()
+
+
+@pytest.fixture
+def detector():
+    """Create regression detector with default thresholds."""
+    return RegressionDetector(coverage_threshold=2.0, performance_threshold=10.0)
+
+
+class TestCoverageRegressions:
+    """Test coverage regression detection."""
+
+    def test_critical_line_coverage_regression(self, detector, baseline_result):
+        """Test detection of critical line coverage regression (>2% decrease)."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 67.0  # 3% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        assert len(report.critical_regressions) == 1
+        assert report.critical_regressions[0].type == RegressionType.COVERAGE
+        assert report.critical_regressions[0].metric == "line_coverage"
+        assert report.should_fail_ci()
+
+    def test_high_line_coverage_regression(self, detector, baseline_result):
+        """Test detection of high severity line coverage regression (<2% decrease)."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 69.0  # 1% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        assert len(report.high_regressions) == 1
+        assert report.high_regressions[0].type == RegressionType.COVERAGE
+        assert not report.should_fail_ci()
+
+    def test_coverage_improvement(self, detector, baseline_result):
+        """Test detection of coverage improvement."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 75.0  # 5% increase
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert not report.has_regressions
+        assert len(report.improvements) >= 1
+        improvement = next(i for i in report.improvements if i.metric == "line_coverage")
+        assert improvement.change_percentage > 0
+
+    def test_branch_coverage_regression(self, detector, baseline_result):
+        """Test detection of branch coverage regression."""
+        current = create_baseline_result()
+        current.coverage.branch_coverage = 62.0  # 3% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        critical_branch = next(
+            (r for r in report.critical_regressions if r.metric == "branch_coverage"),
+            None
         )
-    
-    def _create_current_result(self) -> AnalysisResult:
-        """Create a current analysis result for testing."""
-        return AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="current456",
-            architecture=ArchitectureAnalysis(
-                total_files=105,
-                large_files=[
-                    {"path": "src/new_large.py", "lines": 600, "complexity": 25}
-                ],
-                circular_dependencies=[],
-                coupling_metrics={},
-                solid_violations=[],
-                score=78.0
-            ),
-            performance=PerformanceAnalysis(
-                gpu_utilization=70.0,
-                memory_usage_peak_gb=14.0,
-                bottlenecks=[
-                    {"function": "baseline_func", "time_ms": 600, "percentage": 30.0},
-                    {"function": "new_bottleneck", "time_ms": 400, "percentage": 20.0}
-                ],
-                flame_graph_path="",
-                score=70.0
-            ),
-            coverage=CoverageAnalysis(
-                line_coverage=82.0,  # 3% decrease
-                branch_coverage=77.0,  # 3% decrease
-                untested_critical_paths=[
-                    "src/new_module.py:critical_function"
-                ],
-                missing_property_tests=[],
-                flaky_tests=[],
-                score=79.0
-            ),
-            code_quality=CodeQualityAnalysis(
-                average_complexity=9.5,
-                high_complexity_functions=[
-                    {"function": "complex_func", "complexity": 15, "file": "src/complex.py"}
-                ],
-                duplication_percentage=7.0,
-                documentation_coverage=70.0,
-                pylint_score=8.0,
-                score=75.0
-            ),
-            dependencies=DependencyAnalysis(
-                total_dependencies=32,
-                outdated_packages=[
-                    {"name": "requests", "current": "2.25.0", "latest": "2.28.0"}
-                ],
-                vulnerabilities=[
-                    {"package": "urllib3", "severity": "medium", "cve": "CVE-2023-1234"}
-                ],
-                unused_dependencies=[],
-                license_issues=[],
-                score=80.0
-            ),
-            deployment=DeploymentAnalysis(
-                dockerfile_score=78.0,
-                k8s_readiness=73.0,
-                ci_cd_completeness=83.0,
-                monitoring_score=68.0,
-                score=75.5
-            ),
-            security=SecurityAnalysis(
-                vulnerabilities=[
-                    Issue(
-                        id="SEC-001",
-                        dimension="security",
-                        severity=Severity.HIGH,
-                        category="Security",
-                        title="New SQL Injection",
-                        description="SQL injection vulnerability",
-                        file_path="src/database.py",
-                        line_number=45,
-                        recommendation="Use parameterized queries"
-                    )
-                ],
-                hardcoded_secrets=[
-                    {"file": "config.py", "line": 10, "type": "API_KEY"}
-                ],
-                tls_issues=[],
-                hipaa_compliance_score=80.0,
-                score=75.0
-            ),
-            scalability=ScalabilityAnalysis(
-                ddp_correctness=True,
-                memory_bottlenecks=[
-                    "New memory leak in data loader"
-                ],
-                communication_overhead_ms=25.0,
-                scaling_efficiency="sub-linear",
-                recommendations={},
-                score=75.0
-            ),
-            overall_score=76.0,  # 4 point decrease
-            critical_issues=[
-                Issue(
-                    id="SEC-001",
-                    dimension="security",
-                    severity=Severity.HIGH,
-                    category="Security",
-                    title="New SQL Injection",
-                    description="SQL injection vulnerability",
-                    file_path="src/database.py",
-                    line_number=45,
-                    recommendation="Use parameterized queries"
+        assert critical_branch is not None
+        assert critical_branch.severity == RegressionSeverity.CRITICAL
+
+
+class TestPerformanceRegressions:
+    """Test performance regression detection."""
+
+    def test_gpu_utilization_regression(self, detector, baseline_result):
+        """Test detection of GPU utilization regression (>10% decrease)."""
+        current = create_baseline_result()
+        current.performance.gpu_utilization = 75.0  # ~11.8% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        gpu_regression = next(
+            (r for r in report.critical_regressions if r.metric == "gpu_utilization"),
+            None
+        )
+        assert gpu_regression is not None
+        assert gpu_regression.type == RegressionType.PERFORMANCE
+
+    def test_memory_usage_regression(self, detector, baseline_result):
+        """Test detection of memory usage regression (>10% increase)."""
+        current = create_baseline_result()
+        current.performance.memory_usage_peak_gb = 9.0  # 12.5% increase
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        mem_regression = next(
+            (r for r in report.high_regressions if r.metric == "memory_usage_peak_gb"),
+            None
+        )
+        assert mem_regression is not None
+        assert mem_regression.severity == RegressionSeverity.HIGH
+
+    def test_new_bottleneck_detection(self, detector, baseline_result):
+        """Test detection of new performance bottlenecks."""
+        current = create_baseline_result()
+        current.performance.bottlenecks.append({"operation": "model_forward", "time_ms": 200})
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        bottleneck_regression = next(
+            (r for r in report.high_regressions if r.metric == "bottlenecks"),
+            None
+        )
+        assert bottleneck_regression is not None
+        assert "model_forward" in bottleneck_regression.description
+
+    def test_performance_improvement(self, detector, baseline_result):
+        """Test detection of performance improvement."""
+        current = create_baseline_result()
+        current.performance.gpu_utilization = 95.0  # ~11.8% increase
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        improvement = next(
+            (i for i in report.improvements if i.metric == "gpu_utilization"),
+            None
+        )
+        assert improvement is not None
+        assert improvement.change_percentage > 0
+
+
+class TestSecurityRegressions:
+    """Test security regression detection."""
+
+    def test_new_vulnerability_detection(self, detector, baseline_result):
+        """Test detection of new security vulnerabilities."""
+        current = create_baseline_result()
+        current.security.vulnerabilities.append({"type": "xss", "severity": "critical"})
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        assert len(report.critical_regressions) >= 1
+        vuln_regression = next(
+            (r for r in report.critical_regressions if r.metric == "vulnerabilities"),
+            None
+        )
+        assert vuln_regression is not None
+        assert vuln_regression.type == RegressionType.SECURITY
+
+    def test_new_cve_detection(self, detector, baseline_result):
+        """Test detection of new CVEs in dependencies."""
+        current = create_baseline_result()
+        current.dependencies.vulnerabilities.append({"cve_id": "CVE-2024-0001"})
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        cve_regression = next(
+            (r for r in report.critical_regressions if r.metric == "dependency_cves"),
+            None
+        )
+        assert cve_regression is not None
+        assert "CVE-2024-0001" in cve_regression.description
+
+    def test_hardcoded_secrets_detection(self, detector, baseline_result):
+        """Test detection of new hardcoded secrets."""
+        current = create_baseline_result()
+        current.security.hardcoded_secrets.append({
+            "type": "api_key",
+            "severity": "critical",
+            "file": "config.py",
+            "line": 42,
+            "description": "API key found"
+        })
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        secret_regression = next(
+            (r for r in report.critical_regressions if r.metric == "hardcoded_secrets"),
+            None
+        )
+        assert secret_regression is not None
+        assert secret_regression.severity == RegressionSeverity.CRITICAL
+
+    def test_security_improvement(self, detector, baseline_result):
+        """Test detection of security improvements."""
+        current = create_baseline_result()
+        current.security.vulnerabilities = []  # Fixed vulnerability
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        improvement = next(
+            (i for i in report.improvements if i.metric == "vulnerabilities"),
+            None
+        )
+        assert improvement is not None
+
+
+class TestCodeQualityRegressions:
+    """Test code quality regression detection."""
+
+    def test_complexity_regression(self, detector, baseline_result):
+        """Test detection of complexity regression (>20% increase)."""
+        current = create_baseline_result()
+        current.code_quality.average_complexity = 6.5  # 30% increase
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        complexity_regression = next(
+            (r for r in report.medium_regressions if r.metric == "average_complexity"),
+            None
+        )
+        assert complexity_regression is not None
+        assert complexity_regression.type == RegressionType.CODE_QUALITY
+
+    def test_duplication_regression(self, detector, baseline_result):
+        """Test detection of code duplication regression (>5% increase)."""
+        current = create_baseline_result()
+        current.code_quality.duplication_percentage = 16.0  # 6% increase
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert report.has_regressions
+        dup_regression = next(
+            (r for r in report.medium_regressions if r.metric == "duplication_percentage"),
+            None
+        )
+        assert dup_regression is not None
+        assert dup_regression.severity == RegressionSeverity.MEDIUM
+
+    def test_code_quality_improvement(self, detector, baseline_result):
+        """Test detection of code quality improvements."""
+        current = create_baseline_result()
+        current.code_quality.average_complexity = 3.5  # 30% decrease
+        current.code_quality.duplication_percentage = 4.0  # 6% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert len(report.improvements) >= 2
+
+
+class TestRegressionReport:
+    """Test RegressionReport functionality."""
+
+    def test_should_fail_ci_with_critical_regressions(self):
+        """Test CI failure logic with critical regressions."""
+        report = RegressionReport(
+            has_regressions=True,
+            critical_regressions=[
+                Regression(
+                    type=RegressionType.COVERAGE,
+                    severity=RegressionSeverity.CRITICAL,
+                    metric="line_coverage",
+                    baseline_value=70.0,
+                    current_value=67.0,
+                    change_percentage=-3.0,
+                    description="Coverage decreased"
                 )
             ]
         )
-    
-    def test_detect_regressions_with_baseline(self):
-        """Test regression detection with valid baseline."""
-        # Create temporary baseline file with all required fields
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            result = self.detector.detect_regressions(
-                current=self.current_result,
-                baseline_path=baseline_path
-            )
-            
-            # Should detect regressions
-            assert result is not None
-            assert result["has_regressions"] is True
-            assert "critical_regressions" in result
-            assert "comparison_details" in result
-            
-            # Should have detected some regressions (coverage, performance, security)
-            assert len(result["critical_regressions"]) > 0
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_detect_regressions_no_baseline(self):
-        """Test regression detection without baseline."""
-        result = self.detector.detect_regressions(
-            current=self.current_result,
-            baseline_path="nonexistent.json"
+
+        assert report.should_fail_ci()
+
+    def test_should_not_fail_ci_without_critical_regressions(self):
+        """Test CI passes without critical regressions."""
+        report = RegressionReport(
+            has_regressions=True,
+            high_regressions=[
+                Regression(
+                    type=RegressionType.COVERAGE,
+                    severity=RegressionSeverity.HIGH,
+                    metric="line_coverage",
+                    baseline_value=70.0,
+                    current_value=69.0,
+                    change_percentage=-1.0,
+                    description="Minor coverage decrease"
+                )
+            ]
         )
-        
-        # Should return no-baseline result
-        assert result is not None
-        assert result["has_regressions"] is False
-        assert result["should_fail_ci"] is False
-        assert result["baseline_timestamp"] is None
-        assert "No baseline available" in result["summary"]["message"]
-    
-    def test_coverage_regression_detection(self):
-        """Test coverage regression detection logic."""
-        regressions = self.detector._check_coverage_regressions(
-            current=self.current_result,
-            baseline=self.baseline_result
+
+        assert not report.should_fail_ci()
+
+    def test_get_all_regressions(self):
+        """Test getting all regressions sorted by severity."""
+        report = RegressionReport(
+            has_regressions=True,
+            critical_regressions=[
+                Regression(
+                    type=RegressionType.SECURITY,
+                    severity=RegressionSeverity.CRITICAL,
+                    metric="vulnerabilities",
+                    baseline_value=0,
+                    current_value=1,
+                    change_percentage=0,
+                    description="New vulnerability"
+                )
+            ],
+            high_regressions=[
+                Regression(
+                    type=RegressionType.PERFORMANCE,
+                    severity=RegressionSeverity.HIGH,
+                    metric="memory",
+                    baseline_value=8.0,
+                    current_value=9.0,
+                    change_percentage=12.5,
+                    description="Memory increase"
+                )
+            ]
         )
-        
-        # Should detect coverage regressions
-        assert regressions["coverage_regression_critical"] is True
-        
-        # Should have critical regressions
-        assert "critical_regressions" in regressions
-        critical_regressions = regressions["critical_regressions"]
-        
-        # Check for line coverage regression
-        line_regression = next((r for r in critical_regressions if r["metric"] == "line_coverage"), None)
-        assert line_regression is not None
-        assert line_regression["current"] == 82.0
-        assert line_regression["baseline"] == 85.0
-        assert line_regression["change"] == -3.0
-        
-        # Check for branch coverage regression
-        branch_regression = next((r for r in critical_regressions if r["metric"] == "branch_coverage"), None)
-        assert branch_regression is not None
-        assert branch_regression["current"] == 77.0
-        assert branch_regression["baseline"] == 80.0
-        assert branch_regression["change"] == -3.0
-    
-    def test_coverage_no_regression(self):
-        """Test coverage regression detection with no regressions."""
-        # Create current result with improved coverage
-        improved_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="improved123",
-            architecture=self.baseline_result.architecture,
-            performance=self.baseline_result.performance,
-            coverage=CoverageAnalysis(
-                line_coverage=87.0,  # Improvement
-                branch_coverage=82.0,  # Improvement
-                untested_critical_paths=[],
-                missing_property_tests=[],
-                flaky_tests=[],
-                score=85.0
-            ),
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=self.baseline_result.security,
-            scalability=self.baseline_result.scalability,
-            overall_score=85.0,
-            critical_issues=[]
-        )
-        
-        regressions = self.detector._check_coverage_regressions(
-            current=improved_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should not detect regressions
-        assert regressions["coverage_regression_critical"] is False
-        assert "critical_regressions" not in regressions or len(regressions["critical_regressions"]) == 0
-    
-    def test_performance_regression_detection(self):
-        """Test performance regression detection logic."""
-        regressions = self.detector._check_performance_regressions(
-            current=self.current_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should detect performance regressions
-        assert regressions["performance_regression_critical"] is True
-        
-        # Should have critical regressions
-        assert "critical_regressions" in regressions
-        critical_regressions = regressions["critical_regressions"]
-        assert len(critical_regressions) > 0
-        
-        # Check for GPU or memory regression
-        has_gpu_or_memory_regression = any(
-            r['metric'] in ['gpu_utilization', 'memory_usage'] 
-            for r in critical_regressions
-        )
-        assert has_gpu_or_memory_regression
-        
-        # Check for warnings about new bottlenecks
-        if "warnings" in regressions:
-            warnings = regressions["warnings"]
-            new_bottleneck_warning = next((w for w in warnings if w['type'] == 'new_bottlenecks'), None)
-            if new_bottleneck_warning:
-                assert new_bottleneck_warning['count'] >= 1
-    
-    def test_performance_no_regression(self):
-        """Test performance regression detection with no regressions."""
-        # Create current result with improved performance
-        improved_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="improved123",
-            architecture=self.baseline_result.architecture,
-            performance=PerformanceAnalysis(
-                gpu_utilization=80.0,  # Improvement
-                memory_usage_peak_gb=10.0,  # Improvement
-                bottlenecks=[
-                    {"function": "baseline_func", "time_ms": 400, "percentage": 20.0}  # Improved
-                ],
-                flame_graph_path="",
-                score=80.0
-            ),
-            coverage=self.baseline_result.coverage,
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=self.baseline_result.security,
-            scalability=self.baseline_result.scalability,
-            overall_score=85.0,
-            critical_issues=[]
-        )
-        
-        regressions = self.detector._check_performance_regressions(
-            current=improved_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should not detect regressions
-        assert regressions["performance_regression_critical"] is False
-        assert "critical_regressions" not in regressions or len(regressions.get("critical_regressions", [])) == 0
-    
-    def test_security_regression_detection(self):
-        """Test security regression detection logic."""
-        regressions = self.detector._check_security_regressions(
-            current=self.current_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should detect security regressions
-        assert regressions["security_regression_critical"] is True
-        
-        # Should have critical regressions
-        assert "critical_regressions" in regressions
-        critical_regressions = regressions["critical_regressions"]
-        assert len(critical_regressions) > 0
-        
-        # Check for vulnerability or secret regressions
-        has_vuln_or_secret_regression = any(
-            r['metric'] in ['vulnerabilities', 'hardcoded_secrets'] 
-            for r in critical_regressions
-        )
-        assert has_vuln_or_secret_regression
-    
-    def test_security_no_regression(self):
-        """Test security regression detection with no regressions."""
-        # Create current result with no new security issues
-        secure_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="secure123",
-            architecture=self.baseline_result.architecture,
-            performance=self.baseline_result.performance,
-            coverage=self.baseline_result.coverage,
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=SecurityAnalysis(
-                vulnerabilities=[],
-                hardcoded_secrets=[],
-                tls_issues=[],
-                hipaa_compliance_score=87.0,  # Improvement
-                score=87.0
-            ),
-            scalability=self.baseline_result.scalability,
-            overall_score=85.0,
-            critical_issues=[]
-        )
-        
-        regressions = self.detector._check_security_regressions(
-            current=secure_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should not detect regressions
-        assert regressions["security_regression_critical"] is False
-        assert "critical_regressions" not in regressions or len(regressions.get("critical_regressions", [])) == 0
-    
-    def test_overall_score_regression(self):
-        """Test overall score regression detection."""
-        regression = self.detector._check_overall_score_regression(
-            current=self.current_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should detect overall score regression (76 vs 80 = -4, threshold is -5, so no critical regression)
-        # But should still have comparison details
-        assert 'comparison_details' in regression
-        assert 'overall' in regression['comparison_details']
-        
-        # Check comparison details
-        overall_details = regression['comparison_details']['overall']['score']
-        assert overall_details['baseline'] == 80.0
-        assert overall_details['current'] == 76.0
-        assert overall_details['change'] == -4.0
-    
-    def test_overall_score_no_regression(self):
-        """Test overall score regression with improvement."""
-        improved_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="improved123",
-            architecture=self.baseline_result.architecture,
-            performance=self.baseline_result.performance,
-            coverage=self.baseline_result.coverage,
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=self.baseline_result.security,
-            scalability=self.baseline_result.scalability,
-            overall_score=83.0,  # +3 points, above the >2.0 threshold
-            critical_issues=[]
-        )
-        
-        regression = self.detector._check_overall_score_regression(
-            current=improved_result,
-            baseline=self.baseline_result
-        )
-        
-        # Should not detect regression, should have improvements
-        assert 'critical_regressions' not in regression or len(regression.get('critical_regressions', [])) == 0
-        # Should have improvements (+3 is > 2.0 threshold)
-        assert 'improvements' in regression
-        assert len(regression['improvements']) > 0
-    
-    def test_generate_diff_report_markdown(self):
-        """Test Markdown diff report generation."""
-        # Create temporary baseline file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            report = self.detector.generate_diff_report(
-                current=self.current_result,
-                baseline_path=baseline_path,
-                format="markdown"
-            )
-            
-            # Should generate Markdown report
-            assert "# Regression Analysis Report" in report or "Regression" in report
-            assert "Status:" in report or "status" in report.lower()
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_generate_diff_report_text(self):
-        """Test text diff report generation."""
-        # Create temporary baseline file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            report = self.detector.generate_diff_report(
-                current=self.current_result,
-                baseline_path=baseline_path,
-                format="text"
-            )
-            
-            # Should generate text report
-            assert "REGRESSION" in report.upper() or "Status:" in report
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_should_fail_build_critical_regressions(self):
-        """Test CI build failure logic with critical regressions."""
-        # First detect regressions to get proper result structure
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            regression_result = self.detector.detect_regressions(
-                current=self.current_result,
-                baseline_path=baseline_path
-            )
-            
-            should_fail, reason = self.detector.should_fail_build(regression_result)
-            
-            # Should fail build due to critical regressions
-            assert should_fail is True
-            assert "critical" in reason.lower() or "regression" in reason.lower()
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_should_fail_build_no_critical_regressions(self):
-        """Test CI build failure logic with no critical regressions."""
-        # Create improved result with no critical regressions
-        improved_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="improved123",
-            architecture=self.baseline_result.architecture,
-            performance=self.baseline_result.performance,
-            coverage=CoverageAnalysis(
-                line_coverage=84.0,  # Small decrease, not critical
-                branch_coverage=79.0,  # Small decrease, not critical
-                untested_critical_paths=[],
-                missing_property_tests=[],
-                flaky_tests=[],
-                score=81.0
-            ),
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=self.baseline_result.security,
-            scalability=self.baseline_result.scalability,
-            overall_score=79.0,  # Small decrease, not critical
-            critical_issues=[]
-        )
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            regression_result = self.detector.detect_regressions(
-                current=improved_result,
-                baseline_path=baseline_path
-            )
-            
-            should_fail, reason = self.detector.should_fail_build(regression_result)
-            
-            # Should not fail build
-            assert should_fail is False
-            assert "no critical" in reason.lower() or "no regressions" in reason.lower()
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_should_fail_build_no_regressions(self):
-        """Test CI build failure logic with no regressions."""
-        # Create improved result
-        improved_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="improved123",
-            architecture=self.baseline_result.architecture,
-            performance=self.baseline_result.performance,
-            coverage=CoverageAnalysis(
-                line_coverage=87.0,  # Improvement
-                branch_coverage=82.0,  # Improvement
-                untested_critical_paths=[],
-                missing_property_tests=[],
-                flaky_tests=[],
-                score=85.0
-            ),
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=self.baseline_result.security,
-            scalability=self.baseline_result.scalability,
-            overall_score=85.0,
-            critical_issues=[]
-        )
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            regression_result = self.detector.detect_regressions(
-                current=improved_result,
-                baseline_path=baseline_path
-            )
-            
-            should_fail, reason = self.detector.should_fail_build(regression_result)
-            
-            # Should not fail build
-            assert should_fail is False
-            assert "no" in reason.lower() and "regression" in reason.lower()
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_load_baseline_valid_file(self):
-        """Test loading valid baseline file."""
-        baseline_data = {
-            "timestamp": "2023-01-01T00:00:00",
-            "project_path": "/test",
-            "git_commit": "abc123",
-            "overall_score": 85.0,
-            "architecture": {
-                "total_files": 100,
-                "large_files": [],
-                "circular_dependencies": [],
-                "coupling_metrics": {},
-                "solid_violations": [],
-                "score": 85.0
-            },
-            "coverage": {
-                "line_coverage": 90.0,
-                "branch_coverage": 85.0,
-                "untested_critical_paths": [],
-                "missing_property_tests": [],
-                "flaky_tests": [],
-                "slow_tests": [],
-                "score": 87.0
-            },
-            "performance": {
-                "gpu_utilization": 80.0,
-                "memory_usage_peak_gb": 10.0,
-                "memory_usage_avg_gb": 8.0,
-                "bottlenecks": [],
-                "flame_graph_path": "",
-                "score": 80.0
-            },
-            "code_quality": {
-                "average_complexity": 5.0,
-                "high_complexity_functions": [],
-                "duplication_percentage": 3.0,
-                "documentation_coverage": 80.0,
-                "pylint_score": 9.0,
-                "score": 85.0,
-                "fix_suggestions": []
-            },
-            "dependencies": {
-                "total_dependencies": 20,
-                "vulnerabilities": [],
-                "outdated_packages": [],
-                "license_issues": [],
-                "unused_dependencies": [],
-                "redundant_dependencies": [],
-                "security_report": {},
-                "score": 90.0
-            },
-            "deployment": {
-                "dockerfile_score": 85.0,
-                "k8s_readiness": 80.0,
-                "ci_cd_completeness": 90.0,
-                "monitoring_score": 75.0,
-                "score": 82.5
-            },
-            "security": {
-                "vulnerabilities": [],
-                "hardcoded_secrets": [],
-                "tls_issues": [],
-                "injection_risks": [],
-                "hipaa_compliance_score": 90.0,
-                "score": 90.0
-            },
-            "scalability": {
-                "ddp_correctness": True,
-                "scaling_efficiency": "linear",
-                "memory_bottlenecks": [],
-                "communication_overhead_ms": 10.0,
-                "score": 85.0,
-                "recommendations": {}
-            },
-            "critical_issues": []
-        }
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            result = self.detector._load_baseline(baseline_path)
-            
-            # Should load successfully
-            assert result is not None
-            assert result.overall_score == 85.0
-            assert result.coverage.line_coverage == 90.0
-            assert result.performance.gpu_utilization == 80.0
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_load_baseline_invalid_file(self):
-        """Test loading invalid baseline file."""
-        result = self.detector._load_baseline("nonexistent.json")
-        
-        # Should return None for invalid file
-        assert result is None
-    
-    def test_load_baseline_malformed_json(self):
-        """Test loading malformed JSON baseline file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write("invalid json content")
-            baseline_path = f.name
-        
-        try:
-            result = self.detector._load_baseline(baseline_path)
-            
-            # Should return None for malformed JSON
-            assert result is None
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_regression_summary_generation(self):
-        """Test regression summary generation."""
-        # Create temporary baseline file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            regression_result = self.detector.detect_regressions(
-                current=self.current_result,
-                baseline_path=baseline_path
-            )
-            
-            summary = regression_result['summary']
-            
-            # Should generate comprehensive summary
-            assert 'status' in summary
-            assert 'message' in summary
-            assert 'critical_count' in summary
-            assert summary['critical_count'] > 0  # Should have critical regressions
-            
-        finally:
-            os.unlink(baseline_path)
-    
-    def test_regression_summary_no_regressions(self):
-        """Test regression summary with no regressions."""
-        # Create improved result
-        improved_result = AnalysisResult(
-            timestamp=datetime.now(),
-            project_path="/test/project",
-            git_commit="improved123",
-            architecture=self.baseline_result.architecture,
-            performance=self.baseline_result.performance,
-            coverage=CoverageAnalysis(
-                line_coverage=87.0,  # Improvement
-                branch_coverage=82.0,  # Improvement
-                untested_critical_paths=[],
-                missing_property_tests=[],
-                flaky_tests=[],
-                score=85.0
-            ),
-            code_quality=self.baseline_result.code_quality,
-            dependencies=self.baseline_result.dependencies,
-            deployment=self.baseline_result.deployment,
-            security=self.baseline_result.security,
-            scalability=self.baseline_result.scalability,
-            overall_score=85.0,
-            critical_issues=[]
-        )
-        
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            baseline_data = {
-                "timestamp": self.baseline_result.timestamp.isoformat(),
-                "project_path": self.baseline_result.project_path,
-                "git_commit": self.baseline_result.git_commit,
-                "overall_score": self.baseline_result.overall_score,
-                "architecture": {
-                    "total_files": self.baseline_result.architecture.total_files,
-                    "large_files": self.baseline_result.architecture.large_files,
-                    "circular_dependencies": self.baseline_result.architecture.circular_dependencies,
-                    "coupling_metrics": self.baseline_result.architecture.coupling_metrics,
-                    "solid_violations": [],
-                    "score": self.baseline_result.architecture.score
-                },
-                "coverage": {
-                    "line_coverage": self.baseline_result.coverage.line_coverage,
-                    "branch_coverage": self.baseline_result.coverage.branch_coverage,
-                    "untested_critical_paths": self.baseline_result.coverage.untested_critical_paths,
-                    "missing_property_tests": self.baseline_result.coverage.missing_property_tests,
-                    "flaky_tests": self.baseline_result.coverage.flaky_tests,
-                    "slow_tests": [],
-                    "score": self.baseline_result.coverage.score
-                },
-                "performance": {
-                    "gpu_utilization": self.baseline_result.performance.gpu_utilization,
-                    "memory_usage_peak_gb": self.baseline_result.performance.memory_usage_peak_gb,
-                    "memory_usage_avg_gb": 0.0,
-                    "bottlenecks": self.baseline_result.performance.bottlenecks,
-                    "flame_graph_path": self.baseline_result.performance.flame_graph_path,
-                    "score": self.baseline_result.performance.score
-                },
-                "code_quality": {
-                    "average_complexity": self.baseline_result.code_quality.average_complexity,
-                    "high_complexity_functions": self.baseline_result.code_quality.high_complexity_functions,
-                    "duplication_percentage": self.baseline_result.code_quality.duplication_percentage,
-                    "documentation_coverage": self.baseline_result.code_quality.documentation_coverage,
-                    "pylint_score": self.baseline_result.code_quality.pylint_score,
-                    "score": self.baseline_result.code_quality.score,
-                    "fix_suggestions": []
-                },
-                "dependencies": {
-                    "total_dependencies": self.baseline_result.dependencies.total_dependencies,
-                    "vulnerabilities": self.baseline_result.dependencies.vulnerabilities,
-                    "outdated_packages": self.baseline_result.dependencies.outdated_packages,
-                    "license_issues": self.baseline_result.dependencies.license_issues,
-                    "unused_dependencies": self.baseline_result.dependencies.unused_dependencies,
-                    "redundant_dependencies": [],
-                    "security_report": {},
-                    "score": self.baseline_result.dependencies.score
-                },
-                "deployment": {
-                    "dockerfile_score": self.baseline_result.deployment.dockerfile_score,
-                    "k8s_readiness": self.baseline_result.deployment.k8s_readiness,
-                    "ci_cd_completeness": self.baseline_result.deployment.ci_cd_completeness,
-                    "monitoring_score": self.baseline_result.deployment.monitoring_score,
-                    "score": self.baseline_result.deployment.score
-                },
-                "security": {
-                    "vulnerabilities": [],
-                    "hardcoded_secrets": [],
-                    "tls_issues": [],
-                    "injection_risks": [],
-                    "hipaa_compliance_score": self.baseline_result.security.hipaa_compliance_score,
-                    "score": self.baseline_result.security.score
-                },
-                "scalability": {
-                    "ddp_correctness": self.baseline_result.scalability.ddp_correctness,
-                    "scaling_efficiency": self.baseline_result.scalability.scaling_efficiency,
-                    "memory_bottlenecks": self.baseline_result.scalability.memory_bottlenecks,
-                    "communication_overhead_ms": self.baseline_result.scalability.communication_overhead_ms,
-                    "score": self.baseline_result.scalability.score,
-                    "recommendations": self.baseline_result.scalability.recommendations
-                },
-                "critical_issues": []
-            }
-            json.dump(baseline_data, f)
-            baseline_path = f.name
-        
-        try:
-            regression_result = self.detector.detect_regressions(
-                current=improved_result,
-                baseline_path=baseline_path
-            )
-            
-            summary = regression_result['summary']
-            
-            # Should generate positive summary
-            assert 'status' in summary
-            assert 'message' in summary
-            assert summary['status'] == 'PASS'
-            
-        finally:
-            os.unlink(baseline_path)
+
+        all_regressions = report.get_all_regressions()
+        assert len(all_regressions) == 2
+        assert all_regressions[0].severity == RegressionSeverity.CRITICAL
+        assert all_regressions[1].severity == RegressionSeverity.HIGH
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+class TestDiffReportGeneration:
+    """Test diff report generation."""
+
+    def test_generate_diff_report(self, detector, baseline_result):
+        """Test generation of side-by-side comparison report."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 67.0
+        current.performance.gpu_utilization = 75.0
+
+        report = detector.detect_regressions(baseline_result, current)
+        diff_report = detector.generate_diff_report(baseline_result, current, report)
+
+        assert "Regression Analysis Report" in diff_report
+        assert "Coverage Metrics" in diff_report
+        assert "Performance Metrics" in diff_report
+        assert "67.0%" in diff_report  # Current coverage
+        assert "75.0%" in diff_report  # Current GPU utilization
+
+    def test_diff_report_includes_regressions(self, detector, baseline_result):
+        """Test diff report includes regression details."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 67.0
+
+        report = detector.detect_regressions(baseline_result, current)
+        diff_report = detector.generate_diff_report(baseline_result, current, report)
+
+        assert "Regressions" in diff_report
+        assert "CRITICAL" in diff_report or "HIGH" in diff_report
+
+
+class TestCIIntegration:
+    """Test CI/CD integration functionality."""
+
+    def test_exit_code_for_critical_regression(self, detector, baseline_result):
+        """Test exit code 1 for critical regressions."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 67.0  # Critical regression
+
+        report = detector.detect_regressions(baseline_result, current)
+        exit_code = detector.exit_code_for_ci(report)
+
+        assert exit_code == 1
+
+    def test_exit_code_for_no_regressions(self, detector, baseline_result):
+        """Test exit code 0 for no regressions."""
+        current = create_baseline_result()
+
+        report = detector.detect_regressions(baseline_result, current)
+        exit_code = detector.exit_code_for_ci(report)
+
+        assert exit_code == 0
+
+    def test_exit_code_for_non_critical_regressions(self, detector, baseline_result):
+        """Test exit code 0 for non-critical regressions."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 69.0  # High severity, not critical
+
+        report = detector.detect_regressions(baseline_result, current)
+        exit_code = detector.exit_code_for_ci(report)
+
+        assert exit_code == 0
+
+
+class TestCustomThresholds:
+    """Test custom threshold configuration."""
+
+    def test_custom_coverage_threshold(self, baseline_result):
+        """Test custom coverage threshold."""
+        detector = RegressionDetector(coverage_threshold=5.0)  # More lenient
+
+        current = create_baseline_result()
+        current.coverage.line_coverage = 67.0  # 3% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        # Should be HIGH, not CRITICAL with 5% threshold
+        assert len(report.critical_regressions) == 0
+        assert len(report.high_regressions) >= 1
+
+    def test_custom_performance_threshold(self, baseline_result):
+        """Test custom performance threshold."""
+        detector = RegressionDetector(performance_threshold=20.0)  # More lenient
+
+        current = create_baseline_result()
+        current.performance.gpu_utilization = 75.0  # ~11.8% decrease
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        # Should not be flagged with 20% threshold
+        gpu_regressions = [r for r in report.get_all_regressions() if r.metric == "gpu_utilization"]
+        assert len(gpu_regressions) == 0
+
+
+class TestSummaryGeneration:
+    """Test summary generation."""
+
+    def test_summary_with_critical_regressions(self, detector, baseline_result):
+        """Test summary includes critical regressions."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 67.0
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert "CRITICAL" in report.summary
+        assert "coverage" in report.summary.lower()
+
+    def test_summary_with_improvements(self, detector, baseline_result):
+        """Test summary includes improvements."""
+        current = create_baseline_result()
+        current.coverage.line_coverage = 75.0
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert "improvements" in report.summary.lower()
+
+    def test_summary_with_no_changes(self, detector, baseline_result):
+        """Test summary when no changes detected."""
+        current = create_baseline_result()
+
+        report = detector.detect_regressions(baseline_result, current)
+
+        assert "No regressions" in report.summary or "stable" in report.summary.lower()
