@@ -387,7 +387,12 @@ class EncryptionManager:
         return output_path
 
     def decrypt_file(self, input_path: str, output_path: str) -> str:
-        """Decrypt file."""
+        """Decrypt file with size validation."""
+        max_size = 1024 * 1024 * 1024  # 1GB
+        file_size = os.path.getsize(input_path)
+        if file_size > max_size:
+            raise ValueError(f"File too large: {file_size} bytes")
+        
         with open(input_path, "rb") as f:
             encrypted_data = f.read()
 
