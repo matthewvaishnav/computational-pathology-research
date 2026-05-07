@@ -368,7 +368,12 @@ class EncryptionManager:
             return self.fernet.decrypt(encrypted_data)
 
     def encrypt_file(self, input_path: str, output_path: str) -> str:
-        """Encrypt file."""
+        """Encrypt file with size limit."""
+        max_size = 1024 * 1024 * 1024  # 1GB limit
+        file_size = os.path.getsize(input_path)
+        if file_size > max_size:
+            raise ValueError(f"File too large: {file_size} bytes (max {max_size})")
+        
         with open(input_path, "rb") as f:
             data = f.read()
 
