@@ -527,6 +527,18 @@ class TestSecurityScoreCalculation:
         # Mixed security should result in moderate score
         assert 50.0 <= score <= 85.0
 
+    def test_calculate_security_score_penalizes_tls_issues(self):
+        """Test TLS findings reduce the score when present."""
+        score = self.scanner._calculate_security_score(
+            vulnerabilities=[],
+            hipaa_score=100.0,
+            secrets=[],
+            injection_risks=[],
+            tls_issues=[{'type': 'verify_false'}]
+        )
+
+        assert score < 100.0
+
 
 class TestIntegrationWithMockData:
     """Integration tests with mock security data."""
