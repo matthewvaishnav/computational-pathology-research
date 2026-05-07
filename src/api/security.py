@@ -318,14 +318,23 @@ def secure_filename(filename: str) -> str:
     # Normalize unicode characters
     filename = unicodedata.normalize("NFKD", filename)
 
-    # Remove any path components
+    # Remove any path components (prevent directory traversal)
     filename = os.path.basename(filename)
+    
+    # Additional path traversal protection
+    if ".." in filename or "/" in filename or "\\" in filename:
+        logger.warning(f"Path traversal attempt detected in filename: {filename}")
+        filename = filename.replace("..", "").replace("/", "").replace("\\", "")
 
     # Remove any non-alphanumeric characters except dots, dashes, and underscores
     filename = re.sub(r"[^\w\s.-]", "", filename)
 
     # Replace spaces with underscores
     filename = filename.replace(" ", "_")
+    
+    # Prevent hidden files
+    if filename.startswith("."):
+        filename = "file" + filename
 
     # Limit length
     if len(filename) > 255:
