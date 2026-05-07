@@ -169,7 +169,7 @@ def test_model_inference(checkpoint_path: str, num_samples: int = 100) -> Dict[s
         # Handle AUC calculation
         try:
             auc = roc_auc_score(all_labels, all_probs)
-        except:
+        except (ValueError, ImportError) as e:
             auc = None
         
         cm = confusion_matrix(all_labels, all_preds)
@@ -258,7 +258,7 @@ def validate_attention_weights(checkpoint_path: str, num_samples: int = 10) -> D
                     attention_sums.append(attention_sum)
                     attention_ranges.append((attention_min, attention_max))
                     
-                except:
+                except (TypeError, ValueError, AttributeError) as e:
                     # Model doesn't support return_attention
                     print("  Note: Model doesn't support return_attention parameter")
                     break
