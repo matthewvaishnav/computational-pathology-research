@@ -580,6 +580,7 @@ class TestIntegrationWithMockData:
         assert len(result.vulnerabilities) == 1
         assert result.hipaa_compliance_score == 70.0
         assert len(result.hardcoded_secrets) == 1
+        assert result.hardcoded_secrets[0]['type'] == 'api_key'
         assert len(result.injection_risks) == 1
         
         # Verify score calculation
