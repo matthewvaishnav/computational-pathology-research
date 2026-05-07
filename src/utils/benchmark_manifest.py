@@ -161,6 +161,6 @@ if __name__ == "__main__":
     # Example: Read and print current manifest
     manifest = BenchmarkManifest()
     entries = manifest.read_all()
-    print(f"Found {len(entries)} benchmark entries")
+    logger.info("Found %d benchmark entries", len(entries))
     for e in entries:
-        print(f"  - {e.experiment_name}: {e.status}")
+        logger.info("  - %s: %s", e.experiment_name, e.status)
