@@ -34,7 +34,13 @@ class DeploymentValidator:
         
         Returns:
             DeploymentAnalysis with readiness metrics
+            
+        Raises:
+            ValueError: If project_path does not exist
         """
+        if not self.project_path.exists():
+            raise ValueError(f"Project path does not exist: {self.project_path}")
+        
         logger.info("Starting deployment analysis...")
         
         # Dockerfile validation
