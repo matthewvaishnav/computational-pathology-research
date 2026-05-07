@@ -83,10 +83,14 @@ class CoverageAnalyzer:
                 if result.returncode == 0:
                     coverage_json = self.project_path / 'coverage.json'
                     if coverage_json.exists():
-                        data = json.loads(coverage_json.read_text())
-                        
-                        line_cov = data.get('totals', {}).get('percent_covered', 0.0)
-                        branch_cov = data.get('totals', {}).get('percent_covered_display', 0.0)
+                        try:
+                            data = json.loads(coverage_json.read_text())
+                            
+                            line_cov = data.get('totals', {}).get('percent_covered', 0.0)
+                            branch_cov = data.get('totals', {}).get('percent_covered_display', 0.0)
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"Failed to parse coverage JSON: {e}")
+                            return (0.0, 0.0)
                         
                         # Clean up
                         coverage_json.unlink()
