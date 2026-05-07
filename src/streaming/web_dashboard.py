@@ -386,10 +386,11 @@ async def start_processing(request: ProcessingRequest, background_tasks: Backgro
     if dashboard_state.status == "processing":
         raise HTTPException(status_code=400, detail="Processing already in progress")
 
-    # Validate WSI path
-    wsi_path = Path(request.wsi_path)
-    if not wsi_path.exists():
-        raise HTTPException(status_code=404, detail=f"WSI file not found: {request.wsi_path}")
+    # Validate WSI path - prevent path traversal
+    wsi_path = Path(request.wsi_path).resolve()
+    # Ensure path doesn't contain traversal attempts
+    if ".." in request.wsi_path or not wsi_path.exists():
+        raise HTTPException(status_code=400, detail="Invalid WSI path")
 
     # Update parameters if provided
     if request.parameters:
