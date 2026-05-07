@@ -348,7 +348,7 @@ class ThreadSafeDict(Generic[K, V]):
         
         # Safe iteration
         for key, value in d.items():
-            print(key, value)
+            logger.debug("Key: %s, Value: %s", key, value)
     """
     
     def __init__(self, name: str = "unnamed"):
@@ -435,11 +435,11 @@ class ThreadSafeSet(Generic[T]):
         s.remove('item')
         
         if 'item' in s:
-            print('found')
+            logger.debug("Item found")
         
         # Safe iteration
         for item in s:
-            print(item)
+            logger.debug("Item: %s", item)
     """
     
     def __init__(self, name: str = "unnamed"):
@@ -543,22 +543,22 @@ def create_graceful_thread(
 # Example usage
 if __name__ == "__main__":
     # Example 1: Bounded queue
-    print("Example 1: Bounded Queue")
+    logger.info("Example 1: Bounded Queue")
     q = BoundedQueue(maxsize=5, drop_policy='oldest', name='example')
     
     for i in range(10):
         q.put(i, timeout=0.1)
     
-    print(f"Queue stats: {q.get_stats()}")
+    logger.info("Queue stats: %s", q.get_stats())
     
     # Example 2: Graceful thread
-    print("\nExample 2: Graceful Thread")
+    logger.info("Example 2: Graceful Thread")
     
     def worker(thread: GracefulThread):
         count = 0
         while not thread.should_stop():
             count += 1
-            print(f"Working... {count}")
+            logger.info("Working... %d", count)
             if thread.wait_or_stop(1.0):
                 break
     
@@ -569,16 +569,16 @@ if __name__ == "__main__":
     thread.stop(timeout=5.0)
     
     # Example 3: Thread-safe collections
-    print("\nExample 3: Thread-Safe Collections")
+    logger.info("Example 3: Thread-Safe Collections")
     
     d = ThreadSafeDict(name='example')
     d['key1'] = 'value1'
     d['key2'] = 'value2'
     
-    print(f"Dict items: {d.items()}")
+    logger.info("Dict items: %s", d.items())
     
     s = ThreadSafeSet(name='example')
     s.add('item1')
     s.add('item2')
     
-    print(f"Set items: {list(s)}")
+    logger.info("Set items: %s", list(s))
