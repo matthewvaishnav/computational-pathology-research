@@ -86,7 +86,8 @@ class InferenceEngine:
             result.uncertainty_score = self._calculate_uncertainty(probabilities)
 
             logger.info(
-                f"Inference completed: {result.prediction_class} ({result.confidence_score:.3f}) in {processing_time_ms}ms"
+                "Inference completed: %s (%.3f) in %dms",
+                result.prediction_class, result.confidence_score, processing_time_ms
             )
 
             return result
@@ -179,7 +180,8 @@ class InferenceEngine:
             result.uncertainty_score = self._calculate_uncertainty(probabilities)
 
             logger.info(
-                f"Inference completed for {filename}: {result.prediction_class} ({result.confidence_score:.3f}) in {processing_time_ms}ms"
+                "Inference completed for %s: %s (%.3f) in %dms",
+                filename, result.prediction_class, result.confidence_score, processing_time_ms
             )
 
             return result
