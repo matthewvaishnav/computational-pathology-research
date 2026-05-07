@@ -156,7 +156,7 @@ class SecurityAnalysis:
     """Security vulnerability assessment."""
     vulnerabilities: List[Dict[str, Any]] = field(default_factory=list)
     hipaa_compliance_score: float = 0.0
-    hardcoded_secrets: List[str] = field(default_factory=list)
+    hardcoded_secrets: List[SecretFinding] = field(default_factory=list)
     injection_risks: List[Dict[str, Any]] = field(default_factory=list)
     tls_issues: List[Dict[str, Any]] = field(default_factory=list)
     score: float = 0.0
