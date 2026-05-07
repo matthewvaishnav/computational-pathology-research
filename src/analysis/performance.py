@@ -52,6 +52,9 @@ class PerformanceProfiler:
         # Calculate score
         score = self._calculate_performance_score(gpu_util, bottlenecks, memory_peak)
         
+        # Cleanup temporary files and resources
+        self._cleanup_resources()
+        
         return PerformanceAnalysis(
             gpu_utilization=gpu_util,
             bottlenecks=bottlenecks,
@@ -383,3 +386,28 @@ class PerformanceProfiler:
             score += 15.0  # Partial credit if no data
         
         return max(0.0, min(100.0, round(score, 2)))
+    
+    def _cleanup_resources(self) -> None:
+        """Clean up temporary files and resources to prevent memory leaks."""
+        try:
+            # Clean up performance analysis directory
+            perf_dir = self.project_path / 'performance_analysis'
+            if perf_dir.exists():
+                # Remove old profile files (keep only latest 3)
+                profile_files = list(perf_dir.glob('profile*.stats'))
+                if len(profile_files) > 3:
+                    # Sort by modification time, remove oldest
+                    profile_files.sort(key=lambda p: p.stat().st_mtime)
+                    for old_file in profile_files[:-3]:
+                        old_file.unlink()
+                        logger.debug(f"Cleaned up old profile file: {old_file}")
+                
+                # Remove temporary coverage files
+                temp_files = list(perf_dir.glob('*.tmp')) + list(perf_dir.glob('coverage.json'))
+                for temp_file in temp_files:
+                    if temp_file.exists():
+                        temp_file.unlink()
+                        logger.debug(f"Cleaned up temp file: {temp_file}")
+        
+        except Exception as e:
+            logger.debug(f"Cleanup warning: {e}")
