@@ -10,12 +10,10 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
 import psutil
-import seaborn as sns
 import torch
 
 logger = logging.getLogger(__name__)
