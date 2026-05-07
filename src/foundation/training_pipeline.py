@@ -641,8 +641,11 @@ class FoundationModelTrainer:
             report += f"- Final accuracy: {final_metrics.accuracy:.3f}\n"
             if final_metrics.disease_accuracies:
                 report += "- Disease-specific accuracies:\n"
-                for disease, acc in final_metrics.disease_accuracies.items():
-                    report += f"  - {disease}: {acc:.3f}\n"
+                disease_lines = [
+                    f"  - {disease}: {acc:.3f}\n"
+                    for disease, acc in final_metrics.disease_accuracies.items()
+                ]
+                report += "".join(disease_lines)
             report += "\n"
 
         # Performance targets
