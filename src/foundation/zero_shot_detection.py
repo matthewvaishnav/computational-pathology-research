@@ -444,26 +444,28 @@ class ZeroShotDetector:
         """Generate explanation for zero-shot prediction"""
         disease = self.knowledge_base.diseases[prediction.predicted_disease]
 
-        explanation = f"Predicted disease: {prediction.predicted_disease}\n"
-        explanation += f"Confidence: {prediction.confidence:.3f}\n"
-        explanation += f"Uncertainty: {prediction.uncertainty_score:.3f}\n\n"
-
-        explanation += f"Disease description: {disease.description}\n\n"
-
-        explanation += "Key pathological features:\n"
-        for feature in disease.pathological_features:
-            explanation += f"- {feature}\n"
+        parts = [
+            f"Predicted disease: {prediction.predicted_disease}\n",
+            f"Confidence: {prediction.confidence:.3f}\n",
+            f"Uncertainty: {prediction.uncertainty_score:.3f}\n\n",
+            f"Disease description: {disease.description}\n\n",
+            "Key pathological features:\n",
+        ]
+        
+        parts.extend(f"- {feature}\n" for feature in disease.pathological_features)
 
         if prediction.requires_expert_review:
-            explanation += (
+            parts.append(
                 "\n⚠️ Expert review recommended due to low confidence or high uncertainty."
             )
 
-        explanation += f"\nTop {len(prediction.top_k_diseases)} similar diseases:\n"
-        for i, (disease_name, score) in enumerate(prediction.top_k_diseases):
-            explanation += f"{i+1}. {disease_name}: {score:.3f}\n"
+        parts.append(f"\nTop {len(prediction.top_k_diseases)} similar diseases:\n")
+        parts.extend(
+            f"{i+1}. {disease_name}: {score:.3f}\n"
+            for i, (disease_name, score) in enumerate(prediction.top_k_diseases)
+        )
 
-        return explanation
+        return "".join(parts)
 
 
 class ZeroShotEvaluator:
