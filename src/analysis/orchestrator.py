@@ -54,11 +54,35 @@ class AnalysisOrchestrator:
         Args:
             project_path: Path to project root directory
             max_workers: Max parallel workers (default: min(8, cpu_count))
+            
+        Raises:
+            ValueError: If configuration is invalid
         """
         self.project_path = Path(project_path).resolve()
         self.max_workers = max_workers or min(8, self._get_cpu_count())
         self.timing_data: Dict[str, float] = {}
         self.errors: List[Dict[str, Any]] = []
+        
+        # Validate configuration
+        self._validate_config()
+        
+    def _validate_config(self) -> None:
+        """Validate orchestrator configuration."""
+        if not self.project_path.exists():
+            raise ValueError(f"Project path does not exist: {self.project_path}")
+        
+        if not self.project_path.is_dir():
+            raise ValueError(f"Project path is not a directory: {self.project_path}")
+        
+        if self.max_workers < 1 or self.max_workers > 32:
+            raise ValueError(f"max_workers must be between 1 and 32, got: {self.max_workers}")
+        
+        # Check for required Python files
+        python_files = list(self.project_path.rglob('*.py'))
+        if not python_files:
+            raise ValueError(f"No Python files found in project: {self.project_path}")
+        
+        logger.info(f"Configuration validated: {len(python_files)} Python files, {self.max_workers} workers")
         
     @staticmethod
     def _get_cpu_count() -> int:
