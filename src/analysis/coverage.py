@@ -251,10 +251,73 @@ class CoverageAnalyzer:
         return missing[:15]  # Limit to top 15
     
     def _detect_flaky_tests(self) -> List[str]:
-        """Detect flaky tests (placeholder)."""
-        # TODO: Analyze historical test results
-        logger.info("Flaky test detection not yet implemented")
-        return []
+        """
+        Detect flaky tests by analyzing pytest output.
+        
+        Flaky tests are identified by:
+        - Tests that use time.sleep() or asyncio.sleep()
+        - Tests with random number generation without seeds
+        - Tests that depend on external network calls
+        
+        Returns:
+            List of potentially flaky test identifiers
+        """
+        import ast
+        
+        flaky = []
+        
+        try:
+            tests_dir = self.project_path / 'tests'
+            if not tests_dir.exists():
+                return []
+            
+            for test_file in tests_dir.rglob('test_*.py'):
+                try:
+                    content = test_file.read_text()
+                    tree = ast.parse(content)
+                    
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'):
+                            test_name = node.name
+                            
+                            # Check for sleep calls
+                            for child in ast.walk(node):
+                                if isinstance(child, ast.Call):
+                                    if hasattr(child.func, 'attr'):
+                                        if child.func.attr in ['sleep', 'wait']:
+                                            rel_path = test_file.relative_to(self.project_path)
+                                            flaky.append(f"{rel_path}::{test_name} (uses sleep)")
+                                            break
+                                    
+                                    # Check for random without seed
+                                    if hasattr(child.func, 'id'):
+                                        if 'random' in child.func.id.lower():
+                                            # Check if seed is set
+                                            has_seed = any(
+                                                isinstance(n, ast.Call) and 
+                                                hasattr(n.func, 'attr') and 
+                                                n.func.attr == 'seed'
+                                                for n in ast.walk(node)
+                                            )
+                                            if not has_seed:
+                                                rel_path = test_file.relative_to(self.project_path)
+                                                flaky.append(f"{rel_path}::{test_name} (unseeded random)")
+                                                break
+                            
+                            # Check for network calls
+                            if any(keyword in content for keyword in ['requests.', 'urllib.', 'http.client']):
+                                if 'mock' not in content.lower() and 'patch' not in content.lower():
+                                    rel_path = test_file.relative_to(self.project_path)
+                                    if f"{rel_path}::{test_name}" not in [f.split(' (')[0] for f in flaky]:
+                                        flaky.append(f"{rel_path}::{test_name} (network call)")
+                
+                except (SyntaxError, UnicodeDecodeError):
+                    continue
+        
+        except Exception as e:
+            logger.debug(f"Flaky test detection error: {e}")
+        
+        return flaky[:10]  # Limit to top 10
     
     def _detect_slow_tests(self) -> List[Dict[str, Any]]:
         """Detect slow tests (placeholder)."""
