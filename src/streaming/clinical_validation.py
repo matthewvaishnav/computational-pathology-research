@@ -486,13 +486,16 @@ class ClinicalValidator:
 
 """
 
+        # Build slide type results efficiently
+        slide_type_lines = []
         for slide_type, metrics in result.slide_type_results.items():
-            report_content += f"""
+            slide_type_lines.append(f"""
 **{slide_type}:**
 - Calibration Error: {metrics['calibration_error']:.3f}
 - Number of Slides: {metrics['num_slides']}
 - Average Confidence: {metrics['average_confidence']:.3f}
-"""
+""")
+        report_content += ''.join(slide_type_lines)
 
         report_content += f"""
 
