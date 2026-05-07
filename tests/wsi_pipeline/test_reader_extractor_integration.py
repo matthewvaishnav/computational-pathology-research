@@ -88,7 +88,7 @@ class TestWSIReaderExtractorIntegration:
 
             try:
                 os.unlink(tmp_path)
-            except:
+            except (OSError, FileNotFoundError):
                 pass
 
     @patch("src.data.wsi_pipeline.reader.OPENSLIDE_AVAILABLE", True)
@@ -142,7 +142,7 @@ class TestWSIReaderExtractorIntegration:
 
             try:
                 os.unlink(tmp_path)
-            except:
+            except (OSError, FileNotFoundError):
                 pass
 
     @patch("src.data.wsi_pipeline.reader.OPENSLIDE_AVAILABLE", True)
@@ -195,7 +195,7 @@ class TestWSIReaderExtractorIntegration:
 
             try:
                 os.unlink(tmp_path)
-            except:
+            except (OSError, FileNotFoundError):
                 pass
 
     @patch("src.data.wsi_pipeline.reader.OPENSLIDE_AVAILABLE", True)
@@ -243,7 +243,7 @@ class TestWSIReaderExtractorIntegration:
 
             try:
                 os.unlink(tmp_path)
-            except:
+            except (OSError, FileNotFoundError):
                 pass
 
     def test_file_not_found_error(self):
@@ -267,7 +267,7 @@ class TestWSIReaderExtractorIntegration:
 
             try:
                 os.unlink(tmp_path)
-            except:
+            except (OSError, FileNotFoundError):
                 pass
 
 
@@ -323,5 +323,5 @@ class TestStreamingMemoryEfficiency:
 
             try:
                 os.unlink(tmp_path)
-            except:
+            except (OSError, FileNotFoundError):
                 pass
