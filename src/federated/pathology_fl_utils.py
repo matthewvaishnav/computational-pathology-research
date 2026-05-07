@@ -218,7 +218,7 @@ class PathologyFLUtils:
         """Validate update integrity using checksum."""
         # Calculate checksum of the update
         update_str = json.dumps(update, sort_keys=True)
-        actual_checksum = hashlib.md5(update_str.encode()).hexdigest()
+        actual_checksum = hashlib.sha256(update_str.encode()).hexdigest()
         
         return actual_checksum == expected_checksum
     
