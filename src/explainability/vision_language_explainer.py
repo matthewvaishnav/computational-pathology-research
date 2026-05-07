@@ -302,62 +302,56 @@ class VisionLanguageExplainer:
             max_prob = 0.5
             pred_class = 0
 
-        explanation = f"Analysis shows "
+        parts = ["Analysis shows "]
 
         # Add disease-specific interpretation
         if disease_type == "breast":
             if pred_class == 1:
-                explanation += "malignant breast tissue with irregular ductal architecture and nuclear atypia. "
+                parts.append("malignant breast tissue with irregular ductal architecture and nuclear atypia. ")
             else:
-                explanation += "benign breast tissue with preserved ductal architecture. "
+                parts.append("benign breast tissue with preserved ductal architecture. ")
         elif disease_type == "lung":
             if pred_class == 0:
-                explanation += (
-                    "adenocarcinoma pattern with glandular structures and mucin production. "
-                )
+                parts.append("adenocarcinoma pattern with glandular structures and mucin production. ")
             elif pred_class == 1:
-                explanation += (
-                    "squamous cell carcinoma with keratinization and intercellular bridges. "
-                )
+                parts.append("squamous cell carcinoma with keratinization and intercellular bridges. ")
             else:
-                explanation += "atypical lung tissue requiring further evaluation. "
+                parts.append("atypical lung tissue requiring further evaluation. ")
         elif disease_type == "prostate":
-            explanation += f"Gleason grade {pred_class + 1} prostate adenocarcinoma with "
+            parts.append(f"Gleason grade {pred_class + 1} prostate adenocarcinoma with ")
             if pred_class >= 3:
-                explanation += "poorly formed glands and significant architectural distortion. "
+                parts.append("poorly formed glands and significant architectural distortion. ")
             else:
-                explanation += "well to moderately differentiated glandular pattern. "
+                parts.append("well to moderately differentiated glandular pattern. ")
         elif disease_type == "colon":
-            explanation += (
-                f"Stage {['I', 'II', 'III', 'IV'][min(pred_class, 3)]} colorectal adenocarcinoma "
-            )
+            parts.append(f"Stage {['I', 'II', 'III', 'IV'][min(pred_class, 3)]} colorectal adenocarcinoma ")
             if pred_class >= 2:
-                explanation += "with lymphovascular invasion. "
+                parts.append("with lymphovascular invasion. ")
             else:
-                explanation += "confined to bowel wall. "
+                parts.append("confined to bowel wall. ")
         elif disease_type == "melanoma":
-            explanation += f"Clark level {pred_class + 1} melanoma "
+            parts.append(f"Clark level {pred_class + 1} melanoma ")
             if pred_class >= 3:
-                explanation += "with deep dermal invasion and high mitotic activity. "
+                parts.append("with deep dermal invasion and high mitotic activity. ")
             else:
-                explanation += "with superficial invasion pattern. "
+                parts.append("with superficial invasion pattern. ")
         else:
-            explanation += f"tissue pattern consistent with class {pred_class}. "
+            parts.append(f"tissue pattern consistent with class {pred_class}. ")
 
         # Add confidence information
-        explanation += f"Confidence: {max_prob:.1%}. "
+        parts.append(f"Confidence: {max_prob:.1%}. ")
 
         # Add uncertainty information
         if uncertainty.total_uncertainty > 0.3:
-            explanation += "High uncertainty detected - recommend expert review. "
+            parts.append("High uncertainty detected - recommend expert review. ")
         elif uncertainty.total_uncertainty > 0.15:
-            explanation += "Moderate uncertainty - consider additional stains. "
+            parts.append("Moderate uncertainty - consider additional stains. ")
 
         # Add similar cases information
         if similar_cases:
-            explanation += f"Similar to {len(similar_cases)} training cases "
+            parts.append(f"Similar to {len(similar_cases)} training cases ")
             avg_similarity = np.mean([case.similarity_score for case in similar_cases])
-            explanation += f"(avg similarity: {avg_similarity:.1%}). "
+            parts.append(f"(avg similarity: {avg_similarity:.1%}). ")
 
         # Add morphological features
         vocab = self.pathology_vocab.get("morphology", [])
@@ -366,15 +360,15 @@ class VisionLanguageExplainer:
 
         # Select relevant features based on prediction
         if pred_class == 1 or max_prob > 0.7:  # High confidence malignant
-            explanation += "Key features: nuclear pleomorphism, increased mitotic activity, "
+            parts.append("Key features: nuclear pleomorphism, increased mitotic activity, ")
             if disease_type in ["breast", "prostate", "colon"]:
-                explanation += "glandular architecture disruption. "
+                parts.append("glandular architecture disruption. ")
             elif disease_type == "lung":
-                explanation += "loss of normal alveolar pattern. "
+                parts.append("loss of normal alveolar pattern. ")
             elif disease_type == "melanoma":
-                explanation += "atypical melanocytes with pagetoid spread. "
+                parts.append("atypical melanocytes with pagetoid spread. ")
 
-        return explanation.strip()
+        return "".join(parts).strip()
 
     def _compute_feature_attribution(
         self,
