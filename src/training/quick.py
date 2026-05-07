@@ -147,7 +147,7 @@ class QuickTrainer:
             try:
                 from sklearn.metrics import roc_auc_score
                 auc = roc_auc_score(all_targets, all_probs)
-            except:
+            except (ImportError, ValueError) as e:
                 auc = 0.0
             
             # Update best metrics
