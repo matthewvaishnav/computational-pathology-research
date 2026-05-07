@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any, Dict, Tuple, Union
@@ -23,6 +24,8 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.models.stain_normalization import StainNormalizationTransformer
+
+logger = logging.getLogger(__name__)
 
 
 def load_stain_normalization_config(config_path: Union[str, Path]) -> Dict[str, Any]:
@@ -240,7 +243,7 @@ Examples:
         reference_image_path=args.reference_image,
         device=args.device,
     )
-    print(f"Saved stain-normalization preview summary to {summary['summary_path']}")
+    logger.info("Saved stain-normalization preview summary to %s", summary['summary_path'])
 
 
 if __name__ == "__main__":
