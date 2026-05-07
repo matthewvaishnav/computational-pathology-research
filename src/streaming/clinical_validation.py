@@ -10,12 +10,9 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
-import torch
 from sklearn.metrics import accuracy_score, calibration_curve, roc_auc_score
 
 logger = logging.getLogger(__name__)
