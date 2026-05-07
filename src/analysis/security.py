@@ -10,7 +10,7 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from .models import SecurityAnalysis, SecretFinding
 
@@ -532,8 +532,8 @@ class SecurityScanner:
         vulnerabilities: List[Dict[str, Any]],
         secrets: List[Dict[str, Any]],
         injection_risks: List[Dict[str, Any]],
-        tls_issues: List[Dict[str, Any]],
-        hipaa_score: float
+        tls_issues: Optional[List[Dict[str, Any]]] = None,
+        hipaa_score: float = 0.0
     ) -> float:
         """
         Calculate security score (0-100).
