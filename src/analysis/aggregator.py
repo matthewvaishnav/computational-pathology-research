@@ -7,14 +7,12 @@ conflict resolution, deduplication, and overall scoring.
 
 import logging
 from typing import List, Dict, Any, Set
-from collections import defaultdict
 
 from .models import (
     AnalysisResult,
     Issue,
     Severity,
     Priority,
-    Role,
     ArchitectureAnalysis,
     PerformanceAnalysis,
     CoverageAnalysis,
