@@ -424,18 +424,22 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
         
         p0_tasks = [issue for issue in result.critical_issues if issue.priority == Priority.P0]
         if p0_tasks:
+            task_lines = []
             for i, task in enumerate(p0_tasks, 1):
-                section += f"{i}. **{task.title}** ({task.effort_hours:.1f}h, {task.role.value})\n"
-                section += f"   - {task.recommendation}\n\n"
+                task_lines.append(f"{i}. **{task.title}** ({task.effort_hours:.1f}h, {task.role.value})\n")
+                task_lines.append(f"   - {task.recommendation}\n\n")
+            section += ''.join(task_lines)
         else:
             section += "✅ No P0 tasks\n\n"
         
         section += "### P1 - High Priority (This Sprint)\n"
         p1_tasks = [issue for issue in result.critical_issues if issue.priority == Priority.P1]
         if p1_tasks:
+            task_lines = []
             for i, task in enumerate(p1_tasks, 1):
-                section += f"{i}. **{task.title}** ({task.effort_hours:.1f}h, {task.role.value})\n"
-                section += f"   - {task.recommendation}\n\n"
+                task_lines.append(f"{i}. **{task.title}** ({task.effort_hours:.1f}h, {task.role.value})\n")
+                task_lines.append(f"   - {task.recommendation}\n\n")
+            section += ''.join(task_lines)
         else:
             section += "✅ No P1 tasks\n\n"
         
