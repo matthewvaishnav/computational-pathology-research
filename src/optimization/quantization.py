@@ -306,7 +306,7 @@ class QuantizedInferenceEngine:
         
         # Load weights
         if os.path.exists(model_path):
-            model.load_state_dict(torch.load(model_path, map_location='cpu'))
+            model.load_state_dict(torch.load(model_path, map_location='cpu', weights_only=True))
         
         model.eval()
         return model
