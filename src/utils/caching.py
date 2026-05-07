@@ -79,6 +79,9 @@ class CacheEntry:
         
         try:
             decompressed = zlib.decompress(self.data)
+            # WARNING: pickle.loads() is unsafe with untrusted data
+            # Only use with data from trusted sources (internal cache)
+            # For external data, use json.loads() or other safe formats
             return pickle.loads(decompressed)
         except Exception as e:
             logger.error(f"Failed to decompress cache entry: {e}")
