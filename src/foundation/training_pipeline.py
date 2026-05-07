@@ -623,39 +623,41 @@ class FoundationModelTrainer:
 
     def generate_training_report(self) -> str:
         """Generate comprehensive training report"""
-        report = "# Foundation Model Training Report\n\n"
-
-        # Configuration
-        report += "## Configuration\n"
-        report += f"- Encoder: {self.config.encoder_type}\n"
-        report += f"- Supported diseases: {', '.join(self.config.supported_diseases)}\n"
-        report += f"- Pre-training method: {self.config.pretrain_method}\n"
-        report += f"- Pre-training epochs: {self.config.pretrain_epochs}\n"
-        report += f"- Fine-tuning epochs: {self.config.finetune_epochs}\n"
-        report += f"- Zero-shot enabled: {self.config.enable_zero_shot}\n\n"
+        parts = [
+            "# Foundation Model Training Report\n\n",
+            "## Configuration\n",
+            f"- Encoder: {self.config.encoder_type}\n",
+            f"- Supported diseases: {', '.join(self.config.supported_diseases)}\n",
+            f"- Pre-training method: {self.config.pretrain_method}\n",
+            f"- Pre-training epochs: {self.config.pretrain_epochs}\n",
+            f"- Fine-tuning epochs: {self.config.finetune_epochs}\n",
+            f"- Zero-shot enabled: {self.config.enable_zero_shot}\n\n",
+        ]
 
         # Results summary
         if self.metrics_history:
             final_metrics = self.metrics_history[-1]
-            report += "## Final Results\n"
-            report += f"- Final accuracy: {final_metrics.accuracy:.3f}\n"
+            parts.append("## Final Results\n")
+            parts.append(f"- Final accuracy: {final_metrics.accuracy:.3f}\n")
             if final_metrics.disease_accuracies:
-                report += "- Disease-specific accuracies:\n"
+                parts.append("- Disease-specific accuracies:\n")
                 disease_lines = [
                     f"  - {disease}: {acc:.3f}\n"
                     for disease, acc in final_metrics.disease_accuracies.items()
                 ]
-                report += "".join(disease_lines)
-            report += "\n"
+                parts.extend(disease_lines)
+            parts.append("\n")
 
         # Performance targets
-        report += "## Performance Targets\n"
-        report += "- ✅ Processing time <30s per slide\n"
-        report += "- ✅ Memory usage <2GB\n"
-        report += "- ✅ Accuracy >90% per disease\n"
-        report += "- ✅ Zero-shot detection capability\n\n"
+        parts.extend([
+            "## Performance Targets\n",
+            "- ✅ Processing time <30s per slide\n",
+            "- ✅ Memory usage <2GB\n",
+            "- ✅ Accuracy >90% per disease\n",
+            "- ✅ Zero-shot detection capability\n\n",
+        ])
 
-        return report
+        return "".join(parts)
 
 
 # Example usage
