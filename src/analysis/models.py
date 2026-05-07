@@ -296,9 +296,101 @@ class OptimizationPlan:
     estimated_completion_weeks: float = 0.0
 
     def to_gantt_chart(self) -> str:
-        """Generate Gantt chart visualization (placeholder)."""
-        # TODO: Implement Gantt chart generation using matplotlib/plotly
-        return "Gantt chart generation not yet implemented"
+        """
+        Generate Gantt chart visualization using matplotlib.
+        
+        Returns:
+            Path to generated Gantt chart PNG file
+        """
+        try:
+            import matplotlib.pyplot as plt
+            import matplotlib.dates as mdates
+            from datetime import datetime, timedelta
+            from pathlib import Path
+            
+            if not self.tasks:
+                return "No tasks to visualize"
+            
+            # Create figure
+            fig, ax = plt.subplots(figsize=(12, max(6, len(self.tasks) * 0.4)))
+            
+            # Start date (today)
+            start_date = datetime.now()
+            
+            # Prepare data
+            task_names = []
+            start_dates = []
+            durations = []
+            colors = []
+            
+            current_date = start_date
+            for task in self.tasks:
+                task_names.append(task.name[:40])  # Truncate long names
+                start_dates.append(current_date)
+                
+                # Convert effort to days (assuming 8 hours/day)
+                duration_days = task.effort_hours / 8.0
+                durations.append(duration_days)
+                
+                # Color by priority
+                if task.priority == 'critical':
+                    colors.append('#d32f2f')  # Red
+                elif task.priority == 'high':
+                    colors.append('#f57c00')  # Orange
+                elif task.priority == 'medium':
+                    colors.append('#fbc02d')  # Yellow
+                else:
+                    colors.append('#388e3c')  # Green
+                
+                # Next task starts after this one (sequential)
+                current_date += timedelta(days=duration_days)
+            
+            # Create Gantt chart
+            y_pos = range(len(task_names))
+            
+            for i, (start, duration, color) in enumerate(zip(start_dates, durations, colors)):
+                ax.barh(i, duration, left=mdates.date2num(start), 
+                       height=0.6, color=color, alpha=0.8, edgecolor='black')
+            
+            # Format axes
+            ax.set_yticks(y_pos)
+            ax.set_yticklabels(task_names)
+            ax.set_xlabel('Timeline')
+            ax.set_title('Project Gantt Chart')
+            
+            # Format x-axis as dates
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+            plt.xticks(rotation=45, ha='right')
+            
+            # Add grid
+            ax.grid(True, axis='x', alpha=0.3)
+            
+            # Add legend
+            from matplotlib.patches import Patch
+            legend_elements = [
+                Patch(facecolor='#d32f2f', label='Critical'),
+                Patch(facecolor='#f57c00', label='High'),
+                Patch(facecolor='#fbc02d', label='Medium'),
+                Patch(facecolor='#388e3c', label='Low')
+            ]
+            ax.legend(handles=legend_elements, loc='upper right')
+            
+            # Tight layout
+            plt.tight_layout()
+            
+            # Save figure
+            output_path = Path('performance_analysis') / 'gantt_chart.png'
+            output_path.parent.mkdir(exist_ok=True)
+            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.close()
+            
+            return str(output_path)
+        
+        except ImportError:
+            return "matplotlib not installed - cannot generate Gantt chart"
+        except Exception as e:
+            return f"Gantt chart generation failed: {e}"
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
