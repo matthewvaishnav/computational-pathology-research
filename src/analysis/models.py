@@ -219,6 +219,7 @@ class AnalysisResult:
     def to_json(self, validate_schema: bool = True) -> str:
         """Serialize to JSON format with optional schema validation."""
         def convert_value(obj):
+            """Convert dataclass objects to serializable format."""
             if isinstance(obj, (ArchitectureAnalysis, PerformanceAnalysis, CoverageAnalysis,
                                CodeQualityAnalysis, DependencyAnalysis, DeploymentAnalysis,
                                SecurityAnalysis, ScalabilityAnalysis)):

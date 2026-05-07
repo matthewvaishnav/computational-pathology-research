@@ -372,6 +372,7 @@ class PerformanceProfiler:
             import signal
             
             def timeout_handler(signum, frame):
+                """Handle profiling timeout signal."""
                 raise TimeoutError("Profiling timeout")
             
             try:
