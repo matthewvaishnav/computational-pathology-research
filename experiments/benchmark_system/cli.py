@@ -148,8 +148,8 @@ Examples:
     run_parser.add_argument(
         "--data-root",
         type=Path,
-        default=Path("data/pcam"),
-        help="Root directory for dataset (default: data/pcam)",
+        default=Path("data/pcam_real"),
+        help="Root directory for dataset (default: data/pcam_real)",
     )
     run_parser.add_argument(
         "--model-architecture",
