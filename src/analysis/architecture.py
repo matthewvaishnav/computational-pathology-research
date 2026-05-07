@@ -6,12 +6,12 @@ coupling, and SOLID principle violations.
 """
 
 import ast
-import logging
-from pathlib import Path
-from typing import List, Dict, Set, Any, Optional
-from collections import defaultdict
-import subprocess
 import json
+import logging
+import subprocess
+from collections import defaultdict
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
 from .models import (
     ArchitectureAnalysis,
