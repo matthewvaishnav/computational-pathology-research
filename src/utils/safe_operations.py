@@ -366,7 +366,7 @@ class FileOperationRateLimiter:
         self.max_ops = max_ops_per_second
         self.operations = deque()
     
-    def wait_if_needed(self):
+    def wait_if_needed(self) -> None:
         """Wait if rate limit exceeded."""
         now = time.time()
         
@@ -531,14 +531,14 @@ class CircuitBreaker:
             self.on_failure()
             raise
     
-    def on_success(self):
+    def on_success(self) -> None:
         """Handle successful call."""
         self.failures = 0
         if self.state == CircuitState.HALF_OPEN:
             self.state = CircuitState.CLOSED
             logger.info("Circuit breaker: CLOSED (recovered)")
     
-    def on_failure(self):
+    def on_failure(self) -> None:
         """Handle failed call."""
         self.failures += 1
         self.last_failure_time = time.time()
@@ -606,7 +606,7 @@ class MemoryMonitor:
         self.baseline_mb = None
         self.process = psutil.Process()
     
-    def check_memory(self):
+    def check_memory(self) -> None:
         """Check for memory leaks."""
         import gc
         
