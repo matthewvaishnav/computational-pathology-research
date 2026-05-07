@@ -58,7 +58,15 @@ def extract_wsi_patches(
 
     for i in range(0, height - patch_size + 1, stride):
         for j in range(0, width - patch_size + 1, stride):
+            # Extract patch with bounds checking
+            if i + patch_size > height or j + patch_size > width:
+                continue  # Skip patches that exceed image bounds
+            
             patch = wsi_image[i : i + patch_size, j : j + patch_size]
+            
+            # Validate patch shape
+            if patch.shape[0] != patch_size or patch.shape[1] != patch_size:
+                continue  # Skip malformed patches
 
             # Check tissue content (simple threshold on non-white pixels)
             if _has_sufficient_tissue(patch, tissue_threshold):
