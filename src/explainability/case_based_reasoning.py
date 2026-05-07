@@ -227,34 +227,35 @@ class CaseDatabase:
             self.case_id_to_idx = {}
 
             for row in rows:
-                    metadata = CaseMetadata(
-                        case_id=row[0],
-                        slide_id=row[1],
-                        patient_id=row[2],
-                        institution=row[3],
-                        scanner_type=row[4],
-                        magnification=row[5],
-                        stain_type=row[6],
-                        tissue_type=row[7],
-                        diagnosis=row[8],
-                        grade=row[9],
-                        stage=row[10],
-                        molecular_markers=json.loads(row[11]) if row[11] else {},
-                        pathologist_id=row[12],
-                        confidence_score=row[13],
-                        annotation_time=datetime.fromisoformat(row[14]),
-                        image_quality_score=row[15],
-                        artifact_flags=json.loads(row[16]) if row[16] else [],
-                        demographics=json.loads(row[17]) if row[17] else {},
-                        treatment_response=row[18],
-                        follow_up_months=row[19],
-                        tags=json.loads(row[20]) if row[20] else [],
-                    )
+                metadata = CaseMetadata(
+                    case_id=row[0],
+                    slide_id=row[1],
+                    patient_id=row[2],
+                    institution=row[3],
+                    scanner_type=row[4],
+                    magnification=row[5],
+                    stain_type=row[6],
+                    tissue_type=row[7],
+                    diagnosis=row[8],
+                    grade=row[9],
+                    stage=row[10],
+                    molecular_markers=json.loads(row[11]) if row[11] else {},
+                    pathologist_id=row[12],
+                    confidence_score=row[13],
+                    annotation_time=datetime.fromisoformat(row[14]),
+                    image_quality_score=row[15],
+                    artifact_flags=json.loads(row[16]) if row[16] else [],
+                    demographics=json.loads(row[17]) if row[17] else {},
+                    treatment_response=row[18],
+                    follow_up_months=row[19],
+                    tags=json.loads(row[20]) if row[20] else [],
+                )
 
-                    self.cases.append(metadata)
-                    self.case_id_to_idx[metadata.case_id] = len(self.cases) - 1
+                self.cases.append(metadata)
+                self.case_id_to_idx[metadata.case_id] = len(self.cases) - 1
 
-                # Load FAISS index
+            # Load FAISS index
+            try:
                 if self.index_path.exists():
                     self.index = faiss.read_index(str(self.index_path))
                     if self.use_gpu:
@@ -266,10 +267,10 @@ class CaseDatabase:
                     self.logger.warning("Metadata found but no FAISS index - will rebuild")
                     self._rebuild_index()
 
-        except Exception as e:
-            self.logger.warning(f"Could not load existing data: {e}")
-            self.cases = []
-            self.case_id_to_idx = {}
+            except Exception as e:
+                self.logger.warning(f"Could not load existing data: {e}")
+                self.cases = []
+                self.case_id_to_idx = {}
 
     def add_case(
         self,

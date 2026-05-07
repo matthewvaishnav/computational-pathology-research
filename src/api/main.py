@@ -39,6 +39,7 @@ from src.api.security import (
     log_security_event,
     validate_security_configuration,
 )
+from src.api.errors import (
     internal_error_handler,
     not_found_handler,
     validation_error_handler,
