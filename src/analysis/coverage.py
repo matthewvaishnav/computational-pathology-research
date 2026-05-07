@@ -183,10 +183,72 @@ class CoverageAnalyzer:
         return untested[:20]  # Limit to top 20
     
     def _detect_missing_property_tests(self) -> List[str]:
-        """Detect functions missing property tests (placeholder)."""
-        # TODO: Scan for data transformation functions without property tests
-        logger.info("Property test detection not yet implemented")
-        return []
+        """
+        Detect functions missing property-based tests.
+        
+        Scans for data transformation functions that should have
+        property tests but don't have corresponding test files.
+        
+        Returns:
+            List of functions missing property tests
+        """
+        import ast
+        
+        missing = []
+        
+        try:
+            # Find all Python files in src/
+            src_dir = self.project_path / 'src'
+            if not src_dir.exists():
+                return []
+            
+            # Find test files with property tests
+            tests_dir = self.project_path / 'tests'
+            property_test_files = set()
+            
+            if tests_dir.exists():
+                for test_file in tests_dir.rglob('test_*.py'):
+                    content = test_file.read_text()
+                    if '@given' in content or 'from hypothesis' in content:
+                        property_test_files.add(test_file.stem.replace('test_', ''))
+            
+            # Scan source files for data transformation functions
+            for src_file in src_dir.rglob('*.py'):
+                if src_file.name.startswith('_'):
+                    continue
+                
+                try:
+                    tree = ast.parse(src_file.read_text())
+                    
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.FunctionDef):
+                            # Check if function transforms data
+                            func_name = node.name
+                            
+                            # Skip private/magic methods
+                            if func_name.startswith('_'):
+                                continue
+                            
+                            # Look for transformation keywords
+                            is_transformer = any(keyword in func_name.lower() for keyword in [
+                                'transform', 'convert', 'process', 'normalize',
+                                'encode', 'decode', 'parse', 'serialize'
+                            ])
+                            
+                            if is_transformer:
+                                # Check if module has property tests
+                                module_name = src_file.stem
+                                if module_name not in property_test_files:
+                                    rel_path = src_file.relative_to(self.project_path)
+                                    missing.append(f"{rel_path}::{func_name}")
+                
+                except (SyntaxError, UnicodeDecodeError):
+                    continue
+        
+        except Exception as e:
+            logger.debug(f"Property test detection error: {e}")
+        
+        return missing[:15]  # Limit to top 15
     
     def _detect_flaky_tests(self) -> List[str]:
         """Detect flaky tests (placeholder)."""
