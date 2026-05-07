@@ -7,7 +7,8 @@ import os
 import json
 import time
 from pathlib import Path
-from flask import Flask, render_template, request, jsonify, send_file
+from typing import Any, Dict, Tuple
+from flask import Flask, render_template, request, jsonify, send_file, Response
 from werkzeug.utils import secure_filename
 import numpy as np
 
@@ -22,15 +23,15 @@ os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'svs', 'tiff', 'tif', 'ndpi', 'vms', 'vmu', 'scn'}
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
-def index():
+def index() -> str:
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
+def upload_file() -> Tuple[Response, int]:
     if 'file' not in request.files:
         return jsonify({'error': 'No file selected'}), 400
     
@@ -52,7 +53,7 @@ def upload_file():
     return jsonify({'error': 'Invalid file type'}), 400
 
 @app.route('/analyze', methods=['POST'])
-def analyze():
+def analyze() -> Tuple[Response, int]:
     data = request.get_json()
     filename = data.get('filename')
     
@@ -93,7 +94,7 @@ def analyze():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/status/<analysis_id>')
-def get_status(analysis_id):
+def get_status(analysis_id: str) -> Response:
     result_path = os.path.join(app.config['RESULTS_FOLDER'], f"{analysis_id}.json")
     
     if os.path.exists(result_path):
@@ -104,7 +105,7 @@ def get_status(analysis_id):
     return jsonify({'status': 'processing'})
 
 @app.route('/download/<analysis_id>')
-def download_results(analysis_id):
+def download_results(analysis_id: str) -> Tuple[Response, int]:
     result_path = os.path.join(app.config['RESULTS_FOLDER'], f"{analysis_id}.json")
     
     if os.path.exists(result_path):
@@ -112,7 +113,7 @@ def download_results(analysis_id):
     
     return jsonify({'error': 'Results not found'}), 404
 
-def run_demo_analysis(filepath, config):
+def run_demo_analysis(filepath: str, config: Dict[str, Any]) -> Dict[str, Any]:
     """Demo analysis - replace with real HistoCore processing"""
     
     # Simulate processing time
