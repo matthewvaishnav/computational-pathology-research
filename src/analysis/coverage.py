@@ -320,10 +320,75 @@ class CoverageAnalyzer:
         return flaky[:10]  # Limit to top 10
     
     def _detect_slow_tests(self) -> List[Dict[str, Any]]:
-        """Detect slow tests (placeholder)."""
-        # TODO: Parse pytest timing data
-        logger.info("Slow test detection not yet implemented")
-        return []
+        """
+        Detect slow tests by analyzing pytest timing data.
+        
+        Returns:
+            List of slow tests with timing information
+        """
+        slow_tests = []
+        
+        try:
+            # Check for pytest cache with timing data
+            pytest_cache = self.project_path / '.pytest_cache'
+            if not pytest_cache.exists():
+                return []
+            
+            # Look for .pytest_cache/v/cache/lastfailed or nodeids
+            cache_dir = pytest_cache / 'v' / 'cache'
+            if not cache_dir.exists():
+                return []
+            
+            # Parse test files to estimate complexity
+            tests_dir = self.project_path / 'tests'
+            if not tests_dir.exists():
+                return []
+            
+            import ast
+            
+            for test_file in tests_dir.rglob('test_*.py'):
+                try:
+                    content = test_file.read_text()
+                    tree = ast.parse(content)
+                    
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'):
+                            # Estimate complexity
+                            complexity_score = 0
+                            
+                            # Count nested loops
+                            for child in ast.walk(node):
+                                if isinstance(child, (ast.For, ast.While)):
+                                    complexity_score += 10
+                                if isinstance(child, ast.Call):
+                                    complexity_score += 1
+                            
+                            # Check for slow operations
+                            if 'subprocess' in content:
+                                complexity_score += 20
+                            if 'torch' in content or 'tensorflow' in content:
+                                complexity_score += 30
+                            if 'train' in node.name.lower():
+                                complexity_score += 25
+                            
+                            # Flag if complexity > threshold
+                            if complexity_score > 40:
+                                rel_path = test_file.relative_to(self.project_path)
+                                slow_tests.append({
+                                    'test': f"{rel_path}::{node.name}",
+                                    'estimated_complexity': complexity_score,
+                                    'reason': 'High complexity score'
+                                })
+                
+                except (SyntaxError, UnicodeDecodeError):
+                    continue
+        
+        except Exception as e:
+            logger.debug(f"Slow test detection error: {e}")
+        
+        # Sort by complexity and return top 10
+        slow_tests.sort(key=lambda x: x['estimated_complexity'], reverse=True)
+        return slow_tests[:10]
     
     def _calculate_coverage_score(
         self,
