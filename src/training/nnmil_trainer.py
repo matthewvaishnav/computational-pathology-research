@@ -528,7 +528,7 @@ class nnMILTrainer:
         if not checkpoint_path.exists():
             raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
         
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
         
         # Load model state
         self.model.load_state_dict(checkpoint['model_state_dict'])
