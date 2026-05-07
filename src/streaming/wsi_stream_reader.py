@@ -240,7 +240,8 @@ class WSIStreamReader:
         self.memory_pressure = False
 
         logger.info(
-            f"Initialized WSIStreamReader for {self.wsi_path} (tile_size={tile_size}, overlap={overlap}, stride={self.stride})"
+            "Initialized WSIStreamReader for %s (tile_size=%d, overlap=%d, stride=%d)",
+            self.wsi_path, tile_size, overlap, self.stride
         )
 
     def initialize_streaming(self) -> StreamingMetadata:
@@ -346,7 +347,8 @@ class WSIStreamReader:
             self.buffer_size = optimal_buffer_size
 
             logger.info(
-                f"Buffer optimization - Memory budget: {memory_budget_gb:.2f}GB, Buffer size: {optimal_buffer_size} tiles"
+                "Buffer optimization - Memory budget: %.2fGB, Buffer size: %d tiles",
+                memory_budget_gb, optimal_buffer_size
             )
 
             # Initialize buffer pool
@@ -372,7 +374,8 @@ class WSIStreamReader:
             self.start_time = time.time()
 
             logger.info(
-                f"Streaming initialized: {dimensions} pixels, {estimated_patches} patches, format: {self.wsi_path.suffix}"
+                "Streaming initialized: %s pixels, %d patches, format: %s",
+                dimensions, estimated_patches, self.wsi_path.suffix
             )
             return self.metadata
 
