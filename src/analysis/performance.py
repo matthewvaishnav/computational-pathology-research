@@ -177,7 +177,7 @@ class PerformanceProfiler:
                             "description": f"GPU memory usage at {gpu_memory*100:.1f}%",
                             "recommendation": "Reduce batch size or use gradient accumulation"
                         })
-            except:
+            except (RuntimeError, AttributeError) as e:
                 pass
             
             return {
@@ -220,7 +220,7 @@ class PerformanceProfiler:
                 object_counts[obj_type] += 1
                 try:
                     object_sizes[obj_type] += sys.getsizeof(obj)
-                except:
+                except (TypeError, OSError) as e:
                     pass
             
             # Sort by memory usage
@@ -241,7 +241,7 @@ class PerformanceProfiler:
                         "max_allocated": torch.cuda.max_memory_allocated(),
                         "device_count": torch.cuda.device_count()
                     }
-            except:
+            except (ImportError, RuntimeError) as e:
                 pass
             
             return {
