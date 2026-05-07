@@ -26,8 +26,18 @@ class DependencyAuditor:
         
         Args:
             project_path: Path to project root directory
+            
+        Raises:
+            ValueError: If project_path is empty or None
+            FileNotFoundError: If project_path does not exist
         """
+        if not project_path or not project_path.strip():
+            raise ValueError("project_path cannot be empty")
+        
         self.project_path = Path(project_path).resolve()
+        
+        if not self.project_path.exists():
+            raise FileNotFoundError(f"Project path does not exist: {self.project_path}")
         
     def analyze(self) -> DependencyAnalysis:
         """
