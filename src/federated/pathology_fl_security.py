@@ -67,7 +67,7 @@ class PathologyFLSecurity:
         
         for param_name, param_value in model_update.items():
             # Generate encryption key based on hospital ID
-            key = hashlib.md5(f"{hospital_id}_{param_name}".encode()).hexdigest()[:16]
+            key = hashlib.sha256(f"{hospital_id}_{param_name}".encode()).hexdigest()[:32]
             encrypted_update[param_name] = f"encrypted_{key}_{param_name}"
         
         self._log_security_event("encryption", hospital_id, f"{len(model_update)}_params")
