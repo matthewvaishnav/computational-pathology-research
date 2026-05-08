@@ -15,6 +15,8 @@ from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from src.database import (
     AnalysisOperations,
@@ -29,6 +31,7 @@ from src.api.validators import validate_file_upload
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["analysis"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 # Pydantic models
@@ -52,6 +55,7 @@ class CaseStatusUpdate(BaseModel):
 
 # Analysis endpoints
 @router.post("/analyze/upload")
+@limiter.limit("10/minute")
 async def upload_for_analysis(
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
