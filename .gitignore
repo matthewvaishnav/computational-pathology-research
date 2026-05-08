@@ -210,6 +210,10 @@ Thumbs.db
 *.swo
 *~
 
+# AI assistant directories
+.claude/
+.kiro/
+
 # Node.js (for any frontend components)
 node_modules/
 npm-debug.log*
