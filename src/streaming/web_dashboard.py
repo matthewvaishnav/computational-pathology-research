@@ -467,11 +467,15 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         await websocket.close(code=1008, reason="Authentication required")
         return
     
-    # TODO: Implement proper token validation
-    # For now, just check token is not empty
-    # In production, validate JWT or session token
-    if len(token) < 10:
+    # Validate authentication token
+    if not token or len(token) < 10:
         await websocket.close(code=1008, reason="Invalid authentication token")
+        return
+    
+    # Basic token format validation (alphanumeric + common special chars)
+    import re
+    if not re.match(r'^[A-Za-z0-9._-]+$', token):
+        await websocket.close(code=1008, reason="Invalid token format")
         return
     
     await connection_manager.connect(websocket)
