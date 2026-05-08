@@ -122,6 +122,15 @@ class EMRIntegrationClient:
         Returns:
             True if identity validated
         """
+        # Validate inputs
+        import re
+        if not re.match(r'^[A-Za-z0-9_-]{1,50}$', patient_id):
+            raise ValueError("Invalid patient ID format")
+        if not re.match(r'^[A-Za-z0-9_-]{1,50}$', mrn):
+            raise ValueError("Invalid MRN format")
+        if not isinstance(date_of_birth, datetime):
+            raise ValueError("Invalid date of birth type")
+        
         logger.info(f"Validate patient identity: {patient_id}")
 
         try:
