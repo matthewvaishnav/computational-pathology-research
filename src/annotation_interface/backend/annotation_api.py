@@ -578,6 +578,19 @@ async def delete_annotation(annotation_id: str):
 @app.websocket("/ws/{slide_id}")
 async def websocket_endpoint(websocket: WebSocket, slide_id: str):
     """WebSocket endpoint for real-time collaboration"""
+    
+    # Validate origin to prevent CSRF attacks
+    origin = websocket.headers.get("origin")
+    allowed_origins = ["http://localhost:3000", "https://annotation-interface"]
+    if origin and origin not in allowed_origins:
+        await websocket.close(code=1008, reason="Invalid origin")
+        return
+    
+    # Validate slide_id format to prevent injection
+    if not slide_id or len(slide_id) > 100 or ".." in slide_id:
+        await websocket.close(code=1008, reason="Invalid slide_id")
+        return
+    
     await manager.connect(websocket, slide_id)
 
     # Rate limiting state
