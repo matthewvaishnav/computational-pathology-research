@@ -520,7 +520,17 @@ def load_features_from_hdf5(
     Returns:
         Feature array, or tuple of (features, metadata) if load_metadata=True
     """
-    input_path = Path(input_path)
+    input_path = Path(input_path).resolve()
+    
+    # Validate path doesn't contain traversal attempts
+    if ".." in str(input_path):
+        raise ValueError("Path traversal detected in input path")
+    
+    if not input_path.exists():
+        raise FileNotFoundError(f"Feature file not found: {input_path}")
+    
+    if not input_path.is_file():
+        raise ValueError("Path must be a file")
 
     with h5py.File(input_path, "r") as f:
         features = f[dataset_name][:]
