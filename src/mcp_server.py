@@ -332,9 +332,23 @@ class ProjectMCPServer:
 
     def _tool_read_text_file(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         relative_path = arguments["path"]
-        start_line = int(arguments.get("start_line", 1))
-        end_line = arguments.get("end_line")
-        max_chars = int(arguments.get("max_chars", 12000))
+        try:
+            start_line = int(arguments.get("start_line", 1))
+            if start_line < 1:
+                raise ValueError("start_line must be >= 1")
+            
+            max_chars = int(arguments.get("max_chars", 12000))
+            if max_chars < 1 or max_chars > 100000:
+                raise ValueError("max_chars must be between 1 and 100000")
+            
+            end_line = arguments.get("end_line")
+            if end_line is not None:
+                end_line = int(end_line)
+                if end_line < start_line:
+                    raise ValueError("end_line must be >= start_line")
+        except (ValueError, TypeError) as e:
+            raise JSONRPCError(-32602, f"Invalid parameter: {e}")
+        
         path = self._resolve_repo_path(relative_path, must_exist=True, allow_directory=False)
         if path.is_dir():
             raise JSONRPCError(-32602, f"Expected a file, got directory: {relative_path}")
