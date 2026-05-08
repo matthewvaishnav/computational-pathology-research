@@ -691,8 +691,17 @@ class SelfSupervisedPreTrainer:
     def _init_distributed_training(self):
         """Initialize distributed training"""
         if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
-            self.config.rank = int(os.environ['RANK'])
-            self.config.world_size = int(os.environ['WORLD_SIZE'])
+            try:
+                self.config.rank = int(os.environ['RANK'])
+                self.config.world_size = int(os.environ['WORLD_SIZE'])
+                
+                # Validate values are reasonable
+                if self.config.rank < 0 or self.config.rank >= self.config.world_size:
+                    raise ValueError(f"Invalid RANK {self.config.rank} for WORLD_SIZE {self.config.world_size}")
+                if self.config.world_size < 1 or self.config.world_size > 1024:
+                    raise ValueError(f"Invalid WORLD_SIZE {self.config.world_size}, must be between 1 and 1024")
+            except (ValueError, TypeError) as e:
+                raise RuntimeError(f"Invalid distributed training environment variables: {e}")
         
         # Initialize process group
         dist.init_process_group(
