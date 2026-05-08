@@ -94,6 +94,11 @@ class EMRIntegrationClient:
         Returns:
             PatientRecord or None on failure
         """
+        # Validate patient ID format (alphanumeric, hyphens, underscores only)
+        import re
+        if not re.match(r'^[A-Za-z0-9_-]{1,50}$', patient_id):
+            raise ValueError("Invalid patient ID format")
+        
         logger.info(f"Retrieve patient record: {patient_id}")
 
         try:
