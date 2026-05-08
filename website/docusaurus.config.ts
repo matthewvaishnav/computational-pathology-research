@@ -3,9 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'HistoCore',
-  tagline:
-    'Production-grade computational pathology infrastructure for research, deployment, and clinical-scale workflows.',
+  title: 'HistoCore Research Platform',
+  tagline: 'Computational Pathology Research Platform for Clinical AI Deployment',
   favicon: 'img/favicon.svg',
   future: {
     v4: true,
@@ -99,17 +98,11 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      hideOnScroll: true,
-      title: 'HistoCore',
-      logo: {
-        alt: 'HistoCore logo',
-        src: 'img/logo.svg',
-      },
+      hideOnScroll: false,
+      title: 'HistoCore Research',
       items: [
-        {to: '/', label: 'Home', position: 'left'},
-        {to: '/docs/', label: 'Docs', position: 'left'},
+        {to: '/docs/GETTING_STARTED', label: 'Documentation', position: 'left'},
         {to: '/docs/FOUNDATION_MODELS', label: 'Models', position: 'left'},
-        {to: '/docs/INFERENCE_OPTIMIZATION', label: 'Inference', position: 'left'},
         {to: '/docs/DEPLOYMENT', label: 'Deployment', position: 'left'},
         {to: '/docs/BENCHMARK_SYSTEM', label: 'Benchmarks', position: 'left'},
         {type: 'search', position: 'right'},
@@ -121,47 +114,50 @@ const config: Config = {
       ],
     },
     announcementBar: {
-      id: 'research-use-only',
+      id: 'research-platform',
       content:
-        'Research use only. Review deployment, validation, and compliance guidance before any clinical workflow integration.',
-      backgroundColor: '#efe4d1',
-      textColor: '#2b1b17',
+        '📚 Research Platform - Comprehensive computational pathology framework for clinical AI deployment',
+      backgroundColor: '#e3f2fd',
+      textColor: '#0d47a1',
       isCloseable: true,
     },
     footer: {
       style: 'dark',
       links: [
         {
-          title: 'Platform',
+          title: 'Documentation',
           items: [
             {label: 'Getting Started', to: '/docs/GETTING_STARTED'},
             {label: 'Architecture', to: '/docs/ARCHITECTURE'},
             {label: 'API Reference', to: '/docs/API_REFERENCE'},
+            {label: 'Troubleshooting', to: '/docs/TROUBLESHOOTING'},
           ],
         },
         {
-          title: 'Workflows',
+          title: 'Platform',
           items: [
+            {label: 'Foundation Models', to: '/docs/FOUNDATION_MODELS'},
             {label: 'Inference', to: '/docs/INFERENCE_OPTIMIZATION'},
             {label: 'Deployment', to: '/docs/DEPLOYMENT'},
             {label: 'Security', to: '/docs/SECURITY_HARDENING'},
           ],
         },
         {
-          title: 'Evidence',
+          title: 'Resources',
           items: [
             {label: 'Benchmarks', to: '/docs/BENCHMARK_SYSTEM'},
             {label: 'Testing', to: '/docs/TESTING'},
             {label: 'Clinical Validation', to: '/docs/CLINICAL_VALIDATION'},
+            {label: 'GitHub', href: 'https://github.com/matthewvaishnav/computational-pathology-research'},
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Matthew Vaishnav. Built with Docusaurus.`,
+      copyright: `© ${new Date().getFullYear()} HistoCore Research Platform. Built for computational pathology research.`,
     },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.oneDark,
-      additionalLanguages: ['bash', 'json', 'yaml', 'toml', 'diff'],
+      additionalLanguages: ['bash', 'json', 'yaml', 'toml', 'diff', 'python'],
     },
     docs: {
       sidebar: {
@@ -173,7 +169,12 @@ const config: Config = {
       {
         name: 'keywords',
         content:
-          'computational pathology, pytorch, histopathology, WSI, nnMIL, federated learning, PACS, clinical AI',
+          'computational pathology, pytorch, histopathology, WSI, foundation models, clinical AI, PACS, federated learning',
+      },
+      {
+        name: 'description',
+        content:
+          'HistoCore is a production-grade computational pathology platform with foundation model integration, security compliance, and clinical deployment capabilities.',
       },
     ],
   } satisfies Preset.ThemeConfig,

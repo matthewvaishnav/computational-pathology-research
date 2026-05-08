@@ -1,202 +1,465 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
+/* Medical Research Paper Style - Clean, Professional, Academic */
+@import url('https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;600;700&family=Arial:wght@400;500;600&display=swap');
 
 :root {
-  --ifm-color-primary: #891b35;
-  --ifm-color-primary-dark: #79182f;
-  --ifm-color-primary-darker: #70162b;
-  --ifm-color-primary-darkest: #5c1224;
-  --ifm-color-primary-light: #991e3b;
-  --ifm-color-primary-lighter: #a81f42;
-  --ifm-color-primary-lightest: #c84460;
-  --ifm-background-color: #fcfaf6;
-  --ifm-background-surface-color: #ffffff;
-  --ifm-font-family-base: 'Inter', system-ui, sans-serif;
-  --ifm-heading-font-family: 'Fraunces', Georgia, serif;
-  --ifm-heading-font-weight: 700;
-  --ifm-code-font-size: 94%;
-  --ifm-navbar-background-color: rgba(252, 250, 246, 0.82);
-  --ifm-navbar-link-color: #2b2621;
-  --ifm-menu-color-active: var(--ifm-color-primary);
-  --ifm-menu-color-background-active: rgba(137, 27, 53, 0.08);
-  --ifm-toc-border-color: rgba(43, 38, 33, 0.12);
-  --ifm-footer-background-color: #131720;
-  --docusaurus-highlighted-code-line-bg: rgba(137, 27, 53, 0.08);
-  --hc-text: #201c18;
-  --hc-text-soft: #5f564d;
-  --hc-accent: #0f7c73;
-  --hc-surface: #fffdf9;
-  --hc-border: rgba(43, 38, 33, 0.12);
-  --hc-shadow: 0 18px 48px rgba(28, 24, 20, 0.08);
+  /* Medical/Academic Color Scheme */
+  --ifm-color-primary: #1565c0;
+  --ifm-color-primary-dark: #0d47a1;
+  --ifm-color-primary-darker: #0a3d91;
+  --ifm-color-primary-darkest: #063281;
+  --ifm-color-primary-light: #1976d2;
+  --ifm-color-primary-lighter: #42a5f5;
+  --ifm-color-primary-lightest: #90caf9;
+
+  /* Clean Medical Background */
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #fafafa;
+  
+  /* Medical Typography */
+  --ifm-font-family-base: 'Arial', 'Helvetica Neue', sans-serif;
+  --ifm-heading-font-family: 'Times New Roman', 'Times', serif;
+  --ifm-heading-font-weight: 600;
+  --ifm-font-weight-bold: 600;
+  
+  /* Layout */
+  --ifm-navbar-height: 60px;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-link-color: #333333;
+  --ifm-navbar-link-hover-color: #1565c0;
+  
+  /* Text Colors - Medical Paper Style */
+  --ifm-font-color-base: #212121;
+  --ifm-font-color-secondary: #616161;
+  
+  /* Borders */
+  --ifm-toc-border-color: #e0e0e0;
+  --ifm-hr-border-color: #e0e0e0;
+  --ifm-table-border-color: #e0e0e0;
+  
+  /* Footer */
+  --ifm-footer-background-color: #f5f5f5;
+  --ifm-footer-color: #757575;
+  --ifm-footer-link-color: #1565c0;
+  --ifm-footer-title-color: #212121;
+  
+  /* Code */
+  --ifm-code-font-size: 0.875rem;
+  --ifm-code-background: #f5f5f5;
+  --ifm-code-border-radius: 3px;
+  --ifm-code-padding-horizontal: 0.4rem;
+  --ifm-code-padding-vertical: 0.2rem;
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #ff8ca0;
-  --ifm-color-primary-dark: #ff7088;
-  --ifm-color-primary-darker: #ff627c;
-  --ifm-color-primary-darkest: #ff3660;
-  --ifm-color-primary-light: #ffa8b8;
-  --ifm-color-primary-lighter: #ffb6c4;
-  --ifm-color-primary-lightest: #ffd6dd;
-  --ifm-background-color: #11151d;
-  --ifm-background-surface-color: #171d27;
-  --ifm-navbar-background-color: rgba(17, 21, 29, 0.82);
-  --ifm-navbar-link-color: #f3eee7;
-  --ifm-menu-color-background-active: rgba(255, 140, 160, 0.12);
-  --ifm-footer-background-color: #0a0d12;
-  --docusaurus-highlighted-code-line-bg: rgba(255, 140, 160, 0.14);
-  --hc-text: #f3eee7;
-  --hc-text-soft: #baafa3;
-  --hc-surface: #171d27;
-  --hc-border: rgba(243, 238, 231, 0.08);
-  --hc-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
+  --ifm-color-primary: #90caf9;
+  --ifm-color-primary-dark: #42a5f5;
+  --ifm-color-primary-darker: #1976d2;
+  --ifm-color-primary-darkest: #1565c0;
+  --ifm-color-primary-light: #bbdefb;
+  --ifm-color-primary-lighter: #e3f2fd;
+  --ifm-color-primary-lightest: #f3e5f5;
+  
+  --ifm-background-color: #121212;
+  --ifm-background-surface-color: #1e1e1e;
+  --ifm-navbar-background-color: #121212;
+  --ifm-navbar-link-color: #e0e0e0;
+  --ifm-navbar-link-hover-color: #90caf9;
+  --ifm-footer-background-color: #0a0a0a;
+  
+  --ifm-font-color-base: #e0e0e0;
+  --ifm-font-color-secondary: #bdbdbd;
 }
 
+[data-theme='light'] {
+  --ifm-color-primary: #1565c0;
+  --ifm-color-primary-dark: #0d47a1;
+  --ifm-color-primary-darker: #0a3d91;
+  --ifm-color-primary-darkest: #063281;
+  --ifm-color-primary-light: #1976d2;
+  --ifm-color-primary-lighter: #42a5f5;
+  --ifm-color-primary-lightest: #90caf9;
+  
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #fafafa;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-link-color: #333333;
+  --ifm-navbar-link-hover-color: #1565c0;
+  --ifm-footer-background-color: #f5f5f5;
+  
+  --ifm-font-color-base: #212121;
+  --ifm-font-color-secondary: #616161;
+}
+
+/* Global Styles - Medical Research Paper */
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  color: var(--hc-text);
-  background:
-    radial-gradient(circle at top left, rgba(137, 27, 53, 0.05), transparent 24%),
-    radial-gradient(circle at top right, rgba(15, 124, 115, 0.05), transparent 20%),
-    var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  background: var(--ifm-background-color);
+  font-family: var(--ifm-font-family-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Professional Medical Navbar */
 .navbar {
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--hc-border);
-  box-shadow: 0 10px 30px rgba(28, 24, 20, 0.05);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--ifm-navbar-background-color);
 }
 
 .navbar__brand {
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-heading-font-family);
 }
 
 .navbar__title {
   font-family: var(--ifm-heading-font-family);
-  font-size: 1.25rem;
 }
 
-.hero--primary {
-  --ifm-hero-background-color: transparent;
-  --ifm-hero-text-color: inherit;
+.navbar__link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ifm-navbar-link-color);
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: var(--ifm-font-family-base);
 }
 
-.footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.navbar__link:hover {
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-navbar-link-hover-color);
 }
 
-.footer__title {
-  color: #fff8f2;
+.navbar__link--active {
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
 }
 
+/* Sidebar - Completely hidden for full-width layout */
 .theme-doc-sidebar-container {
-  border-right: 1px solid var(--hc-border) !important;
+  display: none !important;
+}
+
+/* Main wrapper - Full width when sidebar is hidden */
+.main-wrapper {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Doc root - Full width layout */
+.docusaurus-doc-root {
+  display: block !important;
+}
+
+/* Doc wrapper - Full width */
+.theme-doc-wrapper {
+  display: block !important;
+  max-width: none !important;
+}
+
+/* Main content - Full width with proper centering */
+.theme-doc-main {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 2rem !important;
+  width: 100% !important;
 }
 
 .theme-doc-sidebar-menu {
-  padding-inline: 0.5rem;
+  padding: 1rem;
 }
 
-.theme-doc-sidebar-item-link,
 .menu__link {
-  border-radius: 0.85rem;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+.menu__link:hover {
+  background: rgba(79, 70, 229, 0.06);
+  color: var(--ifm-color-primary);
 }
 
 .menu__link--active {
-  font-weight: 700;
+  background: var(--ifm-menu-color-background-active);
+  color: var(--ifm-menu-color-active);
+  font-weight: 600;
 }
 
-.table-of-contents {
-  border-left-color: var(--hc-border);
+.menu__list-item-collapsible {
+  border-radius: 8px;
 }
 
+.menu__caret {
+  transition: transform 0.2s ease;
+}
+
+/* Medical Research Paper Content */
 .theme-doc-markdown {
-  max-width: 78ch;
-}
-
-.theme-doc-markdown h1,
-.theme-doc-markdown h2,
-.theme-doc-markdown h3 {
-  letter-spacing: -0.03em;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-base);
 }
 
 .theme-doc-markdown h1 {
-  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  font-size: 2rem;
+  font-weight: 600;
+  font-family: var(--ifm-heading-font-family);
+  margin-bottom: 1.5rem;
+  color: var(--ifm-font-color-base);
+  text-align: center;
+  border-bottom: 2px solid var(--ifm-toc-border-color);
+  padding-bottom: 1rem;
 }
 
 .theme-doc-markdown h2 {
-  font-size: clamp(1.7rem, 3vw, 2.4rem);
-  border-top: 1px solid var(--hc-border);
-  margin-top: 3rem;
-  padding-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: var(--ifm-heading-font-family);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-font-color-base);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  padding-bottom: 0.5rem;
 }
 
-.theme-doc-markdown p,
-.theme-doc-markdown li {
-  color: var(--hc-text-soft);
-  line-height: 1.8;
+.theme-doc-markdown h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: var(--ifm-heading-font-family);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--ifm-font-color-base);
+}
+
+.theme-doc-markdown p {
+  color: var(--ifm-font-color-base);
+  margin-bottom: 1.25rem;
+  text-align: justify;
+  font-family: var(--ifm-font-family-base);
 }
 
 .theme-doc-markdown a {
-  text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.14em;
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+  font-weight: 500;
 }
 
-.theme-doc-markdown blockquote {
-  background: rgba(137, 27, 53, 0.04);
-  border-left: 4px solid var(--ifm-color-primary);
-  border-radius: 0 1rem 1rem 0;
-  padding: 1rem 1.2rem;
+.theme-doc-markdown a:hover {
+  color: var(--ifm-color-primary-dark);
 }
 
-.theme-doc-markdown table {
-  display: table;
-  width: 100%;
+/* Code Blocks */
+.theme-doc-markdown code {
+  background: var(--ifm-code-background);
+  border: 1px solid var(--hc-border);
+  border-radius: var(--ifm-code-border-radius);
+  font-size: var(--ifm-code-font-size);
+  font-weight: 500;
+  padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
+}
+
+.theme-code-block {
+  border-radius: 12px;
   box-shadow: var(--hc-shadow);
-  border-collapse: collapse;
+  border: 1px solid var(--hc-border);
   overflow: hidden;
-  border-radius: 1rem;
+}
+
+/* Tables */
+.theme-doc-markdown table {
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--hc-shadow);
+  border: 1px solid var(--hc-border);
 }
 
 .theme-doc-markdown th {
-  background: rgba(137, 27, 53, 0.08);
+  background: rgba(79, 70, 229, 0.05);
+  font-weight: 600;
+  color: var(--hc-text);
+  padding: 1rem;
 }
 
-.pagination-nav__link {
-  border-radius: 1rem;
-  border-color: var(--hc-border);
-  box-shadow: var(--hc-shadow);
+.theme-doc-markdown td {
+  padding: 1rem;
+  border-top: 1px solid var(--hc-border);
 }
 
-.card {
-  border-radius: 1rem;
-  border-color: var(--hc-border);
-  box-shadow: var(--hc-shadow);
+/* Blockquotes */
+.theme-doc-markdown blockquote {
+  background: rgba(79, 70, 229, 0.05);
+  border-left: 4px solid var(--ifm-color-primary);
+  border-radius: 0 8px 8px 0;
+  padding: 1.5rem;
+  margin: 2rem 0;
 }
 
+/* Buttons */
 .button {
-  border-radius: 999px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 20px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.button--primary {
+  background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.button--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  color: white;
 }
 
 .button--secondary {
-  background: rgba(137, 27, 53, 0.08);
-  color: var(--ifm-color-primary);
-  border: 1px solid rgba(137, 27, 53, 0.14);
+  background: white;
+  border-color: var(--hc-border);
+  color: var(--hc-text);
 }
 
 .button--secondary:hover {
-  background: rgba(137, 27, 53, 0.12);
+  background: var(--ifm-background-surface-color);
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  transform: translateY(-1px);
 }
 
-.searchBox_ZlJk,
+/* Cards */
+.card {
+  border-radius: 12px;
+  border: 1px solid var(--hc-border);
+  box-shadow: var(--hc-shadow);
+  transition: all 0.3s ease;
+  background: var(--hc-surface);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hc-shadow-lg);
+}
+
+/* Pagination */
+.pagination-nav__link {
+  border-radius: 12px;
+  border: 1px solid var(--hc-border);
+  box-shadow: var(--hc-shadow);
+  transition: all 0.2s ease;
+}
+
+.pagination-nav__link:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--hc-shadow-lg);
+}
+
+/* TOC */
+.table-of-contents {
+  border-left: 1px solid var(--hc-border);
+}
+
+.table-of-contents__link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hc-text-soft);
+  transition: color 0.2s ease;
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+}
+
+/* Footer */
+.footer {
+  background: var(--ifm-footer-background-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer__title {
+  color: var(--ifm-footer-title-color);
+  font-weight: 600;
+}
+
+.footer__link-item {
+  color: var(--ifm-footer-color);
+  transition: color 0.2s ease;
+}
+
+.footer__link-item:hover {
+  color: var(--ifm-footer-link-color);
+}
+
+/* Search */
 .DocSearch-Button {
-  border-radius: 999px !important;
+  border-radius: 8px !important;
+  background: rgba(79, 70, 229, 0.05) !important;
+  border: 1px solid var(--hc-border) !important;
+  transition: all 0.2s ease !important;
 }
 
+.DocSearch-Button:hover {
+  background: rgba(79, 70, 229, 0.1) !important;
+  border-color: var(--ifm-color-primary) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 996px) {
+  .navbar__items--right .navbar__item {
+    display: none;
+  }
+  
+  .navbar__items--right .navbar__item:last-child {
+    display: flex;
+  }
+
+  .theme-doc-markdown {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .theme-doc-main {
+    padding: 0 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+  }
+  
+  .theme-doc-markdown h1 {
+    font-size: 1.75rem;
+  }
+  
+  .theme-doc-markdown h2 {
+    font-size: 1.5rem;
+  }
+  
+  .theme-doc-main {
+    padding: 0 0.75rem !important;
+  }
+}
+
+/* Animations */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -210,56 +473,16 @@ body {
   }
 }
 
-/* ─── Medium screens (961px-1200px) - Intermediate responsive breakpoint ─── */
-@media (min-width: 961px) and (max-width: 1200px) {
-  .theme-doc-sidebar-container {
-    width: 280px !important;
-  }
-  
-  .main-wrapper {
-    margin-left: 260px !important;
-    width: calc(100% - 260px) !important;
-  }
-  
-  .theme-doc-markdown {
-    max-width: 70ch;
-    padding: 40px 50px 50px;
-  }
-  
-  .navbar {
-    padding: 0 1rem;
-  }
-  
-  /* Improve content spacing at medium viewports */
-  .container {
-    max-width: none;
-    padding: 0 1rem;
-  }
+/* Focus States */
+.navbar__link:focus-visible,
+.menu__link:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
 }
 
-/* ─── Improved tablet responsiveness ─── */
-@media (max-width: 1100px) and (min-width: 768px) {
-  .theme-doc-markdown {
-    max-width: 85ch;
-    padding: 2rem 1.5rem;
-  }
-  
-  .navbar__items {
-    gap: 0.5rem;
-  }
-}
-
-@media (max-width: 996px) {
-  .navbar__items--right .navbar__item {
-    display: none;
-  }
-
-  .theme-doc-markdown {
-    max-width: 100%;
-  }
-  
-  /* Better mobile sidebar behavior */
-  .theme-doc-sidebar-container {
-    width: 100% !important;
-  }
+/* Selection */
+::selection {
+  background: rgba(79, 70, 229, 0.2);
+  color: var(--hc-text);
 }
