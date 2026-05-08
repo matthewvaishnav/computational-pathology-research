@@ -210,6 +210,45 @@ body {
   }
 }
 
+/* ─── Medium screens (961px-1200px) - Intermediate responsive breakpoint ─── */
+@media (min-width: 961px) and (max-width: 1200px) {
+  .theme-doc-sidebar-container {
+    width: 280px !important;
+  }
+  
+  .main-wrapper {
+    margin-left: 260px !important;
+    width: calc(100% - 260px) !important;
+  }
+  
+  .theme-doc-markdown {
+    max-width: 70ch;
+    padding: 40px 50px 50px;
+  }
+  
+  .navbar {
+    padding: 0 1rem;
+  }
+  
+  /* Improve content spacing at medium viewports */
+  .container {
+    max-width: none;
+    padding: 0 1rem;
+  }
+}
+
+/* ─── Improved tablet responsiveness ─── */
+@media (max-width: 1100px) and (min-width: 768px) {
+  .theme-doc-markdown {
+    max-width: 85ch;
+    padding: 2rem 1.5rem;
+  }
+  
+  .navbar__items {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 996px) {
   .navbar__items--right .navbar__item {
     display: none;
@@ -217,5 +256,10 @@ body {
 
   .theme-doc-markdown {
     max-width: 100%;
+  }
+  
+  /* Better mobile sidebar behavior */
+  .theme-doc-sidebar-container {
+    width: 100% !important;
   }
 }
