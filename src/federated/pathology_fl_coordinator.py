@@ -151,7 +151,7 @@ class PathologyFLCoordinator:
     
     def load_checkpoint(self, path: str):
         """Load coordinator checkpoint."""
-        checkpoint = torch.load(path, weights_only=False)
+        checkpoint = torch.load(path, weights_only=True)
         
         self.global_model = checkpoint['global_model']
         self.round_number = checkpoint['round_number']
