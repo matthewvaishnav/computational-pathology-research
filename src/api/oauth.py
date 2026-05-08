@@ -325,10 +325,10 @@ class OAuthClient:
             
         except JWTError as e:
             logger.error(f"JWT validation failed: {e}")
-            raise HTTPException(status_code=401, detail=f"Invalid ID token: {str(e)}")
+            raise HTTPException(status_code=401, detail="Invalid ID token")
         except ValueError as e:
             logger.error(f"Token validation failed: {e}")
-            raise HTTPException(status_code=401, detail=f"Invalid ID token: {str(e)}")
+            raise HTTPException(status_code=401, detail="Invalid ID token")
         except Exception as e:
             logger.error(f"Unexpected error during token validation: {e}")
             raise HTTPException(status_code=500, detail="Token validation error")
