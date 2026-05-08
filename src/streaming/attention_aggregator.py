@@ -313,8 +313,11 @@ class StreamingAttentionAggregator:
 
         for i, (x, y) in enumerate(self.accumulated_coordinates):
             if i < len(attention_np):
-                # Simple assignment (could be improved with interpolation)
-                heatmap[int(y), int(x)] = attention_np[i]
+                # Validate coordinates are within bounds
+                y_idx = int(y)
+                x_idx = int(x)
+                if 0 <= y_idx < heatmap.shape[0] and 0 <= x_idx < heatmap.shape[1]:
+                    heatmap[y_idx, x_idx] = attention_np[i]
 
         return heatmap
 
