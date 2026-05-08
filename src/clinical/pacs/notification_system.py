@@ -138,9 +138,12 @@ class EmailNotifier(NotificationChannel):
             if self.use_tls:
                 conn = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port)
             else:
-                conn = smtplib.SMTP(self.smtp_server, self.smtp_port)
+                conn = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30)
             with conn:
-                if self.username and self.password and not self.use_tls:
+                # Enforce STARTTLS for security
+                if self.use_tls:
+                    conn.starttls()
+                if self.username and self.password:
                     conn.login(self.username, self.password)
                 conn.sendmail(self.from_address, [recipient], msg.as_string())
             logger.info("Email sent to %s for event %s", recipient, event.event_id)
