@@ -7,7 +7,9 @@ automatic compression for better resource utilization.
 """
 
 import hashlib
+import hmac
 import logging
+import os
 import pickle
 import time
 import weakref
@@ -58,7 +60,13 @@ class CacheEntry:
             # Serialize and compress
             serialized = pickle.dumps(self.data)
             self.original_size = len(serialized)
-            compressed_data = zlib.compress(serialized, level=6)
+            
+            # Add HMAC for integrity validation
+            secret_key = os.environ.get('CACHE_SECRET_KEY', 'default-secret-key').encode()
+            signature = hmac.new(secret_key, serialized, hashlib.sha256).digest()
+            signed_data = signature + serialized
+            
+            compressed_data = zlib.compress(signed_data, level=6)
             self.compressed_size = len(compressed_data)
             
             # Only keep compressed if it saves significant space
@@ -79,10 +87,17 @@ class CacheEntry:
         
         try:
             decompressed = zlib.decompress(self.data)
-            # WARNING: pickle.loads() is unsafe with untrusted data
-            # Only use with data from trusted sources (internal cache)
-            # For external data, use json.loads() or other safe formats
-            return pickle.loads(decompressed)
+            
+            # Verify HMAC signature
+            secret_key = os.environ.get('CACHE_SECRET_KEY', 'default-secret-key').encode()
+            signature = decompressed[:32]
+            data = decompressed[32:]
+            expected_signature = hmac.new(secret_key, data, hashlib.sha256).digest()
+            
+            if not hmac.compare_digest(signature, expected_signature):
+                raise ValueError("Cache data integrity check failed - possible tampering")
+            
+            return pickle.loads(data)
         except Exception as e:
             logger.error(f"Failed to decompress cache entry: {e}")
             raise
