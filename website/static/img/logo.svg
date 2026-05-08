@@ -1,0 +1,33 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#A51C30" opacity="0.1"/>
+  
+  <!-- Main circle border -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#A51C30" stroke-width="3"/>
+  
+  <!-- Microscope slide representation -->
+  <g transform="translate(100, 100)">
+    <!-- Slide outline -->
+    <rect x="-35" y="-25" width="70" height="50" rx="3" fill="none" stroke="#A51C30" stroke-width="2.5"/>
+    
+    <!-- Grid pattern (representing patches) -->
+    <line x1="-35" y1="-8" x2="35" y2="-8" stroke="#A51C30" stroke-width="1.5" opacity="0.6"/>
+    <line x1="-35" y1="9" x2="35" y2="9" stroke="#A51C30" stroke-width="1.5" opacity="0.6"/>
+    <line x1="-18" y1="-25" x2="-18" y2="25" stroke="#A51C30" stroke-width="1.5" opacity="0.6"/>
+    <line x1="0" y1="-25" x2="0" y2="25" stroke="#A51C30" stroke-width="1.5" opacity="0.6"/>
+    <line x1="18" y1="-25" x2="18" y2="25" stroke="#A51C30" stroke-width="1.5" opacity="0.6"/>
+    
+    <!-- Neural network nodes -->
+    <circle cx="-25" cy="45" r="6" fill="#A51C30"/>
+    <circle cx="0" cy="45" r="6" fill="#A51C30"/>
+    <circle cx="25" cy="45" r="6" fill="#A51C30"/>
+    
+    <!-- Connections -->
+    <line x1="-25" y1="45" x2="0" y2="65" stroke="#A51C30" stroke-width="2" opacity="0.7"/>
+    <line x1="0" y1="45" x2="0" y2="65" stroke="#A51C30" stroke-width="2" opacity="0.7"/>
+    <line x1="25" y1="45" x2="0" y2="65" stroke="#A51C30" stroke-width="2" opacity="0.7"/>
+    
+    <!-- Output node -->
+    <circle cx="0" cy="65" r="7" fill="#A51C30"/>
+  </g>
+</svg>
