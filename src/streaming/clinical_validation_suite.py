@@ -494,7 +494,11 @@ class ClinicalValidator:
 
         for i, (x, y) in enumerate(coordinates):
             if i < len(attention_weights):
-                attention_map[int(y), int(x)] = attention_weights[i].item()
+                # Validate coordinates are within bounds
+                y_idx = int(y)
+                x_idx = int(x)
+                if 0 <= y_idx < max_y and 0 <= x_idx < max_x:
+                    attention_map[y_idx, x_idx] = attention_weights[i].item()
 
         return attention_map
 
