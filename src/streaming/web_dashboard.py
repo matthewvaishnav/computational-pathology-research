@@ -448,10 +448,11 @@ async def stop_processing():
 
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, token: str = None):
     """WebSocket endpoint for real-time updates.
 
     Clients connect to this endpoint to receive real-time processing updates.
+    Requires authentication token as query parameter.
 
     Message types sent to clients:
     - status_update: Processing status changes
@@ -461,6 +462,18 @@ async def websocket_endpoint(websocket: WebSocket):
     - processing_stopped: Processing stopped
     - error: Error occurred
     """
+    # Validate authentication token before accepting connection
+    if not token:
+        await websocket.close(code=1008, reason="Authentication required")
+        return
+    
+    # TODO: Implement proper token validation
+    # For now, just check token is not empty
+    # In production, validate JWT or session token
+    if len(token) < 10:
+        await websocket.close(code=1008, reason="Invalid authentication token")
+        return
+    
     await connection_manager.connect(websocket)
 
     # Rate limiting state
