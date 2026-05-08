@@ -50,8 +50,9 @@ def require_admin(current_user: dict = Depends(get_current_user)):
 async def health_check(db: Session = Depends(get_db_session)):
     """Health check endpoint with real database connectivity."""
     try:
-        # Check database connectivity
-        db.execute("SELECT 1")
+        # Check database connectivity with proper parameterized query
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         db_healthy = True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
