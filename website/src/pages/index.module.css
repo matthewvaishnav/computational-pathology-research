@@ -1,0 +1,291 @@
+.page {
+  display: grid;
+  gap: 4.5rem;
+  padding-block: 1.5rem 5rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.heroCopy,
+.heroPanel,
+.workflowCard,
+.capabilityCard,
+.bottomBand {
+  border: 1px solid rgba(38, 37, 34, 0.08);
+  box-shadow: 0 24px 60px rgba(35, 29, 24, 0.08);
+}
+
+.heroCopy {
+  background:
+    radial-gradient(circle at top left, rgba(158, 39, 66, 0.12), transparent 32%),
+    linear-gradient(180deg, rgba(255, 250, 244, 0.98), rgba(248, 243, 236, 0.96));
+  border-radius: 2rem;
+  padding: 3rem;
+}
+
+.heroPanel {
+  background: linear-gradient(180deg, #151821, #1d2432);
+  border-radius: 2rem;
+  color: #eef3f7;
+  overflow: hidden;
+}
+
+.eyebrow,
+.sectionHeading p,
+.panelSummary p,
+.workflowCard span:first-child,
+.bottomBand p:first-child {
+  margin: 0 0 0.85rem;
+  color: var(--hc-accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(2.8rem, 5vw, 4.8rem);
+  line-height: 0.96;
+  margin: 0;
+  max-width: 11ch;
+}
+
+.subtitle {
+  margin: 1.25rem 0 0;
+  max-width: 62ch;
+  font-size: 1.1rem;
+  line-height: 1.75;
+  color: var(--hc-text-soft);
+}
+
+.heroActions,
+.bottomActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.primaryCta,
+.secondaryCta {
+  min-width: 220px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.primaryCta {
+  box-shadow: 0 12px 30px rgba(137, 27, 53, 0.25);
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 2.2rem;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(38, 37, 34, 0.08);
+  border-radius: 1.1rem;
+  padding: 1rem;
+  backdrop-filter: blur(12px);
+}
+
+.statCard span {
+  display: block;
+  color: var(--hc-text-soft);
+  font-size: 0.8rem;
+  margin-bottom: 0.35rem;
+}
+
+.statCard strong {
+  display: block;
+  color: var(--hc-text);
+  font-size: 1.05rem;
+}
+
+.panelChrome {
+  display: flex;
+  gap: 0.45rem;
+  padding: 1rem 1rem 0;
+}
+
+.panelChrome span {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.archImage {
+  display: block;
+  width: calc(100% - 2rem);
+  margin: 1rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.panelSummary {
+  padding: 0 1.2rem 1.4rem;
+}
+
+.panelSummary ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: rgba(238, 243, 247, 0.82);
+}
+
+.sectionHeading {
+  max-width: 56rem;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.05;
+}
+
+.workflowSection,
+.capabilitySection {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.workflowGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.workflowCard,
+.capabilityCard {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.workflowCard {
+  background: linear-gradient(180deg, rgba(255, 249, 241, 0.95), rgba(246, 239, 231, 0.92));
+  border-radius: 1.5rem;
+  padding: 1.6rem;
+}
+
+.workflowCard h3,
+.capabilityCard h3 {
+  margin: 0 0 0.7rem;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.workflowCard p,
+.capabilityCard p,
+.bottomBand p:last-child {
+  margin: 0;
+  color: var(--hc-text-soft);
+  line-height: 1.7;
+}
+
+.capabilityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.capabilityCard {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 241, 235, 0.92));
+  border-radius: 1.5rem;
+  padding: 1.6rem;
+}
+
+.capabilityCard span {
+  display: inline-flex;
+  margin-top: 1.15rem;
+  color: var(--hc-primary);
+  font-weight: 700;
+}
+
+.workflowCard:hover,
+.workflowCard:focus-visible,
+.capabilityCard:hover,
+.capabilityCard:focus-visible {
+  transform: translateY(-4px);
+  border-color: rgba(137, 27, 53, 0.2);
+  box-shadow: 0 28px 70px rgba(35, 29, 24, 0.12);
+}
+
+.bottomBand {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem 2.2rem;
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(circle at right top, rgba(19, 124, 115, 0.16), transparent 28%),
+    linear-gradient(180deg, #171d27, #11161f);
+  color: #eef3f7;
+}
+
+.bottomBand h2 {
+  margin: 0 0 0.75rem;
+}
+
+.bottomBand p:last-child {
+  color: rgba(238, 243, 247, 0.8);
+  max-width: 42rem;
+}
+
+@media (max-width: 1100px) {
+  .hero,
+  .workflowGrid,
+  .capabilityGrid,
+  .bottomBand {
+    grid-template-columns: 1fr;
+  }
+
+  .statRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .title {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroCopy,
+  .workflowCard,
+  .capabilityCard,
+  .bottomBand {
+    padding: 1.35rem;
+    border-radius: 1.25rem;
+  }
+
+  .statRow {
+    grid-template-columns: 1fr;
+  }
+
+  .page {
+    gap: 3rem;
+    padding-block-end: 3.5rem;
+  }
+
+  .title {
+    font-size: 2.45rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+}
