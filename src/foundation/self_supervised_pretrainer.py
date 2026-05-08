@@ -799,7 +799,7 @@ class SelfSupervisedPreTrainer:
         if not os.path.exists(path):
             raise FileNotFoundError(f"Checkpoint not found: {path}")
             
-        checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+        checkpoint = torch.load(path, map_location="cpu", weights_only=True)
 
         # Load model state
         if self.config.distributed:
