@@ -56,14 +56,26 @@ class UserLogin(BaseModel):
 async def register_user(user_data: UserRegistration, request: Request):
     """Register new user with secure password hashing."""
     try:
+        # Sanitize inputs
+        username = user_data.username.strip().lower()
+        email = user_data.email.strip().lower()
+        
         # Validate email and password using centralized validators
-        validate_email(user_data.email)
+        validate_email(email)
         validate_password(user_data.password)
         
-        if user_data.username in users_db:
+        # Validate username format (alphanumeric, underscore, hyphen only)
+        import re
+        if not re.match(r'^[a-z0-9_-]{3,32}$', username):
+            raise HTTPException(
+                status_code=400, 
+                detail="Username must be 3-32 characters (lowercase letters, numbers, underscore, hyphen only)"
+            )
+        
+        if username in users_db:
             log_security_event(
                 "registration_failed",
-                username=user_data.username,
+                username=username,
                 ip_address=request.client.host,
                 details="User already exists",
                 success=False,
@@ -75,10 +87,10 @@ async def register_user(user_data: UserRegistration, request: Request):
         user_id = str(uuid.uuid4())
         # Role is always set to 'pathologist' for new registrations
         # Admin roles must be assigned by existing admins
-        users_db[user_data.username] = {
+        users_db[username] = {
             "user_id": user_id,
-            "username": user_data.username,
-            "email": user_data.email,
+            "username": username,
+            "email": email,
             "password_hash": hashed_password,
             "role": "pathologist",  # Default role, cannot be overridden by user
             "created_at": datetime.now().isoformat(),
