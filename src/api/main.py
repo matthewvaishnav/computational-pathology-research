@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 import time
+import uuid
 from pathlib import Path
 
 import uvicorn
@@ -22,12 +23,13 @@ from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Database and monitoring
-from src.database import initialize_database
+from src.database import initialize_database, DatabaseManager
 from src.monitoring.tracing import get_tracer
 
 # API components
@@ -159,7 +161,7 @@ async def shutdown_event():
         logger.info("Initiating graceful shutdown...")
         
         # Close database connections
-        db_manager = get_database_manager()
+        db_manager = DatabaseManager()
         if db_manager:
             db_manager.close()
             logger.info("Database connections closed")

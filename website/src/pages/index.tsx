@@ -43,11 +43,13 @@ export default function Home(): ReactNode {
               We present HistoCore, a comprehensive computational pathology platform designed for clinical-scale 
               deployment with integrated foundation models, security compliance, and production-ready inference 
               capabilities. The platform addresses critical challenges in digital pathology including whole slide 
-              image (WSI) processing, model interpretability, federated learning, and regulatory compliance. 
-              Our system demonstrates superior performance across multiple benchmarks with 93.94% AUC on CAMELYON17, 
-              12.3ms inference time per patch, and comprehensive test coverage exceeding 4,740 automated tests. 
-              The platform integrates seamlessly with clinical PACS systems and provides HIPAA-compliant deployment 
-              options for healthcare environments.
+              image (WSI) processing, model interpretability, and regulatory compliance. Our system demonstrates 
+              superior performance across multiple benchmarks with 93.94% AUC on CAMELYON17, 12.3ms inference time 
+              per patch, and comprehensive test coverage exceeding 4,740 automated tests. The platform integrates 
+              seamlessly with clinical PACS systems and provides HIPAA-compliant deployment options for healthcare 
+              environments. Additionally, HistoCore features advanced federated learning integration with 
+              pathology-specific aggregation strategies and a novel Distributed Medical Intelligence (DMI) system 
+              that enables multi-institutional collaboration without compromising patient privacy.
             </p>
           </section>
 
@@ -60,7 +62,8 @@ export default function Home(): ReactNode {
               <li>Comprehensive security framework with HIPAA compliance and clinical workflow integration</li>
               <li>Rigorous benchmarking system with statistical validation and comparative analysis</li>
               <li>Direct PACS integration with DICOM handling for pathology departments</li>
-              <li>Privacy-preserving federated learning with differential privacy and secure aggregation</li>
+              <li>Advanced federated learning integration with pathology-specific aggregation strategies</li>
+              <li>Distributed Medical Intelligence (DMI) system for multi-institutional collaboration</li>
             </ul>
           </section>
 
@@ -100,7 +103,42 @@ export default function Home(): ReactNode {
               <li><strong>Security Layer:</strong> HIPAA-compliant data handling with comprehensive audit logging</li>
               <li><strong>Benchmarking Framework:</strong> Statistical validation and comparative analysis tools</li>
               <li><strong>PACS Integration:</strong> Direct clinical system integration with DICOM support</li>
-              <li><strong>Federated Learning:</strong> Privacy-preserving multi-institutional training capabilities</li>
+              <li><strong>Federated Learning Module:</strong> Pathology-aware FL integration with Flower framework</li>
+              <li><strong>Distributed Medical Intelligence:</strong> Multi-institutional knowledge collaboration system</li>
+            </ul>
+          </section>
+
+          {/* Federated Learning & DMI */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Federated Learning Integration & Distributed Medical Intelligence</h2>
+            <p className={styles.sectionText}>
+              HistoCore features advanced federated learning capabilities that enable multi-hospital AI training 
+              without sharing patient data, combined with a novel Distributed Medical Intelligence (DMI) system 
+              for medical knowledge collaboration.
+            </p>
+            
+            <h3 className={styles.subsectionTitle}>PathologyFL: Expertise-Weighted Aggregation</h3>
+            <ul className={styles.architectureList}>
+              <li><strong>Hospital Expertise Weighting:</strong> Cancer centers receive higher weights than community hospitals</li>
+              <li><strong>Cancer-Type Specific Strategies:</strong> Specialized aggregation for breast, lung, prostate, and colorectal cancers</li>
+              <li><strong>Slide Quality Assessment:</strong> Automatic weighting based on image sharpness, stain consistency, and label confidence</li>
+              <li><strong>Attention-Aware Aggregation:</strong> Different strategies for attention layers vs. standard parameters</li>
+            </ul>
+
+            <h3 className={styles.subsectionTitle}>Production Security & Privacy</h3>
+            <ul className={styles.architectureList}>
+              <li><strong>Differential Privacy (DP-SGD):</strong> Gradient clipping and calibrated noise with privacy budget tracking</li>
+              <li><strong>Secure Aggregation:</strong> Homomorphic encryption using TenSEAL for encrypted gradient aggregation</li>
+              <li><strong>Byzantine Robustness:</strong> Krum algorithm and coordinate-wise median for malicious client detection</li>
+              <li><strong>HIPAA Compliance:</strong> Tamper-evident audit logging and regulatory compliance</li>
+            </ul>
+
+            <h3 className={styles.subsectionTitle}>Distributed Medical Intelligence (DMI)</h3>
+            <ul className={styles.architectureList}>
+              <li><strong>Medical Expertise Calculation:</strong> Weights based on board certifications, publications, and diagnostic accuracy</li>
+              <li><strong>Collective Knowledge Synthesis:</strong> Aggregates medical insights across institutions without data sharing</li>
+              <li><strong>Specialization Matching:</strong> Routes cases to hospitals with relevant expertise</li>
+              <li><strong>Multi-Institutional Collaboration:</strong> Enables knowledge sharing while preserving institutional autonomy</li>
             </ul>
           </section>
 
@@ -127,6 +165,10 @@ export default function Home(): ReactNode {
               <Link to="/docs/SECURITY_HARDENING" className={styles.docLink}>
                 <h3>Security & Compliance</h3>
                 <p>HIPAA compliance and security implementation</p>
+              </Link>
+              <Link to="/docs/FEDERATED_LEARNING" className={styles.docLink}>
+                <h3>Federated Learning & DMI</h3>
+                <p>Multi-hospital training and distributed medical intelligence</p>
               </Link>
               <Link to="https://github.com/matthewvaishnav/computational-pathology-research" className={styles.docLink}>
                 <h3>Source Code</h3>
