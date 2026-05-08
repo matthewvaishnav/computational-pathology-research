@@ -1,7 +1,8 @@
 """Utility modules for monitoring, logging, and helper functions."""
 
 from .attention_utils import load_attention_weights, save_attention_weights
-from .interpretability import AttentionVisualizer, EmbeddingAnalyzer, SaliencyMap
+# Temporarily comment out interpretability to avoid scipy/torch conflicts
+# from .interpretability import AttentionVisualizer, EmbeddingAnalyzer, SaliencyMap
 from .monitoring import (
     MetricsTracker,
     ProgressTracker,
@@ -33,9 +34,10 @@ __all__ = [
     "ProgressTracker",
     "format_metrics",
     "log_system_info",
-    "AttentionVisualizer",
-    "SaliencyMap",
-    "EmbeddingAnalyzer",
+    # Temporarily commented out interpretability exports
+    # "AttentionVisualizer",
+    # "SaliencyMap",
+    # "EmbeddingAnalyzer",
     "ValidationError",
     "validate_tensor_shape",
     "validate_tensor_range",

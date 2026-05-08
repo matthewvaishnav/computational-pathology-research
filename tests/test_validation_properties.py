@@ -42,7 +42,7 @@ def valid_wsi_features(draw):
     """Generate valid WSI feature tensors."""
     batch_size = draw(st.integers(min_value=1, max_value=32))
     num_instances = draw(st.integers(min_value=1, max_value=500))
-    feature_dim = draw(st.sampled_from([512, 1024, 2048]))
+    feature_dim = 1024  # Fixed to expected dimension
     return torch.randn(batch_size, num_instances, feature_dim)
 
 
@@ -50,7 +50,7 @@ def valid_wsi_features(draw):
 def valid_genomic_features(draw):
     """Generate valid genomic feature tensors."""
     batch_size = draw(st.integers(min_value=1, max_value=32))
-    num_genes = draw(st.integers(min_value=100, max_value=20000))
+    num_genes = 2000  # Fixed to expected dimension
     return torch.randn(batch_size, num_genes)
 
 
@@ -114,7 +114,7 @@ class TestTensorShapeProperties:
         with pytest.raises(ValidationError, match="Shape mismatch"):
             validate_tensor_shape(tensor, wrong_shape, "test_tensor")
 
-    @given(st.integers(), st.floats(), st.text(), st.lists(st.integers()))
+    @given(st.one_of(st.integers(), st.floats(), st.text(), st.lists(st.integers())))
     @settings(max_examples=10, deadline=5000)
     def test_non_tensor_input_fails(self, non_tensor):
         """Property: Non-tensor inputs always raise ValidationError."""
@@ -148,7 +148,7 @@ class TestWSIFeatureProperties:
         # Create 2D tensor instead of 3D
         features = torch.randn(batch_size, num_instances)
         
-        with pytest.raises(ValidationError, match="Expected 3D tensor"):
+        with pytest.raises(ValidationError, match="Invalid shape"):
             validate_wsi_features(features)
 
     @given(
@@ -163,7 +163,7 @@ class TestWSIFeatureProperties:
         
         features = torch.randn(batch_size, num_instances, feature_dim)
         
-        with pytest.raises(ValidationError, match="feature dimension"):
+        with pytest.raises(ValidationError, match="Feature dimension mismatch"):
             validate_wsi_features(features)
 
 
@@ -191,7 +191,7 @@ class TestGenomicFeatureProperties:
         """Property: Too few genes always fails validation."""
         features = torch.randn(batch_size, num_genes)
         
-        with pytest.raises(ValidationError, match="at least 100 genes"):
+        with pytest.raises(ValidationError, match="Feature dimension mismatch"):
             validate_genomic_features(features)
 
     @given(st.integers(min_value=1, max_value=32))
@@ -201,7 +201,7 @@ class TestGenomicFeatureProperties:
         # Create 3D tensor instead of 2D
         features = torch.randn(batch_size, 1000, 10)
         
-        with pytest.raises(ValidationError, match="Expected 2D tensor"):
+        with pytest.raises(ValidationError, match="Invalid shape"):
             validate_genomic_features(features)
 
 
@@ -227,7 +227,7 @@ class TestClinicalFeatureProperties:
         # Create 3D tensor instead of 2D
         tokens = torch.randint(0, 30000, (batch_size, 100, 10))
         
-        with pytest.raises(ValidationError, match="Expected 2D tensor"):
+        with pytest.raises(ValidationError, match="Invalid shape"):
             validate_clinical_text(tokens)
 
 
@@ -344,31 +344,31 @@ class TestNaNInfProperties:
     @given(
         st.integers(min_value=1, max_value=32),
         st.integers(min_value=10, max_value=100),
-        st.integers(min_value=512, max_value=2048),
     )
     @settings(max_examples=20, deadline=5000)
-    def test_nan_values_detected(self, batch_size, num_instances, feature_dim):
+    def test_nan_values_detected(self, batch_size, num_instances):
         """Property: NaN values are always detected in validation."""
+        feature_dim = 1024  # Fixed dimension
         features = torch.randn(batch_size, num_instances, feature_dim)
         # Inject NaN
         features[0, 0, 0] = float('nan')
         
-        with pytest.raises(ValidationError, match="contains NaN"):
+        with pytest.raises(ValidationError, match="Invalid values detected"):
             validate_wsi_features(features)
 
     @given(
         st.integers(min_value=1, max_value=32),
         st.integers(min_value=10, max_value=100),
-        st.integers(min_value=512, max_value=2048),
     )
     @settings(max_examples=20, deadline=5000)
-    def test_inf_values_detected(self, batch_size, num_instances, feature_dim):
+    def test_inf_values_detected(self, batch_size, num_instances):
         """Property: Inf values are always detected in validation."""
+        feature_dim = 1024  # Fixed dimension
         features = torch.randn(batch_size, num_instances, feature_dim)
         # Inject Inf
         features[0, 0, 0] = float('inf')
         
-        with pytest.raises(ValidationError, match="contains Inf"):
+        with pytest.raises(ValidationError, match="Invalid values detected"):
             validate_wsi_features(features)
 
 

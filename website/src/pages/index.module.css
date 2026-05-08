@@ -80,6 +80,14 @@
   padding-bottom: 0.5rem;
 }
 
+.subsectionTitle {
+  font-family: 'Times New Roman', 'Times', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1565c0;
+  margin: 1.5rem 0 0.75rem 0;
+}
+
 .abstractText {
   font-size: 1rem;
   color: #424242;
