@@ -302,7 +302,14 @@ class ProjectMCPServer:
     def _tool_list_project_files(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         subdirectory = arguments.get("subdirectory", ".")
         pattern = arguments.get("glob", "*")
-        limit = int(arguments.get("limit", 100))
+        try:
+            limit = int(arguments.get("limit", 100))
+            # Validate limit is within reasonable bounds
+            if limit < 1 or limit > 500:
+                raise ValueError("Limit must be between 1 and 500")
+        except (ValueError, TypeError) as e:
+            raise JSONRPCError(-32602, f"Invalid limit parameter: {e}")
+        
         directory = self._resolve_repo_path(subdirectory, must_exist=True, allow_directory=True)
         if not directory.is_dir():
             raise JSONRPCError(-32602, f"Not a directory: {subdirectory}")
