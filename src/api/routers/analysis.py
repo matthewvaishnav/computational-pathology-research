@@ -299,8 +299,16 @@ async def upload_dicom(
 ):
     """Upload DICOM file."""
     
-    # Read file content for validation
-    file_content = await file.read()
+    # Enforce size limit before reading entire file into memory (DoS prevention)
+    max_size = 500 * 1024 * 1024  # 500MB for DICOM files
+    content_length = request.headers.get("content-length") if request else None
+    if content_length and int(content_length) > max_size:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 500MB")
+    
+    # Read file content with size limit
+    file_content = await file.read(max_size + 1)
+    if len(file_content) > max_size:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 500MB")
     
     # Use centralized file validator for DICOM files
     detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
