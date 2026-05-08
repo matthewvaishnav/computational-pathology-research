@@ -314,16 +314,25 @@ class ModelValidator:
 
     def _version_less_than(self, version1: str, version2: str) -> bool:
         """Compare version strings."""
-        v1_parts = [int(x) for x in version1.split(".")]
-        v2_parts = [int(x) for x in version2.split(".")]
-
-        for v1, v2 in zip(v1_parts, v2_parts):
-            if v1 < v2:
-                return True
-            elif v1 > v2:
+        try:
+            # Validate version format and extract numeric parts only
+            v1_parts = [int(x) for x in version1.split(".") if x.isdigit()]
+            v2_parts = [int(x) for x in version2.split(".") if x.isdigit()]
+            
+            # Ensure we have valid version parts
+            if not v1_parts or not v2_parts:
                 return False
 
-        return False
+            for v1, v2 in zip(v1_parts, v2_parts):
+                if v1 < v2:
+                    return True
+                elif v1 > v2:
+                    return False
+
+            return False
+        except (ValueError, AttributeError):
+            # Invalid version format, treat as equal
+            return False
 
     def _calculate_checksum(self, file_path: str) -> str:
         """Calculate SHA256 checksum."""
