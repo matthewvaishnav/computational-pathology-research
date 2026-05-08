@@ -403,7 +403,16 @@ async def run_demo_with_updates(scenario: DemoScenario):
 async def process_slide(request: ProcessRequest):
     """Process a slide with real-time updates"""
     try:
-        index = int(request.slide_id.split("-")[1])
+        # Validate slide_id format and extract index safely
+        parts = request.slide_id.split("-")
+        if len(parts) != 2 or parts[0] != "slide":
+            raise ValueError("Invalid slide_id format")
+        
+        index = int(parts[1])
+        # Validate index is within reasonable bounds
+        if index < 0 or index > 10000:
+            raise ValueError("Slide index out of valid range")
+        
         slide = data_generator.generate_slide(index)
 
         # Start processing in background
