@@ -387,10 +387,17 @@ async def start_processing(request: ProcessingRequest, background_tasks: Backgro
         raise HTTPException(status_code=400, detail="Processing already in progress")
 
     # Validate WSI path - prevent path traversal
-    wsi_path = Path(request.wsi_path).resolve()
-    # Ensure path doesn't contain traversal attempts
-    if ".." in request.wsi_path or not wsi_path.exists():
-        raise HTTPException(status_code=400, detail="Invalid WSI path")
+    try:
+        wsi_path = Path(request.wsi_path).resolve()
+        # Ensure path doesn't contain traversal attempts and is absolute
+        if ".." in request.wsi_path or not wsi_path.is_absolute():
+            raise HTTPException(status_code=400, detail="Invalid WSI path: path traversal detected")
+        if not wsi_path.exists():
+            raise HTTPException(status_code=404, detail="WSI file not found")
+        if not wsi_path.is_file():
+            raise HTTPException(status_code=400, detail="Path must be a file")
+    except (ValueError, OSError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid path: {str(e)}")
 
     # Update parameters if provided
     if request.parameters:
