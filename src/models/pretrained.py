@@ -202,7 +202,7 @@ class PretrainedFeatureExtractor(nn.Module):
                 import torch
                 checkpoint_path = Path(model_name)
                 if checkpoint_path.exists():
-                    checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
+                    checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
                     
                     # Extract model from checkpoint
                     if 'model' in checkpoint:
