@@ -13,6 +13,9 @@ HistoCore provides production-ready inference optimization through TorchScript c
 - TorchScript compilation for optimized inference
 - Cross-platform deployment (Python, C++, mobile)
 - Batch inference pipeline for high-throughput scenarios
+- Sliding-window inference for bags larger than the configured bag length
+- Attention-output compatibility for models that either expose `forward_with_attention()` or return `(logits, attention)` from `forward(..., return_attention=True)`
+- Built-in epistemic and aleatoric uncertainty aggregation across windows
 - 2-3x speedup with no accuracy loss
 - Production-ready error handling
 
@@ -20,6 +23,75 @@ HistoCore provides production-ready inference optimization through TorchScript c
 - Original PyTorch: ~45 ms/sample
 - TorchScript: ~18 ms/sample
 - **Speedup: 2.5x**
+
+---
+
+## Sliding Window Inference
+
+For large-slide and large-bag workloads, HistoCore supports `SlidingWindowInference` in `src/inference/sliding_window.py`.
+
+### What It Does
+
+- Splits bags into overlapping windows when `num_patches > window_size`
+- Runs each window independently and mean-pools logits across windows
+- Preserves attention outputs when the model supports them
+- Computes:
+  - **Aleatoric uncertainty** from per-window predictive entropy
+  - **Epistemic uncertainty** from variance across window logits
+  - **Total uncertainty** as the combined window-level uncertainty signal
+
+### Attention Compatibility
+
+`SlidingWindowInference` now supports both model integration styles used in the codebase:
+
+- `model.forward_with_attention(features, mask)` returning `(logits, attention_weights)`
+- `model(features, return_attention=True)` returning either:
+  - `(logits, attention_weights)`, or
+  - `logits` only, in which case uniform attention weights are synthesized as a safe fallback
+
+This keeps inference compatible with both legacy and newer nnMIL-style models without requiring a wrapper layer.
+
+### Example
+
+```python
+from src.data.data_models import Bag
+from src.inference.sliding_window import SlidingWindowInference
+from src.models.nnmil import nnMIL
+
+model = nnMIL(feature_dim=1024, hidden_dim=256, num_classes=2)
+inferencer = SlidingWindowInference(
+    model=model,
+    window_size=256,
+    stride=64,
+    enable_uncertainty=True,
+)
+
+bag = Bag(
+    features=torch.randn(1400, 1024),
+    label=0,
+    num_patches=1400,
+    slide_id="slide_001",
+)
+
+result = inferencer(bag)
+print(result.logits.shape)                  # [num_classes]
+print(result.attention_weights.shape)       # [window_size] or aggregated window attention
+print(result.epistemic_uncertainty.item())  # variance across windows
+print(result.aleatoric_uncertainty.item())  # mean predictive entropy
+```
+
+### Window Planning
+
+Use `get_window_info(num_patches)` to inspect how a slide will be chunked before running inference.
+
+Returned metadata includes:
+- `num_windows`
+- `window_size`
+- `stride`
+- `overlap`
+- `window_positions`
+
+This is especially useful for debugging throughput and overlap-sensitive experiments.
 
 ---
 

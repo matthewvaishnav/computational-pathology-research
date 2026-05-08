@@ -11,6 +11,7 @@ HistoCore integrates state-of-the-art foundation models pretrained on massive hi
 
 **Available Models:**
 - **UNI** - Universal pathology model (1024-dim, ViT-L, 100k+ WSIs)
+- **CONCH** - Compact pathology encoder (512-dim)
 - **Phikon** - Histopathology specialist (768-dim, ViT-B/16, 500M+ patches)
 - **GigaPath** - Gigapixel WSI model (1536-dim)
 - **ResNet50** - Fast baseline (2048-dim, ImageNet)
@@ -235,6 +236,31 @@ extractor = PretrainedFeatureExtractor(model_name)
 - `'gigapixel'` → GigaPath (large WSIs)
 - `'fast'` → ResNet50 (fastest)
 - `'baseline'` → ResNet50 (standard baseline)
+
+---
+
+## Compatibility Guarantees
+
+The live test suite now validates foundation-model interoperability through property-based tests in `tests/test_foundation_compatibility_properties.py`.
+
+### Covered Input Dimensions
+
+The compatibility layer is exercised against real-world feature dimensions used throughout the project:
+
+- `512` for CONCH-style embeddings
+- `768` for Phikon
+- `1024` for UNI
+- `2048` for ResNet50
+
+### What Is Validated
+
+- Automatic feature-dimension detection from input tensors
+- Learned projection when `feature_dim != hidden_dim`
+- Safe freezing of foundation-model weights for feature-extraction workflows
+- Unfreezing support for fine-tuning workflows
+- Stable forward-pass output shapes across compatible encoders
+
+These guarantees are implemented through `FoundationModelAdapter` and nnMIL integration tests, so the documentation now matches the current validation strategy rather than just the intended API.
 
 ---
 

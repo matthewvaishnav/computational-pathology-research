@@ -152,8 +152,11 @@ class SlidingWindowInference:
                     batch_features, batch_mask
                 )
             else:
-                logits = self.model(batch_features, batch_mask)
-                attention_weights = torch.ones(1, self.window_size, device=features.device)
+                logits = self.model(batch_features, return_attention=True)
+                if isinstance(logits, tuple):
+                    logits, attention_weights = logits
+                else:
+                    attention_weights = torch.ones(1, self.window_size, device=features.device)
         
         # Compute probabilities for classification
         probabilities = None
@@ -216,8 +219,11 @@ class SlidingWindowInference:
                         batch_features, batch_mask
                     )
                 else:
-                    logits = self.model(batch_features, batch_mask)
-                    attention_weights = torch.ones(1, self.window_size, device=features.device)
+                    logits = self.model(batch_features, return_attention=True)
+                    if isinstance(logits, tuple):
+                        logits, attention_weights = logits
+                    else:
+                        attention_weights = torch.ones(1, self.window_size, device=features.device)
                 
                 all_logits.append(logits.squeeze(0))
                 all_attention_weights.append(attention_weights.squeeze(0))

@@ -94,6 +94,38 @@ def test_batch_size_invariant(batch_size):
 - Attention weight normalization (sum to 1)
 - Probability distributions (valid ranges)
 
+#### Current nnMIL Upgrade Property Suites
+
+The live repository now includes dedicated property-based suites for the nnMIL architecture upgrade:
+
+- `tests/test_sliding_window_properties.py`
+  - Window overlap correctness
+  - Sliding-window output-shape guarantees
+  - Mean-pooling aggregation behavior
+  - Valid stride ranges for large-bag inference
+- `tests/test_uncertainty_properties.py`
+  - Epistemic, aleatoric, and total uncertainty output shape checks
+  - Uncertainty normalization bounds
+  - Combined uncertainty formula validation
+- `tests/test_foundation_compatibility_properties.py`
+  - Foundation-model feature-dimension compatibility
+  - Automatic dimension detection
+  - Adaptive projection behavior
+  - Foundation-model freezing semantics
+- `tests/test_config_properties.py`
+  - YAML configuration loading
+  - Validation of invalid parameters
+  - Configuration inheritance and defaults
+- `tests/test_training_properties.py`
+  - Batch-size flexibility
+  - Learning-rate scaling
+  - Effective batch-size accounting
+- `tests/test_backward_compatibility_properties.py`
+  - API compatibility between TransMIL and nnMIL
+  - Checkpoint migration and weight-transfer behavior
+
+Together, these suites document the current correctness contract for migration, inference, training, and adapter behavior instead of relying only on conventional unit tests.
+
 ### 3. Integration Tests (50+ tests)
 
 End-to-end workflow validation:
@@ -178,6 +210,14 @@ pytest tests/test_data.py -v
 
 # Run property-based tests
 pytest tests/property/ --hypothesis-show-statistics
+
+# Run nnMIL upgrade property suites directly
+pytest tests/test_sliding_window_properties.py -v
+pytest tests/test_uncertainty_properties.py -v
+pytest tests/test_foundation_compatibility_properties.py -v
+pytest tests/test_config_properties.py -v
+pytest tests/test_training_properties.py -v
+pytest tests/test_backward_compatibility_properties.py -v
 
 # Run integration tests
 pytest tests/integration/ -v
