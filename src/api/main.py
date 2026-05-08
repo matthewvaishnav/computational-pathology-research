@@ -151,6 +151,32 @@ async def startup_event():
         raise
 
 
+# Shutdown event
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Gracefully shutdown resources."""
+    try:
+        logger.info("Initiating graceful shutdown...")
+        
+        # Close database connections
+        db_manager = get_database_manager()
+        if db_manager:
+            db_manager.close()
+            logger.info("Database connections closed")
+        
+        # Shutdown tracing
+        tracer = get_tracer("histocore-api")
+        if tracer:
+            tracer.shutdown()
+            logger.info("Distributed tracing shutdown")
+        
+        log_security_event("system_shutdown", details="API server shutdown", success=True)
+        
+    except Exception as e:
+        logger.error(f"Shutdown error: {e}")
+        log_security_event("system_shutdown", details=f"Shutdown error: {e}", success=False)
+
+
 def main():
     """Run the API server."""
     # Add middleware
