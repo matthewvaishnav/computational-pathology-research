@@ -328,7 +328,7 @@ class NotificationService:
                     <li><strong>Uncertainty Score:</strong> {message.get('uncertainty_score', 0):.2f}</li>
                 </ul>
                 <p>Please review this case at your earliest convenience.</p>
-                <p><a href="http://annotation-interface/task/{message.get('task_id')}">View Task</a></p>
+                <p><a href="https://annotation-interface/task/{message.get('task_id')}">View Task</a></p>
             </body>
             </html>
             """
@@ -342,7 +342,7 @@ class NotificationService:
                     <li><strong>Task ID:</strong> {message.get('task_id')}</li>
                     <li><strong>Slide ID:</strong> {message.get('slide_id')}</li>
                 </ul>
-                <p><a href="http://annotation-interface/task/{message.get('task_id')}">View Task Immediately</a></p>
+                <p><a href="https://annotation-interface/task/{message.get('task_id')}">View Task Immediately</a></p>
             </body>
             </html>
             """
