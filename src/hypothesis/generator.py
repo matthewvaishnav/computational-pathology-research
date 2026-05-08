@@ -1,5 +1,5 @@
 """
-Scientific hypothesis generation via Claude API.
+Scientific hypothesis generation via LLM API.
 
 Takes latent factor loadings, subtype survival curves, and TME composition
 as context and generates structured, testable biological hypotheses.
@@ -16,7 +16,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 
@@ -51,11 +51,10 @@ def _summarise_factor_loadings(
 
 class HypothesisGenerator:
     """
-    Generates scientific hypotheses from computational findings using Claude.
+    Generates scientific hypotheses from computational findings using any LLM API.
 
     Args:
-        api_key: Anthropic API key (falls back to ANTHROPIC_API_KEY env var)
-        model: Claude model to use
+        llm_fn: Callable that takes (system_prompt, user_prompt) and returns text response
         cancer_type: tissue/cancer type context (e.g. "lung adenocarcinoma")
         max_hypotheses_per_call: number of hypotheses to request per API call
     """
@@ -73,53 +72,17 @@ or mechanistically novel hypotheses."""
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: str = "claude-opus-4-7",
+        llm_fn: Callable[[str, str], str],
         cancer_type: str = "cancer",
         max_hypotheses_per_call: int = 3,
     ):
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
-        if not self.api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY must be provided via api_key parameter or "
-                "ANTHROPIC_API_KEY environment variable"
-            )
-        self.model = model
+        self.llm_fn = llm_fn
         self.cancer_type = cancer_type
         self.max_per_call = max_hypotheses_per_call
-        self._client = None
 
-    def _get_client(self):
-        if self._client is not None:
-            return self._client
-        try:
-            import anthropic
-
-            self._client = anthropic.Anthropic(api_key=self.api_key)
-            return self._client
-        except ImportError:
-            raise ImportError("pip install anthropic to enable hypothesis generation")
-
-    def _call_api(self, user_prompt: str, timeout: float = 60.0) -> str:
-        """
-        Call Claude API with timeout.
-
-        Args:
-            user_prompt: User prompt text
-            timeout: Timeout in seconds (default 60s)
-
-        Returns:
-            API response text
-        """
-        client = self._get_client()
-        msg = client.messages.create(
-            model=self.model,
-            max_tokens=2048,
-            system=self.SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_prompt}],
-            timeout=timeout,
-        )
-        return msg.content[0].text
+    def _call_api(self, user_prompt: str) -> str:
+        """Call LLM API via provided function."""
+        return self.llm_fn(self.SYSTEM_PROMPT, user_prompt)
 
     def _parse_response(self, text: str, context: dict) -> List[GeneratedHypothesis]:
         # Strip markdown code fences if present
@@ -282,3 +245,60 @@ Return a JSON array."""
         except Exception as e:
             logger.error("Spatial hypothesis generation failed: %s", e)
             return []
+
+
+# Helper functions for common LLM providers
+
+def create_openai_llm(api_key: Optional[str] = None, model: str = "gpt-4") -> Callable[[str, str], str]:
+    """Create OpenAI LLM function."""
+    import openai
+    client = openai.OpenAI(api_key=api_key or os.environ.get("OPENAI_API_KEY"))
+    
+    def llm_fn(system: str, user: str) -> str:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user}
+            ],
+            max_tokens=2048
+        )
+        return response.choices[0].message.content
+    return llm_fn
+
+
+def create_anthropic_llm(api_key: Optional[str] = None, model: str = "claude-opus-4-7") -> Callable[[str, str], str]:
+    """Create Anthropic Claude LLM function."""
+    import anthropic
+    client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+    
+    def llm_fn(system: str, user: str) -> str:
+        msg = client.messages.create(
+            model=model,
+            max_tokens=2048,
+            system=system,
+            messages=[{"role": "user", "content": user}],
+            timeout=60.0
+        )
+        return msg.content[0].text
+    return llm_fn
+
+
+def create_ollama_llm(model: str = "llama3", base_url: str = "http://localhost:11434") -> Callable[[str, str], str]:
+    """Create Ollama local LLM function."""
+    import requests
+    
+    def llm_fn(system: str, user: str) -> str:
+        response = requests.post(
+            f"{base_url}/api/chat",
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ],
+                "stream": False
+            }
+        )
+        return response.json()["message"]["content"]
+    return llm_fn
