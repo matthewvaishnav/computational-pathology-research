@@ -47,6 +47,8 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
 - [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
 - [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 3,171 tests with property-based testing
+- [Inference Optimization](INFERENCE_OPTIMIZATION.html) - Sliding-window inference, TorchScript, uncertainty-aware aggregation
+- [Foundation Models](FOUNDATION_MODELS.html) - UNI, CONCH, Phikon, GigaPath, ResNet50 compatibility
 
 ### Evaluation Metrics
 - Model performance analysis with bootstrap confidence intervals
@@ -105,7 +107,7 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - [TESTING.md](TESTING.html) - **Comprehensive testing documentation**: 3,171 tests, 55% coverage, CI/CD pipeline
 - [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Historical test suite documentation
 - **Coverage**: Unit tests, integration tests, property-based testing, clinical validation
-- **Topics**: Test execution, coverage reports, benchmarks, quality assurance, reproducibility
+- **Topics**: Test execution, coverage reports, benchmarks, quality assurance, reproducibility, nnMIL migration properties, sliding-window inference validation, foundation-model compatibility
 
 ### Build System
 - [MAKEFILE.md](MAKEFILE.html) - Makefile usage guide
@@ -125,7 +127,8 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 - [QUANTIZATION.md](QUANTIZATION.html) - **INT8/FP16 quantization**: 4x compression, 2-3x speedup
 - [MULTI_GPU_TRAINING.md](MULTI_GPU_TRAINING.html) - **DistributedDataParallel**: Linear GPU scaling
 - [FOUNDATION_MODELS.md](FOUNDATION_MODELS.html) - **Pretrained models**: UNI, Phikon, CONCH
-- **Topics**: Model compression, distributed training, transfer learning
+- [INFERENCE_OPTIMIZATION.md](INFERENCE_OPTIMIZATION.html) - **Sliding-window inference**: large-bag support, attention compatibility, uncertainty aggregation
+- **Topics**: Model compression, distributed training, transfer learning, large-slide inference
 
 ### Model Profiling
 - Inference latency measurement

@@ -123,7 +123,7 @@ This implementation plan upgrades the Multiple Instance Learning (MIL) system fr
     - Support classification, regression, and survival tasks
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
   
-  - [ ] 6.3 Write property tests for sliding-window inference
+  - [x] 6.3 Write property tests for sliding-window inference
     - **Property 16: Window Overlap Correctness**
     - **Validates: Requirements 5.2**
     - **Property 17: Mean Pooling Aggregation**
@@ -133,7 +133,7 @@ This implementation plan upgrades the Multiple Instance Learning (MIL) system fr
     - **Property 19: Inference Output Shape**
     - **Validates: Requirements 5.7**
   
-  - [ ] 6.4 Write property tests for uncertainty quantification
+  - [x] 6.4 Write property tests for uncertainty quantification
     - **Property 20: Uncertainty Output Shape**
     - **Validates: Requirements 6.3**
     - **Property 21: Dropout Activation for Uncertainty**
@@ -160,7 +160,7 @@ This implementation plan upgrades the Multiple Instance Learning (MIL) system fr
     - Create default configs: disease_subtyping.yaml, biomarker_detection.yaml, prognosis.yaml
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
   
-  - [ ] 7.3 Write property tests for configuration management
+  - [x] 7.3 Write property tests for configuration management
     - **Property 28: Configuration Loading**
     - **Validates: Requirements 9.1**
     - **Property 29: Configuration Validation**
@@ -203,7 +203,7 @@ This implementation plan upgrades the Multiple Instance Learning (MIL) system fr
     - Auto-cleanup: keep best + N most recent checkpoints
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
   
-  - [ ] 9.4 Write property tests for training infrastructure
+  - [x] 9.4 Write property tests for training infrastructure
     - **Property 4: Batch Size Flexibility**
     - **Validates: Requirements 2.1**
     - **Property 5: Learning Rate Scaling**
@@ -228,7 +228,7 @@ This implementation plan upgrades the Multiple Instance Learning (MIL) system fr
     - Support weight freezing and fine-tuning with configurable lr multiplier
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
   
-  - [ ] 10.2 Write property tests for foundation model compatibility
+  - [x] 10.2 Write property tests for foundation model compatibility
     - **Property 24: Foundation Model Compatibility**
     - **Validates: Requirements 7.1**
     - **Property 25: Automatic Dimension Detection**
@@ -256,7 +256,7 @@ This implementation plan upgrades the Multiple Instance Learning (MIL) system fr
     - Provide migration guide in docstring
     - _Requirements: 10.3, 10.4, 10.5_
   
-  - [ ] 12.3 Write property tests for backward compatibility
+  - [x] 12.3 Write property tests for backward compatibility
     - **Property 33: API Compatibility**
     - **Validates: Requirements 10.2, 10.6**
     - **Property 34: Weight Transfer**
