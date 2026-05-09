@@ -28,6 +28,7 @@ from ..common.data_models import ClientUpdate
 from ..coordinator.orchestrator import TrainingOrchestrator
 from .config import get_config, validate_production_config
 from .database import get_db_manager, init_database
+from .security import RateLimiter
 from .monitoring import get_metrics_manager, setup_logging
 from .security import get_audit_logger, get_security_manager, validate_security_config
 
