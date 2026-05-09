@@ -253,7 +253,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 ## Quickstart
 
 <div class="callout callout-info">
-  <strong>New to HistoCore?</strong> Start with our 5-minute tutorial to train your first model on PCam!
+  <strong>New to HistoCore?</strong> Start with the 5-minute tutorial to train your first model on PCam!
 </div>
 
 **Interactive Tutorials:**
