@@ -312,6 +312,7 @@ async def start_training_round(
     training_config: dict,
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
+    _: None = Depends(check_rate_limit)
 ):
     """Start a new training round."""
     try:
