@@ -651,7 +651,7 @@ class PatientPopulationGenerator:
 if __name__ == "__main__":
     # Demo: Patient population modeling
 
-    print("=== Patient Population Modeling Demo ===\n")
+    logger.info("=== Patient Population Modeling Demo ===\n")
 
     # Create generator
     generator = PatientPopulationGenerator(random_seed=42)
@@ -698,6 +698,6 @@ if __name__ == "__main__":
 
     # Export example population
     generator.export_population(patients, "patient_population_example.json")
-    print("Patient population exported to patient_population_example.json")
+    logger.info("Patient population exported to patient_population_example.json")
 
-    print("\n=== Demo Complete ===")
+    logger.info("\n=== Demo Complete ===")
