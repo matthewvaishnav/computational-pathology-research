@@ -1,11 +1,13 @@
 name: Project Analysis
 
+# TEMPORARILY DISABLED - YAML syntax error at line 148
+# Re-enable after fixing the unclosed Python string in regression detection step
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
   workflow_dispatch:
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main, develop ]
 
 env:
   PYTHON_VERSION: '3.11'
