@@ -975,8 +975,8 @@ class UnlabeledWSIDataset(Dataset):
         for slide in self.slide_handles.values():
             try:
                 slide.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to close slide handle: {e}")
 
 
 # Example usage

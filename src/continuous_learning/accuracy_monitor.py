@@ -115,8 +115,8 @@ class AccuracyMonitor:
         try:
             if len(set(ground_truth)) == 2:  # Binary classification
                 auc = roc_auc_score(ground_truth, predictions)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to calculate AUC: {e}", exc_info=True)
 
         # Create metrics object
         metrics = AccuracyMetrics(

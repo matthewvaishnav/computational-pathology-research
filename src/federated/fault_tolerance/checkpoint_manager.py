@@ -377,7 +377,7 @@ class CheckpointManager:
                 checkpoint_path = Path(checkpoint_meta.checkpoint_path)
                 if checkpoint_path.exists():
                     total_size += checkpoint_path.stat().st_size
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to get checkpoint size for {checkpoint_meta.checkpoint_path}: {e}")
         
         return total_size / (1024 * 1024)  # Convert to MB

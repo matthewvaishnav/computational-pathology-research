@@ -341,8 +341,8 @@ class EncryptionManager:
             # Remove insecure key file
             try:
                 filepath.unlink()
-            except Exception:
-                pass
+            except Exception as cleanup_err:
+                logger.error(f"Failed to remove insecure key file: {cleanup_err}", exc_info=True)
             raise RuntimeError(f"Cannot secure key file permissions: {e}") from e
 
     def encrypt_data(self, data: bytes) -> bytes:
@@ -518,8 +518,8 @@ class KeyManager:
             # Remove insecure key file
             try:
                 filepath.unlink()
-            except Exception:
-                pass
+            except Exception as cleanup_err:
+                logger.error(f"Failed to remove insecure key file: {cleanup_err}", exc_info=True)
             raise RuntimeError(f"Cannot secure key file permissions: {e}") from e
 
     def load_key(self, key_id: str) -> bytes:
