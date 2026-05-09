@@ -2,9 +2,9 @@ computational-pathology-research
 =================================
 
 PyTorch framework for computational pathology. Multiple Instance Learning (MIL)
-models, whole slide image processing, distributed medical intelligence.
+models, whole slide image processing, federated learning integration, and distributed medical intelligence.
 
-~195k LOC, 544 Python modules, 310 tests.
+~195k LOC, 544 Python modules, 5,071 tests.
 
 
 WHAT IT DOES
@@ -21,6 +21,12 @@ Distributed Medical Intelligence (DMI):
   - Knowledge synthesis from multiple institutions
   - Specialization matching and contribution weighting
 
+Federated Learning Integration:
+  - PathologyFL with expertise-weighted aggregation (hospital types, cancer-specific strategies)
+  - Production security (DP-SGD, secure aggregation with TenSEAL, Byzantine robustness)
+  - Multi-institutional AI training without sharing patient data
+  - HIPAA-compliant federated learning with audit logging
+
 Clinical integration:
   - PACS connectivity (DICOM C-FIND/C-MOVE/C-STORE)
   - FHIR adapter for patient metadata
@@ -31,6 +37,31 @@ Production infrastructure:
   - Input validation, SQL parameterization
   - WebSocket streaming for real-time inference
   - Docker/K8s deployment configs
+
+
+FEDERATED LEARNING INTEGRATION
+------------------------------
+
+HistoCore integrates advanced federated learning capabilities using the Flower (flwr) framework
+with pathology-specific extensions:
+
+PathologyFL Features:
+  - Expertise-weighted aggregation (cancer centers vs community hospitals)
+  - Cancer-type specific strategies (breast, lung, prostate, colorectal)
+  - Slide quality assessment and automatic weighting
+  - Attention-aware aggregation for MIL models
+
+Production Security:
+  - Differential Privacy (DP-SGD) with gradient clipping and noise calibration
+  - Secure aggregation using TenSEAL homomorphic encryption
+  - Byzantine robustness with Krum algorithm and coordinate-wise median
+  - HIPAA-compliant audit logging and privacy budget tracking
+
+Multi-institutional deployment:
+  - Direct integration with hospital PACS systems
+  - Preserves institutional autonomy while enabling collaboration
+  - No patient data sharing - only encrypted model updates
+  - Regulatory compliance for clinical environments
 
 
 SECURITY
@@ -60,6 +91,7 @@ src/
   models/           MIL implementations (nnMIL, AttentionMIL, CLAM, TransMIL)
   training/         Training loops, optimizers, distributed training
   data/             Data loaders, WSI pipeline, preprocessing
+  federated/        Federated learning integration (PathologyFL, secure aggregation)
   dmi/              Distributed Medical Intelligence (expertise weighting)
   clinical/         PACS integration, FHIR adapter, patient context
   streaming/        Real-time WSI processing, WebSocket server
@@ -67,22 +99,11 @@ src/
   database/         Connection pooling, parameterized queries
   utils/            Logging, metrics, visualization
 
-tests/              310 test modules
+tests/              5,071 test modules
 docs/               Technical documentation
 scripts/            Deployment, benchmarking, data preparation
 experiments/        Experiment configs and results
 k8s/                Kubernetes manifests
-│   └── model_manager.py    # Version parsing validation
-├── inference/               # Inference engines
-├── database/                # Database connection management
-│   ├── connection.py       # Connection pooling configured
-│   └── operations.py       # Parameterized queries
-└── utils/                   # Utilities and helpers
-
-tests/                       # Test suite (310 test files)
-docs/                        # Documentation (219 markdown files)
-scripts/                     # Utility scripts
-experiments/                 # Experiment configurations
 ```
 
 ## 🚀 Quick Start
@@ -186,7 +207,7 @@ Test categories:
     pytest tests/security/ -v     # Security tests
     pytest tests/clinical/ -v     # Clinical workflow tests
 
-310 test files with property-based testing (Hypothesis).
+5,071 test files with property-based testing (Hypothesis).
 
 
 DOCUMENTATION
@@ -233,6 +254,14 @@ DMI deployment (multi-center):
 
     python -m src.dmi.coordinator --config configs/dmi/coordinator.yaml
     python -m src.dmi.client --config configs/dmi/client.yaml
+
+Federated learning deployment:
+
+    # Start FL coordinator
+    python -m src.federated.coordinator --config configs/fl/coordinator.yaml
+    
+    # Start hospital clients
+    python -m src.federated.client --config configs/fl/hospital_client.yaml
 
 
 CONFIGURATION

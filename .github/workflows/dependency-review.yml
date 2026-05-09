@@ -1,8 +1,19 @@
 name: Dependency Review
 
+# NOTE: This workflow is now integrated into the main CI workflow
+# Keeping this file for reference and potential standalone use
+# The dependency review runs as part of the security job in ci.yml
+
 on:
-  pull_request:
-    branches: [ main, develop ]
+  # Disabled - integrated into main CI workflow
+  # pull_request:
+  #   branches: [ main, develop ]
+  workflow_dispatch:
+
+# Concurrency controls for standalone runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
