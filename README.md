@@ -269,7 +269,8 @@ No trained models included. Train on your own datasets.
 
 For research purposes only. Not FDA-approved or CE-marked for clinical use.
 
-25 production improvements: security, input validation, error handling.
+Security improvements: 39 commits (25 general + 14 PathologyFL-specific)
+covering authentication, input validation, privacy guarantees, and error handling.
 
 
 CITATION
