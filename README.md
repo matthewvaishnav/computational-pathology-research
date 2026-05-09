@@ -118,6 +118,10 @@ INSTALLATION
     pip install -r requirements.txt
     pip install -e .
 
+For federated learning with privacy guarantees:
+
+    pip install tenseal opacus
+
 
 USAGE
 -----
