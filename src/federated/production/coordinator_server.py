@@ -172,6 +172,30 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)):
     return current_user
 
 
+# Rate limiting
+async def check_rate_limit(request: Request):
+    """Check rate limit for endpoint."""
+    import time
+    from collections import defaultdict
+    
+    if not hasattr(check_rate_limit, "requests"):
+        check_rate_limit.requests = defaultdict(list)
+    
+    client_ip = request.client.host
+    now = time.time()
+    window = 60
+    limit = 100
+    
+    check_rate_limit.requests[client_ip] = [
+        t for t in check_rate_limit.requests[client_ip] if now - t < window
+    ]
+    
+    if len(check_rate_limit.requests[client_ip]) >= limit:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+    
+    check_rate_limit.requests[client_ip].append(now)
+
+
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
