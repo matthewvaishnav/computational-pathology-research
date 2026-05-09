@@ -4,7 +4,7 @@ computational-pathology-research
 PyTorch framework for computational pathology. Multiple Instance Learning (MIL)
 models, whole slide image processing, federated learning integration, and distributed medical intelligence.
 
-5,000+ tests across 310 test modules.
+~195k LOC, 544 Python modules, 5,000+ tests.
 
 
 WHAT IT DOES
