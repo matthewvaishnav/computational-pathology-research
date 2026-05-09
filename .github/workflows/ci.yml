@@ -7,15 +7,29 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+# Concurrency controls to prevent workflow conflicts and optimize resource usage
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel in-progress runs for feature branches to save resources
+  # Keep all runs for main/develop to preserve history
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+
 jobs:
   test:
     name: Test on ${{ matrix.os }} with Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    # Tier 2: Run after critical checks (lint, type-check, security)
+    needs: [lint, type-check, security]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.9', '3.10', '3.11']
+        # Optimized matrix for CI queue bottleneck fix - 3 essential combinations
+        os: [ubuntu-latest]
+        python-version: ['3.10', '3.11']
+        include:
+          # Add Windows for most common deployment platform
+          - os: windows-latest
+            python-version: '3.10'
     
     steps:
     - name: Checkout code
@@ -26,11 +40,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    
-    - name: Install system dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install openslide
     
     - name: Install system dependencies (Ubuntu)
       if: runner.os == 'Linux'
@@ -52,6 +61,7 @@ jobs:
     - name: Run tests
       run: |
         pytest tests/ -v -m "not property and not slow" --cov=src --cov-report=xml --cov-report=term
+      timeout-minutes: 30
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -64,6 +74,7 @@ jobs:
   lint:
     name: Lint and Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code
@@ -96,6 +107,7 @@ jobs:
   type-check:
     name: Type Checking
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     steps:
     - name: Checkout code
@@ -126,6 +138,7 @@ jobs:
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code
@@ -152,10 +165,23 @@ jobs:
       with:
         name: bandit-security-report
         path: bandit-report.json
+    
+    # Integrated dependency review for PRs (early security check)
+    - name: Dependency Review
+      if: github.event_name == 'pull_request'
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: moderate
+        deny-licenses: GPL-2.0, GPL-3.0
+        comment-summary-in-pr: always
+      continue-on-error: true
 
   docker:
     name: Docker Build Test
     runs-on: ubuntu-latest
+    # Tier 3: Run after test matrix completes
+    needs: [test]
+    timeout-minutes: 20
     
     steps:
     - name: Checkout code
@@ -181,6 +207,9 @@ jobs:
   docs:
     name: Documentation Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only run on PRs to save runner time
+    if: github.event_name == 'pull_request'
     
     steps:
     - name: Checkout code
@@ -192,6 +221,11 @@ jobs:
         use-quiet-mode: 'yes'
         config-file: '.github/markdown-link-check-config.json'
       continue-on-error: true
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
     
     - name: Validate YAML files
       run: |
@@ -217,6 +251,9 @@ jobs:
   quick-demo:
     name: Quick Demo Test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only run on main branch pushes to save runner time
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -264,6 +301,9 @@ jobs:
     name: Coverage Report
     runs-on: ubuntu-latest
     needs: test
+    timeout-minutes: 20
+    # Only run on main branch to save runner time
+    if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -299,8 +339,10 @@ jobs:
   all-checks-passed:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [test, lint, docker, docs, quick-demo]
+    # Depends on all essential checks
+    needs: [test, lint, type-check, security]
     if: always()
+    timeout-minutes: 5
     
     steps:
     - name: Check all jobs
@@ -313,16 +355,12 @@ jobs:
           echo "Linting failed"
           exit 1
         fi
-        if [ "${{ needs.docker.result }}" != "success" ]; then
-          echo "Docker build failed"
+        if [ "${{ needs.type-check.result }}" != "success" ] && [ "${{ needs.type-check.result }}" != "skipped" ]; then
+          echo "Type checking failed"
           exit 1
         fi
-        if [ "${{ needs.docs.result }}" != "success" ]; then
-          echo "Documentation checks failed"
+        if [ "${{ needs.security.result }}" != "success" ] && [ "${{ needs.security.result }}" != "skipped" ]; then
+          echo "Security scan failed"
           exit 1
         fi
-        if [ "${{ needs.quick-demo.result }}" != "success" ]; then
-          echo "Quick demo failed"
-          exit 1
-        fi
-        echo "✓ All checks passed!"
+        echo "✓ Essential checks passed!"

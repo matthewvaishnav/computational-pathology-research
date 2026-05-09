@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-05-08 22:33:05",
+  "variants": [
+    {
+      "name": "baseline_resnet18",
+      "config_path": "experiments/configs/pcam_comparison/baseline_resnet18.yaml",
+      "training_status": "success",
+      "evaluation_status": "failed",
+      "training_time_seconds": 7.198016881942749,
+      "test_accuracy": null,
+      "test_auc": null,
+      "test_f1": null,
+      "test_precision": null,
+      "test_recall": null,
+      "model_parameters": {},
+      "inference_time_seconds": null,
+      "samples_per_second": null,
+      "checkpoint_path": "checkpoints\\pcam_comparison\\baseline_resnet18\\best_model.pth",
+      "results_dir": "./results/pcam_comparison/baseline_resnet18"
+    },
+    {
+      "name": "resnet50",
+      "config_path": "experiments/configs/pcam_comparison/resnet50.yaml",
+      "training_status": "success",
+      "evaluation_status": "failed",
+      "training_time_seconds": 3.800086498260498,
+      "test_accuracy": null,
+      "test_auc": null,
+      "test_f1": null,
+      "test_precision": null,
+      "test_recall": null,
+      "model_parameters": {},
+      "inference_time_seconds": null,
+      "samples_per_second": null,
+      "checkpoint_path": "checkpoints\\pcam_comparison\\resnet50\\best_model.pth",
+      "results_dir": "./results/pcam_comparison/resnet50"
+    },
+    {
+      "name": "simple_head",
+      "config_path": "experiments/configs/pcam_comparison/simple_head.yaml",
+      "training_status": "success",
+      "evaluation_status": "failed",
+      "training_time_seconds": 3.8159141540527344,
+      "test_accuracy": null,
+      "test_auc": null,
+      "test_f1": null,
+      "test_precision": null,
+      "test_recall": null,
+      "model_parameters": {},
+      "inference_time_seconds": null,
+      "samples_per_second": null,
+      "checkpoint_path": "checkpoints\\pcam_comparison\\simple_head\\best_model.pth",
+      "results_dir": "./results/pcam_comparison/simple_head"
+    }
+  ]
+}
