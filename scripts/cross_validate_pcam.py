@@ -110,7 +110,7 @@ def train_epoch(
     """Train for one epoch."""
     model.train()
     total_loss = 0.0
-    scaler = torch.cuda.amp.GradScaler() if use_amp else None
+    scaler = torch.amp.GradScaler('cuda') if use_amp and torch.cuda.is_available() else None
     
     for batch_idx, batch_data in enumerate(tqdm(dataloader, desc="Training")):
         # PCamDataset returns a dictionary
@@ -119,8 +119,8 @@ def train_epoch(
         
         optimizer.zero_grad()
         
-        if use_amp:
-            with torch.cuda.amp.autocast():
+        if use_amp and torch.cuda.is_available():
+            with torch.amp.autocast('cuda'):
                 logits = model(images)
                 loss = criterion(logits, labels)
             scaler.scale(loss).backward()
@@ -128,6 +128,9 @@ def train_epoch(
             scaler.update()
         else:
             logits = model(images)
+            loss = criterion(logits, labels)
+            loss.backward()
+            optimizer.step()
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
@@ -264,20 +267,23 @@ def train_fold(
     train_dataset = Subset(full_dataset_transformed, train_indices)
     val_dataset = Subset(full_dataset_transformed, val_indices)
     
+    # Fix Windows multiprocessing issue - use num_workers=0 on Windows
+    num_workers = 0 if device.type == "cpu" or sys.platform == "win32" else args.num_workers
+    
     train_loader = DataLoader(
         train_dataset,
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=args.num_workers,
-        pin_memory=True
+        num_workers=num_workers,
+        pin_memory=False if device.type == "cpu" else True
     )
     
     val_loader = DataLoader(
         val_dataset,
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=args.num_workers,
-        pin_memory=True
+        num_workers=num_workers,
+        pin_memory=False if device.type == "cpu" else True
     )
     
     # Create model
