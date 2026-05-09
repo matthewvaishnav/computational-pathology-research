@@ -362,12 +362,13 @@ class PrivacyAccountant:
         self.target_delta = target_delta
 
         # Initialize RDP accountant if available
-        if OPACUS_AVAILABLE:
-            self.accountant = RDPAccountant()
-        else:
-            self.accountant = None
-            logger.warning("Opacus not available - privacy accounting disabled")
-
+        if not OPACUS_AVAILABLE:
+            raise RuntimeError(
+                "Opacus is required for privacy accounting but is not installed. "
+                "Install with: pip install opacus"
+            )
+        
+        self.accountant = RDPAccountant()
         self.steps = 0
 
         logger.info(
@@ -383,9 +384,7 @@ class PrivacyAccountant:
         """
         sigma = noise_multiplier if noise_multiplier is not None else self.noise_multiplier
 
-        if self.accountant is not None:
-            self.accountant.step(noise_multiplier=sigma, sample_rate=self.sample_rate)
-
+        self.accountant.step(noise_multiplier=sigma, sample_rate=self.sample_rate)
         self.steps += 1
 
     def get_privacy_spent(self) -> Tuple[float, float]:
