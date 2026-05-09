@@ -269,25 +269,28 @@ async def metrics():
 # Client management endpoints
 @app.post("/api/v1/clients/register")
 async def register_client(
-    client_data: dict,
+    client_data: ClientRegistration,
     current_user: dict = Depends(get_current_user),
     _: None = Depends(check_rate_limit)
 ):
     """Register a new FL client."""
     try:
-        client_id = client_data["client_id"]
-        name = client_data["name"]
-        organization = client_data.get("organization")
-
         # Register client in database
-        client = db_manager.register_client(client_id, name, organization)
+        client = db_manager.register_client(
+            client_data.client_id,
+            client_data.name,
+            client_data.organization
+        )
 
         # Audit log
-        audit_logger.log_client_registration(client_id=client_id, user_id=current_user["user_id"])
+        audit_logger.log_client_registration(
+            client_id=client_data.client_id,
+            user_id=current_user["user_id"]
+        )
 
         return {
             "status": "success",
-            "client_id": client_id,
+            "client_id": client_data.client_id,
             "message": "Client registered successfully",
         }
 
