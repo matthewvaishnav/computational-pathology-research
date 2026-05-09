@@ -1,12 +1,17 @@
 name: CodeQL Security Scan
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  # Run on schedule only to reduce CI queue pressure
+  # PR security is covered by Bandit in main CI workflow
   schedule:
     - cron: '0 0 * * 1'  # Run every Monday at midnight
+  # Allow manual trigger for ad-hoc security scans
+  workflow_dispatch:
+
+# Concurrency controls to prevent multiple security scans from running simultaneously
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   analyze:
