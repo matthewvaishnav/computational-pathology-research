@@ -300,7 +300,8 @@ class SiteLeakageAuditor:
         try:
             scores = cross_val_score(probe, X, y, cv=cv, scoring="accuracy")
             site_pred = float(scores.mean())
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Site prediction failed, using baseline: {e}")
             site_pred = 1.0 / len(slides_by_site)
 
         # Cross-site attention correlation
@@ -345,7 +346,8 @@ class SiteLeakageAuditor:
             # AUC with full embeddings (includes site info)
             probs_with = cross_val_predict(clf, X, y_labels, cv=cv, method="predict_proba")
             auc_with = roc_auc_score(y_labels, probs_with[:, 1])
-        except Exception:
+        except Exception as e:
+            logger.warning(f"AUC calculation with site info failed: {e}")
             auc_with = 0.5
 
         try:
@@ -366,7 +368,8 @@ class SiteLeakageAuditor:
 
             probs_without = cross_val_predict(clf, X_debiased, y_labels, cv=cv, method="predict_proba")
             auc_without = roc_auc_score(y_labels, probs_without[:, 1])
-        except Exception:
+        except Exception as e:
+            logger.warning(f"AUC calculation without site info failed: {e}")
             auc_without = auc_with
 
         return auc_with, auc_without, auc_without - auc_with
@@ -398,7 +401,8 @@ class SiteLeakageAuditor:
                         per_site_auc[site_id] = roc_auc_score(labels, probs)
                     else:
                         per_site_auc[site_id] = float("nan")
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"AUC calculation failed for site {site_id}: {e}")
                     per_site_auc[site_id] = float("nan")
 
         return per_site_auc, per_site_acc

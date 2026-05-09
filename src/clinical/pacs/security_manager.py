@@ -391,8 +391,8 @@ class SecurityManager:
                 cn = cn_attributes[0].value
                 if self._match_hostname(cn, hostname):
                     return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to extract CN from certificate: {e}")
         
         return False
     

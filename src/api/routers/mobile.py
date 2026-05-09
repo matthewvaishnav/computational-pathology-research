@@ -68,23 +68,10 @@ async def register_mobile_device(
     Returns:
         Registration confirmation with device ID
     """
-    try:
-        logger.info(f"Registering mobile device: {device_data.device_id}")
-        
-        # In production, store device registration in database
-        # For now, just acknowledge registration
-        
-        return DeviceRegistrationResponse(
-            message="Device registered successfully",
-            device_id=device_data.device_id
-        )
-        
-    except Exception as e:
-        logger.error(f"Failed to register device: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to register device"
-        )
+    raise HTTPException(
+        status_code=501,
+        detail="Mobile device registration not yet implemented"
+    )
 
 
 @router.get("/sync", response_model=SyncResponse)
@@ -99,21 +86,10 @@ async def mobile_sync(db: Session = Depends(get_db_session)):
     Returns:
         Pending cases and sync timestamp
     """
-    try:
-        # In production, fetch pending cases from database
-        # For now, return empty list
-        
-        return SyncResponse(
-            pending_cases=[],
-            sync_timestamp=datetime.now().isoformat()
-        )
-        
-    except Exception as e:
-        logger.error(f"Mobile sync failed: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="Sync failed"
-        )
+    raise HTTPException(
+        status_code=501,
+        detail="Mobile sync not yet implemented"
+    )
 
 
 @router.get("/cases/offline", response_model=OfflineCasesResponse)
@@ -128,18 +104,10 @@ async def get_offline_cases(db: Session = Depends(get_db_session)):
     Returns:
         List of cases available for offline use
     """
-    try:
-        # In production, fetch cases marked for offline use from database
-        # For now, return empty list
-        
-        return OfflineCasesResponse(cases=[])
-        
-    except Exception as e:
-        logger.error(f"Failed to get offline cases: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to retrieve offline cases"
-        )
+    raise HTTPException(
+        status_code=501,
+        detail="Offline cases not yet implemented"
+    )
 
 
 @router.get("/model/download", response_model=ModelDownloadResponse)
@@ -151,18 +119,7 @@ async def download_mobile_model():
     Returns:
         Model download URL and version
     """
-    try:
-        # In production, provide actual model download URL
-        # For now, return placeholder
-        
-        return ModelDownloadResponse(
-            model_url="/models/mobile_model.tflite",
-            version="1.0.0"
-        )
-        
-    except Exception as e:
-        logger.error(f"Failed to get model download info: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to retrieve model download information"
-        )
+    raise HTTPException(
+        status_code=501,
+        detail="Mobile model download not yet implemented"
+    )
