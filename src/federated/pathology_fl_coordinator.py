@@ -28,8 +28,13 @@ class PathologyFLCoordinator:
         
     def _load_config(self, config_path: str) -> dict:
         """Load PathologyFL configuration."""
-        with open(config_path, 'r') as f:
-            return json.load(f)
+        try:
+            with open(config_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Config file not found: {config_path}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in config file: {e}")
     
     def _setup_logging(self) -> logging.Logger:
         """Setup logging for PathologyFL."""
