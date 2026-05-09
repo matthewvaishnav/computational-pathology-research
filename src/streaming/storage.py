@@ -334,8 +334,8 @@ class LocalStorage:
             os.close(fd)
             try:
                 os.unlink(filepath)
-            except Exception:
-                pass
+            except Exception as cleanup_err:
+                logger.error(f"Failed to remove insecure temp file: {cleanup_err}", exc_info=True)
             raise RuntimeError(f"Cannot create secure temp file: {e}")
         
         os.close(fd)
@@ -362,8 +362,8 @@ class LocalStorage:
             # Remove insecure temp directory
             try:
                 shutil.rmtree(dirpath)
-            except Exception:
-                pass
+            except Exception as cleanup_err:
+                logger.error(f"Failed to remove insecure temp directory: {cleanup_err}", exc_info=True)
             raise RuntimeError(f"Cannot create secure temp directory: {e}")
         
         return dirpath
@@ -416,8 +416,8 @@ class LocalStorage:
                 filepath = os.path.join(root, filename)
                 try:
                     total_size += os.path.getsize(filepath)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to get size of {filepath}: {e}")
 
         return total_size / (1024**3)
 
@@ -445,8 +445,8 @@ class LocalStorage:
                     for filename in files:
                         filepath = os.path.join(root, filename)
                         total += os.path.getsize(filepath)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to calculate directory size: {e}")
             return total / (1024**3)
 
         return {
