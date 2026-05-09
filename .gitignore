@@ -333,4 +333,4 @@ $RECYCLE.BIN/
 .fuse_hidden*
 .directory
 .Trash-*
-.nfs*
+.nfs*AGENT_REGISTRY.md
