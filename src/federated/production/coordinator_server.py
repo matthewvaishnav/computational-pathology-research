@@ -329,20 +329,18 @@ async def list_clients(current_user: dict = Depends(get_current_user)):
 # Training management endpoints
 @app.post("/api/v1/training/start")
 async def start_training_round(
-    training_config: dict,
+    training_config: TrainingConfig,
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
     _: None = Depends(check_rate_limit)
 ):
     """Start a new training round."""
     try:
-        algorithm = training_config.get("algorithm", "fedavg")
-        min_clients = training_config.get(
+        algorithm = training_config.algorithm
+        min_clients = training_config.min_clients
             "min_clients", config.federated_learning.min_clients_per_round
         )
-        max_clients = training_config.get(
-            "max_clients", config.federated_learning.max_clients_per_round
-        )
+        max_clients = training_config.max_clients or config.federated_learning.max_clients_per_round
 
         # Get active clients
         active_clients = db_manager.get_active_clients()
