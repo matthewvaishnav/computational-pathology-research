@@ -445,7 +445,7 @@ if __name__ == "__main__":
         violation = waf.check_request(request)
         
         if violation:
-            print(f"✗ BLOCKED: {query}")
-            print(f"  Rule: {violation['rule_id']} - {violation['name']}")
+            logger.info(f"✗ BLOCKED: {query}")
+            logger.info(f"  Rule: {violation['rule_id']} - {violation['name']}")
         else:
-            print(f"✓ ALLOWED: {query}")
+            logger.info(f"✓ ALLOWED: {query}")

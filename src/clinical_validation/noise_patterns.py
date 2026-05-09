@@ -388,14 +388,14 @@ if __name__ == "__main__":
         NoiseProfile(NoiseType.SPECKLE, 0.04),
     ]
 
-    print("Testing individual noise types:")
+    logger.info("Testing individual noise types:")
     for profile in noise_types:
         noisy = noise_gen.apply_noise_profile(test_image, profile)
         characteristics = noise_gen.analyze_noise_characteristics(noisy)
         print(f"{profile.noise_type.value}: SNR = {characteristics['estimated_snr_db']:.2f} dB")
 
     # Test scanner-specific noise
-    print("\nTesting scanner-specific noise:")
+    logger.info("\nTesting scanner-specific noise:")
     scanner_types = list(noise_gen.scanner_noise_profiles.keys())
 
     for scanner in scanner_types:
@@ -405,4 +405,4 @@ if __name__ == "__main__":
 
     # Create benchmark
     benchmark = noise_gen.create_noise_benchmark(test_image, scanner_types)
-    print(f"\nBenchmark created for {len(benchmark)} scanner types")
+    logger.info(f"\nBenchmark created for {len(benchmark)} scanner types")

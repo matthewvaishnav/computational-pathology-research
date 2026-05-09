@@ -510,8 +510,8 @@ if __name__ == "__main__":
         
         # Step 1: Get authorization URL
         auth_url, state = client.get_authorization_url()
-        print(f"Authorization URL: {auth_url}")
-        print(f"State: {state}")
+        logger.info(f"Authorization URL: {auth_url}")
+        logger.info(f"State: {state}")
         
         # Step 2: User visits auth_url, grants permission, redirected to callback
         # Step 3: Extract code from callback URL
@@ -526,4 +526,4 @@ if __name__ == "__main__":
         # print(f"User: {userinfo}")
         
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")

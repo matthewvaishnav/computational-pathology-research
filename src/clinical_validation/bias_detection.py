@@ -626,8 +626,8 @@ if __name__ == "__main__":
         }
     )
 
-    print("Bias Detection Analysis")
-    print("=" * 50)
+    logger.info("Bias Detection Analysis")
+    logger.info("=" * 50)
 
     # Perform comprehensive analysis
     fairness_report = detector.comprehensive_bias_analysis(
@@ -637,15 +637,15 @@ if __name__ == "__main__":
     # Generate report
     report = detector.generate_fairness_report(fairness_report)
 
-    print(f"\nOverall Bias Score: {report['summary']['overall_bias_score']:.3f}")
-    print(f"Critical Issues: {report['summary']['critical_issues']}")
-    print(f"High Issues: {report['summary']['high_issues']}")
-    print(f"Medium Issues: {report['summary']['medium_issues']}")
+    logger.info(f"\nOverall Bias Score: {report['summary']['overall_bias_score']:.3f}")
+    logger.info(f"Critical Issues: {report['summary']['critical_issues']}")
+    logger.info(f"High Issues: {report['summary']['high_issues']}")
+    logger.info(f"Medium Issues: {report['summary']['medium_issues']}")
 
-    print(f"\nRecommendations:")
+    logger.info(f"\nRecommendations:")
     for rec in report["recommendations"]:
         print(f"  - {rec}")
 
-    print(f"\nMitigation Strategies:")
+    logger.info(f"\nMitigation Strategies:")
     for strategy in report["mitigation_strategies"][:3]:
         print(f"  - {strategy}")
