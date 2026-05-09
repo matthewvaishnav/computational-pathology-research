@@ -44,6 +44,14 @@ Recent hardening (25 commits):
   - Network security (HTTPS enforcement, STARTTLS, connection pooling)
   - SQL parameterization, graceful shutdown
 
+PathologyFL security (14 commits):
+  - Removed fake differential privacy implementation
+  - TenSEAL and Opacus now required (no silent degradation)
+  - Rate limiting on coordinator endpoints (100 req/min)
+  - Pydantic validation for all API requests
+  - Fixed model weight serialization
+  - Removed legacy unhardened exports
+
 DIRECTORY STRUCTURE
 -------------------
 
