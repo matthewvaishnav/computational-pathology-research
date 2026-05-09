@@ -208,8 +208,9 @@ async def health_check():
     """Health check endpoint."""
     try:
         # Check database connection
+        from sqlalchemy import text
         with db_manager.get_session() as session:
-            session.execute("SELECT 1")
+            session.execute(text("SELECT 1"))
 
         return {"status": "healthy", "timestamp": datetime.utcnow().isoformat(), "version": "1.0.0"}
     except Exception as e:

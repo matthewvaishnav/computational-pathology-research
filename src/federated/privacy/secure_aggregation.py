@@ -85,11 +85,10 @@ class HomomorphicEncryptionManager:
     def _setup_context(self):
         """Set up TenSEAL context with CKKS scheme."""
         if not TENSEAL_AVAILABLE:
-            logger.warning("TenSEAL not available - secure aggregation disabled")
-            self.context = None
-            self.public_key = None
-            self.secret_key = None
-            return
+            raise RuntimeError(
+                "TenSEAL is required for secure aggregation but is not installed. "
+                "Install with: pip install tenseal"
+            )
 
         try:
             # Create TenSEAL context
