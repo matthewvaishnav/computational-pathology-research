@@ -147,6 +147,87 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 
 ---
 
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     HistoCore System Overview                        │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  Core MIL Models                                                     │
+│  ├─ nnMIL (attention-based)                                         │
+│  ├─ AttentionMIL (Ilse et al.)                                      │
+│  ├─ CLAM (clustering-constrained)                                   │
+│  └─ TransMIL (transformer-based)                                    │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  WSI Processing Pipeline                                             │
+│  ├─ OpenSlide integration (.svs, .tiff, .ndpi, DICOM)              │
+│  ├─ Patch extraction (96x96, 224x224)                              │
+│  ├─ Feature extraction (ResNet18, foundation models)                │
+│  └─ Real-time streaming (<30s for gigapixel slides)                │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Training Infrastructure                                             │
+│  ├─ torch.compile optimization (30-40% faster)                      │
+│  ├─ Mixed precision (AMP) - 2-3x speedup                           │
+│  ├─ Channels-last memory format (20-30% faster)                    │
+│  ├─ Multi-GPU (DDP) - linear scaling                               │
+│  └─ 8-12x total speedup (20-40h → 2-3h)                            │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Distributed Medical Intelligence (DMI)                              │
+│  ├─ Expertise-weighted aggregation                                  │
+│  ├─ Multi-center knowledge synthesis                                │
+│  ├─ Cancer-type specialization matching                             │
+│  └─ Hospital tier weighting (cancer center → community)             │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Clinical Integration                                                │
+│  ├─ PACS connectivity (DICOM C-FIND/C-MOVE/C-STORE)                │
+│  ├─ FHIR adapter for patient metadata                              │
+│  ├─ Longitudinal analysis & patient context                         │
+│  └─ Real-time inference (<5s) with WebSocket streaming             │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Production API (FastAPI)                                            │
+│  ├─ JWT authentication & authorization                              │
+│  ├─ Rate limiting (100 req/min)                                     │
+│  ├─ Pydantic request validation                                     │
+│  ├─ SQL parameterization & connection pooling                       │
+│  └─ HTTPS enforcement & CORS protection                             │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Model Interpretability                                              │
+│  ├─ Grad-CAM visualizations                                         │
+│  ├─ Attention heatmaps                                              │
+│  ├─ Failure case analysis                                           │
+│  └─ Feature importance (SHAP)                                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+- **5,000+ tests** across 310 test modules with property-based testing
+- **95.37% validation AUC** on PatchCamelyon (262K samples)
+- **Production security:** 39+ commits (authentication, input validation, privacy)
+- **Privacy guarantees:** TenSEAL + Opacus required (no silent degradation)
+- **HIPAA compliance:** Audit logging, encryption, access controls
+
+---
+
 ## Quickstart
 
 <div class="callout callout-info">
