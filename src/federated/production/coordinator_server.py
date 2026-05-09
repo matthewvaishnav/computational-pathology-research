@@ -431,7 +431,8 @@ async def get_latest_model(current_user: dict = Depends(get_current_user)):
         return {
             "version": app.state.orchestrator.current_version,
             "round_id": app.state.orchestrator.current_round,
-            "model_state": model_state,  # In production, this would be a download URL
+            "download_url": f"/api/v1/models/download/{app.state.orchestrator.current_version}",
+            "checksum": "sha256_placeholder",  # TODO: compute actual checksum
         }
 
     except Exception as e:
