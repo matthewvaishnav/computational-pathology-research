@@ -34,7 +34,7 @@ class BaseAggregator(ABC):
         Returns:
             Dictionary mapping parameter names to aggregated tensors
         """
-        pass
+        raise NotImplementedError("Subclasses must implement aggregate()")
 
     def __str__(self) -> str:
         """String representation of aggregator."""
