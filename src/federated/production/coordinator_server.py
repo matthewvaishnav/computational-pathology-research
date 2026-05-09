@@ -45,6 +45,22 @@ audit_logger = get_audit_logger()
 # Logging setup
 logger = structlog.get_logger(__name__)
 
+# Pydantic models for request validation
+class ClientRegistration(BaseModel):
+    """Client registration request."""
+    client_id: str = Field(..., min_length=1, max_length=100)
+    name: str = Field(..., min_length=1, max_length=200)
+    organization: Optional[str] = Field(None, max_length=200)
+
+
+class TrainingConfig(BaseModel):
+    """Training configuration request."""
+    algorithm: str = Field(default="fedavg", pattern="^(fedavg|fedprox|fedadam)$")
+    min_clients: int = Field(default=2, ge=1, le=1000)
+    max_clients: Optional[int] = Field(None, ge=1, le=1000)
+    rounds: int = Field(default=10, ge=1, le=1000)
+
+
 # Metrics
 REQUEST_COUNT = Counter(
     "fl_coordinator_requests_total", "Total requests", ["method", "endpoint", "status"]
