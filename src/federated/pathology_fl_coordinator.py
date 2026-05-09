@@ -49,6 +49,13 @@ class PathologyFLCoordinator:
     def register_hospital(self, hospital_id: str, metadata: dict):
         """Register hospital with medical expertise metadata."""
         
+        # Validate required fields
+        required_fields = ['hospital_type', 'annual_cases', 'cancer_specialties', 
+                          'diagnostic_accuracy', 'years_experience']
+        missing = [f for f in required_fields if f not in metadata]
+        if missing:
+            raise ValueError(f"Missing required fields: {missing}")
+        
         # Convert dict to HospitalMetadata
         hospital_metadata = HospitalMetadata(
             hospital_id=hospital_id,

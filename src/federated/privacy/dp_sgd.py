@@ -307,6 +307,7 @@ class NoiseGenerator:
         max_grad_norm: float,
         batch_size: int,
         num_steps: int,
+        dataset_size: int,
     ) -> float:
         """
         Calibrate noise multiplier for target privacy parameters.
@@ -326,7 +327,7 @@ class NoiseGenerator:
             noise_multiplier = get_noise_multiplier(
                 target_epsilon=target_epsilon,
                 target_delta=target_delta,
-                sample_rate=batch_size / 60000,  # Assuming dataset size, adjust as needed
+                sample_rate=batch_size / dataset_size,
                 steps=num_steps,
             )
         else:
