@@ -29,6 +29,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+  packages: write  # Required for pushing to GHCR
+  security-events: write  # Required for uploading SARIF results
+
 jobs:
   test:
     name: Run Tests
@@ -130,7 +135,7 @@ jobs:
       continue-on-error: true
     
     - name: Upload Trivy results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: 'trivy-results.sarif'
       continue-on-error: true
