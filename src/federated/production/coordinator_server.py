@@ -251,7 +251,11 @@ async def metrics():
 
 # Client management endpoints
 @app.post("/api/v1/clients/register")
-async def register_client(client_data: dict, current_user: dict = Depends(get_current_user)):
+async def register_client(
+    client_data: dict,
+    current_user: dict = Depends(get_current_user),
+    _: None = Depends(check_rate_limit)
+):
     """Register a new FL client."""
     try:
         client_id = client_data["client_id"]
