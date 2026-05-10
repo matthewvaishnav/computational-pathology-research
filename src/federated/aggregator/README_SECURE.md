@@ -2,15 +2,15 @@
 
 ## Overview
 
-The `SecureAggregator` implements secure multi-party computation for federated learning using homomorphic encryption. This prevents the central server from accessing individual hospital updates while still computing correct aggregated results.
+The `SecureAggregator` performs federated aggregation over client-encrypted model updates using homomorphic encryption. Hospitals encrypt updates before transmission; the coordinator deserializes encrypted vectors, aggregates them homomorphically, and decrypts only the final aggregate result.
 
 ## Key Features
 
-- **Privacy-Preserving**: Central server cannot decrypt individual hospital updates
+- **Privacy-Preserving Transport to Aggregation**: Hospitals send encrypted update vectors rather than plaintext tensors
 - **Secure Multi-Party Computation**: Uses homomorphic encryption (CKKS scheme via TenSEAL)
 - **Dropout Handling**: Gracefully handles hospital dropouts with configurable thresholds
 - **Weighted Aggregation**: Supports dataset-size-based weighting
-- **Production-Ready**: Integrates seamlessly with existing federated learning infrastructure
+- **Integration Path**: Works through the federated aggregation interface when clients submit `EncryptedClientUpdate` payloads
 
 ## Installation
 
@@ -53,7 +53,7 @@ aggregator = create_aggregator(
 ```python
 import torch
 from src.federated.aggregator import SecureAggregator
-from src.federated.common.data_models import ClientUpdate
+from src.federated.privacy.secure_aggregation import SecureAggregationClient
 
 # Initialize secure aggregator
 aggregator = SecureAggregator(
@@ -68,37 +68,38 @@ public_context = aggregator.setup_round(expected_hospitals)
 # Distribute public_context to hospitals for encryption
 # (In production, this would be sent over secure channels)
 
-# Collect encrypted updates from hospitals
-updates = [
-    ClientUpdate(
-        client_id="hospital_a",
-        round_id=1,
-        model_version=0,
-        gradients={
-            "layer1.weight": torch.randn(128, 64) * 0.01,
-            "layer1.bias": torch.randn(128) * 0.01,
-        },
-        dataset_size=500,  # Weight based on dataset size
-        training_time_seconds=10.5,
-    ),
-    ClientUpdate(
-        client_id="hospital_b",
-        round_id=1,
-        model_version=0,
-        gradients={
-            "layer1.weight": torch.randn(128, 64) * 0.01,
-            "layer1.bias": torch.randn(128) * 0.01,
-        },
-        dataset_size=300,
-        training_time_seconds=8.2,
-    ),
-]
+# Each hospital encrypts locally with the public context.
+hospital_a = SecureAggregationClient("hospital_a")
+hospital_a.setup_context(public_context)
+update_a = hospital_a.create_encrypted_update(
+    gradients={
+        "layer1.weight": torch.randn(128, 64) * 0.01,
+        "layer1.bias": torch.randn(128) * 0.01,
+    },
+    round_id=1,
+    model_version=0,
+    dataset_size=500,
+    training_time_seconds=10.5,
+)
+
+hospital_b = SecureAggregationClient("hospital_b")
+hospital_b.setup_context(public_context)
+update_b = hospital_b.create_encrypted_update(
+    gradients={
+        "layer1.weight": torch.randn(128, 64) * 0.01,
+        "layer1.bias": torch.randn(128) * 0.01,
+    },
+    round_id=1,
+    model_version=0,
+    dataset_size=300,
+    training_time_seconds=8.2,
+)
 
 # Aggregate securely
-aggregated_gradients = aggregator.aggregate(updates)
+aggregated_gradients = aggregator.aggregate([update_a, update_b])
 
 # Use aggregated gradients to update global model
-# (Central server never sees individual hospital updates!)
+# (The secure path rejects plaintext ClientUpdate payloads.)
 ```
 
 ## Configuration Parameters
