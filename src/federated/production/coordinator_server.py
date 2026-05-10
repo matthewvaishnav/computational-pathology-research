@@ -79,6 +79,24 @@ security = HTTPBearer()
 SERVER_START_TIME = datetime.now()
 
 
+# Error handling decorator
+def handle_api_errors(func):
+    """Decorator to handle common API errors."""
+    from functools import wraps
+    
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        try:
+            return await func(*args, **kwargs)
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"{func.__name__} failed: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error")
+    
+    return wrapper
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan management."""
@@ -325,30 +343,26 @@ async def register_client(
 
 
 @app.get("/api/v1/clients")
+@handle_api_errors
 async def list_clients(current_user: dict = Depends(get_current_user)):
     """List all registered clients."""
-    try:
-        clients = db_manager.get_active_clients()
+    clients = db_manager.get_active_clients()
 
-        # Update metrics
-        ACTIVE_CLIENTS.set(len(clients))
+    # Update metrics
+    ACTIVE_CLIENTS.set(len(clients))
 
-        return {
-            "clients": [
-                {
-                    "client_id": client.client_id,
-                    "name": client.name,
-                    "organization": client.organization,
-                    "status": client.status,
-                    "last_seen": client.last_seen.isoformat() if client.last_seen else None,
-                }
-                for client in clients
-            ]
-        }
-
-    except Exception as e:
-        logger.error(f"Failed to list clients: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return {
+        "clients": [
+            {
+                "client_id": client.client_id,
+                "name": client.name,
+                "organization": client.organization,
+                "status": client.status,
+                "last_seen": client.last_seen.isoformat() if client.last_seen else None,
+            }
+            for client in clients
+        ]
+    }
 
 
 # Training management endpoints
@@ -420,37 +434,31 @@ async def start_training_round(
 
 
 @app.get("/api/v1/training/status/{round_id}")
+@handle_api_errors
 async def get_training_status(round_id: int, current_user: dict = Depends(get_current_user)):
     """Get training round status."""
-    try:
-        # Get from database
-        with db_manager.get_session() as session:
-            round_obj = (
-                session.query(db_manager.TrainingRound)
-                .filter(db_manager.TrainingRound.round_id == round_id)
-                .first()
-            )
+    # Get from database
+    with db_manager.get_session() as session:
+        round_obj = (
+            session.query(db_manager.TrainingRound)
+            .filter(db_manager.TrainingRound.round_id == round_id)
+            .first()
+        )
 
-            if not round_obj:
-                raise HTTPException(status_code=404, detail="Training round not found")
+        if not round_obj:
+            raise HTTPException(status_code=404, detail="Training round not found")
 
-            return {
-                "round_id": round_obj.round_id,
-                "status": round_obj.status,
-                "algorithm": round_obj.algorithm,
-                "participants": round_obj.participants,
-                "started_at": round_obj.started_at.isoformat() if round_obj.started_at else None,
-                "completed_at": (
-                    round_obj.completed_at.isoformat() if round_obj.completed_at else None
-                ),
-                "metrics": round_obj.aggregated_metrics,
-            }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to get training status: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        return {
+            "round_id": round_obj.round_id,
+            "status": round_obj.status,
+            "algorithm": round_obj.algorithm,
+            "participants": round_obj.participants,
+            "started_at": round_obj.started_at.isoformat() if round_obj.started_at else None,
+            "completed_at": (
+                round_obj.completed_at.isoformat() if round_obj.completed_at else None
+            ),
+            "metrics": round_obj.aggregated_metrics,
+        }
 
 
 # Model management endpoints
@@ -488,47 +496,43 @@ async def get_latest_model(current_user: dict = Depends(get_current_user)):
 
 # Admin endpoints
 @app.get("/api/v1/admin/stats")
+@handle_api_errors
 async def get_system_stats(current_user: dict = Depends(get_admin_user)):
     """Get system statistics (admin only)."""
-    try:
-        with db_manager.get_session() as session:
-            # Get client stats
-            total_clients = session.query(db_manager.Client).count()
-            active_clients = (
-                session.query(db_manager.Client)
-                .filter(db_manager.Client.status == "active")
-                .count()
-            )
+    with db_manager.get_session() as session:
+        # Get client stats
+        total_clients = session.query(db_manager.Client).count()
+        active_clients = (
+            session.query(db_manager.Client)
+            .filter(db_manager.Client.status == "active")
+            .count()
+        )
 
-            # Get training stats
-            total_rounds = session.query(db_manager.TrainingRound).count()
-            completed_rounds = (
-                session.query(db_manager.TrainingRound)
-                .filter(db_manager.TrainingRound.status == "completed")
-                .count()
-            )
-            
-            # Calculate uptime
-            uptime_delta = datetime.now() - SERVER_START_TIME
-            uptime_seconds = int(uptime_delta.total_seconds())
-            uptime_hours = uptime_seconds // 3600
-            uptime_minutes = (uptime_seconds % 3600) // 60
-            uptime_str = f"{uptime_hours}h {uptime_minutes}m"
+        # Get training stats
+        total_rounds = session.query(db_manager.TrainingRound).count()
+        completed_rounds = (
+            session.query(db_manager.TrainingRound)
+            .filter(db_manager.TrainingRound.status == "completed")
+            .count()
+        )
+        
+        # Calculate uptime
+        uptime_delta = datetime.now() - SERVER_START_TIME
+        uptime_seconds = int(uptime_delta.total_seconds())
+        uptime_hours = uptime_seconds // 3600
+        uptime_minutes = (uptime_seconds % 3600) // 60
+        uptime_str = f"{uptime_hours}h {uptime_minutes}m"
 
-            return {
-                "clients": {"total": total_clients, "active": active_clients},
-                "training": {"total_rounds": total_rounds, "completed_rounds": completed_rounds},
-                "system": {
-                    "uptime": uptime_str,
-                    "uptime_seconds": uptime_seconds,
-                    "version": "1.0.0",
-                    "start_time": SERVER_START_TIME.isoformat(),
-                },
-            }
-
-    except Exception as e:
-        logger.error(f"Failed to get system stats: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        return {
+            "clients": {"total": total_clients, "active": active_clients},
+            "training": {"total_rounds": total_rounds, "completed_rounds": completed_rounds},
+            "system": {
+                "uptime": uptime_str,
+                "uptime_seconds": uptime_seconds,
+                "version": "1.0.0",
+                "start_time": SERVER_START_TIME.isoformat(),
+            },
+        }
 
 
 def main():
