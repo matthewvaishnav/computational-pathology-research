@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    # Run weekly security audit every Monday at 9 AM UTC
-    - cron: '0 9 * * 1'
+    # Run security audit daily at 2 AM UTC
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,39 +17,50 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for trend analysis
     
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+        cache: 'pip'
     
     - name: Install security tools
       run: |
         python -m pip install --upgrade pip
         pip install bandit[toml] safety pip-audit
     
-    - name: Run comprehensive Bandit scan
+    - name: Run Bandit security scan
       run: |
-        bandit -r src/ -f json -o bandit-full-report.json
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/ -f txt -o bandit-report.txt || true
+    
+    - name: Check for HIGH/MEDIUM severity issues
+      run: |
+        python scripts/check_bandit_results.py bandit-report.json
+      continue-on-error: false
+    
+    - name: Run Safety check for vulnerable dependencies
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check --output safety-report.txt || true
       continue-on-error: true
     
-    - name: Check Bandit results
+    - name: Run pip-audit for dependency vulnerabilities
       run: |
-        python scripts/check_bandit_results.py bandit-full-report.json
-    
-    - name: Generate security report
-      if: always()
-      run: |
-        python scripts/generate_security_report.py bandit-full-report.json security-report.html
-    
-    - name: Run Safety check (known vulnerabilities)
-      run: |
-        safety check --json --output safety-report.json
+        pip-audit --format json --output pip-audit-report.json || true
+        pip-audit --output pip-audit-report.txt || true
       continue-on-error: true
     
-    - name: Run pip-audit (dependency vulnerabilities)
+    - name: Generate security posture report
       run: |
-        pip-audit --format json --output pip-audit-report.json
+        python scripts/security_posture_report.py \
+          --bandit bandit-report.json \
+          --safety safety-report.json \
+          --pip-audit pip-audit-report.json \
+          --output security-posture.json \
+          --html security-posture.html
       continue-on-error: true
     
     - name: Upload security reports
@@ -58,35 +69,210 @@ jobs:
       with:
         name: security-audit-reports
         path: |
-          bandit-full-report.json
-          security-report.html
+          bandit-report.json
+          bandit-report.txt
           safety-report.json
+          safety-report.txt
           pip-audit-report.json
+          pip-audit-report.txt
+          security-posture.json
+          security-posture.html
+        retention-days: 90
     
-    - name: Comment PR with security summary
-      if: github.event_name == 'pull_request'
+    - name: Comment security summary on commit
+      if: github.event_name == 'push'
       uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
-          const bandit = JSON.parse(fs.readFileSync('bandit-full-report.json', 'utf8'));
-          const high = bandit.metrics._totals['SEVERITY.HIGH'] || 0;
-          const medium = bandit.metrics._totals['SEVERITY.MEDIUM'] || 0;
-          const low = bandit.metrics._totals['SEVERITY.LOW'] || 0;
           
-          const body = `## 🔒 Security Audit Summary
+          // Read security posture report
+          let summary = '## 🔒 Security Audit Summary\n\n';
           
-          - **HIGH severity issues:** ${high}
-          - **MEDIUM severity issues:** ${medium}
-          - **LOW severity issues:** ${low}
+          try {
+            const posture = JSON.parse(fs.readFileSync('security-posture.json', 'utf8'));
+            
+            summary += `**Scan Date:** ${posture.scan_date}\n\n`;
+            summary += `### Bandit Results\n`;
+            summary += `- HIGH: ${posture.bandit.high_count}\n`;
+            summary += `- MEDIUM: ${posture.bandit.medium_count}\n`;
+            summary += `- LOW: ${posture.bandit.low_count}\n\n`;
+            
+            if (posture.bandit.high_count > 0 || posture.bandit.medium_count > 0) {
+              summary += `⚠️ **Action Required:** HIGH or MEDIUM severity issues detected!\n\n`;
+            } else {
+              summary += `✅ **No HIGH or MEDIUM severity issues detected**\n\n`;
+            }
+            
+            summary += `### Dependency Vulnerabilities\n`;
+            summary += `- Safety: ${posture.safety.vulnerable_count} vulnerable packages\n`;
+            summary += `- pip-audit: ${posture.pip_audit.vulnerable_count} vulnerable packages\n\n`;
+            
+            summary += `[View detailed reports in artifacts](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
+          } catch (error) {
+            summary += `Error generating summary: ${error.message}\n`;
+          }
           
-          ${high > 0 || medium > 0 ? '⚠️ **Action required:** Please review and fix HIGH/MEDIUM severity issues.' : '✅ No HIGH or MEDIUM severity issues found.'}
-          
-          Full report available in workflow artifacts.`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
+          // Create commit comment
+          await github.rest.repos.createCommitComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: body
+            commit_sha: context.sha,
+            body: summary
           });
+      continue-on-error: true
+    
+    - name: Notify security team on critical issues
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          // Create an issue for security team
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Security Audit Failed - Critical Issues Detected',
+            body: `Security audit failed on ${context.sha.substring(0, 7)}.\n\n` +
+                  `**Workflow Run:** ${context.payload.repository.html_url}/actions/runs/${context.runId}\n\n` +
+                  `Please review the security reports and address HIGH/MEDIUM severity issues immediately.`,
+            labels: ['security', 'critical']
+          });
+      continue-on-error: true
+
+  security-test-suite:
+    name: Security Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e ".[foundation]"
+    
+    - name: Run security unit tests
+      run: |
+        pytest tests/security/ -v --cov=src/security --cov-report=xml --cov-report=term
+    
+    - name: Run security property tests
+      run: |
+        pytest tests/security/ -v -m property --hypothesis-show-statistics
+      continue-on-error: true
+    
+    - name: Upload test coverage
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: security-tests
+        name: security-test-coverage
+        fail_ci_if_error: false
+
+  dependency-review:
+    name: Dependency Security Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-audit safety
+    
+    - name: Audit dependencies with pip-audit
+      run: |
+        pip-audit --format json --output pip-audit-full.json || true
+        pip-audit || true
+      continue-on-error: true
+    
+    - name: Check dependencies with Safety
+      run: |
+        safety check --json --output safety-full.json || true
+        safety check || true
+      continue-on-error: true
+    
+    - name: Upload dependency reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-security-reports
+        path: |
+          pip-audit-full.json
+          safety-full.json
+        retention-days: 30
+
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: python
+        queries: security-extended
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:python"
+
+  security-verification:
+    name: Security Controls Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Verify security controls
+      run: |
+        python scripts/verify_security.py --environment production
+        python scripts/verify_security.py --environment development
+        python scripts/verify_security.py --environment research
+    
+    - name: Upload verification results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-verification-results
+        path: security-verification-*.json
+        retention-days: 30
