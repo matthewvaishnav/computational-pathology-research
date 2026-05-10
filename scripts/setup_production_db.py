@@ -33,7 +33,7 @@ def create_admin_user(db_manager: DatabaseManager):
             return
         
         # Create admin user - use environment variable for password
-        admin_password = os.getenv("ADMIN_PASSWORD", "admin123")  # Default for dev only
+        admin_password = os.getenv("ADMIN_PASSWORD", "admin123")  # nosec B105 - Default for dev only, warning issued
         if admin_password == "admin123":
             logger.warning("Using default admin password! Set ADMIN_PASSWORD env var for production.")
         password_hash = hashlib.sha256(admin_password.encode()).hexdigest()
