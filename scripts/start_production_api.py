@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import uvicorn
 from dotenv import load_dotenv
+from src.security.network_binding import NetworkBindingManager
 
 # Load environment variables
 load_dotenv(".env.production")
@@ -27,10 +28,19 @@ def main():
     """Start production API server."""
     
     # Configuration from environment
-    host = os.getenv("API_HOST", "0.0.0.0")
+    host_override = os.getenv("API_HOST")  # Allow explicit override
     port = int(os.getenv("API_PORT", "8000"))
     workers = int(os.getenv("API_WORKERS", "1"))
     log_level = os.getenv("LOG_LEVEL", "info").lower()
+    
+    # Use NetworkBindingManager for secure host binding
+    if host_override:
+        host = host_override
+        logger.info(f"Using explicit host override: {host}")
+    else:
+        binding_manager = NetworkBindingManager()
+        host = binding_manager.get_safe_host()
+        logger.info(f"Using NetworkBindingManager secure binding: {host}")
     
     logger.info(f"Starting Medical AI API server...")
     logger.info(f"Host: {host}:{port}")
