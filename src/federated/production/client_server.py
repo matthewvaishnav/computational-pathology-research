@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 import signal
 import sys
 import time
@@ -24,6 +25,7 @@ from ..communication.grpc_client import GRPCClient
 from ..privacy.dp_sgd import DPSGDEngine
 from .config import get_config
 from .monitoring import get_metrics_manager, setup_logging
+from src.security.network_binding import NetworkBindingManager
 
 # Import distributed tracing
 from src.monitoring.tracing import get_tracer
@@ -355,10 +357,14 @@ def main():
     app.state.coordinator_url = coordinator_url
     app.state.start_time = time.time()
 
+    # Use NetworkBindingManager for secure host binding
+    binding_manager = NetworkBindingManager()
+    safe_host = binding_manager.get_safe_host()
+
     # Start server
     uvicorn.run(
         "src.federated.production.client_server:app",
-        host="0.0.0.0",
+        host=safe_host,
         port=8081,
         workers=1,
         log_config=None,
