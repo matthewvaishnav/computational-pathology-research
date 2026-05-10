@@ -298,7 +298,8 @@ def create_ollama_llm(model: str = "llama3", base_url: str = "http://localhost:1
                     {"role": "user", "content": user}
                 ],
                 "stream": False
-            }
+            },
+            timeout=30
         )
         return response.json()["message"]["content"]
     return llm_fn
