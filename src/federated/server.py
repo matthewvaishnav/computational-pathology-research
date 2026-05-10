@@ -9,6 +9,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from src.security.network_binding import NetworkBindingManager
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -66,7 +68,7 @@ def start_federated_server(
     min_fit_clients: int = 2,
     min_evaluate_clients: int = 2,
     min_available_clients: int = 2,
-    server_address: str = "0.0.0.0:8080",
+    server_address: Optional[str] = None,
     early_stopping_patience: int = 5,
     proximal_mu: float = 0.01,
     fraction_fit: float = 1.0,
@@ -78,6 +80,7 @@ def start_federated_server(
     Args:
         model_init_fn: Callable returning initialized nn.Module (for initial params).
         num_rounds: Number of federated rounds.
+        server_address: Server address (host:port). If None, uses NetworkBindingManager for host.
         strategy: One of "fedavg", "fedprox", "byzantine".
         min_fit_clients: Minimum clients for fit round.
         min_evaluate_clients: Minimum clients for evaluate round.
@@ -151,6 +154,13 @@ def start_federated_server(
         f"Starting FL server: strategy={strategy}, rounds={num_rounds}, "
         f"address={server_address}, min_clients={min_available_clients}"
     )
+
+    # Use NetworkBindingManager for secure host binding if no address provided
+    if server_address is None:
+        binding_manager = NetworkBindingManager()
+        safe_host = binding_manager.get_safe_host()
+        server_address = f"{safe_host}:8080"
+        logger.info(f"Using NetworkBindingManager secure binding: {server_address}")
 
     fl.server.start_server(
         server_address=server_address,
