@@ -13,6 +13,7 @@ import torch
 from aiohttp import web
 
 from .metrics import get_metrics
+from src.security.network_binding import NetworkBindingManager
 
 logger = logging.getLogger(__name__)
 
@@ -614,13 +615,23 @@ def get_health_checker() -> HealthChecker:
     return _health_checker
 
 
-async def start_health_server(host: str = "0.0.0.0", port: int = 8080) -> HealthServer:
-    """Start health check server."""
+async def start_health_server(host: Optional[str] = None, port: int = 8080) -> HealthServer:
+    """Start health check server.
+    
+    Args:
+        host: Host to bind to. If None, uses NetworkBindingManager for secure binding.
+        port: Port to bind to.
+    """
     global _health_server
 
     if _health_server is not None:
         logger.warning("Health server already running")
         return _health_server
+
+    # Use NetworkBindingManager for secure host binding
+    if host is None:
+        binding_manager = NetworkBindingManager()
+        host = binding_manager.get_safe_host()
 
     health_checker = get_health_checker()
     _health_server = HealthServer(health_checker)
