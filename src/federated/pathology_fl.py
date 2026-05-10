@@ -6,7 +6,7 @@ Unique federated learning approach designed specifically for computational patho
 
 import torch
 import numpy as np
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List
 from dataclasses import dataclass
 from enum import Enum
 
@@ -46,12 +46,102 @@ class PathologyFederatedAggregator:
     """
     
     def __init__(self, alpha: float = 0.5, beta: float = 0.3):
+        if alpha < 0 or beta < 0 or alpha + beta > 1:
+            raise ValueError("alpha and beta must be non-negative and sum to at most 1")
+
         self.alpha = alpha  # Expertise weighting factor
         self.beta = beta    # Quality weighting factor
         self.expertise_cache = {}
+
+    def _normalize_cancer_type(self, cancer_type: CancerType | str) -> CancerType:
+        if isinstance(cancer_type, CancerType):
+            return cancer_type
+        if isinstance(cancer_type, str):
+            try:
+                return CancerType(cancer_type.lower())
+            except ValueError as exc:
+                raise ValueError(f"Unsupported cancer type: {cancer_type}") from exc
+        raise ValueError("cancer_type must be a CancerType or string value")
+
+    def _validate_hospital_metadata(self, metadata: HospitalMetadata) -> None:
+        if not isinstance(metadata, HospitalMetadata):
+            raise ValueError("hospital_metadata values must be HospitalMetadata instances")
+        if not metadata.hospital_id:
+            raise ValueError("hospital_id is required")
+        if not isinstance(metadata.hospital_type, HospitalType):
+            raise ValueError("hospital_type must be a HospitalType")
+        if metadata.annual_cases <= 0:
+            raise ValueError("annual_cases must be positive")
+        if metadata.cancer_specialties is None:
+            raise ValueError("cancer_specialties is required")
+        if any(not isinstance(specialty, CancerType) for specialty in metadata.cancer_specialties):
+            raise ValueError("cancer_specialties must contain CancerType values")
+        if not 0 <= metadata.diagnostic_accuracy <= 1:
+            raise ValueError("diagnostic_accuracy must be between 0 and 1")
+        if metadata.years_experience < 0:
+            raise ValueError("years_experience must be non-negative")
+
+    def _validate_slide_quality(self, quality: SlideQuality) -> None:
+        if not isinstance(quality, SlideQuality):
+            raise ValueError("slide_quality values must be SlideQuality instances")
+
+        scores = {
+            "image_sharpness": quality.image_sharpness,
+            "stain_consistency": quality.stain_consistency,
+            "label_confidence": quality.label_confidence,
+            "artifact_level": quality.artifact_level,
+        }
+        for score_name, score in scores.items():
+            if not 0 <= score <= 1:
+                raise ValueError(f"{score_name} must be between 0 and 1")
+
+    def _validate_updates(self, client_updates: Dict[str, Dict[str, torch.Tensor]]) -> None:
+        if not client_updates:
+            raise ValueError("client_updates cannot be empty")
+
+        first_client_id = next(iter(client_updates))
+        first_params = client_updates[first_client_id]
+        if not first_params:
+            raise ValueError(f"client update for {first_client_id} cannot be empty")
+
+        expected_param_names = set(first_params.keys())
+        expected_shapes = {
+            param_name: tensor.shape for param_name, tensor in first_params.items()
+        }
+
+        for client_id, params in client_updates.items():
+            if not params:
+                raise ValueError(f"client update for {client_id} cannot be empty")
+            if set(params.keys()) != expected_param_names:
+                raise ValueError("all clients must provide the same parameter names")
+            for param_name, tensor in params.items():
+                if not isinstance(tensor, torch.Tensor):
+                    raise ValueError("client update parameters must be torch.Tensor values")
+                if tensor.shape != expected_shapes[param_name]:
+                    raise ValueError(f"mismatched parameter shape for {param_name}")
+                if not torch.isfinite(tensor).all():
+                    raise ValueError(f"non-finite values found in {param_name}")
+
+    def _validate_inputs(
+        self,
+        client_updates: Dict[str, Dict[str, torch.Tensor]],
+        hospital_metadata: Dict[str, HospitalMetadata],
+        slide_quality: Dict[str, SlideQuality],
+    ) -> None:
+        self._validate_updates(client_updates)
+
+        for client_id in client_updates:
+            if client_id not in hospital_metadata:
+                raise ValueError(f"missing hospital metadata for {client_id}")
+            if client_id not in slide_quality:
+                raise ValueError(f"missing slide quality for {client_id}")
+            self._validate_hospital_metadata(hospital_metadata[client_id])
+            self._validate_slide_quality(slide_quality[client_id])
         
     def calculate_expertise_weight(self, metadata: HospitalMetadata, cancer_type: CancerType) -> float:
         """Calculate hospital expertise weight for specific cancer type."""
+        self._validate_hospital_metadata(metadata)
+        cancer_type = self._normalize_cancer_type(cancer_type)
         
         # Base weight by hospital type
         type_weights = {
@@ -67,7 +157,7 @@ class PathologyFederatedAggregator:
         specialty_bonus = 1.5 if cancer_type in metadata.cancer_specialties else 1.0
         
         # Volume scaling (log scale to prevent dominance)
-        volume_factor = min(2.0, 1.0 + np.log10(metadata.annual_cases / 1000))
+        volume_factor = max(0.1, min(2.0, 1.0 + np.log10(metadata.annual_cases / 1000)))
         
         # Accuracy factor
         accuracy_factor = metadata.diagnostic_accuracy
@@ -87,6 +177,7 @@ class PathologyFederatedAggregator:
     
     def calculate_quality_weight(self, quality: SlideQuality) -> float:
         """Calculate slide quality weight."""
+        self._validate_slide_quality(quality)
         
         # Weighted average of quality metrics
         quality_score = (
@@ -98,6 +189,31 @@ class PathologyFederatedAggregator:
         
         # Apply sigmoid to smooth the weighting
         return torch.sigmoid(torch.tensor(quality_score * 4 - 2)).item()
+
+    def _cancer_specific_weights(
+        self,
+        cancer_type: CancerType,
+        hospital_metadata: Dict[str, HospitalMetadata],
+    ) -> Dict[str, float]:
+        """Calculate validated specialty expertise weights for each client."""
+
+        weights = {}
+        for client_id, metadata in hospital_metadata.items():
+            base_weight = self.calculate_expertise_weight(metadata, cancer_type)
+
+            if cancer_type == CancerType.BREAST and metadata.hospital_type == HospitalType.TEACHING_HOSPITAL:
+                base_weight *= 1.2
+            elif cancer_type == CancerType.LUNG and metadata.annual_cases > 5000:
+                base_weight *= 1.3
+            elif cancer_type == CancerType.PROSTATE and metadata.hospital_type in {
+                HospitalType.CANCER_CENTER,
+                HospitalType.TEACHING_HOSPITAL,
+            }:
+                base_weight *= 1.4
+
+            weights[client_id] = base_weight
+
+        return weights
     
     def attention_weighted_aggregation(self, 
                                      client_updates: Dict[str, Dict[str, torch.Tensor]],
@@ -159,89 +275,56 @@ class PathologyFederatedAggregator:
                                      client_updates: Dict[str, Dict[str, torch.Tensor]],
                                      hospital_metadata: Dict[str, HospitalMetadata]) -> Dict[str, torch.Tensor]:
         """Breast cancer specific aggregation."""
-        
-        weights = {}
-        for client_id, metadata in hospital_metadata.items():
-            # Higher weight for hospitals with breast cancer specialty
-            base_weight = self.calculate_expertise_weight(metadata, CancerType.BREAST)
-            
-            # Additional weight for teaching hospitals (better at complex cases)
-            if metadata.hospital_type == HospitalType.TEACHING_HOSPITAL:
-                base_weight *= 1.2
-            
-            weights[client_id] = base_weight
-        
+        weights = self._cancer_specific_weights(CancerType.BREAST, hospital_metadata)
         return self._weighted_average(client_updates, weights)
     
     def _histology_weighted_agg(self,
                               client_updates: Dict[str, Dict[str, torch.Tensor]], 
                               hospital_metadata: Dict[str, HospitalMetadata]) -> Dict[str, torch.Tensor]:
         """Lung cancer specific aggregation."""
-        
-        weights = {}
-        for client_id, metadata in hospital_metadata.items():
-            base_weight = self.calculate_expertise_weight(metadata, CancerType.LUNG)
-            
-            # Lung cancer requires high volume for expertise
-            if metadata.annual_cases > 5000:
-                base_weight *= 1.3
-            
-            weights[client_id] = base_weight
-        
+        weights = self._cancer_specific_weights(CancerType.LUNG, hospital_metadata)
         return self._weighted_average(client_updates, weights)
     
     def _gleason_weighted_agg(self,
                             client_updates: Dict[str, Dict[str, torch.Tensor]],
                             hospital_metadata: Dict[str, HospitalMetadata]) -> Dict[str, torch.Tensor]:
         """Prostate cancer specific aggregation."""
-        
-        weights = {}
-        for client_id, metadata in hospital_metadata.items():
-            base_weight = self.calculate_expertise_weight(metadata, CancerType.PROSTATE)
-            
-            # Gleason scoring requires specialized training
-            if metadata.hospital_type in [HospitalType.CANCER_CENTER, HospitalType.TEACHING_HOSPITAL]:
-                base_weight *= 1.4
-            
-            weights[client_id] = base_weight
-        
+        weights = self._cancer_specific_weights(CancerType.PROSTATE, hospital_metadata)
         return self._weighted_average(client_updates, weights)
     
     def _general_pathology_agg(self,
                              client_updates: Dict[str, Dict[str, torch.Tensor]],
                              hospital_metadata: Dict[str, HospitalMetadata]) -> Dict[str, torch.Tensor]:
         """General pathology aggregation."""
-        
-        weights = {}
-        for client_id, metadata in hospital_metadata.items():
-            weights[client_id] = self.calculate_expertise_weight(metadata, CancerType.GENERAL)
-        
+        weights = self._cancer_specific_weights(CancerType.GENERAL, hospital_metadata)
         return self._weighted_average(client_updates, weights)
     
     def _weighted_average(self, 
                          client_updates: Dict[str, Dict[str, torch.Tensor]],
                          weights: Dict[str, float]) -> Dict[str, torch.Tensor]:
         """Compute weighted average of client updates."""
+        self._validate_updates(client_updates)
         
         aggregated_params = {}
-        total_weight = sum(weights.values())
-        
-        if total_weight == 0:
-            # Fallback to simple average
-            for param_name in client_updates[list(client_updates.keys())[0]].keys():
-                aggregated_params[param_name] = torch.stack([
-                    params[param_name] for params in client_updates.values()
-                ]).mean(dim=0)
-        else:
-            # Weighted average
-            for param_name in client_updates[list(client_updates.keys())[0]].keys():
-                weighted_sum = torch.zeros_like(client_updates[list(client_updates.keys())[0]][param_name])
-                
-                for client_id, params in client_updates.items():
-                    if client_id in weights:
-                        weighted_sum += params[param_name] * weights[client_id]
-                
-                aggregated_params[param_name] = weighted_sum / total_weight
+        total_weight = 0.0
+        for client_id in client_updates:
+            if client_id not in weights:
+                raise ValueError(f"missing aggregation weight for {client_id}")
+            weight = weights[client_id]
+            if not np.isfinite(weight) or weight < 0:
+                raise ValueError("aggregation weights must be finite and non-negative")
+            total_weight += weight
+
+        if total_weight <= 0:
+            raise ValueError("total aggregation weight must be positive")
+
+        for param_name in client_updates[list(client_updates.keys())[0]].keys():
+            weighted_sum = torch.zeros_like(client_updates[list(client_updates.keys())[0]][param_name])
+            
+            for client_id, params in client_updates.items():
+                weighted_sum += params[param_name] * weights[client_id]
+            
+            aggregated_params[param_name] = weighted_sum / total_weight
         
         return aggregated_params
     
@@ -253,11 +336,11 @@ class PathologyFederatedAggregator:
         """
         Main aggregation function with hierarchical pathology-aware weighting.
         """
+        cancer_type = self._normalize_cancer_type(cancer_type)
+        self._validate_inputs(client_updates, hospital_metadata, slide_quality)
         
-        # Step 1: Calculate expertise weights
-        expertise_weights = {}
-        for client_id, metadata in hospital_metadata.items():
-            expertise_weights[client_id] = self.calculate_expertise_weight(metadata, cancer_type)
+        # Step 1: Calculate specialty-aware expertise weights
+        expertise_weights = self._cancer_specific_weights(cancer_type, hospital_metadata)
         
         # Step 2: Calculate quality weights
         quality_weights = {}
@@ -277,12 +360,7 @@ class PathologyFederatedAggregator:
                 (1 - self.alpha - self.beta) * 1.0  # Base weight
             )
         
-        # Step 4: Apply pathology-type specific aggregation
-        aggregated_updates = self.pathology_type_specific_aggregation(
-            client_updates, cancer_type, hospital_metadata
-        )
-        
-        # Step 5: Final weighted aggregation
+        # Step 4: Final weighted aggregation
         final_updates = self._weighted_average(client_updates, combined_weights)
         
         return final_updates
