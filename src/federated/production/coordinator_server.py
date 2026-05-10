@@ -1,6 +1,7 @@
 """Production FL Coordinator Server."""
 
 import asyncio
+import hashlib
 import logging
 import os
 import signal
@@ -244,6 +245,30 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+# Utility functions
+def compute_model_checksum(model_state: Dict[str, Any]) -> str:
+    """
+    Compute SHA-256 checksum of model state dict.
+    
+    Args:
+        model_state: Model state dictionary
+        
+    Returns:
+        Hexadecimal SHA-256 checksum string
+    """
+    import torch
+    import io
+    
+    # Serialize model state to bytes
+    buffer = io.BytesIO()
+    torch.save(model_state, buffer)
+    model_bytes = buffer.getvalue()
+    
+    # Compute SHA-256 hash
+    sha256_hash = hashlib.sha256(model_bytes)
+    return sha256_hash.hexdigest()
+
+
 # Health check endpoints
 @app.get("/health")
 async def health_check():
@@ -438,6 +463,9 @@ async def get_latest_model(current_user: dict = Depends(get_current_user)):
 
         model_state = app.state.orchestrator.get_global_model()
 
+        # Compute checksum for model integrity verification
+        checksum = compute_model_checksum(model_state)
+
         # Audit log
         audit_logger.log_data_access(
             user_id=current_user["user_id"],
@@ -450,7 +478,7 @@ async def get_latest_model(current_user: dict = Depends(get_current_user)):
             "version": app.state.orchestrator.current_version,
             "round_id": app.state.orchestrator.current_round,
             "download_url": f"/api/v1/models/download/{app.state.orchestrator.current_version}",
-            "checksum": "sha256_placeholder",  # TODO: compute actual checksum
+            "checksum": f"sha256:{checksum}",
         }
 
     except Exception as e:
