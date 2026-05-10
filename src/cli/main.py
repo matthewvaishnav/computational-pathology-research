@@ -292,6 +292,7 @@ def web():
         from src.security.network_binding import NetworkBindingManager
         
         safe_host = NetworkBindingManager.get_safe_host()
+        # nosec B104 - String literal used for display logic only, not actual binding
         click.echo(f"📍 Access at: http://{safe_host if safe_host != '0.0.0.0' else 'localhost'}:5000")
         
         app.run(debug=False, host=safe_host, port=5000)
