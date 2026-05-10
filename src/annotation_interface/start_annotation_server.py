@@ -22,8 +22,11 @@ def main():
     logger.info("Starting Expert Annotation Interface Server")
     logger.info("=" * 60)
 
-    # Configuration
-    host = "0.0.0.0"
+    # Import NetworkBindingManager
+    from src.security.network_binding import NetworkBindingManager
+
+    # Get safe host binding
+    host = NetworkBindingManager.get_safe_host()
     port = 8001
     reload = True  # Enable auto-reload for development
 
