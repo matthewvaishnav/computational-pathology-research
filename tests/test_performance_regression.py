@@ -9,6 +9,7 @@ import psutil
 import threading
 from typing import List, Dict, Any
 from contextlib import contextmanager
+from src.security.temp_file_manager import TempFileManager
 
 class PerformanceMonitor:
     """Monitor system performance metrics."""
@@ -108,13 +109,16 @@ def test_cpu_spike_detection():
     
     # Test 2: I/O operations
     with monitor.monitor_operation("File I/O operations"):
+        temp_files = []
         for i in range(100):
-            with open(f"/tmp/test_{i}.txt", "w") as f:
+            fd, temp_path = TempFileManager.create_temp_file(suffix=f"_test_{i}.txt")
+            with os.fdopen(fd, 'w') as f:
                 f.write("test data" * 1000)
+            temp_files.append(temp_path)
         
-        for i in range(100):
+        for temp_path in temp_files:
             try:
-                os.remove(f"/tmp/test_{i}.txt")
+                os.remove(temp_path)
             except:
                 pass
     
@@ -174,7 +178,8 @@ def test_resource_cleanup():
         files = []
         try:
             for i in range(100):
-                f = open(f"/tmp/resource_test_{i}.txt", "w")
+                fd, temp_path = TempFileManager.create_temp_file(suffix=f"_resource_test_{i}.txt")
+                f = os.fdopen(fd, 'w')
                 f.write("test")
                 files.append(f)
         finally:
