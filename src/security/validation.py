@@ -29,6 +29,9 @@ class InputValidator:
     ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".svs", ".ndpi"}
     ALLOWED_MODEL_EXTENSIONS = {".pth", ".pt", ".ckpt", ".h5"}
 
+    # Filesystem limits
+    MAX_FILENAME_LENGTH = 255  # Maximum filename length for most filesystems
+
     # Dangerous patterns
     PATH_TRAVERSAL_PATTERN = re.compile(r"\.\.|~|/etc|/root|/sys|/proc")
     SQL_INJECTION_PATTERN = re.compile(
@@ -308,9 +311,13 @@ class InputValidator:
         filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
 
         # Limit length
-        if len(filename) > 255:
+        if len(filename) > cls.MAX_FILENAME_LENGTH:
             name, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
-            filename = name[: 255 - len(ext) - 1] + "." + ext if ext else name[:255]
+            filename = (
+                name[: cls.MAX_FILENAME_LENGTH - len(ext) - 1] + "." + ext
+                if ext
+                else name[: cls.MAX_FILENAME_LENGTH]
+            )
 
         return filename
 
