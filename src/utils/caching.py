@@ -97,7 +97,7 @@ class CacheEntry:
             if not hmac.compare_digest(signature, expected_signature):
                 raise ValueError("Cache data integrity check failed - possible tampering")
             
-            return pickle.loads(data)
+            return pickle.loads(data)  # nosec B301 - Data integrity verified via HMAC signature
         except Exception as e:
             logger.error(f"Failed to decompress cache entry: {e}")
             raise

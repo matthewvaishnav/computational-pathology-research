@@ -126,10 +126,10 @@ class ClinicalReportGenerator:
             template_dir = Path(template_dir)
             if not template_dir.exists():
                 raise ValueError(f"Template directory does not exist: {template_dir}")
-            self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
+            self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)), autoescape=True)
         else:
             # Use built-in templates
-            self.jinja_env = Environment(loader=FileSystemLoader(searchpath="./"))
+            self.jinja_env = Environment(loader=FileSystemLoader(searchpath="./"), autoescape=True)
 
         # Built-in templates as strings
         self._builtin_templates = self._create_builtin_templates()
