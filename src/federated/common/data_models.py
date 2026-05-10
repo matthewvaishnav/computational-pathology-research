@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 
@@ -34,6 +34,21 @@ class ClientUpdate:
     privacy_epsilon: float = 0.0
     is_encrypted: bool = False
     compression_method: Optional[str] = None  # "quantize_8bit", "sparsify_10pct"
+
+
+@dataclass
+class EncryptedClientUpdate:
+    """Encrypted update from a client for secure aggregation."""
+
+    client_id: str
+    round_id: int
+    model_version: int
+    encrypted_gradients: Dict[str, bytes]  # param_name -> serialized encrypted vector
+    gradient_shapes: Dict[str, Tuple[int, ...]]
+    dataset_size: int
+    training_time_seconds: float
+    privacy_epsilon: float = 0.0
+    compression_method: Optional[str] = None
 
 
 @dataclass
