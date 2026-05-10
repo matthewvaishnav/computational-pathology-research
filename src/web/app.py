@@ -134,6 +134,8 @@ def run_demo_analysis(filepath: str, config: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 if __name__ == '__main__':
+    from src.security.network_binding import NetworkBindingManager
+    
     # SECURITY: Never run with debug=True in production
     # Debug mode exposes sensitive information and allows code execution
     debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
@@ -141,4 +143,8 @@ if __name__ == '__main__':
     if debug_mode and os.getenv("ENVIRONMENT") == "production":
         raise RuntimeError("Debug mode cannot be enabled in production")
     
-    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
+    # Use NetworkBindingManager for secure host binding
+    binding_manager = NetworkBindingManager()
+    safe_host = binding_manager.get_safe_host()
+    
+    app.run(debug=debug_mode, host=safe_host, port=5000)
