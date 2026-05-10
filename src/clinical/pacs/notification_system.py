@@ -205,6 +205,13 @@ class SMSNotifier(NotificationChannel):
         try:
             import json as _json
             import urllib.request
+            from urllib.parse import urlparse
+
+            # SECURITY: Validate URL scheme before opening to prevent file:// and other unsafe schemes
+            parsed = urlparse(self.gateway_url)
+            if parsed.scheme not in ('http', 'https'):
+                logger.error("SMS gateway URL has invalid scheme: %s (only http/https allowed)", parsed.scheme)
+                return False
 
             payload = _json.dumps({"to": recipient, "from": self.sender_id, "body": body}).encode()
             headers = {"Content-Type": "application/json"}
@@ -213,7 +220,7 @@ class SMSNotifier(NotificationChannel):
             req = urllib.request.Request(
                 self.gateway_url, data=payload, headers=headers, method="POST"
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310 - URL scheme validated above
                 success = resp.status < 300
             if success:
                 logger.info("SMS sent to %s for event %s", recipient, event.event_id)
