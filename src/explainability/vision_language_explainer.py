@@ -18,6 +18,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
 
 from .case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery, SimilarCase
+from src.security.model_download import ModelDownloadManager
 from .counterfactual_explanations import (
     BiologicalPlausibilityValidator,
     CounterfactualExplanation,
@@ -65,8 +66,9 @@ class VisionLanguageExplainer:
         self.num_mc_samples = num_mc_samples
 
         # Load vision-language model
-        self.clip_model = CLIPModel.from_pretrained(vision_language_model)
-        self.clip_processor = CLIPProcessor.from_pretrained(vision_language_model)
+        revision = ModelDownloadManager.get_pinned_revision(vision_language_model)
+        self.clip_model = CLIPModel.from_pretrained(vision_language_model, revision=revision)
+        self.clip_processor = CLIPProcessor.from_pretrained(vision_language_model, revision=revision)
         self.clip_model.to(device)
         self.clip_model.eval()
 
