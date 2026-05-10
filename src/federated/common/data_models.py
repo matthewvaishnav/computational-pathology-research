@@ -16,7 +16,7 @@ class TrainingRound:
     start_time: datetime
     end_time: Optional[datetime] = None
     participants: List[str] = field(default_factory=list)  # Client IDs
-    aggregation_algorithm: str = "fedavg"  # "fedavg", "fedprox", "fedadam"
+    aggregation_algorithm: str = "fedavg"  # "fedavg", "fedprox", "fedadam", "secure", "pathology_fl"
     convergence_metrics: Dict[str, float] = field(default_factory=dict)  # loss, accuracy, grad_norm
     status: str = "in_progress"  # "in_progress", "completed", "failed"
 
@@ -34,6 +34,9 @@ class ClientUpdate:
     privacy_epsilon: float = 0.0
     is_encrypted: bool = False
     compression_method: Optional[str] = None  # "quantize_8bit", "sparsify_10pct"
+    hospital_metadata: Optional[Dict[str, Any]] = None
+    slide_quality: Optional[Dict[str, float]] = None
+    cancer_type: Optional[str] = None
 
 
 @dataclass

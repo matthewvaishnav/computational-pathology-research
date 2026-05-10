@@ -56,7 +56,7 @@ class ClientRegistration(BaseModel):
 
 class TrainingConfig(BaseModel):
     """Training configuration request."""
-    algorithm: str = Field(default="fedavg", pattern="^(fedavg|fedprox|fedadam)$")
+    algorithm: str = Field(default="fedavg", pattern="^(fedavg|fedprox|fedadam|secure|pathology_fl)$")
     min_clients: int = Field(default=2, ge=1, le=1000)
     max_clients: Optional[int] = Field(None, ge=1, le=1000)
     rounds: int = Field(default=10, ge=1, le=1000)
@@ -376,9 +376,7 @@ async def start_training_round(
     """Start a new training round."""
     try:
         algorithm = training_config.algorithm
-        min_clients = training_config.min_clients
-            "min_clients", config.federated_learning.min_clients_per_round
-        )
+        min_clients = training_config.min_clients or config.federated_learning.min_clients_per_round
         max_clients = training_config.max_clients or config.federated_learning.max_clients_per_round
 
         # Get active clients

@@ -11,8 +11,10 @@ coordinator:
   
   # Aggregation settings
   aggregation:
-    algorithm: "fedavg"  # fedavg, fedprox, fedadam
-    weighting: "medical_expertise"  # uniform, medical_expertise, data_size
+    algorithm: "pathology_fl"  # fedavg, fedprox, fedadam, secure, pathology_fl
+    alpha: 0.5
+    beta: 0.3
+    default_cancer_type: "general"
     byzantine_tolerance: true
     outlier_detection_threshold: 3.0
     
@@ -39,7 +41,7 @@ client:
   
   # Hospital metadata
   metadata:
-    hospital_type: "cancer_center"  # cancer_center, teaching_hospital, community
+    hospital_type: "cancer_center"  # cancer_center, teaching_hospital, community_hospital, rural_hospital
     annual_cases: 15000
     cancer_specialties: ["breast", "lung", "prostate"]
     diagnostic_accuracy: 0.94
