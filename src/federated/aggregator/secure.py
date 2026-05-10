@@ -11,7 +11,7 @@ from typing import Dict, List, Optional
 import torch
 import torch.nn as nn
 
-from ..common.data_models import ClientUpdate
+from ..common.data_models import ClientUpdate, EncryptedClientUpdate
 from ..privacy.secure_aggregation import SecureAggregationProtocol
 from .base import BaseAggregator
 
@@ -22,8 +22,8 @@ class SecureAggregator(BaseAggregator):
     """
     Secure aggregator using homomorphic encryption.
 
-    Prevents central server from accessing individual hospital updates
-    by using homomorphic encryption for secure multi-party computation.
+    Requires hospitals to encrypt updates before transmission and only
+    decrypts the final aggregate result.
 
     Properties:
         - Central server cannot decrypt individual updates
@@ -90,13 +90,13 @@ class SecureAggregator(BaseAggregator):
         return self.protocol.setup_round()
 
     def aggregate(
-        self, client_updates: List[ClientUpdate], global_model: Optional[nn.Module] = None
+        self, client_updates: List[EncryptedClientUpdate], global_model: Optional[nn.Module] = None
     ) -> Dict[str, torch.Tensor]:
         """
         Aggregate client updates securely using homomorphic encryption.
 
         Args:
-            client_updates: List of client updates to aggregate
+            client_updates: List of encrypted client updates to aggregate
             global_model: Current global model (unused, for interface compatibility)
 
         Returns:
@@ -106,7 +106,22 @@ class SecureAggregator(BaseAggregator):
             ValueError: If insufficient clients or empty updates
         """
         if not client_updates:
-            raise ValueError("Cannot aggregate empty list of client updates")
+            raise ValueError("Cannot aggregate empty list of encrypted client updates")
+
+        plaintext_updates = [
+            update for update in client_updates if isinstance(update, ClientUpdate)
+        ]
+        if plaintext_updates:
+            raise ValueError(
+                "SecureAggregator requires EncryptedClientUpdate payloads. "
+                "Plaintext ClientUpdate objects expose individual gradients to the coordinator."
+            )
+
+        invalid_updates = [
+            update for update in client_updates if not isinstance(update, EncryptedClientUpdate)
+        ]
+        if invalid_updates:
+            raise TypeError("SecureAggregator only accepts EncryptedClientUpdate instances")
 
         # Check dropout threshold
         if self.expected_clients is not None:
@@ -121,10 +136,10 @@ class SecureAggregator(BaseAggregator):
                     f"minimum required {self.min_clients_required}"
                 )
 
-        logger.info(f"Aggregating {len(client_updates)} client updates securely")
+        logger.info(f"Aggregating {len(client_updates)} encrypted client updates securely")
 
-        # Prepare client updates for secure aggregation
-        # Format: Dict[client_id, (gradients, weight)]
+        # Prepare client-encrypted updates for secure aggregation.
+        # Format: Dict[client_id, (encrypted_gradients, gradient_shapes, weight)]
         client_data = {}
         total_dataset_size = sum(update.dataset_size for update in client_updates)
 
@@ -134,10 +149,14 @@ class SecureAggregator(BaseAggregator):
         for update in client_updates:
             # Compute weight based on dataset size
             weight = update.dataset_size / total_dataset_size
-            client_data[update.client_id] = (update.gradients, weight)
+            client_data[update.client_id] = (
+                update.encrypted_gradients,
+                update.gradient_shapes,
+                weight,
+            )
 
         # Perform secure aggregation
-        aggregated_gradients = self.protocol.aggregate_client_updates(client_data)
+        aggregated_gradients = self.protocol.aggregate_encrypted_client_updates(client_data)
 
         logger.info(
             f"Secure aggregation completed: {len(aggregated_gradients)} parameters aggregated"
