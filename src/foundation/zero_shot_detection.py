@@ -17,6 +17,8 @@ import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
 
+from src.security.model_download import ModelDownloadManager
+
 
 @dataclass
 class DiseaseDescription:
@@ -224,8 +226,9 @@ class VisionLanguageEncoder:
             self.model = self._load_biomedclip()
         else:
             # Use standard CLIP
-            self.model = CLIPModel.from_pretrained(model_name)
-            self.processor = CLIPProcessor.from_pretrained(model_name)
+            revision = ModelDownloadManager.get_pinned_revision(model_name)
+            self.model = CLIPModel.from_pretrained(model_name, revision=revision)
+            self.processor = CLIPProcessor.from_pretrained(model_name, revision=revision)
 
         self.model.to(device)
         self.model.eval()
@@ -237,8 +240,9 @@ class VisionLanguageEncoder:
         # This would load the actual BiomedCLIP model
         # For now, fall back to standard CLIP
         self.logger.warning("BiomedCLIP not available, using standard CLIP")
-        self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+        revision = ModelDownloadManager.get_pinned_revision("openai/clip-vit-base-patch32")
+        self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", revision=revision)
+        self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", revision=revision)
         return self.model
 
     def encode_images(self, images: torch.Tensor) -> torch.Tensor:
