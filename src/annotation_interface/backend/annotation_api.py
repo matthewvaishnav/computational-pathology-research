@@ -990,5 +990,7 @@ async def startup_event():
 
 if __name__ == "__main__":
     import uvicorn
+    from src.security.network_binding import NetworkBindingManager
 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    safe_host = NetworkBindingManager.get_safe_host()
+    uvicorn.run(app, host=safe_host, port=8001)
