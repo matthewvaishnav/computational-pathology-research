@@ -22,6 +22,7 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.models.pretrained import PRETRAINED_MODELS
+from src.security.model_download import ModelDownloadManager
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +97,11 @@ class ModelDownloader:
             downloaded_files = []
             for filename in files_to_download:
                 try:
+                    revision = ModelDownloadManager.get_pinned_revision(repo_id)
                     file_path = hf_hub_download(
                         repo_id=repo_id,
                         filename=filename,
+                        revision=revision,
                         cache_dir=str(self.cache_dir),
                         force_download=force
                     )
