@@ -37,6 +37,7 @@ class SecureFLClient:
         coordinator_host: str = "localhost",
         coordinator_port: int = 50051,
         cert_dir: str = "./certs",
+        connection_timeout: float = 10.0,
     ):
         """
         Initialize secure FL client.
@@ -46,10 +47,12 @@ class SecureFLClient:
             coordinator_host: Coordinator hostname
             coordinator_port: Coordinator port
             cert_dir: Certificate directory
+            connection_timeout: Timeout for connection establishment in seconds
         """
         self.client_id = client_id
         self.coordinator_host = coordinator_host
         self.coordinator_port = coordinator_port
+        self.connection_timeout = connection_timeout
 
         # Initialize TLS manager
         self.tls_manager = TLSManager(cert_dir)
@@ -119,7 +122,7 @@ class SecureFLClient:
             self.stub = FederatedLearningServiceStub(self.channel)
 
             # Test connection
-            grpc.channel_ready_future(self.channel).result(timeout=10)
+            grpc.channel_ready_future(self.channel).result(timeout=self.connection_timeout)
 
             logger.info(
                 f"Connected to coordinator at {self.coordinator_host}:{self.coordinator_port}"
