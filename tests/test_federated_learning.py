@@ -293,7 +293,7 @@ def test_fedavg_basic():
 def test_orchestrator_basic():
     """Basic orchestrator test."""
     model = TinyModel()
-    orchestrator = TrainingOrchestrator(model)
+    orchestrator = TrainingOrchestrator(model, min_clients_per_round=2)
 
     # Start round
     round_metadata = orchestrator.start_round(["client_0", "client_1"])
