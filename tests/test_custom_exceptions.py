@@ -135,9 +135,15 @@ class TestResourceExceptions:
         from src.utils.safe_operations import check_disk_space
         
         # Mock shutil.disk_usage to fail
-        with patch('shutil.disk_usage', side_effect=OSError("Disk not found")):
-            with pytest.raises(DiskSpaceError):
-                check_disk_space(Path("/tmp/test.txt"), required_bytes=1000)
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+        
+        try:
+            with patch('shutil.disk_usage', side_effect=OSError("Disk not found")):
+                with pytest.raises(DiskSpaceError):
+                    check_disk_space(tmp_path, required_bytes=1000)
+        finally:
+            tmp_path.unlink(missing_ok=True)
 
 
 class TestModelExceptions:
@@ -178,9 +184,15 @@ class TestSecurityExceptions:
         
         manager = ModelSecurityManager()
         
-        # Try to encrypt non-existent file
-        with pytest.raises(EncryptionError):
-            manager.encrypt_model("/nonexistent/model.pth", "/tmp/encrypted.pth")
+        # Try to encrypt non-existent file (use temp path for output)
+        with tempfile.NamedTemporaryFile(delete=False, suffix='_encrypted.pth') as tmp:
+            tmp_path = tmp.name
+        
+        try:
+            with pytest.raises(EncryptionError):
+                manager.encrypt_model("/nonexistent/model.pth", tmp_path)
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
 
 
 class TestThreadingExceptions:
