@@ -59,11 +59,12 @@ class PACSIntegrationService:
         Returns:
             Configuration dictionary
         """
+        from src.security.temp_file import TempFileManager
         default_config = {
             "dicom_server": {
                 "ae_title": "MEDICAL_AI",
                 "port": 11112,
-                "storage_dir": "/tmp/dicom_storage",
+                "storage_dir": str(Path(TempFileManager.get_temp_dir()) / "dicom_storage"),
             },
             "pacs_client": {"ae_title": "MEDICAL_AI_CLIENT"},
             "hl7_server": {"host": "localhost", "port": 2575, "enabled": True},
