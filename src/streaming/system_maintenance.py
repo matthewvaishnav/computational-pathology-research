@@ -365,10 +365,11 @@ class AutomatedMaintenanceManager:
             logger.info("Starting cache cleanup")
 
             # Clean up temporary files
+            from src.security.temp_file import TempFileManager
             temp_dirs = [
                 Path("temp"),
                 Path("cache"),
-                Path("/tmp/medical_ai_uploads"),
+                Path(TempFileManager.get_temp_dir()) / "medical_ai_uploads",
                 Path("logs/temp"),
             ]
 
