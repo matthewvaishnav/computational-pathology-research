@@ -158,7 +158,7 @@ class AuditLogger:
 
         # Console output
         if self.enable_console:
-            print(f"[AUDIT] {self._format_event(event)}")
+            logger.info("[AUDIT] %s", self._format_event(event))
 
         # System logger
         logger.info(
