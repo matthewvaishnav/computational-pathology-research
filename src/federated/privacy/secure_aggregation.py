@@ -7,13 +7,14 @@ using TenSEAL (SEAL homomorphic encryption library).
 
 import base64
 import logging
-import pickle
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
+
+from ..common.data_models import EncryptedClientUpdate
 
 # Optional imports - gracefully handle missing dependencies
 try:
@@ -149,6 +150,24 @@ class HomomorphicEncryptionManager:
             Deserialized TenSEAL context
         """
         return ts.context_from(serialized_context)
+
+    def deserialize_encrypted_vector(
+        self, serialized_vector: bytes, context: Optional[ts.Context] = None
+    ) -> ts.CKKSVector:
+        """
+        Deserialize an encrypted CKKS vector.
+
+        Args:
+            serialized_vector: Serialized encrypted vector bytes
+            context: TenSEAL context (uses self.context if None)
+
+        Returns:
+            Deserialized encrypted vector
+        """
+        ctx = context if context is not None else self.context
+        if not TENSEAL_AVAILABLE or ctx is None:
+            raise RuntimeError("TenSEAL context not available - cannot deserialize vector")
+        return ts.ckks_vector_from(ctx, serialized_vector)
 
     def encrypt_tensor(
         self, tensor: torch.Tensor, context: Optional[ts.Context] = None
@@ -295,6 +314,41 @@ class SecureAggregator:
 
         logger.info(f"Added encrypted update from {client_id} (weight={weight})")
 
+    def add_encrypted_client_update(
+        self,
+        client_id: str,
+        encrypted_gradients: Dict[str, bytes],
+        gradient_shapes: Dict[str, Tuple[int, ...]],
+        weight: float = 1.0,
+    ):
+        """
+        Add a client-encrypted update to aggregation.
+
+        The coordinator deserializes encrypted CKKS vectors and only decrypts
+        after homomorphic aggregation, so individual plaintext updates are not
+        accepted by this path.
+        """
+        self.client_weights[client_id] = weight
+
+        for param_name, serialized_gradient in encrypted_gradients.items():
+            if param_name not in gradient_shapes:
+                raise ValueError(f"Missing gradient shape for encrypted parameter {param_name}")
+
+            self.gradient_shapes[param_name] = tuple(gradient_shapes[param_name])
+            encrypted_gradient = self.he_manager.deserialize_encrypted_vector(serialized_gradient)
+
+            if weight != 1.0:
+                encrypted_gradient = self.he_manager.multiply_encrypted_by_scalar(
+                    encrypted_gradient, weight
+                )
+
+            if param_name not in self.encrypted_gradients:
+                self.encrypted_gradients[param_name] = []
+
+            self.encrypted_gradients[param_name].append(encrypted_gradient)
+
+        logger.info(f"Added client-encrypted update from {client_id} (weight={weight})")
+
     def aggregate_encrypted_gradients(self) -> Dict[str, ts.CKKSVector]:
         """
         Aggregate all encrypted gradients homomorphically.
@@ -395,6 +449,44 @@ class SecureAggregator:
 
         return aggregated_gradients
 
+    def secure_aggregate_encrypted(
+        self, client_updates: Dict[str, Tuple[Dict[str, bytes], Dict[str, Tuple[int, ...]], float]]
+    ) -> Dict[str, torch.Tensor]:
+        """
+        Perform secure aggregation over client-encrypted payloads.
+
+        Args:
+            client_updates: Dict mapping client_id to
+                (encrypted_gradients, gradient_shapes, weight)
+
+        Returns:
+            Aggregated gradients after final aggregate-only decryption
+        """
+        start_time = time.time()
+
+        self.encrypted_gradients.clear()
+        self.gradient_shapes.clear()
+        self.client_weights.clear()
+
+        for client_id, (encrypted_gradients, gradient_shapes, weight) in client_updates.items():
+            self.add_encrypted_client_update(
+                client_id=client_id,
+                encrypted_gradients=encrypted_gradients,
+                gradient_shapes=gradient_shapes,
+                weight=weight,
+            )
+
+        aggregated_encrypted = self.aggregate_encrypted_gradients()
+        aggregated_gradients = self.decrypt_aggregated_gradients(aggregated_encrypted)
+
+        elapsed_time = time.time() - start_time
+        logger.info(
+            f"Encrypted secure aggregation completed in {elapsed_time:.2f}s "
+            f"for {len(client_updates)} clients"
+        )
+
+        return aggregated_gradients
+
     def clear_state(self):
         """Clear aggregation state."""
         self.encrypted_gradients.clear()
@@ -476,6 +568,26 @@ class SecureAggregationProtocol:
 
         return aggregated_gradients
 
+    def aggregate_encrypted_client_updates(
+        self, client_updates: Dict[str, Tuple[Dict[str, bytes], Dict[str, Tuple[int, ...]], float]]
+    ) -> Dict[str, torch.Tensor]:
+        """
+        Aggregate client-encrypted updates securely.
+
+        Args:
+            client_updates: Client-encrypted updates with shapes and weights
+
+        Returns:
+            Aggregated gradients
+        """
+        if not client_updates:
+            raise ValueError("No encrypted client updates provided")
+
+        logger.info(f"Starting encrypted secure aggregation for {len(client_updates)} clients")
+        aggregated_gradients = self.secure_aggregator.secure_aggregate_encrypted(client_updates)
+        logger.info(f"Encrypted secure aggregation round {self.round_id} completed")
+        return aggregated_gradients
+
     def get_public_context(self) -> bytes:
         """Get serialized public context for clients."""
         if self.public_context_serialized is None:
@@ -535,6 +647,31 @@ class SecureAggregationClient:
         logger.info(f"Client {self.client_id}: Encrypted {len(gradients)} parameters")
 
         return encrypted_gradients
+
+    def create_encrypted_update(
+        self,
+        gradients: Dict[str, torch.Tensor],
+        round_id: int,
+        model_version: int,
+        dataset_size: int,
+        training_time_seconds: float,
+        privacy_epsilon: float = 0.0,
+        compression_method: Optional[str] = None,
+    ) -> EncryptedClientUpdate:
+        """Encrypt gradients and package them for coordinator-side aggregation."""
+        encrypted_gradients = self.encrypt_gradients(gradients)
+        gradient_shapes = {name: tuple(gradient.shape) for name, gradient in gradients.items()}
+        return EncryptedClientUpdate(
+            client_id=self.client_id,
+            round_id=round_id,
+            model_version=model_version,
+            encrypted_gradients=encrypted_gradients,
+            gradient_shapes=gradient_shapes,
+            dataset_size=dataset_size,
+            training_time_seconds=training_time_seconds,
+            privacy_epsilon=privacy_epsilon,
+            compression_method=compression_method,
+        )
 
 
 def benchmark_secure_aggregation(
