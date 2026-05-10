@@ -442,7 +442,7 @@ class ConfigurationManager:
                 "local_cache_path": "./data/pacs_cache",
                 "max_cache_size_gb": 10,
                 "cleanup_threshold_gb": 2,
-                "temp_directory": "./tmp/pacs",
+                "temp_directory": "pacs",  # Relative to system temp dir
                 "archive_directory": "./data/pacs_archive",
             },
             notification_config={
