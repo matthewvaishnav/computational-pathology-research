@@ -658,14 +658,15 @@ async def model_info(user: Dict[str, Any] = Depends(get_current_user)):
 
 if __name__ == "__main__":
     import uvicorn
+    from src.security.network_binding import NetworkBindingManager
 
     # Configuration
-    host = os.getenv("API_HOST", "0.0.0.0")
+    safe_host = NetworkBindingManager.get_safe_host()
     port = int(os.getenv("API_PORT", "8000"))
     workers = int(os.getenv("API_WORKERS", "1"))
 
-    logger.info(f"Starting API on {host}:{port} with {workers} workers")
+    logger.info(f"Starting API on {safe_host}:{port} with {workers} workers")
 
     uvicorn.run(
-        "api_secure:app", host=host, port=port, workers=workers, log_level="info", access_log=True
+        "api_secure:app", host=safe_host, port=port, workers=workers, log_level="info", access_log=True
     )
