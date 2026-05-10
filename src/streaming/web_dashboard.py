@@ -19,6 +19,8 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from src.security.network_binding import NetworkBindingManager
+
 logger = logging.getLogger(__name__)
 
 
@@ -963,5 +965,9 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
+    # Use NetworkBindingManager for secure host binding
+    binding_manager = NetworkBindingManager()
+    safe_host = binding_manager.get_safe_host()
+
     # Run server
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(app, host=safe_host, port=8000, log_level="info")
