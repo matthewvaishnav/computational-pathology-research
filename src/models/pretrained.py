@@ -4,6 +4,12 @@ Pretrained model loaders for computational pathology.
 Provides unified interface for loading and using publicly available
 pretrained pathology models (UNI, Prov-GigaPath, CTransPath) as
 feature extractors or encoders.
+
+Security Note:
+    All model loading is validated against the PRETRAINED_MODELS registry.
+    Dynamic imports only occur after string validation against known models.
+    No user input is passed to eval/exec. Uses torch.load with weights_only=True
+    for checkpoint loading to prevent arbitrary code execution.
 """
 
 import logging
@@ -204,6 +210,7 @@ class PretrainedFeatureExtractor(nn.Module):
                 import torch
                 checkpoint_path = Path(model_name)
                 if checkpoint_path.exists():
+                    # nosec B614 - Safe: weights_only=True prevents code execution
                     checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
                     
                     # Extract model from checkpoint
