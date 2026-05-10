@@ -79,8 +79,9 @@ def backup(ctx, component, compress, output):
     click.echo(f"Creating backup: {output}")
     click.echo(f"Components: {', '.join(components_to_backup)}")
     
-    temp_dir = Path(f"/tmp/histocore_backup_{timestamp}")
-    temp_dir.mkdir(parents=True, exist_ok=True)
+    from src.security.temp_file import TempFileManager
+    import tempfile
+    temp_dir = Path(tempfile.mkdtemp(prefix=f"histocore_backup_{timestamp}_"))
     
     try:
         # Backup metadata
@@ -266,8 +267,8 @@ def restore(ctx, backup_file, component, dry_run, force):
         
     click.echo(f"Restoring from: {backup_file}")
     
-    temp_dir = Path(f"/tmp/histocore_restore_{int(time.time())}")
-    temp_dir.mkdir(parents=True, exist_ok=True)
+    import tempfile
+    temp_dir = Path(tempfile.mkdtemp(prefix=f"histocore_restore_{int(time.time())}_"))
     
     try:
         # Extract backup
@@ -441,8 +442,8 @@ def info(ctx, backup_file):
         click.echo(f"✗ Backup file not found: {backup_file}", err=True)
         return
         
-    temp_dir = Path(f"/tmp/histocore_info_{int(time.time())}")
-    temp_dir.mkdir(parents=True, exist_ok=True)
+    import tempfile
+    temp_dir = Path(tempfile.mkdtemp(prefix=f"histocore_info_{int(time.time())}_"))
     
     try:
         # Extract metadata only
