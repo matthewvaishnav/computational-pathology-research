@@ -229,6 +229,13 @@ class LocalTrainer:
         # Create data loader
         dataset = TensorDataset(self.train_data, self.train_labels)
         data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+        if self.privacy_engine:
+            self.model, self.optimizer, data_loader = self.privacy_engine.make_private(
+                self.model,
+                self.optimizer,
+                data_loader,
+            )
         
         # Training loop
         self.model.train()
@@ -252,19 +259,6 @@ class LocalTrainer:
                 
                 # Backward pass
                 loss.backward()
-                
-                # Apply differential privacy if enabled (Task 12.4)
-                if self.privacy_engine:
-                    # Privatize gradients using DP-SGD
-                    private_gradients = self.privacy_engine.privatize_gradients(
-                        self.model, batch_size=len(data)
-                    )
-                    
-                    # Apply privatized gradients
-                    with torch.no_grad():
-                        for name, param in self.model.named_parameters():
-                            if name in private_gradients:
-                                param.grad = private_gradients[name]
                 
                 # Optimizer step
                 self.optimizer.step()
