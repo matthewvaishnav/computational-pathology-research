@@ -183,7 +183,7 @@ class SMSNotifier(NotificationChannel):
             if parsed.scheme != 'https':
                 raise ValueError("SMS gateway URL must use HTTPS")
             # Block private IP ranges
-            if any(x in parsed.netloc.lower() for x in ['localhost', '127.0.0.1', '0.0.0.0', '169.254', '10.', '172.16.', '192.168.']):
+            if any(x in parsed.netloc.lower() for x in ['localhost', '127.0.0.1', '0.0.0.0', '169.254', '10.', '172.16.', '192.168.']):  # nosec B104 - String literals for SSRF validation, not actual binding
                 raise ValueError("SMS gateway URL cannot point to private IP ranges")
         
         self.gateway_url = gateway_url
