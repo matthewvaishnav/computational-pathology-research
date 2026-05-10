@@ -13,6 +13,7 @@ from .byzantine_robust import KrumAggregator, MedianAggregator, TrimmedMeanAggre
 from .fedadam import FedAdamAggregator
 from .fedavg import FedAvgAggregator
 from .fedprox import FedProxAggregator
+from .pathology_fl import PathologyFLAggregator
 from .secure import SecureAggregator
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class AggregatorFactory:
         "trimmed_mean": TrimmedMeanAggregator,
         "median": MedianAggregator,
         "secure": SecureAggregator,
+        "pathology_fl": PathologyFLAggregator,
     }
 
     # Default configurations for each aggregator
@@ -54,6 +56,7 @@ class AggregatorFactory:
             "max_retries": 3,
             "failure_recovery": True,
         },
+        "pathology_fl": {"alpha": 0.5, "beta": 0.3, "default_cancer_type": "general"},
     }
 
     @classmethod
