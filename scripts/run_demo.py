@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.streaming.demo_scenarios import DemoScenarioRunner, DemoScenario
 from src.streaming.interactive_showcase import run_showcase
+from src.security.network_binding import NetworkBindingManager
 
 
 def main():
@@ -62,8 +63,8 @@ Examples:
     parser.add_argument(
         "--host",
         type=str,
-        default="0.0.0.0",
-        help="Host for interactive showcase (default: 0.0.0.0)"
+        default=None,
+        help="Host for interactive showcase (default: uses NetworkBindingManager)"
     )
     
     parser.add_argument(
@@ -78,12 +79,19 @@ Examples:
     # Parse GPU IDs
     gpu_ids = [int(x.strip()) for x in args.gpus.split(",")]
     
+    # Use NetworkBindingManager for secure host binding
+    if args.host is None:
+        binding_manager = NetworkBindingManager()
+        host = binding_manager.get_safe_host()
+    else:
+        host = args.host
+    
     if args.interactive:
         # Launch interactive showcase
         print("\n" + "="*60)
         print("LAUNCHING INTERACTIVE SHOWCASE")
         print("="*60)
-        run_showcase(host=args.host, port=args.port, gpu_ids=gpu_ids)
+        run_showcase(host=host, port=args.port, gpu_ids=gpu_ids)
     
     elif args.scenario:
         # Run specific scenario(s)
