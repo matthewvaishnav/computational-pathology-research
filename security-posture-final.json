@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-05-10T14:08:19.014366",
+  "summary": {
+    "high_severity_issues": 0,
+    "medium_severity_issues": 0,
+    "low_severity_issues": 195,
+    "total_issues": 195
+  },
+  "test_coverage": {
+    "overall": 0.0,
+    "security": 0.0
+  },
+  "audit_trail": {
+    "exists": false,
+    "entries": 0,
+    "recent_entries": 0
+  },
+  "remediation_guidance": [
+    "\u2139\ufe0f  INFO: 195 LOW severity issues detected",
+    "   - Review LOW severity issues for best practices",
+    "   - Address during regular maintenance",
+    "\u2705 EXCELLENT: No HIGH or MEDIUM severity issues detected",
+    "   - Security posture is good",
+    "   - Continue regular security audits"
+  ]
+}
