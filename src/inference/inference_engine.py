@@ -253,7 +253,9 @@ class InferenceEngine:
             raise ValueError(f"Image file too large: {file_size} bytes (max 50MB)")
 
         # Validate path is within allowed directories (prevent path traversal)
-        allowed_dirs = ["/tmp", "/var/tmp", os.getcwd()]
+        from src.security.temp_file import TempFileManager
+        import tempfile
+        allowed_dirs = [TempFileManager.get_temp_dir(), tempfile.gettempdir(), os.getcwd()]
         path_str = str(image_path)
         if not any(path_str.startswith(os.path.abspath(d)) for d in allowed_dirs):
             raise ValueError("Access to file path not allowed")
