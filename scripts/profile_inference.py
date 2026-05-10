@@ -63,8 +63,10 @@ class InferenceProfiler:
         logger.info(f"Profiling inference pipeline with {num_runs} runs...")
         
         # Create test image
+        from src.security.temp_file import TempFileManager
         test_image = self.create_test_image()
-        test_path = "/tmp/test_pathology_image.png"
+        test_fd, test_path = TempFileManager.create_temp_file(suffix=".png")
+        os.close(test_fd)
         test_image.save(test_path)
         
         all_timings = []
@@ -150,8 +152,10 @@ class InferenceProfiler:
         """Profile using cProfile for detailed function-level analysis."""
         logger.info("Running detailed cProfile analysis...")
         
+        from src.security.temp_file import TempFileManager
         test_image = self.create_test_image()
-        test_path = "/tmp/test_pathology_image.png"
+        test_fd, test_path = TempFileManager.create_temp_file(suffix=".png")
+        os.close(test_fd)
         test_image.save(test_path)
         
         def run_inference():
