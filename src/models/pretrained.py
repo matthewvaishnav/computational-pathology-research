@@ -12,6 +12,8 @@ from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 
+from src.security.model_download import ModelDownloadManager
+
 logger = logging.getLogger(__name__)
 
 # Model registry with metadata
@@ -221,7 +223,8 @@ class PretrainedFeatureExtractor(nn.Module):
             elif '/' in model_name:  # Likely HF model path
                 try:
                     from transformers import AutoModel
-                    return AutoModel.from_pretrained(model_name)
+                    revision = ModelDownloadManager.get_pinned_revision(model_name)
+                    return AutoModel.from_pretrained(model_name, revision=revision)
                 except ImportError:
                     raise ImportError("transformers library required for Hugging Face models")
             
