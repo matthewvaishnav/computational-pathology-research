@@ -6,6 +6,13 @@ from typing import List, Optional
 
 from pydantic import BaseSettings, Field, validator
 
+from src.security.network_binding import NetworkBindingManager
+
+
+def _get_safe_host() -> str:
+    """Get safe host binding using NetworkBindingManager."""
+    return NetworkBindingManager.get_safe_host()
+
 
 class DatabaseConfig(BaseSettings):
     """Database configuration."""
@@ -98,7 +105,7 @@ class ProductionConfig(BaseSettings):
     debug: bool = Field(False, env="DEBUG")
 
     # Server Configuration
-    host: str = Field("0.0.0.0", env="HOST")
+    host: str = Field(default_factory=lambda: _get_safe_host(), env="HOST")
     port: int = Field(8080, env="PORT")
     grpc_port: int = Field(50051, env="GRPC_PORT")
     workers: int = Field(4, env="WORKERS")
