@@ -61,8 +61,10 @@ async def lifespan(app: FastAPI):
 
         # Initialize privacy engine
         app.state.privacy_engine = DPSGDEngine(
-            epsilon=config.federated_learning.default_epsilon,
-            delta=config.federated_learning.default_delta,
+            max_grad_norm=1.0,
+            noise_multiplier=1.1,
+            sample_rate=0.01,
+            target_delta=config.federated_learning.default_delta,
         )
 
         # Initialize distributed tracing

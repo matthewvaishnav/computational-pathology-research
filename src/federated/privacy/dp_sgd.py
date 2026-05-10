@@ -43,7 +43,11 @@ logger = logging.getLogger(__name__)
 
 
 class GradientClipper:
-    """Gradient clipping for differential privacy."""
+    """Gradient clipping utility.
+
+    Batch-gradient clipping is useful for monitoring and non-DP safety checks,
+    but it is not a substitute for Opacus per-sample DP-SGD.
+    """
 
     def __init__(self, max_grad_norm: float = 1.0, clipping_mode: str = "flat"):
         """
@@ -331,10 +335,9 @@ class NoiseGenerator:
                 steps=num_steps,
             )
         else:
-            # Fallback: simple heuristic
-            noise_multiplier = max(1.0, target_epsilon / num_steps * 100)
-            logger.warning(
-                "Using fallback noise calibration - install opacus for accurate calibration"
+            raise RuntimeError(
+                "Opacus is required for DP-SGD noise calibration but is not installed. "
+                "Install with: pip install opacus"
             )
 
         self.noise_multiplier = noise_multiplier
@@ -430,7 +433,7 @@ class PrivacyAccountant:
 
 
 class DPSGDEngine:
-    """Complete DP-SGD engine combining clipping, noise, and accounting."""
+    """DP-SGD engine backed by Opacus per-sample gradient accounting."""
 
     def __init__(
         self,
@@ -452,11 +455,18 @@ class DPSGDEngine:
             secure_rng: Use secure random number generator
             device: Device for computations
         """
+        if not OPACUS_AVAILABLE:
+            raise RuntimeError(
+                "Opacus is required for production DP-SGD but is not installed. "
+                "Install with: pip install opacus"
+            )
+
         self.max_grad_norm = max_grad_norm
         self.noise_multiplier = noise_multiplier
         self.sample_rate = sample_rate
         self.target_delta = target_delta
         self.device = device
+        self.opacus_engine = PrivacyEngine(secure_mode=secure_rng)
 
         # Initialize components
         self.clipper = GradientClipper(max_grad_norm)
@@ -466,6 +476,23 @@ class DPSGDEngine:
         logger.info(
             f"DP-SGD engine initialized: C={max_grad_norm}, σ={noise_multiplier}, q={sample_rate}"
         )
+
+    def make_private(
+        self,
+        model: nn.Module,
+        optimizer: torch.optim.Optimizer,
+        data_loader,
+    ):
+        """Wrap model, optimizer, and loader with Opacus DP-SGD."""
+        private_model, private_optimizer, private_loader = self.opacus_engine.make_private(
+            module=model,
+            optimizer=optimizer,
+            data_loader=data_loader,
+            noise_multiplier=self.noise_multiplier,
+            max_grad_norm=self.max_grad_norm,
+        )
+        logger.info("Opacus PrivacyEngine attached for per-sample DP-SGD")
+        return private_model, private_optimizer, private_loader
 
     def privatize_gradients(
         self,
@@ -484,7 +511,13 @@ class DPSGDEngine:
         Returns:
             Dictionary of privatized gradients
         """
-        # Step 1: Clip gradients
+        if per_sample_gradients is None:
+            raise ValueError(
+                "privatize_gradients requires per-sample gradients. "
+                "Use make_private(...) for production DP-SGD training."
+            )
+
+        # Step 1: Clip per-sample gradients
         clipped_gradients = self.clipper.clip_gradients(model, per_sample_gradients)
 
         # Step 2: Add noise
@@ -499,7 +532,14 @@ class DPSGDEngine:
 
     def get_privacy_spent(self) -> Tuple[float, float]:
         """Get current privacy expenditure."""
+        if self.opacus_engine is not None:
+            epsilon = self.opacus_engine.get_epsilon(delta=self.target_delta)
+            return epsilon, self.target_delta
         return self.accountant.get_privacy_spent()
+
+    def clip_batch_gradients_for_monitoring(self, model: nn.Module) -> Dict[str, torch.Tensor]:
+        """Clip batch gradients for non-DP diagnostics only."""
+        return self.clipper._clip_batch_gradients(model)
 
     def get_clipping_stats(self) -> Dict[str, float]:
         """Get gradient clipping statistics."""
@@ -527,6 +567,7 @@ class DPSGDEngine:
             max_grad_norm=self.max_grad_norm,
             batch_size=batch_size,
             num_steps=num_steps,
+            dataset_size=dataset_size,
         )
 
         # Update components
