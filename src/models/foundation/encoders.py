@@ -14,6 +14,8 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
+from src.security.model_download import ModelDownloadManager
+
 
 class FoundationModelEncoder(ABC, nn.Module):
     """Base class for all foundation model encoders.
@@ -95,8 +97,10 @@ class PhikonEncoder(FoundationModelEncoder):
             )
 
         # Load Phikon ViT-B/16 model from HuggingFace
+        revision = ModelDownloadManager.get_pinned_revision("owkin/phikon")
         self.model = ViTModel.from_pretrained(
             "owkin/phikon",
+            revision=revision,
             add_pooling_layer=False,  # We'll use CLS token directly
         )
 
@@ -153,9 +157,11 @@ class UNIEncoder(FoundationModelEncoder):
             checkpoint_path = os.path.join(self.local_dir, "pytorch_model.bin")
         else:
             # Download from HuggingFace (requires authentication)
+            revision = ModelDownloadManager.get_pinned_revision("MahmoodLab/UNI")
             checkpoint_path = hf_hub_download(
                 "MahmoodLab/UNI",
                 filename="pytorch_model.bin",
+                revision=revision,
                 use_auth_token=True,
             )
 
@@ -213,8 +219,10 @@ class CONCHEncoder(FoundationModelEncoder):
                 "transformers required for CONCH. " "Install with: pip install transformers>=4.37.0"
             )
 
+        revision = ModelDownloadManager.get_pinned_revision("MahmoodLab/CONCH")
         self.model = AutoModel.from_pretrained(
             "MahmoodLab/CONCH",
+            revision=revision,
             trust_remote_code=True,
         )
         self.vision_encoder = self.model.visual
@@ -241,7 +249,8 @@ class CONCHEncoder(FoundationModelEncoder):
         except ImportError:
             raise ImportError("transformers required for text encoding")
 
-        tokenizer = AutoTokenizer.from_pretrained("MahmoodLab/CONCH")
+        revision = ModelDownloadManager.get_pinned_revision("MahmoodLab/CONCH")
+        tokenizer = AutoTokenizer.from_pretrained("MahmoodLab/CONCH", revision=revision)
         tokens = tokenizer(texts, return_tensors="pt", padding=True)
         return self.model.encode_text(tokens)
 
