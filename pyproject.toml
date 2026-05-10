@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "histocore"
 version = "1.0.0"
-description = "Production-grade computational pathology framework"
+description = "Production-grade PyTorch framework for computational pathology. Attention-based MIL (nnMIL, CLAM, TransMIL), foundation model integration (UNI/Phikon/CONCH), clinical PACS/DICOM integration, federated learning (Flower + DP-SGD), and 5,000+ tests. 47k+ Python modules for research and clinical deployment."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
