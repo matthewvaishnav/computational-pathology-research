@@ -24,6 +24,9 @@ except ImportError:
     FLASK_AVAILABLE = False
     Flask = None
 
+# Security imports
+from src.security.network_binding import NetworkBindingManager
+
 # Optional Redis for caching
 try:
     import redis
@@ -475,13 +478,18 @@ class InterpretabilityDashboard:
                 logger.error(f"Error exporting visualization: {e}", exc_info=True)
                 return jsonify({"success": False, "error": str(e)}), 500
 
-    def start(self, host: str = "0.0.0.0", debug: bool = False):
+    def start(self, host: Optional[str] = None, debug: bool = False):
         """Start dashboard web server.
 
         Args:
-            host: Host address (default '0.0.0.0' for all interfaces)
+            host: Host address. If None, uses NetworkBindingManager for secure binding.
             debug: Enable debug mode
         """
+        # Use NetworkBindingManager for secure host binding
+        if host is None:
+            binding_manager = NetworkBindingManager()
+            host = binding_manager.get_safe_host()
+        
         logger.info(f"Starting dashboard on {host}:{self.port}")
         self.app.run(host=host, port=self.port, debug=debug)
 
@@ -856,7 +864,7 @@ def start_dashboard(
     feature_importance=None,
     cache_backend: str = "memory",
     cache_config: Optional[Dict[str, Any]] = None,
-    host: str = "0.0.0.0",
+    host: Optional[str] = None,
     port: int = 5000,
     debug: bool = False,
 ):
