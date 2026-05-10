@@ -286,11 +286,15 @@ def web():
     """Launch HistoCore web interface"""
     
     click.echo("🌐 Starting HistoCore Web Interface...")
-    click.echo("📍 Access at: http://localhost:5000")
     
     try:
         from src.web.app import app
-        app.run(debug=False, host='0.0.0.0', port=5000)
+        from src.security.network_binding import NetworkBindingManager
+        
+        safe_host = NetworkBindingManager.get_safe_host()
+        click.echo(f"📍 Access at: http://{safe_host if safe_host != '0.0.0.0' else 'localhost'}:5000")
+        
+        app.run(debug=False, host=safe_host, port=5000)
     except ImportError as e:
         click.echo(f"❌ Web interface not available: {e}")
         click.echo("💡 Install web dependencies: pip install flask")
