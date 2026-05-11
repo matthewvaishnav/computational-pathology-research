@@ -15,7 +15,7 @@ description: Testing strategy, suite organization, and quality assurance workflo
 
 ## Overview
 
-HistoCore maintains a comprehensive testing infrastructure with **3,006 automated tests** covering unit tests, integration tests, property-based tests, and clinical validation scenarios. Our testing strategy ensures reliability, correctness, and production readiness for clinical deployment.
+HistoCore maintains a comprehensive testing infrastructure with **3,006 automated tests** covering unit tests, integration tests, property-based tests, and clinical validation scenarios. The testing strategy ensures reliability, correctness, and production readiness for clinical deployment.
 
 ### Test Statistics
 

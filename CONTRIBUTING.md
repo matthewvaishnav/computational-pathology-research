@@ -92,6 +92,44 @@ Key documentation to review:
 - `ARCHITECTURE.md`: Detailed architecture documentation
 - `docs/multimodal_architecture.md`: Multimodal fusion details
 
+## Documentation Voice Guidelines
+
+**Important**: All documentation in this project uses **singular first-person voice** ("I/my") rather than plural first-person ("we/our"). This reflects that this is an individual's research project.
+
+### Voice Rules
+
+When writing or updating documentation:
+
+1. **Author Actions** → Use "I":
+   - "I built this system"
+   - "I designed the architecture"
+   - "I implemented the feature"
+
+2. **System Capabilities** → Use "the system/platform/model":
+   - "The system processes slides in <30 seconds"
+   - "The model achieves 95% accuracy"
+   - "The platform supports DICOM"
+
+3. **Possessive Adjectives**:
+   - Author's work: "my approach", "my implementation"
+   - System components: "the testing strategy", "the PACS integration"
+
+### Examples
+
+✅ **Correct**:
+- "I built this framework to address..."
+- "The system handles missing modalities gracefully"
+- "My research focuses on multimodal fusion"
+- "The model achieves state-of-the-art performance"
+
+❌ **Incorrect**:
+- "We built this framework to address..."
+- "I handle missing modalities gracefully" (system capability, not author action)
+- "Our research focuses on multimodal fusion"
+- "We achieve state-of-the-art performance"
+
+For complete voice guidelines and rationale, see [STYLE_GUIDE.md](STYLE_GUIDE.md).
+
 ## Code Style Guidelines
 
 I follow strict code style guidelines to maintain consistency and readability.

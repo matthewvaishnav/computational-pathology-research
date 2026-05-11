@@ -203,7 +203,7 @@ studies = client.find_studies(
     modality="SM"  # Slide Microscopy
 )
 
-# Move study to our server
+# Move study to the AI server
 for study in studies:
     success = client.move_study(
         pacs_name="epic_main",

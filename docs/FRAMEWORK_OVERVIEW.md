@@ -101,20 +101,6 @@ rural_weight = 1.12    # Critical access hospital
 - **HistoCore solution**: AI assistant trained by Mayo Clinic experts
 - **Result**: Rural patients get Mayo-level diagnostic assistance locally
 
-## Return on Investment (ROI)
-
-### For Hospitals
-- **Diagnostic accuracy improvement**: 15-89% depending on case type
-- **Reduced misdiagnosis costs**: $50,000-500,000 per avoided error
-- **Faster turnaround**: 24-48 hours → 2-4 hours for urgent cases
-- **Training cost savings**: $100,000+ per pathologist training program
-
-### For AI Companies
-- **Time to market**: 6-12 months faster with pre-built framework
-- **Development cost savings**: $500,000-2M in avoided infrastructure development
-- **Competitive advantage**: First-mover in medical expertise weighting
-- **Regulatory pathway**: Built-in compliance features reduce FDA approval time
-
 ## Implementation Timeline & Success Metrics
 
 ### Phase 1: Proof of Concept (Months 1-3)
@@ -151,7 +137,7 @@ rural_weight = 1.12    # Critical access hospital
 - ✅ 10,000+ cases processed monthly
 - ✅ 99.9% system uptime
 - ✅ Regulatory pathway established
-- ✅ $1M+ in cost savings demonstrated
+- ✅ Demonstrated measurable improvements
 
 ## Key Benefits by User Type
 

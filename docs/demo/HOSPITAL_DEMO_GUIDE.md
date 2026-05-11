@@ -166,7 +166,7 @@ This guide covers everything needed to run a successful hospital demo of HistoCo
 **Objective**: Show scalability for high-volume labs
 
 **Script**:
-1. "For high-volume labs, we support multiple GPUs"
+1. "For high-volume labs, the system supports multiple GPUs"
 2. Show 4 slides processing in parallel
 3. Highlight linear speedup
 4. Compare to sequential processing
@@ -375,28 +375,28 @@ Payback period: 12 months / 1.58 = 7.6 months
 
 ### Technical Questions
 
-**Q: What GPU do we need?**
-A: "Minimum NVIDIA V100 or A100. For high-volume labs, we recommend 4x A100s. We can help size based on your volume."
+**Q: What GPU do you need?**
+A: "Minimum NVIDIA V100 or A100. For high-volume labs, I recommend 4x A100s. I can help size based on your volume."
 
-**Q: Does it work with our PACS?**
-A: "Yes, we support all major PACS vendors through standard DICOM protocols. We've integrated with [list vendors]. What PACS do you use?"
+**Q: Does it work with your PACS?**
+A: "Yes, the system supports all major PACS vendors through standard DICOM protocols. I've integrated with [list vendors]. What PACS do you use?"
 
 **Q: What about data security?**
-A: "Full HIPAA/GDPR compliance with TLS 1.3 encryption, at-rest encryption, audit logging, and role-based access control. We can provide security documentation."
+A: "Full HIPAA/GDPR compliance with TLS 1.3 encryption, at-rest encryption, audit logging, and role-based access control. I can provide security documentation."
 
-**Q: Can we deploy on-premise?**
-A: "Yes, we support on-premise, cloud, or hybrid deployment. Most hospitals prefer on-premise for data sovereignty."
+**Q: Can you deploy on-premise?**
+A: "Yes, the system supports on-premise, cloud, or hybrid deployment. Most hospitals prefer on-premise for data sovereignty."
 
 ### Clinical Questions
 
 **Q: How accurate is it?**
-A: "85-95% concordance with expert pathologists, depending on tissue type. We provide validation data for each tissue type. It's designed as a decision support tool, not a replacement."
+A: "85-95% concordance with expert pathologists, depending on tissue type. I provide validation data for each tissue type. It's designed as a decision support tool, not a replacement."
 
 **Q: What if the AI is wrong?**
 A: "The pathologist always makes the final diagnosis. The AI provides a second opinion with confidence score. Low confidence cases are flagged for careful review."
 
 **Q: What tissue types are supported?**
-A: "Currently 10 tissue types: breast, lung, colon, prostate, skin, lymph node, liver, kidney, brain, thyroid. We're adding more based on customer needs."
+A: "Currently 10 tissue types: breast, lung, colon, prostate, skin, lymph node, liver, kidney, brain, thyroid. I'm adding more based on customer needs."
 
 **Q: Can it handle rare cases?**
 A: "The system flags cases with low confidence for manual review. It's most effective on common cases, freeing pathologists to focus on rare/complex cases."
@@ -404,13 +404,13 @@ A: "The system flags cases with low confidence for manual review. It's most effe
 ### Business Questions
 
 **Q: What's the cost?**
-A: "Pricing depends on volume and deployment model. Typical range is $100K-$300K for hardware + software. We can provide a detailed quote based on your needs."
+A: "Pricing depends on volume and deployment model. Typical range is $100K-$300K for hardware + software. I can provide a detailed quote based on your needs."
 
 **Q: What's the ROI?**
 A: "Most hospitals see ROI within 12-18 months through increased throughput and reduced turnaround time. Let me show you a calculation based on your volume."
 
 **Q: Do you offer a trial?**
-A: "Yes, we offer a 30-day pilot program where you can test the system with your own cases. No commitment required."
+A: "Yes, I offer a 30-day pilot program where you can test the system with your own cases. No commitment required."
 
 **Q: What about support?**
 A: "24/7 technical support, dedicated customer success manager, quarterly business reviews, and free software updates for the first year."

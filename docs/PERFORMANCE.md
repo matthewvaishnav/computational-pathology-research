@@ -107,7 +107,7 @@ Comprehensive performance analysis of the multimodal fusion framework across dif
 
 | Model | Parameters | Accuracy | Speed | Notes |
 |-------|------------|----------|-------|-------|
-| **Our Model** | 27.6M | 93.33% | 100ms | Multimodal fusion |
+| **The Model** | 27.6M | 93.33% | 100ms | Multimodal fusion |
 | Single-Modality CNN | 25M | ~70% | 50ms | WSI only (estimated) |
 | Simple Concatenation | 30M | ~75% | 80ms | No attention (estimated) |
 | Large Transformer | 100M+ | ~85% | 500ms | BERT-style (estimated) |
@@ -255,7 +255,7 @@ Comprehensive performance analysis of the multimodal fusion framework across dif
 
 ### 8.1 vs. Traditional Methods
 
-| Aspect | Traditional ML | Our Approach | Advantage |
+| Aspect | Traditional ML | The Approach | Advantage |
 |--------|---------------|--------------|-----------|
 | **Modality Fusion** | Concatenation | Cross-modal attention | +15-20% accuracy |
 | **Missing Data** | Imputation required | Native handling | Simpler pipeline |
@@ -267,7 +267,7 @@ Comprehensive performance analysis of the multimodal fusion framework across dif
 
 | Model | Accuracy | Speed | Memory | Flexibility |
 |-------|----------|-------|--------|-------------|
-| **Our Model** | 93% | 100ms | 2.5GB | ✅✅✅ |
+| **The Model** | 93% | 100ms | 2.5GB | ✅✅✅ |
 | ResNet-50 (WSI only) | 70% | 50ms | 1GB | ✅ |
 | BERT (text only) | 65% | 80ms | 2GB | ✅ |
 | Simple Concat | 75% | 80ms | 3GB | ✅✅ |

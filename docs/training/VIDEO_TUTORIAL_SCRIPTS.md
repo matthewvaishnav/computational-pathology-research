@@ -44,7 +44,7 @@
 
 **[ACTION: Click Login]**
 
-"And we're in. That's it - no special credentials needed."
+"And I'm in. That's it - no special credentials needed."
 
 **[SECTION 2: Dashboard Overview - 1:30-3:00]**
 
@@ -62,7 +62,7 @@
 
 **[ACTION: Highlight center panel]**
 
-"The center shows your active processing queue. Right now it's empty because we haven't processed anything yet."
+"The center shows your active processing queue. Right now it's empty because I haven't processed anything yet."
 
 **[ACTION: Highlight right panel]**
 
@@ -103,7 +103,7 @@ You can also change your password and notification preferences here."
 
 **[OUTRO - 4:30-5:00]**
 
-"That's it for getting started. You now know how to log in, navigate the dashboard, and check system status. In the next tutorial, we'll process your first slide. See you there!"
+"That's it for getting started. You now know how to log in, navigate the dashboard, and check system status. In the next tutorial, I'll show you how to process your first slide. See you there!"
 
 **[END SCREEN: Next Tutorial Preview]**
 
@@ -133,11 +133,11 @@ You can also change your password and notification preferences here."
 
 **[SCREEN: Upload interface]**
 
-"You have two options: upload a file directly, or retrieve from PACS. We'll upload directly first."
+"You have two options: upload a file directly, or retrieve from PACS. I'll upload directly first."
 
 **[ACTION: Click 'Upload File']**
 
-"Click 'Choose File' and select your slide. We support .svs, .tiff, .ndpi, and DICOM formats."
+"Click 'Choose File' and select your slide. The system supports .svs, .tiff, .ndpi, and DICOM formats."
 
 **[ACTION: Select file from computer]**
 
@@ -159,11 +159,11 @@ You can also change your password and notification preferences here."
 
 **[SCREEN: Processing interface with progress bar]**
 
-"Now we're in the processing view. Let's look at what's happening."
+"Now I'm in the processing view. Let's look at what's happening."
 
 **[ACTION: Highlight progress bar]**
 
-"The progress bar shows completion percentage. We're at 15% after just 5 seconds."
+"The progress bar shows completion percentage. The system is at 15% after just 5 seconds."
 
 **[ACTION: Highlight attention heatmap]**
 
@@ -175,7 +175,7 @@ You can also change your password and notification preferences here."
 
 **[ACTION: Highlight confidence score]**
 
-"The confidence score is increasing as more of the slide is processed. We're at 72% confidence now."
+"The confidence score is increasing as more of the slide is processed. The system is at 72% confidence now."
 
 **[ACTION: Highlight processing stats]**
 
@@ -190,7 +190,7 @@ This is running on a single GPU. With multiple GPUs, it's even faster."
 
 **[SCREEN: Processing complete notification]**
 
-"And we're done! 28 seconds total. The system automatically saves the results."
+"And processing is complete! 28 seconds total. The system automatically saves the results."
 
 **[SECTION 3: Initial Results Review - 6:00-9:00]**
 
@@ -222,14 +222,14 @@ These are estimates - always verify with your own assessment."
 **[SECTION 4: Next Steps - 9:00-9:30]**
 
 "From here, you can:
-- Generate a clinical report (we'll cover this in Tutorial 4)
+- Generate a clinical report (I'll cover this in Tutorial 4)
 - Export results to PACS
 - Download the attention heatmap
 - Process another slide"
 
 **[OUTRO - 9:30-10:00]**
 
-"Congratulations! You've processed your first slide. In the next tutorial, we'll dive deeper into understanding and interpreting results. See you there!"
+"Congratulations! You've processed your first slide. In the next tutorial, I'll dive deeper into understanding and interpreting results. See you there!"
 
 **[END SCREEN: Next Tutorial Preview]**
 
@@ -247,7 +247,7 @@ These are estimates - always verify with your own assessment."
 
 **[INTRO - 0:00-0:30]**
 
-"Welcome to Tutorial 3. Now that you can process slides, let's learn how to interpret the results. We'll cover attention heatmaps, confidence scores, and when to trust the AI."
+"Welcome to Tutorial 3. Now that you can process slides, let's learn how to interpret the results. I'll cover attention heatmaps, confidence scores, and when to trust the AI."
 
 **[SCREEN: Results view with completed analysis]**
 
@@ -295,7 +295,7 @@ These are estimates - always verify with your own assessment."
 
 **[ACTION: Show confidence scale]**
 
-"We categorize confidence into three ranges:
+"The system categorizes confidence into three ranges:
 - 90-100%: High confidence - AI is very certain
 - 70-89%: Moderate confidence - review carefully
 - Below 70%: Low confidence - manual review strongly recommended"
@@ -401,7 +401,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[OUTRO - 14:00-15:00]**
 
-"You now understand how to interpret attention heatmaps, confidence scores, and when to trust AI predictions. In the next tutorial, we'll generate clinical reports. See you there!"
+"You now understand how to interpret attention heatmaps, confidence scores, and when to trust AI predictions. In the next tutorial, I'll show you how to generate clinical reports. See you there!"
 
 **[END SCREEN: Next Tutorial Preview]**
 
@@ -568,7 +568,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[OUTRO - 9:30-10:00]**
 
-"You now know how to generate, customize, and export clinical reports. In the final tutorial, we'll cover PACS integration and worklist workflows. See you there!"
+"You now know how to generate, customize, and export clinical reports. In the final tutorial, I'll cover PACS integration and worklist workflows. See you there!"
 
 **[END SCREEN: Next Tutorial Preview]**
 
@@ -586,7 +586,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[INTRO - 0:00-0:30]**
 
-"Welcome to the final tutorial. In this 15-minute session, you'll learn how to integrate HistoCore with your PACS system. We'll cover worklist access, slide retrieval, and result delivery."
+"Welcome to the final tutorial. In this 15-minute session, you'll learn how to integrate HistoCore with your PACS system. I'll cover worklist access, slide retrieval, and result delivery."
 
 **[SCREEN: Dashboard]**
 
@@ -625,7 +625,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[SCREEN: Filtered worklist]**
 
-"Now we see only today's pending cases - 12 cases total."
+"Now the system shows only today's pending cases - 12 cases total."
 
 **[SECTION 2: Retrieving Slides from PACS - 3:00-6:00]**
 
@@ -665,7 +665,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[SCREEN: Processing starts]**
 
-"Once retrieved, processing starts immediately. We're now in the familiar processing view from Tutorial 2."
+"Once retrieved, processing starts immediately. The system is now in the familiar processing view from Tutorial 2."
 
 **[SECTION 3: Batch Processing from Worklist - 6:00-9:00]**
 
@@ -755,7 +755,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[ACTION: Show PACS viewer (if available)]**
 
-"If we open the case in the PACS viewer, we can see:
+"If you open the case in the PACS viewer, you can see:
 - Original slide
 - Attention heatmap overlay
 - Structured report with AI findings"

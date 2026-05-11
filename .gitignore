@@ -214,6 +214,11 @@ Thumbs.db
 .claude/
 .kiro/
 
+# Private business/commercial content
+business/
+enterprise/
+patents/
+
 # Node.js (for any frontend components)
 node_modules/
 npm-debug.log*

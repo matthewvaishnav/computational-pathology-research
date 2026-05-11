@@ -7,7 +7,7 @@ title: Roadmap to Harvard-Level Research
 
 Practical step-by-step guide to elevate this project to publication-quality research.
 
-**Have an RTX 4070 Laptop?** See our [RTX 4070 Optimization Guide](START_NOW_RTX4070.html) for hardware-specific batch sizes, training times, and a 4-week action plan!
+**Have an RTX 4070 Laptop?** See the [RTX 4070 Optimization Guide](START_NOW_RTX4070.html) for hardware-specific batch sizes, training times, and a 4-week action plan!
 
 ---
 

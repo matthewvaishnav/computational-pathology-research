@@ -91,9 +91,9 @@ hardware:
 | **Baseline CNN** | ~70% | ~0.85 | Simple CNN |
 | **ResNet-18** | ~85% | ~0.92 | Standard baseline |
 | **DenseNet-121** | ~89% | ~0.95 | Strong baseline |
-| **Our Model** | **85.26%** | **0.9394** | Full PCam dataset |
+| **The Model** | **85.26%** | **0.9394** | Full PCam dataset |
 
-**Note**: Our results are competitive with ResNet-18 baselines and demonstrate the framework's capability on real pathology data.
+**Note**: The results are competitive with ResNet-18 baselines and demonstrate the framework's capability on real pathology data.
 
 ## Statistical Validation
 
@@ -104,7 +104,7 @@ hardware:
 - **Random State**: 42 (reproducible)
 
 ### Confidence Interval Interpretation
-- **Accuracy CI (84.83% - 85.63%)**: We are 95% confident the true accuracy lies in this range
+- **Accuracy CI (84.83% - 85.63%)**: There is 95% confidence the true accuracy lies in this range
 - **AUC CI (0.9369 - 0.9418)**: Tight interval indicates stable discriminative performance
 - **F1 CI (0.8464 - 0.8543)**: Balanced precision-recall tradeoff is consistent
 

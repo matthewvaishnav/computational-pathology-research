@@ -97,7 +97,7 @@ All benchmarks must use:
 
 ## Expected Outcomes
 
-Based on architecture and optimization differences, we expect:
+Based on architecture and optimization differences, I expect:
 
 **HistoCore advantages**:
 - Faster training (8-12x vs baseline)

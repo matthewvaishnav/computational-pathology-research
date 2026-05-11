@@ -145,7 +145,7 @@ early_stopping:
 
 ### Why Synthetic Data?
 
-The full PatchCamelyon dataset is ~7GB and requires significant download time. For rapid iteration and CI/CD, we generated a small synthetic subset that maintains the same data format and structure. This allows:
+The full PatchCamelyon dataset is ~7GB and requires significant download time. For rapid iteration and CI/CD, I generated a small synthetic subset that maintains the same data format and structure. This allows:
 - Fast training/testing cycles
 - Reproducible results without large downloads
 - Framework validation
@@ -206,13 +206,13 @@ python scripts/generate_synthetic_pcam.py
 
 ## Honest Assessment
 
-### What We Can Say
+### What Can Be Said
 - "Framework successfully trains and evaluates on PCam-format data"
 - "Achieved 94% accuracy on a small synthetic test set"
 - "Pipeline is functional and reproducible"
 - "Code is ready for full-scale experiments"
 
-### What We Cannot Say
+### What Cannot Be Said
 - ~~"Achieves state-of-the-art performance on PCam"~~ (not tested on full dataset)
 - ~~"Outperforms existing methods"~~ (no comparisons run)
 - ~~"Validated for clinical use"~~ (not clinically validated)
@@ -220,16 +220,16 @@ python scripts/generate_synthetic_pcam.py
 
 ## Comparison to Published Baselines
 
-**IMPORTANT**: We have NOT run comparisons to published methods. For reference, published PCam results include:
+**IMPORTANT**: I have NOT run comparisons to published methods. For reference, published PCam results include:
 
 | Method | Test Accuracy | Test AUC | Notes |
 |--------|---------------|----------|-------|
 | **Baseline CNN** | ~70% | ~0.85 | Simple CNN |
 | **ResNet-18** | ~85% | ~0.92 | Standard baseline |
 | **DenseNet-121** | ~89% | ~0.95 | Strong baseline |
-| **Our Model** | 94%* | 1.0* | ***Synthetic subset only*** |
+| **The Model** | 94%* | 1.0* | ***Synthetic subset only*** |
 
-**\*CRITICAL**: Our results are on a 100-sample synthetic subset, NOT the full 32K-sample PCam test set. Direct comparison is invalid.
+**\*CRITICAL**: The results are on a 100-sample synthetic subset, NOT the full 32K-sample PCam test set. Direct comparison is invalid.
 
 ## Limitations and Caveats
 
@@ -253,7 +253,7 @@ python scripts/generate_synthetic_pcam.py
 
 ## Next Steps for Rigorous Validation
 
-To make stronger claims, we would need to:
+To make stronger claims, the following would be needed:
 
 1. **Download full PCam dataset** (~7GB)
 2. **Train on full 262K training set**
@@ -350,7 +350,7 @@ This benchmark successfully demonstrates that the computational pathology framew
 3. Produces reproducible results with proper evaluation
 4. Handles checkpointing, early stopping, and visualization correctly
 
-However, this is a **framework validation**, not a **scientific benchmark**. The synthetic subset and small scale mean we cannot make claims about state-of-the-art performance, clinical utility, or generalization.
+However, this is a **framework validation**, not a **scientific benchmark**. The synthetic subset and small scale mean I cannot make claims about state-of-the-art performance, clinical utility, or generalization.
 
 For production use or publication, full-scale experiments on real PCam data with proper baselines and statistical validation would be required.
 

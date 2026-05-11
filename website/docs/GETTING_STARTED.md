@@ -36,7 +36,7 @@ Complete guide to installing and using the Computational Pathology Research Fram
 - GPU: NVIDIA GPU with 8GB+ VRAM (for training)
 - Storage: 50GB+ free space (for datasets)
 
-**Have an RTX 4070 Laptop?** Check out our [RTX 4070 Optimization Guide](https://github.com/matthewvaishnav/computational-pathology-research/blob/main/docs/START_NOW_RTX4070.md) for hardware-specific batch sizes, training times, and optimization tips!
+**Have an RTX 4070 Laptop?** Check out the [RTX 4070 Optimization Guide](https://github.com/matthewvaishnav/computational-pathology-research/blob/main/docs/START_NOW_RTX4070.md) for hardware-specific batch sizes, training times, and optimization tips!
 
 ### Software Requirements
 

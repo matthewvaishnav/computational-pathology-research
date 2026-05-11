@@ -481,4 +481,4 @@ A: Yes. Results can be sent to EMR via HL7 FHIR.
 **Last Updated**: 2026-04-27  
 **For**: Clinical Users (Pathologists, Clinicians, Technicians)
 
-**Feedback**: We value your input! Email feedback@histocore.ai
+**Feedback**: I value your input! Email feedback@histocore.ai

@@ -188,4 +188,4 @@ Include:
 - Potential impact
 - Suggested fix (if any)
 
-We will respond within 48 hours.
+I will respond within 48 hours.

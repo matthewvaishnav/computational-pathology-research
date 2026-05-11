@@ -1,0 +1,63 @@
+# Model Revision Pinning Configuration
+#
+# This file specifies pinned revisions (commit hashes or tags) for HuggingFace models
+# to ensure reproducibility and protect against supply chain attacks.
+#
+# Format:
+#   models:
+#     <repo_id>: <revision_hash_or_tag>
+#
+# To find the latest revision for a model:
+#   1. Visit https://huggingface.co/<repo_id>
+#   2. Click on "Files and versions" tab
+#   3. Copy the commit hash from the latest commit
+#
+# Security Note:
+#   - Production environments REQUIRE pinned revisions
+#   - Development environments WARN about unpinned revisions
+#   - Always verify model integrity after downloading
+
+models:
+  # Foundation Models for Computational Pathology
+  
+  # Phikon - Vision Transformer for Histopathology (Owkin)
+  # https://huggingface.co/owkin/phikon
+  "owkin/phikon": "main"  # TODO: Replace with specific commit hash
+  
+  # UNI - Universal Pathology Foundation Model (Mahmood Lab)
+  # https://huggingface.co/MahmoodLab/UNI
+  "MahmoodLab/UNI": "main"  # TODO: Replace with specific commit hash
+  
+  # CONCH - Contrastive Learning for Histopathology (Mahmood Lab)
+  # https://huggingface.co/MahmoodLab/CONCH
+  "MahmoodLab/CONCH": "main"  # TODO: Replace with specific commit hash
+  
+  # Vision-Language Models
+  
+  # OpenAI CLIP - Vision-Language Model
+  # https://huggingface.co/openai/clip-vit-base-patch32
+  "openai/clip-vit-base-patch32": "main"  # TODO: Replace with specific commit hash
+  
+  # OpenAI CLIP Large
+  # https://huggingface.co/openai/clip-vit-large-patch14
+  "openai/clip-vit-large-patch14": "main"  # TODO: Replace with specific commit hash
+  
+  # General Purpose Models
+  
+  # Microsoft ResNet-50
+  # https://huggingface.co/microsoft/resnet-50
+  "microsoft/resnet-50": "main"  # TODO: Replace with specific commit hash
+  
+  # Facebook DINO ViT-B/16
+  # https://huggingface.co/facebook/dino-vitb16
+  "facebook/dino-vitb16": "main"  # TODO: Replace with specific commit hash
+  
+  # BiomedCLIP (if used)
+  # https://huggingface.co/microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
+  "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": "main"  # TODO: Replace with specific commit hash
+
+# Notes:
+# - "main" is used as a placeholder. For production, replace with specific commit hashes.
+# - Commit hashes provide stronger security guarantees than branch names or tags.
+# - Update this file when upgrading models to newer versions.
+# - Document the reason for version changes in git commit messages.
