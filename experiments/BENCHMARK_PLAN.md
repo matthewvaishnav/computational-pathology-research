@@ -4,7 +4,7 @@
 Run PathML, CLAM, and other frameworks on identical hardware (RTX 4070) with identical dataset (PCam) for fair comparison.
 
 ## Current Status
-- ✅ HistoCore optimized: 93.98% AUC, 3.1 hours
+- ✅ HistoCore optimized: 93.94% AUC, 4.2 hours
 - ✅ Baseline PyTorch: Estimated 89% AUC, 20-40 hours
 - ⏳ PathML: Not yet benchmarked
 - ⏳ CLAM: Not yet benchmarked
