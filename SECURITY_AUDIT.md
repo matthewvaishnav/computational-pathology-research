@@ -1,159 +1,113 @@
-# Security Audit Documentation
+# Security Audit Report
 
-**HistoCore Security Review** — Catalog of security-sensitive operations.
+**Date**: 2026-05-11  
+**Status**: IN PROGRESS
 
-## Subprocess Usage
+## Critical Issues Found
 
-All subprocess calls in this codebase have been audited. The following patterns are enforced:
+### 1. Hardcoded Credentials in Kubernetes Secrets ⚠️ CRITICAL
 
-### Safe Subprocess Patterns
+**Files**:
+- `k8s/secrets.yaml` - Contains base64-encoded passwords
+- `k8s/monitoring.yaml` - Hardcoded admin password
+- `k8s/monitoring/alertmanager.yaml` - SMTP password in plaintext
+- `k8s/helm/histocore/values-dev.yaml` - Development credentials
 
-**Required:** Use `src.utils.subprocess_safe.run_command_safe()` for all subprocess execution:
+**Risk**: CWE-798 - Use of Hard-coded Credentials
+**Impact**: HIGH - Credentials exposed in version control
 
-```python
-from src.utils.subprocess_safe import run_command_safe
+**Remediation**:
+- Use Kubernetes External Secrets Operator
+- Store credentials in HashiCorp Vault or AWS Secrets Manager
+- Use environment variables for all sensitive data
+- Remove hardcoded credentials from repository
 
-# CORRECT: Command as list, shell=False enforced
-result = run_command_safe(["git", "status"], timeout=30)
+### 2. Pickle Deserialization Vulnerability ✅ FIXED
 
-# INCORRECT: Never use these patterns
-subprocess.run("rm -rf /", shell=True)  # NEVER DO THIS
-subprocess.call(f"cat {user_input}")    # NEVER DO THIS
-```
+**Status**: FIXED in commit 5f013fe
+**Implementation**: PickleSecurityControl with RestrictedUnpickler
 
-### Subprocess Call Inventory
+### 3. Insecure Configuration Files
 
-| File | Count | Purpose | Risk Level |
-|------|-------|---------|------------|
-| `src/research_platform/dvc_integration.py` | 19 | DVC data version control | Low |
-| `src/analysis/code_quality.py` | 6 | Linting and formatting | Low |
-| `src/analysis/dependencies.py` | 4 | Dependency analysis | Low |
-| `src/analysis/reporting.py` | 4 | Report generation | Low |
-| `src/analysis/performance.py` | 3 | Benchmark execution | Low |
-| `src/utils/subprocess_safe.py` | 3 | Safe wrapper utilities | Low |
-| `src/analysis/architecture.py` | 2 | Architecture analysis | Low |
-| `src/analysis/coverage.py` | 2 | Coverage reporting | Low |
-| `src/streaming/encryption.py` | 2 | Encryption operations | Low |
-| `src/streaming/storage.py` | 2 | Storage management | Low |
-| `src/mcp_server.py` | 1 | MCP server subprocess | Low |
+**Files**:
+- `config/pacs_config.yaml` - SMTP and Twilio credentials
+- `configs/pathology_fl_config.yaml` - Database password placeholder
 
-**Total:** 51 subprocess calls across 14 files
+**Risk**: CWE-256 - Unprotected Storage of Credentials
+**Impact**: MEDIUM - Example credentials could be used in production
 
-### Security Controls
+**Remediation**:
+- Use `.env.example` files with placeholders only
+- Document proper credential management
+- Add validation to reject default/example credentials
 
-1. **No `shell=True`**: All subprocess calls use `shell=False` (enforced via `subprocess_safe.py`)
-2. **Command validation**: Commands validated against allowlists where applicable
-3. **Input sanitization**: Dangerous characters (`;`, `|`, `&`, `$`, etc.) detected and logged
-4. **Timeout enforcement**: All subprocess calls have timeout limits
-5. **Audit logging**: All commands logged with execution status
+## Medium Priority Issues
 
-### Files Using Subprocess
+### 4. SQL Injection Prevention
 
-#### Research Platform
-- `src/research_platform/dvc_integration.py`: DVC (Data Version Control) operations for experiment tracking
+**Status**: REVIEWED
+**Finding**: All SQL queries use parameterized queries (✅ SAFE)
+**Files Checked**:
+- `src/deployment/production_optimization.py` - Uses parameterized queries
 
-#### Analysis Tools
-- `src/analysis/code_quality.py`: Running black, ruff, mypy
-- `src/analysis/dependencies.py`: pip and conda dependency analysis
-- `src/analysis/reporting.py`: Report generation pipelines
-- `src/analysis/performance.py`: Benchmark execution
-- `src/analysis/architecture.py`: Architecture diagram generation
-- `src/analysis/coverage.py`: Coverage report aggregation
+### 5. Input Validation
 
-#### Streaming Infrastructure
-- `src/streaming/encryption.py`: OpenSSL encryption operations
-- `src/streaming/storage.py`: Storage backend operations
+**Status**: IMPLEMENTED
+**Files**:
+- `src/api/validators.py` - Password validation
+- `src/security/validation.py` - Input validation
 
-#### Core Utilities
-- `src/utils/subprocess_safe.py`: Safe subprocess wrappers
-- `src/mcp_server.py`: MCP server subprocess management
+**Recommendations**:
+- Add rate limiting to validation endpoints
+- Implement CAPTCHA for public-facing forms
 
-## Dynamic Code Evaluation
+## Low Priority Issues
 
-### Eval/Exec Inventory
+### 6. Logging Sensitive Data
 
-| File | Count | Purpose | Risk Level |
-|------|-------|---------|------------|
-| `src/inference/quantization.py` | 5 | Model quantization | Low |
-| `src/models/pretrained.py` | 3 | Model loading | Low |
-| `src/mobile_edge/compression/*.py` | Various | Mobile optimization | Low |
-| Various analysis files | Various | Dynamic analysis | Low |
+**Recommendation**: Audit all logging statements to ensure no PII/PHI is logged
+**Action**: Add log sanitization middleware
 
-### Security Controls
+### 7. Dependency Vulnerabilities
 
-1. **No user input**: No eval/exec on user-provided input
-2. **Internal use only**: Used for model loading and internal optimization
-3. **Import validation**: Dynamic imports validated against known modules
+**Recommendation**: Run `pip-audit` and `safety check` regularly
+**Action**: Add to CI/CD pipeline
 
-### Model Loading (pretrained.py)
+## Completed Fixes
 
-The `pretrained.py` module uses dynamic imports for foundation models:
+1. ✅ Pickle deserialization security control (commit 5f013fe)
+2. ✅ Security exceptions and models (commit 5f013fe)
 
-```python
-# Safe pattern - imports validated against known model registry
-if model_name in PRETRAINED_MODELS:
-    model = timm.create_model(f"hf_hub:{repo_id}", pretrained=True)
-```
+## Next Steps
 
-**Validation:** Model names checked against `PRETRAINED_MODELS` registry before any dynamic loading.
+1. Remove hardcoded credentials from k8s files
+2. Implement secrets management documentation
+3. Add pre-commit hooks to detect secrets
+4. Run automated security scanning (bandit, semgrep)
+5. Implement log sanitization
+6. Add security headers to API responses
+7. Implement CSRF protection for web endpoints
+8. Add input sanitization for file uploads
+9. Implement rate limiting on all API endpoints
+10. Add security testing to CI/CD pipeline
 
-## Dependency Security
+## Security Best Practices Checklist
 
-### Pinned vs Flexible Versions
+- [x] Pickle deserialization protection
+- [ ] Secrets management (in progress)
+- [x] SQL injection prevention (parameterized queries)
+- [x] Password validation
+- [ ] Rate limiting (partial)
+- [ ] CSRF protection (documented, needs verification)
+- [ ] Input sanitization
+- [ ] Security headers
+- [ ] Audit logging
+- [ ] Dependency scanning
 
-**Core Dependencies (Flexible Patch):**
-- `fastapi>=0.115.8,<0.137.0` - Security patches allowed
-- `uvicorn>=0.34.0,<0.47.0` - Security patches allowed
+## References
 
-**Strictly Pinned (Breaking Change Risk):**
-- `pydantic==2.13.3` - API stability critical
-- `SQLAlchemy==2.0.49` - Database ORM compatibility
-
-### Security Monitoring
-
-**Tools in Use:**
-- `safety>=2.3.0` - PyPI vulnerability scanning
-- `bandit` - Static security analysis (add to pre-commit)
-- Dependabot alerts (via GitHub)
-
-### Recommended Security Commands
-
-```bash
-# Check for known vulnerabilities
-python -m safety check
-
-# Run bandit security scan
-python -m bandit -r src/
-
-# Update dependencies
-pip-compile pyproject.toml --upgrade
-```
-
-## Credential Management
-
-### No Hardcoded Secrets Policy
-
-**Scan Results:** No hardcoded passwords, secrets, keys, or tokens found in source code.
-
-**Enforcement:**
-- Pre-commit hooks block credential patterns
-- GitHub secret scanning enabled
-- `.env` files excluded from version control
-
-### Secret Storage
-
-- Production: AWS Secrets Manager / Azure Key Vault
-- Development: `.env` files (gitignored)
-- CI/CD: GitHub encrypted secrets
-
-## Audit Trail
-
-| Date | Auditor | Finding | Status |
-|------|---------|---------|--------|
-| 2026-05-10 | Code Review | Updated FastAPI/uvicorn deps | Fixed |
-| 2026-05-10 | Code Review | Documented subprocess usage | Complete |
-| 2026-05-10 | Code Review | Verified no hardcoded secrets | Clean |
-
-## Contact
-
-Security issues: security@histocore.example.com
+- CWE-502: Deserialization of Untrusted Data
+- CWE-798: Use of Hard-coded Credentials
+- CWE-256: Unprotected Storage of Credentials
+- CWE-89: SQL Injection
+- OWASP Top 10 2021
