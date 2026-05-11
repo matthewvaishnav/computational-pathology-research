@@ -11,7 +11,7 @@ Transform any laptop into a complete HistoCore demonstration environment for hos
 **Primary Goal**: Demonstrate HistoCore's breakthrough real-time WSI streaming capability and #1 performance superiority in <5 minutes
 
 **Target Audience**: 
-- Hospital executives (ROI focus)
+- Hospital executives (performance focus)
 - Pathologists (clinical workflow focus)  
 - IT departments (integration focus)
 - Procurement teams (competitive advantage focus)
@@ -41,7 +41,7 @@ histocore-demo start
 **Script**:
 1. **Load gigapixel slide**: "This is a 100,000-patch breast cancer slide"
 2. **Start real-time processing**: "Watch HistoCore analyze in real-time - no waiting"
-3. **Show progressive confidence**: "Confidence builds as we process - 85%... 90%... 95%"
+3. **Show progressive confidence**: "Confidence builds as the system processes - 85%... 90%... 95%"
 4. **Highlight speed**: "Complete analysis in 28 seconds vs 15+ minutes for competitors"
 5. **Show attention heatmap**: "AI focuses on same regions pathologists would examine"
 
@@ -67,7 +67,7 @@ histocore-demo start
 - ✅ **Enterprise ready**: Security, compliance, scalability
 - ✅ **Multi-vendor support**: GE, Philips, Siemens, Agfa
 
-### Scenario 3: ROI & Competitive Demo (1 minute)
+### Scenario 3: Performance & Competitive Demo (1 minute)
 **Audience**: Hospital Executives, Procurement
 
 **Script**:

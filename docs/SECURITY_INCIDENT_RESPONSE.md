@@ -264,7 +264,7 @@ Subject: Security Incident Notification
 
 Dear [Customer],
 
-We are writing to inform you of a security incident that may have affected your data.
+I am writing to inform you of a security incident that may have affected your data.
 
 What Happened:
 [Brief description]
@@ -272,7 +272,7 @@ What Happened:
 What Information Was Involved:
 [List of affected data types]
 
-What We Are Doing:
+What Actions Have Been Taken:
 [Actions taken to address incident]
 
 What You Can Do:
@@ -282,7 +282,7 @@ For More Information:
 Contact: security@company.com
 Phone: [number]
 
-We sincerely apologize for this incident and are committed to protecting your data.
+I sincerely apologize for this incident and am committed to protecting your data.
 
 [Company Name]
 ```

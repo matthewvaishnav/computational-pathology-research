@@ -169,7 +169,7 @@ results/pcam_real/failure_analysis/
 - **Specificity**: 90-98% for normal tissue
 - **Inter-observer agreement**: κ = 0.7-0.8 (substantial)
 
-### Our Model Performance
+### Model Performance
 - **Sensitivity (Recall)**: 73.89% ⚠️ (below pathologist range)
 - **Specificity**: 96.62% ✅ (within pathologist range)
 - **Overall Accuracy**: 85.26%

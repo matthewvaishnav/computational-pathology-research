@@ -201,18 +201,18 @@ Dear [Lab Director],
 I'm developing an open-source medical AI platform for pathology diagnosis 
 and would like to collaborate on creating a vision-language dataset.
 
-What we need:
+What I need:
 - De-identified pathology slides (WSI)
 - Corresponding diagnostic reports (anonymized)
 - Approximately 10,000-50,000 cases
 
-What we offer:
+What I offer:
 - Co-authorship on publications
 - Access to trained models for your lab
 - Technical support for deployment
 - IRB protocol assistance
 
-Our platform: https://github.com/matthewvaishnav/computational-pathology-research
+The platform: https://github.com/matthewvaishnav/computational-pathology-research
 
 Would you be interested in discussing this further?
 

@@ -294,7 +294,7 @@ Want to see HistoCore benchmarked on your specific cases?
 **Phone**: 1-800-HISTOCORE  
 **Web**: https://histocore.ai/benchmark
 
-We'll run a custom benchmark on your slides and provide detailed comparison report.
+A custom benchmark can be run on your slides with a detailed comparison report provided.
 
 ---
 

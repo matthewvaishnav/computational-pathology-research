@@ -75,7 +75,7 @@ Recently completed a comprehensive medical AI platform for computational patholo
 
 Excited to share the completion of a comprehensive computational pathology platform that transforms how hospitals collaborate on AI training while preserving patient privacy.
 
-**What we built:**
+**What I built:**
 🔬 Multi-disease foundation models (5+ cancer types)
 🏥 Federated learning across hospitals (no data sharing)
 ⚡ Real-time WSI processing (7x faster, <30s)
@@ -108,7 +108,7 @@ This represents the evolution from research prototype to production-ready medica
 **Add to your GitHub profile:**
 
 ### 🏥 Medical AI Platform
-Recently completed a comprehensive computational pathology platform featuring:
+I recently completed a comprehensive computational pathology platform featuring:
 - **Multi-disease foundation models** supporting 5+ cancer types
 - **Federated learning** across hospitals with differential privacy
 - **Real-time WSI processing** with 7x performance improvements

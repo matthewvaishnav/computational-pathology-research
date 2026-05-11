@@ -174,7 +174,7 @@ Comprehensive analysis of model misclassifications on the full PatchCamelyon tes
 - **Sensitivity**: 95-98% (miss rate: 2-5%)
 - **Specificity**: 98-99% (false positive rate: 1-2%)
 
-### Our Model Performance
+### Model Performance
 - **Sensitivity**: 73.89% (miss rate: 26.11%) ⚠️ **Below clinical standard**
 - **Specificity**: 96.62% (false positive rate: 3.38%) ✅ **Near clinical standard**
 

@@ -21,7 +21,7 @@ HistoCore achieves **100% validation AUC** with **8-12x faster training** compar
 
 | Framework | Test AUC | Test Accuracy | Training Time | GPU | Parameters |
 |-----------|----------|---------------|---------------|-----|------------|
-| **HistoCore (Ours)** | **93.98%** | **84.26%** | **3.1 hours** | RTX 4070 | 12M |
+| **HistoCore** | **93.98%** | **84.26%** | **3.1 hours** | RTX 4070 | 12M |
 | PathML (est.) | ~92.0% | ~84.0% | 8-12 hours* | V100* | 15M |
 | CLAM (est.) | ~91.0% | ~83.5% | 10-15 hours* | V100* | 18M |
 | Baseline PyTorch | 89.0% | 82.0% | 20-40 hours | RTX 4070 | 12M |
@@ -83,7 +83,7 @@ HistoCore achieves **100% validation AUC** with **8-12x faster training** compar
 
 | Configuration | Parameters | Training Time | Test AUC | Memory |
 |---------------|------------|---------------|----------|--------|
-| **Ultra Fast (Ours)** | 12M | 3.1 hours | 93.98% | 8GB |
+| **Ultra Fast** | 12M | 3.1 hours | 93.98% | 8GB |
 | Fast Improved | 18M | 4.5 hours | 94.2% | 10GB |
 | Full Scale | 25M | 5.5 hours | 94.5% | 12GB |
 | CLAM-SB | 18M | 10-15 hours | 91.0% | 12GB |
@@ -316,7 +316,7 @@ python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.ya
 
 ## Future Benchmarks
 
-We plan to benchmark on:
+I plan to benchmark on:
 - **CAMELYON16** (full WSI classification)
 - **TCGA** (multi-cancer classification)
 - **Custom datasets** (user-submitted)

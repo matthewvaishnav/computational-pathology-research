@@ -17,9 +17,9 @@
 
 Dear Dr. [Last Name],
 
-I'm reaching out to explore a potential research collaboration between [Hospital Name] and HistoCore Medical AI. We've developed an AI-powered pathology system for lymph node metastasis detection and are seeking 1-2 academic medical centers as pilot partners for a multi-site clinical validation study.
+I'm reaching out to explore a potential research collaboration between [Hospital Name] and HistoCore Medical AI. I've developed an AI-powered pathology system for lymph node metastasis detection and am seeking 1-2 academic medical centers as pilot partners for a multi-site clinical validation study.
 
-### What We've Built
+### What I've Built
 
 **HistoCore** is an FDA-ready AI system for whole-slide image analysis with:
 - **85.26% accuracy** (95% CI: 84.83%-85.63%) on PatchCamelyon benchmark (32,768 test samples)
@@ -61,12 +61,12 @@ I'm reaching out to explore a potential research collaboration between [Hospital
 - Month 11-12: Manuscript preparation and submission
 
 **Your Commitment**:
-- IRB submission support (we provide protocol template)
+- IRB submission support (I provide protocol template)
 - PACS test environment access for integration
 - Pathologist time for ground truth labeling (~20 hours total)
 - Co-authorship and manuscript review
 
-**Our Commitment**:
+**My Commitment**:
 - Complete technical implementation and support
 - IRB protocol and documentation
 - Data analysis and statistical validation
@@ -100,7 +100,7 @@ If this aligns with [Hospital Name]'s research priorities, I'd welcome a 30-minu
 3. Potential pathologist champions for the study
 4. Technical requirements and integration approach
 
-I'm available for a call at your convenience. You can also review our technical documentation and validation results at: https://github.com/matthewvaishnav/computational-pathology-research
+I'm available for a call at your convenience. You can also review the technical documentation and validation results at: https://github.com/matthewvaishnav/computational-pathology-research
 
 Thank you for considering this collaboration. I believe a partnership between [Hospital Name] and HistoCore could significantly advance the field of AI-assisted pathology.
 
@@ -121,7 +121,7 @@ GitHub: https://github.com/matthewvaishnav/computational-pathology-research
 
 Dear Dr. [Last Name],
 
-I wanted to follow up on my email from [date] regarding a potential research collaboration for clinical validation of our AI pathology system.
+I wanted to follow up on my email from [date] regarding a potential research collaboration for clinical validation of the AI pathology system.
 
 I understand you're likely very busy, so I'll keep this brief:
 
@@ -130,7 +130,7 @@ I understand you're likely very busy, so I'll keep this brief:
 - Seeking 1-2 pilot partners for multi-site validation study
 - Co-authorship opportunity on high-impact publication
 - Minimal burden on your team (~20 hours pathologist time)
-- We handle all technical implementation and costs
+- I handle all technical implementation and costs
 
 **One Question**: Would a 15-minute exploratory call be valuable for [Hospital Name]?
 
@@ -151,13 +151,13 @@ Dr. [Last Name],
 
 Quick question: Is [Hospital Name] interested in partnering on a multi-site clinical validation study for AI-powered lymph node metastasis detection?
 
-**What we offer**:
+**What I offer**:
 - Co-authorship on validation study
 - FDA-ready system (85% accuracy, HIPAA-compliant)
-- We handle all technical work and costs
+- I handle all technical work and costs
 - ~20 hours total pathologist time commitment
 
-**What we need**:
+**What I need**:
 - IRB approval support
 - PACS test environment access
 - 500-1,000 cases for validation
@@ -248,7 +248,7 @@ matthew@histocore-medical.ai
 ## Key Talking Points for Calls
 
 ### Technical Differentiation
-- "We're not just another AI model - we've built complete FDA-ready infrastructure"
+- "I'm not just another AI model - I've built complete FDA-ready infrastructure"
 - "85% accuracy on 32,000 real clinical test samples, not synthetic data"
 - "Full PACS integration - works with your existing workflow"
 
@@ -258,7 +258,7 @@ matthew@histocore-medical.ai
 - "Your institution's name on cutting-edge AI pathology research"
 
 ### Low Burden
-- "We handle all technical work - PACS integration, deployment, monitoring"
+- "I handle all technical work - PACS integration, deployment, monitoring"
 - "~20 hours total pathologist time over 6 months"
 - "No cost to your institution"
 
@@ -271,20 +271,20 @@ matthew@histocore-medical.ai
 
 ## Objection Handling
 
-**"We're already working with [Competitor]"**
+**"They're already working with [Competitor]"**
 → "That's great! Multi-site validation actually strengthens both studies. Would you be interested in a head-to-head comparison?"
 
-**"We don't have budget for this"**
-→ "No cost to your institution - we cover all software, infrastructure, and support costs. We're seeking research partners, not customers."
+**"I don't have budget for this"**
+→ "No cost to your institution - I cover all software, infrastructure, and support costs. I'm seeking research partners, not customers."
 
-**"Our IRB process takes 6+ months"**
-→ "We provide complete IRB protocol template and can work with your timeline. Many institutions approve observational AI studies in 2-3 months."
+**"The IRB process takes 6+ months"**
+→ "I provide complete IRB protocol template and can work with your timeline. Many institutions approve observational AI studies in 2-3 months."
 
-**"We don't have digital pathology infrastructure"**
-→ "What scanner vendor do you use? We support all major PACS systems and can work with your existing setup."
+**"I don't have digital pathology infrastructure"**
+→ "What scanner vendor do you use? I support all major PACS systems and can work with your existing setup."
 
-**"Our pathologists are too busy"**
-→ "Total time commitment is ~20 hours over 6 months - about 1 hour per week. We can work around your schedule and provide compensation if needed."
+**"The pathologists are too busy"**
+→ "Total time commitment is ~20 hours over 6 months - about 1 hour per week. I can work around your schedule and provide compensation if needed."
 
 ---
 
