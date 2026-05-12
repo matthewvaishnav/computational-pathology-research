@@ -183,8 +183,12 @@ omit = [
 ]
 
 [tool.bandit]
-exclude_dirs = ["tests", "scripts", ".venv", ".venv311", ".venv-ci311"]
+exclude_dirs = ["tests", "scripts", ".venv", ".venv311", ".venv-ci311", "build", "dist"]
 skips = ["B101"]  # Skip assert_used warnings (common in scientific code)
+# Severity levels: LOW, MEDIUM, HIGH
+# Confidence levels: LOW, MEDIUM, HIGH
+severity = "MEDIUM"  # Report MEDIUM and HIGH severity issues
+confidence = "MEDIUM"  # Report MEDIUM and HIGH confidence issues
 
 [tool.coverage.report]
 exclude_lines = [
