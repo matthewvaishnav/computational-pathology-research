@@ -11,12 +11,14 @@ from dataclasses import dataclass
 from enum import Enum
 
 class HospitalType(Enum):
+    """Hospital classification for federated learning stratification."""
     CANCER_CENTER = "cancer_center"
     TEACHING_HOSPITAL = "teaching_hospital" 
     COMMUNITY_HOSPITAL = "community_hospital"
     RURAL_HOSPITAL = "rural_hospital"
 
 class CancerType(Enum):
+    """Cancer type classification for specialized model training."""
     BREAST = "breast"
     LUNG = "lung"
     PROSTATE = "prostate"
