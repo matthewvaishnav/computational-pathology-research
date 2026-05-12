@@ -11,19 +11,15 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Union
-from queue import Queue, Empty
-import threading
+from typing import Any, Callable, Dict, List, Optional, TypeVar
+from queue import Queue
 
 import torch
-import numpy as np
 
 from ..utils.constants import (
     DEFAULT_BATCH_SIZE,
     MAX_BATCH_SIZE,
-    MEMORY_PRESSURE_THRESHOLD,
 )
-from ..utils.gpu_memory import gpu_memory_manager
 
 logger = logging.getLogger(__name__)
 

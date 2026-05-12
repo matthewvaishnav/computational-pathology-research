@@ -12,17 +12,15 @@ import logging
 import os
 import pickle
 import time
-import weakref
 import zlib
 from collections import OrderedDict
 from dataclasses import dataclass
 from functools import wraps
 from threading import RLock
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Optional, TypeVar
 
 from ..utils.constants import (
     CACHE_TTL_SECONDS,
-    DEFAULT_MAX_MEMORY_GB,
     MEMORY_PRESSURE_THRESHOLD,
 )
 

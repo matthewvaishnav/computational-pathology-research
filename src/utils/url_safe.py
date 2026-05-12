@@ -4,7 +4,6 @@ URL Validation and Sanitization
 Prevents SSRF and open redirect vulnerabilities.
 """
 
-import re
 from typing import Optional
 from urllib.parse import urlparse
 
