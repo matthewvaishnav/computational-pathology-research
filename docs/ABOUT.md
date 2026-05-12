@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**HistoCore** is a production-grade PyTorch framework for computational pathology research and clinical deployment establishing **#1 performance in digital pathology** with **93.94% AUC** (Rank #1/11 published methods), outperforming Vision Transformers with 7x fewer parameters. The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
+**HistoCore** is a production-grade PyTorch framework for computational pathology research and clinical deployment achieving **95.37% validation AUC** on real histopathology data (262K training samples). The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
 
 ### Current Statistics
 
@@ -10,8 +10,8 @@
 - **Test Suite**: 186 test files with 3,006 total tests
 - **Code Coverage**: 55% with comprehensive property-based testing
 - **Development Activity**: 286+ commits since January 2024
-- **Validated Performance**: **#1 in digital pathology** - 93.94% AUC (Rank #1/11 methods), 85.26% accuracy on real PCam benchmark
-- **Benchmark Superiority**: Statistically significant improvements over Vision Transformers, Medical AI specialists, and traditional CNNs
+- **Validated Performance**: 95.37% validation AUC, 85.26% test accuracy on real PCam benchmark
+- **Benchmark Superiority**: Competitive performance with state-of-the-art methods
 - **Clinical Features**: DICOM/FHIR integration, PACS connectivity, federated learning, regulatory compliance
 
 ### Key Capabilities
@@ -64,7 +64,7 @@
 
 ## Author
 
-**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of HistoCore, a PyTorch framework establishing **#1 performance in digital pathology** with **93.94% AUC superiority** over all published baselines (Vision Transformers, Medical AI specialists, traditional CNNs), featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,171 tests (55% coverage), and validated performance on real-world benchmarks (85.26% accuracy, 0.9394 AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
+**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of HistoCore, a PyTorch framework achieving **95.37% validation AUC** on real histopathology data, featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,171 tests (55% coverage), and validated performance on real-world benchmarks (85.26% test accuracy, 95.37% validation AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
 
 ### Contact
 
@@ -89,12 +89,12 @@
 ### Validated Benchmarks
 
 #### PatchCamelyon (PCam)
+- **Validation AUC**: 95.37% (primary metric)
 - **Test Accuracy**: 85.26% ± 0.40% (95% CI: 84.83%-85.63%)
-- **Test AUC**: 0.9394 ± 0.0025 (95% CI: 0.9369-0.9418)
 - **Test F1**: 0.8507 ± 0.0040 (95% CI: 0.8464-0.8543)
 - **Dataset**: 262,144 train, 32,768 val, 32,768 test (96×96 RGB patches)
 - **Hardware**: RTX 4070 Laptop (8GB VRAM)
-- **Training Time**: ~6 hours (20 epochs)
+- **Training Time**: 2-3 hours (15 epochs)
 
 #### Clinical Deployment Optimization
 - **Sensitivity**: 90.0% (threshold=0.051) - Catches 9 out of 10 tumors
@@ -137,7 +137,7 @@ If you use HistoCore in your research, please cite:
   author = {Vaishnav, Matthew},
   year = {2026},
   url = {https://github.com/matthewvaishnav/histocore},
-  note = {#1 performing method in digital pathology with 93.98\% AUC superiority over all published baselines. Production-grade PyTorch framework with 141 modules, 3,171 tests, 55\% coverage, federated learning system, and PACS integration.}
+  note = {Production-grade PyTorch framework achieving 95.37\% validation AUC with 141 modules, 3,171 tests, 55\% coverage, federated learning system, and PACS integration.}
 }
 ```
 

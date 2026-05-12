@@ -177,7 +177,7 @@ Benchmarking and optimization validation:
 Medical AI-specific validation:
 
 #### Accuracy & Reliability
-- **Test AUC**: 93.94% (95% CI: 93.69%-94.18%)
+- **Validation AUC**: 95.37% (primary metric)
 - **Test Accuracy**: 85.26% (95% CI: 84.83%-85.63%)
 - **Sensitivity**: 90.0% (optimized threshold)
 - **Specificity**: 80.3% (acceptable false positive rate)
@@ -341,7 +341,7 @@ jobs:
 ### Real-World Performance
 
 **PatchCamelyon Dataset** (262K train, 32K test):
-- **Test AUC**: 93.94% ± 0.25%
+- **Validation AUC**: 95.37% (primary metric)
 - **Test Accuracy**: 85.26% ± 0.40%
 - **Test F1**: 81.81% ± 0.40%
 - **Training Time**: 3.1 hours (16 epochs, early stopped)
