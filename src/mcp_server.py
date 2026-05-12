@@ -51,6 +51,7 @@ CAVEMAN_TEMPLATE = (
 
 
 class JSONRPCError(Exception):
+    """JSON-RPC 2.0 error with code, message, and optional data."""
     def __init__(self, code: int, message: str, data: Optional[Any] = None):
         super().__init__(message)
         self.code = code
