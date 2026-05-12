@@ -172,4 +172,5 @@ metadata:
   namespace: histocore
 type: Opaque
 data:
-  admin-password: aGlzdG9jb3JlMTIz  # histocore123
+  # SECURITY WARNING: Replace with actual password from secrets manager
+  admin-password: <base64-encoded-password>  # DO NOT commit real passwords
