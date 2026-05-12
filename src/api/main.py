@@ -70,6 +70,7 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",
 
 # Request ID middleware for tracing
 class RequestIDMiddleware(BaseHTTPMiddleware):
+    """Middleware to track requests with unique IDs for distributed tracing."""
     async def dispatch(self, request, call_next):
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
         response = await call_next(request)

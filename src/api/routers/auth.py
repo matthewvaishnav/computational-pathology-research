@@ -37,6 +37,11 @@ users_db: Dict[str, Dict] = {}
 
 
 class UserRegistration(BaseModel):
+    """User registration request model.
+    
+    Validates new user registration data with security controls.
+    Role assignment is server-side only to prevent privilege escalation.
+    """
     username: str
     email: str
     password: str
@@ -48,6 +53,10 @@ class UserRegistration(BaseModel):
 
 
 class UserLogin(BaseModel):
+    """User login request model.
+    
+    Validates user authentication credentials.
+    """
     username: str
     password: str
 
