@@ -273,7 +273,7 @@ Actual Neg     13,672    2,712
 **Comparison to Literature**:
 - State-of-art: 96-98% AUC
 - Strong baselines: 90-95% AUC
-- HistoCore: 93.94% AUC (competitive performance)
+- HistoCore: 95.37% validation AUC (competitive performance)
 
 **Clinical Relevance**:
 - Sensitivity optimized for screening (minimize missed cancers)

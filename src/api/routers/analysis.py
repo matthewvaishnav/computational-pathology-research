@@ -21,11 +21,10 @@ from slowapi.util import get_remote_address
 from src.database import (
     AnalysisOperations,
     CaseOperations,
-    DicomOperations,
     get_db_session,
 )
 from src.api.dependencies import get_current_user, get_inference_engine
-from src.api.security import limiter, log_security_event, sanitize_for_log, validate_uploaded_image
+from src.api.security import limiter, log_security_event, sanitize_for_log
 from src.api.validators import validate_file_upload, validate_limit
 
 logger = logging.getLogger(__name__)

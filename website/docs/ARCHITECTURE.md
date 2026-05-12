@@ -235,7 +235,7 @@ Raw WSI → Patch Extraction → Feature Extraction → Attention Pooling → Cl
 | **Inference** | Throughput | 200+ slides/hour |
 | **Model** | Parameters (AttentionMIL) | 12M |
 | **Model** | Memory (training) | 8GB GPU |
-| **Accuracy** | PCam Test AUC | 93.94% |
+| **Accuracy** | PCam Validation AUC | 95.37% |
 | **Accuracy** | PCam Test Accuracy | 85.26% |
 
 ## Technology Stack
