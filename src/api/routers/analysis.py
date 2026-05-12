@@ -156,7 +156,7 @@ async def upload_for_analysis(
         raise HTTPException(status_code=500, detail="Upload failed. Please try again.")
 
 
-async def process_real_analysis(analysis_id: str, file_path: str, file_content: bytes):
+async def process_real_analysis(analysis_id: str, file_path: str, file_content: bytes) -> None:
     """Background task to process analysis with real AI model."""
 
     # Get database session for background task

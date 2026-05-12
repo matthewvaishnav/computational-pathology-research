@@ -78,7 +78,7 @@ async def health_check(db: Session = Depends(get_db_session)):
 
 
 @router.get("/api/v1/system/readiness")
-async def readiness_check():
+async def readiness_check() -> dict:
     """Deployment readiness check."""
     return {
         "ready": True,
@@ -93,7 +93,7 @@ async def readiness_check():
 
 
 @router.get("/metrics")
-async def metrics():
+async def metrics() -> JSONResponse:
     """Prometheus metrics endpoint."""
     metrics_data = """
 # HELP api_requests_total Total number of API requests

@@ -121,7 +121,7 @@ app.include_router(monitoring.router)
 
 # Startup event
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """Initialize database and models on startup."""
     try:
         # Validate security configuration
@@ -156,7 +156,7 @@ async def startup_event():
 
 # Shutdown event
 @app.on_event("shutdown")
-async def shutdown_event():
+async def shutdown_event() -> None:
     """Gracefully shutdown resources."""
     try:
         logger.info("Initiating graceful shutdown...")
