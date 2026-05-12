@@ -26,6 +26,7 @@ router = APIRouter(tags=["monitoring"])
 
 # Pydantic models
 class HealthResponse(BaseModel):
+    """Health check response model with component status."""
     status: str
     timestamp: str
     version: str
@@ -33,6 +34,7 @@ class HealthResponse(BaseModel):
 
 
 class BuildInfo(BaseModel):
+    """Build information model for deployment tracking."""
     version: str
     commit_hash: str
     build_date: str

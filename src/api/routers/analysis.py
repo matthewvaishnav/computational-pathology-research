@@ -36,12 +36,14 @@ limiter = Limiter(key_func=get_remote_address)
 
 # Pydantic models
 class AnalysisRequest(BaseModel):
+    """Analysis request model for pathology case processing."""
     case_id: Optional[str] = None
     priority: str = "normal"
     case_type: str = "breast_cancer_screening"
 
 
 class CaseData(BaseModel):
+    """Case data model for pathology analysis."""
     patient_id: str
     study_id: str
     priority: str = "normal"
@@ -49,6 +51,7 @@ class CaseData(BaseModel):
 
 
 class CaseStatusUpdate(BaseModel):
+    """Case status update model for tracking analysis progress."""
     status: str
     notes: Optional[str] = None
 

@@ -25,6 +25,7 @@ users: Dict[str, Dict] = {}
 
 
 class ReportRequest(BaseModel):
+    """Admin report generation request model."""
     report_type: str
     parameters: Optional[Dict] = None
 
