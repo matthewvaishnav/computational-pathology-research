@@ -113,8 +113,9 @@ async def upload_for_analysis(
             db.commit()
 
             # Start background processing with real inference
+            # Pass only file path to avoid keeping file content in memory
             background_tasks.add_task(
-                process_real_analysis, str(analysis.id), temp_path, file_content
+                process_real_analysis, str(analysis.id), temp_path
             )
 
             logger.info(
@@ -153,7 +154,7 @@ async def upload_for_analysis(
         raise HTTPException(status_code=500, detail="Upload failed. Please try again.")
 
 
-async def process_real_analysis(analysis_id: str, file_path: str, file_content: bytes):
+async def process_real_analysis(analysis_id: str, file_path: str):
     """Background task to process analysis with real AI model."""
 
     # Get database session for background task
@@ -171,6 +172,10 @@ async def process_real_analysis(analysis_id: str, file_path: str, file_content: 
 
             # Get inference engine
             engine = get_inference_engine()
+
+            # Read file content for inference
+            with open(file_path, "rb") as f:
+                file_content = f.read()
 
             # Run real model inference
             result = engine.analyze_image_bytes(
@@ -376,7 +381,9 @@ async def get_cases(
     
     try:
         case_ops = CaseOperations(db)
-        cases = case_ops.list_cases(status=status, limit=limit)
+        # Use joined loading to avoid N+1 queries when accessing assigned_user
+        from sqlalchemy.orm import joinedload
+        cases = case_ops.list_cases(status=status, limit=limit, options=[joinedload(Case.assigned_user)])
 
         case_list = []
         for case in cases:
@@ -477,8 +484,9 @@ async def get_case(
                 "role": case.assigned_user.role,
             }
 
-        # Add analysis count
-        case_dict["analysis_count"] = len(case.analyses)
+        # Add analysis count using efficient count query
+        case_ops = CaseOperations(db)
+        case_dict["analysis_count"] = case_ops.get_analysis_count_by_case(case.id)
 
         return case_dict
 
