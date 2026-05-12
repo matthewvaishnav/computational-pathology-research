@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from sqlalchemy import and_, desc, func, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from .models import Analysis, AuditLog, Case, DicomStudy, ModelResult, User
 
@@ -133,6 +133,7 @@ class CaseOperations(BaseOperations):
         assigned_user_id: Optional[UUID] = None,
         limit: int = 50,
         offset: int = 0,
+        options: Optional[List] = None,
     ) -> List[Case]:
         """List cases with filtering and pagination."""
         query = self.session.query(Case)
@@ -143,6 +144,11 @@ class CaseOperations(BaseOperations):
             query = query.filter(Case.priority == priority)
         if assigned_user_id:
             query = query.filter(Case.assigned_user_id == assigned_user_id)
+        
+        # Apply any additional query options (e.g., joinedload)
+        if options:
+            for option in options:
+                query = query.options(option)
 
         return query.order_by(Case.created_at.desc()).limit(limit).offset(offset).all()
 
@@ -263,30 +269,9 @@ class AnalysisOperations(BaseOperations):
 
         return query.order_by(Analysis.created_at.desc()).limit(limit).offset(offset).all()
 
-    def get_analysis_statistics(self) -> Dict[str, Any]:
-        """Get analysis statistics."""
-        total_analyses = self.session.query(func.count(Analysis.id)).scalar()
-
-        status_counts = (
-            self.session.query(Analysis.status, func.count(Analysis.id))
-            .group_by(Analysis.status)
-            .all()
-        )
-
-        # Average processing time for completed analyses
-        avg_processing_time = (
-            self.session.query(func.avg(Analysis.processing_time_ms))
-            .filter(Analysis.status == "completed")
-            .scalar()
-        )
-
-        return {
-            "total_analyses": total_analyses,
-            "status_distribution": dict(status_counts),
-            "average_processing_time_ms": (
-                float(avg_processing_time) if avg_processing_time else None
-            ),
-        }
+    def get_analysis_count_by_case(self, case_id: UUID) -> int:
+        """Get count of analyses for a case."""
+        return self.session.query(func.count(Analysis.id)).filter(Analysis.case_id == case_id).scalar()
 
 
 class DicomOperations(BaseOperations):
