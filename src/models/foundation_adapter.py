@@ -309,7 +309,7 @@ class FoundationModelAdapter(nn.Module):
         
         results = {}
         
-        for dim_str in self.projections.keys():
+        for dim_str in self.projections:
             input_dim = int(dim_str)
             model_name = self.known_dimensions.get(input_dim, f'Unknown_{input_dim}D')
             

@@ -352,7 +352,7 @@ if __name__ == "__main__":
     dummy_image = torch.randn(3, 224, 224)
 
     # Test quality degradation for different sites
-    for site_id in simulator.quality_profiles.keys():
+    for site_id in simulator.quality_profiles:
         profile = simulator.get_site_profile(site_id)
         degraded_image = simulator.simulate_image_quality_degradation(dummy_image, profile)
 

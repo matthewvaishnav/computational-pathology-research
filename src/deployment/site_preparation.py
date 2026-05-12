@@ -511,7 +511,7 @@ if __name__ == "__main__":
     manager = create_demo_sites()
     
     # Assess requirements for each site
-    for site_id in manager.sites.keys():
+    for site_id in manager.sites:
         assessment = manager.assess_technical_requirements(site_id)
         print(f"\nTechnical Assessment for {assessment['site_name']}:")
         print(f"Recommended CPU cores: {assessment['recommended_specs']['cpu_cores']}")

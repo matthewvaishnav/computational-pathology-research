@@ -294,7 +294,7 @@ class PACSIntegrationService:
             return {}
 
         results = {}
-        for pacs_name in self.pacs_client.connections.keys():
+        for pacs_name in self.pacs_client.connections:
             results[pacs_name] = self.pacs_client.test_connection(pacs_name)
 
         return results
