@@ -4,7 +4,7 @@ Result aggregator for HistoCore Project Optimization Analysis System.
 Merges results from all 8 analyzers into unified AnalysisResult.
 """
 
-from typing import List, Dict, Any
+from typing import List
 from datetime import datetime
 import subprocess
 from pathlib import Path
