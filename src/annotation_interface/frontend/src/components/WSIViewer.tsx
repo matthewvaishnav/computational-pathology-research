@@ -25,9 +25,8 @@ const WSIViewer: React.FC<Props> = ({ slideId, expertId }) => {
       element: viewerRef.current,
       prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@4.1/build/openseadragon/images/',
       tileSources: {
-        // TODO: Replace with actual DZI tile source from backend
         type: 'image',
-        url: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi'
+        url: process.env.REACT_APP_DZI_URL || 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi'
       },
       showNavigationControl: true,
       showNavigator: true,
