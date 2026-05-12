@@ -67,8 +67,8 @@ secrets:
     host: "localhost"
     port: "5432"
     name: "histocore_dev"
-    user: "dev_user"
-    password: "dev_password"
+    user: "${DB_USER}"  # Set via environment variable
+    password: "${DB_PASSWORD}"  # Set via environment variable
   apiKeys:
-    admin: "dev-admin-key"
-    service: "dev-service-key"
+    admin: "${ADMIN_API_KEY}"  # Set via environment variable
+    service: "${SERVICE_API_KEY}"  # Set via environment variable
