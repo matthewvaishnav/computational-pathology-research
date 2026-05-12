@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from src.database import AnalysisOperations, CaseOperations, get_db_session
 from src.inference import get_model_loader
 from src.api.dependencies import get_current_user
+from src.api.validators import validate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -134,8 +135,7 @@ async def get_ids_alerts(
         limit: Maximum number of alerts (1-1000)
     """
     # Validate limit to prevent DoS via excessive queries
-    if limit < 1 or limit > 1000:
-        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    validate_limit(limit)
     
     try:
         from src.monitoring.ids import get_ids_engine
@@ -173,8 +173,7 @@ async def get_siem_incidents(
         limit: Maximum number of incidents (1-1000)
     """
     # Validate limit to prevent DoS via excessive queries
-    if limit < 1 or limit > 1000:
-        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    validate_limit(limit)
     
     try:
         from src.monitoring.siem import get_siem_engine

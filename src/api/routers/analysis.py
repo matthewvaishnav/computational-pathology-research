@@ -26,7 +26,7 @@ from src.database import (
 )
 from src.api.dependencies import get_current_user, get_inference_engine
 from src.api.security import limiter, log_security_event, sanitize_for_log, validate_uploaded_image
-from src.api.validators import validate_file_upload
+from src.api.validators import validate_file_upload, validate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -374,8 +374,7 @@ async def get_cases(
         status: Filter by status
     """
     # Validate limit to prevent DoS via excessive queries
-    if limit < 1 or limit > 1000:
-        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    validate_limit(limit)
     
     try:
         case_ops = CaseOperations(db)

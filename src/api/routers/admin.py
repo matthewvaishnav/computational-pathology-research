@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from src.database import AuditOperations, UserOperations, get_db_session
 from src.api.dependencies import get_current_user
+from src.api.validators import validate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,7 @@ async def get_users(
         limit: Maximum number of users (1-1000)
     """
     # Validate limit to prevent DoS via excessive queries
-    if limit < 1 or limit > 1000:
-        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    validate_limit(limit)
     
     user_list = list(users.values())
     return {"users": user_list[:limit], "total": len(user_list)}
@@ -80,8 +80,7 @@ async def get_audit_logs(
         limit: Maximum number of logs (1-1000)
     """
     # Validate limit to prevent DoS via excessive queries
-    if limit < 1 or limit > 1000:
-        raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+    validate_limit(limit)
     
     try:
         audit_ops = AuditOperations(db)
