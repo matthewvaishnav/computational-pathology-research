@@ -7,7 +7,7 @@ import { useAnnotationStore } from './store/annotationStore'
 
 function App() {
   const [currentSlideId, setCurrentSlideId] = useState<string | null>(null)
-  const [expertId] = useState('expert_001') // TODO: Get from auth
+  const [expertId] = useState(process.env.REACT_APP_EXPERT_ID || 'expert_001')
   const { fetchQueue } = useAnnotationStore()
 
   useEffect(() => {
