@@ -272,6 +272,31 @@ body {
   padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
 }
 
+/* Fix blurry code fonts in dark mode */
+[data-theme='dark'] code,
+[data-theme='dark'] pre,
+[data-theme='dark'] .prism-code {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+  font-weight: 400;
+}
+
+[data-theme='dark'] .theme-doc-markdown code {
+  background: #2d2d2d;
+  border-color: #404040;
+  color: #e0e0e0;
+}
+
+[data-theme='dark'] .theme-code-block {
+  background: #1e1e1e;
+  border-color: #404040;
+}
+
+[data-theme='dark'] .prism-code {
+  background: #1e1e1e !important;
+}
+
 .theme-code-block {
   border-radius: 12px;
   box-shadow: var(--hc-shadow);
