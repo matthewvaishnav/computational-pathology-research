@@ -132,7 +132,7 @@ End-to-end workflow validation:
 
 #### Training Pipelines
 - **Quick Demo**: 150 samples, 5 epochs, 93% validation accuracy
-- **Full Training**: 262K samples, 20 epochs, 100% validation AUC
+- **Full Training**: 262K samples, 20 epochs, 95.37% validation AUC
 - **Distributed Training**: Multi-GPU synchronization, gradient aggregation
 - **Federated Training**: Multi-site coordination, privacy preservation
 
