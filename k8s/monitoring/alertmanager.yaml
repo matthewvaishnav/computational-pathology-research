@@ -9,7 +9,7 @@ data:
       smtp_smarthost: 'smtp.gmail.com:587'
       smtp_from: 'alerts@medical-ai.com'
       smtp_auth_username: 'alerts@medical-ai.com'
-      smtp_auth_password: 'your-app-password'  # Use app password for Gmail
+      smtp_auth_password: '${SMTP_PASSWORD}'  # Set via secrets manager
     
     route:
       group_by: ['alertname', 'cluster', 'service']

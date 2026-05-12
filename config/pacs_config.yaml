@@ -83,14 +83,14 @@ notifications:
     smtp_server: "smtp.hospital.local"
     smtp_port: 587
     username: "medical_ai@hospital.local"
-    password: "password"  # Use environment variable in production
+    password: "${SMTP_PASSWORD}"  # Set via environment variable
     from_address: "medical_ai@hospital.local"
     
   # SMS settings (if enabled)
   sms:
     provider: "twilio"
-    account_sid: "your_account_sid"
-    auth_token: "your_auth_token"  # Use environment variable in production
+    account_sid: "${TWILIO_ACCOUNT_SID}"  # Set via environment variable
+    auth_token: "${TWILIO_AUTH_TOKEN}"  # Set via environment variable
     from_number: "+1234567890"
     
   # HL7 notification settings
