@@ -177,7 +177,7 @@ class MonteCarloDropout:
             prediction_variance = 0.0
 
             disease_count = 0
-            for disease in predictions[0].keys():
+            for disease in predictions[0]:
                 disease_preds = torch.stack([p[disease] for p in predictions])
                 disease_logits = torch.stack([l[disease] for l in logits_samples])
 
@@ -375,7 +375,7 @@ class EnsembleUncertainty:
             prediction_variance = 0.0
 
             disease_count = 0
-            for disease in predictions[0].keys():
+            for disease in predictions[0]:
                 # Extract predictions for this disease
                 disease_preds = [p[disease] for p in predictions]
 

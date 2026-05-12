@@ -251,7 +251,7 @@ class GradientCompressor:
         """Compute size of quantized gradients in bytes."""
         total_size = 0
         
-        for name in quantized.quantized_values.keys():
+        for name in quantized.quantized_values:
             # Quantized values
             total_size += quantized.quantized_values[name].numel() * quantized.quantized_values[name].element_size()
             # Scale and zero_point (float32 each)
@@ -263,7 +263,7 @@ class GradientCompressor:
         """Compute size of sparsified gradients in bytes."""
         total_size = 0
         
-        for name in sparsified.values.keys():
+        for name in sparsified.values:
             # Values (float32)
             total_size += len(sparsified.values[name]) * 4
             # Indices (int64)

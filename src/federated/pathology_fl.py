@@ -224,7 +224,8 @@ class PathologyFederatedAggregator:
         
         aggregated_params = {}
         
-        for param_name in client_updates[list(client_updates.keys())[0]].keys():
+        first_client_params = next(iter(client_updates.values()))
+        for param_name in first_client_params:
             if 'attention' in param_name.lower():
                 # Use attention-based weighting for attention layers
                 weighted_params = []
@@ -320,8 +321,9 @@ class PathologyFederatedAggregator:
         if total_weight <= 0:
             raise ValueError("total aggregation weight must be positive")
 
-        for param_name in client_updates[list(client_updates.keys())[0]].keys():
-            weighted_sum = torch.zeros_like(client_updates[list(client_updates.keys())[0]][param_name])
+        first_client_params = next(iter(client_updates.values()))
+        for param_name in first_client_params:
+            weighted_sum = torch.zeros_like(first_client_params[param_name])
             
             for client_id, params in client_updates.items():
                 weighted_sum += params[param_name] * weights[client_id]
@@ -351,7 +353,7 @@ class PathologyFederatedAggregator:
         
         # Step 3: Combine expertise and quality weights
         combined_weights = {}
-        for client_id in client_updates.keys():
+        for client_id in client_updates:
             expertise_w = expertise_weights.get(client_id, 1.0)
             quality_w = quality_weights.get(client_id, 1.0)
             

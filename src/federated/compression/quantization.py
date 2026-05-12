@@ -41,7 +41,7 @@ class QuantizedGradients:
         original_size = 0
         compressed_size = 0
         
-        for name in self.quantized_values.keys():
+        for name in self.quantized_values:
             # Original size (assuming float32)
             original_size += np.prod(self.original_shapes[name]) * 4
             
@@ -169,7 +169,7 @@ def dequantize_gradients(
     """
     dequantized = {}
     
-    for name in quantized.quantized_values.keys():
+    for name in quantized.quantized_values:
         quantized_vals = quantized.quantized_values[name]
         scale = quantized.scales[name]
         zero_point = quantized.zero_points[name]

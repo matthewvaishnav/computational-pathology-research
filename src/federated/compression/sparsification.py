@@ -42,7 +42,7 @@ class SparsifiedGradients:
         original_size = 0
         compressed_size = 0
         
-        for name in self.values.keys():
+        for name in self.values:
             # Original size (assuming float32)
             original_size += np.prod(self.original_shapes[name]) * 4
             
@@ -56,7 +56,7 @@ class SparsifiedGradients:
         """Calculate sparsity for each parameter."""
         sparsity = {}
         
-        for name in self.values.keys():
+        for name in self.values:
             original_size = np.prod(self.original_shapes[name])
             non_zero_size = len(self.values[name])
             sparsity[name] = 1.0 - (non_zero_size / original_size)
@@ -154,7 +154,7 @@ def densify_gradients(
     """
     densified = {}
     
-    for name in sparsified.values.keys():
+    for name in sparsified.values:
         sparse_values = sparsified.values[name]
         sparse_indices = sparsified.indices[name]
         original_shape = sparsified.original_shapes[name]

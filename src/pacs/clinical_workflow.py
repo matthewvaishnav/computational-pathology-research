@@ -232,7 +232,7 @@ class ClinicalWorkflowOrchestrator:
 
             # Find study on PACS systems
             study_found = False
-            for pacs_name in self.pacs_client.connections.keys():
+            for pacs_name in self.pacs_client.connections:
                 studies = self.pacs_client.find_studies(
                     pacs_name=pacs_name, accession_number=task.accession_number
                 )
