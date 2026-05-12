@@ -419,7 +419,7 @@ Subject: Security Incident Notification
 
 Dear [User],
 
-We are writing to inform you of a security incident that may have affected your account.
+I am writing to inform you of a security incident that may have affected your account.
 
 What happened:
 [Brief description]
@@ -427,7 +427,7 @@ What happened:
 What information was involved:
 [List of data types]
 
-What we are doing:
+What I am doing:
 [Remediation steps]
 
 What you should do:

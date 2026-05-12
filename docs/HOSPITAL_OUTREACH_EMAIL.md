@@ -28,7 +28,7 @@ I'm reaching out to explore a potential research collaboration between [Hospital
 - **FDA regulatory infrastructure**: Device Master Record, risk management (ISO 14971), V&V documentation
 - **Real-time processing**: Streaming WSI analysis with attention-based MIL models
 
-### Why Partner With Us
+### Why Partner With Me
 
 **For Your Institution**:
 - Co-authorship on multi-site validation study (high-impact publication potential)
