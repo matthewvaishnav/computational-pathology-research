@@ -40,10 +40,10 @@ export default function Home(): ReactNode {
           <section className={styles.abstract}>
             <h2 className={styles.sectionTitle}>Abstract</h2>
             <p className={styles.abstractText}>
-              We present HistoCore, a comprehensive computational pathology platform designed for clinical-scale 
+              I present HistoCore, a comprehensive computational pathology platform designed for clinical-scale 
               deployment with integrated foundation models, security compliance, and production-ready inference 
               capabilities. The platform addresses critical challenges in digital pathology including whole slide 
-              image (WSI) processing, model interpretability, and regulatory compliance. Our system demonstrates 
+              image (WSI) processing, model interpretability, and regulatory compliance. The system demonstrates 
               superior performance across multiple benchmarks with 93.94% AUC on CAMELYON17, 12.3ms inference time 
               per patch, and comprehensive test coverage exceeding 4,740 automated tests. The platform integrates 
               seamlessly with clinical PACS systems and provides HIPAA-compliant deployment options for healthcare 
