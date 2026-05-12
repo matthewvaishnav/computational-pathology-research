@@ -72,7 +72,7 @@
 - Highlight: Real clinical data validation
 
 **[4:00-4:30] Call to Action**
-- "Partner with us for multi-site validation study"
+- "Partner with me for multi-site validation study"
 - Benefits: Co-authorship, early access, no cost
 - Contact: Email, GitHub, phone
 

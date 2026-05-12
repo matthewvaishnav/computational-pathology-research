@@ -124,7 +124,7 @@ The live repository now includes dedicated property-based suites for the nnMIL a
   - API compatibility between TransMIL and nnMIL
   - Checkpoint migration and weight-transfer behavior
 
-Together, these suites document the current correctness contract for migration, inference, training, and adapter behavior instead of relying only on conventional unit tests.
+These suites document the current correctness contract for migration, inference, training, and adapter behavior instead of relying only on conventional unit tests.
 
 ### 3. Integration Tests (50+ tests)
 

@@ -419,7 +419,7 @@ def notify_slack(webhook_url: str, vulnerabilities: list):
 security:
   ignore-vulnerabilities:
     - id: 12345
-      reason: "Not applicable - we don't use affected feature"
+      reason: "Not applicable - I don't use affected feature"
       expires: "2024-12-31"
 ```
 
