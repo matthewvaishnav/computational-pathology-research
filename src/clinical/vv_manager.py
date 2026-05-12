@@ -72,8 +72,8 @@ class VVManager:
                 software_components, verification_activities, validation_activities
             ),
             "completion_criteria": {
-                "verification_pass_rate": 100,
-                "validation_pass_rate": 100,
+                "verification_pass_rate": 100,  # nosec B105 - Numeric threshold, not password
+                "validation_pass_rate": 100,  # nosec B105 - Numeric threshold, not password
                 "coverage_threshold": 95,
             },
         }

@@ -158,7 +158,7 @@ async def login_user(login_data: UserLogin, request: Request):
             "login_success", username=username, ip_address=ip_address, success=True
         )
 
-        return {"access_token": access_token, "token_type": "bearer"}
+        return {"access_token": access_token, "token_type": "bearer"}  # nosec B105 - OAuth2 token type, not password  # nosec B105 - OAuth2 token type, not password
 
     except HTTPException:
         raise
@@ -237,7 +237,7 @@ async def oauth_callback(request: Request, provider: str = "azure"):
             user = user_ops.create_user(
                 username=username,
                 email=email,
-                password_hash="",
+                password_hash="",  # nosec B106 - OAuth users have no password
                 role="pathologist",
             )
             db.commit()
