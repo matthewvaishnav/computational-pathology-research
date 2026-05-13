@@ -6,6 +6,7 @@ from configuration dictionaries. Supports:
 - AttentionMIL: Basic attention-weighted pooling
 - CLAM: Clustering-Constrained Attention MIL
 - TransMIL: Transformer-based MIL
+- TransnnMIL: Fusion of TransMIL and nnMIL with learnable gate
 - Baseline pooling models (mean, max)
 """
 
@@ -18,6 +19,7 @@ import torch.nn as nn
 from .attention_mil import AttentionMIL
 from .clam import CLAM
 from .transmil import TransMIL
+from .transnnmil import TransnnMIL
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +29,15 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
     Factory function to create attention-based MIL models from configuration.
 
     This function reads the model configuration and instantiates the appropriate
-    attention-based MIL model (AttentionMIL, CLAM, or TransMIL). It also supports
-    baseline pooling models (mean, max) for comparison.
+    attention-based MIL model (AttentionMIL, CLAM, TransMIL, or TransnnMIL). It also
+    supports baseline pooling models (mean, max) for comparison.
 
     Args:
         config: Configuration dictionary with model parameters
         feature_dim: Dimension of input patch features (default: 1024)
 
     Returns:
-        Instantiated model (AttentionMIL, CLAM, TransMIL, or baseline)
+        Instantiated model (AttentionMIL, CLAM, TransMIL, TransnnMIL, or baseline)
 
     Raises:
         ValueError: If model_type is invalid or required config is missing
@@ -112,6 +114,24 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
             f"num_heads={transmil_config.get('num_heads', 8)}"
         )
 
+    elif model_type == "transnnmil":
+        # TransnnMIL configuration (fusion of TransMIL and nnMIL)
+        transnnmil_config = config.get("transnnmil", {})
+        model = TransnnMIL(
+            feature_dim=feature_dim,
+            hidden_dim=hidden_dim,
+            num_classes=num_classes,
+            num_layers=transnnmil_config.get("num_layers", 2),
+            num_heads=transnnmil_config.get("num_heads", 8),
+            dropout=dropout,
+            use_pos_encoding=transnnmil_config.get("use_pos_encoding", False),
+        )
+        logger.info(
+            f"TransnnMIL created: num_layers={transnnmil_config.get('num_layers', 2)}, "
+            f"num_heads={transnnmil_config.get('num_heads', 8)}, "
+            f"use_pos_encoding={transnnmil_config.get('use_pos_encoding', False)}"
+        )
+
     elif model_type in ["mean", "max"]:
         # Baseline pooling models
         class SimplePoolingModel(nn.Module):
@@ -174,7 +194,7 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
     else:
         raise ValueError(
             f"Invalid model_type: {model_type}. Must be one of: "
-            f"attention_mil, clam, transmil, mean, max"
+            f"attention_mil, clam, transmil, transnnmil, mean, max"
         )
 
     return model
