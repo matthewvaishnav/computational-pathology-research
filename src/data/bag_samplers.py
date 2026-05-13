@@ -8,6 +8,7 @@ for efficient batching during training and inference.
 Key Design Decisions:
 - Bag length M = median_patches / 2 (rule-based from dataset fingerprint)
 - Training: Random sampling without replacement if N > M
+  - Optional: Tissue-aware weighted sampling (prioritize tumor regions)
 - Inference: Sliding window with stride for N > M
 - Padding: Zero vectors if N < M
 """
@@ -16,6 +17,7 @@ import logging
 from typing import Optional, Tuple
 
 import torch
+import torch.nn as nn
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +65,10 @@ class FixedLengthBagSampler:
         self,
         bag_length: int,
         mode: str = 'train',
-        stride: Optional[int] = None
+        stride: Optional[int] = None,
+        tissue_classifier: Optional[nn.Module] = None,
+        tissue_aware: bool = False,
+        temperature: float = 1.0
     ):
         """
         Initialize FixedLengthBagSampler.
@@ -72,6 +77,9 @@ class FixedLengthBagSampler:
             bag_length: Fixed length M for all bags (100-10000)
             mode: Sampling mode - 'train' or 'inference'
             stride: Stride for sliding window (default: bag_length)
+            tissue_classifier: Optional tissue classifier for weighted sampling
+            tissue_aware: Enable tissue-aware weighted sampling (default: False)
+            temperature: Temperature for tissue importance weighting (default: 1.0)
         """
         # Validate bag_length
         if not (100 <= bag_length <= 10000):
@@ -91,13 +99,23 @@ class FixedLengthBagSampler:
                 f"stride must be positive, got {stride}"
             )
         
+        # Validate tissue-aware settings
+        if tissue_aware and tissue_classifier is None:
+            raise ValueError(
+                "tissue_classifier must be provided when tissue_aware=True"
+            )
+        
         self.bag_length = bag_length
         self.mode = mode
         self.stride = stride if stride is not None else bag_length
+        self.tissue_classifier = tissue_classifier
+        self.tissue_aware = tissue_aware
+        self.temperature = temperature
         
         logger.debug(
             f"Initialized FixedLengthBagSampler: "
-            f"bag_length={bag_length}, mode={mode}, stride={self.stride}"
+            f"bag_length={bag_length}, mode={mode}, stride={self.stride}, "
+            f"tissue_aware={tissue_aware}"
         )
     
     def sample(
@@ -218,6 +236,10 @@ class FixedLengthBagSampler:
         """
         Randomly sample M patches from N patches without replacement (training mode).
         
+        Supports two sampling strategies:
+        1. Uniform sampling (default): All patches equally likely
+        2. Tissue-aware sampling: Weight by tissue importance (tumor > stroma > background)
+        
         Args:
             features: Input features [N_total, D]
             N: Actual number of valid patches
@@ -227,14 +249,38 @@ class FixedLengthBagSampler:
             sampled_features: [M, D] randomly sampled patches
             mask: [M] all True (no padding)
         """
-        # Random sampling without replacement
-        indices = torch.randperm(N, device=features.device)[:M]
-        sampled_features = features[indices]
+        if self.tissue_aware and self.tissue_classifier is not None:
+            # Tissue-aware weighted sampling
+            with torch.no_grad():
+                # Get importance weights from tissue classifier
+                importance = self.tissue_classifier.get_importance_weights(
+                    features[:N],
+                    temperature=self.temperature
+                )  # [N]
+                
+                # Convert to sampling probabilities
+                probs = importance / (importance.sum() + 1e-8)
+                
+                # Sample without replacement using multinomial
+                # Note: multinomial samples with replacement, so we use a workaround
+                # Sample M indices weighted by importance
+                indices = torch.multinomial(probs, M, replacement=False)
+            
+            sampled_features = features[indices]
+            
+            logger.debug(
+                f"Tissue-aware sampled: {M} patches from {N} "
+                f"(mean importance: {importance.mean():.3f})"
+            )
+        else:
+            # Uniform random sampling without replacement
+            indices = torch.randperm(N, device=features.device)[:M]
+            sampled_features = features[indices]
+            
+            logger.debug(f"Random sampled: {M} patches from {N} (train mode)")
         
         # All patches are valid (no padding)
         mask = torch.ones(M, dtype=torch.bool, device=features.device)
-        
-        logger.debug(f"Random sampled: {M} patches from {N} (train mode)")
         
         return sampled_features, mask
     
