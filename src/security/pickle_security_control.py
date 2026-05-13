@@ -204,14 +204,14 @@ class PickleSecurityControl:
             if file_obj:
                 # File object provided
                 if is_trusted:
-                    data = pickle.load(file_obj)
+                    data = pickle.load(file_obj)  # nosec B301 - Source validated as trusted via is_trusted_source()
                 else:
                     data = RestrictedUnpickler(file_obj).load()
             else:
                 # Path provided
                 with open(source, 'rb') as f:
                     if is_trusted:
-                        data = pickle.load(f)
+                        data = pickle.load(f)  # nosec B301 - Source validated as trusted via is_trusted_source()
                     else:
                         data = RestrictedUnpickler(f).load()
             
