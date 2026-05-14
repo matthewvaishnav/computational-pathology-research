@@ -44,6 +44,13 @@ from .hierarchical_pooling import (
     RegionTransformer,
 )
 
+# Import topology branch if available
+try:
+    from .topology_branch import TopologyBranch
+    TOPOLOGY_AVAILABLE = True
+except ImportError:
+    TOPOLOGY_AVAILABLE = False
+
 
 class TransnnMIL(nn.Module):
     """
@@ -109,6 +116,10 @@ class TransnnMIL(nn.Module):
         clustering_method: str = 'learnable',
         pooling_method: str = 'attention',
         temperature: float = 1.0,
+        enable_topology: bool = False,
+        k_neighbors: int = 8,
+        gnn_type: str = 'gat',
+        gnn_pooling: str = 'attention',
     ):
         super().__init__()
         
@@ -149,6 +160,25 @@ class TransnnMIL(nn.Module):
         self.clustering_method = clustering_method
         self.pooling_method = pooling_method
         self.temperature = temperature
+        self.enable_topology = enable_topology
+        self.k_neighbors = k_neighbors
+        self.gnn_type = gnn_type
+        self.gnn_pooling = gnn_pooling
+        
+        # Topology branch (optional)
+        if enable_topology:
+            if not TOPOLOGY_AVAILABLE:
+                raise ImportError("TopologyBranch requires torch_geometric. Install with: pip install torch-geometric")
+            
+            self.topology_branch = TopologyBranch(
+                feature_dim=feature_dim,
+                hidden_dim=region_hidden_dim,
+                num_layers=2,
+                k_neighbors=k_neighbors,
+                gnn_type=gnn_type,
+                pooling=gnn_pooling,
+                dropout=dropout,
+            )
         
         # Hierarchical pooling module (optional)
         if enable_hierarchical:
@@ -342,25 +372,52 @@ class TransnnMIL(nn.Module):
         # Branch B: Aggregated features [batch_size, 1024]
         features_b = self.branch_b.get_features(branch_input, branch_num_patches)
         
+        # Branch C: Topology (optional)
+        features_c = None
+        if self.enable_topology:
+            if coordinates is None:
+                raise ValueError("coordinates required when enable_topology=True")
+            
+            # Create mask from num_patches
+            mask = None
+            if num_patches is not None:
+                mask = torch.arange(features.size(1), device=features.device).unsqueeze(0) < num_patches.unsqueeze(1)
+            
+            # Get topology features [batch_size, region_hidden_dim]
+            features_c = self.topology_branch(features, coordinates, mask)
+        
         # Project to common dimension (512)
         proj_a = self.proj_a(features_a)  # [batch_size, 512]
         proj_b = self.proj_b(features_b)  # [batch_size, 512]
         
-        # Validate output shapes
-        batch_size = features.size(0)
-        assert proj_a.shape == (batch_size, 512), \
-            f"proj_a shape mismatch: expected ({batch_size}, 512), got {proj_a.shape}"
-        assert proj_b.shape == (batch_size, 512), \
-            f"proj_b shape mismatch: expected ({batch_size}, 512), got {proj_b.shape}"
-        
-        # Reshape for multi-head attention: [B, 512] → [B, 1, 512]
-        query = proj_a.unsqueeze(1)
-        key = proj_b.unsqueeze(1)
-        value = proj_b.unsqueeze(1)
-        
-        # Apply cross-attention fusion
-        fused, _ = self.fusion_attention(query, key, value)  # [B, 1, 512]
-        fused = fused.squeeze(1)  # [B, 512]
+        # Three-branch fusion if topology enabled
+        if self.enable_topology and features_c is not None:
+            # Project topology features
+            proj_c = nn.Linear(self.region_hidden_dim, 512).to(features.device)(features_c)  # [B, 512]
+            
+            # Concatenate all three branches
+            combined = torch.stack([proj_a, proj_b, proj_c], dim=1)  # [B, 3, 512]
+            
+            # Multi-head attention over branches
+            fused, _ = self.fusion_attention(combined, combined, combined)  # [B, 3, 512]
+            fused = fused.mean(dim=1)  # [B, 512] - average over branches
+        else:
+            # Two-branch fusion (original)
+            # Validate output shapes
+            batch_size = features.size(0)
+            assert proj_a.shape == (batch_size, 512), \
+                f"proj_a shape mismatch: expected ({batch_size}, 512), got {proj_a.shape}"
+            assert proj_b.shape == (batch_size, 512), \
+                f"proj_b shape mismatch: expected ({batch_size}, 512), got {proj_b.shape}"
+            
+            # Reshape for multi-head attention: [B, 512] → [B, 1, 512]
+            query = proj_a.unsqueeze(1)
+            key = proj_b.unsqueeze(1)
+            value = proj_b.unsqueeze(1)
+            
+            # Apply cross-attention fusion
+            fused, _ = self.fusion_attention(query, key, value)  # [B, 1, 512]
+            fused = fused.squeeze(1)  # [B, 512]
         
         # Validate fused features shape
         assert fused.shape == (batch_size, 512), \
