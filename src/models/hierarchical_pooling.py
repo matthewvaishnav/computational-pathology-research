@@ -363,3 +363,109 @@ class KMeansClusterer(nn.Module):
         """Get k-means cluster centers."""
         return self.centers.detach()
 
+
+class GridClusterer(nn.Module):
+    """
+    Grid-based baseline for spatial clustering.
+    
+    Divides coordinate space into uniform grid. Simple, deterministic,
+    no learning required. Useful as baseline.
+    
+    Args:
+        num_clusters: Number of grid cells (must be perfect square)
+        temperature: Softmax temperature for soft assignment
+    
+    Example:
+        >>> clusterer = GridClusterer(num_clusters=16)  # 4x4 grid
+        >>> coords = torch.rand(4, 100, 2)
+        >>> assignments = clusterer(coords)  # [4, 100, 16]
+    
+    Notes:
+        - Grid centers are fixed (not learnable)
+        - num_clusters must be perfect square (4, 9, 16, 25, ...)
+        - Assumes coords normalized to [0, 1]
+    """
+    
+    def __init__(
+        self,
+        num_clusters: int,
+        temperature: float = 1.0,
+    ):
+        super().__init__()
+        
+        if num_clusters <= 0:
+            raise ValueError(f"num_clusters must be positive, got {num_clusters}")
+        if temperature <= 0:
+            raise ValueError(f"temperature must be positive, got {temperature}")
+        
+        # Check perfect square
+        k = int(num_clusters ** 0.5)
+        if k * k != num_clusters:
+            raise ValueError(
+                f"num_clusters must be perfect square, got {num_clusters}. "
+                f"Try: {k*k} or {(k+1)*(k+1)}"
+            )
+        
+        self.num_clusters = num_clusters
+        self.temperature = temperature
+        self.grid_size = k
+        
+        # Create fixed grid centers
+        centers = self._create_grid()
+        self.register_buffer('centers', centers)
+    
+    def _create_grid(self) -> torch.Tensor:
+        """
+        Create uniform grid centers in [0, 1]^2.
+        
+        Returns:
+            centers: Grid centers [num_clusters, 2]
+        """
+        k = self.grid_size
+        
+        # Grid points (exclude boundaries)
+        x = torch.linspace(0, 1, k + 2)[1:-1]
+        y = torch.linspace(0, 1, k + 2)[1:-1]
+        
+        # Meshgrid
+        grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
+        centers = torch.stack([grid_x.flatten(), grid_y.flatten()], dim=1)
+        
+        return centers
+    
+    def forward(
+        self,
+        coords: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Compute soft assignments using fixed grid.
+        
+        Args:
+            coords: Patch coordinates [batch_size, num_patches, 2]
+            mask: Optional mask [batch_size, num_patches]
+        
+        Returns:
+            assignments: Soft assignments [batch_size, num_patches, num_clusters]
+        """
+        batch_size, num_patches, _ = coords.shape
+        
+        # Compute distances [B, N, K]
+        coords_expanded = coords.unsqueeze(2)  # [B, N, 1, 2]
+        centers_expanded = self.centers.unsqueeze(0).unsqueeze(0)  # [1, 1, K, 2]
+        distances = torch.norm(coords_expanded - centers_expanded, dim=-1)
+        
+        # Soft assignment
+        assignments = F.softmax(-distances / self.temperature, dim=-1)
+        
+        # Apply mask
+        if mask is not None:
+            uniform = torch.ones_like(assignments) / self.num_clusters
+            assignments = torch.where(mask.unsqueeze(-1), assignments, uniform)
+        
+        return assignments
+    
+    def get_centers(self) -> torch.Tensor:
+        """Get grid centers."""
+        return self.centers.detach()
+
