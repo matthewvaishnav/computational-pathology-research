@@ -435,3 +435,126 @@ class nnMIL(nn.Module):
                 ) < num_patches.unsqueeze(1)
             
             return self._forward_single_scale(features, mask, return_attention)
+
+    def get_features(
+        self,
+        features: torch.Tensor,
+        num_patches: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Extract feature representation before classification.
+        
+        Args:
+            features: Patch features [batch_size, num_patches, feature_dim]
+            num_patches: Actual patch counts [batch_size] for masking padded patches
+        
+        Returns:
+            h: Aggregated feature representation [batch_size, feature_dim]
+        """
+        if self.multi_scale:
+            # Multi-scale input
+            batch_size = features[0].shape[0] if features[0] is not None else features[1].shape[0]
+            max_patches = max(f.shape[1] for f in features if f is not None)
+
+            # Create mask from num_patches
+            mask = None
+            if num_patches is not None:
+                first_scale = next((f for f in features if f is not None), None)
+                mask = torch.arange(max_patches, device=first_scale.device).unsqueeze(
+                    0
+                ) < num_patches.unsqueeze(1)
+
+            # Apply fusion strategy
+            if self.fusion_strategy == "early":
+                return self._get_features_early_fusion(features, mask)
+            elif self.fusion_strategy == "late":
+                return self._get_features_late_fusion(features, mask)
+            else:
+                raise ValueError(f"Unknown fusion_strategy: {self.fusion_strategy}")
+        else:
+            # Single-scale input
+            batch_size, max_patches, _ = features.shape
+
+            # Create mask from num_patches
+            mask = None
+            if num_patches is not None:
+                mask = torch.arange(max_patches, device=features.device).unsqueeze(
+                    0
+                ) < num_patches.unsqueeze(1)
+            
+            return self._get_features_single_scale(features, mask)
+
+    def _get_features_single_scale(
+        self,
+        features: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Get features for single-scale input."""
+        # Store original features for aggregation
+        original_features = features
+        
+        # Project to hidden dimension for attention computation
+        features = self.feature_proj(features)
+        
+        # Compute attention weights in H-dimensional subspace
+        attention_weights = self._compute_attention(features, mask)
+        
+        # Aggregate in FULL D-dimensional space
+        h = self._aggregate_features(original_features, attention_weights)
+        
+        return h
+
+    def _get_features_early_fusion(
+        self,
+        multi_scale_features: List[torch.Tensor],
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Get features for early fusion multi-scale input."""
+        # Apply fusion strategy to combine scales
+        fused_features = self.fusion(multi_scale_features, mask)
+        
+        # Store original fused features for aggregation
+        original_features = fused_features
+        
+        # Project to hidden dimension for attention computation
+        features = self.feature_proj(fused_features)
+        
+        # Compute attention weights in H-dimensional subspace
+        attention_weights = self._compute_attention(features, mask)
+        
+        # Aggregate in FULL D-dimensional space
+        h = self._aggregate_features(original_features, attention_weights)
+        
+        return h
+
+    def _get_features_late_fusion(
+        self,
+        multi_scale_features: List[torch.Tensor],
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Get features for late fusion multi-scale input."""
+        scale_features = []
+        
+        for i, scale_features_i in enumerate(multi_scale_features):
+            if scale_features_i is not None:
+                # Store original features for aggregation
+                original_features = scale_features_i
+                
+                # Project to hidden dimension for attention computation
+                features = self.feature_proj[i](scale_features_i)
+                
+                # Compute attention weights in H-dimensional subspace
+                attention_weights = self._compute_attention(features, mask)
+                
+                # Aggregate in FULL D-dimensional space
+                h_i = self._aggregate_features(original_features, attention_weights)
+                
+                scale_features.append(h_i)
+            else:
+                scale_features.append(None)
+        
+        # Concatenate features from all scales
+        valid_features = [f for f in scale_features if f is not None]
+        h = torch.cat(valid_features, dim=1)
+        
+        return h

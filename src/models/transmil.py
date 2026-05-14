@@ -418,3 +418,82 @@ class TransMIL(nn.Module):
                 return logits, attention_weights
             else:
                 return logits
+
+    def get_features(
+        self,
+        features: torch.Tensor,
+        num_patches: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Extract feature representation before classification.
+        
+        Args:
+            features: Patch features [batch_size, num_patches, feature_dim]
+            num_patches: Actual patch counts [batch_size] for masking padded patches
+        
+        Returns:
+            cls_repr: CLS token representation [batch_size, hidden_dim]
+        """
+        if self.multi_scale:
+            # Multi-scale input
+            batch_size = features[0].shape[0] if features[0] is not None else features[1].shape[0]
+            max_patches = max(f.shape[1] for f in features if f is not None)
+
+            # Create mask from num_patches
+            mask = None
+            if num_patches is not None:
+                first_scale = next((f for f in features if f is not None), None)
+                mask = torch.arange(max_patches, device=first_scale.device).unsqueeze(
+                    0
+                ) < num_patches.unsqueeze(1)
+
+            # Apply fusion strategy
+            if self.fusion_strategy == "early":
+                cls_repr, _ = self._early_fusion_transmil(features, mask)
+            elif self.fusion_strategy == "late":
+                cls_repr, _ = self._late_fusion_transmil(features, mask)
+            else:
+                raise ValueError(f"Unknown fusion_strategy: {self.fusion_strategy}")
+
+            return cls_repr
+        else:
+            # Single-scale input
+            batch_size, max_patches, _ = features.shape
+
+            # Project features
+            h = (
+                self.feature_proj[0](features)
+                if isinstance(self.feature_proj, nn.ModuleList)
+                else self.feature_proj(features)
+            )
+
+            # Add CLS token
+            cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+            h = torch.cat([cls_tokens, h], dim=1)
+
+            # Create attention mask for transformer
+            if num_patches is not None:
+                transformer_mask = torch.arange(max_patches, device=features.device).unsqueeze(
+                    0
+                ) >= num_patches.unsqueeze(1)
+                cls_mask = torch.zeros(batch_size, 1, dtype=torch.bool, device=features.device)
+                transformer_mask = torch.cat([cls_mask, transformer_mask], dim=1)
+            else:
+                transformer_mask = None
+
+            # Apply transformer encoder
+            h = (
+                self.transformer[0](h, src_key_padding_mask=transformer_mask)
+                if isinstance(self.transformer, nn.ModuleList)
+                else self.transformer(h, src_key_padding_mask=transformer_mask)
+            )
+
+            # Extract CLS token representation
+            cls_repr = h[:, 0, :]
+
+            # Apply layer normalization
+            cls_repr = (
+                self.norm[0](cls_repr) if isinstance(self.norm, nn.ModuleList) else self.norm(cls_repr)
+            )
+
+            return cls_repr
