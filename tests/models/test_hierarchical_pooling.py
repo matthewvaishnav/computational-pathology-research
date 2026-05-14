@@ -626,5 +626,142 @@ class TestPoolingComparison:
         assert not torch.allclose(attn_out, max_out)
 
 
+class TestRegionTransformer:
+    """Test region transformer."""
+    
+    def test_init(self):
+        """Test initialization."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        transformer = RegionTransformer(
+            feature_dim=1024,
+            num_layers=2,
+            num_heads=8,
+        )
+        
+        assert transformer.feature_dim == 1024
+        assert transformer.num_layers == 2
+        assert transformer.num_heads == 8
+    
+    def test_invalid_inputs(self):
+        """Test input validation."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        with pytest.raises(ValueError, match="feature_dim must be positive"):
+            RegionTransformer(feature_dim=0)
+        
+        with pytest.raises(ValueError, match="num_layers must be positive"):
+            RegionTransformer(feature_dim=1024, num_layers=0)
+        
+        with pytest.raises(ValueError, match="num_heads must be positive"):
+            RegionTransformer(feature_dim=1024, num_heads=0)
+        
+        with pytest.raises(ValueError, match="must be divisible by num_heads"):
+            RegionTransformer(feature_dim=1024, num_heads=7)
+        
+        with pytest.raises(ValueError, match="mlp_ratio must be positive"):
+            RegionTransformer(feature_dim=1024, mlp_ratio=0)
+        
+        with pytest.raises(ValueError, match="dropout must be in"):
+            RegionTransformer(feature_dim=1024, dropout=1.5)
+    
+    def test_forward_shape(self):
+        """Test forward pass output shape."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        transformer = RegionTransformer(feature_dim=1024, num_layers=2)
+        region_features = torch.randn(4, 16, 1024)
+        
+        output = transformer(region_features)
+        
+        assert output.shape == (4, 16, 1024)
+    
+    def test_forward_with_mask(self):
+        """Test forward with mask."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        transformer = RegionTransformer(feature_dim=1024, num_layers=2)
+        region_features = torch.randn(4, 16, 1024)
+        mask = torch.ones(4, 16, dtype=torch.bool)
+        mask[:, 8:] = False  # Mask half
+        
+        output = transformer(region_features, mask=mask)
+        
+        assert output.shape == (4, 16, 1024)
+        assert not torch.isnan(output).any()
+    
+    def test_positional_encoding(self):
+        """Test positional encoding."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        transformer = RegionTransformer(
+            feature_dim=1024,
+            num_layers=2,
+            use_pos_encoding=True,
+        )
+        
+        region_features = torch.randn(4, 16, 1024)
+        region_centers = torch.rand(16, 2)
+        
+        output = transformer(region_features, region_centers=region_centers)
+        
+        assert output.shape == (4, 16, 1024)
+    
+    def test_positional_encoding_required(self):
+        """Test positional encoding requires centers."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        transformer = RegionTransformer(
+            feature_dim=1024,
+            use_pos_encoding=True,
+        )
+        
+        region_features = torch.randn(4, 16, 1024)
+        
+        with pytest.raises(ValueError, match="region_centers required"):
+            transformer(region_features)
+    
+    def test_gradients_flow(self):
+        """Test gradients flow through transformer."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        transformer = RegionTransformer(feature_dim=1024, num_layers=2)
+        region_features = torch.randn(4, 16, 1024, requires_grad=True)
+        
+        output = transformer(region_features)
+        loss = output.sum()
+        loss.backward()
+        
+        assert region_features.grad is not None
+    
+    def test_multiple_layers(self):
+        """Test different number of layers."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        region_features = torch.randn(4, 16, 1024)
+        
+        for num_layers in [1, 2, 4]:
+            transformer = RegionTransformer(
+                feature_dim=1024,
+                num_layers=num_layers,
+            )
+            output = transformer(region_features)
+            assert output.shape == (4, 16, 1024)
+    
+    def test_different_num_heads(self):
+        """Test different number of attention heads."""
+        from src.models.hierarchical_pooling import RegionTransformer
+        
+        region_features = torch.randn(4, 16, 1024)
+        
+        for num_heads in [4, 8, 16]:
+            transformer = RegionTransformer(
+                feature_dim=1024,
+                num_heads=num_heads,
+            )
+            output = transformer(region_features)
+            assert output.shape == (4, 16, 1024)
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

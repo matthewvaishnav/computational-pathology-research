@@ -364,112 +364,6 @@ class KMeansClusterer(nn.Module):
         return self.centers.detach()
 
 
-class GridClusterer(nn.Module):
-    """
-    Grid-based baseline for spatial clustering.
-    
-    Divides coordinate space into uniform grid. Simple, deterministic,
-    no learning required. Useful as baseline.
-    
-    Args:
-        num_clusters: Number of grid cells (must be perfect square)
-        temperature: Softmax temperature for soft assignment
-    
-    Example:
-        >>> clusterer = GridClusterer(num_clusters=16)  # 4x4 grid
-        >>> coords = torch.rand(4, 100, 2)
-        >>> assignments = clusterer(coords)  # [4, 100, 16]
-    
-    Notes:
-        - Grid centers are fixed (not learnable)
-        - num_clusters must be perfect square (4, 9, 16, 25, ...)
-        - Assumes coords normalized to [0, 1]
-    """
-    
-    def __init__(
-        self,
-        num_clusters: int,
-        temperature: float = 1.0,
-    ):
-        super().__init__()
-        
-        if num_clusters <= 0:
-            raise ValueError(f"num_clusters must be positive, got {num_clusters}")
-        if temperature <= 0:
-            raise ValueError(f"temperature must be positive, got {temperature}")
-        
-        # Check perfect square
-        k = int(num_clusters ** 0.5)
-        if k * k != num_clusters:
-            raise ValueError(
-                f"num_clusters must be perfect square, got {num_clusters}. "
-                f"Try: {k*k} or {(k+1)*(k+1)}"
-            )
-        
-        self.num_clusters = num_clusters
-        self.temperature = temperature
-        self.grid_size = k
-        
-        # Create fixed grid centers
-        centers = self._create_grid()
-        self.register_buffer('centers', centers)
-    
-    def _create_grid(self) -> torch.Tensor:
-        """
-        Create uniform grid centers in [0, 1]^2.
-        
-        Returns:
-            centers: Grid centers [num_clusters, 2]
-        """
-        k = self.grid_size
-        
-        # Grid points (exclude boundaries)
-        x = torch.linspace(0, 1, k + 2)[1:-1]
-        y = torch.linspace(0, 1, k + 2)[1:-1]
-        
-        # Meshgrid
-        grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
-        centers = torch.stack([grid_x.flatten(), grid_y.flatten()], dim=1)
-        
-        return centers
-    
-    def forward(
-        self,
-        coords: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
-    ) -> torch.Tensor:
-        """
-        Compute soft assignments using fixed grid.
-        
-        Args:
-            coords: Patch coordinates [batch_size, num_patches, 2]
-            mask: Optional mask [batch_size, num_patches]
-        
-        Returns:
-            assignments: Soft assignments [batch_size, num_patches, num_clusters]
-        """
-        batch_size, num_patches, _ = coords.shape
-        
-        # Compute distances [B, N, K]
-        coords_expanded = coords.unsqueeze(2)  # [B, N, 1, 2]
-        centers_expanded = self.centers.unsqueeze(0).unsqueeze(0)  # [1, 1, K, 2]
-        distances = torch.norm(coords_expanded - centers_expanded, dim=-1)
-        
-        # Soft assignment
-        assignments = F.softmax(-distances / self.temperature, dim=-1)
-        
-        # Apply mask
-        if mask is not None:
-            uniform = torch.ones_like(assignments) / self.num_clusters
-            assignments = torch.where(mask.unsqueeze(-1), assignments, uniform)
-        
-        return assignments
-    
-    def get_centers(self) -> torch.Tensor:
-        """Get grid centers."""
-        return self.centers.detach()
-
-
 class RegionAttentionPooling(nn.Module):
     """
     Attention-based pooling within spatial regions.
@@ -700,6 +594,132 @@ class RegionMaxPooling(nn.Module):
         region_features = torch.stack(region_features, dim=1)  # [B, R, D]
         
         return region_features
+
+
+class RegionTransformer(nn.Module):
+    """
+    Transformer for inter-region communication.
+    
+    Processes region features with multi-head self-attention to capture
+    spatial relationships between regions.
+    
+    Args:
+        feature_dim: Region feature dimension
+        num_layers: Number of transformer layers (default: 2)
+        num_heads: Number of attention heads (default: 8)
+        mlp_ratio: MLP hidden dim ratio (default: 4.0)
+        dropout: Dropout rate (default: 0.1)
+        use_pos_encoding: Add positional encoding for regions (default: False)
+    
+    Example:
+        >>> transformer = RegionTransformer(feature_dim=1024, num_layers=2)
+        >>> region_features = torch.randn(4, 16, 1024)  # [B, R, D]
+        >>> 
+        >>> # Process regions
+        >>> output = transformer(region_features)  # [4, 16, 1024]
+    
+    Notes:
+        - Standard transformer encoder architecture
+        - Optional positional encoding based on region centers
+        - LayerNorm + residual connections
+    """
+    
+    def __init__(
+        self,
+        feature_dim: int,
+        num_layers: int = 2,
+        num_heads: int = 8,
+        mlp_ratio: float = 4.0,
+        dropout: float = 0.1,
+        use_pos_encoding: bool = False,
+    ):
+        super().__init__()
+        
+        if feature_dim <= 0:
+            raise ValueError(f"feature_dim must be positive, got {feature_dim}")
+        if num_layers <= 0:
+            raise ValueError(f"num_layers must be positive, got {num_layers}")
+        if num_heads <= 0:
+            raise ValueError(f"num_heads must be positive, got {num_heads}")
+        if feature_dim % num_heads != 0:
+            raise ValueError(f"feature_dim ({feature_dim}) must be divisible by num_heads ({num_heads})")
+        if mlp_ratio <= 0:
+            raise ValueError(f"mlp_ratio must be positive, got {mlp_ratio}")
+        if not 0 <= dropout < 1:
+            raise ValueError(f"dropout must be in [0, 1), got {dropout}")
+        
+        self.feature_dim = feature_dim
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.mlp_ratio = mlp_ratio
+        self.dropout = dropout
+        self.use_pos_encoding = use_pos_encoding
+        
+        # Transformer layers
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=feature_dim,
+            nhead=num_heads,
+            dim_feedforward=int(feature_dim * mlp_ratio),
+            dropout=dropout,
+            activation='gelu',
+            batch_first=True,
+            norm_first=True,
+        )
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers,
+        )
+        
+        # Optional positional encoding
+        if use_pos_encoding:
+            self.pos_encoder = nn.Linear(2, feature_dim)
+        else:
+            self.pos_encoder = None
+    
+    def forward(
+        self,
+        region_features: torch.Tensor,
+        region_centers: Optional[torch.Tensor] = None,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Process region features with transformer.
+        
+        Args:
+            region_features: Region features [batch_size, num_regions, feature_dim]
+            region_centers: Optional region center coords [num_regions, 2]
+                          Used for positional encoding if use_pos_encoding=True
+            mask: Optional mask for valid regions [batch_size, num_regions]
+                 True = valid, False = padding
+        
+        Returns:
+            output: Processed features [batch_size, num_regions, feature_dim]
+        """
+        batch_size, num_regions, feature_dim = region_features.shape
+        
+        # Add positional encoding
+        if self.use_pos_encoding:
+            if region_centers is None:
+                raise ValueError("region_centers required when use_pos_encoding=True")
+            
+            # Encode positions [R, 2] -> [R, D]
+            pos_encoding = self.pos_encoder(region_centers)  # [R, D]
+            
+            # Add to features
+            region_features = region_features + pos_encoding.unsqueeze(0)  # [B, R, D]
+        
+        # Create attention mask (True = ignore)
+        attn_mask = None
+        if mask is not None:
+            attn_mask = ~mask  # Invert: True = padding
+        
+        # Apply transformer
+        output = self.transformer(
+            region_features,
+            src_key_padding_mask=attn_mask,
+        )
+        
+        return output
 
 
 class GridClusterer(nn.Module):
