@@ -469,3 +469,341 @@ class GridClusterer(nn.Module):
         """Get grid centers."""
         return self.centers.detach()
 
+
+class RegionAttentionPooling(nn.Module):
+    """
+    Attention-based pooling within spatial regions.
+    
+    Aggregates patch features within each region using learned attention.
+    Each region gets independent attention weights.
+    
+    Args:
+        feature_dim: Patch feature dimension
+        hidden_dim: Hidden dimension for attention (default: 128)
+        dropout: Dropout rate (default: 0.1)
+    
+    Example:
+        >>> pooling = RegionAttentionPooling(feature_dim=1024)
+        >>> features = torch.randn(4, 100, 1024)
+        >>> assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        >>> 
+        >>> region_features = pooling(features, assignments)  # [4, 16, 1024]
+    
+    Notes:
+        - Uses single-layer attention (query = tanh(W * features))
+        - Attention computed independently per region
+        - Masked patches contribute zero to aggregation
+    """
+    
+    def __init__(
+        self,
+        feature_dim: int,
+        hidden_dim: int = 128,
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+        
+        if feature_dim <= 0:
+            raise ValueError(f"feature_dim must be positive, got {feature_dim}")
+        if hidden_dim <= 0:
+            raise ValueError(f"hidden_dim must be positive, got {hidden_dim}")
+        if not 0 <= dropout < 1:
+            raise ValueError(f"dropout must be in [0, 1), got {dropout}")
+        
+        self.feature_dim = feature_dim
+        self.hidden_dim = hidden_dim
+        
+        # Attention network
+        self.attention = nn.Sequential(
+            nn.Linear(feature_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, 1),
+        )
+    
+    def forward(
+        self,
+        features: torch.Tensor,
+        assignments: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Pool features within regions using attention.
+        
+        Args:
+            features: Patch features [batch_size, num_patches, feature_dim]
+            assignments: Soft region assignments [batch_size, num_patches, num_regions]
+            mask: Optional mask [batch_size, num_patches]
+        
+        Returns:
+            region_features: Aggregated features [batch_size, num_regions, feature_dim]
+        """
+        batch_size, num_patches, feature_dim = features.shape
+        num_regions = assignments.shape[-1]
+        
+        # Compute attention scores [B, N, 1]
+        attn_scores = self.attention(features)  # [B, N, 1]
+        
+        # Apply mask to attention
+        if mask is not None:
+            attn_scores = attn_scores.masked_fill(~mask.unsqueeze(-1), float('-inf'))
+        
+        # Compute attention weights per region
+        # For each region, weight patches by (assignment * attention)
+        region_features = []
+        
+        for r in range(num_regions):
+            # Region assignment weights [B, N, 1]
+            region_assign = assignments[:, :, r:r+1]  # [B, N, 1]
+            
+            # Combined weights: assignment * attention
+            combined_scores = attn_scores + torch.log(region_assign + 1e-8)
+            
+            # Softmax over patches (within region)
+            region_attn = F.softmax(combined_scores, dim=1)  # [B, N, 1]
+            
+            # Weighted sum
+            region_feat = (features * region_attn).sum(dim=1)  # [B, D]
+            region_features.append(region_feat)
+        
+        # Stack regions
+        region_features = torch.stack(region_features, dim=1)  # [B, R, D]
+        
+        return region_features
+
+
+class RegionMeanPooling(nn.Module):
+    """
+    Mean pooling within spatial regions (baseline).
+    
+    Simple weighted average of patch features within each region.
+    
+    Args:
+        None
+    
+    Example:
+        >>> pooling = RegionMeanPooling()
+        >>> features = torch.randn(4, 100, 1024)
+        >>> assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        >>> 
+        >>> region_features = pooling(features, assignments)  # [4, 16, 1024]
+    """
+    
+    def __init__(self):
+        super().__init__()
+    
+    def forward(
+        self,
+        features: torch.Tensor,
+        assignments: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Pool features within regions using mean.
+        
+        Args:
+            features: Patch features [batch_size, num_patches, feature_dim]
+            assignments: Soft region assignments [batch_size, num_patches, num_regions]
+            mask: Optional mask [batch_size, num_patches]
+        
+        Returns:
+            region_features: Aggregated features [batch_size, num_regions, feature_dim]
+        """
+        # Apply mask to assignments
+        if mask is not None:
+            assignments = assignments * mask.unsqueeze(-1).float()
+        
+        # Weighted sum: [B, R, N] @ [B, N, D] = [B, R, D]
+        region_features = torch.bmm(
+            assignments.transpose(1, 2),  # [B, R, N]
+            features,  # [B, N, D]
+        )
+        
+        # Normalize by sum of assignments (handle empty regions)
+        region_weights = assignments.sum(dim=1, keepdim=True).transpose(1, 2)  # [B, R, 1]
+        region_features = region_features / (region_weights + 1e-8)
+        
+        return region_features
+
+
+class RegionMaxPooling(nn.Module):
+    """
+    Max pooling within spatial regions (baseline).
+    
+    Takes max feature value within each region (per dimension).
+    
+    Args:
+        None
+    
+    Example:
+        >>> pooling = RegionMaxPooling()
+        >>> features = torch.randn(4, 100, 1024)
+        >>> assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        >>> 
+        >>> region_features = pooling(features, assignments)  # [4, 16, 1024]
+    """
+    
+    def __init__(self):
+        super().__init__()
+    
+    def forward(
+        self,
+        features: torch.Tensor,
+        assignments: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Pool features within regions using max.
+        
+        Args:
+            features: Patch features [batch_size, num_patches, feature_dim]
+            assignments: Soft region assignments [batch_size, num_patches, num_regions]
+            mask: Optional mask [batch_size, num_patches]
+        
+        Returns:
+            region_features: Aggregated features [batch_size, num_regions, feature_dim]
+        """
+        batch_size, num_patches, feature_dim = features.shape
+        num_regions = assignments.shape[-1]
+        
+        # Hard assignment (argmax)
+        hard_assign = assignments.argmax(dim=-1)  # [B, N]
+        
+        # Apply mask
+        if mask is not None:
+            hard_assign = hard_assign.masked_fill(~mask, -1)
+        
+        # Max pool per region
+        region_features = []
+        
+        for r in range(num_regions):
+            # Patches in region r
+            region_mask = (hard_assign == r)  # [B, N]
+            
+            # Get features for region
+            region_feat = features.clone()
+            region_feat[~region_mask] = float('-inf')
+            
+            # Max over patches
+            region_max = region_feat.max(dim=1)[0]  # [B, D]
+            
+            # Handle empty regions (all -inf)
+            region_max = torch.where(
+                torch.isinf(region_max),
+                torch.zeros_like(region_max),
+                region_max,
+            )
+            
+            region_features.append(region_max)
+        
+        # Stack regions
+        region_features = torch.stack(region_features, dim=1)  # [B, R, D]
+        
+        return region_features
+
+
+class GridClusterer(nn.Module):
+    """
+    Grid-based baseline for spatial clustering.
+    
+    Divides coordinate space into uniform grid. Simple, deterministic,
+    no learning required. Useful as baseline.
+    
+    Args:
+        num_clusters: Number of grid cells (must be perfect square)
+        temperature: Softmax temperature for soft assignment
+    
+    Example:
+        >>> clusterer = GridClusterer(num_clusters=16)  # 4x4 grid
+        >>> coords = torch.rand(4, 100, 2)
+        >>> assignments = clusterer(coords)  # [4, 100, 16]
+    
+    Notes:
+        - Grid centers are fixed (not learnable)
+        - num_clusters must be perfect square (4, 9, 16, 25, ...)
+        - Assumes coords normalized to [0, 1]
+    """
+    
+    def __init__(
+        self,
+        num_clusters: int,
+        temperature: float = 1.0,
+    ):
+        super().__init__()
+        
+        if num_clusters <= 0:
+            raise ValueError(f"num_clusters must be positive, got {num_clusters}")
+        if temperature <= 0:
+            raise ValueError(f"temperature must be positive, got {temperature}")
+        
+        # Check perfect square
+        k = int(num_clusters ** 0.5)
+        if k * k != num_clusters:
+            raise ValueError(
+                f"num_clusters must be perfect square, got {num_clusters}. "
+                f"Try: {k*k} or {(k+1)*(k+1)}"
+            )
+        
+        self.num_clusters = num_clusters
+        self.temperature = temperature
+        self.grid_size = k
+        
+        # Create fixed grid centers
+        centers = self._create_grid()
+        self.register_buffer('centers', centers)
+    
+    def _create_grid(self) -> torch.Tensor:
+        """
+        Create uniform grid centers in [0, 1]^2.
+        
+        Returns:
+            centers: Grid centers [num_clusters, 2]
+        """
+        k = self.grid_size
+        
+        # Grid points (exclude boundaries)
+        x = torch.linspace(0, 1, k + 2)[1:-1]
+        y = torch.linspace(0, 1, k + 2)[1:-1]
+        
+        # Meshgrid
+        grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
+        centers = torch.stack([grid_x.flatten(), grid_y.flatten()], dim=1)
+        
+        return centers
+    
+    def forward(
+        self,
+        coords: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Compute soft assignments using fixed grid.
+        
+        Args:
+            coords: Patch coordinates [batch_size, num_patches, 2]
+            mask: Optional mask [batch_size, num_patches]
+        
+        Returns:
+            assignments: Soft assignments [batch_size, num_patches, num_clusters]
+        """
+        batch_size, num_patches, _ = coords.shape
+        
+        # Compute distances [B, N, K]
+        coords_expanded = coords.unsqueeze(2)  # [B, N, 1, 2]
+        centers_expanded = self.centers.unsqueeze(0).unsqueeze(0)  # [1, 1, K, 2]
+        distances = torch.norm(coords_expanded - centers_expanded, dim=-1)
+        
+        # Soft assignment
+        assignments = F.softmax(-distances / self.temperature, dim=-1)
+        
+        # Apply mask
+        if mask is not None:
+            uniform = torch.ones_like(assignments) / self.num_clusters
+            assignments = torch.where(mask.unsqueeze(-1), assignments, uniform)
+        
+        return assignments
+    
+    def get_centers(self) -> torch.Tensor:
+        """Get grid centers."""
+        return self.centers.detach()
+
