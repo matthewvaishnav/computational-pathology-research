@@ -24,6 +24,8 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from sklearn.cluster import KMeans
+import numpy as np
 
 
 class LearnableClusterCenters(nn.Module):
@@ -243,3 +245,121 @@ class HierarchicalPooling(nn.Module):
     def get_centers(self) -> torch.Tensor:
         """Get cluster center positions."""
         return self.clusterer.get_centers()
+
+
+class KMeansClusterer(nn.Module):
+    """
+    K-means baseline for spatial clustering.
+    
+    Uses sklearn KMeans to cluster patch coordinates. Centers are fixed
+    (not learnable). Useful as baseline comparison.
+    
+    Args:
+        num_clusters: Number of spatial regions (K)
+        temperature: Softmax temperature for soft assignment
+        random_state: Random seed for reproducibility
+    
+    Example:
+        >>> clusterer = KMeansClusterer(num_clusters=16)
+        >>> coords = torch.rand(4, 100, 2)
+        >>> 
+        >>> # Fit on first batch
+        >>> clusterer.fit(coords[0])
+        >>> 
+        >>> # Get assignments
+        >>> assignments = clusterer(coords)  # [4, 100, 16]
+    
+    Notes:
+        - Centers are fixed after fit() call
+        - Must call fit() before forward()
+        - Not differentiable (no gradient flow)
+    """
+    
+    def __init__(
+        self,
+        num_clusters: int,
+        temperature: float = 1.0,
+        random_state: int = 42,
+    ):
+        super().__init__()
+        
+        if num_clusters <= 0:
+            raise ValueError(f"num_clusters must be positive, got {num_clusters}")
+        if temperature <= 0:
+            raise ValueError(f"temperature must be positive, got {temperature}")
+        
+        self.num_clusters = num_clusters
+        self.temperature = temperature
+        self.random_state = random_state
+        
+        # Will be set by fit()
+        self.register_buffer('centers', torch.zeros(num_clusters, 2))
+        self._fitted = False
+    
+    def fit(self, coords: torch.Tensor) -> None:
+        """
+        Fit k-means on coordinates.
+        
+        Args:
+            coords: Patch coordinates [num_patches, 2] or [batch, num_patches, 2]
+                   If batched, uses first batch only
+        """
+        # Handle batched input
+        if coords.ndim == 3:
+            coords = coords[0]
+        
+        # Convert to numpy
+        coords_np = coords.detach().cpu().numpy()
+        
+        # Fit k-means
+        kmeans = KMeans(
+            n_clusters=self.num_clusters,
+            random_state=self.random_state,
+            n_init=10,
+        )
+        kmeans.fit(coords_np)
+        
+        # Store centers
+        centers = torch.from_numpy(kmeans.cluster_centers_).float()
+        self.centers.copy_(centers)
+        self._fitted = True
+    
+    def forward(
+        self,
+        coords: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Compute soft assignments using fixed k-means centers.
+        
+        Args:
+            coords: Patch coordinates [batch_size, num_patches, 2]
+            mask: Optional mask [batch_size, num_patches]
+        
+        Returns:
+            assignments: Soft assignments [batch_size, num_patches, num_clusters]
+        """
+        if not self._fitted:
+            raise RuntimeError("Must call fit() before forward()")
+        
+        batch_size, num_patches, _ = coords.shape
+        
+        # Compute distances [B, N, K]
+        coords_expanded = coords.unsqueeze(2)  # [B, N, 1, 2]
+        centers_expanded = self.centers.unsqueeze(0).unsqueeze(0)  # [1, 1, K, 2]
+        distances = torch.norm(coords_expanded - centers_expanded, dim=-1)
+        
+        # Soft assignment
+        assignments = F.softmax(-distances / self.temperature, dim=-1)
+        
+        # Apply mask
+        if mask is not None:
+            uniform = torch.ones_like(assignments) / self.num_clusters
+            assignments = torch.where(mask.unsqueeze(-1), assignments, uniform)
+        
+        return assignments
+    
+    def get_centers(self) -> torch.Tensor:
+        """Get k-means cluster centers."""
+        return self.centers.detach()
+
