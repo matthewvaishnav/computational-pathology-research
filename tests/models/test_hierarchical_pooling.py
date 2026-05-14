@@ -17,6 +17,9 @@ from src.models.hierarchical_pooling import (
     KMeansClusterer,
     GridClusterer,
     HierarchicalPooling,
+    RegionAttentionPooling,
+    RegionMeanPooling,
+    RegionMaxPooling,
 )
 
 
@@ -348,6 +351,279 @@ class TestClustererComparison:
         assign_grid = grid(coords)
         
         assert not assign_grid.requires_grad
+
+
+class TestRegionAttentionPooling:
+    """Test attention-based region pooling."""
+    
+    def test_init(self):
+        """Test initialization."""
+        pooling = RegionAttentionPooling(feature_dim=1024, hidden_dim=128)
+        
+        assert pooling.feature_dim == 1024
+        assert pooling.hidden_dim == 128
+    
+    def test_invalid_inputs(self):
+        """Test input validation."""
+        with pytest.raises(ValueError, match="feature_dim must be positive"):
+            RegionAttentionPooling(feature_dim=0)
+        
+        with pytest.raises(ValueError, match="hidden_dim must be positive"):
+            RegionAttentionPooling(feature_dim=1024, hidden_dim=0)
+        
+        with pytest.raises(ValueError, match="dropout must be in"):
+            RegionAttentionPooling(feature_dim=1024, dropout=1.5)
+    
+    def test_forward_shape(self):
+        """Test forward pass output shape."""
+        pooling = RegionAttentionPooling(feature_dim=1024)
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        region_features = pooling(features, assignments)
+        
+        assert region_features.shape == (4, 16, 1024)
+    
+    def test_forward_with_mask(self):
+        """Test forward with mask."""
+        pooling = RegionAttentionPooling(feature_dim=1024)
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        mask = torch.ones(4, 100, dtype=torch.bool)
+        mask[:, 50:] = False
+        
+        region_features = pooling(features, assignments, mask)
+        
+        assert region_features.shape == (4, 16, 1024)
+        assert not torch.isnan(region_features).any()
+    
+    def test_gradients_flow(self):
+        """Test gradients flow through attention."""
+        pooling = RegionAttentionPooling(feature_dim=1024)
+        
+        features = torch.randn(4, 100, 1024, requires_grad=True)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        region_features = pooling(features, assignments)
+        loss = region_features.sum()
+        loss.backward()
+        
+        assert features.grad is not None
+
+
+class TestRegionMeanPooling:
+    """Test mean pooling baseline."""
+    
+    def test_init(self):
+        """Test initialization."""
+        pooling = RegionMeanPooling()
+        assert pooling is not None
+    
+    def test_forward_shape(self):
+        """Test forward pass output shape."""
+        pooling = RegionMeanPooling()
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        region_features = pooling(features, assignments)
+        
+        assert region_features.shape == (4, 16, 1024)
+    
+    def test_forward_with_mask(self):
+        """Test forward with mask."""
+        pooling = RegionMeanPooling()
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        mask = torch.ones(4, 100, dtype=torch.bool)
+        mask[:, 50:] = False
+        
+        region_features = pooling(features, assignments, mask)
+        
+        assert region_features.shape == (4, 16, 1024)
+        assert not torch.isnan(region_features).any()
+    
+    def test_weighted_average(self):
+        """Test mean pooling computes weighted average."""
+        pooling = RegionMeanPooling()
+        
+        # Simple case: 2 patches, 2 regions
+        features = torch.tensor([
+            [[1.0, 2.0], [3.0, 4.0]]  # [1, 2, 2]
+        ])
+        assignments = torch.tensor([
+            [[1.0, 0.0], [0.0, 1.0]]  # [1, 2, 2]
+        ])
+        
+        region_features = pooling(features, assignments)
+        
+        # Region 0: patch 0 = [1, 2]
+        # Region 1: patch 1 = [3, 4]
+        expected = torch.tensor([[[1.0, 2.0], [3.0, 4.0]]])
+        
+        assert torch.allclose(region_features, expected)
+    
+    def test_soft_assignment(self):
+        """Test mean pooling with soft assignments."""
+        pooling = RegionMeanPooling()
+        
+        features = torch.tensor([
+            [[1.0, 2.0], [3.0, 4.0]]  # [1, 2, 2]
+        ])
+        # Both patches contribute to both regions
+        assignments = torch.tensor([
+            [[0.5, 0.5], [0.5, 0.5]]  # [1, 2, 2]
+        ])
+        
+        region_features = pooling(features, assignments)
+        
+        # Both regions get average of both patches
+        expected = torch.tensor([[[2.0, 3.0], [2.0, 3.0]]])
+        
+        assert torch.allclose(region_features, expected)
+    
+    def test_gradients_flow(self):
+        """Test gradients flow through mean pooling."""
+        pooling = RegionMeanPooling()
+        
+        features = torch.randn(4, 100, 1024, requires_grad=True)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        region_features = pooling(features, assignments)
+        loss = region_features.sum()
+        loss.backward()
+        
+        assert features.grad is not None
+
+
+class TestRegionMaxPooling:
+    """Test max pooling baseline."""
+    
+    def test_init(self):
+        """Test initialization."""
+        pooling = RegionMaxPooling()
+        assert pooling is not None
+    
+    def test_forward_shape(self):
+        """Test forward pass output shape."""
+        pooling = RegionMaxPooling()
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        region_features = pooling(features, assignments)
+        
+        assert region_features.shape == (4, 16, 1024)
+    
+    def test_forward_with_mask(self):
+        """Test forward with mask."""
+        pooling = RegionMaxPooling()
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        mask = torch.ones(4, 100, dtype=torch.bool)
+        mask[:, 50:] = False
+        
+        region_features = pooling(features, assignments, mask)
+        
+        assert region_features.shape == (4, 16, 1024)
+        assert not torch.isnan(region_features).any()
+    
+    def test_max_selection(self):
+        """Test max pooling selects maximum values."""
+        pooling = RegionMaxPooling()
+        
+        # Simple case: 3 patches, 2 regions
+        features = torch.tensor([
+            [[1.0, 5.0], [3.0, 2.0], [2.0, 4.0]]  # [1, 3, 2]
+        ])
+        # Hard assignment: patch 0,1 -> region 0, patch 2 -> region 1
+        assignments = torch.tensor([
+            [[1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]  # [1, 3, 2]
+        ])
+        
+        region_features = pooling(features, assignments)
+        
+        # Region 0: max([1,5], [3,2]) = [3, 5]
+        # Region 1: max([2,4]) = [2, 4]
+        expected = torch.tensor([[[3.0, 5.0], [2.0, 4.0]]])
+        
+        assert torch.allclose(region_features, expected)
+    
+    def test_empty_region(self):
+        """Test max pooling handles empty regions."""
+        pooling = RegionMaxPooling()
+        
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.zeros(4, 100, 16)
+        assignments[:, :, 0] = 1.0  # All patches in region 0
+        
+        region_features = pooling(features, assignments)
+        
+        # Region 0 has features, others are zeros
+        assert not torch.allclose(region_features[:, 0], torch.zeros_like(region_features[:, 0]))
+        assert torch.allclose(region_features[:, 1:], torch.zeros_like(region_features[:, 1:]))
+    
+    def test_gradients_flow(self):
+        """Test gradients flow through max pooling."""
+        pooling = RegionMaxPooling()
+        
+        features = torch.randn(4, 100, 1024, requires_grad=True)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        region_features = pooling(features, assignments)
+        loss = region_features.sum()
+        loss.backward()
+        
+        assert features.grad is not None
+
+
+class TestPoolingComparison:
+    """Compare different pooling methods."""
+    
+    def test_all_produce_valid_output(self):
+        """Test all pooling methods produce valid output."""
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        # Attention
+        attn_pooling = RegionAttentionPooling(feature_dim=1024)
+        attn_out = attn_pooling(features, assignments)
+        
+        # Mean
+        mean_pooling = RegionMeanPooling()
+        mean_out = mean_pooling(features, assignments)
+        
+        # Max
+        max_pooling = RegionMaxPooling()
+        max_out = max_pooling(features, assignments)
+        
+        # All valid
+        for out in [attn_out, mean_out, max_out]:
+            assert out.shape == (4, 16, 1024)
+            assert not torch.isnan(out).any()
+            assert not torch.isinf(out).any()
+    
+    def test_different_aggregations(self):
+        """Test pooling methods produce different results."""
+        features = torch.randn(4, 100, 1024)
+        assignments = torch.randn(4, 100, 16).softmax(dim=-1)
+        
+        attn_pooling = RegionAttentionPooling(feature_dim=1024)
+        mean_pooling = RegionMeanPooling()
+        max_pooling = RegionMaxPooling()
+        
+        attn_out = attn_pooling(features, assignments)
+        mean_out = mean_pooling(features, assignments)
+        max_out = max_pooling(features, assignments)
+        
+        # Should be different
+        assert not torch.allclose(attn_out, mean_out)
+        assert not torch.allclose(mean_out, max_out)
+        assert not torch.allclose(attn_out, max_out)
 
 
 if __name__ == '__main__':
