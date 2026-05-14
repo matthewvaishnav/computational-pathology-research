@@ -1,0 +1,35 @@
+[
+  {
+    "pooling_type": "attention",
+    "num_params": 2163747,
+    "best_val_auc": 1.0,
+    "final_val_auc": 1.0,
+    "final_val_acc": 1.0,
+    "final_val_f1": 1.0,
+    "avg_train_time": 1.604941201210022,
+    "total_train_time": 32.09882402420044,
+    "memory_mb": 0.0
+  },
+  {
+    "pooling_type": "mean",
+    "num_params": 2097954,
+    "best_val_auc": 1.0,
+    "final_val_auc": 1.0,
+    "final_val_acc": 0.89,
+    "final_val_f1": 0.8881090428237208,
+    "avg_train_time": 0.5934842705726624,
+    "total_train_time": 11.869685411453247,
+    "memory_mb": 0.0
+  },
+  {
+    "pooling_type": "max",
+    "num_params": 2097954,
+    "best_val_auc": 0.7014805922368947,
+    "final_val_auc": 0.5918367346938775,
+    "final_val_acc": 0.51,
+    "final_val_f1": 0.33774834437086093,
+    "avg_train_time": 1.4712424993515014,
+    "total_train_time": 29.42484998703003,
+    "memory_mb": 0.0
+  }
+]
