@@ -144,9 +144,42 @@ class TransnnMIL(nn.Module):
             dropout=0.25,  # nnMIL uses higher dropout than TransMIL
         )
         
-        # Learnable fusion gate
+        # Feature-level fusion components
+        # Project Branch A features (256-dim) to common embedding space (512-dim)
+        self.proj_a = nn.Sequential(
+            nn.Linear(hidden_dim, 512),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+        
+        # Project Branch B features (1024-dim) to common embedding space (512-dim)
+        self.proj_b = nn.Sequential(
+            nn.Linear(feature_dim, 512),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+        
+        # Cross-attention fusion module
+        # Uses multi-head attention to fuse features from both branches
+        self.fusion_attention = nn.MultiheadAttention(
+            embed_dim=512,
+            num_heads=8,
+            dropout=dropout,
+            batch_first=True,
+        )
+        
+        # Fusion classifier: maps fused features to class predictions
+        # Architecture: 512 → 256 → num_classes
+        self.fusion_classifier = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(256, num_classes),
+        )
+        
+        # Learnable fusion gate (maintained for backward compatibility)
         # Initialized to 0.0 → sigmoid(0) = 0.5 (equal weight to both branches)
-        # During training, the model learns the optimal balance
+        # Note: Not used in feature-level fusion, but kept for API compatibility
         self.gate_param = nn.Parameter(torch.zeros(1))
     
     def forward(
@@ -156,10 +189,11 @@ class TransnnMIL(nn.Module):
         return_attention: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """
-        Forward pass through TransnnMIL.
+        Forward pass through TransnnMIL with feature-level fusion.
         
-        Processes the input bag through both branches in parallel and fuses
-        their outputs using the learnable gate parameter.
+        Processes the input bag through both branches, extracts features before
+        classification, projects them to a common dimension, fuses them via
+        cross-attention, and classifies the fused features.
         
         Args:
             features: Patch features [batch_size, num_patches, feature_dim]
@@ -172,28 +206,56 @@ class TransnnMIL(nn.Module):
         
         Notes:
             - Both branches process the same input in parallel
-            - The gate parameter controls the contribution of each branch
+            - Features are extracted before classification using get_features()
+            - Features are projected to common 512-dim space
+            - Cross-attention fuses features from both branches
+            - Fusion classifier produces final predictions
             - Attention weights are returned from Branch A (TransMIL) for interpretability
-            - Branch B attention weights are not returned but could be accessed separately
         """
-        # Branch A: TransMIL forward pass
+        # Extract attention weights from Branch A if requested
+        attention_a = None
         if return_attention:
-            logits_a, attention_a = self.branch_a(
+            _, attention_a = self.branch_a(
                 features, num_patches, return_attention=True
             )
-        else:
-            logits_a = self.branch_a(features, num_patches, return_attention=False)
         
-        # Branch B: nnMIL forward pass
-        logits_b = self.branch_b(features, num_patches, return_attention=False)
+        # Extract features from both branches (before classification)
+        # Branch A: CLS token representation [batch_size, 256]
+        features_a = self.branch_a.get_features(features, num_patches)
         
-        # Compute fusion gate
-        # gate ∈ (0, 1) via sigmoid activation
-        gate = torch.sigmoid(self.gate_param)
+        # Branch B: Aggregated features [batch_size, 1024]
+        features_b = self.branch_b.get_features(features, num_patches)
         
-        # Fuse logits from both branches
-        # output = gate * logits_A + (1 - gate) * logits_B
-        logits = gate * logits_a + (1 - gate) * logits_b
+        # Project to common dimension (512)
+        proj_a = self.proj_a(features_a)  # [batch_size, 512]
+        proj_b = self.proj_b(features_b)  # [batch_size, 512]
+        
+        # Validate output shapes
+        batch_size = features.size(0)
+        assert proj_a.shape == (batch_size, 512), \
+            f"proj_a shape mismatch: expected ({batch_size}, 512), got {proj_a.shape}"
+        assert proj_b.shape == (batch_size, 512), \
+            f"proj_b shape mismatch: expected ({batch_size}, 512), got {proj_b.shape}"
+        
+        # Reshape for multi-head attention: [B, 512] → [B, 1, 512]
+        query = proj_a.unsqueeze(1)
+        key = proj_b.unsqueeze(1)
+        value = proj_b.unsqueeze(1)
+        
+        # Apply cross-attention fusion
+        fused, _ = self.fusion_attention(query, key, value)  # [B, 1, 512]
+        fused = fused.squeeze(1)  # [B, 512]
+        
+        # Validate fused features shape
+        assert fused.shape == (batch_size, 512), \
+            f"fused shape mismatch: expected ({batch_size}, 512), got {fused.shape}"
+        
+        # Classify fused features
+        logits = self.fusion_classifier(fused)  # [B, num_classes]
+        
+        # Validate output logits shape
+        assert logits.shape == (batch_size, self.num_classes), \
+            f"logits shape mismatch: expected ({batch_size}, {self.num_classes}), got {logits.shape}"
         
         if return_attention:
             # Return attention weights from Branch A (TransMIL)
@@ -247,13 +309,30 @@ class TransnnMIL(nn.Module):
             >>> print(f"Branch agreement: {agreement:.2%}")
         """
         with torch.no_grad():
-            # Get outputs from both branches
+            # Get logits from original branch classifiers
             logits_a = self.branch_a(features, num_patches, return_attention=False)
             logits_b = self.branch_b(features, num_patches, return_attention=False)
             
-            # Compute fused output
-            gate = torch.sigmoid(self.gate_param)
-            logits_fused = gate * logits_a + (1 - gate) * logits_b
+            # Compute fused logits via feature-level fusion pipeline
+            # Extract features from both branches (before classification)
+            features_a = self.branch_a.get_features(features, num_patches)
+            features_b = self.branch_b.get_features(features, num_patches)
+            
+            # Project to common dimension (512)
+            proj_a = self.proj_a(features_a)
+            proj_b = self.proj_b(features_b)
+            
+            # Reshape for multi-head attention: [B, 512] → [B, 1, 512]
+            query = proj_a.unsqueeze(1)
+            key = proj_b.unsqueeze(1)
+            value = proj_b.unsqueeze(1)
+            
+            # Apply cross-attention fusion
+            fused, _ = self.fusion_attention(query, key, value)
+            fused = fused.squeeze(1)
+            
+            # Classify fused features
+            logits_fused = self.fusion_classifier(fused)
             
             return logits_a, logits_b, logits_fused
 
