@@ -6,8 +6,8 @@
     "final_val_auc": 1.0,
     "final_val_acc": 1.0,
     "final_val_f1": 1.0,
-    "avg_train_time": 1.604941201210022,
-    "total_train_time": 32.09882402420044,
+    "avg_train_time": 0.9798326373100281,
+    "total_train_time": 19.59665274620056,
     "memory_mb": 0.0
   },
   {
@@ -17,8 +17,8 @@
     "final_val_auc": 1.0,
     "final_val_acc": 0.89,
     "final_val_f1": 0.8881090428237208,
-    "avg_train_time": 0.5934842705726624,
-    "total_train_time": 11.869685411453247,
+    "avg_train_time": 0.4218603253364563,
+    "total_train_time": 8.437206506729126,
     "memory_mb": 0.0
   },
   {
@@ -28,8 +28,8 @@
     "final_val_auc": 0.5918367346938775,
     "final_val_acc": 0.51,
     "final_val_f1": 0.33774834437086093,
-    "avg_train_time": 1.4712424993515014,
-    "total_train_time": 29.42484998703003,
+    "avg_train_time": 0.7653401732444763,
+    "total_train_time": 15.306803464889526,
     "memory_mb": 0.0
   }
 ]
