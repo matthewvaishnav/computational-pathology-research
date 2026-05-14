@@ -211,19 +211,34 @@ class HierarchicalPooling(nn.Module):
         num_clusters: int,
         temperature: float = 1.0,
         init_method: str = 'uniform',
+        clustering_method: str = 'learnable',
     ):
         super().__init__()
         
         self.num_clusters = num_clusters
         self.temperature = temperature
         self.init_method = init_method
+        self.clustering_method = clustering_method
         
-        # Learnable cluster centers
-        self.clusterer = LearnableClusterCenters(
-            num_clusters=num_clusters,
-            temperature=temperature,
-            init_method=init_method,
-        )
+        # Select clustering method
+        if clustering_method == 'learnable':
+            self.clusterer = LearnableClusterCenters(
+                num_clusters=num_clusters,
+                temperature=temperature,
+                init_method=init_method,
+            )
+        elif clustering_method == 'kmeans':
+            self.clusterer = KMeansClusterer(
+                num_clusters=num_clusters,
+                temperature=temperature,
+            )
+        elif clustering_method == 'grid':
+            self.clusterer = GridClusterer(
+                num_clusters=num_clusters,
+                temperature=temperature,
+            )
+        else:
+            raise ValueError(f"Unknown clustering_method: {clustering_method}")
     
     def forward(
         self,

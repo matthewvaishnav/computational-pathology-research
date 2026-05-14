@@ -157,6 +157,7 @@ class TransnnMIL(nn.Module):
                 num_clusters=num_regions,
                 temperature=temperature,
                 init_method='uniform',
+                clustering_method=clustering_method,
             )
             
             # Feature projection for regions

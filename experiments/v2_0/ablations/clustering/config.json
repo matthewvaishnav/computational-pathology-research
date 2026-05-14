@@ -1,0 +1,26 @@
+{
+  "feature_dim": 1024,
+  "hidden_dim": 256,
+  "num_classes": 2,
+  "num_layers": 2,
+  "num_heads": 8,
+  "dropout": 0.1,
+  "num_regions": 16,
+  "region_hidden_dim": 512,
+  "pooling": "attention",
+  "temperature": 1.0,
+  "clustering_methods": [
+    "learnable",
+    "kmeans",
+    "grid"
+  ],
+  "dataset": "dummy",
+  "batch_size": 4,
+  "num_epochs": 5,
+  "lr": 0.0001,
+  "weight_decay": 1e-05,
+  "device": "cpu",
+  "seed": 42,
+  "output_dir": "experiments/v2_0/ablations/clustering",
+  "quick": true
+}
