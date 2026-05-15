@@ -7,11 +7,12 @@ Provides checkpoint save/load, crash recovery, and training state persistence.
 import json
 import logging
 import shutil
-import torch
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional, Any, List
+from typing import Any, Dict, List, Optional
+
+import torch
 
 logger = logging.getLogger(__name__)
 

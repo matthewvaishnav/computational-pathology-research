@@ -12,14 +12,15 @@ ensuring no regressions in validation capabilities.
 """
 
 import re
-import yaml
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Any, Set, Tuple
-from unittest.mock import patch, MagicMock
+from typing import Any, Dict, List, Set, Tuple
+from unittest.mock import MagicMock, patch
 
 import pytest
+import yaml
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
 

@@ -5,26 +5,27 @@ Tests dataclass initialization, validation, and edge cases for all data models.
 Requirements: 11.1, 11.2
 """
 
-import pytest
-from datetime import datetime
 from dataclasses import FrozenInstanceError
+from datetime import datetime
+
+import pytest
 
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
-    ScalabilityAnalysis,
     Issue,
-    Task,
     OptimizationPlan,
-    Severity,
+    PerformanceAnalysis,
     Priority,
     Role,
+    ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
+    Task,
 )
 
 

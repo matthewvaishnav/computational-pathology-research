@@ -5,15 +5,16 @@ Tests injection detection, secrets detection, and HIPAA compliance checklist gen
 Requirements: 7.1, 7.2, 7.4
 """
 
-import pytest
-import tempfile
-import shutil
 import json
+import shutil
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
-from src.analysis.security import SecurityScanner
+import pytest
+
 from src.analysis.models import SecurityAnalysis
+from src.analysis.security import SecurityScanner
 
 
 class TestSecurityScanner:

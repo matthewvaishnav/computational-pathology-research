@@ -8,12 +8,14 @@ a minimum of 100 iterations to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-import pytest
-import torch
-import numpy as np
-from hypothesis import given, settings, strategies as st
 from typing import Dict, List, Tuple
 
+import numpy as np
+import pytest
+import torch
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.inference.uncertainty import UncertaintyEstimator
 
 # ============================================================================

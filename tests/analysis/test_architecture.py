@@ -5,16 +5,17 @@ Tests large file detection, circular dependency detection, coupling metrics,
 and SOLID principle violation detection.
 """
 
-import pytest
-import tempfile
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.analysis.architecture import ArchitectureAnalyzer
-from src.analysis.models import ArchitectureAnalysis, Issue, Severity, Priority, Role
+from src.analysis.models import ArchitectureAnalysis, Issue, Priority, Role, Severity
 
 
 class TestArchitectureAnalyzer:

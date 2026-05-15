@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """PathologyFL utility functions and helpers."""
 
-import time
 import hashlib
 import json
-from typing import Dict, List, Any, Tuple, Optional
+import time
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class PathologyFLUtils:
@@ -84,8 +84,8 @@ class PathologyFLUtils:
     @staticmethod
     def add_differential_privacy_noise(gradients: List[float], epsilon: float = 1.0) -> List[float]:
         """Add differential privacy noise to gradients."""
-        import random
         import math
+        import random
 
         def laplace_noise(scale):
             """Generate Laplace noise."""

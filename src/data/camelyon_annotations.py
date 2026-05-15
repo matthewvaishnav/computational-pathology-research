@@ -9,11 +9,11 @@ CAMELYON-style experiments:
 - score tiles against annotation masks
 """
 
-import defusedxml.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Literal, Sequence, Tuple, Union
 
+import defusedxml.ElementTree as ET
 import numpy as np
 from matplotlib import colormaps
 from PIL import Image, ImageDraw

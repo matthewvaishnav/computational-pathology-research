@@ -5,8 +5,9 @@ Tests environment variable detection, default behavior, and validation.
 """
 
 import os
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from src.security.environment_detector import SecurityEnvironmentDetector
 from src.security.models import SecurityEnvironment

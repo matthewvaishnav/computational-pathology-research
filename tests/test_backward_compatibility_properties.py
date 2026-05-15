@@ -9,19 +9,21 @@ universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-import pytest
-import torch
-import tempfile
 import os
+import tempfile
 from pathlib import Path
-from hypothesis import given, settings, strategies as st
-from typing import Dict, List, Tuple, Any
+from typing import Any, Dict, List, Tuple
 from unittest.mock import Mock, patch
 
+import pytest
+import torch
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from scripts.migrate_transmil_to_nnmil import TransMILToNnMILMigrator
 from src.models.nnmil import nnMIL
 from src.models.transmil import TransMIL  # Assuming existing TransMIL implementation
 from src.training.unified_trainer import UnifiedTrainer
-from scripts.migrate_transmil_to_nnmil import TransMILToNnMILMigrator
 
 # ============================================================================
 # Property 33: API Compatibility
@@ -402,8 +404,9 @@ def test_performance_regression_check():
 
 def test_memory_usage_compatibility():
     """Test that nnMIL memory usage is comparable to TransMIL."""
-    import psutil
     import os
+
+    import psutil
 
     process = psutil.Process(os.getpid())
 

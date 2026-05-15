@@ -5,12 +5,13 @@ Tests model download security with revision pinning.
 """
 
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from src.security.exceptions import ModelSecurityError
 from src.security.model_download_manager import ModelDownloadManager
 from src.security.models import SecurityEnvironment
-from src.security.exceptions import ModelSecurityError
 
 
 class TestModelDownloadManager:

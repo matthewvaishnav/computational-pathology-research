@@ -25,7 +25,7 @@ import logging
 import os
 import pickle
 from pathlib import Path
-from typing import Union, List, Any, BinaryIO
+from typing import Any, BinaryIO, List, Union
 
 from src.security.exceptions import PickleSecurityError
 from src.security.models import SecurityEnvironment

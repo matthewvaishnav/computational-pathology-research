@@ -8,15 +8,17 @@ a minimum of 100 iterations to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
+import os
+import tempfile
+from pathlib import Path
+from typing import Any, Dict
+
 import pytest
 import torch
 import yaml
-import tempfile
-import os
-from pathlib import Path
-from hypothesis import given, settings, strategies as st
-from typing import Dict, Any
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.config.nnmil_config import nnMILConfig
 
 # ============================================================================

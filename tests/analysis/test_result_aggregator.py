@@ -5,21 +5,22 @@ Tests merging, deduplication, scoring, and summary generation.
 """
 
 import pytest
+
 from src.analysis.aggregator import ResultAggregator
 from src.analysis.models import (
     AnalysisResult,
-    Issue,
-    Severity,
-    Priority,
-    Role,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
+    Issue,
+    PerformanceAnalysis,
+    Priority,
+    Role,
     ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
 )
 
 

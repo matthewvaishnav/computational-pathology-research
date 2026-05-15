@@ -11,10 +11,11 @@ from the same TaskSpecification, ensuring fair comparisons.
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings, strategies as st
 
 from experiments.benchmark_system.models import TaskSpecification
 from experiments.benchmark_system.task_executor import TrainingTaskExecutor
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 
 # Hypothesis strategies for generating test data

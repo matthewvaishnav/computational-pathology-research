@@ -2,10 +2,11 @@
 Tests for publication table generation.
 """
 
-import pytest
-from pathlib import Path
-import tempfile
 import shutil
+import tempfile
+from pathlib import Path
+
+import pytest
 
 from src.clinical.publication_tables import PublicationTableGenerator
 

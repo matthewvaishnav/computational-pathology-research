@@ -21,11 +21,11 @@ Reference:
 
 from typing import Optional, Tuple
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.cluster import KMeans
-import numpy as np
 
 
 class LearnableClusterCenters(nn.Module):

@@ -8,16 +8,18 @@ a minimum of 100 iterations to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
+import math
+from typing import Dict, List, Tuple
+from unittest.mock import MagicMock, Mock
+
 import pytest
 import torch
-import math
-from hypothesis import given, settings, strategies as st
-from typing import Dict, List, Tuple
-from unittest.mock import Mock, MagicMock
 
-from src.training.nnmil_trainer import nnMILTrainer
-from src.models.nnmil import nnMIL
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.config.nnmil_config import nnMILConfig
+from src.models.nnmil import nnMIL
+from src.training.nnmil_trainer import nnMILTrainer
 
 # ============================================================================
 # Property 4: Batch Size Flexibility

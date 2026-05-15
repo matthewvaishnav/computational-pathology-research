@@ -12,11 +12,12 @@ excessive job creation and lack of resource management.
 """
 
 import re
-import yaml
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import pytest
+import yaml
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
 

@@ -6,9 +6,9 @@ Tracks client latency and adjusts timeouts adaptively.
 
 import logging
 import time
-from typing import Dict, List, Optional
-from dataclasses import dataclass, field
 from collections import deque
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

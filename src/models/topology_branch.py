@@ -19,7 +19,7 @@ Reference:
 - TransnnMIL v2.0: Hierarchical + Topology (2027)
 """
 
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -27,9 +27,15 @@ import torch.nn.functional as F
 
 try:
     import torch_geometric
-    from torch_geometric.data import Data, Batch
-    from torch_geometric.nn import GATv2Conv, SAGEConv, GINConv
-    from torch_geometric.nn import global_mean_pool, global_max_pool, global_add_pool
+    from torch_geometric.data import Batch, Data
+    from torch_geometric.nn import (
+        GATv2Conv,
+        GINConv,
+        SAGEConv,
+        global_add_pool,
+        global_max_pool,
+        global_mean_pool,
+    )
 
     TORCH_GEOMETRIC_AVAILABLE = True
 except ImportError:

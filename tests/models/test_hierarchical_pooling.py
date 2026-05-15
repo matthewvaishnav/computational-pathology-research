@@ -8,18 +8,18 @@ Tests:
 - HierarchicalPooling
 """
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
 
 from src.models.hierarchical_pooling import (
-    LearnableClusterCenters,
-    KMeansClusterer,
     GridClusterer,
     HierarchicalPooling,
+    KMeansClusterer,
+    LearnableClusterCenters,
     RegionAttentionPooling,
-    RegionMeanPooling,
     RegionMaxPooling,
+    RegionMeanPooling,
 )
 
 

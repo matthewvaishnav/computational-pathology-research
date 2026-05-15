@@ -10,24 +10,23 @@ Covers all correctness properties from Task 17:
 - 17.6 Fault tolerance robustness
 """
 
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-import numpy as np
 
-from hypothesis import HealthCheck, given, settings, assume
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
-
-from src.federated.aggregator.fedavg import FedAvgAggregator
 from src.federated.aggregator.byzantine_robust import (
     KrumAggregator,
-    TrimmedMeanAggregator,
     MedianAggregator,
+    TrimmedMeanAggregator,
 )
-from src.federated.privacy.dp_sgd import DPSGDEngine
-from src.federated.security.secure_aggregation import SecureAggregator
+from src.federated.aggregator.fedavg import FedAvgAggregator
 from src.federated.common.data_models import ClientUpdate
 from src.federated.fault_tolerance.checkpoint_manager import CheckpointManager
+from src.federated.privacy.dp_sgd import DPSGDEngine
+from src.federated.security.secure_aggregation import SecureAggregator
 
 # ============================================================================
 # Task 17.1: FedAvg Correctness Properties
@@ -516,8 +515,8 @@ def test_property_checkpoint_recovery_consistency():
 
     **Validates: Requirement 4.2 (Fault tolerance)**
     """
-    import tempfile
     import shutil
+    import tempfile
 
     # Create temporary checkpoint directory
     checkpoint_dir = tempfile.mkdtemp()
@@ -574,8 +573,8 @@ def test_property_checkpoint_latest_recovery(num_checkpoints):
 
     **Validates: Requirement 4.2 (Fault tolerance)**
     """
-    import tempfile
     import shutil
+    import tempfile
 
     checkpoint_dir = tempfile.mkdtemp()
 

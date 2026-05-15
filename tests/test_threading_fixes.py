@@ -19,30 +19,33 @@ Test markers:
 Requirements: 13.1-13.7
 """
 
-import pytest
-import threading
 import asyncio
-import time
+import json
+import os
 import sqlite3
 import tempfile
-import os
-import json
+import threading
+import time
 from pathlib import Path
 from queue import Empty
-from typing import List, Dict, Any, Optional
-from unittest.mock import Mock, patch, MagicMock
+from typing import Any, Dict, List, Optional
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
+import hypothesis
 
 # Hypothesis for property-based testing
-from hypothesis import given, strategies as st, settings, Phase
-import hypothesis
+from hypothesis import Phase, given, settings
+from hypothesis import strategies as st
 
 # Import the thread-safe utilities
 from src.utils.safe_threading import (
     BoundedQueue,
     GracefulThread,
-    TimeoutLock,
     ThreadSafeDict,
     ThreadSafeSet,
+    TimeoutLock,
 )
 
 # =============================================================================
@@ -967,8 +970,9 @@ class TestSQLiteCleanup:
 
     def test_connection_closed_on_success(self, temp_db):
         """Test connection is closed after successful operation."""
-        from src.utils.safe_operations import safe_db_transaction
         from pathlib import Path
+
+        from src.utils.safe_operations import safe_db_transaction
 
         # Perform successful operation
         with safe_db_transaction(Path(temp_db)) as conn:
@@ -983,9 +987,10 @@ class TestSQLiteCleanup:
 
     def test_connection_closed_on_exception(self, temp_db):
         """Test connection is closed even when exception occurs."""
-        from src.utils.safe_operations import safe_db_transaction
-        from src.exceptions import DatabaseError
         from pathlib import Path
+
+        from src.exceptions import DatabaseError
+        from src.utils.safe_operations import safe_db_transaction
 
         conn_ref = None
         try:
@@ -1004,9 +1009,10 @@ class TestSQLiteCleanup:
 
     def test_rollback_on_exception(self, temp_db):
         """Test rollback occurs when exception is raised."""
-        from src.utils.safe_operations import safe_db_transaction
-        from src.exceptions import DatabaseError
         from pathlib import Path
+
+        from src.exceptions import DatabaseError
+        from src.utils.safe_operations import safe_db_transaction
 
         # Create table first
         with safe_db_transaction(Path(temp_db)) as conn:
@@ -1036,8 +1042,9 @@ class TestSQLiteCleanup:
 
     def test_cleanup_with_null_connection(self):
         """Test cleanup handles null connection gracefully."""
-        from src.utils.safe_operations import safe_db_transaction
         from pathlib import Path
+
+        from src.utils.safe_operations import safe_db_transaction
 
         # Test with non-existent path - should raise but not crash
         with pytest.raises(Exception):
@@ -2651,6 +2658,7 @@ class TestMatplotlibCleanup:
         # Import only what we need to avoid OpenSlide dependency
         import sys
         import tempfile
+
         import matplotlib.pyplot as plt
         import numpy as np
 
@@ -2682,9 +2690,11 @@ class TestMatplotlibCleanup:
     @pytest.mark.skip(reason="OpenSlide DLL not available in test environment")
     def test_figure_closed_on_exception(self):
         """Test that matplotlib figure is closed even when exception occurs."""
-        from src.streaming.progressive_visualizer import ProgressiveVisualizer
         import tempfile
+
         import matplotlib.pyplot as plt
+
+        from src.streaming.progressive_visualizer import ProgressiveVisualizer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             visualizer = ProgressiveVisualizer(
@@ -2708,8 +2718,9 @@ class TestMatplotlibCleanup:
     @pytest.mark.skip(reason="OpenSlide DLL not available in test environment")
     def test_cleanup_with_null_figure(self):
         """Test that cleanup handles null figure gracefully."""
-        from src.streaming.progressive_visualizer import ProgressiveVisualizer
         import tempfile
+
+        from src.streaming.progressive_visualizer import ProgressiveVisualizer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             visualizer = ProgressiveVisualizer(
@@ -2731,9 +2742,11 @@ class TestMatplotlibCleanup:
     @pytest.mark.skip(reason="OpenSlide DLL not available in test environment")
     def test_confidence_plot_figure_closed(self):
         """Test that confidence plot figure is closed properly."""
-        from src.streaming.progressive_visualizer import ProgressiveVisualizer
         import tempfile
+
         import matplotlib.pyplot as plt
+
+        from src.streaming.progressive_visualizer import ProgressiveVisualizer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             visualizer = ProgressiveVisualizer(
@@ -2759,10 +2772,12 @@ class TestMatplotlibCleanup:
     @pytest.mark.skip(reason="OpenSlide DLL not available in test environment")
     def test_final_visualizations_figures_closed(self):
         """Test that all figures in final visualizations are closed."""
-        from src.streaming.progressive_visualizer import ProgressiveVisualizer
         import tempfile
+
         import matplotlib.pyplot as plt
         import numpy as np
+
+        from src.streaming.progressive_visualizer import ProgressiveVisualizer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             visualizer = ProgressiveVisualizer(
@@ -2793,10 +2808,12 @@ class TestMatplotlibCleanup:
     @pytest.mark.skip(reason="OpenSlide DLL not available in test environment")
     def test_dashboard_figure_closed_on_exception(self):
         """Test that dashboard figure is closed even when exception occurs during save."""
-        from src.streaming.progressive_visualizer import ProgressiveVisualizer
         import tempfile
+
         import matplotlib.pyplot as plt
         import numpy as np
+
+        from src.streaming.progressive_visualizer import ProgressiveVisualizer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             visualizer = ProgressiveVisualizer(

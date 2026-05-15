@@ -3,15 +3,16 @@
 PathologyFL Client - Hospital-side implementation with medical expertise reporting
 """
 
-import torch
-import torch.nn as nn
-import numpy as np
-from typing import Dict, List, Tuple
 import json
 import logging
 from pathlib import Path
+from typing import Dict, List, Tuple
 
-from .pathology_fl import SlideQuality, CancerType
+import numpy as np
+import torch
+import torch.nn as nn
+
+from .pathology_fl import CancerType, SlideQuality
 
 
 class PathologyFLClient:

@@ -5,22 +5,23 @@ Tests quantization, sparsification, and mixed compression modes with
 property-based testing for round-trip correctness.
 """
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from hypothesis import given, strategies as st, settings, assume
 
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.federated.compression import (
-    quantize_gradients,
-    dequantize_gradients,
-    QuantizationConfig,
-    sparsify_gradients,
-    densify_gradients,
-    SparsificationConfig,
-    GradientCompressor,
     CompressionConfig,
     CompressionMethod,
+    GradientCompressor,
+    QuantizationConfig,
+    SparsificationConfig,
     create_compressor,
+    densify_gradients,
+    dequantize_gradients,
+    quantize_gradients,
+    sparsify_gradients,
 )
 
 # ============================================================================

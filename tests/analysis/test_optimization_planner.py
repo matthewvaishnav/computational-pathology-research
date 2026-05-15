@@ -5,26 +5,27 @@ Tests task prioritization, effort estimation, dependency resolution, and role as
 Requirements: 10.1, 10.2, 10.3, 10.4
 """
 
-import pytest
 from datetime import datetime
 
-from src.analysis.planner import OptimizationPlanner
+import pytest
+
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
-    ScalabilityAnalysis,
     Issue,
-    Severity,
+    PerformanceAnalysis,
     Priority,
     Role,
+    ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
     Task,
 )
+from src.analysis.planner import OptimizationPlanner
 
 
 class TestOptimizationPlanner:

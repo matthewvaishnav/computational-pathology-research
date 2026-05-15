@@ -3,11 +3,12 @@ Integration tests for end-to-end API flows.
 Tests complete user workflows across multiple endpoints.
 """
 
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
 import json
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
+
+import pytest
+from fastapi.testclient import TestClient
 
 
 # Mock the main app for testing

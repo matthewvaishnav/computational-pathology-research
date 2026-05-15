@@ -4,19 +4,20 @@ Tests for safe threading utilities.
 Tests thread-safe primitives, graceful shutdown, and error handling.
 """
 
-import pytest
-import time
 import threading
+import time
 from unittest.mock import Mock, patch
 
+import pytest
+
+from src.exceptions import ThreadingError
 from src.utils.safe_threading import (
-    TimeoutLock,
     BoundedQueue,
     GracefulThread,
     ThreadSafeDict,
     ThreadSafeSet,
+    TimeoutLock,
 )
-from src.exceptions import ThreadingError
 
 
 class TestTimeoutLock:

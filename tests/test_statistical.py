@@ -4,15 +4,15 @@ Tests for statistical utilities.
 Tests bootstrap confidence intervals and metric computation.
 """
 
-import pytest
 import numpy as np
+import pytest
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
-from src.utils.statistical import (
-    compute_bootstrap_ci,
-    compute_all_metrics_with_ci,
-)
 from src.exceptions import ValidationError
+from src.utils.statistical import (
+    compute_all_metrics_with_ci,
+    compute_bootstrap_ci,
+)
 
 
 class TestBootstrapCI:

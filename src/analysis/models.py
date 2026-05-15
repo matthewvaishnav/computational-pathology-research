@@ -5,12 +5,13 @@ Defines core data structures for analysis results, issues, and optimization plan
 """
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import List, Dict, Optional, Any, TypedDict
 from enum import Enum
+from typing import Any, Dict, List, Optional, TypedDict
+
 import jsonschema
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
 
 
 class SecretFinding(TypedDict):
@@ -355,10 +356,11 @@ class OptimizationPlan:
             Path to generated Gantt chart PNG file
         """
         try:
-            import matplotlib.pyplot as plt
-            import matplotlib.dates as mdates
             from datetime import datetime, timedelta
             from pathlib import Path
+
+            import matplotlib.dates as mdates
+            import matplotlib.pyplot as plt
 
             if not self.tasks:
                 return "No tasks to visualize"

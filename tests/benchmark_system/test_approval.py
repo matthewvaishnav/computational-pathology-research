@@ -1,15 +1,17 @@
 """Unit tests for historical comparison and approval workflow."""
 
-import pytest
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import pytest
+
+from experiments.benchmark_system.approval import ApprovalWorkflow, QAFlag
 from experiments.benchmark_system.historical_comparison import (
+    DeviationFlag,
     HistoricalComparison,
     HistoricalResult,
-    DeviationFlag,
 )
-from experiments.benchmark_system.approval import ApprovalWorkflow, QAFlag
 
 
 @pytest.fixture

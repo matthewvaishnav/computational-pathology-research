@@ -18,9 +18,9 @@ from pathlib import Path
 import pytest
 import torch
 import torch.nn as nn
-from hypothesis import given, settings, HealthCheck
-from hypothesis import strategies as st
 
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from src.federated.common.data_models import ModelCheckpoint
 from src.federated.coordinator.model_registry import ModelRegistry
 

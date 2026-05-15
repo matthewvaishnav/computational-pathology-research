@@ -110,10 +110,10 @@ class TestRunBenchmarkIntegration:
         # This test is conceptual - actual KeyboardInterrupt testing is complex
         # We verify the error handling code exists and is structured correctly
 
-        from experiments.benchmark_system import run_benchmark
-
         # Verify the main block has KeyboardInterrupt handling
         import inspect
+
+        from experiments.benchmark_system import run_benchmark
 
         source = inspect.getsource(run_benchmark)
 
@@ -127,10 +127,10 @@ class TestRunBenchmarkIntegration:
 
         Requirement: 8.8 (Error summary generation)
         """
-        from experiments.benchmark_system import run_benchmark
-
         # Verify the main block has exception handling
         import inspect
+
+        from experiments.benchmark_system import run_benchmark
 
         source = inspect.getsource(run_benchmark)
 

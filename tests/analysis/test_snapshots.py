@@ -12,9 +12,9 @@ from unittest.mock import patch
 
 import pytest
 
+from src.analysis.models import AnalysisResult
 from src.analysis.orchestrator import AnalysisOrchestrator
 from src.analysis.reporting import ReportGenerator
-from src.analysis.models import AnalysisResult
 
 
 class TestReportSnapshots:

@@ -558,8 +558,8 @@ class DICOMAdapter:
             requires pynetdicom library and proper DICOM networking setup.
         """
         try:
-            from pynetdicom import AE, debug_logger
             from pydicom.dataset import Dataset
+            from pynetdicom import AE, debug_logger
 
             # Configure DICOM networking
             ae = AE(ae_title=ae_title)
@@ -654,10 +654,11 @@ class DICOMAdapter:
             requires pynetdicom library and proper DICOM networking setup.
         """
         try:
+            import os
+
+            from pydicom.dataset import Dataset
             from pynetdicom import AE, StoragePresentationContexts
             from pynetdicom.sop_class import StudyRootQueryRetrieveInformationModelMove
-            from pydicom.dataset import Dataset
-            import os
 
             output_dir = Path(output_dir)
             output_dir.mkdir(parents=True, exist_ok=True)

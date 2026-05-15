@@ -14,15 +14,15 @@ This module implements:
 
 import json
 import logging
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
 try:
-    from azure.identity import DefaultAzureCredential
-    from azure.core.exceptions import AzureError
     import requests
+    from azure.core.exceptions import AzureError
+    from azure.identity import DefaultAzureCredential
 
     AZURE_AVAILABLE = True
 except ImportError:

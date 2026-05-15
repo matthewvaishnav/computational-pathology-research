@@ -4,10 +4,11 @@ Tests for streaming cache functionality.
 Tests cache operations, serialization, and error handling.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from src.exceptions import CacheError, CacheSerializationError
 
@@ -62,6 +63,7 @@ class TestCacheSerialization:
     def test_serialize_numpy_array(self):
         """Test serialization of numpy arrays."""
         import numpy as np
+
         from src.streaming.cache import CacheSerializer
 
         serializer = CacheSerializer()
@@ -94,7 +96,7 @@ class TestCacheOperations:
     @pytest.fixture
     def mock_redis_cache(self):
         """Create a mock Redis cache for testing."""
-        from src.streaming.cache import RedisCache, CacheConfig
+        from src.streaming.cache import CacheConfig, RedisCache
 
         with patch("redis.Redis") as mock_redis:
             mock_client = MagicMock()
@@ -156,7 +158,7 @@ class TestCacheErrorHandling:
 
     def test_cache_get_nonexistent_key_returns_none(self):
         """Test getting nonexistent key returns None."""
-        from src.streaming.cache import RedisCache, CacheConfig
+        from src.streaming.cache import CacheConfig, RedisCache
 
         with patch("redis.Redis") as mock_redis:
             mock_client = MagicMock()
@@ -172,7 +174,7 @@ class TestCacheErrorHandling:
 
     def test_cache_operation_failure_raises_cache_error(self):
         """Test cache operation failure raises CacheError."""
-        from src.streaming.cache import RedisCache, CacheConfig
+        from src.streaming.cache import CacheConfig, RedisCache
 
         with patch("redis.Redis") as mock_redis:
             mock_client = MagicMock()
@@ -192,7 +194,7 @@ class TestCacheMetrics:
 
     def test_cache_hit_rate_tracking(self):
         """Test cache tracks hit rate."""
-        from src.streaming.cache import RedisCache, CacheConfig
+        from src.streaming.cache import CacheConfig, RedisCache
 
         with patch("redis.Redis") as mock_redis:
             mock_client = MagicMock()

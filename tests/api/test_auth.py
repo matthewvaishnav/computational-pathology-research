@@ -5,14 +5,16 @@ Tests user registration, login, OAuth flows, and security features.
 """
 
 import json
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from fastapi.testclient import TestClient
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
+
+from src.api.main import app
 
 # Import the router and dependencies
-from src.api.routers.auth import router, users_db, UserRegistration, UserLogin
-from src.api.main import app
+from src.api.routers.auth import UserLogin, UserRegistration, router, users_db
 
 # Create test client
 client = TestClient(app)

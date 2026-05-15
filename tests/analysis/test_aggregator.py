@@ -5,20 +5,21 @@ Tests merging of analyzer results, deduplication, and overall score calculation.
 """
 
 import pytest
+
 from src.analysis.aggregator import ResultAggregator
 from src.analysis.models import (
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
-    ScalabilityAnalysis,
     Issue,
-    Severity,
+    PerformanceAnalysis,
     Priority,
     Role,
+    ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
 )
 
 

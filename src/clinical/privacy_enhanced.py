@@ -33,7 +33,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 # Import Role and Permission from privacy module for type hints
-from src.clinical.privacy import Role, Permission
+from src.clinical.privacy import Permission, Role
 
 logger = logging.getLogger(__name__)
 
@@ -307,7 +307,7 @@ class EnhancedRBACManager:
             session_token = SecureSessionToken.generate()
 
             # Create session
-            from src.clinical.privacy import Role, Permission
+            from src.clinical.privacy import Permission, Role
 
             # Get role permissions mapping
             ROLE_PERMISSIONS = {

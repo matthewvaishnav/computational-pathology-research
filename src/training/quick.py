@@ -4,11 +4,12 @@ Quick training utilities for HistoCore.
 Provides simple, high-level training functions with sensible defaults.
 """
 
+import logging
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 import torch
 import torch.nn as nn
-from pathlib import Path
-from typing import Dict, Any, Optional
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -3,13 +3,14 @@ Performance tests for API routes refactoring.
 Tests response times, memory usage, and startup time.
 """
 
-import pytest
-import time
-import psutil
-import threading
-from unittest.mock import Mock, patch
-from concurrent.futures import ThreadPoolExecutor
 import statistics
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import Mock, patch
+
+import psutil
+import pytest
 
 
 class TestEndpointResponseTimes:

@@ -6,8 +6,9 @@ This version avoids circular import issues by testing components in isolation.
 """
 
 import os
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestAuthRouterComponents:

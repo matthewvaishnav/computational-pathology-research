@@ -4,25 +4,26 @@ Integration tests for CI/CD workflow components.
 Tests GitHub Actions workflow integration, PR comment posting, and baseline comparison.
 """
 
-import pytest
 import json
 import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
-from src.analysis.regression_detector import RegressionDetector
+import pytest
+
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
+    PerformanceAnalysis,
     ScalabilityAnalysis,
+    SecurityAnalysis,
 )
+from src.analysis.regression_detector import RegressionDetector
 
 
 @pytest.fixture

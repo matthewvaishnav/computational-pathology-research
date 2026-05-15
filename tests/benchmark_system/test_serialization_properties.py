@@ -13,13 +13,14 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings, strategies as st
 
 from experiments.benchmark_system.models import (
     BenchmarkConfig,
     TaskSpecification,
     TrainingResult,
 )
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 
 # Hypothesis strategies for generating test data

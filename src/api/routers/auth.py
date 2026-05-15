@@ -14,7 +14,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from src.database import UserOperations, get_db_session
 from src.api.dependencies import get_current_user
 from src.api.security import (
     check_account_lockout,
@@ -27,6 +26,7 @@ from src.api.security import (
     verify_password,
 )
 from src.api.validators import validate_email, validate_password
+from src.database import UserOperations, get_db_session
 
 logger = logging.getLogger(__name__)
 

@@ -10,22 +10,22 @@ Provides integration with Azure Functions for serverless processing of HistoCore
 - Function monitoring and management
 """
 
+import asyncio
+import base64
 import json
 import logging
-import asyncio
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Callable, Union
-from dataclasses import dataclass, asdict
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import urlparse
-import base64
 
 try:
+    import aiohttp
+    import requests
     from azure.identity import DefaultAzureCredential
     from azure.mgmt.web import WebSiteManagementClient
-    from azure.mgmt.web.models import Site, SiteConfig, AppServicePlan
-    import requests
-    import aiohttp
+    from azure.mgmt.web.models import AppServicePlan, Site, SiteConfig
 
     AZURE_AVAILABLE = True
 except ImportError:

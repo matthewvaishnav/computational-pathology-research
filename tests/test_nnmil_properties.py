@@ -10,8 +10,9 @@ Feature: nnmil-architecture-upgrade
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.models.nnmil import nnMIL
 
 # ============================================================================

@@ -6,11 +6,11 @@ executive summaries, detailed analysis, and prioritized task lists.
 """
 
 import logging
+import subprocess
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-import subprocess
-import tempfile
 
 from .models import AnalysisResult, Priority, Severity
 

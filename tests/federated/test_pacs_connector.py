@@ -15,9 +15,10 @@ from unittest.mock import MagicMock, Mock, patch
 import numpy as np
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
 from PIL import Image
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.clinical.pacs.data_models import DicomPriority, StudyInfo
 from src.federated.client.pacs_connector import PACSConnector
 

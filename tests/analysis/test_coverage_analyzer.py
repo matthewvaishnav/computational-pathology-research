@@ -5,11 +5,12 @@ Tests coverage data parsing, critical path detection, and quality metrics calcul
 """
 
 import json
-import pytest
+import subprocess
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import subprocess
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from src.analysis.coverage import CoverageAnalyzer
 from src.analysis.models import CoverageAnalysis

@@ -9,17 +9,17 @@ Requirements: 3.1, 3.2, 3.3, 3.5, 3.8
 
 import subprocess
 import time
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import torch
 
 from experiments.benchmark_system.resource_manager import (
-    ResourceManager,
-    GPUInfo,
     GPUAllocation,
-    ResourceMetrics,
+    GPUInfo,
     ResourceLimits,
+    ResourceManager,
+    ResourceMetrics,
 )
 
 

@@ -14,16 +14,17 @@ Tests Task 13: Resource manager
 import shutil
 import tempfile
 import time
-from datetime import datetime, time as dt_time
+from datetime import datetime
+from datetime import time as dt_time
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import psutil
 import pytest
 import torch
+
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-
 from src.federated.client.resource_manager import (
     ResourceLimits,
     ResourceManager,

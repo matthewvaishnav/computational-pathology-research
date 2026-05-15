@@ -5,10 +5,11 @@ Handles whole-slide image processing for HistoCore
 
 import os
 import time
-import numpy as np
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 
 @dataclass

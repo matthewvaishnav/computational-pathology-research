@@ -5,9 +5,9 @@ This module provides comprehensive Azure cloud services integration for HistoCor
 including Health Data Services, Blob Storage, Functions, and Monitor integration.
 """
 
-from .health_data_services import AzureHealthDataServices
 from .blob_storage import AzureBlobStorageConnector
 from .functions import AzureFunctionsIntegration
+from .health_data_services import AzureHealthDataServices
 from .monitor import AzureMonitorIntegration
 
 __all__ = [

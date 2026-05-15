@@ -2,12 +2,13 @@
 Tests for API dependencies module.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
-from src.api.dependencies import get_inference_engine, get_current_user
+from src.api.dependencies import get_current_user, get_inference_engine
 
 
 class TestGetInferenceEngine:

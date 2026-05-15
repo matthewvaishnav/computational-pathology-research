@@ -12,8 +12,9 @@ import psutil
 import torch
 from aiohttp import web
 
-from .metrics import get_metrics
 from src.security.network_binding import NetworkBindingManager
+
+from .metrics import get_metrics
 
 logger = logging.getLogger(__name__)
 

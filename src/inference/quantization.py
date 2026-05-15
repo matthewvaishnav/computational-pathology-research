@@ -15,9 +15,9 @@ import torch
 import torch.nn as nn
 import torch.quantization as quant
 from torch.quantization import (
+    convert,
     get_default_qconfig,
     prepare,
-    convert,
     prepare_qat,
     quantize_dynamic,
 )

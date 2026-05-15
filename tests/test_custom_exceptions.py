@@ -5,10 +5,11 @@ Verifies that custom exceptions from src.exceptions are properly raised
 and handled throughout the codebase.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 from src.exceptions import (
     CacheConnectionError,
@@ -33,7 +34,7 @@ class TestCacheExceptions:
     @pytest.mark.skip(reason="Requires Redis server")
     def test_cache_connection_error_raised(self):
         """Test CacheConnectionError is raised on connection failure."""
-        from src.streaming.cache import RedisCache, CacheConfig
+        from src.streaming.cache import CacheConfig, RedisCache
 
         config = CacheConfig(redis_host="invalid_host", redis_port=99999)
 
@@ -43,7 +44,7 @@ class TestCacheExceptions:
     @pytest.mark.skip(reason="Requires Redis server")
     def test_cache_serialization_error_on_invalid_data(self):
         """Test CacheSerializationError on deserialization failure."""
-        from src.streaming.cache import RedisCache, CacheConfig
+        from src.streaming.cache import CacheConfig, RedisCache
 
         # Mock Redis client to return corrupted data
         with patch("redis.Redis") as mock_redis:
@@ -223,8 +224,9 @@ class TestValidationExceptions:
 
     def test_validation_error_on_metric_computation_failure(self):
         """Test ValidationError is raised on metric computation failure."""
-        from src.utils.statistical import compute_all_metrics_with_ci
         import numpy as np
+
+        from src.utils.statistical import compute_all_metrics_with_ci
 
         # Create invalid inputs (mismatched shapes)
         y_true = np.array([0, 1, 0, 1])

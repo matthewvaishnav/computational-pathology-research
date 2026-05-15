@@ -6,9 +6,9 @@ Simple Python API for training and inference on histopathology data.
 
 # Conditional imports to avoid torch dependency in analysis tests
 try:
-    from .models import nnMIL, AttentionMIL, CLAM
     from .data import MultimodalDataset, UniversalSlideReader
-    from .training import train, evaluate
+    from .models import CLAM, AttentionMIL, nnMIL
+    from .training import evaluate, train
 except ImportError:
     # Analysis tests don't need torch models
     pass

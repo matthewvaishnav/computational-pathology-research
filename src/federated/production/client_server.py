@@ -19,16 +19,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import Counter, Gauge, Histogram, generate_latest
 from prometheus_client.exposition import CONTENT_TYPE_LATEST
 
+# Import distributed tracing
+from src.monitoring.tracing import get_tracer
+from src.security.network_binding import NetworkBindingManager
+
 from ..client.trainer import FederatedTrainer
 from ..common.data_models import ClientUpdate, TrainingMetadata
 from ..communication.grpc_client import GRPCClient
 from ..privacy.dp_sgd import DPSGDEngine
 from .config import get_config
 from .monitoring import get_metrics_manager, setup_logging
-from src.security.network_binding import NetworkBindingManager
-
-# Import distributed tracing
-from src.monitoring.tracing import get_tracer
 
 logger = structlog.get_logger(__name__)
 config = get_config()

@@ -1,9 +1,6 @@
 """Neural network model definitions."""
 
-from .attention_mil import AttentionMIL, CLAM
-from .nnmil import nnMIL
-from .transmil import TransMIL
-from .foundation_adapter import FoundationModelAdapter
+from .attention_mil import CLAM, AttentionMIL
 from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
 from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from .foundation import (
@@ -14,6 +11,7 @@ from .foundation import (
     UNIEncoder,
     load_foundation_model,
 )
+from .foundation_adapter import FoundationModelAdapter
 from .fusion import CrossModalAttention, MultiModalFusionLayer
 from .heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
 from .instance_clustering import (
@@ -23,6 +21,7 @@ from .instance_clustering import (
 )
 from .mil_base import MILBase
 from .multimodal import MultimodalFusionModel
+from .nnmil import nnMIL
 from .pretrained import (
     PretrainedFeatureExtractor,
     create_wsi_encoder_with_pretrained,
@@ -37,6 +36,7 @@ from .stain_normalization import (
     StyleTransferDecoder,
 )
 from .temporal import CrossSlideTemporalReasoner, TemporalAttention
+from .transmil import TransMIL
 
 
 def __getattr__(name):

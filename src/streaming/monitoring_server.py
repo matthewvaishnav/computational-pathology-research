@@ -8,8 +8,9 @@ from typing import Optional
 
 from aiohttp import web, web_request, web_response
 
-from .metrics import get_metrics
 from src.security.network_binding import NetworkBindingManager
+
+from .metrics import get_metrics
 
 logger = logging.getLogger(__name__)
 

@@ -15,9 +15,9 @@ from typing import Any, Dict, List, Set
 from .models import (
     ArchitectureAnalysis,
     Issue,
-    Severity,
     Priority,
     Role,
+    Severity,
 )
 
 logger = logging.getLogger(__name__)

@@ -4,22 +4,24 @@ Integration tests for end-to-end report generation.
 Tests JSON → Markdown → HTML conversion pipeline and visualization embedding.
 """
 
-import pytest
 import json
 import tempfile
 from pathlib import Path
-from src.analysis.reporting import ReportGenerator
+
+import pytest
+
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
+    PerformanceAnalysis,
     ScalabilityAnalysis,
+    SecurityAnalysis,
 )
+from src.analysis.reporting import ReportGenerator
 
 
 @pytest.fixture

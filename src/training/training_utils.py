@@ -4,7 +4,8 @@ Training Utilities
 Helper functions to reduce complexity in training loops.
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
+
 import torch
 import torch.nn as nn
 

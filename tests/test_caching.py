@@ -161,9 +161,9 @@ def test_cache_hmac_validation():
 
 def test_malicious_pickle_rejected():
     """Test that safe_pickle rejects malicious pickle payloads."""
-    from src.security.pickle_security_control import safe_pickle
     from src.security.exceptions import PickleSecurityError
-    
+    from src.security.pickle_security_control import safe_pickle
+
     # Create malicious pickle that tries to execute code
     class MaliciousClass:
         def __reduce__(self):

@@ -11,8 +11,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 from queue import Queue
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 
 import torch
 

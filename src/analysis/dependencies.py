@@ -7,9 +7,10 @@ Analyzes dependency security, health, and license compatibility.
 import json
 import logging
 import subprocess
-import toml
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
+import toml
 
 from .models import DependencyAnalysis
 

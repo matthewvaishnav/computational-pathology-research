@@ -240,9 +240,10 @@ async def get_slide_tile(slide_id: str, z: int, x: int, y: int):
         # For WSI formats, use OpenSlide
         if file_ext in [".svs", ".tif", ".tiff", ".ndpi", ".vms", ".vmu", ".scn", ".mrxs", ".bif"]:
             try:
+                import io
+
                 import openslide
                 from PIL import Image
-                import io
 
                 slide = openslide.OpenSlide(image_path)
 
@@ -289,8 +290,9 @@ async def get_slide_tile(slide_id: str, z: int, x: int, y: int):
         # For regular images, use PIL
         elif file_ext in [".png", ".jpg", ".jpeg"]:
             try:
-                from PIL import Image
                 import io
+
+                from PIL import Image
 
                 img = Image.open(image_path)
 
@@ -975,6 +977,7 @@ async def startup_event():
 
 if __name__ == "__main__":
     import uvicorn
+
     from src.security.network_binding import NetworkBindingManager
 
     safe_host = NetworkBindingManager.get_safe_host()

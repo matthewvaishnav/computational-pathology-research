@@ -24,8 +24,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .metrics import record_processing_time, timed_operation
 from src.utils.safe_threading import TimeoutLock
+
+from .metrics import record_processing_time, timed_operation
 
 logger = logging.getLogger(__name__)
 

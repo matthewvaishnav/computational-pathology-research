@@ -8,7 +8,7 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from .models import PerformanceAnalysis
 
@@ -123,10 +123,11 @@ class PerformanceProfiler:
     def _detect_bottlenecks(self) -> List[Dict[str, Any]]:
         """Detect performance bottlenecks (placeholder)."""
         try:
-            import psutil
-            import time
             import threading
+            import time
             from collections import defaultdict
+
+            import psutil
 
             bottlenecks = []
 
@@ -210,10 +211,11 @@ class PerformanceProfiler:
     def _measure_memory_usage(self) -> tuple[float, float]:
         """Measure memory usage (placeholder)."""
         try:
-            import psutil
             import gc
             import sys
             from collections import defaultdict
+
+            import psutil
 
             # Force garbage collection
             gc.collect()
@@ -398,8 +400,8 @@ class PerformanceProfiler:
             profiler.enable()
 
             # Profile for a short duration (simulate work) with timeout protection
-            import time
             import signal
+            import time
 
             def timeout_handler(signum, frame):
                 """Handle profiling timeout signal."""

@@ -5,7 +5,7 @@ Tests for tissue classifier module.
 import pytest
 import torch
 
-from src.models.tissue_classifier import TissueClassifier, PretrainedTissueClassifier
+from src.models.tissue_classifier import PretrainedTissueClassifier, TissueClassifier
 
 
 class TestTissueClassifier:

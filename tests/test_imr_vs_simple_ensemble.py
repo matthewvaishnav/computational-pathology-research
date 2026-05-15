@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Test IMR vs Simple Ensemble to determine if complexity is worth it."""
 
-import random
-import time
-import sys
 import os
+import random
+import sys
+import time
 
 # Add the src directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))

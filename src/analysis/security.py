@@ -10,9 +10,9 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
-from .models import SecurityAnalysis, SecretFinding
+from .models import SecretFinding, SecurityAnalysis
 
 logger = logging.getLogger(__name__)
 

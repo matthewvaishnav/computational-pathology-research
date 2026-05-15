@@ -4,8 +4,8 @@ PathologyFL Performance Metrics - Track FL performance and efficiency
 """
 
 import time
-from typing import Dict, List
 from dataclasses import dataclass
+from typing import Dict, List
 
 
 @dataclass

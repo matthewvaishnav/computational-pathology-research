@@ -7,19 +7,19 @@ and input validation across a wide range of inputs.
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
-from hypothesis import assume
-import hypothesis.extra.numpy as npst
 
+import hypothesis.extra.numpy as npst
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.utils.validation import (
-    validate_tensor_shape,
-    validate_wsi_features,
-    validate_genomic_features,
-    validate_clinical_text,
-    validate_multimodal_batch,
+    ValidationError,
     is_validation_enabled,
     set_validation_enabled,
-    ValidationError,
+    validate_clinical_text,
+    validate_genomic_features,
+    validate_multimodal_batch,
+    validate_tensor_shape,
+    validate_wsi_features,
 )
 
 # ============================================================================

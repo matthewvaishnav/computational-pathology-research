@@ -5,11 +5,13 @@ Tests universal correctness properties for BalancedBatchSampler,
 RegressionBatchSampler, and SurvivalBatchSampler using Hypothesis.
 """
 
-import pytest
-import torch
-from hypothesis import given, strategies as st, assume, settings
 from collections import Counter
 
+import pytest
+import torch
+
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.data.batch_samplers import (
     BalancedBatchSampler,
     RegressionBatchSampler,

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Simple Rule-Based Decision System - Transparent and reliable routing."""
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 from imr.intelligent_medical_referee import IntelligentMedicalReferee

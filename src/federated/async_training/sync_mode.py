@@ -4,8 +4,8 @@ Synchronization modes for federated learning.
 Defines synchronous, semi-synchronous, and fully asynchronous training modes.
 """
 
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional
 
 
