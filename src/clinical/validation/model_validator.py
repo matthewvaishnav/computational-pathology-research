@@ -6,6 +6,7 @@ AUC validation, and bootstrap confidence intervals.
 """
 
 import logging
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np

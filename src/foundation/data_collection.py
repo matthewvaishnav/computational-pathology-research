@@ -22,6 +22,8 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class SlideMetadata:

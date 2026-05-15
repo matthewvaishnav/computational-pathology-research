@@ -311,12 +311,12 @@ class InputValidator:
         filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
 
         # Limit length
-        if len(filename) > cls.MAX_FILENAME_LENGTH:
+        if len(filename) > InputValidator.MAX_FILENAME_LENGTH:
             name, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
             filename = (
-                name[: cls.MAX_FILENAME_LENGTH - len(ext) - 1] + "." + ext
+                name[: InputValidator.MAX_FILENAME_LENGTH - len(ext) - 1] + "." + ext
                 if ext
-                else name[: cls.MAX_FILENAME_LENGTH]
+                else name[: InputValidator.MAX_FILENAME_LENGTH]
             )
 
         return filename

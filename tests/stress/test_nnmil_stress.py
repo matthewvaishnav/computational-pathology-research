@@ -21,16 +21,14 @@ import sys
 sys.path.append('src')
 
 # Import nnMIL components directly
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
-
 from config.nnmil_config import nnMILConfig
 from data.bag_samplers import FixedLengthBagSampler
 from data.data_models import Bag, TrainingBatch, InferenceOutput
 from models.nnmil import nnMIL
 from models.foundation_adapter import FoundationModelAdapter
 from training.nnmil_trainer import nnMILTrainer
+from inference.sliding_window import SlidingWindowInference
+from inference.uncertainty import UncertaintyEstimator
 
 
 class TestnnMILStress:

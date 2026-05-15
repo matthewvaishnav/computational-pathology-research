@@ -8,6 +8,7 @@ supporting PACS integration for query/retrieve operations.
 Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7
 """
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -15,6 +16,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pydicom
+
+logger = logging.getLogger(__name__)
 from pydicom.dataset import Dataset, FileDataset
 from pydicom.uid import (
     JPEG2000,
@@ -531,6 +534,10 @@ class DICOMAdapter:
         pacs_host: str = "localhost",
         pacs_port: int = 11112,
         ae_title: str = "PATHOLOGY_AI",
+        patient_id: Optional[str] = None,
+        study_date: Optional[str] = None,
+        modality: Optional[str] = None,
+        series_description: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         Query PACS system for DICOM studies/series.
