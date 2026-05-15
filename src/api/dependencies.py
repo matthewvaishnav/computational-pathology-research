@@ -12,9 +12,9 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from src.api.security import decode_access_token, log_security_event
 from src.database import UserOperations, get_db_session
 from src.inference import InferenceEngine
-from src.api.security import decode_access_token, log_security_event
 
 logger = logging.getLogger(__name__)
 

@@ -26,7 +26,9 @@ from pathlib import Path
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 # Import the refactored AttentionMIL
 from src.models.attention_mil import AttentionMIL

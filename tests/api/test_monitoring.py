@@ -5,9 +5,10 @@ Tests for system monitoring endpoints including health checks, readiness probes,
 metrics, IDS alerts, and SIEM incidents.
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

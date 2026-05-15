@@ -811,7 +811,7 @@ def _send_to_ids(
         success: Whether event was successful
     """
     try:
-        from src.monitoring.ids import get_ids_engine, create_ids_event_from_security_log
+        from src.monitoring.ids import create_ids_event_from_security_log, get_ids_engine
 
         # Only send failed events to IDS (potential attacks)
         if not success:

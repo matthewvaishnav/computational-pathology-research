@@ -7,37 +7,39 @@ functionality including inference cache, feature cache, and sync manager.
 
 import asyncio
 import json
-import numpy as np
-import pytest
 import tempfile
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import AsyncMock, Mock, patch
+
+import numpy as np
+import pytest
+
+from src.mobile_edge.caching.feature_cache import (
+    FeatureCacheConfig,
+    FeatureCacheManager,
+    FeatureEntry,
+)
 
 # Import caching modules
 from src.mobile_edge.caching.inference_cache import (
-    InferenceCacheManager,
     CacheConfig,
     CacheEntry,
-    CacheStrategy,
     CacheEvictionPolicy,
-)
-from src.mobile_edge.caching.feature_cache import (
-    FeatureCacheManager,
-    FeatureCacheConfig,
-    FeatureEntry,
+    CacheStrategy,
+    InferenceCacheManager,
 )
 
 # Import sync modules
 from src.mobile_edge.sync.sync_manager import (
     BackgroundSyncManager,
     SyncConfig,
-    SyncTask,
-    SyncStatus,
-    SyncPriority,
     SyncDirection,
+    SyncPriority,
     SyncResult,
+    SyncStatus,
+    SyncTask,
 )
 
 

@@ -12,9 +12,9 @@ Tests Task 12: Local trainer implementation
 import pytest
 import torch
 import torch.nn as nn
-from hypothesis import given, settings, strategies as st
-from hypothesis import assume
 
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.federated.client.trainer import LocalTrainer
 from src.federated.privacy.dp_sgd import DPSGDEngine
 

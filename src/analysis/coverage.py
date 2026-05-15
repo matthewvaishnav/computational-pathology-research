@@ -8,7 +8,7 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from .models import CoverageAnalysis
 

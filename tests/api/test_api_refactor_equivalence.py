@@ -12,11 +12,13 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, Any, List
-from unittest.mock import MagicMock, patch, Mock
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from hypothesis import given, settings, strategies as st, assume, HealthCheck
+
+from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import strategies as st
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -137,7 +139,7 @@ class TestRouterStructureProperties:
     def test_all_routers_importable(self):
         """Property: All routers are properly importable."""
         try:
-            from src.api.routers import auth, analysis, admin, mobile, monitoring
+            from src.api.routers import admin, analysis, auth, mobile, monitoring
 
             # Verify each router has the router attribute
             assert hasattr(auth, "router"), "Auth router missing"
@@ -151,7 +153,8 @@ class TestRouterStructureProperties:
     def test_routers_have_fastapi_router_instances(self):
         """Property: Each router module contains a FastAPI APIRouter instance."""
         from fastapi import APIRouter
-        from src.api.routers import auth, analysis, admin, mobile, monitoring
+
+        from src.api.routers import admin, analysis, auth, mobile, monitoring
 
         routers = [auth.router, analysis.router, admin.router, mobile.router, monitoring.router]
 
@@ -160,7 +163,7 @@ class TestRouterStructureProperties:
 
     def test_router_tags_properly_set(self):
         """Property: Each router has appropriate tags for organization."""
-        from src.api.routers import auth, analysis, admin, mobile, monitoring
+        from src.api.routers import admin, analysis, auth, mobile, monitoring
 
         # Check tags exist
         assert len(auth.router.tags) > 0, "Auth router has no tags"
@@ -286,8 +289,9 @@ class TestPydanticModelProperties:
     @settings(max_examples=2, deadline=5000)
     def test_routers_define_pydantic_models(self, router_name):
         """Property: Routers define Pydantic models for type safety."""
-        from src.api import routers
         from pydantic import BaseModel
+
+        from src.api import routers
 
         router_module = getattr(routers, router_name)
 
@@ -322,11 +326,11 @@ class TestRouterDependencyProperties:
 
     def test_auth_router_uses_security_functions(self):
         """Property: Auth router imports security functions."""
-        from src.api.routers import auth
-
         # Check that auth router has access to security functions
         # (they should be imported at module level)
         import inspect
+
+        from src.api.routers import auth
 
         source = inspect.getsource(auth)
 
@@ -336,9 +340,9 @@ class TestRouterDependencyProperties:
 
     def test_routers_use_fastapi_dependencies(self):
         """Property: Routers use FastAPI Depends for dependency injection."""
-        from src.api.routers import auth
-
         import inspect
+
+        from src.api.routers import auth
 
         source = inspect.getsource(auth)
 
@@ -508,11 +512,7 @@ class TestRouterInteractionProperties:
         """Property: Routers can be imported independently."""
         # Each router should be importable on its own
         try:
-            from src.api.routers import auth
-            from src.api.routers import analysis
-            from src.api.routers import admin
-            from src.api.routers import mobile
-            from src.api.routers import monitoring
+            from src.api.routers import admin, analysis, auth, mobile, monitoring
         except ImportError as e:
             pytest.fail(f"Routers should be independently importable: {e}")
 
@@ -520,7 +520,7 @@ class TestRouterInteractionProperties:
         """Property: Routers don't have circular import dependencies."""
         # Import all routers - if there are circular deps, this will fail
         try:
-            from src.api.routers import auth, analysis, admin, mobile, monitoring
+            from src.api.routers import admin, analysis, auth, mobile, monitoring
 
             # Try to access router attributes
             _ = auth.router

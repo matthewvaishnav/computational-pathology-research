@@ -9,11 +9,13 @@ to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-import pytest
-import torch
-from hypothesis import given, settings, strategies as st
 from typing import Dict, List, Tuple
 
+import pytest
+import torch
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.models.foundation_adapter import FoundationModelAdapter
 from src.models.nnmil import nnMIL
 
@@ -385,8 +387,9 @@ def test_adapter_memory_efficiency():
     large_features = torch.randn(8, 1000, 2048)  # Large batch
 
     # Memory usage should be reasonable
-    import psutil
     import os
+
+    import psutil
 
     process = psutil.Process(os.getpid())
     memory_before = process.memory_info().rss

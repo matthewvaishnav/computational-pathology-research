@@ -2,19 +2,20 @@
 Unit tests for API error handlers module.
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.api.errors import (
-    not_found_handler,
-    internal_error_handler,
-    validation_error_handler,
-    http_exception_handler,
-    get_error_name,
     create_error_response,
+    get_error_name,
+    http_exception_handler,
+    internal_error_handler,
+    not_found_handler,
+    validation_error_handler,
 )
 
 

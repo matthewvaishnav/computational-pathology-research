@@ -6,12 +6,13 @@ Tests configuration loading, environment-based policy decisions, validation, and
 
 import os
 import tempfile
-import pytest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from src.security.config_manager import SecurityConfigManager
-from src.security.models import SecurityEnvironment, SecurityConfig
+from src.security.models import SecurityConfig, SecurityEnvironment
 
 
 class TestSecurityConfigManager:

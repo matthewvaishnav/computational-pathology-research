@@ -5,12 +5,13 @@ Tests network binding security policies across different environments.
 """
 
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from src.security.network_binding_manager import NetworkBindingManager
-from src.security.models import SecurityEnvironment
+import pytest
+
 from src.security.exceptions import NetworkBindingSecurityError
+from src.security.models import SecurityEnvironment
+from src.security.network_binding_manager import NetworkBindingManager
 
 
 class TestNetworkBindingManager:

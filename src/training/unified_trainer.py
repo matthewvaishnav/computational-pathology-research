@@ -15,7 +15,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from ..config.nnmil_config import nnMILConfig
-from ..models import nnMIL, TransMIL, FoundationModelAdapter
+from ..models import FoundationModelAdapter, TransMIL, nnMIL
 from .nnmil_trainer import nnMILTrainer
 
 

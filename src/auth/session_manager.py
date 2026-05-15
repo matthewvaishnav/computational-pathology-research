@@ -6,7 +6,7 @@ Provides secure session handling with proper expiration and validation.
 
 import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 class SecureSession:

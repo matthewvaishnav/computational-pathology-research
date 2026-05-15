@@ -6,12 +6,13 @@ Orchestrates async/semi-sync training with staleness weighting and timeouts.
 
 import logging
 import time
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+
 import torch
 
-from .sync_mode import SynchronizationMode, SyncConfig
 from .staleness_weighting import StalenessWeighting, UpdateMetadata
+from .sync_mode import SyncConfig, SynchronizationMode
 from .timeout_manager import TimeoutManager
 
 logger = logging.getLogger(__name__)

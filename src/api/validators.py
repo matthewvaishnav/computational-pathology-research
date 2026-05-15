@@ -89,8 +89,9 @@ def validate_file_upload(
     Raises:
         HTTPException: If file validation fails
     """
-    import magic
     from pathlib import Path
+
+    import magic
 
     # Check file size
     if len(file_content) > max_size:

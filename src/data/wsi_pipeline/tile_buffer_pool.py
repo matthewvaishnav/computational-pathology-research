@@ -18,31 +18,31 @@ import logging
 import threading
 import time
 import weakref
+import zlib
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-import zlib
 
 import numpy as np
 import psutil
 import torch
 from PIL import Image
 
-from .exceptions import ProcessingError, ResourceError
-from ..utils.common import log_operation, format_bytes
+from ..utils.common import format_bytes, log_operation
 from ..utils.constants import (
+    COMPRESSION_THRESHOLD_MB,
+    DEFAULT_BUFFER_SIZE,
     DEFAULT_MAX_MEMORY_GB,
     DEFAULT_MIN_MEMORY_GB,
-    DEFAULT_BUFFER_SIZE,
+    GC_FREQUENCY,
     MAX_BUFFER_SIZE,
+    MAX_TILE_SIZE,
     MEMORY_PRESSURE_THRESHOLD,
     MEMORY_TARGET_USAGE,
-    COMPRESSION_THRESHOLD_MB,
-    GC_FREQUENCY,
     MIN_TILE_SIZE,
-    MAX_TILE_SIZE,
 )
+from .exceptions import ProcessingError, ResourceError
 
 logger = logging.getLogger(__name__)
 

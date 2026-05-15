@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Distributed Medical Intelligence (DMI) - Advanced pathology collaboration system."""
 
-import time
 import random
-from typing import Dict, List, Any
+import time
+from typing import Any, Dict, List
 
 
 class DistributedMedicalIntelligence:

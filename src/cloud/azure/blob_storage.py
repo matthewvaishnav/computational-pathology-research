@@ -11,28 +11,28 @@ Enhanced Azure Blob Storage integration for HistoCore with advanced features:
 - Security and compliance features
 """
 
-import os
-import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Iterator, Tuple
-from dataclasses import dataclass
-from enum import Enum
 import asyncio
+import logging
+import os
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 try:
+    from azure.core.exceptions import AzureError, ResourceNotFoundError
+    from azure.identity import DefaultAzureCredential
     from azure.storage.blob import (
-        BlobServiceClient,
-        BlobClient,
-        ContainerClient,
-        BlobProperties,
         AccessTier,
-        StandardBlobTier,
+        BlobClient,
+        BlobProperties,
+        BlobServiceClient,
+        ContainerClient,
         PremiumPageBlobTier,
+        StandardBlobTier,
     )
     from azure.storage.blob.aio import BlobServiceClient as AsyncBlobServiceClient
-    from azure.identity import DefaultAzureCredential
-    from azure.core.exceptions import AzureError, ResourceNotFoundError
 
     AZURE_AVAILABLE = True
 except ImportError:
@@ -474,8 +474,9 @@ class AzureBlobStorageConnector:
     ) -> Optional[str]:
         """Generate SAS URL for secure blob access."""
         try:
-            from azure.storage.blob import generate_blob_sas, BlobSasPermissions
             from datetime import datetime, timedelta
+
+            from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 
             blob_client = self.container_client.get_blob_client(blob_name)
 

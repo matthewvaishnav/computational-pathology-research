@@ -8,7 +8,8 @@ ensuring that models use pinned revisions to prevent supply chain attacks.
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 import yaml
 
 logger = logging.getLogger(__name__)

@@ -4,24 +4,24 @@ Result aggregator for HistoCore Project Optimization Analysis System.
 Merges results from all 8 analyzers into unified AnalysisResult.
 """
 
-from typing import List
-from datetime import datetime
 import subprocess
+from datetime import datetime
 from pathlib import Path
+from typing import List
 
 from .models import (
     AnalysisResult,
-    Issue,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
-    ScalabilityAnalysis,
-    Severity,
+    Issue,
+    PerformanceAnalysis,
     Priority,
+    ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
 )
 
 

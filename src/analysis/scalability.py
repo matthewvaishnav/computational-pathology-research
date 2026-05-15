@@ -7,7 +7,7 @@ Analyzes distributed training, data loading, and memory bottlenecks.
 import ast
 import logging
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from .models import ScalabilityAnalysis
 

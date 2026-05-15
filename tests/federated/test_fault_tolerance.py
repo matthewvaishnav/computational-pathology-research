@@ -5,12 +5,13 @@ Tests checkpoint recovery, network monitoring, and reconnection handling.
 """
 
 import asyncio
+import tempfile
+from datetime import datetime, timedelta
+from pathlib import Path
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
 import torch
-import tempfile
-from pathlib import Path
-from datetime import datetime, timedelta
-from unittest.mock import Mock, AsyncMock, patch
 
 from src.federated.fault_tolerance import (
     CheckpointManager,

@@ -7,9 +7,9 @@ by performing multiple forward passes with dropout enabled at inference time.
 
 from typing import Dict, Optional, Tuple
 
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 
 
 class MCDropoutInference:

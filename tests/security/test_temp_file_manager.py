@@ -7,8 +7,9 @@ Tests secure temporary file creation with proper permissions and cleanup.
 import os
 import stat
 import tempfile
-import pytest
 from pathlib import Path
+
+import pytest
 
 from src.security.temp_file_manager import TempFileManager
 

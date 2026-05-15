@@ -14,8 +14,8 @@ import pytest
 # Direct imports to avoid src.__init__ issues
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from analysis.orchestrator import AnalysisOrchestrator
 from analysis.models import AnalysisResult
+from analysis.orchestrator import AnalysisOrchestrator
 
 
 @pytest.fixture

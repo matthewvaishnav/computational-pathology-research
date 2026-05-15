@@ -6,34 +6,34 @@ error recovery, and resource tracking.
 """
 
 import argparse
+import logging
+import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Callable, Any
-import subprocess
-import logging
+from typing import Any, Callable, Dict, List, Optional
 
+from .architecture import ArchitectureAnalyzer
+from .code_quality import CodeQualityScanner
+from .coverage import CoverageAnalyzer
+from .dependencies import DependencyAuditor
+from .deployment import DeploymentValidator
 from .models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
+    PerformanceAnalysis,
     ScalabilityAnalysis,
+    SecurityAnalysis,
 )
-from .architecture import ArchitectureAnalyzer
 from .performance import PerformanceProfiler
-from .coverage import CoverageAnalyzer
-from .code_quality import CodeQualityScanner
-from .dependencies import DependencyAuditor
-from .deployment import DeploymentValidator
-from .security import SecurityScanner
 from .scalability import ScalabilityAnalyzer
+from .security import SecurityScanner
 
 # Configure logging
 logging.basicConfig(

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Collaborative Pathology Intelligence (CPI) - Next-generation pathology AI."""
 
-import time
 import random
-from typing import Dict, List, Any, Tuple
+import time
+from typing import Any, Dict, List, Tuple
 
 
 class CollaborativePathologyIntelligence:

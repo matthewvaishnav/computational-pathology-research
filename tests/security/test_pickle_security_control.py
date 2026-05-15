@@ -7,13 +7,14 @@ Tests pickle deserialization security with source validation.
 import os
 import pickle
 import tempfile
-import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from src.security.pickle_security_control import PickleSecurityControl
-from src.security.models import SecurityEnvironment
+import pytest
+
 from src.security.exceptions import PickleSecurityError
+from src.security.models import SecurityEnvironment
+from src.security.pickle_security_control import PickleSecurityControl
 
 
 class TestPickleSecurityControl:

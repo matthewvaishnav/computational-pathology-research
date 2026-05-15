@@ -17,11 +17,11 @@ import numpy as np
 import pytest
 
 from experiments.benchmark_system.metrics_collector import (
-    MetricsCollector,
-    EpochMetrics,
-    SystemMetrics,
     AggregatedMetrics,
     CollectionSession,
+    EpochMetrics,
+    MetricsCollector,
+    SystemMetrics,
 )
 from experiments.benchmark_system.resource_manager import ResourceMetrics
 

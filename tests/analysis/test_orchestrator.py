@@ -4,18 +4,19 @@ Integration tests for Analysis Orchestrator.
 Tests parallel execution, error recovery, and CLI interface.
 """
 
-import pytest
-import tempfile
 import json
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from src.analysis.orchestrator import AnalysisOrchestrator, main
+import pytest
+
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
     PerformanceAnalysis,
 )
+from src.analysis.orchestrator import AnalysisOrchestrator, main
 
 
 @pytest.fixture

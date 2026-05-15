@@ -18,11 +18,11 @@ from torch.utils.data import DataLoader, TensorDataset
 from src.config.nnmil_config import nnMILConfig
 from src.data.bag_samplers import FixedLengthBagSampler
 from src.data.batch_samplers import BalancedBatchSampler
-from src.data.data_models import Bag, TrainingBatch, InferenceOutput
+from src.data.data_models import Bag, InferenceOutput, TrainingBatch
 from src.inference.sliding_window import SlidingWindowInference
 from src.inference.uncertainty import UncertaintyEstimator
-from src.models import nnMIL, FoundationModelAdapter
-from src.training import nnMILTrainer, UnifiedTrainer
+from src.models import FoundationModelAdapter, nnMIL
+from src.training import UnifiedTrainer, nnMILTrainer
 
 
 class TestnnMILEndToEnd:

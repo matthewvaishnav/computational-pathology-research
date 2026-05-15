@@ -18,11 +18,14 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, R
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field
 from prometheus_client import Counter, Gauge, Histogram, generate_latest
 from prometheus_client.exposition import CONTENT_TYPE_LATEST
+from pydantic import BaseModel, Field
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+# Import distributed tracing
+from src.monitoring.tracing import get_tracer
 
 # Local imports grouped together
 from ..aggregator.factory import AggregatorFactory
@@ -30,12 +33,8 @@ from ..common.data_models import ClientUpdate
 from ..coordinator.orchestrator import TrainingOrchestrator
 from .config import get_config, validate_production_config
 from .database import get_db_manager, init_database
-from .security import RateLimiter
 from .monitoring import get_metrics_manager, setup_logging
-from .security import get_audit_logger, get_security_manager, validate_security_config
-
-# Import distributed tracing
-from src.monitoring.tracing import get_tracer
+from .security import RateLimiter, get_audit_logger, get_security_manager, validate_security_config
 
 # Configuration
 config = get_config()
@@ -283,8 +282,9 @@ def compute_model_checksum(model_state: Dict[str, Any]) -> str:
     Returns:
         Hexadecimal SHA-256 checksum string
     """
-    import torch
     import io
+
+    import torch
 
     # Serialize model state to bytes
     buffer = io.BytesIO()

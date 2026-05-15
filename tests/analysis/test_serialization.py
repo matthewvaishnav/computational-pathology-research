@@ -5,24 +5,26 @@ Tests that AnalysisResult objects can be serialized to JSON and deserialized
 back without data loss.
 """
 
-import pytest
-from hypothesis import given, strategies as st
 from datetime import datetime
 
+import pytest
+
+from hypothesis import given
+from hypothesis import strategies as st
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
-    ScalabilityAnalysis,
     Issue,
-    Severity,
+    PerformanceAnalysis,
     Priority,
     Role,
+    ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
 )
 
 

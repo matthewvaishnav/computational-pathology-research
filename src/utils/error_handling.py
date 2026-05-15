@@ -6,7 +6,7 @@ Prevents information disclosure through error messages.
 
 import logging
 import traceback
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -3,11 +3,12 @@ Security tests for API routes refactoring.
 Tests authentication, authorization, rate limiting, and input validation.
 """
 
-import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
 import time
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch
+
+import pytest
+from fastapi.testclient import TestClient
 
 
 class TestAuthentication:

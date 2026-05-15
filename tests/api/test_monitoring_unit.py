@@ -5,8 +5,9 @@ Tests health checks, readiness probes, metrics, and security monitoring endpoint
 """
 
 import os
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestMonitoringRouterComponents:

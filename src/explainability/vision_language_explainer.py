@@ -17,8 +17,9 @@ import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
 
-from .case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery, SimilarCase
 from src.security.model_download import ModelDownloadManager
+
+from .case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery, SimilarCase
 from .counterfactual_explanations import (
     BiologicalPlausibilityValidator,
     CounterfactualExplanation,

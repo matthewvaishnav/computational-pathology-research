@@ -20,8 +20,8 @@ import numpy as np
 import torch
 from PIL import Image
 
-from src.clinical.pacs.pacs_service import PACSService
 from src.clinical.pacs.data_models import StudyInfo
+from src.clinical.pacs.pacs_service import PACSService
 
 logger = logging.getLogger(__name__)
 

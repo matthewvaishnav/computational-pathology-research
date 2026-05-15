@@ -4,12 +4,13 @@ Unit tests for URLFetcherControl.
 Tests URL scheme validation for safe URL opening.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from urllib.error import URLError
 
-from src.security.url_fetcher_control import URLFetcherControl
+import pytest
+
 from src.security.exceptions import URLSecurityError
+from src.security.url_fetcher_control import URLFetcherControl
 
 
 class TestURLFetcherControl:

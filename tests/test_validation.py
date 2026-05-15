@@ -4,24 +4,25 @@ Tests for input validation utilities.
 Tests tensor validation, modality-specific validation, and batch validation.
 """
 
-import pytest
-import torch
 import os
 
+import pytest
+import torch
+
 from src.utils.validation import (
+    ValidationError,
+    get_validation_summary,
     is_validation_enabled,
     set_validation_enabled,
-    ValidationError,
-    validate_tensor_shape,
-    validate_tensor_range,
-    validate_no_nan_inf,
     validate_batch_size,
-    validate_wsi_features,
-    validate_genomic_features,
     validate_clinical_text,
-    validate_multimodal_batch,
+    validate_genomic_features,
     validate_inputs,
-    get_validation_summary,
+    validate_multimodal_batch,
+    validate_no_nan_inf,
+    validate_tensor_range,
+    validate_tensor_shape,
+    validate_wsi_features,
 )
 
 

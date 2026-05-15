@@ -8,26 +8,18 @@ Comprehensive test suite for all Azure cloud services integration:
 - Monitor Integration
 """
 
-import pytest
 import json
 import os
-from datetime import datetime, timezone
-from unittest.mock import Mock, patch, MagicMock
 from dataclasses import asdict
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, Mock, patch
 
-# Import Azure integration modules
-from src.cloud.azure.health_data_services import (
-    AzureHealthDataServices,
-    HealthDataConfig,
-    PatientData,
-    DiagnosticReportData,
-    ObservationData,
-    create_health_data_services,
-)
+import pytest
+
 from src.cloud.azure.blob_storage import (
     AzureBlobStorageConnector,
-    BlobStorageConfig,
     BlobAccessTier,
+    BlobStorageConfig,
     UploadResult,
     create_blob_storage_connector,
 )
@@ -39,17 +31,29 @@ from src.cloud.azure.functions import (
     FunctionResult,
     FunctionTriggerType,
     create_functions_integration,
-    get_slide_preprocessing_function,
     get_model_inference_function,
+    get_slide_preprocessing_function,
+)
+
+# Import Azure integration modules
+from src.cloud.azure.health_data_services import (
+    AzureHealthDataServices,
+    DiagnosticReportData,
+    HealthDataConfig,
+    ObservationData,
+    PatientData,
+    create_health_data_services,
 )
 from src.cloud.azure.monitor import (
-    AzureMonitorIntegration,
-    MonitorConfig,
-    CustomMetric as MonitorMetric,
-    LogEntry,
     AlertRule,
-    MetricType,
     AlertSeverity,
+    AzureMonitorIntegration,
+)
+from src.cloud.azure.monitor import CustomMetric as MonitorMetric
+from src.cloud.azure.monitor import (
+    LogEntry,
+    MetricType,
+    MonitorConfig,
     create_monitor_integration,
     setup_histocore_monitoring,
 )
@@ -513,9 +517,9 @@ class TestAzureIntegrationEnd2End:
         # For now, just verify all services can be imported and initialized
 
         from src.cloud.azure import (
-            AzureHealthDataServices,
             AzureBlobStorageConnector,
             AzureFunctionsIntegration,
+            AzureHealthDataServices,
             AzureMonitorIntegration,
         )
 
@@ -527,15 +531,14 @@ class TestAzureIntegrationEnd2End:
 
     def test_azure_module_imports(self):
         """Test Azure module imports work correctly."""
-        from src.cloud.azure import (
-            AzureHealthDataServices,
-            AzureBlobStorageConnector,
-            AzureFunctionsIntegration,
-            AzureMonitorIntegration,
-        )
-
         # Verify __all__ exports
         import src.cloud.azure as azure_module
+        from src.cloud.azure import (
+            AzureBlobStorageConnector,
+            AzureFunctionsIntegration,
+            AzureHealthDataServices,
+            AzureMonitorIntegration,
+        )
 
         expected_exports = [
             "AzureHealthDataServices",

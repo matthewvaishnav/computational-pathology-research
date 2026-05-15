@@ -3,13 +3,14 @@ HistoCore Command Line Interface
 Simple commands like: histocore analyze slide.svs --output results/
 """
 
-import click
+import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Optional
-import json
-import time
+
+import click
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -307,8 +308,8 @@ def web():
     click.echo("🌐 Starting HistoCore Web Interface...")
 
     try:
-        from src.web.app import app
         from src.security.network_binding import NetworkBindingManager
+        from src.web.app import app
 
         safe_host = NetworkBindingManager.get_safe_host()
         click.echo(

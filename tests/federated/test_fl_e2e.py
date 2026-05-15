@@ -12,13 +12,14 @@ These tests require actual deployment and are marked as slow/e2e.
 Run with: pytest tests/federated/test_fl_e2e.py -v -s -m e2e
 """
 
+import sys
+import time
+from pathlib import Path
+from typing import List, Tuple
+
 import pytest
 import torch
 import torch.nn as nn
-import time
-import sys
-from pathlib import Path
-from typing import List, Tuple
 
 # Mark all tests in this module as e2e
 pytestmark = pytest.mark.e2e
@@ -99,9 +100,10 @@ def test_e2e_deploy_coordinator_and_clients(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 1.1, 1.2, 1.3**
     """
-    from src.federated.coordinator.server import FederatedCoordinator
-    from src.federated.client.client import FederatedClient
     import threading
+
+    from src.federated.client.client import FederatedClient
+    from src.federated.coordinator.server import FederatedCoordinator
 
     # Configuration
     num_clients = 3
@@ -174,9 +176,9 @@ def test_e2e_train_on_pcam_distributed(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 2.1, 2.2, 2.3**
     """
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
-    from src.federated.client.trainer import LocalTrainer
     from src.federated.aggregator.fedavg import FedAvgAggregator
+    from src.federated.client.trainer import LocalTrainer
+    from src.federated.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -295,9 +297,9 @@ def test_e2e_accuracy_comparison_centralized(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 2.4, 2.5**
     """
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
-    from src.federated.client.trainer import LocalTrainer
     from src.federated.aggregator.fedavg import FedAvgAggregator
+    from src.federated.client.trainer import LocalTrainer
+    from src.federated.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -422,10 +424,10 @@ def test_e2e_measure_bandwidth_usage(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 4.3, 4.4**
     """
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
-    from src.federated.client.trainer import LocalTrainer
     from src.federated.aggregator.fedavg import FedAvgAggregator
+    from src.federated.client.trainer import LocalTrainer
     from src.federated.compression.compressor import GradientCompressor
+    from src.federated.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -498,9 +500,9 @@ def test_e2e_measure_round_time(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 4.5, 4.6**
     """
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
-    from src.federated.client.trainer import LocalTrainer
     from src.federated.aggregator.fedavg import FedAvgAggregator
+    from src.federated.client.trainer import LocalTrainer
+    from src.federated.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3

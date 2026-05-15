@@ -8,19 +8,20 @@ or mixed compression modes to gradients.
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, Optional, Union
+
 import torch
 
 from .quantization import (
-    quantize_gradients,
-    dequantize_gradients,
     QuantizationConfig,
     QuantizedGradients,
+    dequantize_gradients,
+    quantize_gradients,
 )
 from .sparsification import (
-    sparsify_gradients,
-    densify_gradients,
     SparsificationConfig,
     SparsifiedGradients,
+    densify_gradients,
+    sparsify_gradients,
 )
 
 

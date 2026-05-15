@@ -28,7 +28,7 @@ from .batch_optimizer import BatchOptimizer, OptimalSizes
 from .cache_manager import CacheManager
 from .config import OptimizerConfig
 from .monitor import MemoryAlert, MemoryAnalytics, MemoryMonitor
-from .profiler import MemoryProfiler, MemoryPressureLevel, MemorySnapshot
+from .profiler import MemoryPressureLevel, MemoryProfiler, MemorySnapshot
 
 logger = logging.getLogger(__name__)
 

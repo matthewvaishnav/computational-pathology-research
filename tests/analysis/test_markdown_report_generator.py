@@ -5,22 +5,23 @@ Tests report formatting, table generation, and task list formatting.
 """
 
 import pytest
-from src.analysis.reporting import ReportGenerator
+
 from src.analysis.models import (
     AnalysisResult,
-    Issue,
-    Severity,
-    Priority,
-    Role,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
+    Issue,
+    PerformanceAnalysis,
+    Priority,
+    Role,
     ScalabilityAnalysis,
+    SecurityAnalysis,
+    Severity,
 )
+from src.analysis.reporting import ReportGenerator
 
 
 @pytest.fixture

@@ -375,10 +375,10 @@ class AttentionMIL(MILBase):
 # Import it from there to maintain backward compatibility
 from .clam import CLAM  # noqa: F401
 
-# TransMIL has been extracted to src/models/transmil.py
-# Import it from there to maintain backward compatibility
-from .transmil import TransMIL  # noqa: F401
-
 # create_attention_model has been extracted to src/models/factory.py
 # Import it from there to maintain backward compatibility
 from .factory import create_attention_model  # noqa: F401
+
+# TransMIL has been extracted to src/models/transmil.py
+# Import it from there to maintain backward compatibility
+from .transmil import TransMIL  # noqa: F401

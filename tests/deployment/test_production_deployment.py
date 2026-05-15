@@ -2,17 +2,13 @@
 Tests for Production Deployment Module
 """
 
-import pytest
-import tempfile
 import sqlite3
+import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from src.deployment.site_preparation import (
-    SitePreparationManager,
-    HospitalSite,
-    TechnicalRequirements,
-)
+import pytest
+
 from src.deployment.clinical_impact import (
     ClinicalImpactTracker,
     DiagnosticAccuracyMetric,
@@ -20,10 +16,15 @@ from src.deployment.clinical_impact import (
     UserSatisfactionSurvey,
 )
 from src.deployment.production_optimization import (
-    PerformanceMonitor,
     AutoScaler,
     CapacityPlanner,
     OperationalExcellence,
+    PerformanceMonitor,
+)
+from src.deployment.site_preparation import (
+    HospitalSite,
+    SitePreparationManager,
+    TechnicalRequirements,
 )
 
 

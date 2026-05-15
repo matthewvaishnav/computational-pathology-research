@@ -5,14 +5,15 @@ Tests complexity calculation, duplication detection, documentation coverage meas
 and overall code quality scoring.
 """
 
-import pytest
-import tempfile
+import json
 import shutil
 import subprocess
-import json
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.analysis.code_quality import CodeQualityScanner
 from src.analysis.models import CodeQualityAnalysis

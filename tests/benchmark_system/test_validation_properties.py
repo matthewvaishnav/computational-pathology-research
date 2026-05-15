@@ -12,10 +12,11 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-from hypothesis import given, strategies as st, settings
 
-from experiments.benchmark_system.models import TrainingResult, TaskSpecification
+from experiments.benchmark_system.models import TaskSpecification, TrainingResult
 from experiments.benchmark_system.result_validator import ResultValidator
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 
 # Strategy for generating TaskSpecification instances

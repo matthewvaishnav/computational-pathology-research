@@ -496,6 +496,7 @@ async def create_sample_ai_analysis_callback(study_path: str, study_uid: str, ta
         task: Workflow task for storing results
     """
     from pathlib import Path
+
     from src.inference.inference_engine import InferenceEngine
 
     logger.info(f"Starting AI analysis for study: {study_uid}")

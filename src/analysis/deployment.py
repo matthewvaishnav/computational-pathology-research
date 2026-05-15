@@ -6,9 +6,10 @@ Analyzes deployment readiness including Docker, Kubernetes, and CI/CD.
 
 import logging
 import subprocess
-import yaml
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
+import yaml
 
 from .models import DeploymentAnalysis
 

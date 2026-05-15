@@ -5,12 +5,13 @@ Tests Dockerfile parsing, Kubernetes manifest validation, and CI/CD pipeline ass
 Requirements: 6.1, 6.2, 6.3
 """
 
-import pytest
-import tempfile
 import shutil
-import yaml
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
+
+import pytest
+import yaml
 
 from src.analysis.deployment import DeploymentValidator
 from src.analysis.models import DeploymentAnalysis

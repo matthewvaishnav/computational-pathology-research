@@ -8,9 +8,10 @@ Property 4: Exponential Backoff Retry Pattern
 """
 
 import pytest
-from hypothesis import given, strategies as st, settings, assume
 
-from experiments.benchmark_system.error_handler import ErrorHandler, ErrorContext, ErrorCategory
+from experiments.benchmark_system.error_handler import ErrorCategory, ErrorContext, ErrorHandler
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 
 
 class TestExponentialBackoffProperties:

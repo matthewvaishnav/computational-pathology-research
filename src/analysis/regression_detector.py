@@ -8,10 +8,10 @@ Compares baseline vs current analysis results to detect regressions in:
 """
 
 import json
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from .models import AnalysisResult
 

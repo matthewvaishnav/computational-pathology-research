@@ -6,6 +6,9 @@ robustness of the nnMIL implementation under stress.
 """
 
 import gc
+
+# Add src to path for imports
+import sys
 import time
 import warnings
 from pathlib import Path
@@ -16,20 +19,17 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-# Add src to path for imports
-import sys
-
 sys.path.append("src")
 
 # Import nnMIL components directly
 from config.nnmil_config import nnMILConfig
 from data.bag_samplers import FixedLengthBagSampler
-from data.data_models import Bag, TrainingBatch, InferenceOutput
-from models.nnmil import nnMIL
-from models.foundation_adapter import FoundationModelAdapter
-from training.nnmil_trainer import nnMILTrainer
+from data.data_models import Bag, InferenceOutput, TrainingBatch
 from inference.sliding_window import SlidingWindowInference
 from inference.uncertainty import UncertaintyEstimator
+from models.foundation_adapter import FoundationModelAdapter
+from models.nnmil import nnMIL
+from training.nnmil_trainer import nnMILTrainer
 
 
 class TestnnMILStress:

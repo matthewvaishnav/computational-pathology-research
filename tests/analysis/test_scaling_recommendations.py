@@ -5,13 +5,14 @@ Tests the generate_scaling_recommendations method and related functionality.
 Requirements: 8.7, 8.8
 """
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
 
-from src.analysis.scalability import ScalabilityAnalyzer
+import pytest
+
 from src.analysis.models import ScalabilityAnalysis
+from src.analysis.scalability import ScalabilityAnalyzer
 
 
 class TestScalingRecommendations:

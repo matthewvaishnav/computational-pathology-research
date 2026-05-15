@@ -9,10 +9,10 @@ is available.
 from .sync_manager import (
     BackgroundSyncManager,
     SyncConfig,
-    SyncTask,
-    SyncStatus,
     SyncPriority,
     SyncResult,
+    SyncStatus,
+    SyncTask,
 )
 
 __all__ = [

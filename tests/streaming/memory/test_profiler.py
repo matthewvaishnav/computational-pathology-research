@@ -15,8 +15,8 @@ import pytest
 import torch
 
 from src.streaming.memory.profiler import (
-    MemoryProfiler,
     MemoryPressureLevel,
+    MemoryProfiler,
     MemorySnapshot,
 )
 

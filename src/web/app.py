@@ -3,14 +3,15 @@ HistoCore Web Interface
 Browser-based WSI analysis
 """
 
-import os
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any, Dict, Tuple
-from flask import Flask, render_template, request, jsonify, send_file, Response
-from werkzeug.utils import secure_filename
+
 import numpy as np
+from flask import Flask, Response, jsonify, render_template, request, send_file
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024 * 1024  # 2GB max file size

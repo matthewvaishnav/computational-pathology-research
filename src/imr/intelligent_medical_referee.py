@@ -2,7 +2,7 @@
 """Intelligent Medical Referee (IMR) - Arbitrates between FL and DMI predictions."""
 
 import time
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 class IntelligentMedicalReferee:

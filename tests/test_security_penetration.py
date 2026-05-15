@@ -4,8 +4,8 @@ Security Penetration Testing for HistoCore
 """
 
 import os
-import sys
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 

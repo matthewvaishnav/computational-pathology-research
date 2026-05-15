@@ -19,7 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from ..config.nnmil_config import nnMILConfig
 from ..data.batch_samplers import BalancedBatchSampler, RegressionBatchSampler, SurvivalBatchSampler
-from ..data.data_models import TrainingBatch, InferenceOutput
+from ..data.data_models import InferenceOutput, TrainingBatch
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Realistic medical scenario test for IMR vs Simple Ensemble."""
 
+import os
 import random
 import sys
-import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 from imr.intelligent_medical_referee import IntelligentMedicalReferee

@@ -4,11 +4,12 @@ PathologyFL: Hierarchical Attention-Weighted Federated Learning
 Unique federated learning approach designed specifically for computational pathology
 """
 
-import torch
-import numpy as np
-from typing import Dict, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List
+
+import numpy as np
+import torch
 
 
 class HospitalType(Enum):

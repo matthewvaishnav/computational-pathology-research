@@ -17,8 +17,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from .dmr_manager import (
-    DMRManager,
     DeviceMasterRecord,
+    DMRManager,
     ModelDevelopmentRecord,
     RegulatoryStandard,
     SoftwareComponent,

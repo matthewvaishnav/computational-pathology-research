@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Adaptive Decision System - Learns when to use IMR vs Simple Ensemble."""
 
-import random
-import time
-import sys
 import os
+import random
+import sys
+import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 from imr.intelligent_medical_referee import IntelligentMedicalReferee

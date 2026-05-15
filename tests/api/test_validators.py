@@ -5,7 +5,7 @@ Unit tests for API validators module.
 import pytest
 from fastapi import HTTPException
 
-from src.api.validators import validate_email, validate_password, validate_file_upload
+from src.api.validators import validate_email, validate_file_upload, validate_password
 
 
 class TestEmailValidation:

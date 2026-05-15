@@ -11,7 +11,6 @@ import hashlib
 import json
 import logging
 import ssl
-import defusedxml.ElementTree as ET
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -19,6 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
+import defusedxml.ElementTree as ET
 import zeep
 from zeep import wsse
 

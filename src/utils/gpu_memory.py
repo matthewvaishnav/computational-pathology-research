@@ -17,9 +17,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 import torch
 
 from ..utils.constants import (
+    DEFAULT_BATCH_SIZE,
     MAX_MEMORY_PERCENT,
     MEMORY_PRESSURE_THRESHOLD,
-    DEFAULT_BATCH_SIZE,
 )
 
 logger = logging.getLogger(__name__)

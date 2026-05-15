@@ -14,13 +14,13 @@ from pathlib import Path
 import pytest
 
 from experiments.benchmark_system.error_handler import (
-    ErrorHandler,
-    ErrorContext,
     ErrorCategory,
+    ErrorContext,
+    ErrorHandler,
     RecoveryAction,
 )
+from experiments.benchmark_system.models import TaskSpecification, TrainingResult
 from experiments.benchmark_system.result_validator import ResultValidator, ValidationIssue
-from experiments.benchmark_system.models import TrainingResult, TaskSpecification
 
 
 class TestErrorClassification:

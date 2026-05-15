@@ -4,26 +4,27 @@ Unit tests for RegressionDetector.
 Tests coverage, performance, security, and code quality regression detection.
 """
 
-import pytest
 from datetime import datetime
 
-from src.analysis.regression_detector import (
-    RegressionDetector,
-    RegressionType,
-    RegressionSeverity,
-    Regression,
-    RegressionReport,
-)
+import pytest
+
 from src.analysis.models import (
     AnalysisResult,
     ArchitectureAnalysis,
-    PerformanceAnalysis,
-    CoverageAnalysis,
     CodeQualityAnalysis,
+    CoverageAnalysis,
     DependencyAnalysis,
     DeploymentAnalysis,
-    SecurityAnalysis,
+    PerformanceAnalysis,
     ScalabilityAnalysis,
+    SecurityAnalysis,
+)
+from src.analysis.regression_detector import (
+    Regression,
+    RegressionDetector,
+    RegressionReport,
+    RegressionSeverity,
+    RegressionType,
 )
 
 

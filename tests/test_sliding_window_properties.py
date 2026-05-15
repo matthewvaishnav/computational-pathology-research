@@ -8,14 +8,16 @@ a minimum of 100 iterations to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-import pytest
-import torch
-from hypothesis import given, settings, strategies as st
 from typing import Dict, List, Tuple
 
+import pytest
+import torch
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from src.data.data_models import Bag
 from src.inference.sliding_window import SlidingWindowInference
 from src.models.nnmil import nnMIL
-from src.data.data_models import Bag
 
 # ============================================================================
 # Property 16: Window Overlap Correctness

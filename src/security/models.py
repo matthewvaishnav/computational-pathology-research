@@ -4,9 +4,9 @@ Security models and enumerations for the HistoCore framework.
 This module defines security-related data models and enumerations.
 """
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
-from dataclasses import dataclass
 
 
 class SecurityEnvironment(Enum):

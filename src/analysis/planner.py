@@ -6,10 +6,10 @@ dependency resolution, and role assignment based on analysis results.
 """
 
 import logging
-from typing import Dict, List, Set
 from collections import defaultdict
+from typing import Dict, List, Set
 
-from .models import AnalysisResult, OptimizationPlan, Task, Priority, Severity, Role
+from .models import AnalysisResult, OptimizationPlan, Priority, Role, Severity, Task
 
 logger = logging.getLogger(__name__)
 

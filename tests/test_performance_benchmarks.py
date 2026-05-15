@@ -5,14 +5,15 @@ Tests training loop, data loading, inference, and memory usage to detect
 performance regressions and validate optimization targets.
 """
 
+import tempfile
+import time
+from pathlib import Path
+
+import h5py
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-import time
-from pathlib import Path
-import tempfile
-import h5py
-import numpy as np
 
 from src.models.attention_mil import AttentionMIL
 

@@ -4,13 +4,14 @@ Unit tests for Performance Profiler.
 Tests GPU utilization measurement, bottleneck detection, and recommendation generation.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 import subprocess
 from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
 
-from src.analysis.performance import PerformanceProfiler
+import pytest
+
 from src.analysis.models import PerformanceAnalysis
+from src.analysis.performance import PerformanceProfiler
 
 
 class TestPerformanceProfiler:

@@ -9,20 +9,21 @@ Covers Task 18:
 - 18.5 Client dropout simulation
 """
 
+import shutil
+import tempfile
+from pathlib import Path
+
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from pathlib import Path
-import tempfile
-import shutil
 
-from src.federated.coordinator.orchestrator import TrainingOrchestrator
-from src.federated.client.trainer import LocalTrainer
-from src.federated.aggregator.fedavg import FedAvgAggregator
 from src.federated.aggregator.byzantine_robust import KrumAggregator
-from src.federated.privacy.dp_sgd import DPSGDEngine
+from src.federated.aggregator.fedavg import FedAvgAggregator
+from src.federated.client.trainer import LocalTrainer
 from src.federated.common.data_models import ClientUpdate
+from src.federated.coordinator.orchestrator import TrainingOrchestrator
+from src.federated.privacy.dp_sgd import DPSGDEngine
 
 
 # Simple model for testing

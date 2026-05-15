@@ -4,19 +4,21 @@ Tests for asynchronous training module.
 Tests sync modes, staleness weighting, timeout management, and async coordination.
 """
 
-import pytest
 import time
-import torch
-from hypothesis import given, strategies as st, settings
 
+import pytest
+import torch
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from src.federated.async_training import (
-    SynchronizationMode,
-    SyncConfig,
-    StalenessWeighting,
-    UpdateMetadata,
-    TimeoutManager,
     AsyncCoordinator,
     ClientUpdate,
+    StalenessWeighting,
+    SyncConfig,
+    SynchronizationMode,
+    TimeoutManager,
+    UpdateMetadata,
 )
 
 # ============================================================================

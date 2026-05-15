@@ -20,10 +20,10 @@ except ImportError:
     TORCH_GEOMETRIC_AVAILABLE = False
 
 from src.models.topology_branch import (
-    KNNGraphBuilder,
     GATv2Layer,
-    GraphSAGELayer,
     GINLayer,
+    GraphSAGELayer,
+    KNNGraphBuilder,
     TopologyBranch,
 )
 

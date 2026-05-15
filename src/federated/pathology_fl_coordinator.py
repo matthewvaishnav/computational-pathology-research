@@ -4,18 +4,19 @@ PathologyFL Coordinator - Implements hierarchical medical expertise aggregation
 """
 
 import asyncio
-import torch
 import json
-from typing import Dict, List
-from pathlib import Path
 import logging
+from pathlib import Path
+from typing import Dict, List
+
+import torch
 
 from .pathology_fl import (
-    PathologyFederatedAggregator,
-    HospitalMetadata,
-    SlideQuality,
     CancerType,
+    HospitalMetadata,
     HospitalType,
+    PathologyFederatedAggregator,
+    SlideQuality,
 )
 
 

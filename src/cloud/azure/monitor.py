@@ -13,25 +13,25 @@ Provides comprehensive monitoring and observability for HistoCore using Azure Mo
 import json
 import logging
 import queue
-import time
-from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict
-from enum import Enum
 import threading
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 from queue import Queue
+from typing import Any, Dict, List, Optional, Union
 
 try:
+    import requests
     from azure.identity import DefaultAzureCredential
-    from azure.mgmt.monitor import MonitorManagementClient
     from azure.mgmt.loganalytics import LogAnalyticsManagementClient
-    from azure.monitor.opentelemetry import configure_azure_monitor
+    from azure.mgmt.monitor import MonitorManagementClient
     from azure.monitor.ingestion import LogsIngestionClient
+    from azure.monitor.opentelemetry import configure_azure_monitor
     from opencensus.ext.azure.log_exporter import AzureLogHandler
     from opencensus.ext.azure.trace_exporter import AzureExporter
-    from opencensus.trace.tracer import Tracer
     from opencensus.trace import config_integration
-    import requests
+    from opencensus.trace.tracer import Tracer
 
     AZURE_AVAILABLE = True
 except ImportError:

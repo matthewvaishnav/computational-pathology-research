@@ -4,11 +4,13 @@
 import gc
 import os
 import sys
-import time
-import psutil
 import threading
-from typing import List, Dict, Any
+import time
 from contextlib import contextmanager
+from typing import Any, Dict, List
+
+import psutil
+
 from src.security.temp_file_manager import TempFileManager
 
 
