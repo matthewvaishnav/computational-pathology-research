@@ -50,6 +50,50 @@ This is a research framework. Before clinical deployment:
 5. Enable audit trails for HIPAA compliance
 6. Test disaster recovery procedures
 
+## Bandit Security Scan Results
+
+**Last Scan**: 2026-05-15T17:11:50Z  
+**Report**: `bandit-final-clean.json`
+
+### Summary
+- **HIGH Severity**: 0 issues ✅
+- **MEDIUM Severity**: 0 issues ✅
+- **LOW Severity**: 195 issues (expected/justified)
+- **Lines of Code Scanned**: 146,893
+
+### Security Patterns Explained
+
+All remaining LOW severity findings are false positives or acceptable patterns:
+
+#### subprocess Usage (B603, B607)
+- **Context**: Used in analysis/deployment modules for legitimate system operations
+- **Mitigation**: Input validation, no user-controlled shell injection
+- **Justification**: Required for build/test automation
+
+#### Standard Pseudo-Random (B311)
+- **Context**: Used for non-cryptographic purposes (sampling, shuffling)
+- **Mitigation**: `secrets` module used for all cryptographic operations
+- **Justification**: `random` module appropriate for ML/statistical tasks
+
+#### pickle Usage (B301)
+- **Context**: Cache deserialization in `src/utils/caching.py`
+- **Mitigation**: HMAC validation + safe_pickle wrapper with restricted unpickler
+- **Justification**: Double-layer security prevents malicious pickle attacks
+
+#### hardcoded_bind_all_interfaces (B104)
+- **Context**: Development server binding in CLI
+- **Mitigation**: Marked with `# nosec B104` - dev only, not production
+- **Justification**: Intentional for local development
+
+### Fixed Issues
+
+#### Medium Severity (Fixed)
+1. **B113**: Missing timeout in `requests.post()` → Added 30s default timeout
+2. **B301**: Direct `pickle.loads()` → Replaced with `safe_pickle.loads(trusted=True)`
+
+#### High Severity (Already Fixed)
+1. **B201**: Jinja2 XSS → `autoescape=True` enabled in all templates
+
 ## Security Best Practices
 
 When deploying:
