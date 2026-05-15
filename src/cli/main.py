@@ -312,8 +312,9 @@ def web():
 
         safe_host = NetworkBindingManager.get_safe_host()
         click.echo(
-            f"📍 Access at: http://{safe_host if safe_host != '0.0.0.0' else 'localhost'}:5000"
-        )  # nosec B104 - String literal for display only
+            f"📍 Access at: http://{safe_host if safe_host != '0.0.0.0' else 'localhost'}:5000"  # nosec B104
+        )
+
 
         app.run(debug=False, host=safe_host, port=5000)
     except ImportError as e:
