@@ -13,6 +13,7 @@ Security Note:
 """
 
 import logging
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import torch
@@ -137,7 +138,7 @@ class PretrainedFeatureExtractor(nn.Module):
         elif source.startswith("hf_hub:"):
             return self._load_huggingface(source.replace("hf_hub:", ""), cache_dir)
         elif self.config.get("custom_loader"):
-            return self._load_custom()
+            return self._load_custom(self.model_name)
         else:
             raise ValueError(f"Unknown source: {source}")
 
@@ -166,7 +167,7 @@ class PretrainedFeatureExtractor(nn.Module):
         )
         return model.to(self.device)
 
-    def _load_custom(self) -> nn.Module:
+    def _load_custom(self, model_name: str) -> nn.Module:
         """Load custom models (CTransPath, etc.)."""
         try:
             # Handle custom model formats

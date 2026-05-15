@@ -21,6 +21,8 @@ from ..config.nnmil_config import nnMILConfig
 from ..data.batch_samplers import BalancedBatchSampler, RegressionBatchSampler, SurvivalBatchSampler
 from ..data.data_models import TrainingBatch, InferenceOutput
 
+logger = logging.getLogger(__name__)
+
 
 class nnMILTrainer:
     """

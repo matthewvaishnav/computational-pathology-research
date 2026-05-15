@@ -17,6 +17,7 @@ import numpy as np
 from scipy import stats
 
 from .longitudinal import PatientTimeline, ScanRecord, TreatmentEvent, TreatmentResponseCategory
+from .progression_analyzer import ResponseKinetics
 
 logger = logging.getLogger(__name__)
 
