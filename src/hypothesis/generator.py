@@ -291,9 +291,19 @@ def create_anthropic_llm(
 
 
 def create_ollama_llm(
-    model: str = "llama3", base_url: str = "http://localhost:11434"
+    model: str = "llama3", base_url: str = "http://localhost:11434", timeout: int = 30
 ) -> Callable[[str, str], str]:
-    """Create Ollama local LLM function."""
+    """
+    Create Ollama local LLM function.
+    
+    Args:
+        model: Ollama model name (default: llama3)
+        base_url: Ollama API base URL (default: http://localhost:11434)
+        timeout: Request timeout in seconds (default: 30)
+    
+    Returns:
+        Callable that takes (system_prompt, user_prompt) and returns response text
+    """
     import requests
 
     def llm_fn(system: str, user: str) -> str:
@@ -307,7 +317,7 @@ def create_ollama_llm(
                 ],
                 "stream": False,
             },
-            timeout=30,
+            timeout=timeout,
         )
         return response.json()["message"]["content"]
 
