@@ -366,6 +366,7 @@ class AutomatedMaintenanceManager:
 
             # Clean up temporary files
             from src.security.temp_file import TempFileManager
+
             temp_dirs = [
                 Path("temp"),
                 Path("cache"),

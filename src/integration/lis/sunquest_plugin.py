@@ -148,7 +148,11 @@ class SunquestLISPlugin(LISPlugin):
 
 
 if __name__ == "__main__":
-    config = {"host": "lis.hospital.local", "username": "ai_user", "password": "test"}  # nosec B106 - Test/demo code only, not production credential
+    config = {
+        "host": "lis.hospital.local",
+        "username": "ai_user",
+        "password": "test",
+    }  # nosec B106 - Test/demo code only, not production credential
     plugin = SunquestLISPlugin(config)
     if plugin.initialize():
         print(f"Init OK: {plugin.get_metadata().name}")

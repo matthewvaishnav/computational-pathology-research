@@ -195,9 +195,12 @@ def process_command(args) -> int:
             pattern_str = str(pattern)
             # Prevent path traversal attacks
             if ".." in pattern_str or pattern_str.startswith("/"):
-                print(f"Error: Invalid path pattern (path traversal detected): {pattern_str}", file=sys.stderr)
+                print(
+                    f"Error: Invalid path pattern (path traversal detected): {pattern_str}",
+                    file=sys.stderr,
+                )
                 return 1
-            
+
             if "*" in pattern_str or "?" in pattern_str:
                 # Handle wildcards - use current directory as base
                 matches = list(Path(".").glob(pattern_str))

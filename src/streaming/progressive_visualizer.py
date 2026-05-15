@@ -115,9 +115,7 @@ class ProgressiveVisualizer:
 
         # Thread-safe update queue with bounded size to prevent memory exhaustion
         self.update_queue: BoundedQueue = BoundedQueue(
-            maxsize=1000,
-            drop_policy='oldest',
-            name='visualization_queue'
+            maxsize=1000, drop_policy="oldest", name="visualization_queue"
         )
         self.visualization_thread: Optional[GracefulThread] = None
 
@@ -156,7 +154,7 @@ class ProgressiveVisualizer:
             target=self._update_loop,
             name="visualization_thread",
             daemon=False,
-            cleanup_callback=cleanup_callback
+            cleanup_callback=cleanup_callback,
         )
         self.visualization_thread.start()
         logger.info("Started async visualization updates")
@@ -171,7 +169,7 @@ class ProgressiveVisualizer:
 
     def _update_loop(self, thread: GracefulThread):
         """Background loop for processing visualization updates.
-        
+
         Args:
             thread: GracefulThread instance for shutdown coordination
         """
@@ -517,7 +515,10 @@ class ProgressiveVisualizer:
 
             # Overall title
             fig.suptitle(
-                "Real-Time WSI Streaming - Processing Dashboard", fontsize=16, fontweight="bold", y=0.98
+                "Real-Time WSI Streaming - Processing Dashboard",
+                fontsize=16,
+                fontweight="bold",
+                y=0.98,
             )
 
             # Save in requested formats

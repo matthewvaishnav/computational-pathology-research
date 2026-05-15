@@ -54,9 +54,11 @@ class AttentionVisualizer:
         style: Plot style (default: 'seaborn-v0_8')
     """
 
-    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8") -> None:
+    def __init__(
+        self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8"
+    ) -> None:
         """Initialize attention visualizer.
-        
+
         Args:
             output_dir: Directory to save visualizations
             style: Matplotlib style name
@@ -287,7 +289,7 @@ class SaliencyMap:
         clinical_text = batch.get("clinical_text")
 
         saliency_maps = {}
-        
+
         # Initialize tensor variables for cleanup
         input_tensor = None
         output = None
@@ -326,8 +328,10 @@ class SaliencyMap:
                 grad = input_tensor.grad.detach().cpu().numpy()
 
                 # Compute absolute gradient magnitude as saliency
-                saliency_maps[modality] = np.abs(grad).mean(axis=-1) if grad.ndim > 1 else np.abs(grad)
-                
+                saliency_maps[modality] = (
+                    np.abs(grad).mean(axis=-1) if grad.ndim > 1 else np.abs(grad)
+                )
+
                 # Clean up tensors after each modality
                 if input_tensor is not None:
                     del input_tensor
@@ -338,7 +342,7 @@ class SaliencyMap:
                 if logits is not None:
                     del logits
                     logits = None
-                
+
                 # Clear GPU cache if available
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
@@ -403,7 +407,7 @@ class SaliencyMap:
         clinical_text = batch.get("clinical_text")
 
         integrated_grads = {}
-        
+
         # Initialize tensor variables for cleanup
         input_tensor = None
         baseline_tensor = None
@@ -459,7 +463,7 @@ class SaliencyMap:
                     # Accumulate gradients
                     if interpolated.grad is not None:
                         accumulated_grads += interpolated.grad.detach()
-                    
+
                     # Clean up intermediate tensors
                     if interpolated is not None:
                         del interpolated
@@ -470,7 +474,7 @@ class SaliencyMap:
                     if logits is not None:
                         del logits
                         logits = None
-                    
+
                     # Periodic GPU cache cleanup
                     if torch.cuda.is_available() and step % 10 == 0:
                         torch.cuda.empty_cache()
@@ -481,7 +485,7 @@ class SaliencyMap:
                     * accumulated_grads.cpu().numpy()
                     / num_steps
                 )
-                
+
                 # Clean up tensors after each modality
                 if input_tensor is not None:
                     del input_tensor
@@ -492,7 +496,7 @@ class SaliencyMap:
                 if accumulated_grads is not None:
                     del accumulated_grads
                     accumulated_grads = None
-                
+
                 # Clear GPU cache if available
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
@@ -536,7 +540,9 @@ class EmbeddingAnalyzer:
     - Modality correlation computation
     """
 
-    def __init__(self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8") -> None:
+    def __init__(
+        self, output_dir: str = "results/interpretability", style: str = "seaborn-v0_8"
+    ) -> None:
         """Initialize embedding analyzer.
 
         Args:

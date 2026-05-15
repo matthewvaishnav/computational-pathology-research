@@ -99,9 +99,7 @@ class VersionedEncryption(ABC):
         with self._lock:
             old_key_id = self.current_key_id
             self.add_key(new_key, make_current=True)
-            logger.warning(
-                f"Key rotation: old_key={old_key_id}, new_key={new_key.key_id}"
-            )
+            logger.warning(f"Key rotation: old_key={old_key_id}, new_key={new_key.key_id}")
 
     @abstractmethod
     def encrypt(self, data: bytes) -> bytes:
@@ -360,9 +358,7 @@ class EnhancedRBACManager:
             )
             return session_token
 
-    def invalidate_session_on_security_event(
-        self, session_token: str, reason: str
-    ) -> bool:
+    def invalidate_session_on_security_event(self, session_token: str, reason: str) -> bool:
         """Invalidate session immediately due to security event"""
         with self._lock:
             if session_token in self.active_sessions:

@@ -182,7 +182,9 @@ class RiskManager:
         with open(filepath, "r") as f:
             return json.load(f)
 
-    def get_surveillance_records(self, device_name: str, device_version: str) -> List[Dict[str, Any]]:
+    def get_surveillance_records(
+        self, device_name: str, device_version: str
+    ) -> List[Dict[str, Any]]:
         """
         Get all surveillance records for a device
 

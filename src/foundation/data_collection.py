@@ -380,11 +380,11 @@ class WSIDataCollector:
     """Main data collection and curation system for 100K+ slides"""
 
     def __init__(
-        self, 
-        database_path: str = "slide_database.db", 
+        self,
+        database_path: str = "slide_database.db",
         quality_config: Optional[Dict] = None,
         max_workers: int = 8,
-        batch_size: int = 1000
+        batch_size: int = 1000,
     ):
         self.database = SlideDatabase(database_path)
         self.quality_assessor = WSIQualityAssessment(**(quality_config or {}))
@@ -393,42 +393,37 @@ class WSIDataCollector:
         self.logger = logging.getLogger(__name__)
 
     def collect_slides_from_multiple_sources(
-        self, 
-        source_directories: List[str], 
-        target_count: int = 100000,
-        recursive: bool = True
+        self, source_directories: List[str], target_count: int = 100000, recursive: bool = True
     ) -> Dict[str, Any]:
         """Collect slides from multiple source directories to reach target count"""
-        
+
         self.logger.info(f"Starting collection from {len(source_directories)} sources")
         self.logger.info(f"Target: {target_count} high-quality slides")
-        
+
         total_stats = {
             "processed_slides": 0,
             "duplicate_slides": 0,
             "failed_slides": 0,
             "high_quality_slides": 0,
-            "sources_processed": 0
+            "sources_processed": 0,
         }
-        
+
         for i, directory in enumerate(source_directories):
             self.logger.info(f"Processing source {i+1}/{len(source_directories)}: {directory}")
-            
+
             # Check current high-quality slide count
             current_stats = self.database.get_statistics()
             current_high_quality = current_stats.get("high_quality_slides", 0)
-            
+
             if current_high_quality >= target_count:
                 self.logger.info(f"Target reached: {current_high_quality} high-quality slides")
                 break
-                
+
             # Process this source
             source_stats = self.collect_slides_from_directory(
-                directory, 
-                recursive=recursive, 
-                max_workers=self.max_workers
+                directory, recursive=recursive, max_workers=self.max_workers
             )
-            
+
             # Update totals
             for key in total_stats:
                 if key in source_stats:
@@ -439,13 +434,15 @@ class WSIDataCollector:
                     # Get updated count from database
                     updated_stats = self.database.get_statistics()
                     total_stats[key] = updated_stats.get("high_quality_slides", 0)
-            
-            self.logger.info(f"Source {i+1} completed. Total high-quality slides: {total_stats['high_quality_slides']}")
-        
+
+            self.logger.info(
+                f"Source {i+1} completed. Total high-quality slides: {total_stats['high_quality_slides']}"
+            )
+
         # Final statistics
         final_stats = self.database.get_statistics()
         total_stats["database_stats"] = final_stats
-        
+
         return total_stats
 
     def collect_slides_from_directory(
@@ -681,56 +678,56 @@ class WSIDataCollector:
         return slides
 
     def progressive_quality_filtering(
-        self, 
+        self,
         min_quality_scores: List[float] = [0.5, 0.6, 0.7, 0.8],
-        target_counts: List[int] = [200000, 150000, 100000, 50000]
+        target_counts: List[int] = [200000, 150000, 100000, 50000],
     ) -> Dict[str, Any]:
         """Apply progressive quality filtering to achieve target dataset sizes"""
-        
+
         results = {}
-        
+
         for min_score, target_count in zip(min_quality_scores, target_counts):
             slides = self.database.get_high_quality_slides(min_score, target_count)
-            
+
             results[f"quality_{min_score}"] = {
                 "count": len(slides),
                 "target": target_count,
-                "achieved": len(slides) >= target_count
+                "achieved": len(slides) >= target_count,
             }
-            
+
             self.logger.info(
                 f"Quality {min_score}: {len(slides)} slides "
                 f"(target: {target_count}, {'✓' if len(slides) >= target_count else '✗'})"
             )
-        
+
         return results
-    
+
     def deduplicate_by_content_hash(self, similarity_threshold: float = 0.95) -> int:
         """Remove duplicate slides based on content similarity"""
-        
+
         # This would implement perceptual hashing for content-based deduplication
         # For now, we rely on file hash deduplication which is already implemented
-        
+
         # Get all slides
         all_slides = self.database.get_high_quality_slides(min_quality_score=0.0)
-        
+
         self.logger.info(f"Starting content-based deduplication for {len(all_slides)} slides")
-        
+
         # Group by similar characteristics
         groups = defaultdict(list)
         for slide in all_slides:
             # Group by vendor, magnification, and tissue type
             key = (slide.vendor, slide.magnification, slide.tissue_type)
             groups[key].append(slide)
-        
+
         duplicates_removed = 0
-        
+
         for group_key, group_slides in groups.items():
             if len(group_slides) <= 1:
                 continue
-                
+
             self.logger.info(f"Processing group {group_key}: {len(group_slides)} slides")
-            
+
             # For slides in the same group, check for potential duplicates
             # This is a simplified approach - in practice would use perceptual hashing
             seen_dimensions = set()
@@ -742,17 +739,17 @@ class WSIDataCollector:
                     duplicates_removed += 1
                 else:
                     seen_dimensions.add(dim_key)
-        
-        self.logger.info(f"Content-based deduplication completed. Estimated duplicates: {duplicates_removed}")
+
+        self.logger.info(
+            f"Content-based deduplication completed. Estimated duplicates: {duplicates_removed}"
+        )
         return duplicates_removed
-    
+
     def create_balanced_dataset(
-        self,
-        target_size: int = 100000,
-        tissue_type_distribution: Optional[Dict[str, float]] = None
+        self, target_size: int = 100000, tissue_type_distribution: Optional[Dict[str, float]] = None
     ) -> List[SlideMetadata]:
         """Create a balanced dataset across tissue types and vendors"""
-        
+
         if tissue_type_distribution is None:
             # Default balanced distribution
             tissue_type_distribution = {
@@ -761,30 +758,32 @@ class WSIDataCollector:
                 "prostate": 0.15,
                 "colon": 0.15,
                 "melanoma": 0.10,
-                "other": 0.15
+                "other": 0.15,
             }
-        
+
         balanced_slides = []
-        
+
         for tissue_type, proportion in tissue_type_distribution.items():
             target_count = int(target_size * proportion)
-            
+
             # Get slides for this tissue type
             if tissue_type == "other":
                 # Get slides not in the main categories
                 all_slides = self.database.get_high_quality_slides(min_quality_score=0.7)
                 tissue_slides = [
-                    s for s in all_slides 
+                    s
+                    for s in all_slides
                     if s.tissue_type not in ["breast", "lung", "prostate", "colon", "melanoma"]
                 ]
             else:
                 all_slides = self.database.get_high_quality_slides(min_quality_score=0.7)
                 tissue_slides = [s for s in all_slides if s.tissue_type == tissue_type]
-            
+
             # Sample up to target count
             if len(tissue_slides) >= target_count:
                 # Randomly sample
                 import random
+
                 sampled_slides = random.sample(tissue_slides, target_count)
             else:
                 # Use all available
@@ -793,14 +792,13 @@ class WSIDataCollector:
                     f"Only {len(tissue_slides)} slides available for {tissue_type} "
                     f"(target: {target_count})"
                 )
-            
+
             balanced_slides.extend(sampled_slides)
-            
+
             self.logger.info(
-                f"Added {len(sampled_slides)} {tissue_type} slides "
-                f"(target: {target_count})"
+                f"Added {len(sampled_slides)} {tissue_type} slides " f"(target: {target_count})"
             )
-        
+
         self.logger.info(f"Created balanced dataset: {len(balanced_slides)} slides")
         return balanced_slides
 
@@ -817,7 +815,7 @@ class UnlabeledWSIDataset(Dataset):
         transform=None,
         cache_patches: bool = False,
         prefetch_factor: int = 2,
-        num_workers: int = 4
+        num_workers: int = 4,
     ):
         self.slide_metadata = slide_metadata
         self.patch_size = patch_size
@@ -832,14 +830,14 @@ class UnlabeledWSIDataset(Dataset):
         self.patch_coordinates = []
         self.slide_handles = {}  # Keep slide handles open for efficiency
         self.patch_cache = {} if cache_patches else None
-        
+
         self._precompute_coordinates()
         self._initialize_slide_handles()
 
     def _precompute_coordinates(self):
         """Pre-compute random patch coordinates for each slide with tissue detection"""
         self.logger = logging.getLogger(__name__)
-        
+
         for i, metadata in enumerate(self.slide_metadata):
             try:
                 slide = openslide.OpenSlide(metadata.file_path)
@@ -848,10 +846,10 @@ class UnlabeledWSIDataset(Dataset):
                 # Get thumbnail for tissue detection
                 thumbnail = slide.get_thumbnail((512, 512))
                 thumbnail_array = np.array(thumbnail)
-                
+
                 # Create tissue mask
                 tissue_mask = self._create_tissue_mask(thumbnail_array)
-                
+
                 # Scale tissue mask to level dimensions
                 mask_scale_x = level_dimensions[0] / thumbnail_array.shape[1]
                 mask_scale_y = level_dimensions[1] / thumbnail_array.shape[0]
@@ -860,22 +858,22 @@ class UnlabeledWSIDataset(Dataset):
                 coords = []
                 attempts = 0
                 max_attempts = self.patches_per_slide * 10
-                
+
                 while len(coords) < self.patches_per_slide and attempts < max_attempts:
                     x = np.random.randint(0, max(1, level_dimensions[0] - self.patch_size))
                     y = np.random.randint(0, max(1, level_dimensions[1] - self.patch_size))
-                    
+
                     # Check if patch center is in tissue region
                     mask_x = int((x + self.patch_size // 2) / mask_scale_x)
                     mask_y = int((y + self.patch_size // 2) / mask_scale_y)
-                    
+
                     mask_x = min(mask_x, tissue_mask.shape[1] - 1)
                     mask_y = min(mask_y, tissue_mask.shape[0] - 1)
-                    
+
                     # Accept patch if in tissue region or with some probability for background
                     if tissue_mask[mask_y, mask_x] or np.random.random() < 0.1:
                         coords.append((x, y))
-                    
+
                     attempts += 1
 
                 # Fill remaining coordinates randomly if needed
@@ -895,15 +893,15 @@ class UnlabeledWSIDataset(Dataset):
         """Create binary tissue mask from thumbnail"""
         # Convert to HSV for better tissue detection
         hsv = cv2.cvtColor(thumbnail, cv2.COLOR_RGB2HSV)
-        
+
         # Create tissue mask (exclude white/light backgrounds)
         tissue_mask = (hsv[:, :, 1] > 20) & (hsv[:, :, 2] < 240)
-        
+
         # Morphological operations to clean up mask
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         tissue_mask = cv2.morphologyEx(tissue_mask.astype(np.uint8), cv2.MORPH_OPEN, kernel)
         tissue_mask = cv2.morphologyEx(tissue_mask, cv2.MORPH_CLOSE, kernel)
-        
+
         return tissue_mask.astype(bool)
 
     def _initialize_slide_handles(self):
@@ -948,7 +946,7 @@ class UnlabeledWSIDataset(Dataset):
 
             patch = slide.read_region((x, y), self.level, (self.patch_size, self.patch_size))
             patch = patch.convert("RGB")
-            
+
             # Close slide if not cached
             if metadata.slide_id not in self.slide_handles:
                 slide.close()
@@ -1012,7 +1010,7 @@ if __name__ == "__main__":
 
 class HighPerformanceDataLoader:
     """High-performance data loader factory for large-scale training"""
-    
+
     @staticmethod
     def create_pretraining_dataloader(
         slide_metadata: List[SlideMetadata],
@@ -1023,23 +1021,23 @@ class HighPerformanceDataLoader:
         persistent_workers: bool = True,
         patch_size: int = 224,
         patches_per_slide: int = 100,
-        cache_patches: bool = False
+        cache_patches: bool = False,
     ) -> DataLoader:
         """Create optimized dataloader for pre-training"""
-        
+
         dataset = UnlabeledWSIDataset(
             slide_metadata=slide_metadata,
             patch_size=patch_size,
             patches_per_slide=patches_per_slide,
             cache_patches=cache_patches,
             prefetch_factor=prefetch_factor,
-            num_workers=num_workers
+            num_workers=num_workers,
         )
-        
+
         # Custom collate function for better memory efficiency
         def collate_fn(batch):
             return torch.stack(batch)
-        
+
         dataloader = DataLoader(
             dataset,
             batch_size=batch_size,
@@ -1049,11 +1047,11 @@ class HighPerformanceDataLoader:
             prefetch_factor=prefetch_factor,
             persistent_workers=persistent_workers,
             drop_last=True,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
         )
-        
+
         return dataloader
-    
+
     @staticmethod
     def create_distributed_dataloader(
         slide_metadata: List[SlideMetadata],
@@ -1061,24 +1059,17 @@ class HighPerformanceDataLoader:
         num_workers: int = 8,
         world_size: int = 1,
         rank: int = 0,
-        **kwargs
+        **kwargs,
     ) -> DataLoader:
         """Create distributed dataloader for multi-GPU training"""
-        
-        dataset = UnlabeledWSIDataset(
-            slide_metadata=slide_metadata,
-            **kwargs
-        )
-        
+
+        dataset = UnlabeledWSIDataset(slide_metadata=slide_metadata, **kwargs)
+
         # Create distributed sampler
         sampler = torch.utils.data.distributed.DistributedSampler(
-            dataset,
-            num_replicas=world_size,
-            rank=rank,
-            shuffle=True,
-            drop_last=True
+            dataset, num_replicas=world_size, rank=rank, shuffle=True, drop_last=True
         )
-        
+
         dataloader = DataLoader(
             dataset,
             batch_size=batch_size,
@@ -1086,7 +1077,7 @@ class HighPerformanceDataLoader:
             num_workers=num_workers,
             pin_memory=True,
             persistent_workers=True,
-            drop_last=True
+            drop_last=True,
         )
-        
+
         return dataloader

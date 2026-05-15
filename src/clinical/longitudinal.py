@@ -396,14 +396,14 @@ class PatientTimeline:
             PatientTimeline instance
         """
         input_path = Path(input_path).resolve()
-        
+
         # Validate path doesn't contain traversal attempts
         if ".." in str(input_path):
             raise ValueError("Path traversal detected in input path")
 
         if not input_path.exists():
             raise FileNotFoundError(f"Timeline file not found: {input_path}")
-        
+
         if not input_path.is_file():
             raise ValueError("Path must be a file")
 

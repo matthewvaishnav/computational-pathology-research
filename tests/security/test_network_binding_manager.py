@@ -20,16 +20,13 @@ class TestNetworkBindingManager:
         """Test production blocks 0.0.0.0 binding without explicit configuration."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
-            
+
             with pytest.raises(NetworkBindingSecurityError, match="0.0.0.0 binding not allowed"):
                 manager.get_safe_host(requested_host="0.0.0.0")
 
     def test_production_allows_0_0_0_0_with_explicit_config(self):
         """Test production allows 0.0.0.0 with explicit configuration."""
-        with patch.dict(os.environ, {
-            "ENVIRONMENT": "production",
-            "ALLOW_PUBLIC_BINDING": "true"
-        }):
+        with patch.dict(os.environ, {"ENVIRONMENT": "production", "ALLOW_PUBLIC_BINDING": "true"}):
             manager = NetworkBindingManager()
             host = manager.get_safe_host(requested_host="0.0.0.0")
             assert host == "0.0.0.0"
@@ -38,7 +35,7 @@ class TestNetworkBindingManager:
         """Test production allows localhost binding."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
-            
+
             assert manager.get_safe_host(requested_host="127.0.0.1") == "127.0.0.1"
             assert manager.get_safe_host(requested_host="localhost") == "localhost"
 
@@ -54,7 +51,7 @@ class TestNetworkBindingManager:
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
             manager = NetworkBindingManager()
             host = manager.get_safe_host(requested_host="0.0.0.0")
-            
+
             assert host == "0.0.0.0"
             assert "0.0.0.0 binding in development" in caplog.text
 
@@ -63,7 +60,7 @@ class TestNetworkBindingManager:
         with patch.dict(os.environ, {"ENVIRONMENT": "research"}):
             manager = NetworkBindingManager()
             host = manager.get_safe_host(requested_host="0.0.0.0")
-            
+
             assert host == "0.0.0.0"
             assert "0.0.0.0 binding in research" in caplog.text
 
@@ -71,7 +68,7 @@ class TestNetworkBindingManager:
         """Test explicit host configuration is respected."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
-            
+
             # Specific IP addresses should be allowed
             assert manager.get_safe_host(requested_host="192.168.1.100") == "192.168.1.100"
             assert manager.get_safe_host(requested_host="10.0.0.5") == "10.0.0.5"
@@ -79,7 +76,7 @@ class TestNetworkBindingManager:
     def test_invalid_hosts_rejected(self):
         """Test invalid host values are rejected."""
         manager = NetworkBindingManager()
-        
+
         invalid_hosts = [
             "invalid_host",
             "256.256.256.256",
@@ -87,7 +84,7 @@ class TestNetworkBindingManager:
             "",
             None,
         ]
-        
+
         for invalid_host in invalid_hosts:
             with pytest.raises((NetworkBindingSecurityError, ValueError)):
                 manager.get_safe_host(requested_host=invalid_host)
@@ -96,7 +93,7 @@ class TestNetworkBindingManager:
         """Test validate_binding succeeds for valid bindings."""
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
             manager = NetworkBindingManager()
-            
+
             # Should not raise
             manager.validate_binding("127.0.0.1", 8000)
             manager.validate_binding("localhost", 8080)
@@ -105,7 +102,7 @@ class TestNetworkBindingManager:
         """Test validate_binding fails for invalid bindings."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
-            
+
             with pytest.raises(NetworkBindingSecurityError):
                 manager.validate_binding("0.0.0.0", 8000)
 
@@ -113,11 +110,11 @@ class TestNetworkBindingManager:
         """Test audit logging for binding decisions."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
-            
+
             # Successful binding
             manager.get_safe_host(requested_host="127.0.0.1")
             assert "Network binding" in caplog.text
-            
+
             # Failed binding
             try:
                 manager.get_safe_host(requested_host="0.0.0.0")
@@ -128,26 +125,26 @@ class TestNetworkBindingManager:
     def test_ipv6_localhost_support(self):
         """Test IPv6 localhost is supported."""
         manager = NetworkBindingManager()
-        
+
         assert manager.get_safe_host(requested_host="::1") == "::1"
         assert manager.get_safe_host(requested_host="::") == "::"
 
     def test_port_validation(self):
         """Test port number validation."""
         manager = NetworkBindingManager()
-        
+
         # Valid ports
         manager.validate_binding("127.0.0.1", 80)
         manager.validate_binding("127.0.0.1", 8000)
         manager.validate_binding("127.0.0.1", 65535)
-        
+
         # Invalid ports
         with pytest.raises(ValueError):
             manager.validate_binding("127.0.0.1", 0)
-        
+
         with pytest.raises(ValueError):
             manager.validate_binding("127.0.0.1", 70000)
-        
+
         with pytest.raises(ValueError):
             manager.validate_binding("127.0.0.1", -1)
 
@@ -155,12 +152,11 @@ class TestNetworkBindingManager:
         """Test get_safe_host with port parameter."""
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
             manager = NetworkBindingManager()
-            
+
             host, port = manager.get_safe_host_and_port(
-                requested_host="127.0.0.1",
-                requested_port=8000
+                requested_host="127.0.0.1", requested_port=8000
             )
-            
+
             assert host == "127.0.0.1"
             assert port == 8000
 
@@ -170,12 +166,12 @@ class TestNetworkBindingManager:
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
             assert manager.get_safe_host() == "127.0.0.1"
-        
+
         # Development defaults to localhost
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
             manager = NetworkBindingManager()
             assert manager.get_safe_host() == "127.0.0.1"
-        
+
         # Research defaults to localhost
         with patch.dict(os.environ, {"ENVIRONMENT": "research"}):
             manager = NetworkBindingManager()
@@ -185,10 +181,10 @@ class TestNetworkBindingManager:
         """Test manager caches environment detection."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             manager = NetworkBindingManager()
-            
+
             # Change environment
             os.environ["ENVIRONMENT"] = "development"
-            
+
             # Should still use production rules
             with pytest.raises(NetworkBindingSecurityError):
                 manager.get_safe_host(requested_host="0.0.0.0")

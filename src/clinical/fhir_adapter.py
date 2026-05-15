@@ -105,16 +105,13 @@ class FHIRAdapter:
         self.config = config
         self.session = requests.Session()
         self.session.verify = config.verify_ssl
-        
+
         # Configure connection pooling and timeouts
         adapter = requests.adapters.HTTPAdapter(
-            pool_connections=10,
-            pool_maxsize=20,
-            max_retries=3,
-            pool_block=False
+            pool_connections=10, pool_maxsize=20, max_retries=3, pool_block=False
         )
-        self.session.mount('http://', adapter)
-        self.session.mount('https://', adapter)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
 
         # Set up authentication
         if config.auth_method != AuthenticationMethod.NONE:

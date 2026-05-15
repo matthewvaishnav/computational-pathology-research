@@ -52,6 +52,7 @@ CAVEMAN_TEMPLATE = (
 
 class JSONRPCError(Exception):
     """JSON-RPC 2.0 error with code, message, and optional data."""
+
     def __init__(self, code: int, message: str, data: Optional[Any] = None):
         super().__init__(message)
         self.code = code
@@ -310,7 +311,7 @@ class ProjectMCPServer:
                 raise ValueError("Limit must be between 1 and 500")
         except (ValueError, TypeError) as e:
             raise JSONRPCError(-32602, f"Invalid limit parameter: {e}")
-        
+
         directory = self._resolve_repo_path(subdirectory, must_exist=True, allow_directory=True)
         if not directory.is_dir():
             raise JSONRPCError(-32602, f"Not a directory: {subdirectory}")
@@ -337,11 +338,11 @@ class ProjectMCPServer:
             start_line = int(arguments.get("start_line", 1))
             if start_line < 1:
                 raise ValueError("start_line must be >= 1")
-            
+
             max_chars = int(arguments.get("max_chars", 12000))
             if max_chars < 1 or max_chars > 100000:
                 raise ValueError("max_chars must be between 1 and 100000")
-            
+
             end_line = arguments.get("end_line")
             if end_line is not None:
                 end_line = int(end_line)
@@ -349,7 +350,7 @@ class ProjectMCPServer:
                     raise ValueError("end_line must be >= start_line")
         except (ValueError, TypeError) as e:
             raise JSONRPCError(-32602, f"Invalid parameter: {e}")
-        
+
         path = self._resolve_repo_path(relative_path, must_exist=True, allow_directory=False)
         if path.is_dir():
             raise JSONRPCError(-32602, f"Expected a file, got directory: {relative_path}")

@@ -17,7 +17,8 @@ from datetime import datetime
 from pathlib import Path
 
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend for tests
+
+matplotlib.use("Agg")  # Use non-interactive backend for tests
 
 import numpy as np
 import pandas as pd
@@ -31,7 +32,6 @@ from experiments.benchmark_system.models import (
 )
 from experiments.benchmark_system.report_generator import ReportGenerator
 from experiments.benchmark_system.result_validator import ResultValidator
-
 
 # ============================================================================
 # FIXTURES
@@ -56,7 +56,7 @@ def sample_task_spec():
 def sample_training_results(sample_task_spec):
     """Create sample training results for multiple frameworks."""
     results = []
-    
+
     # HistoCore result
     results.append(
         TrainingResult(
@@ -86,7 +86,7 @@ def sample_training_results(sample_task_spec):
             status="success",
         )
     )
-    
+
     # PathML result
     results.append(
         TrainingResult(
@@ -116,7 +116,7 @@ def sample_training_results(sample_task_spec):
             status="success",
         )
     )
-    
+
     # CLAM result
     results.append(
         TrainingResult(
@@ -146,7 +146,7 @@ def sample_training_results(sample_task_spec):
             status="success",
         )
     )
-    
+
     return results
 
 
@@ -164,7 +164,7 @@ def report_generator():
 def test_generate_comparison_table_basic(report_generator, sample_training_results):
     """Test basic comparison table generation."""
     df = report_generator.generate_comparison_table(sample_training_results)
-    
+
     # Verify DataFrame structure
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 3  # Three frameworks
@@ -172,12 +172,12 @@ def test_generate_comparison_table_basic(report_generator, sample_training_resul
     assert "Accuracy" in df.columns
     assert "AUC" in df.columns
     assert "Training Time (s)" in df.columns
-    
+
     # Verify data
     assert "HistoCore" in df["Framework"].values
     assert "PathML" in df["Framework"].values
     assert "CLAM" in df["Framework"].values
-    
+
     # Verify sorted by accuracy (descending)
     assert df.iloc[0]["Framework"] == "HistoCore"  # Highest accuracy
 
@@ -193,12 +193,12 @@ def test_generate_comparison_table_includes_confidence_intervals(
 ):
     """Test comparison table includes confidence intervals."""
     df = report_generator.generate_comparison_table(sample_training_results)
-    
+
     assert "Accuracy CI Lower" in df.columns
     assert "Accuracy CI Upper" in df.columns
     assert "AUC CI Lower" in df.columns
     assert "AUC CI Upper" in df.columns
-    
+
     # Verify CI values
     histocore_row = df[df["Framework"] == "HistoCore"].iloc[0]
     assert histocore_row["Accuracy CI Lower"] == 0.8450
@@ -210,28 +210,26 @@ def test_generate_comparison_table_includes_confidence_intervals(
 # ============================================================================
 
 
-def test_compute_statistical_significance_accuracy(
-    report_generator, sample_training_results
-):
+def test_compute_statistical_significance_accuracy(report_generator, sample_training_results):
     """Test statistical significance computation for accuracy."""
     histocore = sample_training_results[0]
     pathml = sample_training_results[1]
-    
+
     test = report_generator.compute_statistical_significance(
         histocore, pathml, metric_name="accuracy"
     )
-    
+
     # Verify SignificanceTest structure
     assert isinstance(test, SignificanceTest)
     assert test.histocore_metric == 0.8526
     assert test.competitor_metric == 0.8400
     assert test.competitor_name == "PathML"
     assert test.metric_name == "accuracy"
-    
+
     # Verify improvement calculation
     assert test.improvement == pytest.approx(0.0126, abs=0.0001)
     assert test.improvement_pct > 0
-    
+
     # Verify statistical measures
     assert isinstance(test.cohens_d, float)
     assert isinstance(test.p_value, float)
@@ -244,45 +242,35 @@ def test_compute_statistical_significance_accuracy(
     ]
 
 
-def test_compute_statistical_significance_auc(
-    report_generator, sample_training_results
-):
+def test_compute_statistical_significance_auc(report_generator, sample_training_results):
     """Test statistical significance computation for AUC."""
     histocore = sample_training_results[0]
     pathml = sample_training_results[1]
-    
-    test = report_generator.compute_statistical_significance(
-        histocore, pathml, metric_name="auc"
-    )
-    
+
+    test = report_generator.compute_statistical_significance(histocore, pathml, metric_name="auc")
+
     assert test.metric_name == "auc"
     assert test.histocore_metric == 0.9537
     assert test.competitor_metric == 0.9400
 
 
-def test_compute_statistical_significance_f1(
-    report_generator, sample_training_results
-):
+def test_compute_statistical_significance_f1(report_generator, sample_training_results):
     """Test statistical significance computation for F1."""
     histocore = sample_training_results[0]
     pathml = sample_training_results[1]
-    
-    test = report_generator.compute_statistical_significance(
-        histocore, pathml, metric_name="f1"
-    )
-    
+
+    test = report_generator.compute_statistical_significance(histocore, pathml, metric_name="f1")
+
     assert test.metric_name == "f1"
     assert test.histocore_metric == 0.8234
     assert test.competitor_metric == 0.8100
 
 
-def test_compute_statistical_significance_invalid_metric(
-    report_generator, sample_training_results
-):
+def test_compute_statistical_significance_invalid_metric(report_generator, sample_training_results):
     """Test statistical significance with invalid metric raises error."""
     histocore = sample_training_results[0]
     pathml = sample_training_results[1]
-    
+
     with pytest.raises(ValueError, match="Unknown metric"):
         report_generator.compute_statistical_significance(
             histocore, pathml, metric_name="invalid_metric"
@@ -295,11 +283,11 @@ def test_compute_statistical_significance_effect_size_interpretation(
     """Test effect size interpretation (Cohen's d)."""
     histocore = sample_training_results[0]
     pathml = sample_training_results[1]
-    
+
     test = report_generator.compute_statistical_significance(
         histocore, pathml, metric_name="accuracy"
     )
-    
+
     # Verify effect size interpretation
     abs_d = abs(test.cohens_d)
     if abs_d >= 0.8:
@@ -317,21 +305,17 @@ def test_compute_statistical_significance_effect_size_interpretation(
 # ============================================================================
 
 
-def test_generate_visualizations_basic(
-    report_generator, sample_training_results, tmp_path
-):
+def test_generate_visualizations_basic(report_generator, sample_training_results, tmp_path):
     """Test basic visualization generation."""
     output_dir = tmp_path / "visualizations"
-    
-    generated_files = report_generator.generate_visualizations(
-        sample_training_results, output_dir
-    )
-    
+
+    generated_files = report_generator.generate_visualizations(sample_training_results, output_dir)
+
     # Verify files were generated
     assert len(generated_files) > 0
     assert all(isinstance(f, Path) for f in generated_files)
     assert all(f.exists() for f in generated_files)
-    
+
     # Verify expected plots
     file_names = [f.name for f in generated_files]
     assert any("accuracy_vs_parameters" in name for name in file_names)
@@ -351,22 +335,18 @@ def test_generate_visualizations_creates_output_dir(
 ):
     """Test visualization generation creates output directory."""
     output_dir = tmp_path / "nested" / "viz"
-    
+
     report_generator.generate_visualizations(sample_training_results, output_dir)
-    
+
     assert output_dir.exists()
 
 
-def test_generate_visualizations_file_format(
-    report_generator, sample_training_results, tmp_path
-):
+def test_generate_visualizations_file_format(report_generator, sample_training_results, tmp_path):
     """Test visualization files use correct format."""
     output_dir = tmp_path / "visualizations"
-    
-    generated_files = report_generator.generate_visualizations(
-        sample_training_results, output_dir
-    )
-    
+
+    generated_files = report_generator.generate_visualizations(sample_training_results, output_dir)
+
     # Verify file format
     for file_path in generated_files:
         assert file_path.suffix == f".{report_generator.figure_format}"
@@ -382,22 +362,20 @@ def test_update_performance_comparison_md_basic(
 ):
     """Test basic PERFORMANCE_COMPARISON.md update."""
     output_path = tmp_path / "PERFORMANCE_COMPARISON.md"
-    
-    report_generator.update_performance_comparison_md(
-        sample_training_results, output_path
-    )
-    
+
+    report_generator.update_performance_comparison_md(sample_training_results, output_path)
+
     # Verify file created
     assert output_path.exists()
-    
+
     content = output_path.read_text(encoding="utf-8")
-    
+
     # Verify sections
     assert "# Performance Comparison: HistoCore vs Competitors" in content
     assert "## Performance Summary" in content
     assert "## Statistical Significance" in content
     assert "## Detailed Metrics" in content
-    
+
     # Verify data
     assert "HistoCore" in content
     assert "PathML" in content
@@ -409,13 +387,13 @@ def test_update_performance_comparison_md_with_reproducibility(
 ):
     """Test PERFORMANCE_COMPARISON.md includes reproducibility section."""
     output_path = tmp_path / "PERFORMANCE_COMPARISON.md"
-    
+
     report_generator.update_performance_comparison_md(
         sample_training_results, output_path, include_reproducibility=True
     )
-    
+
     content = output_path.read_text(encoding="utf-8")
-    
+
     # Verify reproducibility section
     assert "## Reproducibility" in content
     assert "### Environment Details" in content
@@ -428,7 +406,7 @@ def test_update_performance_comparison_md_with_qa_flags(
 ):
     """Test PERFORMANCE_COMPARISON.md includes QA flags."""
     output_path = tmp_path / "PERFORMANCE_COMPARISON.md"
-    
+
     # Create a result with issues to trigger QA flags
     problematic_result = TrainingResult(
         framework_name="ProblematicFramework",
@@ -456,15 +434,15 @@ def test_update_performance_comparison_md_with_qa_flags(
         log_path=Path("logs/problematic.log"),
         status="success",
     )
-    
+
     results_with_issues = sample_training_results + [problematic_result]
-    
+
     report_generator.update_performance_comparison_md(
         results_with_issues, output_path, include_qa_flags=True
     )
-    
+
     content = output_path.read_text(encoding="utf-8")
-    
+
     # Verify QA flags section exists
     assert "## Quality Assurance Flags" in content
 
@@ -472,7 +450,7 @@ def test_update_performance_comparison_md_with_qa_flags(
 def test_update_performance_comparison_md_empty_results(report_generator, tmp_path):
     """Test PERFORMANCE_COMPARISON.md update with empty results raises error."""
     output_path = tmp_path / "PERFORMANCE_COMPARISON.md"
-    
+
     with pytest.raises(ValueError, match="empty results"):
         report_generator.update_performance_comparison_md([], output_path)
 
@@ -482,11 +460,9 @@ def test_update_performance_comparison_md_creates_parent_dirs(
 ):
     """Test PERFORMANCE_COMPARISON.md update creates parent directories."""
     output_path = tmp_path / "nested" / "dir" / "PERFORMANCE_COMPARISON.md"
-    
-    report_generator.update_performance_comparison_md(
-        sample_training_results, output_path
-    )
-    
+
+    report_generator.update_performance_comparison_md(sample_training_results, output_path)
+
     assert output_path.exists()
     assert output_path.parent.exists()
 
@@ -496,13 +472,11 @@ def test_update_performance_comparison_md_statistical_significance(
 ):
     """Test PERFORMANCE_COMPARISON.md includes statistical significance tests."""
     output_path = tmp_path / "PERFORMANCE_COMPARISON.md"
-    
-    report_generator.update_performance_comparison_md(
-        sample_training_results, output_path
-    )
-    
+
+    report_generator.update_performance_comparison_md(sample_training_results, output_path)
+
     content = output_path.read_text(encoding="utf-8")
-    
+
     # Verify statistical significance section
     assert "## Statistical Significance" in content
     assert "Cohen's d" in content
@@ -518,12 +492,12 @@ def test_update_performance_comparison_md_statistical_significance(
 def test_export_to_csv(report_generator, sample_training_results, tmp_path):
     """Test CSV export."""
     output_path = tmp_path / "comparison.csv"
-    
+
     report_generator.export_to_csv(sample_training_results, output_path)
-    
+
     # Verify file created
     assert output_path.exists()
-    
+
     # Verify CSV format
     df = pd.read_csv(output_path)
     assert len(df) == 3
@@ -534,40 +508,36 @@ def test_export_to_csv(report_generator, sample_training_results, tmp_path):
 def test_export_to_json(report_generator, sample_training_results, tmp_path):
     """Test JSON export."""
     output_path = tmp_path / "comparison.json"
-    
+
     report_generator.export_to_json(sample_training_results, output_path)
-    
+
     # Verify file created
     assert output_path.exists()
-    
+
     # Verify JSON format
     with open(output_path) as f:
         data = json.load(f)
-    
+
     assert isinstance(data, list)
     assert len(data) == 3
     assert data[0]["Framework"] == "HistoCore"
 
 
-def test_export_to_csv_creates_parent_dirs(
-    report_generator, sample_training_results, tmp_path
-):
+def test_export_to_csv_creates_parent_dirs(report_generator, sample_training_results, tmp_path):
     """Test CSV export creates parent directories."""
     output_path = tmp_path / "nested" / "comparison.csv"
-    
+
     report_generator.export_to_csv(sample_training_results, output_path)
-    
+
     assert output_path.exists()
 
 
-def test_export_to_json_creates_parent_dirs(
-    report_generator, sample_training_results, tmp_path
-):
+def test_export_to_json_creates_parent_dirs(report_generator, sample_training_results, tmp_path):
     """Test JSON export creates parent directories."""
     output_path = tmp_path / "nested" / "comparison.json"
-    
+
     report_generator.export_to_json(sample_training_results, output_path)
-    
+
     assert output_path.exists()
 
 
@@ -576,14 +546,12 @@ def test_export_to_json_creates_parent_dirs(
 # ============================================================================
 
 
-def test_full_report_generation_workflow(
-    report_generator, sample_training_results, tmp_path
-):
+def test_full_report_generation_workflow(report_generator, sample_training_results, tmp_path):
     """Test complete report generation workflow."""
     # Generate comparison table
     df = report_generator.generate_comparison_table(sample_training_results)
     assert len(df) == 3
-    
+
     # Compute statistical significance
     histocore = sample_training_results[0]
     pathml = sample_training_results[1]
@@ -591,19 +559,17 @@ def test_full_report_generation_workflow(
         histocore, pathml, metric_name="accuracy"
     )
     assert test.statistically_significant is not None
-    
+
     # Generate visualizations
     viz_dir = tmp_path / "visualizations"
-    viz_files = report_generator.generate_visualizations(
-        sample_training_results, viz_dir
-    )
+    viz_files = report_generator.generate_visualizations(sample_training_results, viz_dir)
     assert len(viz_files) > 0
-    
+
     # Update PERFORMANCE_COMPARISON.md
     md_path = tmp_path / "PERFORMANCE_COMPARISON.md"
     report_generator.update_performance_comparison_md(sample_training_results, md_path)
     assert md_path.exists()
-    
+
     # Export to CSV and JSON
     csv_path = tmp_path / "comparison.csv"
     json_path = tmp_path / "comparison.json"

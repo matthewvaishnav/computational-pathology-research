@@ -497,48 +497,57 @@ async def create_sample_ai_analysis_callback(study_path: str, study_uid: str, ta
     """
     from pathlib import Path
     from src.inference.inference_engine import InferenceEngine
-    
+
     logger.info(f"Starting AI analysis for study: {study_uid}")
-    
+
     try:
         # Initialize inference engine
         engine = InferenceEngine()
-        
+
         # Find DICOM images in study path
         study_dir = Path(study_path)
-        image_files = list(study_dir.glob("**/*.dcm")) + list(study_dir.glob("**/*.jpg")) + list(study_dir.glob("**/*.png"))
-        
+        image_files = (
+            list(study_dir.glob("**/*.dcm"))
+            + list(study_dir.glob("**/*.jpg"))
+            + list(study_dir.glob("**/*.png"))
+        )
+
         if not image_files:
             logger.warning(f"No image files found in study: {study_uid}")
             return
-        
+
         # Analyze each image in the study
         results = []
         for image_file in image_files[:10]:  # Limit to first 10 images for performance
             try:
                 result = engine.analyze_image(
-                    image_path=str(image_file),
-                    disease_type="breast_cancer"
+                    image_path=str(image_file), disease_type="breast_cancer"
                 )
-                results.append({
-                    "image_file": image_file.name,
-                    "prediction": result.prediction_class,
-                    "confidence": result.confidence_score,
-                    "probabilities": result.probability_scores,
-                    "processing_time_ms": result.processing_time_ms,
-                    "uncertainty": result.uncertainty_score
-                })
-                logger.info(f"Analyzed {image_file.name}: {result.prediction_class} ({result.confidence_score:.3f})")
+                results.append(
+                    {
+                        "image_file": image_file.name,
+                        "prediction": result.prediction_class,
+                        "confidence": result.confidence_score,
+                        "probabilities": result.probability_scores,
+                        "processing_time_ms": result.processing_time_ms,
+                        "uncertainty": result.uncertainty_score,
+                    }
+                )
+                logger.info(
+                    f"Analyzed {image_file.name}: {result.prediction_class} ({result.confidence_score:.3f})"
+                )
             except Exception as e:
                 logger.error(f"Failed to analyze {image_file.name}: {e}")
                 continue
-        
+
         # Store results in task for later retrieval
-        if hasattr(task, 'analysis_results'):
+        if hasattr(task, "analysis_results"):
             task.analysis_results = results
-        
-        logger.info(f"Completed AI analysis for study: {study_uid} ({len(results)} images analyzed)")
-        
+
+        logger.info(
+            f"Completed AI analysis for study: {study_uid} ({len(results)} images analyzed)"
+        )
+
     except Exception as e:
         logger.error(f"AI analysis failed for study {study_uid}: {e}")
         raise

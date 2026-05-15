@@ -468,18 +468,19 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
     if not token:
         await websocket.close(code=1008, reason="Authentication required")
         return
-    
+
     # Validate authentication token
     if not token or len(token) < 10:
         await websocket.close(code=1008, reason="Invalid authentication token")
         return
-    
+
     # Basic token format validation (alphanumeric + common special chars)
     import re
-    if not re.match(r'^[A-Za-z0-9._-]+$', token):
+
+    if not re.match(r"^[A-Za-z0-9._-]+$", token):
         await websocket.close(code=1008, reason="Invalid token format")
         return
-    
+
     await connection_manager.connect(websocket)
 
     # Rate limiting state
@@ -504,29 +505,24 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         while time.time() < timeout:
             # Receive messages from client (e.g., parameter updates, commands)
             data = await websocket.receive_json()
-            
+
             # Validate message size to prevent DoS
             import json
+
             message_size = len(json.dumps(data))
             if message_size > MAX_MESSAGE_SIZE:
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "Message too large"
-                })
+                await websocket.send_json({"type": "error", "message": "Message too large"})
                 continue
-            
+
             # Rate limiting: reset counter every second
             current_time = time.time()
             if current_time - rate_limit_window_start > 1.0:
                 message_count = 0
                 rate_limit_window_start = current_time
-            
+
             message_count += 1
             if message_count > MAX_MESSAGES_PER_SECOND:
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "Rate limit exceeded"
-                })
+                await websocket.send_json({"type": "error", "message": "Rate limit exceeded"})
                 continue
 
             # Handle client messages

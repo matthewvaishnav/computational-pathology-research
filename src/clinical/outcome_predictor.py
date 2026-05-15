@@ -119,7 +119,7 @@ class TreatmentResponseMetrics:
 class OutcomePredictor:
     """
     Predict treatment outcomes including durability and unexpected responses.
-    
+
     Handles patient factor correlation and outcome modeling.
     """
 

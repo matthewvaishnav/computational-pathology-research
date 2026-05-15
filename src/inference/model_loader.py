@@ -74,6 +74,7 @@ class ModelLoader:
         try:
             # Load checkpoint safely (always to CPU first to avoid OOM)
             from src.utils.safe_operations import safe_torch_load
+
             checkpoint = safe_torch_load(checkpoint_path, device=None)  # Load to CPU first
 
             # Create model architecture (based on your training setup)
@@ -83,7 +84,7 @@ class ModelLoader:
             # Validate and load checkpoint
             if not isinstance(checkpoint, dict):
                 raise ValueError("Invalid checkpoint: must be a dictionary")
-            
+
             if "model_state_dict" in checkpoint:
                 model.load_state_dict(checkpoint["model_state_dict"])
             else:
@@ -94,6 +95,7 @@ class ModelLoader:
 
             # Safely move model to device with memory checks
             from src.utils.safe_operations import safe_model_to_device
+
             model, actual_device = safe_model_to_device(model, self.device)
             model.eval()
 

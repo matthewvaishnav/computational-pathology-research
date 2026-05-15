@@ -249,45 +249,53 @@ Return a JSON array."""
 
 # Helper functions for common LLM providers
 
-def create_openai_llm(api_key: Optional[str] = None, model: str = "gpt-4") -> Callable[[str, str], str]:
+
+def create_openai_llm(
+    api_key: Optional[str] = None, model: str = "gpt-4"
+) -> Callable[[str, str], str]:
     """Create OpenAI LLM function."""
     import openai
+
     client = openai.OpenAI(api_key=api_key or os.environ.get("OPENAI_API_KEY"))
-    
+
     def llm_fn(system: str, user: str) -> str:
         response = client.chat.completions.create(
             model=model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user}
-            ],
-            max_tokens=2048
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            max_tokens=2048,
         )
         return response.choices[0].message.content
+
     return llm_fn
 
 
-def create_anthropic_llm(api_key: Optional[str] = None, model: str = "claude-opus-4-7") -> Callable[[str, str], str]:
+def create_anthropic_llm(
+    api_key: Optional[str] = None, model: str = "claude-opus-4-7"
+) -> Callable[[str, str], str]:
     """Create Anthropic Claude LLM function."""
     import anthropic
+
     client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
-    
+
     def llm_fn(system: str, user: str) -> str:
         msg = client.messages.create(
             model=model,
             max_tokens=2048,
             system=system,
             messages=[{"role": "user", "content": user}],
-            timeout=60.0
+            timeout=60.0,
         )
         return msg.content[0].text
+
     return llm_fn
 
 
-def create_ollama_llm(model: str = "llama3", base_url: str = "http://localhost:11434") -> Callable[[str, str], str]:
+def create_ollama_llm(
+    model: str = "llama3", base_url: str = "http://localhost:11434"
+) -> Callable[[str, str], str]:
     """Create Ollama local LLM function."""
     import requests
-    
+
     def llm_fn(system: str, user: str) -> str:
         response = requests.post(
             f"{base_url}/api/chat",
@@ -295,11 +303,12 @@ def create_ollama_llm(model: str = "llama3", base_url: str = "http://localhost:1
                 "model": model,
                 "messages": [
                     {"role": "system", "content": system},
-                    {"role": "user", "content": user}
+                    {"role": "user", "content": user},
                 ],
-                "stream": False
+                "stream": False,
             },
-            timeout=30
+            timeout=30,
         )
         return response.json()["message"]["content"]
+
     return llm_fn

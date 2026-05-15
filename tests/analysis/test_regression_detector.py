@@ -12,7 +12,7 @@ from src.analysis.regression_detector import (
     RegressionType,
     RegressionSeverity,
     Regression,
-    RegressionReport
+    RegressionReport,
 )
 from src.analysis.models import (
     AnalysisResult,
@@ -23,7 +23,7 @@ from src.analysis.models import (
     DependencyAnalysis,
     DeploymentAnalysis,
     SecurityAnalysis,
-    ScalabilityAnalysis
+    ScalabilityAnalysis,
 )
 
 
@@ -38,30 +38,21 @@ def create_baseline_result():
             gpu_utilization=85.0,
             memory_usage_peak_gb=8.0,
             bottlenecks=[{"operation": "data_loading", "time_ms": 100}],
-            score=75.0
+            score=75.0,
         ),
-        coverage=CoverageAnalysis(
-            line_coverage=70.0,
-            branch_coverage=65.0,
-            score=70.0
-        ),
+        coverage=CoverageAnalysis(line_coverage=70.0, branch_coverage=65.0, score=70.0),
         code_quality=CodeQualityAnalysis(
-            average_complexity=5.0,
-            duplication_percentage=10.0,
-            score=75.0
+            average_complexity=5.0, duplication_percentage=10.0, score=75.0
         ),
-        dependencies=DependencyAnalysis(
-            vulnerabilities=[{"cve_id": "CVE-2023-0001"}],
-            score=80.0
-        ),
+        dependencies=DependencyAnalysis(vulnerabilities=[{"cve_id": "CVE-2023-0001"}], score=80.0),
         deployment=DeploymentAnalysis(score=85.0),
         security=SecurityAnalysis(
             vulnerabilities=[{"type": "sql_injection", "severity": "high"}],
             hardcoded_secrets=[],
-            score=70.0
+            score=70.0,
         ),
         scalability=ScalabilityAnalysis(score=80.0),
-        overall_score=75.0
+        overall_score=75.0,
     )
 
 
@@ -126,8 +117,7 @@ class TestCoverageRegressions:
 
         assert report.has_regressions
         critical_branch = next(
-            (r for r in report.critical_regressions if r.metric == "branch_coverage"),
-            None
+            (r for r in report.critical_regressions if r.metric == "branch_coverage"), None
         )
         assert critical_branch is not None
         assert critical_branch.severity == RegressionSeverity.CRITICAL
@@ -145,8 +135,7 @@ class TestPerformanceRegressions:
 
         assert report.has_regressions
         gpu_regression = next(
-            (r for r in report.critical_regressions if r.metric == "gpu_utilization"),
-            None
+            (r for r in report.critical_regressions if r.metric == "gpu_utilization"), None
         )
         assert gpu_regression is not None
         assert gpu_regression.type == RegressionType.PERFORMANCE
@@ -160,8 +149,7 @@ class TestPerformanceRegressions:
 
         assert report.has_regressions
         mem_regression = next(
-            (r for r in report.high_regressions if r.metric == "memory_usage_peak_gb"),
-            None
+            (r for r in report.high_regressions if r.metric == "memory_usage_peak_gb"), None
         )
         assert mem_regression is not None
         assert mem_regression.severity == RegressionSeverity.HIGH
@@ -175,8 +163,7 @@ class TestPerformanceRegressions:
 
         assert report.has_regressions
         bottleneck_regression = next(
-            (r for r in report.high_regressions if r.metric == "bottlenecks"),
-            None
+            (r for r in report.high_regressions if r.metric == "bottlenecks"), None
         )
         assert bottleneck_regression is not None
         assert "model_forward" in bottleneck_regression.description
@@ -188,10 +175,7 @@ class TestPerformanceRegressions:
 
         report = detector.detect_regressions(baseline_result, current)
 
-        improvement = next(
-            (i for i in report.improvements if i.metric == "gpu_utilization"),
-            None
-        )
+        improvement = next((i for i in report.improvements if i.metric == "gpu_utilization"), None)
         assert improvement is not None
         assert improvement.change_percentage > 0
 
@@ -209,8 +193,7 @@ class TestSecurityRegressions:
         assert report.has_regressions
         assert len(report.critical_regressions) >= 1
         vuln_regression = next(
-            (r for r in report.critical_regressions if r.metric == "vulnerabilities"),
-            None
+            (r for r in report.critical_regressions if r.metric == "vulnerabilities"), None
         )
         assert vuln_regression is not None
         assert vuln_regression.type == RegressionType.SECURITY
@@ -224,8 +207,7 @@ class TestSecurityRegressions:
 
         assert report.has_regressions
         cve_regression = next(
-            (r for r in report.critical_regressions if r.metric == "dependency_cves"),
-            None
+            (r for r in report.critical_regressions if r.metric == "dependency_cves"), None
         )
         assert cve_regression is not None
         assert "CVE-2024-0001" in cve_regression.description
@@ -233,20 +215,21 @@ class TestSecurityRegressions:
     def test_hardcoded_secrets_detection(self, detector, baseline_result):
         """Test detection of new hardcoded secrets."""
         current = create_baseline_result()
-        current.security.hardcoded_secrets.append({
-            "type": "api_key",
-            "severity": "critical",
-            "file": "config.py",
-            "line": 42,
-            "description": "API key found"
-        })
+        current.security.hardcoded_secrets.append(
+            {
+                "type": "api_key",
+                "severity": "critical",
+                "file": "config.py",
+                "line": 42,
+                "description": "API key found",
+            }
+        )
 
         report = detector.detect_regressions(baseline_result, current)
 
         assert report.has_regressions
         secret_regression = next(
-            (r for r in report.critical_regressions if r.metric == "hardcoded_secrets"),
-            None
+            (r for r in report.critical_regressions if r.metric == "hardcoded_secrets"), None
         )
         assert secret_regression is not None
         assert secret_regression.severity == RegressionSeverity.CRITICAL
@@ -258,10 +241,7 @@ class TestSecurityRegressions:
 
         report = detector.detect_regressions(baseline_result, current)
 
-        improvement = next(
-            (i for i in report.improvements if i.metric == "vulnerabilities"),
-            None
-        )
+        improvement = next((i for i in report.improvements if i.metric == "vulnerabilities"), None)
         assert improvement is not None
 
 
@@ -277,8 +257,7 @@ class TestCodeQualityRegressions:
 
         assert report.has_regressions
         complexity_regression = next(
-            (r for r in report.medium_regressions if r.metric == "average_complexity"),
-            None
+            (r for r in report.medium_regressions if r.metric == "average_complexity"), None
         )
         assert complexity_regression is not None
         assert complexity_regression.type == RegressionType.CODE_QUALITY
@@ -292,8 +271,7 @@ class TestCodeQualityRegressions:
 
         assert report.has_regressions
         dup_regression = next(
-            (r for r in report.medium_regressions if r.metric == "duplication_percentage"),
-            None
+            (r for r in report.medium_regressions if r.metric == "duplication_percentage"), None
         )
         assert dup_regression is not None
         assert dup_regression.severity == RegressionSeverity.MEDIUM
@@ -324,9 +302,9 @@ class TestRegressionReport:
                     baseline_value=70.0,
                     current_value=67.0,
                     change_percentage=-3.0,
-                    description="Coverage decreased"
+                    description="Coverage decreased",
                 )
-            ]
+            ],
         )
 
         assert report.should_fail_ci()
@@ -343,9 +321,9 @@ class TestRegressionReport:
                     baseline_value=70.0,
                     current_value=69.0,
                     change_percentage=-1.0,
-                    description="Minor coverage decrease"
+                    description="Minor coverage decrease",
                 )
-            ]
+            ],
         )
 
         assert not report.should_fail_ci()
@@ -362,7 +340,7 @@ class TestRegressionReport:
                     baseline_value=0,
                     current_value=1,
                     change_percentage=0,
-                    description="New vulnerability"
+                    description="New vulnerability",
                 )
             ],
             high_regressions=[
@@ -373,9 +351,9 @@ class TestRegressionReport:
                     baseline_value=8.0,
                     current_value=9.0,
                     change_percentage=12.5,
-                    description="Memory increase"
+                    description="Memory increase",
                 )
-            ]
+            ],
         )
 
         all_regressions = report.get_all_regressions()

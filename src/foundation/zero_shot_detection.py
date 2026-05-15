@@ -242,7 +242,9 @@ class VisionLanguageEncoder:
         self.logger.warning("BiomedCLIP not available, using standard CLIP")
         revision = ModelDownloadManager.get_pinned_revision("openai/clip-vit-base-patch32")
         self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", revision=revision)
-        self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", revision=revision)
+        self.processor = CLIPProcessor.from_pretrained(
+            "openai/clip-vit-base-patch32", revision=revision
+        )
         return self.model
 
     def encode_images(self, images: torch.Tensor) -> torch.Tensor:
@@ -455,7 +457,7 @@ class ZeroShotDetector:
             f"Disease description: {disease.description}\n\n",
             "Key pathological features:\n",
         ]
-        
+
         parts.extend(f"- {feature}\n" for feature in disease.pathological_features)
 
         if prediction.requires_expert_review:

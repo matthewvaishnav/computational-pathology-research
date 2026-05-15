@@ -171,74 +171,93 @@ class PretrainedFeatureExtractor(nn.Module):
         """Load custom models (CTransPath, etc.)."""
         try:
             # Handle custom model formats
-            if model_name.startswith('histocore_'):
+            if model_name.startswith("histocore_"):
                 # HistoCore custom models
-                model_type = model_name.replace('histocore_', '')
-                if model_type == 'dmi':
-                    from ..dmi.distributed_medical_intelligence import DistributedMedicalIntelligence
+                model_type = model_name.replace("histocore_", "")
+                if model_type == "dmi":
+                    from ..dmi.distributed_medical_intelligence import (
+                        DistributedMedicalIntelligence,
+                    )
+
                     return DistributedMedicalIntelligence()
-                elif model_type == 'attention_mil':
+                elif model_type == "attention_mil":
                     from ..models.attention_mil import AttentionMIL
+
                     return AttentionMIL(feature_dim=2048, hidden_dim=256, num_classes=2)
-                elif model_type == 'clam':
+                elif model_type == "clam":
                     from ..models.attention_mil import CLAM
+
                     return CLAM(feature_dim=2048, hidden_dim=256, num_classes=2)
-                elif model_type == 'transmil':
+                elif model_type == "transmil":
                     from ..models.attention_mil import TransMIL
+
                     return TransMIL(feature_dim=2048, hidden_dim=256, num_classes=2)
-            
+
             # Handle foundation models
-            elif model_name in ['uni', 'phikon', 'conch']:
-                if model_name == 'uni':
+            elif model_name in ["uni", "phikon", "conch"]:
+                if model_name == "uni":
                     # UNI foundation model
                     import timm
-                    model = timm.create_model('vit_large_patch16_224', pretrained=False, num_classes=0)
+
+                    model = timm.create_model(
+                        "vit_large_patch16_224", pretrained=False, num_classes=0
+                    )
                     # Load UNI weights if available
                     return model
-                elif model_name == 'phikon':
+                elif model_name == "phikon":
                     # Phikon foundation model
                     import timm
-                    model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=0)
+
+                    model = timm.create_model(
+                        "vit_base_patch16_224", pretrained=False, num_classes=0
+                    )
                     return model
-                elif model_name == 'conch':
+                elif model_name == "conch":
                     # CONCH foundation model
                     import timm
-                    model = timm.create_model('vit_base_patch16_224', pretrained=False, num_classes=0)
+
+                    model = timm.create_model(
+                        "vit_base_patch16_224", pretrained=False, num_classes=0
+                    )
                     return model
-            
+
             # Handle checkpoint loading
-            elif model_name.endswith('.pth') or model_name.endswith('.ckpt'):
+            elif model_name.endswith(".pth") or model_name.endswith(".ckpt"):
                 import torch
+
                 checkpoint_path = Path(model_name)
                 if checkpoint_path.exists():
                     # nosec B614 - Safe: weights_only=True prevents code execution
-                    checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
-                    
+                    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+
                     # Extract model from checkpoint
-                    if 'model' in checkpoint:
-                        return checkpoint['model']
-                    elif 'state_dict' in checkpoint:
+                    if "model" in checkpoint:
+                        return checkpoint["model"]
+                    elif "state_dict" in checkpoint:
                         # Need to reconstruct model architecture
                         # This would require model config in checkpoint
-                        raise NotImplementedError("Model reconstruction from state_dict requires architecture info")
+                        raise NotImplementedError(
+                            "Model reconstruction from state_dict requires architecture info"
+                        )
                     else:
                         # Assume checkpoint is the model directly
                         return checkpoint
                 else:
                     raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
-            
+
             # Handle Hugging Face models
-            elif '/' in model_name:  # Likely HF model path
+            elif "/" in model_name:  # Likely HF model path
                 try:
                     from transformers import AutoModel
+
                     revision = ModelDownloadManager.get_pinned_revision(model_name)
                     return AutoModel.from_pretrained(model_name, revision=revision)
                 except ImportError:
                     raise ImportError("transformers library required for Hugging Face models")
-            
+
             else:
                 raise ValueError(f"Unknown model format: {model_name}")
-                
+
         except Exception as e:
             logger.error(f"Failed to load custom model {model_name}: {e}")
             raise RuntimeError(f"Custom model loading failed: {e}")

@@ -492,7 +492,7 @@ class ClinicalValidator:
 - Number of Slides: {metrics['num_slides']}
 - Average Confidence: {metrics['average_confidence']:.3f}
 """)
-        report_content += ''.join(slide_type_lines)
+        report_content += "".join(slide_type_lines)
 
         report_content += f"""
 

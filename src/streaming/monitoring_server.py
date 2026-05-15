@@ -1,4 +1,5 @@
 import time
+
 """Prometheus metrics HTTP server for HistoCore streaming."""
 
 import asyncio
@@ -21,7 +22,7 @@ class MetricsServer:
         if host is None:
             binding_manager = NetworkBindingManager()
             host = binding_manager.get_safe_host()
-        
+
         self.host = host
         self.port = port
         self.app = web.Application()
@@ -106,7 +107,7 @@ _server_instance: Optional[MetricsServer] = None
 
 async def start_metrics_server(host: Optional[str] = None, port: int = 9090) -> MetricsServer:
     """Start global metrics server.
-    
+
     Args:
         host: Host to bind to. If None, uses NetworkBindingManager for secure binding.
         port: Port to bind to.
@@ -142,7 +143,9 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="HistoCore Metrics Server")
-    parser.add_argument("--host", default=None, help="Host to bind to (default: uses NetworkBindingManager)")
+    parser.add_argument(
+        "--host", default=None, help="Host to bind to (default: uses NetworkBindingManager)"
+    )
     parser.add_argument("--port", type=int, default=9090, help="Port to bind to")
 
     args = parser.parse_args()

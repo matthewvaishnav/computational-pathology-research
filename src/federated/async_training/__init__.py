@@ -11,11 +11,11 @@ from .timeout_manager import TimeoutManager
 from .async_coordinator import AsyncCoordinator, ClientUpdate
 
 __all__ = [
-    'SynchronizationMode',
-    'SyncConfig',
-    'StalenessWeighting',
-    'UpdateMetadata',
-    'TimeoutManager',
-    'AsyncCoordinator',
-    'ClientUpdate',
+    "SynchronizationMode",
+    "SyncConfig",
+    "StalenessWeighting",
+    "UpdateMetadata",
+    "TimeoutManager",
+    "AsyncCoordinator",
+    "ClientUpdate",
 ]

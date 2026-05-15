@@ -12,6 +12,7 @@ import numpy as np
 @dataclass
 class TrainingResult:
     """Result from training epoch."""
+
     loss: float
     accuracy: float
     f1_score: float
@@ -26,6 +27,7 @@ class TrainingResult:
 @dataclass
 class ValidationResult:
     """Result from validation."""
+
     loss: float
     accuracy: float
     f1_score: float
@@ -33,7 +35,7 @@ class ValidationResult:
     predictions: np.ndarray
     labels: np.ndarray
     probabilities: np.ndarray
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -47,6 +49,7 @@ class ValidationResult:
 @dataclass
 class FileValidationResult:
     """Result from file validation."""
+
     is_valid: bool
     mime_type: str
     safe_filename: str
@@ -56,6 +59,7 @@ class FileValidationResult:
 @dataclass
 class URLValidationResult:
     """Result from URL validation."""
+
     is_valid: bool
     scheme: str
     hostname: str
@@ -66,10 +70,11 @@ class URLValidationResult:
 @dataclass
 class PasswordStrengthResult:
     """Result from password strength check."""
+
     score: int  # 0-100
     feedback: List[str]
     is_strong: bool
-    
+
     @property
     def strength_label(self) -> str:
         """Get strength label."""

@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 # Re-export all public classes for backward compatibility
 __all__ = [
     "ResponseKinetics",
-    "UnexpectedResponseType", 
+    "UnexpectedResponseType",
     "TreatmentResponseMetrics",
     "TreatmentResponseAnalyzer",
     "treatment_response_viz",

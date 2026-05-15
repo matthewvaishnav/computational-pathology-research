@@ -18,6 +18,7 @@ from .models import AnalysisResult
 
 class RegressionType(str, Enum):
     """Types of regressions that can be detected."""
+
     COVERAGE = "coverage"
     PERFORMANCE = "performance"
     SECURITY = "security"
@@ -26,6 +27,7 @@ class RegressionType(str, Enum):
 
 class RegressionSeverity(str, Enum):
     """Severity levels for regressions."""
+
     CRITICAL = "critical"  # Blocks CI
     HIGH = "high"  # Warning
     MEDIUM = "medium"  # Info
@@ -35,6 +37,7 @@ class RegressionSeverity(str, Enum):
 @dataclass
 class Regression:
     """Individual regression finding."""
+
     type: RegressionType
     severity: RegressionSeverity
     metric: str
@@ -49,6 +52,7 @@ class Regression:
 @dataclass
 class RegressionReport:
     """Comprehensive regression analysis report."""
+
     has_regressions: bool
     critical_regressions: List[Regression] = field(default_factory=list)
     high_regressions: List[Regression] = field(default_factory=list)
@@ -63,28 +67,28 @@ class RegressionReport:
 
     def get_all_regressions(self) -> List[Regression]:
         """Get all regressions sorted by severity."""
-        return (self.critical_regressions + self.high_regressions +
-                self.medium_regressions + self.low_regressions)
+        return (
+            self.critical_regressions
+            + self.high_regressions
+            + self.medium_regressions
+            + self.low_regressions
+        )
 
 
 class RegressionDetector:
     """
     Detects regressions by comparing baseline and current analysis results.
-    
+
     Thresholds:
     - Coverage: >2% decrease is critical
     - Performance: >10% slowdown is critical
     - Security: Any new CVE is critical
     """
 
-    def __init__(
-        self,
-        coverage_threshold: float = 2.0,
-        performance_threshold: float = 10.0
-    ):
+    def __init__(self, coverage_threshold: float = 2.0, performance_threshold: float = 10.0):
         """
         Initialize regression detector.
-        
+
         Args:
             coverage_threshold: Coverage decrease % to flag as critical (default: 2.0)
             performance_threshold: Performance slowdown % to flag as critical (default: 10.0)
@@ -93,17 +97,15 @@ class RegressionDetector:
         self.performance_threshold = performance_threshold
 
     def detect_regressions(
-        self,
-        baseline: AnalysisResult,
-        current: AnalysisResult
+        self, baseline: AnalysisResult, current: AnalysisResult
     ) -> RegressionReport:
         """
         Compare baseline vs current analysis results and detect regressions.
-        
+
         Args:
             baseline: Baseline analysis results (e.g., from main branch)
             current: Current analysis results (e.g., from PR branch)
-            
+
         Returns:
             RegressionReport with all detected regressions and improvements
         """
@@ -146,13 +148,11 @@ class RegressionDetector:
             medium_regressions=medium,
             low_regressions=low,
             improvements=improvements,
-            summary=summary
+            summary=summary,
         )
 
     def _detect_coverage_regressions(
-        self,
-        baseline: AnalysisResult,
-        current: AnalysisResult
+        self, baseline: AnalysisResult, current: AnalysisResult
     ) -> Tuple[List[Regression], List[Regression]]:
         """Detect test coverage regressions."""
         regressions = []
@@ -164,29 +164,36 @@ class RegressionDetector:
         line_change = current_line - baseline_line
 
         if line_change < 0:
-            severity = (RegressionSeverity.CRITICAL if abs(line_change) >= self.coverage_threshold
-                       else RegressionSeverity.HIGH)
-            regressions.append(Regression(
-                type=RegressionType.COVERAGE,
-                severity=severity,
-                metric="line_coverage",
-                baseline_value=baseline_line,
-                current_value=current_line,
-                change_percentage=line_change,
-                description=f"Line coverage decreased by {abs(line_change):.1f}%",
-                root_cause="New code added without tests or existing tests removed",
-                recommendation="Add tests for uncovered code paths"
-            ))
+            severity = (
+                RegressionSeverity.CRITICAL
+                if abs(line_change) >= self.coverage_threshold
+                else RegressionSeverity.HIGH
+            )
+            regressions.append(
+                Regression(
+                    type=RegressionType.COVERAGE,
+                    severity=severity,
+                    metric="line_coverage",
+                    baseline_value=baseline_line,
+                    current_value=current_line,
+                    change_percentage=line_change,
+                    description=f"Line coverage decreased by {abs(line_change):.1f}%",
+                    root_cause="New code added without tests or existing tests removed",
+                    recommendation="Add tests for uncovered code paths",
+                )
+            )
         elif line_change > 0:
-            improvements.append(Regression(
-                type=RegressionType.COVERAGE,
-                severity=RegressionSeverity.LOW,
-                metric="line_coverage",
-                baseline_value=baseline_line,
-                current_value=current_line,
-                change_percentage=line_change,
-                description=f"Line coverage improved by {line_change:.1f}%"
-            ))
+            improvements.append(
+                Regression(
+                    type=RegressionType.COVERAGE,
+                    severity=RegressionSeverity.LOW,
+                    metric="line_coverage",
+                    baseline_value=baseline_line,
+                    current_value=current_line,
+                    change_percentage=line_change,
+                    description=f"Line coverage improved by {line_change:.1f}%",
+                )
+            )
 
         # Branch coverage
         baseline_branch = baseline.coverage.branch_coverage
@@ -194,36 +201,41 @@ class RegressionDetector:
         branch_change = current_branch - baseline_branch
 
         if branch_change < 0:
-            severity = (RegressionSeverity.CRITICAL if abs(branch_change) >= self.coverage_threshold
-                       else RegressionSeverity.HIGH)
-            regressions.append(Regression(
-                type=RegressionType.COVERAGE,
-                severity=severity,
-                metric="branch_coverage",
-                baseline_value=baseline_branch,
-                current_value=current_branch,
-                change_percentage=branch_change,
-                description=f"Branch coverage decreased by {abs(branch_change):.1f}%",
-                root_cause="New conditional logic added without tests",
-                recommendation="Add tests for all code branches"
-            ))
+            severity = (
+                RegressionSeverity.CRITICAL
+                if abs(branch_change) >= self.coverage_threshold
+                else RegressionSeverity.HIGH
+            )
+            regressions.append(
+                Regression(
+                    type=RegressionType.COVERAGE,
+                    severity=severity,
+                    metric="branch_coverage",
+                    baseline_value=baseline_branch,
+                    current_value=current_branch,
+                    change_percentage=branch_change,
+                    description=f"Branch coverage decreased by {abs(branch_change):.1f}%",
+                    root_cause="New conditional logic added without tests",
+                    recommendation="Add tests for all code branches",
+                )
+            )
         elif branch_change > 0:
-            improvements.append(Regression(
-                type=RegressionType.COVERAGE,
-                severity=RegressionSeverity.LOW,
-                metric="branch_coverage",
-                baseline_value=baseline_branch,
-                current_value=current_branch,
-                change_percentage=branch_change,
-                description=f"Branch coverage improved by {branch_change:.1f}%"
-            ))
+            improvements.append(
+                Regression(
+                    type=RegressionType.COVERAGE,
+                    severity=RegressionSeverity.LOW,
+                    metric="branch_coverage",
+                    baseline_value=baseline_branch,
+                    current_value=current_branch,
+                    change_percentage=branch_change,
+                    description=f"Branch coverage improved by {branch_change:.1f}%",
+                )
+            )
 
         return regressions, improvements
 
     def _detect_performance_regressions(
-        self,
-        baseline: AnalysisResult,
-        current: AnalysisResult
+        self, baseline: AnalysisResult, current: AnalysisResult
     ) -> Tuple[List[Regression], List[Regression]]:
         """Detect performance regressions."""
         regressions = []
@@ -237,27 +249,31 @@ class RegressionDetector:
             gpu_change = ((current_gpu - baseline_gpu) / baseline_gpu) * 100
 
             if gpu_change < -self.performance_threshold:
-                regressions.append(Regression(
-                    type=RegressionType.PERFORMANCE,
-                    severity=RegressionSeverity.CRITICAL,
-                    metric="gpu_utilization",
-                    baseline_value=baseline_gpu,
-                    current_value=current_gpu,
-                    change_percentage=gpu_change,
-                    description=f"GPU utilization decreased by {abs(gpu_change):.1f}%",
-                    root_cause="Inefficient GPU operations or increased CPU bottlenecks",
-                    recommendation="Profile GPU kernels and optimize data loading"
-                ))
+                regressions.append(
+                    Regression(
+                        type=RegressionType.PERFORMANCE,
+                        severity=RegressionSeverity.CRITICAL,
+                        metric="gpu_utilization",
+                        baseline_value=baseline_gpu,
+                        current_value=current_gpu,
+                        change_percentage=gpu_change,
+                        description=f"GPU utilization decreased by {abs(gpu_change):.1f}%",
+                        root_cause="Inefficient GPU operations or increased CPU bottlenecks",
+                        recommendation="Profile GPU kernels and optimize data loading",
+                    )
+                )
             elif gpu_change > self.performance_threshold:
-                improvements.append(Regression(
-                    type=RegressionType.PERFORMANCE,
-                    severity=RegressionSeverity.LOW,
-                    metric="gpu_utilization",
-                    baseline_value=baseline_gpu,
-                    current_value=current_gpu,
-                    change_percentage=gpu_change,
-                    description=f"GPU utilization improved by {gpu_change:.1f}%"
-                ))
+                improvements.append(
+                    Regression(
+                        type=RegressionType.PERFORMANCE,
+                        severity=RegressionSeverity.LOW,
+                        metric="gpu_utilization",
+                        baseline_value=baseline_gpu,
+                        current_value=current_gpu,
+                        change_percentage=gpu_change,
+                        description=f"GPU utilization improved by {gpu_change:.1f}%",
+                    )
+                )
 
         # Memory usage
         baseline_mem = baseline.performance.memory_usage_peak_gb
@@ -267,52 +283,56 @@ class RegressionDetector:
             mem_change = ((current_mem - baseline_mem) / baseline_mem) * 100
 
             if mem_change > self.performance_threshold:
-                regressions.append(Regression(
-                    type=RegressionType.PERFORMANCE,
-                    severity=RegressionSeverity.HIGH,
-                    metric="memory_usage_peak_gb",
-                    baseline_value=baseline_mem,
-                    current_value=current_mem,
-                    change_percentage=mem_change,
-                    description=f"Peak memory usage increased by {mem_change:.1f}%",
-                    root_cause="Memory leaks or inefficient data structures",
-                    recommendation="Profile memory allocations and optimize data handling"
-                ))
+                regressions.append(
+                    Regression(
+                        type=RegressionType.PERFORMANCE,
+                        severity=RegressionSeverity.HIGH,
+                        metric="memory_usage_peak_gb",
+                        baseline_value=baseline_mem,
+                        current_value=current_mem,
+                        change_percentage=mem_change,
+                        description=f"Peak memory usage increased by {mem_change:.1f}%",
+                        root_cause="Memory leaks or inefficient data structures",
+                        recommendation="Profile memory allocations and optimize data handling",
+                    )
+                )
             elif mem_change < -self.performance_threshold:
-                improvements.append(Regression(
-                    type=RegressionType.PERFORMANCE,
-                    severity=RegressionSeverity.LOW,
-                    metric="memory_usage_peak_gb",
-                    baseline_value=baseline_mem,
-                    current_value=current_mem,
-                    change_percentage=mem_change,
-                    description=f"Peak memory usage decreased by {abs(mem_change):.1f}%"
-                ))
+                improvements.append(
+                    Regression(
+                        type=RegressionType.PERFORMANCE,
+                        severity=RegressionSeverity.LOW,
+                        metric="memory_usage_peak_gb",
+                        baseline_value=baseline_mem,
+                        current_value=current_mem,
+                        change_percentage=mem_change,
+                        description=f"Peak memory usage decreased by {abs(mem_change):.1f}%",
+                    )
+                )
 
         # New bottlenecks
-        baseline_bottlenecks = {b.get('operation', '') for b in baseline.performance.bottlenecks}
-        current_bottlenecks = {b.get('operation', '') for b in current.performance.bottlenecks}
+        baseline_bottlenecks = {b.get("operation", "") for b in baseline.performance.bottlenecks}
+        current_bottlenecks = {b.get("operation", "") for b in current.performance.bottlenecks}
         new_bottlenecks = current_bottlenecks - baseline_bottlenecks
 
         if new_bottlenecks:
-            regressions.append(Regression(
-                type=RegressionType.PERFORMANCE,
-                severity=RegressionSeverity.HIGH,
-                metric="bottlenecks",
-                baseline_value=len(baseline_bottlenecks),
-                current_value=len(current_bottlenecks),
-                change_percentage=0.0,
-                description=f"New performance bottlenecks detected: {', '.join(new_bottlenecks)}",
-                root_cause="Inefficient operations introduced in new code",
-                recommendation="Profile and optimize slow operations"
-            ))
+            regressions.append(
+                Regression(
+                    type=RegressionType.PERFORMANCE,
+                    severity=RegressionSeverity.HIGH,
+                    metric="bottlenecks",
+                    baseline_value=len(baseline_bottlenecks),
+                    current_value=len(current_bottlenecks),
+                    change_percentage=0.0,
+                    description=f"New performance bottlenecks detected: {', '.join(new_bottlenecks)}",
+                    root_cause="Inefficient operations introduced in new code",
+                    recommendation="Profile and optimize slow operations",
+                )
+            )
 
         return regressions, improvements
 
     def _detect_security_regressions(
-        self,
-        baseline: AnalysisResult,
-        current: AnalysisResult
+        self, baseline: AnalysisResult, current: AnalysisResult
     ) -> Tuple[List[Regression], List[Regression]]:
         """Detect security regressions."""
         regressions = []
@@ -324,46 +344,52 @@ class RegressionDetector:
 
         if current_vulns > baseline_vulns:
             new_vuln_count = current_vulns - baseline_vulns
-            regressions.append(Regression(
-                type=RegressionType.SECURITY,
-                severity=RegressionSeverity.CRITICAL,
-                metric="vulnerabilities",
-                baseline_value=baseline_vulns,
-                current_value=current_vulns,
-                change_percentage=0.0,
-                description=f"{new_vuln_count} new security vulnerabilities detected",
-                root_cause="New vulnerable code or dependencies introduced",
-                recommendation="Review and fix security vulnerabilities immediately"
-            ))
+            regressions.append(
+                Regression(
+                    type=RegressionType.SECURITY,
+                    severity=RegressionSeverity.CRITICAL,
+                    metric="vulnerabilities",
+                    baseline_value=baseline_vulns,
+                    current_value=current_vulns,
+                    change_percentage=0.0,
+                    description=f"{new_vuln_count} new security vulnerabilities detected",
+                    root_cause="New vulnerable code or dependencies introduced",
+                    recommendation="Review and fix security vulnerabilities immediately",
+                )
+            )
         elif current_vulns < baseline_vulns:
             fixed_count = baseline_vulns - current_vulns
-            improvements.append(Regression(
-                type=RegressionType.SECURITY,
-                severity=RegressionSeverity.LOW,
-                metric="vulnerabilities",
-                baseline_value=baseline_vulns,
-                current_value=current_vulns,
-                change_percentage=0.0,
-                description=f"{fixed_count} security vulnerabilities fixed"
-            ))
+            improvements.append(
+                Regression(
+                    type=RegressionType.SECURITY,
+                    severity=RegressionSeverity.LOW,
+                    metric="vulnerabilities",
+                    baseline_value=baseline_vulns,
+                    current_value=current_vulns,
+                    change_percentage=0.0,
+                    description=f"{fixed_count} security vulnerabilities fixed",
+                )
+            )
 
         # New CVEs in dependencies
-        baseline_cves = {v.get('cve_id', '') for v in baseline.dependencies.vulnerabilities}
-        current_cves = {v.get('cve_id', '') for v in current.dependencies.vulnerabilities}
+        baseline_cves = {v.get("cve_id", "") for v in baseline.dependencies.vulnerabilities}
+        current_cves = {v.get("cve_id", "") for v in current.dependencies.vulnerabilities}
         new_cves = current_cves - baseline_cves
 
         if new_cves:
-            regressions.append(Regression(
-                type=RegressionType.SECURITY,
-                severity=RegressionSeverity.CRITICAL,
-                metric="dependency_cves",
-                baseline_value=len(baseline_cves),
-                current_value=len(current_cves),
-                change_percentage=0.0,
-                description=f"New CVEs in dependencies: {', '.join(new_cves)}",
-                root_cause="Vulnerable dependencies added or updated",
-                recommendation="Update dependencies to patched versions"
-            ))
+            regressions.append(
+                Regression(
+                    type=RegressionType.SECURITY,
+                    severity=RegressionSeverity.CRITICAL,
+                    metric="dependency_cves",
+                    baseline_value=len(baseline_cves),
+                    current_value=len(current_cves),
+                    change_percentage=0.0,
+                    description=f"New CVEs in dependencies: {', '.join(new_cves)}",
+                    root_cause="Vulnerable dependencies added or updated",
+                    recommendation="Update dependencies to patched versions",
+                )
+            )
 
         # Hardcoded secrets
         baseline_secrets = len(baseline.security.hardcoded_secrets)
@@ -371,24 +397,24 @@ class RegressionDetector:
 
         if current_secrets > baseline_secrets:
             new_secret_count = current_secrets - baseline_secrets
-            regressions.append(Regression(
-                type=RegressionType.SECURITY,
-                severity=RegressionSeverity.CRITICAL,
-                metric="hardcoded_secrets",
-                baseline_value=baseline_secrets,
-                current_value=current_secrets,
-                change_percentage=0.0,
-                description=f"{new_secret_count} new hardcoded secrets detected",
-                root_cause="Secrets committed to codebase",
-                recommendation="Remove secrets and use environment variables"
-            ))
+            regressions.append(
+                Regression(
+                    type=RegressionType.SECURITY,
+                    severity=RegressionSeverity.CRITICAL,
+                    metric="hardcoded_secrets",
+                    baseline_value=baseline_secrets,
+                    current_value=current_secrets,
+                    change_percentage=0.0,
+                    description=f"{new_secret_count} new hardcoded secrets detected",
+                    root_cause="Secrets committed to codebase",
+                    recommendation="Remove secrets and use environment variables",
+                )
+            )
 
         return regressions, improvements
 
     def _detect_code_quality_regressions(
-        self,
-        baseline: AnalysisResult,
-        current: AnalysisResult
+        self, baseline: AnalysisResult, current: AnalysisResult
     ) -> Tuple[List[Regression], List[Regression]]:
         """Detect code quality regressions."""
         regressions = []
@@ -399,30 +425,36 @@ class RegressionDetector:
         current_complexity = current.code_quality.average_complexity
 
         if baseline_complexity > 0:
-            complexity_change = ((current_complexity - baseline_complexity) / baseline_complexity) * 100
+            complexity_change = (
+                (current_complexity - baseline_complexity) / baseline_complexity
+            ) * 100
 
             if complexity_change > 20:  # >20% increase in complexity
-                regressions.append(Regression(
-                    type=RegressionType.CODE_QUALITY,
-                    severity=RegressionSeverity.MEDIUM,
-                    metric="average_complexity",
-                    baseline_value=baseline_complexity,
-                    current_value=current_complexity,
-                    change_percentage=complexity_change,
-                    description=f"Average complexity increased by {complexity_change:.1f}%",
-                    root_cause="Complex logic added without refactoring",
-                    recommendation="Refactor complex functions into smaller units"
-                ))
+                regressions.append(
+                    Regression(
+                        type=RegressionType.CODE_QUALITY,
+                        severity=RegressionSeverity.MEDIUM,
+                        metric="average_complexity",
+                        baseline_value=baseline_complexity,
+                        current_value=current_complexity,
+                        change_percentage=complexity_change,
+                        description=f"Average complexity increased by {complexity_change:.1f}%",
+                        root_cause="Complex logic added without refactoring",
+                        recommendation="Refactor complex functions into smaller units",
+                    )
+                )
             elif complexity_change < -20:
-                improvements.append(Regression(
-                    type=RegressionType.CODE_QUALITY,
-                    severity=RegressionSeverity.LOW,
-                    metric="average_complexity",
-                    baseline_value=baseline_complexity,
-                    current_value=current_complexity,
-                    change_percentage=complexity_change,
-                    description=f"Average complexity decreased by {abs(complexity_change):.1f}%"
-                ))
+                improvements.append(
+                    Regression(
+                        type=RegressionType.CODE_QUALITY,
+                        severity=RegressionSeverity.LOW,
+                        metric="average_complexity",
+                        baseline_value=baseline_complexity,
+                        current_value=current_complexity,
+                        change_percentage=complexity_change,
+                        description=f"Average complexity decreased by {abs(complexity_change):.1f}%",
+                    )
+                )
 
         # Duplication percentage
         baseline_dup = baseline.code_quality.duplication_percentage
@@ -430,27 +462,31 @@ class RegressionDetector:
         dup_change = current_dup - baseline_dup
 
         if dup_change > 5:  # >5% increase in duplication
-            regressions.append(Regression(
-                type=RegressionType.CODE_QUALITY,
-                severity=RegressionSeverity.MEDIUM,
-                metric="duplication_percentage",
-                baseline_value=baseline_dup,
-                current_value=current_dup,
-                change_percentage=dup_change,
-                description=f"Code duplication increased by {dup_change:.1f}%",
-                root_cause="Copy-paste code instead of refactoring",
-                recommendation="Extract duplicated code into reusable functions"
-            ))
+            regressions.append(
+                Regression(
+                    type=RegressionType.CODE_QUALITY,
+                    severity=RegressionSeverity.MEDIUM,
+                    metric="duplication_percentage",
+                    baseline_value=baseline_dup,
+                    current_value=current_dup,
+                    change_percentage=dup_change,
+                    description=f"Code duplication increased by {dup_change:.1f}%",
+                    root_cause="Copy-paste code instead of refactoring",
+                    recommendation="Extract duplicated code into reusable functions",
+                )
+            )
         elif dup_change < -5:
-            improvements.append(Regression(
-                type=RegressionType.CODE_QUALITY,
-                severity=RegressionSeverity.LOW,
-                metric="duplication_percentage",
-                baseline_value=baseline_dup,
-                current_value=current_dup,
-                change_percentage=dup_change,
-                description=f"Code duplication decreased by {abs(dup_change):.1f}%"
-            ))
+            improvements.append(
+                Regression(
+                    type=RegressionType.CODE_QUALITY,
+                    severity=RegressionSeverity.LOW,
+                    metric="duplication_percentage",
+                    baseline_value=baseline_dup,
+                    current_value=current_dup,
+                    change_percentage=dup_change,
+                    description=f"Code duplication decreased by {abs(dup_change):.1f}%",
+                )
+            )
 
         return regressions, improvements
 
@@ -460,7 +496,7 @@ class RegressionDetector:
         high: List[Regression],
         medium: List[Regression],
         low: List[Regression],
-        improvements: List[Regression]
+        improvements: List[Regression],
     ) -> str:
         """Generate human-readable summary of regression analysis."""
         lines = []
@@ -491,19 +527,16 @@ class RegressionDetector:
         return "\n".join(lines)
 
     def generate_diff_report(
-        self,
-        baseline: AnalysisResult,
-        current: AnalysisResult,
-        report: RegressionReport
+        self, baseline: AnalysisResult, current: AnalysisResult, report: RegressionReport
     ) -> str:
         """
         Generate side-by-side comparison report (baseline vs current).
-        
+
         Args:
             baseline: Baseline analysis results
             current: Current analysis results
             report: Regression report
-            
+
         Returns:
             Formatted diff report in Markdown
         """
@@ -567,24 +600,28 @@ class RegressionDetector:
 
         # Add regression details
         if report.get_all_regressions():
-            lines.extend([
-                "## Regressions",
-                "",
-            ])
+            lines.extend(
+                [
+                    "## Regressions",
+                    "",
+                ]
+            )
 
             for regression in report.get_all_regressions():
-                lines.extend([
-                    f"### {regression.severity.value.upper()}: {regression.description}",
-                    "",
-                    f"**Type**: {regression.type.value}",
-                    f"**Metric**: {regression.metric}",
-                    f"**Change**: {regression.change_percentage:.1f}%",
-                    "",
-                    f"**Root Cause**: {regression.root_cause}",
-                    "",
-                    f"**Recommendation**: {regression.recommendation}",
-                    "",
-                ])
+                lines.extend(
+                    [
+                        f"### {regression.severity.value.upper()}: {regression.description}",
+                        "",
+                        f"**Type**: {regression.type.value}",
+                        f"**Metric**: {regression.metric}",
+                        f"**Change**: {regression.change_percentage:.1f}%",
+                        "",
+                        f"**Root Cause**: {regression.root_cause}",
+                        "",
+                        f"**Recommendation**: {regression.recommendation}",
+                        "",
+                    ]
+                )
 
         return "\n".join(lines)
 
@@ -600,10 +637,10 @@ class RegressionDetector:
     def exit_code_for_ci(self, report: RegressionReport) -> int:
         """
         Return appropriate exit code for CI build.
-        
+
         Args:
             report: Regression report
-            
+
         Returns:
             0 if no critical regressions, 1 if critical regressions detected
         """
@@ -613,13 +650,13 @@ class RegressionDetector:
     def load_baseline(baseline_path: str) -> AnalysisResult:
         """
         Load baseline analysis results from JSON file.
-        
+
         Args:
             baseline_path: Path to baseline JSON file
-            
+
         Returns:
             AnalysisResult object
-            
+
         Raises:
             FileNotFoundError: If baseline file doesn't exist
             ValueError: If JSON is invalid
@@ -628,7 +665,7 @@ class RegressionDetector:
         if not path.exists():
             raise FileNotFoundError(f"Baseline file not found: {baseline_path}")
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             json_str = f.read()
 
         return AnalysisResult.from_json(json_str)

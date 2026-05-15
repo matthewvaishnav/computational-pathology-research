@@ -30,7 +30,6 @@ from src.utils.benchmark_report import (
     generate_benchmark_report,
 )
 
-
 # ============================================================================
 # EXECUTIVE SUMMARY TESTS
 # ============================================================================
@@ -49,9 +48,9 @@ def test_executive_summary_with_ci():
     }
     dataset_info = {"train_samples": 262144, "test_samples": 32768}
     training_config = {"num_epochs": 10}
-    
+
     _add_executive_summary(lines, test_metrics, dataset_info, training_config)
-    
+
     content = "\n".join(lines)
     assert "85.26%" in content
     assert "0.9537" in content
@@ -66,9 +65,9 @@ def test_executive_summary_without_ci():
     test_metrics = {"accuracy": 0.8526, "auc": 0.9537}
     dataset_info = {"train_samples": 1000, "test_samples": 200}
     training_config = {"num_epochs": 5}
-    
+
     _add_executive_summary(lines, test_metrics, dataset_info, training_config)
-    
+
     content = "\n".join(lines)
     assert "85.26%" in content
     assert "0.9537" in content
@@ -92,9 +91,9 @@ def test_dataset_description_basic():
         "num_classes": 2,
         "task": "Metastatic tissue detection",
     }
-    
+
     _add_dataset_description(lines, dataset_info)
-    
+
     content = "\n".join(lines)
     assert "PatchCamelyon" in content
     assert "262,144" in content
@@ -112,9 +111,9 @@ def test_dataset_description_defaults():
         "val_samples": 0,
         "test_samples": 0,
     }
-    
+
     _add_dataset_description(lines, dataset_info)
-    
+
     content = "\n".join(lines)
     assert "PatchCamelyon" in content  # Default name
     assert "0" in content
@@ -136,9 +135,9 @@ def test_model_architecture_basic():
         "total_params": 25000000,
         "pretrained": "Yes",
     }
-    
+
     _add_model_architecture(lines, model_info)
-    
+
     content = "\n".join(lines)
     assert "ResNet50" in content
     assert "2048" in content
@@ -153,9 +152,9 @@ def test_model_architecture_defaults():
     lines = []
     # Provide numeric default for total_params
     model_info = {"total_params": 0}
-    
+
     _add_model_architecture(lines, model_info)
-    
+
     content = "\n".join(lines)
     assert "N/A" in content
     assert "0" in content
@@ -178,9 +177,9 @@ def test_training_configuration_basic():
         "use_amp": True,
         "early_stopping_patience": 5,
     }
-    
+
     _add_training_configuration(lines, training_config)
-    
+
     content = "\n".join(lines)
     assert "num_epochs: 10" in content
     assert "batch_size: 32" in content
@@ -193,9 +192,9 @@ def test_training_configuration_defaults():
     """Test training configuration with missing fields."""
     lines = []
     training_config = {}
-    
+
     _add_training_configuration(lines, training_config)
-    
+
     content = "\n".join(lines)
     assert "N/A" in content
     assert "AdamW" in content  # Default optimizer
@@ -226,9 +225,9 @@ def test_test_results_with_ci():
         "recall_ci_lower": 0.7940,
         "recall_ci_upper": 0.8106,
     }
-    
+
     _add_test_results(lines, test_metrics)
-    
+
     content = "\n".join(lines)
     assert "85.26%" in content
     assert "[84.50%, 86.02%]" in content
@@ -246,9 +245,9 @@ def test_test_results_without_ci():
         "precision": 0.8456,
         "recall": 0.8023,
     }
-    
+
     _add_test_results(lines, test_metrics)
-    
+
     content = "\n".join(lines)
     assert "85.26%" in content
     assert "0.9537" in content
@@ -266,9 +265,9 @@ def test_test_results_with_confusion_matrix():
         "recall": 0.80,
         "confusion_matrix": [[15000, 1500], [2000, 14268]],
     }
-    
+
     _add_test_results(lines, test_metrics)
-    
+
     content = "\n".join(lines)
     assert "Confusion Matrix" in content
     assert "15000" in content
@@ -317,9 +316,9 @@ def test_baseline_comparison_with_ci():
             },
         ]
     }
-    
+
     _add_baseline_comparison(lines, comparison_results)
-    
+
     content = "\n".join(lines)
     assert "ResNet50" in content
     assert "VGG16" in content
@@ -340,9 +339,9 @@ def test_baseline_comparison_without_ci():
             }
         ]
     }
-    
+
     _add_baseline_comparison(lines, comparison_results)
-    
+
     content = "\n".join(lines)
     assert "SimpleNet" in content
     assert "75.00%" in content
@@ -354,9 +353,9 @@ def test_baseline_comparison_empty():
     """Test baseline comparison with no baselines."""
     lines = []
     comparison_results = {"baselines": []}
-    
+
     _add_baseline_comparison(lines, comparison_results)
-    
+
     content = "\n".join(lines)
     # Should have header but no data rows
     assert "Model" in content
@@ -379,9 +378,9 @@ def test_hardware_info_basic():
         "training_time": "2h 15m",
         "throughput": "450 samples/sec",
     }
-    
+
     _add_hardware_info(lines, hardware_info)
-    
+
     content = "\n".join(lines)
     assert "NVIDIA RTX 4070" in content
     assert "12GB" in content
@@ -395,9 +394,9 @@ def test_hardware_info_defaults():
     """Test hardware info with missing fields."""
     lines = []
     hardware_info = {}
-    
+
     _add_hardware_info(lines, hardware_info)
-    
+
     content = "\n".join(lines)
     assert "N/A" in content
 
@@ -415,9 +414,9 @@ def test_reproduction_commands_basic():
         "checkpoint_path": "checkpoints/model.pth",
     }
     dataset_info = {"data_root": "./data/test"}
-    
+
     _add_reproduction_commands(lines, training_config, dataset_info)
-    
+
     content = "\n".join(lines)
     assert "python scripts/download_pcam.py" in content
     assert "./data/test" in content
@@ -432,9 +431,9 @@ def test_reproduction_commands_defaults():
     lines = []
     training_config = {}
     dataset_info = {}
-    
+
     _add_reproduction_commands(lines, training_config, dataset_info)
-    
+
     content = "\n".join(lines)
     assert "python scripts/download_pcam.py" in content
     assert "python experiments/train_pcam.py" in content
@@ -449,7 +448,7 @@ def test_reproduction_commands_defaults():
 def test_generate_benchmark_report_basic(tmp_path):
     """Test full report generation with basic inputs."""
     output_path = tmp_path / "report.md"
-    
+
     generate_benchmark_report(
         experiment_name="Test Experiment",
         dataset_info={"train_samples": 1000, "val_samples": 200, "test_samples": 200},
@@ -458,12 +457,12 @@ def test_generate_benchmark_report_basic(tmp_path):
         test_metrics={"accuracy": 0.85, "auc": 0.95},
         output_path=str(output_path),
     )
-    
+
     # Verify file created
     assert output_path.exists()
-    
+
     content = output_path.read_text(encoding="utf-8")
-    
+
     # Verify sections present
     assert "# Test Experiment" in content
     assert "## Executive Summary" in content
@@ -472,7 +471,7 @@ def test_generate_benchmark_report_basic(tmp_path):
     assert "## Training Configuration" in content
     assert "## Test Results" in content
     assert "## Reproduction Commands" in content
-    
+
     # Verify data
     assert "85.00%" in content
     assert "0.9500" in content
@@ -482,7 +481,7 @@ def test_generate_benchmark_report_basic(tmp_path):
 def test_generate_benchmark_report_with_all_sections(tmp_path):
     """Test full report with all optional sections."""
     output_path = tmp_path / "full_report.md"
-    
+
     generate_benchmark_report(
         experiment_name="Full Test",
         dataset_info={"train_samples": 10000, "val_samples": 2000, "test_samples": 2000},
@@ -525,11 +524,11 @@ def test_generate_benchmark_report_with_all_sections(tmp_path):
         },
         output_path=str(output_path),
     )
-    
+
     assert output_path.exists()
-    
+
     content = output_path.read_text(encoding="utf-8")
-    
+
     # Verify all sections
     assert "## Baseline Comparison" in content
     assert "## Hardware Specifications" in content
@@ -541,21 +540,26 @@ def test_generate_benchmark_report_with_all_sections(tmp_path):
 def test_generate_benchmark_report_utf8_encoding(tmp_path):
     """Test report handles UTF-8 encoding correctly."""
     output_path = tmp_path / "utf8_report.md"
-    
+
     generate_benchmark_report(
         experiment_name="Test with UTF-8: ±×÷",
-        dataset_info={"train_samples": 1000, "val_samples": 200, "test_samples": 200, "image_size": "96×96"},
+        dataset_info={
+            "train_samples": 1000,
+            "val_samples": 200,
+            "test_samples": 200,
+            "image_size": "96×96",
+        },
         model_info={"feature_extractor": "ResNet50", "total_params": 25000000},
         training_config={"num_epochs": 10},
         test_metrics={"accuracy": 0.85, "auc": 0.95},
         output_path=str(output_path),
     )
-    
+
     assert output_path.exists()
-    
+
     # Read with UTF-8 encoding
     content = output_path.read_text(encoding="utf-8")
-    
+
     assert "±" in content or "×" in content or "96×96" in content
 
 
@@ -563,7 +567,7 @@ def test_generate_benchmark_report_default_output_path(tmp_path, monkeypatch):
     """Test report uses default output path."""
     # Change to temp directory
     monkeypatch.chdir(tmp_path)
-    
+
     generate_benchmark_report(
         experiment_name="Default Path Test",
         dataset_info={"train_samples": 1000, "val_samples": 200, "test_samples": 200},
@@ -571,7 +575,7 @@ def test_generate_benchmark_report_default_output_path(tmp_path, monkeypatch):
         training_config={"num_epochs": 10},
         test_metrics={"accuracy": 0.85, "auc": 0.95},
     )
-    
+
     # Check default path
     default_path = tmp_path / "PCAM_BENCHMARK_RESULTS.md"
     assert default_path.exists()
@@ -580,7 +584,7 @@ def test_generate_benchmark_report_default_output_path(tmp_path, monkeypatch):
 def test_generate_benchmark_report_creates_parent_dirs(tmp_path):
     """Test report creates parent directories if needed."""
     output_path = tmp_path / "nested" / "dir" / "report.md"
-    
+
     generate_benchmark_report(
         experiment_name="Nested Path Test",
         dataset_info={"train_samples": 1000, "val_samples": 200, "test_samples": 200},
@@ -589,7 +593,7 @@ def test_generate_benchmark_report_creates_parent_dirs(tmp_path):
         test_metrics={"accuracy": 0.85, "auc": 0.95},
         output_path=str(output_path),
     )
-    
+
     assert output_path.exists()
     assert output_path.parent.exists()
 
@@ -602,7 +606,7 @@ def test_generate_benchmark_report_creates_parent_dirs(tmp_path):
 def test_report_with_zero_metrics(tmp_path):
     """Test report handles zero metrics gracefully."""
     output_path = tmp_path / "zero_metrics.md"
-    
+
     generate_benchmark_report(
         experiment_name="Zero Metrics",
         dataset_info={"train_samples": 0, "val_samples": 0, "test_samples": 0},
@@ -611,7 +615,7 @@ def test_report_with_zero_metrics(tmp_path):
         test_metrics={"accuracy": 0.0, "auc": 0.0},
         output_path=str(output_path),
     )
-    
+
     assert output_path.exists()
     content = output_path.read_text()
     assert "0.00%" in content
@@ -620,16 +624,20 @@ def test_report_with_zero_metrics(tmp_path):
 def test_report_with_very_large_numbers(tmp_path):
     """Test report formats very large numbers correctly."""
     output_path = tmp_path / "large_numbers.md"
-    
+
     generate_benchmark_report(
         experiment_name="Large Numbers",
-        dataset_info={"train_samples": 1000000000, "val_samples": 100000000, "test_samples": 100000000},
+        dataset_info={
+            "train_samples": 1000000000,
+            "val_samples": 100000000,
+            "test_samples": 100000000,
+        },
         model_info={"total_params": 500000000},
         training_config={"num_epochs": 100},
         test_metrics={"accuracy": 0.999, "auc": 0.9999},
         output_path=str(output_path),
     )
-    
+
     assert output_path.exists()
     content = output_path.read_text()
     # Check comma formatting

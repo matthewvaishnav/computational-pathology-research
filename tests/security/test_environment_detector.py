@@ -48,7 +48,7 @@ class TestEnvironmentDetector:
         with patch.dict(os.environ, {}, clear=True):
             detector = SecurityEnvironmentDetector()
             env = detector.detect()
-            
+
             assert env == SecurityEnvironment.DEVELOPMENT
             assert "No environment specified" in caplog.text
             assert "defaulting to DEVELOPMENT" in caplog.text
@@ -66,7 +66,7 @@ class TestEnvironmentDetector:
             ("Research", SecurityEnvironment.RESEARCH),
             ("research", SecurityEnvironment.RESEARCH),
         ]
-        
+
         for env_value, expected in test_cases:
             with patch.dict(os.environ, {"ENVIRONMENT": env_value}):
                 detector = SecurityEnvironmentDetector()
@@ -82,10 +82,7 @@ class TestEnvironmentDetector:
 
     def test_environment_priority_environment_over_deployment_env(self):
         """Test ENVIRONMENT variable takes priority over DEPLOYMENT_ENV."""
-        with patch.dict(os.environ, {
-            "ENVIRONMENT": "production",
-            "DEPLOYMENT_ENV": "development"
-        }):
+        with patch.dict(os.environ, {"ENVIRONMENT": "production", "DEPLOYMENT_ENV": "development"}):
             detector = SecurityEnvironmentDetector()
             env = detector.detect()
             assert env == SecurityEnvironment.PRODUCTION
@@ -105,14 +102,14 @@ class TestEnvironmentDetector:
             "\tresearch\t",
             "\nproduction\n",
         ]
-        
+
         expected = [
             SecurityEnvironment.PRODUCTION,
             SecurityEnvironment.DEVELOPMENT,
             SecurityEnvironment.RESEARCH,
             SecurityEnvironment.PRODUCTION,
         ]
-        
+
         for env_value, expected_env in zip(test_cases, expected):
             with patch.dict(os.environ, {"ENVIRONMENT": env_value}):
                 detector = SecurityEnvironmentDetector()
@@ -124,7 +121,7 @@ class TestEnvironmentDetector:
         with patch.dict(os.environ, {"ENVIRONMENT": ""}):
             detector = SecurityEnvironmentDetector()
             env = detector.detect()
-            
+
             assert env == SecurityEnvironment.DEVELOPMENT
             assert "No environment specified" in caplog.text
 
@@ -132,16 +129,16 @@ class TestEnvironmentDetector:
         """Test detector caches environment detection result."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             detector = SecurityEnvironmentDetector()
-            
+
             # First call
             env1 = detector.detect()
-            
+
             # Change environment variable
             os.environ["ENVIRONMENT"] = "development"
-            
+
             # Second call should return cached result
             env2 = detector.detect()
-            
+
             assert env1 == env2 == SecurityEnvironment.PRODUCTION
 
     def test_multiple_detectors_independent(self):
@@ -149,10 +146,10 @@ class TestEnvironmentDetector:
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             detector1 = SecurityEnvironmentDetector()
             env1 = detector1.detect()
-        
+
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
             detector2 = SecurityEnvironmentDetector()
             env2 = detector2.detect()
-        
+
         assert env1 == SecurityEnvironment.PRODUCTION
         assert env2 == SecurityEnvironment.DEVELOPMENT

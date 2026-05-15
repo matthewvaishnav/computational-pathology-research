@@ -50,12 +50,12 @@ class CertificateValidator:
             AuthenticationError: If validation fails
         """
         import secrets
-        
+
         # Constant-time validation to prevent timing attacks
         validation_start = time.time()
         is_valid = True
         error_msg = "Certificate validation failed"
-        
+
         try:
             cert = x509.load_pem_x509_certificate(cert_pem)
 
@@ -132,8 +132,9 @@ class CertificateValidator:
     def _is_valid_common_name(self, common_name: str) -> bool:
         """Validate common name format to prevent injection attacks."""
         import re
+
         # Allow alphanumeric, hyphens, underscores, dots
-        pattern = r'^[a-zA-Z0-9._-]+$'
+        pattern = r"^[a-zA-Z0-9._-]+$"
         return bool(re.match(pattern, common_name)) and len(common_name) <= 64
 
 
@@ -214,7 +215,7 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
         """
         self.validator = CertificateValidator(ca_cert_pem)
         self.rbac = rbac
-        
+
         # Rate limiting for authentication attempts
         self._auth_attempts = {}  # client_ip -> (count, last_attempt)
         self._max_attempts = 5
@@ -232,33 +233,34 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
     def _validate_client_id(self, client_id: str) -> bool:
         """Validate client ID format to prevent injection attacks."""
         import re
+
         if not client_id or len(client_id) > 64:
             return False
         # Allow alphanumeric, hyphens, underscores
-        pattern = r'^[a-zA-Z0-9_-]+$'
+        pattern = r"^[a-zA-Z0-9_-]+$"
         return bool(re.match(pattern, client_id))
 
     def _check_rate_limit(self, client_ip: str) -> bool:
         """Check if client is rate limited."""
         now = time.time()
-        
+
         if client_ip in self._auth_attempts:
             count, last_attempt = self._auth_attempts[client_ip]
-            
+
             # Reset counter if lockout period expired
             if now - last_attempt > self._lockout_duration:
                 self._auth_attempts[client_ip] = (1, now)
                 return True
-            
+
             # Check if exceeded max attempts
             if count >= self._max_attempts:
                 return False
-            
+
             # Increment counter
             self._auth_attempts[client_ip] = (count + 1, now)
         else:
             self._auth_attempts[client_ip] = (1, now)
-        
+
         return True
 
     def intercept_service(self, continuation, handler_call_details):
@@ -268,8 +270,8 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
             try:
                 # Get client IP for rate limiting
                 peer = context.peer()
-                client_ip = peer.split(':')[1] if ':' in peer else 'unknown'
-                
+                client_ip = peer.split(":")[1] if ":" in peer else "unknown"
+
                 # Check rate limiting
                 if not self._check_rate_limit(client_ip):
                     context.set_code(grpc.StatusCode.RESOURCE_EXHAUSTED)
@@ -309,7 +311,7 @@ class MutualAuthInterceptor(grpc.ServerInterceptor):
                         context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                         context.set_details("Invalid client ID format")
                         return
-                    
+
                     # Verify client_id matches certificate identity
                     if client_id != peer_identity:
                         context.set_code(grpc.StatusCode.UNAUTHENTICATED)
@@ -539,7 +541,8 @@ def generate_client_certificates(
         if not client_id or len(client_id) > 64:
             raise ValueError(f"Invalid client ID: {client_id}")
         import re
-        if not re.match(r'^[a-zA-Z0-9._-]+$', client_id):
+
+        if not re.match(r"^[a-zA-Z0-9._-]+$", client_id):
             raise ValueError(f"Invalid client ID format: {client_id}")
 
     for client_id in client_ids:

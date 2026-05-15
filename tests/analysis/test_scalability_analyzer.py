@@ -18,31 +18,37 @@ from src.analysis.models import ScalabilityAnalysis
 
 class TestScalabilityAnalyzer:
     """Test suite for ScalabilityAnalyzer class."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.project_path = Path(self.temp_dir)
         self.analyzer = ScalabilityAnalyzer(str(self.project_path))
-    
+
     def teardown_method(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
+
     def test_init(self):
         """Test analyzer initialization."""
         analyzer = ScalabilityAnalyzer("/path/to/project")
         assert analyzer.project_path == Path("/path/to/project").resolve()
-    
+
     def test_analyze_returns_scalability_analysis(self):
         """Test that analyze() returns a ScalabilityAnalysis object."""
-        with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=True):
-            with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=[]):
-                with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=[]):
-                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
-                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=25.5):
+        with patch.object(self.analyzer, "_verify_ddp_implementation", return_value=True):
+            with patch.object(self.analyzer, "_identify_memory_bottlenecks", return_value=[]):
+                with patch.object(
+                    self.analyzer, "_detect_data_loading_bottlenecks", return_value=[]
+                ):
+                    with patch.object(
+                        self.analyzer, "_assess_large_dataset_handling", return_value=[]
+                    ):
+                        with patch.object(
+                            self.analyzer, "_estimate_communication_overhead", return_value=25.5
+                        ):
                             result = self.analyzer.analyze()
-        
+
         assert isinstance(result, ScalabilityAnalysis)
         assert result.ddp_correctness is True
         assert result.scaling_efficiency == "linear"
@@ -54,27 +60,27 @@ class TestScalabilityAnalyzer:
 
 class TestDDPImplementationVerification:
     """Test DistributedDataParallel implementation verification."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.project_path = Path(self.temp_dir)
         self.analyzer = ScalabilityAnalyzer(str(self.project_path))
-    
+
     def teardown_method(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
+
     def create_python_file(self, path: str, content: str):
         """Create a Python file with specified content."""
         file_path = self.project_path / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
         return file_path
-    
+
     def test_verify_ddp_implementation_correct(self):
         """Test DDP verification with correct implementation."""
-        correct_ddp_code = '''
+        correct_ddp_code = """
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -100,18 +106,18 @@ def train_step(model, data, target):
     loss.backward()
     optimizer.step()
     return loss
-'''
-        
-        self.create_python_file('src/training.py', correct_ddp_code)
-        
+"""
+
+        self.create_python_file("src/training.py", correct_ddp_code)
+
         is_correct = self.analyzer._verify_ddp_implementation()
-        
+
         # Should detect correct DDP usage
         assert is_correct is True
-    
+
     def test_verify_ddp_implementation_incorrect(self):
         """Test DDP verification with incorrect implementation."""
-        incorrect_code = '''
+        incorrect_code = """
 import torch
 
 class Model(torch.nn.Module):
@@ -130,25 +136,25 @@ def train_step(model, data, target):
     loss.backward()
     optimizer.step()
     return loss
-'''
-        
-        self.create_python_file('src/training.py', incorrect_code)
-        
+"""
+
+        self.create_python_file("src/training.py", incorrect_code)
+
         is_correct = self.analyzer._verify_ddp_implementation()
-        
+
         # Should detect missing DDP usage
         assert is_correct is False
-    
+
     def test_verify_ddp_implementation_no_files(self):
         """Test DDP verification with no Python files."""
         is_correct = self.analyzer._verify_ddp_implementation()
-        
+
         # Should return False when no files found
         assert is_correct is False
-    
+
     def test_verify_ddp_implementation_partial(self):
         """Test DDP verification with partial implementation."""
-        partial_ddp_code = '''
+        partial_ddp_code = """
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -160,12 +166,12 @@ class Model(torch.nn.Module):
 # DDP import but no proper setup
 model = Model()
 # Missing: dist.init_process_group() and DDP wrapping
-'''
-        
-        self.create_python_file('src/model.py', partial_ddp_code)
-        
+"""
+
+        self.create_python_file("src/model.py", partial_ddp_code)
+
         is_correct = self.analyzer._verify_ddp_implementation()
-        
+
         # Current implementation detects DDP import as indicator
         # More sophisticated analysis would check for actual usage
         # For now, we accept that import alone is not sufficient evidence
@@ -175,27 +181,27 @@ model = Model()
 
 class TestDataLoadingBottleneckDetection:
     """Test data loading bottleneck detection functionality."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.project_path = Path(self.temp_dir)
         self.analyzer = ScalabilityAnalyzer(str(self.project_path))
-    
+
     def teardown_method(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
+
     def create_python_file(self, path: str, content: str):
         """Create a Python file with specified content."""
         file_path = self.project_path / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
         return file_path
-    
+
     def test_detect_data_loading_bottlenecks_good_config(self):
         """Test bottleneck detection with good DataLoader configuration."""
-        good_dataloader_code = '''
+        good_dataloader_code = """
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
 
@@ -211,18 +217,18 @@ def create_dataloader(dataset, batch_size=32):
         persistent_workers=True  # Worker persistence
     )
     return dataloader
-'''
-        
-        self.create_python_file('src/data_loading.py', good_dataloader_code)
-        
+"""
+
+        self.create_python_file("src/data_loading.py", good_dataloader_code)
+
         bottlenecks = self.analyzer._detect_data_loading_bottlenecks()
-        
+
         # Should detect no bottlenecks with good configuration
         assert len(bottlenecks) == 0
-    
+
     def test_detect_data_loading_bottlenecks_poor_config(self):
         """Test bottleneck detection with poor DataLoader configuration."""
-        poor_dataloader_code = '''
+        poor_dataloader_code = """
 import torch
 from torch.utils.data import DataLoader
 
@@ -236,23 +242,23 @@ def create_dataloader(dataset, batch_size=32):
         # Missing: DistributedSampler, prefetching, etc.
     )
     return dataloader
-'''
-        
-        self.create_python_file('src/data_loading.py', poor_dataloader_code)
-        
+"""
+
+        self.create_python_file("src/data_loading.py", poor_dataloader_code)
+
         bottlenecks = self.analyzer._detect_data_loading_bottlenecks()
-        
+
         # Should detect multiple bottlenecks
         assert len(bottlenecks) >= 2
-        
+
         # Check for specific bottleneck messages
-        bottleneck_text = ' '.join(bottlenecks)
-        assert 'num_workers=0' in bottleneck_text
-        assert 'pin_memory=False' in bottleneck_text
-    
+        bottleneck_text = " ".join(bottlenecks)
+        assert "num_workers=0" in bottleneck_text
+        assert "pin_memory=False" in bottleneck_text
+
     def test_detect_data_loading_bottlenecks_no_dataloader(self):
         """Test bottleneck detection with no DataLoader usage."""
-        no_dataloader_code = '''
+        no_dataloader_code = """
 import torch
 
 def simple_training():
@@ -260,58 +266,58 @@ def simple_training():
     data = torch.randn(100, 10)
     target = torch.randn(100, 1)
     return data, target
-'''
-        
-        self.create_python_file('src/simple.py', no_dataloader_code)
-        
+"""
+
+        self.create_python_file("src/simple.py", no_dataloader_code)
+
         bottlenecks = self.analyzer._detect_data_loading_bottlenecks()
-        
+
         # Should return empty list when no DataLoader found
         assert bottlenecks == []
 
 
 class TestCommunicationOverheadMeasurement:
     """Test communication overhead measurement functionality."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.project_path = Path(self.temp_dir)
         self.analyzer = ScalabilityAnalyzer(str(self.project_path))
-    
+
     def teardown_method(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
+
     def create_python_file(self, path: str, content: str):
         """Create a Python file with specified content."""
         file_path = self.project_path / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
         return file_path
-    
+
     def test_estimate_communication_overhead_no_distributed(self):
         """Test communication overhead estimation with no distributed training."""
-        simple_code = '''
+        simple_code = """
 import torch
 
 def train():
     model = torch.nn.Linear(10, 1)
     optimizer = torch.optim.Adam(model.parameters())
     # No distributed training
-'''
-        
-        self.create_python_file('src/train.py', simple_code)
-        
+"""
+
+        self.create_python_file("src/train.py", simple_code)
+
         overhead = self.analyzer._estimate_communication_overhead()
-        
+
         # Should return 0.0 when no distributed training detected
         assert overhead == 0.0
         assert isinstance(overhead, float)
-    
+
     def test_estimate_communication_overhead_with_all_reduce(self):
         """Test communication overhead estimation with all-reduce operations."""
-        distributed_code = '''
+        distributed_code = """
 import torch
 import torch.distributed as dist
 
@@ -326,19 +332,19 @@ def train_step(model, data, target):
     
     optimizer.step()
     return loss
-'''
-        
-        self.create_python_file('src/train.py', distributed_code)
-        
+"""
+
+        self.create_python_file("src/train.py", distributed_code)
+
         overhead = self.analyzer._estimate_communication_overhead()
-        
+
         # Should return positive overhead when all-reduce detected
         assert overhead > 0.0
         assert isinstance(overhead, float)
-    
+
     def test_estimate_communication_overhead_with_gradient_accumulation(self):
         """Test communication overhead estimation with gradient accumulation."""
-        grad_accum_code = '''
+        grad_accum_code = """
 import torch
 import torch.distributed as dist
 
@@ -358,19 +364,19 @@ def train_step(model, data, target, step):
         optimizer.zero_grad()
     
     return loss
-'''
-        
-        self.create_python_file('src/train.py', grad_accum_code)
-        
+"""
+
+        self.create_python_file("src/train.py", grad_accum_code)
+
         overhead = self.analyzer._estimate_communication_overhead()
-        
+
         # Should return positive overhead, but reduced due to gradient accumulation
         assert overhead > 0.0
         assert isinstance(overhead, float)
-    
+
     def test_estimate_communication_overhead_with_model_params(self):
         """Test communication overhead estimation with explicit parameter count."""
-        model_with_params = '''
+        model_with_params = """
 import torch
 import torch.distributed as dist
 
@@ -385,65 +391,63 @@ def train_step(model):
     # Gradient synchronization
     for param in model.parameters():
         dist.all_reduce(param.grad, op=dist.ReduceOp.SUM)
-'''
-        
-        self.create_python_file('src/model.py', model_with_params)
-        
+"""
+
+        self.create_python_file("src/model.py", model_with_params)
+
         overhead = self.analyzer._estimate_communication_overhead()
-        
+
         # Should return positive overhead based on model size
         assert overhead > 0.0
         assert isinstance(overhead, float)
-    
+
     def test_extract_parameter_count_from_assignment(self):
         """Test parameter count extraction from AST."""
         import ast
-        
-        code = '''
+
+        code = """
 num_parameters = 20000000
 model_params = 10000000
-'''
-        
+"""
+
         tree = ast.parse(code)
         param_count = self.analyzer._extract_parameter_count(tree)
-        
+
         # Should extract the first parameter count found
         assert param_count in [20000000, 10000000]
-    
+
     def test_extract_parameter_count_no_params(self):
         """Test parameter count extraction with no parameters."""
         import ast
-        
-        code = '''
+
+        code = """
 x = 10
 y = 20
-'''
-        
+"""
+
         tree = ast.parse(code)
         param_count = self.analyzer._extract_parameter_count(tree)
-        
+
         # Should return 0 when no parameter count found
         assert param_count == 0
 
 
 class TestScalabilityScoreCalculation:
     """Test scalability score calculation functionality."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.analyzer = ScalabilityAnalyzer("/test/project")
-    
+
     def test_calculate_scalability_score_perfect(self):
         """Test scalability score calculation with perfect scaling."""
         score = self.analyzer._calculate_scalability_score(
-            ddp_correct=True,
-            bottlenecks=[],
-            scaling_efficiency="linear"
+            ddp_correct=True, bottlenecks=[], scaling_efficiency="linear"
         )
-        
+
         # Perfect scaling should result in high score (50 + 30 + 20 = 100)
         assert score == 100.0
-    
+
     def test_calculate_scalability_score_poor(self):
         """Test scalability score calculation with poor scaling."""
         many_bottlenecks = [
@@ -451,134 +455,150 @@ class TestScalabilityScoreCalculation:
             "bottleneck2",
             "bottleneck3",
             "bottleneck4",
-            "bottleneck5"
+            "bottleneck5",
         ]
-        
+
         score = self.analyzer._calculate_scalability_score(
-            ddp_correct=False,
-            bottlenecks=many_bottlenecks,
-            scaling_efficiency="unknown"
+            ddp_correct=False, bottlenecks=many_bottlenecks, scaling_efficiency="unknown"
         )
-        
+
         # Poor scaling should result in low score (0 + 0 + 0 = 0)
         assert score == 0.0
-    
+
     def test_calculate_scalability_score_mixed(self):
         """Test scalability score calculation with mixed conditions."""
         some_bottlenecks = ["bottleneck1"]
-        
+
         score = self.analyzer._calculate_scalability_score(
-            ddp_correct=True,
-            bottlenecks=some_bottlenecks,
-            scaling_efficiency="sub-linear"
+            ddp_correct=True, bottlenecks=some_bottlenecks, scaling_efficiency="sub-linear"
         )
-        
+
         # Mixed conditions should result in moderate score
         # 50 (DDP) + 24 (memory: 30 * (1 - 1/5)) + 10 (sub-linear) = 84
         assert 80.0 <= score <= 90.0
-    
+
     def test_calculate_scalability_score_bounds(self):
         """Test scalability score calculation stays within bounds."""
         # Test extreme values
         score = self.analyzer._calculate_scalability_score(
             ddp_correct=False,
             bottlenecks=["b" + str(i) for i in range(100)],
-            scaling_efficiency="unknown"
+            scaling_efficiency="unknown",
         )
-        
+
         # Should be bounded between 0 and 100
         assert 0.0 <= score <= 100.0
 
 
 class TestIntegrationWithMockData:
     """Integration tests with mock scalability data."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.project_path = Path(self.temp_dir)
         self.analyzer = ScalabilityAnalyzer(str(self.project_path))
-    
+
     def teardown_method(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
+
     def test_full_analysis_with_mock_data(self):
         """Test complete analysis workflow with mocked data."""
         mock_bottlenecks = ["Low worker count in data loading"]
-        
+
         # Mock all the analysis methods
-        with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=True):
-            with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=[]):
-                with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=mock_bottlenecks):
-                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
-                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=25.0):
+        with patch.object(self.analyzer, "_verify_ddp_implementation", return_value=True):
+            with patch.object(self.analyzer, "_identify_memory_bottlenecks", return_value=[]):
+                with patch.object(
+                    self.analyzer, "_detect_data_loading_bottlenecks", return_value=mock_bottlenecks
+                ):
+                    with patch.object(
+                        self.analyzer, "_assess_large_dataset_handling", return_value=[]
+                    ):
+                        with patch.object(
+                            self.analyzer, "_estimate_communication_overhead", return_value=25.0
+                        ):
                             result = self.analyzer.analyze()
-        
+
         # Verify all fields are populated
         assert result.ddp_correctness is True
         assert result.scaling_efficiency == "sub-linear"
         assert len(result.memory_bottlenecks) == 1
         assert result.communication_overhead_ms == 25.0
-        
+
         # Verify score calculation
         assert isinstance(result.score, float)
         assert 0 <= result.score <= 100
-    
+
     def test_analysis_with_excellent_scalability(self):
         """Test analysis with excellent scalability."""
-        with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=True):
-            with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=[]):
-                with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=[]):
-                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
-                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=5.0):
+        with patch.object(self.analyzer, "_verify_ddp_implementation", return_value=True):
+            with patch.object(self.analyzer, "_identify_memory_bottlenecks", return_value=[]):
+                with patch.object(
+                    self.analyzer, "_detect_data_loading_bottlenecks", return_value=[]
+                ):
+                    with patch.object(
+                        self.analyzer, "_assess_large_dataset_handling", return_value=[]
+                    ):
+                        with patch.object(
+                            self.analyzer, "_estimate_communication_overhead", return_value=5.0
+                        ):
                             result = self.analyzer.analyze()
-        
+
         # Excellent scalability should result in high score
         assert result.score == 100.0
-    
+
     def test_analysis_with_poor_scalability(self):
         """Test analysis with poor scalability."""
         many_bottlenecks = [
             "Data loading bottleneck",
             "Memory bottleneck",
-            "Communication bottleneck"
+            "Communication bottleneck",
         ]
-        
-        with patch.object(self.analyzer, '_verify_ddp_implementation', return_value=False):
-            with patch.object(self.analyzer, '_identify_memory_bottlenecks', return_value=many_bottlenecks):
-                with patch.object(self.analyzer, '_detect_data_loading_bottlenecks', return_value=[]):
-                    with patch.object(self.analyzer, '_assess_large_dataset_handling', return_value=[]):
-                        with patch.object(self.analyzer, '_estimate_communication_overhead', return_value=80.0):
+
+        with patch.object(self.analyzer, "_verify_ddp_implementation", return_value=False):
+            with patch.object(
+                self.analyzer, "_identify_memory_bottlenecks", return_value=many_bottlenecks
+            ):
+                with patch.object(
+                    self.analyzer, "_detect_data_loading_bottlenecks", return_value=[]
+                ):
+                    with patch.object(
+                        self.analyzer, "_assess_large_dataset_handling", return_value=[]
+                    ):
+                        with patch.object(
+                            self.analyzer, "_estimate_communication_overhead", return_value=80.0
+                        ):
                             result = self.analyzer.analyze()
-        
+
         # Poor scalability should result in low score
         assert result.score < 50.0
 
 
 class TestLargeDatasetHandlingAssessment:
     """Test large dataset handling assessment functionality."""
-    
+
     def setup_method(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
         self.project_path = Path(self.temp_dir)
         self.analyzer = ScalabilityAnalyzer(str(self.project_path))
-    
+
     def teardown_method(self):
         """Clean up test fixtures."""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
+
     def create_python_file(self, path: str, content: str):
         """Create a Python file with specified content."""
         file_path = self.project_path / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
         return file_path
-    
+
     def test_assess_large_dataset_handling_no_optimizations(self):
         """Test assessment with no large dataset optimizations."""
-        basic_code = '''
+        basic_code = """
 import torch
 from torch.utils.data import Dataset
 
@@ -591,24 +611,24 @@ class BasicDataset(Dataset):
     
     def __len__(self):
         return len(self.data)
-'''
-        
-        self.create_python_file('src/dataset.py', basic_code)
-        
+"""
+
+        self.create_python_file("src/dataset.py", basic_code)
+
         issues = self.analyzer._assess_large_dataset_handling()
-        
+
         # Should detect missing optimizations
         assert len(issues) >= 3
-        
+
         # Check for specific issues
-        issues_text = ' '.join(issues)
-        assert 'streaming' in issues_text.lower()
-        assert 'wsi' in issues_text.lower() or 'openslide' in issues_text.lower()
-        assert 'memory-efficient' in issues_text.lower() or 'lazy' in issues_text.lower()
-    
+        issues_text = " ".join(issues)
+        assert "streaming" in issues_text.lower()
+        assert "wsi" in issues_text.lower() or "openslide" in issues_text.lower()
+        assert "memory-efficient" in issues_text.lower() or "lazy" in issues_text.lower()
+
     def test_assess_large_dataset_handling_with_streaming(self):
         """Test assessment with streaming dataset support."""
-        streaming_code = '''
+        streaming_code = """
 import torch
 from torch.utils.data import IterableDataset
 
@@ -620,19 +640,19 @@ class StreamingDataset(IterableDataset):
         # Stream data from source
         for item in self.data_source:
             yield item
-'''
-        
-        self.create_python_file('src/streaming_dataset.py', streaming_code)
-        
+"""
+
+        self.create_python_file("src/streaming_dataset.py", streaming_code)
+
         issues = self.analyzer._assess_large_dataset_handling()
-        
+
         # Should not flag missing streaming support
-        issues_text = ' '.join(issues)
-        assert 'streaming' not in issues_text.lower() or 'no streaming' not in issues_text.lower()
-    
+        issues_text = " ".join(issues)
+        assert "streaming" not in issues_text.lower() or "no streaming" not in issues_text.lower()
+
     def test_assess_large_dataset_handling_with_wsi_optimization(self):
         """Test assessment with WSI-specific optimizations."""
-        wsi_code = '''
+        wsi_code = """
 import openslide
 from pathlib import Path
 
@@ -649,19 +669,19 @@ class WSIDataset:
     def get_thumbnail(self, size):
         # Multi-resolution pyramid support
         return self.slide.get_thumbnail(size)
-'''
-        
-        self.create_python_file('src/wsi_dataset.py', wsi_code)
-        
+"""
+
+        self.create_python_file("src/wsi_dataset.py", wsi_code)
+
         issues = self.analyzer._assess_large_dataset_handling()
-        
+
         # Should not flag missing WSI optimization
-        issues_text = ' '.join(issues)
-        assert 'wsi' not in issues_text.lower() or 'no wsi' not in issues_text.lower()
-    
+        issues_text = " ".join(issues)
+        assert "wsi" not in issues_text.lower() or "no wsi" not in issues_text.lower()
+
     def test_assess_large_dataset_handling_with_memory_efficient_patterns(self):
         """Test assessment with memory-efficient loading patterns."""
-        efficient_code = '''
+        efficient_code = """
 import torch
 from typing import Generator
 
@@ -681,19 +701,22 @@ class LazyDataset:
             for x in range(0, image.width, patch_size):
                 patch = image.crop((x, y, x + patch_size, y + patch_size))
                 yield patch
-'''
-        
-        self.create_python_file('src/efficient_dataset.py', efficient_code)
-        
+"""
+
+        self.create_python_file("src/efficient_dataset.py", efficient_code)
+
         issues = self.analyzer._assess_large_dataset_handling()
-        
+
         # Should not flag missing memory-efficient patterns
-        issues_text = ' '.join(issues)
-        assert 'memory-efficient' not in issues_text.lower() or 'no memory-efficient' not in issues_text.lower()
-    
+        issues_text = " ".join(issues)
+        assert (
+            "memory-efficient" not in issues_text.lower()
+            or "no memory-efficient" not in issues_text.lower()
+        )
+
     def test_assess_large_dataset_handling_with_inefficient_patterns(self):
         """Test assessment with memory-inefficient patterns."""
-        inefficient_code = '''
+        inefficient_code = """
 import cv2
 import numpy as np
 from PIL import Image
@@ -712,23 +735,27 @@ class IneffientDataset:
             img7 = cv2.imread(str(path))
             images.append(img1)
         return images
-'''
-        
-        self.create_python_file('src/inefficient_dataset.py', inefficient_code)
-        
+"""
+
+        self.create_python_file("src/inefficient_dataset.py", inefficient_code)
+
         issues = self.analyzer._assess_large_dataset_handling()
-        
+
         # Should detect issues (at minimum, missing optimizations)
         assert len(issues) >= 3
-        
+
         # Check that issues are reported
-        issues_text = ' '.join(issues)
+        issues_text = " ".join(issues)
         # The method reports missing optimizations, not necessarily the specific patterns
-        assert 'streaming' in issues_text.lower() or 'wsi' in issues_text.lower() or 'memory-efficient' in issues_text.lower()
-    
+        assert (
+            "streaming" in issues_text.lower()
+            or "wsi" in issues_text.lower()
+            or "memory-efficient" in issues_text.lower()
+        )
+
     def test_assess_large_dataset_handling_comprehensive(self):
         """Test assessment with comprehensive optimizations."""
-        comprehensive_code = '''
+        comprehensive_code = """
 import openslide
 from torch.utils.data import IterableDataset
 from typing import Generator
@@ -749,15 +776,15 @@ class OptimizedWSIDataset(IterableDataset):
     def get_thumbnail(self, size):
         # Multi-resolution pyramid support
         return self.slide.get_thumbnail(size)
-'''
-        
-        self.create_python_file('src/optimized_dataset.py', comprehensive_code)
-        
+"""
+
+        self.create_python_file("src/optimized_dataset.py", comprehensive_code)
+
         issues = self.analyzer._assess_large_dataset_handling()
-        
+
         # Should detect minimal or no issues with comprehensive optimizations
         assert len(issues) <= 1  # May still have some recommendations
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

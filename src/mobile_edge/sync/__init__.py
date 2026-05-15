@@ -12,14 +12,14 @@ from .sync_manager import (
     SyncTask,
     SyncStatus,
     SyncPriority,
-    SyncResult
+    SyncResult,
 )
 
 __all__ = [
     "BackgroundSyncManager",
     "SyncConfig",
-    "SyncTask", 
+    "SyncTask",
     "SyncStatus",
     "SyncPriority",
-    "SyncResult"
+    "SyncResult",
 ]

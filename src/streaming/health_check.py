@@ -617,7 +617,7 @@ def get_health_checker() -> HealthChecker:
 
 async def start_health_server(host: Optional[str] = None, port: int = 8080) -> HealthServer:
     """Start health check server.
-    
+
     Args:
         host: Host to bind to. If None, uses NetworkBindingManager for secure binding.
         port: Port to bind to.

@@ -54,11 +54,12 @@ class DVCManager:
         if not message or len(message) > 500:
             self.logger.error("Invalid commit message")
             return False
-        
+
         if tag:
             # Git tag names must be valid: alphanumeric, dash, underscore, dot, slash
             import re
-            if not re.match(r'^[a-zA-Z0-9._/-]+$', tag) or len(tag) > 100:
+
+            if not re.match(r"^[a-zA-Z0-9._/-]+$", tag) or len(tag) > 100:
                 self.logger.error("Invalid tag name")
                 return False
 
@@ -82,7 +83,8 @@ class DVCManager:
 
         # Validate version to prevent command injection
         import re
-        if not version or not re.match(r'^[a-zA-Z0-9._/-]+$', version) or len(version) > 100:
+
+        if not version or not re.match(r"^[a-zA-Z0-9._/-]+$", version) or len(version) > 100:
             self.logger.error("Invalid version identifier")
             return False
 
@@ -111,7 +113,8 @@ class DVCManager:
 
         # Validate remote name to prevent command injection
         import re
-        if not remote or not re.match(r'^[a-zA-Z0-9._/-]+$', remote) or len(remote) > 100:
+
+        if not remote or not re.match(r"^[a-zA-Z0-9._/-]+$", remote) or len(remote) > 100:
             self.logger.error("Invalid remote name")
             return False
 
@@ -128,7 +131,8 @@ class DVCManager:
 
         # Validate remote name to prevent command injection
         import re
-        if not remote or not re.match(r'^[a-zA-Z0-9._/-]+$', remote) or len(remote) > 100:
+
+        if not remote or not re.match(r"^[a-zA-Z0-9._/-]+$", remote) or len(remote) > 100:
             self.logger.error("Invalid remote name")
             return False
 

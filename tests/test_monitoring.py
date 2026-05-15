@@ -31,7 +31,6 @@ from src.utils.monitoring import (
     log_system_info,
 )
 
-
 # ============================================================================
 # JSONFormatter Tests
 # ============================================================================
@@ -550,7 +549,9 @@ class TestIntegration:
         # Simulate training loop
         for step in range(10):
             # Log metrics
-            tracker.log_metrics({"loss": 0.5 - step * 0.01, "accuracy": 0.8 + step * 0.01}, step=step)
+            tracker.log_metrics(
+                {"loss": 0.5 - step * 0.01, "accuracy": 0.8 + step * 0.01}, step=step
+            )
 
             # Update progress
             progress.update(step=step)

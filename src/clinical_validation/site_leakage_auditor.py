@@ -45,18 +45,22 @@ logger = logging.getLogger(__name__)
 
 # ── Data structures ───────────────────────────────────────────────────────────
 
+
 @dataclass
 class LeakageScore:
     """Quantifies one leakage mechanism."""
-    mechanism: str          # "feature" | "attention" | "performance"
-    score: float            # 0 = no leakage, 1 = complete leakage
-    baseline: float         # random-chance baseline (1/num_sites)
-    excess: float           # score - baseline (the actual leakage)
-    severity: str           # "none" | "mild" | "moderate" | "severe"
+
+    mechanism: str  # "feature" | "attention" | "performance"
+    score: float  # 0 = no leakage, 1 = complete leakage
+    baseline: float  # random-chance baseline (1/num_sites)
+    excess: float  # score - baseline (the actual leakage)
+    severity: str  # "none" | "mild" | "moderate" | "severe"
     description: str
 
     @classmethod
-    def compute(cls, mechanism: str, score: float, num_sites: int, description: str) -> "LeakageScore":
+    def compute(
+        cls, mechanism: str, score: float, num_sites: int, description: str
+    ) -> "LeakageScore":
         baseline = 1.0 / num_sites
         excess = max(0.0, score - baseline)
         if excess < 0.05:
@@ -73,6 +77,7 @@ class LeakageScore:
 @dataclass
 class SiteLeakageReport:
     """Full audit report for one model."""
+
     model_name: str
     num_sites: int
     num_slides: int
@@ -119,8 +124,10 @@ class SiteLeakageReport:
                 f"(+{self.attention_leakage.excess:.1%}) [{self.attention_leakage.severity}]"
             )
         if self.cross_site_attention_correlation is not None:
-            lines.append(f"  Cross-site attn corr: {self.cross_site_attention_correlation:.3f} "
-                         f"(1.0 = perfectly consistent)")
+            lines.append(
+                f"  Cross-site attn corr: {self.cross_site_attention_correlation:.3f} "
+                f"(1.0 = perfectly consistent)"
+            )
         lines += [
             f"",
             f"AUC with site info:    {self.auc_with_site_info:.3f}",
@@ -144,20 +151,27 @@ class SiteLeakageReport:
         else:
             lines.append("  🚨 Severe site leakage detected.")
             lines.append("     Model is diagnosing hospitals, not pathology.")
-            lines.append("     Published results should not be trusted without site-controlled validation.")
-        lines.append("="*60)
+            lines.append(
+                "     Published results should not be trusted without site-controlled validation."
+            )
+        lines.append("=" * 60)
         return "\n".join(lines)
 
 
 @dataclass
 class RegimeComparison:
     """Comparison of leakage across training regimes."""
+
     reports: Dict[str, SiteLeakageReport]
 
     def summary(self) -> str:
-        lines = ["\n" + "="*70, "TRAINING REGIME COMPARISON: Site Leakage", "="*70,
-                 f"\n{'Regime':<25} {'Feature':>10} {'Attention':>10} {'Perf':>10} {'Overall':>10} {'AUC drop':>10}"]
-        lines.append("-"*70)
+        lines = [
+            "\n" + "=" * 70,
+            "TRAINING REGIME COMPARISON: Site Leakage",
+            "=" * 70,
+            f"\n{'Regime':<25} {'Feature':>10} {'Attention':>10} {'Perf':>10} {'Overall':>10} {'AUC drop':>10}",
+        ]
+        lines.append("-" * 70)
         for name, report in self.reports.items():
             attn = f"{report.attention_leakage.excess:.1%}" if report.attention_leakage else "N/A"
             lines.append(
@@ -165,7 +179,7 @@ class RegimeComparison:
                 f"{attn:>10} {report.performance_leakage.excess:>10.1%} "
                 f"{report.overall_leakage_score():>10.3f} {report.auc_degradation:>+10.3f}"
             )
-        lines.append("="*70)
+        lines.append("=" * 70)
 
         # Key finding
         scores = {k: v.overall_leakage_score() for k, v in self.reports.items()}
@@ -175,15 +189,22 @@ class RegimeComparison:
             lines.append(f"\n📊 KEY FINDING: {best} shows {scores[worst]-scores[best]:.1%} less")
             lines.append(f"   site leakage than {worst}.")
             if "federated" in best.lower():
-                lines.append("   Federated training is structurally more resistant to site shortcuts.")
-                lines.append("   This supports federated learning beyond privacy — as a debiasing mechanism.")
+                lines.append(
+                    "   Federated training is structurally more resistant to site shortcuts."
+                )
+                lines.append(
+                    "   This supports federated learning beyond privacy — as a debiasing mechanism."
+                )
         else:
-            lines.append("\n📊 KEY FINDING: No significant difference in site leakage across regimes.")
+            lines.append(
+                "\n📊 KEY FINDING: No significant difference in site leakage across regimes."
+            )
             lines.append("   All training approaches show similar shortcut learning behavior.")
         return "\n".join(lines)
 
 
 # ── Core auditor ──────────────────────────────────────────────────────────────
+
 
 class SiteLeakageAuditor:
     """
@@ -242,9 +263,7 @@ class SiteLeakageAuditor:
 
     # ── Leakage mechanisms ────────────────────────────────────────────────────
 
-    def _feature_leakage(
-        self, slides_by_site: Dict[int, List]
-    ) -> Tuple[float, np.ndarray]:
+    def _feature_leakage(self, slides_by_site: Dict[int, List]) -> Tuple[float, np.ndarray]:
         """
         Train linear probe to predict site from slide embeddings.
         Returns (accuracy, embeddings_array).
@@ -269,9 +288,7 @@ class SiteLeakageAuditor:
             logger.warning(f"Feature leakage probe failed: {e}")
             return 1.0 / len(slides_by_site), np.array(X)
 
-    def _attention_leakage(
-        self, slides_by_site: Dict[int, List]
-    ) -> Tuple[float, float]:
+    def _attention_leakage(self, slides_by_site: Dict[int, List]) -> Tuple[float, float]:
         """
         Train linear probe to predict site from attention weights.
         Also computes cross-site attention correlation.
@@ -358,15 +375,16 @@ class SiteLeakageAuditor:
 
             # Identify site-correlated components
             site_correlations = [
-                abs(np.corrcoef(X_pca[:, i], site_labels)[0, 1])
-                for i in range(X_pca.shape[1])
+                abs(np.corrcoef(X_pca[:, i], site_labels)[0, 1]) for i in range(X_pca.shape[1])
             ]
             # Remove top-3 most site-correlated components
             site_dims = np.argsort(site_correlations)[-3:]
             keep_dims = [i for i in range(X_pca.shape[1]) if i not in site_dims]
             X_debiased = X_pca[:, keep_dims]
 
-            probs_without = cross_val_predict(clf, X_debiased, y_labels, cv=cv, method="predict_proba")
+            probs_without = cross_val_predict(
+                clf, X_debiased, y_labels, cv=cv, method="predict_proba"
+            )
             auc_without = roc_auc_score(y_labels, probs_without[:, 1])
         except Exception as e:
             logger.warning(f"AUC calculation without site info failed: {e}")
@@ -428,8 +446,10 @@ class SiteLeakageAuditor:
         logger.info("  Computing feature leakage...")
         feat_score, embeddings = self._feature_leakage(slides_by_site)
         feature_leakage = LeakageScore.compute(
-            "feature", feat_score, num_sites,
-            "Linear probe accuracy predicting site from slide embeddings"
+            "feature",
+            feat_score,
+            num_sites,
+            "Linear probe accuracy predicting site from slide embeddings",
         )
 
         # 2. Attention leakage (if model returns attention)
@@ -439,8 +459,10 @@ class SiteLeakageAuditor:
             logger.info("  Computing attention leakage...")
             attn_score, cross_site_corr = self._attention_leakage(slides_by_site)
             attention_leakage = LeakageScore.compute(
-                "attention", attn_score, num_sites,
-                "Linear probe accuracy predicting site from attention weights"
+                "attention",
+                attn_score,
+                num_sites,
+                "Linear probe accuracy predicting site from attention weights",
             )
         except Exception as e:
             logger.warning(f"  Attention leakage skipped: {e}")
@@ -454,9 +476,10 @@ class SiteLeakageAuditor:
         # Normalize: large drop = high leakage
         perf_score = max(0.0, -auc_degradation)  # degradation is negative
         performance_leakage = LeakageScore.compute(
-            "performance", min(1.0, perf_score * 5),  # scale to 0-1
+            "performance",
+            min(1.0, perf_score * 5),  # scale to 0-1
             0.0,
-            "AUC degradation when site-correlated embedding dimensions removed"
+            "AUC degradation when site-correlated embedding dimensions removed",
         )
 
         # 4. Per-site metrics

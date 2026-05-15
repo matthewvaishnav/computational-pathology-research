@@ -46,7 +46,7 @@ class TestCIQueueBottleneckBugExploration:
         for job_name, job_config in jobs.items():
             strategy = job_config.get("strategy", {})
             matrix = strategy.get("matrix", {})
-            
+
             if matrix:
                 # Calculate matrix expansion
                 matrix_size = 1
@@ -54,12 +54,12 @@ class TestCIQueueBottleneckBugExploration:
                     if key != "include" and key != "exclude":
                         if isinstance(values, list):
                             matrix_size *= len(values)
-                
+
                 # Add include entries
                 include_entries = matrix.get("include", [])
                 if include_entries:
                     matrix_size += len(include_entries)
-                
+
                 total_jobs += matrix_size
             else:
                 total_jobs += 1
@@ -67,10 +67,13 @@ class TestCIQueueBottleneckBugExploration:
         # Count jobs from other workflow files
         workflow_dir = Path(".github/workflows")
         other_workflows = [
-            "codeql.yml", "dependency-review.yml", "pages.yml", 
-            "docker-publish.yml", "release.yml"
+            "codeql.yml",
+            "dependency-review.yml",
+            "pages.yml",
+            "docker-publish.yml",
+            "release.yml",
         ]
-        
+
         other_jobs = 0
         for workflow_file in other_workflows:
             workflow_path = workflow_dir / workflow_file
@@ -155,20 +158,20 @@ class TestCIQueueBottleneckBugExploration:
             workflow = yaml.safe_load(f)
 
         jobs = workflow["jobs"]
-        
+
         # Identify critical jobs that should run first
         critical_jobs = ["lint", "type-check", "security"]
         regular_jobs = ["test", "docker"]
-        
+
         # Check for job dependencies using 'needs:' keyword
         prioritization_found = False
-        
+
         for job_name, job_config in jobs.items():
             if job_name in regular_jobs and "needs" in job_config:
                 needs = job_config["needs"]
                 if isinstance(needs, str):
                     needs = [needs]
-                
+
                 # Check if regular jobs depend on critical jobs
                 if any(critical_job in needs for critical_job in critical_jobs):
                     prioritization_found = True
@@ -192,13 +195,13 @@ class TestCIQueueBottleneckBugExploration:
         """
         workflow_files = [
             ".github/workflows/ci.yml",
-            ".github/workflows/codeql.yml", 
-            ".github/workflows/dependency-review.yml"
+            ".github/workflows/codeql.yml",
+            ".github/workflows/dependency-review.yml",
         ]
-        
+
         workflows_with_concurrency = 0
         total_workflows = 0
-        
+
         for workflow_file in workflow_files:
             workflow_path = Path(workflow_file)
             if workflow_path.exists():
@@ -211,7 +214,9 @@ class TestCIQueueBottleneckBugExploration:
                     except yaml.YAMLError:
                         continue
 
-        concurrency_coverage = workflows_with_concurrency / total_workflows if total_workflows > 0 else 0
+        concurrency_coverage = (
+            workflows_with_concurrency / total_workflows if total_workflows > 0 else 0
+        )
 
         # This assertion SHOULD FAIL on unfixed code
         assert concurrency_coverage >= 0.8, (
@@ -222,9 +227,9 @@ class TestCIQueueBottleneckBugExploration:
         )
 
     @given(
-        trigger_event=st.sampled_from([
-            "pull_request", "push_to_main", "push_to_develop", "scheduled_codeql"
-        ])
+        trigger_event=st.sampled_from(
+            ["pull_request", "push_to_main", "push_to_develop", "scheduled_codeql"]
+        )
     )
     @settings(max_examples=4, deadline=None)
     def test_property_trigger_events_create_excessive_job_queues(self, trigger_event):
@@ -237,13 +242,13 @@ class TestCIQueueBottleneckBugExploration:
         """
         # Simulate job counting for different trigger events
         job_counts = self._count_jobs_for_trigger_event(trigger_event)
-        
+
         total_jobs = sum(job_counts.values())
-        
+
         # The bug condition: excessive job creation leads to queue times >30 minutes
         # GitHub Actions typically provides 20 concurrent runners for free accounts
         runner_capacity = 20
-        
+
         # This assertion SHOULD FAIL on unfixed code for most trigger events
         assert total_jobs <= runner_capacity, (
             f"Bug confirmed: Trigger event '{trigger_event}' creates {total_jobs} concurrent jobs "
@@ -254,19 +259,19 @@ class TestCIQueueBottleneckBugExploration:
     def _count_jobs_for_trigger_event(self, trigger_event: str) -> Dict[str, int]:
         """Count jobs that would be triggered for a specific event."""
         job_counts = {}
-        
+
         # Count ci.yml jobs (always triggered for PR/push events)
         if trigger_event in ["pull_request", "push_to_main", "push_to_develop"]:
             ci_file = Path(".github/workflows/ci.yml")
             if ci_file.exists():
                 with open(ci_file, "r") as f:
                     workflow = yaml.safe_load(f)
-                
+
                 ci_jobs = 0
                 for job_name, job_config in workflow["jobs"].items():
                     strategy = job_config.get("strategy", {})
                     matrix = strategy.get("matrix", {})
-                    
+
                     if matrix:
                         # Calculate matrix expansion for test job
                         if job_name == "test":
@@ -278,21 +283,21 @@ class TestCIQueueBottleneckBugExploration:
                             ci_jobs += 1
                     else:
                         ci_jobs += 1
-                
+
                 job_counts["ci.yml"] = ci_jobs
-        
+
         # Count codeql.yml jobs
         if trigger_event in ["pull_request", "push_to_main", "push_to_develop", "scheduled_codeql"]:
             job_counts["codeql.yml"] = 1
-        
+
         # Count dependency-review.yml jobs
         if trigger_event == "pull_request":
             job_counts["dependency-review.yml"] = 1
-        
+
         # Count pages.yml jobs (only on main branch pushes with docs changes)
         if trigger_event == "push_to_main":
             job_counts["pages.yml"] = 2  # build + deploy jobs
-        
+
         return job_counts
 
     def test_queue_time_simulation_exceeds_30_minutes(self):
@@ -306,11 +311,11 @@ class TestCIQueueBottleneckBugExploration:
         # Simulate a typical PR scenario
         total_jobs = self._count_jobs_for_trigger_event("pull_request")
         concurrent_jobs = sum(total_jobs.values())
-        
+
         # GitHub Actions runner assumptions (conservative estimates)
         available_runners = 5  # Typical for free accounts during peak hours
         job_duration_minutes = 15  # Average job duration
-        
+
         # Simple queue simulation
         if concurrent_jobs <= available_runners:
             max_queue_time = 0
@@ -320,7 +325,7 @@ class TestCIQueueBottleneckBugExploration:
             # Assuming jobs complete in waves
             waves_needed = (queued_jobs + available_runners - 1) // available_runners
             max_queue_time = waves_needed * job_duration_minutes
-        
+
         # This assertion SHOULD FAIL on unfixed code
         assert max_queue_time <= 30, (
             f"Bug confirmed: Simulated queue time is {max_queue_time} minutes "

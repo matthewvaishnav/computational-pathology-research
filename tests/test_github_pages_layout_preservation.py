@@ -56,12 +56,12 @@ class TestGitHubPagesLayoutPreservation:
         header_pattern = r"header\s*\{[^}]*width\s*:\s*340px"
         section_pattern = r"section\s*\{[^}]*margin-left\s*:\s*320px"
 
-        assert re.search(header_pattern, content, re.DOTALL), (
-            f"Desktop layout broken: header width should be 340px for viewport > 1200px"
-        )
-        assert re.search(section_pattern, content, re.DOTALL), (
-            f"Desktop layout broken: section margin-left should be 320px for viewport > 1200px"
-        )
+        assert re.search(
+            header_pattern, content, re.DOTALL
+        ), f"Desktop layout broken: header width should be 340px for viewport > 1200px"
+        assert re.search(
+            section_pattern, content, re.DOTALL
+        ), f"Desktop layout broken: section margin-left should be 320px for viewport > 1200px"
 
         # Verify no media query overrides desktop layout for viewports > 1200px
         # Check that there's no @media (min-width: 1201px) or similar that changes these values
@@ -99,9 +99,9 @@ class TestGitHubPagesLayoutPreservation:
         assert header_match, "Could not find header block in CSS"
 
         header_block = header_match.group(1)
-        assert re.search(r"width\s*:\s*340px", header_block), (
-            "Desktop layout broken: header width should be 340px"
-        )
+        assert re.search(
+            r"width\s*:\s*340px", header_block
+        ), "Desktop layout broken: header width should be 340px"
 
         # Extract section block (outside media queries)
         section_block_pattern = r"section\s*\{([^}]*)\}"
@@ -109,12 +109,12 @@ class TestGitHubPagesLayoutPreservation:
         assert section_match, "Could not find section block in CSS"
 
         section_block = section_match.group(1)
-        assert re.search(r"margin-left\s*:\s*320px", section_block), (
-            "Desktop layout broken: section margin-left should be 320px"
-        )
-        assert re.search(r"width\s*:\s*calc\s*\(\s*100%\s*-\s*320px\s*\)", section_block), (
-            "Desktop layout broken: section width should be calc(100% - 320px)"
-        )
+        assert re.search(
+            r"margin-left\s*:\s*320px", section_block
+        ), "Desktop layout broken: section margin-left should be 320px"
+        assert re.search(
+            r"width\s*:\s*calc\s*\(\s*100%\s*-\s*320px\s*\)", section_block
+        ), "Desktop layout broken: section width should be calc(100% - 320px)"
 
     # ═══════════════════════════════════════════════════════════════
     # Mobile Layout Preservation (≤960px)
@@ -159,13 +159,14 @@ class TestGitHubPagesLayoutPreservation:
         mobile_section_content = content[mobile_section_start:]
 
         # Check for full-width layout indicators in mobile section
-        assert re.search(r"header\s*\{[^}]*width\s*:\s*100%", mobile_section_content, re.DOTALL) or \
-               re.search(r"width\s*:\s*100%[^}]*float\s*:\s*none", mobile_section_content, re.DOTALL), (
-            f"Mobile layout broken at {viewport_width}px: header should be full-width (100%) in mobile layout"
-        )
-        assert re.search(r"section\s*\{[^}]*width\s*:\s*100%", mobile_section_content, re.DOTALL), (
-            f"Mobile layout broken at {viewport_width}px: section should be full-width (100%) in mobile layout"
-        )
+        assert re.search(
+            r"header\s*\{[^}]*width\s*:\s*100%", mobile_section_content, re.DOTALL
+        ) or re.search(
+            r"width\s*:\s*100%[^}]*float\s*:\s*none", mobile_section_content, re.DOTALL
+        ), f"Mobile layout broken at {viewport_width}px: header should be full-width (100%) in mobile layout"
+        assert re.search(
+            r"section\s*\{[^}]*width\s*:\s*100%", mobile_section_content, re.DOTALL
+        ), f"Mobile layout broken at {viewport_width}px: section should be full-width (100%) in mobile layout"
 
     def test_mobile_breakpoint_at_960px(self):
         """Test that mobile layout breakpoint is at 960px.
@@ -189,9 +190,9 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify @media (max-width: 960px) exists
         mobile_breakpoint_pattern = r"@media\s*\(\s*max-width\s*:\s*960px\s*\)"
-        assert re.search(mobile_breakpoint_pattern, content, re.IGNORECASE), (
-            "Mobile layout preservation violated: @media (max-width: 960px) not found"
-        )
+        assert re.search(
+            mobile_breakpoint_pattern, content, re.IGNORECASE
+        ), "Mobile layout preservation violated: @media (max-width: 960px) not found"
 
     def test_phone_breakpoint_at_480px(self):
         """Test that phone-specific layout breakpoint is at 480px.
@@ -215,9 +216,9 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify @media (max-width: 480px) exists
         phone_breakpoint_pattern = r"@media\s*\(\s*max-width\s*:\s*480px\s*\)"
-        assert re.search(phone_breakpoint_pattern, content, re.IGNORECASE), (
-            "Phone layout preservation violated: @media (max-width: 480px) not found"
-        )
+        assert re.search(
+            phone_breakpoint_pattern, content, re.IGNORECASE
+        ), "Phone layout preservation violated: @media (max-width: 480px) not found"
 
     # ═══════════════════════════════════════════════════════════════
     # Navigation Preservation
@@ -254,9 +255,9 @@ class TestGitHubPagesLayoutPreservation:
         ]
 
         for pattern, description in nav_patterns:
-            assert re.search(pattern, content, re.DOTALL), (
-                f"Navigation preservation violated: {description} not found in CSS"
-            )
+            assert re.search(
+                pattern, content, re.DOTALL
+            ), f"Navigation preservation violated: {description} not found in CSS"
 
     def test_navigation_mobile_behavior_preserved(self):
         """Test that mobile navigation behavior is preserved.
@@ -280,17 +281,17 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify nav-toggle is hidden by default
         nav_toggle_pattern = r"\.nav-toggle\s*\{[^}]*display\s*:\s*none"
-        assert re.search(nav_toggle_pattern, content, re.DOTALL), (
-            "Navigation preservation violated: .nav-toggle should have display: none by default"
-        )
+        assert re.search(
+            nav_toggle_pattern, content, re.DOTALL
+        ), "Navigation preservation violated: .nav-toggle should have display: none by default"
 
         # Verify mobile media query shows nav-toggle
         mobile_block_pattern = r"@media\s*\(\s*max-width\s*:\s*960px\s*\)[^{]*\{[^}]*\.nav-toggle\s*\{[^}]*display\s*:\s*flex"
         # Note: This is a simplified check - actual CSS may have nav-toggle in nested blocks
         # We'll check if nav-toggle display is changed in mobile context
-        assert re.search(r"\.nav-toggle\s*\{", content), (
-            "Navigation preservation violated: .nav-toggle block not found"
-        )
+        assert re.search(
+            r"\.nav-toggle\s*\{", content
+        ), "Navigation preservation violated: .nav-toggle block not found"
 
     # ═══════════════════════════════════════════════════════════════
     # Accessibility Preservation
@@ -317,9 +318,9 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify focus styles exist
         focus_pattern = r"(?:a|button):focus\s*\{[^}]*outline\s*:\s*3px\s+solid\s+#A51C30"
-        assert re.search(focus_pattern, content, re.IGNORECASE), (
-            "Accessibility preservation violated: focus styles (outline: 3px solid #A51C30) not found"
-        )
+        assert re.search(
+            focus_pattern, content, re.IGNORECASE
+        ), "Accessibility preservation violated: focus styles (outline: 3px solid #A51C30) not found"
 
     def test_accessibility_reduced_motion_preserved(self):
         """Test that reduced motion preference support is preserved.
@@ -344,19 +345,19 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify prefers-reduced-motion media query exists
         reduced_motion_pattern = r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)"
-        assert re.search(reduced_motion_pattern, content, re.IGNORECASE), (
-            "Accessibility preservation violated: @media (prefers-reduced-motion: reduce) not found"
-        )
+        assert re.search(
+            reduced_motion_pattern, content, re.IGNORECASE
+        ), "Accessibility preservation violated: @media (prefers-reduced-motion: reduce) not found"
 
         # Verify animation and transition durations are set to minimal values
         # Simply check that the reduced motion block contains the expected properties
         # without trying to extract the exact block
-        assert re.search(r"animation-duration\s*:\s*0\.01ms\s*!important", content), (
-            "Accessibility preservation violated: animation-duration should be 0.01ms !important in reduced motion"
-        )
-        assert re.search(r"transition-duration\s*:\s*0\.01ms\s*!important", content), (
-            "Accessibility preservation violated: transition-duration should be 0.01ms !important in reduced motion"
-        )
+        assert re.search(
+            r"animation-duration\s*:\s*0\.01ms\s*!important", content
+        ), "Accessibility preservation violated: animation-duration should be 0.01ms !important in reduced motion"
+        assert re.search(
+            r"transition-duration\s*:\s*0\.01ms\s*!important", content
+        ), "Accessibility preservation violated: transition-duration should be 0.01ms !important in reduced motion"
 
     def test_accessibility_skip_to_content_preserved(self):
         """Test that skip-to-content link for screen readers is preserved.
@@ -380,16 +381,18 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify skip-to-content class exists
         skip_to_content_pattern = r"\.skip-to-content\s*\{"
-        assert re.search(skip_to_content_pattern, content), (
-            "Accessibility preservation violated: .skip-to-content class not found"
-        )
+        assert re.search(
+            skip_to_content_pattern, content
+        ), "Accessibility preservation violated: .skip-to-content class not found"
 
         # Verify skip-to-content:focus behavior
         # Note: SCSS uses nested & syntax for :focus
-        skip_focus_pattern = r"\.skip-to-content:focus\s*\{[^}]*top\s*:\s*0|&:focus\s*\{[^}]*top\s*:\s*0"
-        assert re.search(skip_focus_pattern, content, re.DOTALL), (
-            "Accessibility preservation violated: .skip-to-content:focus should set top: 0"
+        skip_focus_pattern = (
+            r"\.skip-to-content:focus\s*\{[^}]*top\s*:\s*0|&:focus\s*\{[^}]*top\s*:\s*0"
         )
+        assert re.search(
+            skip_focus_pattern, content, re.DOTALL
+        ), "Accessibility preservation violated: .skip-to-content:focus should set top: 0"
 
     # ═══════════════════════════════════════════════════════════════
     # Print Preservation
@@ -418,9 +421,9 @@ class TestGitHubPagesLayoutPreservation:
 
         # Verify @media print exists
         print_media_pattern = r"@media\s+print\s*\{"
-        assert re.search(print_media_pattern, content, re.IGNORECASE), (
-            "Print preservation violated: @media print not found"
-        )
+        assert re.search(
+            print_media_pattern, content, re.IGNORECASE
+        ), "Print preservation violated: @media print not found"
 
         # Extract print media query block - just check after the first @media print
         print_match = re.search(print_media_pattern, content, re.IGNORECASE)
@@ -430,17 +433,18 @@ class TestGitHubPagesLayoutPreservation:
 
             # Verify print-specific styles exist somewhere in the print sections
             # Note: There are 2 @media print blocks, so check the entire print section
-            assert re.search(r"header\s*\{[^}]*width\s*:\s*100%", print_section_content, re.DOTALL) or \
-                   re.search(r"width\s*:\s*100%", print_section_content), (
-                "Print preservation violated: header should be full-width (100%) in print"
-            )
-            assert re.search(r"section\s*\{[^}]*width\s*:\s*100%", print_section_content, re.DOTALL), (
-                "Print preservation violated: section should be full-width (100%) in print"
-            )
+            assert re.search(
+                r"header\s*\{[^}]*width\s*:\s*100%", print_section_content, re.DOTALL
+            ) or re.search(
+                r"width\s*:\s*100%", print_section_content
+            ), "Print preservation violated: header should be full-width (100%) in print"
+            assert re.search(
+                r"section\s*\{[^}]*width\s*:\s*100%", print_section_content, re.DOTALL
+            ), "Print preservation violated: section should be full-width (100%) in print"
             # Check for nav display: none in print section
-            assert re.search(r"nav[^}]*display\s*:\s*none", print_section_content, re.DOTALL), (
-                "Print preservation violated: nav should be hidden (display: none) in print"
-            )
+            assert re.search(
+                r"nav[^}]*display\s*:\s*none", print_section_content, re.DOTALL
+            ), "Print preservation violated: nav should be hidden (display: none) in print"
 
     def test_print_media_query_count(self):
         """Test that the number of print media queries is preserved.
@@ -464,9 +468,9 @@ class TestGitHubPagesLayoutPreservation:
         print_media_pattern = r"@media\s+print\s*\{"
         print_matches = re.findall(print_media_pattern, content, re.IGNORECASE)
 
-        assert len(print_matches) == 2, (
-            f"Print preservation violated: expected 2 @media print blocks, found {len(print_matches)}"
-        )
+        assert (
+            len(print_matches) == 2
+        ), f"Print preservation violated: expected 2 @media print blocks, found {len(print_matches)}"
 
     # ═══════════════════════════════════════════════════════════════
     # Comprehensive Preservation Test
@@ -502,17 +506,17 @@ class TestGitHubPagesLayoutPreservation:
         if viewport_width <= 960:
             # Mobile layout should be preserved
             mobile_breakpoint_pattern = r"@media\s*\(\s*max-width\s*:\s*960px\s*\)"
-            assert re.search(mobile_breakpoint_pattern, content, re.IGNORECASE), (
-                f"Preservation violated at {viewport_width}px: mobile breakpoint @media (max-width: 960px) not found"
-            )
+            assert re.search(
+                mobile_breakpoint_pattern, content, re.IGNORECASE
+            ), f"Preservation violated at {viewport_width}px: mobile breakpoint @media (max-width: 960px) not found"
         elif viewport_width > 1200:
             # Desktop layout should be preserved
             header_pattern = r"header\s*\{[^}]*width\s*:\s*340px"
             section_pattern = r"section\s*\{[^}]*margin-left\s*:\s*320px"
 
-            assert re.search(header_pattern, content, re.DOTALL), (
-                f"Preservation violated at {viewport_width}px: desktop header width should be 340px"
-            )
-            assert re.search(section_pattern, content, re.DOTALL), (
-                f"Preservation violated at {viewport_width}px: desktop section margin-left should be 320px"
-            )
+            assert re.search(
+                header_pattern, content, re.DOTALL
+            ), f"Preservation violated at {viewport_width}px: desktop header width should be 340px"
+            assert re.search(
+                section_pattern, content, re.DOTALL
+            ), f"Preservation violated at {viewport_width}px: desktop section margin-left should be 320px"
