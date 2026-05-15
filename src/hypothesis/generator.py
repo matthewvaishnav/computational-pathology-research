@@ -295,12 +295,12 @@ def create_ollama_llm(
 ) -> Callable[[str, str], str]:
     """
     Create Ollama local LLM function.
-    
+
     Args:
         model: Ollama model name (default: llama3)
         base_url: Ollama API base URL (default: http://localhost:11434)
         timeout: Request timeout in seconds (default: 30)
-    
+
     Returns:
         Callable that takes (system_prompt, user_prompt) and returns response text
     """

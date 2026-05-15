@@ -315,7 +315,6 @@ def web():
             f"📍 Access at: http://{safe_host if safe_host != '0.0.0.0' else 'localhost'}:5000"  # nosec B104
         )
 
-
         app.run(debug=False, host=safe_host, port=5000)
     except ImportError as e:
         click.echo(f"❌ Web interface not available: {e}")
