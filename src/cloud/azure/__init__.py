@@ -12,7 +12,7 @@ from .monitor import AzureMonitorIntegration
 
 __all__ = [
     "AzureHealthDataServices",
-    "AzureBlobStorageConnector", 
+    "AzureBlobStorageConnector",
     "AzureFunctionsIntegration",
-    "AzureMonitorIntegration"
+    "AzureMonitorIntegration",
 ]

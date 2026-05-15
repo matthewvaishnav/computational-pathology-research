@@ -392,9 +392,15 @@ class DatasetOrganizer:
         }
 
         size_stats = {
-            "small_percent": size_distribution["small"] / total_samples * 100 if total_samples > 0 else 0,
-            "medium_percent": size_distribution["medium"] / total_samples * 100 if total_samples > 0 else 0,
-            "large_percent": size_distribution["large"] / total_samples * 100 if total_samples > 0 else 0,
+            "small_percent": (
+                size_distribution["small"] / total_samples * 100 if total_samples > 0 else 0
+            ),
+            "medium_percent": (
+                size_distribution["medium"] / total_samples * 100 if total_samples > 0 else 0
+            ),
+            "large_percent": (
+                size_distribution["large"] / total_samples * 100 if total_samples > 0 else 0
+            ),
             "mean_size_mb": float(np.mean(file_sizes)) if file_sizes else 0.0,
             "total_size_gb": sum(file_sizes) / 1024 if file_sizes else 0.0,
         }
@@ -416,10 +422,26 @@ class DatasetOrganizer:
 
         # Quality distribution
         quality_distribution = {
-            "excellent": len([q for q in quality_scores if q >= 0.9]) / total_samples * 100 if total_samples > 0 else 0,
-            "good": len([q for q in quality_scores if 0.7 <= q < 0.9]) / total_samples * 100 if total_samples > 0 else 0,
-            "fair": len([q for q in quality_scores if 0.5 <= q < 0.7]) / total_samples * 100 if total_samples > 0 else 0,
-            "poor": len([q for q in quality_scores if q < 0.5]) / total_samples * 100 if total_samples > 0 else 0,
+            "excellent": (
+                len([q for q in quality_scores if q >= 0.9]) / total_samples * 100
+                if total_samples > 0
+                else 0
+            ),
+            "good": (
+                len([q for q in quality_scores if 0.7 <= q < 0.9]) / total_samples * 100
+                if total_samples > 0
+                else 0
+            ),
+            "fair": (
+                len([q for q in quality_scores if 0.5 <= q < 0.7]) / total_samples * 100
+                if total_samples > 0
+                else 0
+            ),
+            "poor": (
+                len([q for q in quality_scores if q < 0.5]) / total_samples * 100
+                if total_samples > 0
+                else 0
+            ),
         }
 
         # Advanced quality metrics

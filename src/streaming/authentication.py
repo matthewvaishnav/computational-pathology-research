@@ -99,7 +99,7 @@ class TLSManager:
         """Generate self-signed certificate for testing."""
         # Validate and sanitize common_name to prevent injection
         common_name = self._sanitize_common_name(common_name)
-        
+
         # Generate private key
         private_key = rsa.generate_private_key(
             public_exponent=65537, key_size=2048, backend=default_backend()
@@ -154,22 +154,22 @@ class TLSManager:
         logger.info("Generated self-signed certificate: %s", output_cert_path)
 
         return output_cert_path, output_key_path
-    
+
     def _sanitize_common_name(self, common_name: str) -> str:
         """Sanitize common_name to prevent injection attacks."""
         import re
-        
+
         # Remove any control characters or special chars that could cause issues
-        common_name = re.sub(r'[^\w\.\-]', '', common_name)
-        
+        common_name = re.sub(r"[^\w\.\-]", "", common_name)
+
         # Limit length
         if len(common_name) > 64:
             common_name = common_name[:64]
-        
+
         # Ensure not empty
         if not common_name:
             raise ValueError("Invalid common_name: empty after sanitization")
-        
+
         return common_name
 
 

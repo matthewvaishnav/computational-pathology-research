@@ -66,7 +66,7 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
         """
         try:
             client_id = request.client_id
-            
+
             # Input validation
             if not client_id or len(client_id) > 64:
                 return RegistrationResponse(success=False, message="Invalid client ID")
@@ -90,23 +90,29 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
             # Validate and verify client certificate
             if not request.certificate:
                 return RegistrationResponse(success=False, message="Certificate required")
-            
+
             try:
                 from cryptography import x509
+
                 cert = x509.load_pem_x509_certificate(request.certificate.encode())
-                
+
                 # Basic certificate validation
                 from datetime import datetime, timezone
+
                 now = datetime.now(timezone.utc)
                 if now < cert.not_valid_before_utc or now > cert.not_valid_after_utc:
-                    return RegistrationResponse(success=False, message="Certificate expired or not valid")
-                
+                    return RegistrationResponse(
+                        success=False, message="Certificate expired or not valid"
+                    )
+
                 # Verify certificate subject matches client_id
                 subject = cert.subject
                 cn_attributes = subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
                 if not cn_attributes or cn_attributes[0].value != client_id:
-                    return RegistrationResponse(success=False, message="Certificate subject mismatch")
-                    
+                    return RegistrationResponse(
+                        success=False, message="Certificate subject mismatch"
+                    )
+
             except Exception:
                 return RegistrationResponse(success=False, message="Invalid certificate format")
 
@@ -114,10 +120,10 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
             caps = request.capabilities
             if caps.available_memory_gb < 0 or caps.available_memory_gb > 1024:
                 return RegistrationResponse(success=False, message="Invalid memory specification")
-            
+
             if caps.num_gpus < 0 or caps.num_gpus > 16:
                 return RegistrationResponse(success=False, message="Invalid GPU count")
-            
+
             if caps.dataset_size < 0 or caps.dataset_size > 10000000:
                 return RegistrationResponse(success=False, message="Invalid dataset size")
 
@@ -139,13 +145,14 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
 
             # Return coordinator certificate for mutual TLS with secure file access
             ca_cert_path = f"{self.tls_manager.cert_dir}/ca-cert.pem"
-            
+
             # Validate file path to prevent directory traversal
             import os
+
             ca_cert_path = os.path.abspath(ca_cert_path)
             if not ca_cert_path.startswith(os.path.abspath(self.tls_manager.cert_dir)):
                 return RegistrationResponse(success=False, message="Registration failed")
-            
+
             try:
                 with open(ca_cert_path, "r") as f:
                     coordinator_cert = f.read()
@@ -176,7 +183,7 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
         try:
             client_id = request.client_id
             round_id = request.round_id
-            
+
             # Input validation
             if not client_id or len(client_id) > 64:
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
@@ -188,7 +195,7 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
                 context.set_code(grpc.StatusCode.UNAUTHENTICATED)
                 context.set_details("Client not registered")
                 return ModelResponse()
-            
+
             # Check if client registration is still valid (not expired)
             client_info = self.registered_clients[client_id]
             if time.time() - client_info["registered_at"] > 86400:  # 24 hours
@@ -252,13 +259,13 @@ class FederatedLearningServicer(FederatedLearningServiceServicer):
             import torch
 
             buffer = io.BytesIO(request.gradients)
-            
+
             # Validate payload size to prevent memory exhaustion
             if len(request.gradients) > 512 * 1024 * 1024:  # 512MB max
                 context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
                 context.set_details("Gradient payload too large")
                 return UpdateAcknowledgment(success=False, message="Payload too large")
-            
+
             # Use weights_only=True to prevent arbitrary code execution
             try:
                 gradients = torch.load(buffer, weights_only=True)

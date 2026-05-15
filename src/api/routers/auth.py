@@ -38,14 +38,15 @@ users_db: Dict[str, Dict] = {}
 
 class UserRegistration(BaseModel):
     """User registration request model.
-    
+
     Validates new user registration data with security controls.
     Role assignment is server-side only to prevent privilege escalation.
     """
+
     username: str
     email: str
     password: str
-    
+
     class Config:
         # Prevent mass assignment of sensitive fields
         # role is set server-side, not from user input
@@ -54,9 +55,10 @@ class UserRegistration(BaseModel):
 
 class UserLogin(BaseModel):
     """User login request model.
-    
+
     Validates user authentication credentials.
     """
+
     username: str
     password: str
 
@@ -68,19 +70,20 @@ async def register_user(user_data: UserRegistration, request: Request):
         # Sanitize inputs
         username = user_data.username.strip().lower()
         email = user_data.email.strip().lower()
-        
+
         # Validate email and password using centralized validators
         validate_email(email)
         validate_password(user_data.password)
-        
+
         # Validate username format (alphanumeric, underscore, hyphen only)
         import re
-        if not re.match(r'^[a-z0-9_-]{3,32}$', username):
+
+        if not re.match(r"^[a-z0-9_-]{3,32}$", username):
             raise HTTPException(
-                status_code=400, 
-                detail="Username must be 3-32 characters (lowercase letters, numbers, underscore, hyphen only)"
+                status_code=400,
+                detail="Username must be 3-32 characters (lowercase letters, numbers, underscore, hyphen only)",
             )
-        
+
         if username in users_db:
             log_security_event(
                 "registration_failed",
@@ -163,11 +166,12 @@ async def login_user(login_data: UserLogin, request: Request):
             data={"sub": user["user_id"], "username": username, "role": user["role"]}
         )
 
-        log_security_event(
-            "login_success", username=username, ip_address=ip_address, success=True
-        )
+        log_security_event("login_success", username=username, ip_address=ip_address, success=True)
 
-        return {"access_token": access_token, "token_type": "bearer"}  # nosec B105 - OAuth2 token type, not password  # nosec B105 - OAuth2 token type, not password
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+        }  # nosec B105 - OAuth2 token type, not password  # nosec B105 - OAuth2 token type, not password
 
     except HTTPException:
         raise
@@ -184,7 +188,7 @@ async def get_current_user_info(current_user=Depends(get_current_user)):
     """Get current user information."""
     if not current_user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     return {
         "id": str(current_user.id),
         "username": current_user.username,
@@ -202,9 +206,7 @@ async def oauth_login(provider: str = "azure"):
         oauth_client = create_oauth_client(provider=provider)
         auth_url, state = oauth_client.get_authorization_url()
 
-        log_security_event(
-            "oauth_login_initiated", details=f"Provider: {provider}", success=True
-        )
+        log_security_event("oauth_login_initiated", details=f"Provider: {provider}", success=True)
 
         return {"authorization_url": auth_url, "state": state, "provider": provider}
 
@@ -235,9 +237,7 @@ async def oauth_callback(request: Request, provider: str = "azure"):
 
         email = userinfo.get("email")
         if not email:
-            raise HTTPException(
-                status_code=400, detail="Email not provided by OAuth provider"
-            )
+            raise HTTPException(status_code=400, detail="Email not provided by OAuth provider")
 
         user = user_ops.get_user_by_email(email)
 

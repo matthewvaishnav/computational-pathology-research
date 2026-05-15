@@ -41,16 +41,20 @@ def task_specification_strategy(draw):
         weight_decay=draw(st.floats(min_value=0.0, max_value=1e-3)),
         optimizer=draw(st.sampled_from(["Adam", "AdamW", "SGD"])),
         random_seed=draw(st.integers(min_value=0, max_value=10000)),
-        augmentation_config=draw(st.dictionaries(
-            st.text(min_size=1, max_size=20),
-            st.one_of(st.booleans(), st.floats(), st.integers(), st.text())
-        )),
-        metrics=draw(st.lists(
-            st.sampled_from(["accuracy", "auc", "f1", "precision", "recall"]),
-            min_size=1,
-            max_size=5,
-            unique=True
-        ))
+        augmentation_config=draw(
+            st.dictionaries(
+                st.text(min_size=1, max_size=20),
+                st.one_of(st.booleans(), st.floats(), st.integers(), st.text()),
+            )
+        ),
+        metrics=draw(
+            st.lists(
+                st.sampled_from(["accuracy", "auc", "f1", "precision", "recall"]),
+                min_size=1,
+                max_size=5,
+                unique=True,
+            )
+        ),
     )
 
 
@@ -58,14 +62,18 @@ def task_specification_strategy(draw):
 def benchmark_config_strategy(draw):
     """Generate random BenchmarkConfig instances."""
     # Use fixed splits to avoid floating-point precision issues
-    split_choice = draw(st.sampled_from([
-        (0.8, 0.1, 0.1),
-        (0.7, 0.2, 0.1),
-        (0.7, 0.15, 0.15),
-        (0.6, 0.2, 0.2),
-    ]))
+    split_choice = draw(
+        st.sampled_from(
+            [
+                (0.8, 0.1, 0.1),
+                (0.7, 0.2, 0.1),
+                (0.7, 0.15, 0.15),
+                (0.6, 0.2, 0.2),
+            ]
+        )
+    )
     train_split, val_split, test_split = split_choice
-    
+
     task_spec = TaskSpecification(
         dataset_name=draw(st.text(min_size=1, max_size=50)),
         data_root=Path(draw(st.text(min_size=1, max_size=100))),
@@ -82,15 +90,17 @@ def benchmark_config_strategy(draw):
         optimizer=draw(st.sampled_from(["Adam", "AdamW", "SGD"])),
         random_seed=draw(st.integers(min_value=0, max_value=10000)),
     )
-    
+
     return BenchmarkConfig(
         mode=draw(st.sampled_from(["quick", "full"])),
-        frameworks=draw(st.lists(
-            st.sampled_from(["HistoCore", "PathML", "CLAM", "PyTorch"]),
-            min_size=1,
-            max_size=4,
-            unique=True
-        )),
+        frameworks=draw(
+            st.lists(
+                st.sampled_from(["HistoCore", "PathML", "CLAM", "PyTorch"]),
+                min_size=1,
+                max_size=4,
+                unique=True,
+            )
+        ),
         task_spec=task_spec,
         quick_mode_epochs=draw(st.integers(min_value=1, max_value=10)),
         quick_mode_samples=draw(st.integers(min_value=100, max_value=10000)),
@@ -109,14 +119,18 @@ def benchmark_config_strategy(draw):
 def training_result_strategy(draw):
     """Generate random TrainingResult instances."""
     # Use fixed splits to avoid floating-point precision issues
-    split_choice = draw(st.sampled_from([
-        (0.8, 0.1, 0.1),
-        (0.7, 0.2, 0.1),
-        (0.7, 0.15, 0.15),
-        (0.6, 0.2, 0.2),
-    ]))
+    split_choice = draw(
+        st.sampled_from(
+            [
+                (0.8, 0.1, 0.1),
+                (0.7, 0.2, 0.1),
+                (0.7, 0.15, 0.15),
+                (0.6, 0.2, 0.2),
+            ]
+        )
+    )
     train_split, val_split, test_split = split_choice
-    
+
     task_spec = TaskSpecification(
         dataset_name=draw(st.text(min_size=1, max_size=50)),
         data_root=Path(draw(st.text(min_size=1, max_size=100))),
@@ -133,21 +147,21 @@ def training_result_strategy(draw):
         optimizer=draw(st.sampled_from(["Adam", "AdamW", "SGD"])),
         random_seed=draw(st.integers(min_value=0, max_value=10000)),
     )
-    
+
     # Generate confidence intervals
     accuracy = draw(st.floats(min_value=0.0, max_value=1.0))
     auc = draw(st.floats(min_value=0.0, max_value=1.0))
     f1 = draw(st.floats(min_value=0.0, max_value=1.0))
-    
+
     accuracy_ci_lower = max(0.0, accuracy - draw(st.floats(min_value=0.0, max_value=0.1)))
     accuracy_ci_upper = min(1.0, accuracy + draw(st.floats(min_value=0.0, max_value=0.1)))
-    
+
     auc_ci_lower = max(0.0, auc - draw(st.floats(min_value=0.0, max_value=0.1)))
     auc_ci_upper = min(1.0, auc + draw(st.floats(min_value=0.0, max_value=0.1)))
-    
+
     f1_ci_lower = max(0.0, f1 - draw(st.floats(min_value=0.0, max_value=0.1)))
     f1_ci_upper = min(1.0, f1 + draw(st.floats(min_value=0.0, max_value=0.1)))
-    
+
     return TrainingResult(
         framework_name=draw(st.sampled_from(["HistoCore", "PathML", "CLAM", "PyTorch"])),
         task_spec=task_spec,
@@ -182,24 +196,32 @@ def serialize_benchmark_config(config: BenchmarkConfig) -> str:
     data = {
         "mode": config.mode,
         "frameworks": config.frameworks,
-        "task_spec": {
-            "dataset_name": config.task_spec.dataset_name if config.task_spec else None,
-            "data_root": str(config.task_spec.data_root) if config.task_spec else None,
-            "train_split": config.task_spec.train_split if config.task_spec else None,
-            "val_split": config.task_spec.val_split if config.task_spec else None,
-            "test_split": config.task_spec.test_split if config.task_spec else None,
-            "model_architecture": config.task_spec.model_architecture if config.task_spec else None,
-            "feature_dim": config.task_spec.feature_dim if config.task_spec else None,
-            "num_classes": config.task_spec.num_classes if config.task_spec else None,
-            "num_epochs": config.task_spec.num_epochs if config.task_spec else None,
-            "batch_size": config.task_spec.batch_size if config.task_spec else None,
-            "learning_rate": config.task_spec.learning_rate if config.task_spec else None,
-            "weight_decay": config.task_spec.weight_decay if config.task_spec else None,
-            "optimizer": config.task_spec.optimizer if config.task_spec else None,
-            "random_seed": config.task_spec.random_seed if config.task_spec else None,
-            "augmentation_config": config.task_spec.augmentation_config if config.task_spec else {},
-            "metrics": config.task_spec.metrics if config.task_spec else [],
-        } if config.task_spec else None,
+        "task_spec": (
+            {
+                "dataset_name": config.task_spec.dataset_name if config.task_spec else None,
+                "data_root": str(config.task_spec.data_root) if config.task_spec else None,
+                "train_split": config.task_spec.train_split if config.task_spec else None,
+                "val_split": config.task_spec.val_split if config.task_spec else None,
+                "test_split": config.task_spec.test_split if config.task_spec else None,
+                "model_architecture": (
+                    config.task_spec.model_architecture if config.task_spec else None
+                ),
+                "feature_dim": config.task_spec.feature_dim if config.task_spec else None,
+                "num_classes": config.task_spec.num_classes if config.task_spec else None,
+                "num_epochs": config.task_spec.num_epochs if config.task_spec else None,
+                "batch_size": config.task_spec.batch_size if config.task_spec else None,
+                "learning_rate": config.task_spec.learning_rate if config.task_spec else None,
+                "weight_decay": config.task_spec.weight_decay if config.task_spec else None,
+                "optimizer": config.task_spec.optimizer if config.task_spec else None,
+                "random_seed": config.task_spec.random_seed if config.task_spec else None,
+                "augmentation_config": (
+                    config.task_spec.augmentation_config if config.task_spec else {}
+                ),
+                "metrics": config.task_spec.metrics if config.task_spec else [],
+            }
+            if config.task_spec
+            else None
+        ),
         "quick_mode_epochs": config.quick_mode_epochs,
         "quick_mode_samples": config.quick_mode_samples,
         "max_gpu_memory_mb": config.max_gpu_memory_mb,
@@ -217,7 +239,7 @@ def serialize_benchmark_config(config: BenchmarkConfig) -> str:
 def deserialize_benchmark_config(json_str: str) -> BenchmarkConfig:
     """Deserialize BenchmarkConfig from JSON string."""
     data = json.loads(json_str)
-    
+
     task_spec = None
     if data["task_spec"]:
         task_spec = TaskSpecification(
@@ -238,7 +260,7 @@ def deserialize_benchmark_config(json_str: str) -> BenchmarkConfig:
             augmentation_config=data["task_spec"]["augmentation_config"],
             metrics=data["task_spec"]["metrics"],
         )
-    
+
     return BenchmarkConfig(
         mode=data["mode"],
         frameworks=data["frameworks"],
@@ -308,7 +330,7 @@ def serialize_training_result(result: TrainingResult) -> str:
 def deserialize_training_result(json_str: str) -> TrainingResult:
     """Deserialize TrainingResult from JSON string."""
     data = json.loads(json_str)
-    
+
     task_spec = TaskSpecification(
         dataset_name=data["task_spec"]["dataset_name"],
         data_root=Path(data["task_spec"]["data_root"]),
@@ -327,7 +349,7 @@ def deserialize_training_result(json_str: str) -> TrainingResult:
         augmentation_config=data["task_spec"]["augmentation_config"],
         metrics=data["task_spec"]["metrics"],
     )
-    
+
     return TrainingResult(
         framework_name=data["framework_name"],
         task_spec=task_spec,
@@ -363,18 +385,18 @@ def deserialize_training_result(json_str: str) -> TrainingResult:
 def test_benchmark_config_serialization_roundtrip(config):
     """
     Property: Serialization Round-Trip Preservation for BenchmarkConfig
-    
+
     For any BenchmarkConfig instance, serializing to JSON and deserializing
     SHALL produce an equivalent object with all data preserved.
-    
+
     Validates: Requirements 4.9, 9.8
     """
     # Serialize
     json_str = serialize_benchmark_config(config)
-    
+
     # Deserialize
     restored_config = deserialize_benchmark_config(json_str)
-    
+
     # Verify equivalence
     assert restored_config.mode == config.mode
     assert restored_config.frameworks == config.frameworks
@@ -388,7 +410,7 @@ def test_benchmark_config_serialization_roundtrip(config):
     assert restored_config.random_seed == config.random_seed
     assert restored_config.bootstrap_samples == config.bootstrap_samples
     assert restored_config.confidence_level == config.confidence_level
-    
+
     # Verify task_spec if present
     if config.task_spec:
         assert restored_config.task_spec is not None
@@ -416,18 +438,18 @@ def test_benchmark_config_serialization_roundtrip(config):
 def test_training_result_serialization_roundtrip(result):
     """
     Property: Serialization Round-Trip Preservation for TrainingResult
-    
+
     For any TrainingResult instance, serializing to JSON and deserializing
     SHALL produce an equivalent object with all data preserved.
-    
+
     Validates: Requirements 4.9, 9.8
     """
     # Serialize
     json_str = serialize_training_result(result)
-    
+
     # Deserialize
     restored_result = deserialize_training_result(json_str)
-    
+
     # Verify equivalence
     assert restored_result.framework_name == result.framework_name
     assert restored_result.training_time_seconds == result.training_time_seconds
@@ -453,7 +475,7 @@ def test_training_result_serialization_roundtrip(result):
     assert restored_result.log_path == result.log_path
     assert restored_result.status == result.status
     assert restored_result.error_message == result.error_message
-    
+
     # Verify task_spec
     assert restored_result.task_spec.dataset_name == result.task_spec.dataset_name
     assert restored_result.task_spec.data_root == result.task_spec.data_root

@@ -15,15 +15,15 @@ import torch
 class DataPrefetcher:
     """
     Prefetch data batches in background thread to overlap I/O with computation.
-    
+
     Loads next batch while GPU processes current batch, hiding data loading latency.
-    
+
     Usage:
         prefetcher = DataPrefetcher(dataloader, device='cuda')
         for batch in prefetcher:
             # Process batch - next batch loading in background
             outputs = model(batch)
-    
+
     Args:
         loader: PyTorch DataLoader
         device: Target device for prefetched data
@@ -44,7 +44,7 @@ class DataPrefetcher:
     def __iter__(self) -> Iterator:
         """Iterate over prefetched batches."""
         loader_iter = iter(self.loader)
-        
+
         # Prefetch first batch
         try:
             next_batch = next(loader_iter)
@@ -99,10 +99,10 @@ class DataPrefetcher:
 class BackgroundPrefetcher:
     """
     Advanced prefetcher using background thread and queue.
-    
+
     Maintains queue of prefetched batches for smoother data flow.
     Useful when data loading is highly variable or expensive.
-    
+
     Args:
         loader: PyTorch DataLoader
         device: Target device
@@ -132,9 +132,11 @@ class BackgroundPrefetcher:
                 # Move to device
                 if isinstance(batch, dict):
                     batch = {
-                        k: v.to(self.device, non_blocking=True)
-                        if isinstance(v, torch.Tensor)
-                        else v
+                        k: (
+                            v.to(self.device, non_blocking=True)
+                            if isinstance(v, torch.Tensor)
+                            else v
+                        )
                         for k, v in batch.items()
                     }
                 elif isinstance(batch, torch.Tensor):
@@ -196,7 +198,7 @@ def create_optimized_dataloader(
 ) -> torch.utils.data.DataLoader:
     """
     Create DataLoader with optimized settings for performance.
-    
+
     Args:
         dataset: PyTorch Dataset
         batch_size: Batch size
@@ -205,10 +207,10 @@ def create_optimized_dataloader(
         prefetch_factor: Batches to prefetch per worker (default: 2)
         persistent_workers: Keep workers alive between epochs (default: True)
         **kwargs: Additional DataLoader arguments
-    
+
     Returns:
         Optimized DataLoader
-    
+
     Performance tips:
         - num_workers: Set to 2-4x number of GPUs
         - pin_memory: Always True for GPU training

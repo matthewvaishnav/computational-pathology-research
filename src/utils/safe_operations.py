@@ -50,19 +50,19 @@ def safe_torch_load(
 ) -> Dict[str, Any]:
     """
     Safely load PyTorch checkpoint with OOM protection.
-    
+
     Fixes:
     - Issue #1: Unsafe model loading without map_location
     - Issue #9: No model checksum validation
-    
+
     Args:
         filepath: Path to checkpoint file
         device: Target device (auto-detected if None)
         verify_checksum: Expected SHA256 checksum (optional)
-    
+
     Returns:
         Loaded checkpoint dictionary
-    
+
     Raises:
         FileNotFoundError: If checkpoint doesn't exist
         ValueError: If checksum verification fails
@@ -70,7 +70,7 @@ def safe_torch_load(
     """
     if not filepath.exists():
         raise FileNotFoundError(f"Checkpoint not found: {filepath}")
-    
+
     # Verify checksum if provided
     if verify_checksum:
         actual_checksum = compute_file_checksum(filepath)
@@ -79,18 +79,18 @@ def safe_torch_load(
                 f"Checksum mismatch: expected {verify_checksum}, got {actual_checksum}"
             )
         logger.info(f"Checksum verified: {filepath.name}")
-    
+
     # Always load to CPU first to avoid OOM
     logger.info(f"Loading checkpoint to CPU: {filepath}")
-    checkpoint = torch.load(filepath, map_location='cpu', weights_only=True)
-    
+    checkpoint = torch.load(filepath, map_location="cpu", weights_only=True)
+
     # Move to target device if specified
-    if device is not None and device.type == 'cuda':
+    if device is not None and device.type == "cuda":
         # Check GPU memory before moving
         if not check_gpu_memory_available(checkpoint):
             logger.warning("Insufficient GPU memory, keeping on CPU")
-            device = torch.device('cpu')
-    
+            device = torch.device("cpu")
+
     logger.info(f"Checkpoint loaded successfully: {filepath.name}")
     return checkpoint
 
@@ -100,40 +100,40 @@ def safe_model_to_device(
 ) -> Tuple[torch.nn.Module, torch.device]:
     """
     Safely move model to device with memory checks.
-    
+
     Fixes:
     - Issue #5: Missing GPU memory checks
     - Issue #10: No graceful degradation
-    
+
     Args:
         model: PyTorch model
         device: Target device (auto-detected if None)
-    
+
     Returns:
         Tuple of (model, actual_device_used)
     """
     if device is None:
         device = get_best_device()
-    
-    if device.type == 'cuda':
+
+    if device.type == "cuda":
         # Estimate model size
         model_size = sum(p.numel() * p.element_size() for p in model.parameters())
-        
+
         # Check available GPU memory
         try:
             free_mem, total_mem = torch.cuda.mem_get_info(device.index)
-            
+
             # Require 80% free memory for model
             if model_size > free_mem * 0.8:
                 logger.warning(
                     f"Insufficient GPU memory: model={model_size/1024**2:.1f}MB, "
                     f"free={free_mem/1024**2:.1f}MB, falling back to CPU"
                 )
-                device = torch.device('cpu')
+                device = torch.device("cpu")
         except RuntimeError as e:
             logger.warning(f"CUDA error, falling back to CPU: {e}")
-            device = torch.device('cpu')
-    
+            device = torch.device("cpu")
+
     model = model.to(device)
     logger.info(f"Model moved to device: {device}")
     return model, device
@@ -142,10 +142,10 @@ def safe_model_to_device(
 def get_best_device() -> torch.device:
     """
     Get best available device with graceful degradation.
-    
+
     Fixes:
     - Issue #10: No graceful degradation
-    
+
     Returns:
         Best available torch.device
     """
@@ -153,29 +153,29 @@ def get_best_device() -> torch.device:
         try:
             # Test CUDA works
             torch.cuda.current_device()
-            device = torch.device('cuda')
+            device = torch.device("cuda")
             logger.info(f"Using CUDA device: {torch.cuda.get_device_name(0)}")
             return device
         except RuntimeError as e:
             logger.warning(f"CUDA available but not functional: {e}")
-    
+
     logger.info("Using CPU device")
-    return torch.device('cpu')
+    return torch.device("cpu")
 
 
 def check_gpu_memory_available(checkpoint: Dict[str, Any], threshold: float = 0.8) -> bool:
     """Check if sufficient GPU memory for checkpoint."""
     if not torch.cuda.is_available():
         return False
-    
+
     try:
         # Estimate checkpoint size
         checkpoint_size = 0
-        if 'model_state_dict' in checkpoint:
-            for tensor in checkpoint['model_state_dict'].values():
+        if "model_state_dict" in checkpoint:
+            for tensor in checkpoint["model_state_dict"].values():
                 if isinstance(tensor, torch.Tensor):
                     checkpoint_size += tensor.numel() * tensor.element_size()
-        
+
         free_mem, _ = torch.cuda.mem_get_info(0)
         return checkpoint_size < free_mem * threshold
     except Exception as e:
@@ -185,8 +185,8 @@ def check_gpu_memory_available(checkpoint: Dict[str, Any], threshold: float = 0.
 def compute_file_checksum(filepath: Path) -> str:
     """Compute SHA256 checksum of file."""
     sha256 = hashlib.sha256()
-    with open(filepath, 'rb') as f:
-        for chunk in iter(lambda: f.read(4096), b''):
+    with open(filepath, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
             sha256.update(chunk)
     return sha256.hexdigest()
 
@@ -199,15 +199,15 @@ def compute_file_checksum(filepath: Path) -> str:
 def check_disk_space(filepath: Path, required_bytes: int, buffer_factor: float = 1.1) -> bool:
     """
     Check if sufficient disk space available.
-    
+
     Fixes:
     - Issue #7: No disk space checks before writes
-    
+
     Args:
         filepath: Target file path
         required_bytes: Required space in bytes
         buffer_factor: Safety buffer (default 10%)
-    
+
     Returns:
         True if sufficient space available
     """
@@ -215,7 +215,7 @@ def check_disk_space(filepath: Path, required_bytes: int, buffer_factor: float =
         stat = shutil.disk_usage(filepath.parent)
         free_bytes = stat.free
         required_with_buffer = required_bytes * buffer_factor
-        
+
         if free_bytes < required_with_buffer:
             logger.error(
                 f"Insufficient disk space: required={required_with_buffer/1024**2:.1f}MB, "
@@ -231,44 +231,44 @@ def check_disk_space(filepath: Path, required_bytes: int, buffer_factor: float =
         raise ResourceError(f"Failed to check disk space: {e}") from e
 
 
-def atomic_write(filepath: Path, data: Any, mode: str = 'json') -> None:
+def atomic_write(filepath: Path, data: Any, mode: str = "json") -> None:
     """
     Atomic file write to prevent corruption.
-    
+
     Fixes:
     - Issue #6: Unsafe file writes without atomic operations
-    
+
     Args:
         filepath: Target file path
         data: Data to write (dict for json, str for text)
         mode: Write mode ('json' or 'text')
-    
+
     Raises:
         IOError: If write fails
     """
     # Estimate size
-    if mode == 'json':
+    if mode == "json":
         content = json.dumps(data, indent=2)
     else:
         content = str(data)
-    
-    estimated_size = len(content.encode('utf-8'))
-    
+
+    estimated_size = len(content.encode("utf-8"))
+
     # Check disk space
     if not check_disk_space(filepath, estimated_size):
         raise IOError(f"Insufficient disk space for {filepath}")
-    
+
     # Create parent directory
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Write to temp file first
-    fd, temp_path = tempfile.mkstemp(dir=filepath.parent, suffix='.tmp')
+    fd, temp_path = tempfile.mkstemp(dir=filepath.parent, suffix=".tmp")
     try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(content)
             f.flush()
             os.fsync(f.fileno())  # Force write to disk
-        
+
         # Atomic rename (POSIX guarantees atomicity)
         os.replace(temp_path, filepath)
         logger.debug(f"Atomic write successful: {filepath}")
@@ -288,25 +288,27 @@ def atomic_write(filepath: Path, data: Any, mode: str = 'json') -> None:
         raise DataSaveError(f"Atomic write failed: {e}") from e
 
 
-def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs: Optional[list[Path]] = None) -> bool:
+def safe_delete(
+    filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs: Optional[list[Path]] = None
+) -> bool:
     """
     Safe file deletion with optional archival and path validation.
-    
+
     Fixes:
     - Issue #2: Unsafe file deletion - data loss risk
     - Path traversal vulnerability
-    
+
     Args:
         filepath: File to delete
         archive_dir: Optional archive directory (moves instead of deleting)
         allowed_dirs: List of allowed parent directories (validates path stays within bounds)
-    
+
     Raises:
         ValueError: If filepath is outside allowed directories
     """
     # Resolve to absolute path to prevent traversal
     filepath = filepath.resolve()
-    
+
     # Validate path is within allowed directories if specified
     if allowed_dirs:
         allowed = False
@@ -318,13 +320,13 @@ def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs
                 break
             except ValueError:
                 continue
-        
+
         if not allowed:
             raise ValueError(f"Path outside allowed directories: {filepath}")
-    
+
     if not filepath.exists():
         return
-    
+
     if archive_dir:
         # Validate archive_dir if allowed_dirs specified
         if allowed_dirs:
@@ -337,15 +339,15 @@ def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs
                     break
                 except ValueError:
                     continue
-            
+
             if not allowed:
                 raise ValueError(f"Archive path outside allowed directories: {archive_dir}")
-        
+
         # Move to archive instead of deleting
         archive_dir.mkdir(parents=True, exist_ok=True)
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         archive_path = archive_dir / f"{filepath.name}.{timestamp}"
-        
+
         shutil.move(str(filepath), str(archive_path))
         logger.info(f"Archived: {filepath} -> {archive_path}")
     else:
@@ -357,69 +359,69 @@ def safe_delete(filepath: Path, archive_dir: Optional[Path] = None, allowed_dirs
 class FileOperationRateLimiter:
     """
     Rate limiter for file operations.
-    
+
     Fixes:
     - Issue #11: No rate limiting on file operations
     """
-    
+
     def __init__(self, max_ops_per_second: int = 100):
         self.max_ops = max_ops_per_second
         self.operations = deque()
-    
+
     def wait_if_needed(self) -> None:
         """Wait if rate limit exceeded."""
         now = time.time()
-        
+
         # Remove operations older than 1 second
         while self.operations and self.operations[0] < now - 1:
             self.operations.popleft()
-        
+
         # Wait if at limit
         if len(self.operations) >= self.max_ops:
             sleep_time = 1 - (now - self.operations[0])
             if sleep_time > 0:
                 time.sleep(sleep_time)
-        
+
         self.operations.append(now)
 
 
 def create_verified_backup(source: Path, backup: Path) -> bool:
     """
     Create and verify backup.
-    
+
     Fixes:
     - Issue #12: Missing backup verification
-    
+
     Args:
         source: Source file
         backup: Backup destination
-    
+
     Returns:
         True if backup verified successfully
-    
+
     Raises:
         IOError: If backup creation or verification fails
     """
     # Create backup
     shutil.copy2(source, backup)  # Preserve metadata
-    
+
     # Verify backup exists
     if not backup.exists():
         raise IOError(f"Backup creation failed: {backup}")
-    
+
     # Verify size matches
     if source.stat().st_size != backup.stat().st_size:
         backup.unlink()
         raise IOError(f"Backup size mismatch: {source} vs {backup}")
-    
+
     # Verify checksum
     source_checksum = compute_file_checksum(source)
     backup_checksum = compute_file_checksum(backup)
-    
+
     if source_checksum != backup_checksum:
         backup.unlink()
         raise IOError(f"Backup checksum mismatch")
-    
+
     logger.info(f"Verified backup: {source} -> {backup}")
     return True
 
@@ -433,10 +435,10 @@ def create_verified_backup(source: Path, backup: Path) -> bool:
 def safe_db_transaction(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
     """
     Context manager for safe database transactions.
-    
+
     Fixes:
     - Issue #4: Database operations without transactions
-    
+
     Usage:
         with safe_db_transaction(db_path) as conn:
             cursor = conn.cursor()
@@ -465,28 +467,24 @@ def safe_db_transaction(db_path: Path) -> Generator[sqlite3.Connection, None, No
 # ============================================================================
 
 
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    reraise=True
-)
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), reraise=True)
 def fetch_with_retry(url: str, timeout: int = 30, **kwargs) -> requests.Response:
     """
     Fetch URL with exponential backoff retry.
-    
+
     Fixes:
     - Issue #8: Missing retry logic for network operations
-    
+
     Args:
         url: URL to fetch
         timeout: Request timeout in seconds
         **kwargs: Additional arguments for requests
-    
+
     Returns:
         Response object
     """
     import requests
-    
+
     response = requests.get(url, timeout=timeout, **kwargs)
     response.raise_for_status()
     return response
@@ -494,6 +492,7 @@ def fetch_with_retry(url: str, timeout: int = 30, **kwargs) -> requests.Response
 
 class CircuitState(Enum):
     """Circuit breaker states."""
+
     CLOSED = "closed"  # Normal operation
     OPEN = "open"  # Failing, reject requests
     HALF_OPEN = "half_open"  # Testing if recovered
@@ -502,18 +501,18 @@ class CircuitState(Enum):
 class CircuitBreaker:
     """
     Circuit breaker for external services.
-    
+
     Fixes:
     - Issue #13: No circuit breaker for external services
     """
-    
+
     def __init__(self, failure_threshold: int = 5, timeout: int = 60):
         self.failure_threshold = failure_threshold
         self.timeout = timeout
         self.failures = 0
         self.last_failure_time = None
         self.state = CircuitState.CLOSED
-    
+
     def call(self, func: Callable, *args, **kwargs):
         """Call function with circuit breaker protection."""
         if self.state == CircuitState.OPEN:
@@ -522,7 +521,7 @@ class CircuitBreaker:
                 logger.info("Circuit breaker: HALF_OPEN (testing recovery)")
             else:
                 raise Exception(f"Circuit breaker OPEN (fails={self.failures})")
-        
+
         try:
             result = func(*args, **kwargs)
             self.on_success()
@@ -530,19 +529,19 @@ class CircuitBreaker:
         except Exception as e:
             self.on_failure()
             raise
-    
+
     def on_success(self) -> None:
         """Handle successful call."""
         self.failures = 0
         if self.state == CircuitState.HALF_OPEN:
             self.state = CircuitState.CLOSED
             logger.info("Circuit breaker: CLOSED (recovered)")
-    
+
     def on_failure(self) -> None:
         """Handle failed call."""
         self.failures += 1
         self.last_failure_time = time.time()
-        
+
         if self.failures >= self.failure_threshold:
             self.state = CircuitState.OPEN
             logger.error(f"Circuit breaker: OPEN (threshold={self.failure_threshold})")
@@ -556,81 +555,81 @@ class CircuitBreaker:
 def check_system_health() -> Dict[str, bool]:
     """
     Check all system dependencies.
-    
+
     Fixes:
     - Issue #14: Missing health checks for dependencies
-    
+
     Returns:
         Dictionary of health check results
     """
     health = {}
-    
+
     # Check GPU
-    health['gpu_available'] = torch.cuda.is_available()
-    if health['gpu_available']:
+    health["gpu_available"] = torch.cuda.is_available()
+    if health["gpu_available"]:
         try:
             torch.cuda.current_device()
-            health['gpu_functional'] = True
+            health["gpu_functional"] = True
         except Exception as e:
-            health['gpu_functional'] = False
+            health["gpu_functional"] = False
     else:
-        health['gpu_functional'] = False
-    
+        health["gpu_functional"] = False
+
     # Check disk space (require 10GB minimum)
     try:
-        stat = shutil.disk_usage('/')
-        health['disk_space'] = stat.free > 10 * 1024**3
+        stat = shutil.disk_usage("/")
+        health["disk_space"] = stat.free > 10 * 1024**3
     except Exception as e:
-        health['disk_space'] = False
-    
+        health["disk_space"] = False
+
     # Check memory (require 4GB free)
     try:
         mem = psutil.virtual_memory()
-        health['memory'] = mem.available > 4 * 1024**3
+        health["memory"] = mem.available > 4 * 1024**3
     except Exception as e:
-        health['memory'] = False
-    
+        health["memory"] = False
+
     return health
 
 
 class MemoryMonitor:
     """
     Monitor for memory leaks.
-    
+
     Fixes:
     - Issue #15: No monitoring for memory leaks
     """
-    
+
     def __init__(self, threshold_mb: int = 8000):
         self.threshold_mb = threshold_mb
         self.baseline_mb = None
         self.process = psutil.Process()
-    
+
     def check_memory(self) -> None:
         """Check for memory leaks."""
         import gc
-        
+
         current_mb = self.process.memory_info().rss / 1024**2
-        
+
         if self.baseline_mb is None:
             self.baseline_mb = current_mb
             logger.info(f"Memory baseline: {current_mb:.1f}MB")
             return
-        
+
         growth_mb = current_mb - self.baseline_mb
-        
+
         if growth_mb > self.threshold_mb:
             logger.warning(f"Memory leak detected: {growth_mb:.1f}MB growth")
-            
+
             # Force garbage collection
             gc.collect()
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-            
+
             # Re-check after GC
             current_mb = self.process.memory_info().rss / 1024**2
             growth_mb = current_mb - self.baseline_mb
-            
+
             if growth_mb > self.threshold_mb:
                 raise MemoryError(
                     f"Memory leak: {growth_mb:.1f}MB growth (threshold={self.threshold_mb}MB)"
@@ -642,23 +641,23 @@ class MemoryMonitor:
 # Export all safe operations
 __all__ = [
     # Model loading
-    'safe_torch_load',
-    'safe_model_to_device',
-    'get_best_device',
-    'compute_file_checksum',
+    "safe_torch_load",
+    "safe_model_to_device",
+    "get_best_device",
+    "compute_file_checksum",
     # File operations
-    'atomic_write',
-    'safe_delete',
-    'check_disk_space',
-    'FileOperationRateLimiter',
-    'create_verified_backup',
+    "atomic_write",
+    "safe_delete",
+    "check_disk_space",
+    "FileOperationRateLimiter",
+    "create_verified_backup",
     # Database operations
-    'safe_db_transaction',
+    "safe_db_transaction",
     # Network operations
-    'fetch_with_retry',
-    'CircuitBreaker',
-    'CircuitState',
+    "fetch_with_retry",
+    "CircuitBreaker",
+    "CircuitState",
     # System health
-    'check_system_health',
-    'MemoryMonitor',
+    "check_system_health",
+    "MemoryMonitor",
 ]

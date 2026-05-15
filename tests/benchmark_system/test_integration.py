@@ -29,7 +29,6 @@ from experiments.benchmark_system.models import (
 )
 from experiments.benchmark_system.orchestrator import BenchmarkOrchestrator
 
-
 # ============================================================================
 # Fixtures
 # ============================================================================
@@ -136,7 +135,7 @@ def test_single_framework_benchmark_with_synthetic_data(
 ):
     """
     Test complete benchmark for one framework with synthetic data.
-    
+
     This test verifies:
     - Framework installation and validation
     - Task configuration
@@ -144,19 +143,17 @@ def test_single_framework_benchmark_with_synthetic_data(
     - Metrics collection
     - Result validation
     - File outputs (checkpoints, metrics, logs)
-    
+
     **Validates: Requirements 5.4, 8.1**
     """
     # Create output directories
     integration_config.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create orchestrator with mocked components
     orchestrator = BenchmarkOrchestrator(config=integration_config)
-    
+
     # Mock GPU availability
-    with patch.object(
-        orchestrator.resource_manager, 'verify_gpu_availability'
-    ) as mock_gpu_check:
+    with patch.object(orchestrator.resource_manager, "verify_gpu_availability") as mock_gpu_check:
         mock_gpu_check.return_value = Mock(
             available=True,
             name="Mock GPU",
@@ -164,89 +161,83 @@ def test_single_framework_benchmark_with_synthetic_data(
             cuda_available=True,
             error_message=None,
         )
-        
+
         # Mock framework installation
-        with patch.object(
-            orchestrator.framework_manager, 'install_framework'
-        ) as mock_install:
+        with patch.object(orchestrator.framework_manager, "install_framework") as mock_install:
             mock_install.return_value = mock_framework_env
-            
+
             # Mock framework validation
             with patch.object(
-                orchestrator.framework_manager, 'validate_installation'
+                orchestrator.framework_manager, "validate_installation"
             ) as mock_validate:
                 mock_validate.return_value = mock_framework_env
-                
+
                 # Mock GPU allocation
-                with patch.object(
-                    orchestrator.resource_manager, 'allocate_gpu'
-                ) as mock_allocate:
+                with patch.object(orchestrator.resource_manager, "allocate_gpu") as mock_allocate:
                     mock_allocate.return_value = Mock()
-                    
+
                     # Mock GPU memory cleanup
                     with patch.object(
-                        orchestrator.resource_manager, 'clear_gpu_memory'
+                        orchestrator.resource_manager, "clear_gpu_memory"
                     ) as mock_clear:
-                        
+
                         # Mock task configuration
                         with patch.object(
-                            orchestrator.task_executor, 'configure_task'
+                            orchestrator.task_executor, "configure_task"
                         ) as mock_configure:
                             mock_configure.return_value = Mock(config_dict={})
-                            
+
                             # Mock metrics collection
-                            with patch.object(
-                                orchestrator.metrics_collector, 'start_collection'
-                            ):
+                            with patch.object(orchestrator.metrics_collector, "start_collection"):
                                 with patch.object(
-                                    orchestrator.metrics_collector, 'finalize_collection'
+                                    orchestrator.metrics_collector, "finalize_collection"
                                 ) as mock_finalize:
                                     mock_finalize.return_value = {}
-                                    
+
                                     # Mock training execution
                                     with patch.object(
-                                        orchestrator.task_executor, 'execute_training'
+                                        orchestrator.task_executor, "execute_training"
                                     ) as mock_execute:
                                         mock_execute.return_value = mock_training_result
-                                        
+
                                         # Mock report generation
                                         with patch.object(
                                             orchestrator.report_generator,
-                                            'generate_visualizations',
+                                            "generate_visualizations",
                                         ):
                                             with patch.object(
                                                 orchestrator.report_generator,
-                                                'update_performance_comparison_md',
+                                                "update_performance_comparison_md",
                                             ):
                                                 with patch.object(
                                                     orchestrator.report_generator,
-                                                    'export_to_csv',
+                                                    "export_to_csv",
                                                 ):
                                                     with patch.object(
                                                         orchestrator.report_generator,
-                                                        'export_to_json',
+                                                        "export_to_json",
                                                     ):
                                                         # Run benchmark suite
                                                         result = orchestrator.run_benchmark_suite()
-    
+
     # Verify benchmark completed successfully
     assert result is not None
     assert len(result.successful_frameworks) == 1
     assert "HistoCore" in result.successful_frameworks
     assert len(result.failed_frameworks) == 0
-    
+
     # Verify framework results
     assert "HistoCore" in result.framework_results
     framework_result = result.framework_results["HistoCore"]
     assert framework_result.status == "success"
     assert framework_result.test_accuracy == 0.82
     assert framework_result.test_auc == 0.88
-    
+
     # Verify timing
     assert result.total_duration_hours > 0
     assert result.start_time is not None
     assert result.end_time is not None
-    
+
     # Verify GPU was allocated and cleaned up
     mock_allocate.assert_called_once()
     mock_clear.assert_called_once()
@@ -262,25 +253,25 @@ def test_checkpoint_recovery_with_simulated_crash(
 ):
     """
     Test checkpoint recovery after simulated crash.
-    
+
     This test verifies:
     - Checkpoint creation during execution
     - Checkpoint loading after crash
     - State restoration
     - Resumption from last checkpoint
-    
+
     **Validates: Requirement 5.4**
     """
     # Create checkpoint directory
     checkpoint_dir = tmp_path / "checkpoints"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create checkpoint manager
     checkpoint_manager = CheckpointManager(
         checkpoint_dir=checkpoint_dir,
         checkpoint_interval_minutes=1,
     )
-    
+
     # Create benchmark state
     benchmark_state = {
         "config": {
@@ -313,34 +304,34 @@ def test_checkpoint_recovery_with_simulated_crash(
             }
         },
     }
-    
+
     # Save checkpoint
     checkpoint_path = checkpoint_manager.save_checkpoint(benchmark_state)
     assert checkpoint_path is not None
     assert checkpoint_path.exists()
-    
+
     # Verify checkpoint file contains expected data
-    with open(checkpoint_path, 'r') as f:
+    with open(checkpoint_path, "r") as f:
         checkpoint_data = json.load(f)
-    
+
     # Checkpoint manager wraps state in "benchmark_state" key
     assert "benchmark_state" in checkpoint_data
     loaded_state = checkpoint_data["benchmark_state"]
-    
+
     assert loaded_state["config"]["mode"] == "quick"
     assert loaded_state["completed_frameworks"] == ["HistoCore"]
     assert loaded_state["failed_frameworks"] == []
-    
+
     # Simulate crash and recovery
     # Load checkpoint (this unwraps the benchmark_state)
     recovered_state = checkpoint_manager.load_checkpoint(checkpoint_path)
-    
+
     # Verify state restored correctly
     assert recovered_state["config"]["mode"] == "quick"
     assert recovered_state["completed_frameworks"] == ["HistoCore"]
     assert recovered_state["failed_frameworks"] == []
     assert "HistoCore" in recovered_state["framework_environments"]
-    
+
     # Verify we can resume from this state
     # (In production, orchestrator would skip completed frameworks)
     assert "PathML" not in recovered_state["completed_frameworks"]
@@ -356,13 +347,13 @@ def test_multi_framework_execution(
 ):
     """
     Test benchmark execution for multiple frameworks sequentially.
-    
+
     This test verifies:
     - Sequential framework execution
     - GPU memory cleanup between frameworks
     - Independent framework results
     - Aggregated benchmark results
-    
+
     **Validates: Requirements 8.1, 5.4**
     """
     # Create config with 2 frameworks
@@ -377,16 +368,14 @@ def test_multi_framework_execution(
         checkpoint_interval_minutes=1,
         random_seed=42,
     )
-    
+
     config.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create orchestrator
     orchestrator = BenchmarkOrchestrator(config=config)
-    
+
     # Mock GPU availability
-    with patch.object(
-        orchestrator.resource_manager, 'verify_gpu_availability'
-    ) as mock_gpu_check:
+    with patch.object(orchestrator.resource_manager, "verify_gpu_availability") as mock_gpu_check:
         mock_gpu_check.return_value = Mock(
             available=True,
             name="Mock GPU",
@@ -394,7 +383,7 @@ def test_multi_framework_execution(
             cuda_available=True,
             error_message=None,
         )
-        
+
         # Mock framework installation for both frameworks
         def mock_install_side_effect(framework_name):
             env = FrameworkEnvironment(
@@ -409,43 +398,37 @@ def test_multi_framework_execution(
                 validation_errors=[],
             )
             return env
-        
-        with patch.object(
-            orchestrator.framework_manager, 'install_framework'
-        ) as mock_install:
+
+        with patch.object(orchestrator.framework_manager, "install_framework") as mock_install:
             mock_install.side_effect = mock_install_side_effect
-            
+
             # Mock framework validation
             with patch.object(
-                orchestrator.framework_manager, 'validate_installation'
+                orchestrator.framework_manager, "validate_installation"
             ) as mock_validate:
                 mock_validate.side_effect = lambda env: env
-                
+
                 # Mock GPU operations
-                with patch.object(
-                    orchestrator.resource_manager, 'allocate_gpu'
-                ) as mock_allocate:
+                with patch.object(orchestrator.resource_manager, "allocate_gpu") as mock_allocate:
                     mock_allocate.return_value = Mock()
-                    
+
                     with patch.object(
-                        orchestrator.resource_manager, 'clear_gpu_memory'
+                        orchestrator.resource_manager, "clear_gpu_memory"
                     ) as mock_clear:
-                        
+
                         # Mock task configuration
                         with patch.object(
-                            orchestrator.task_executor, 'configure_task'
+                            orchestrator.task_executor, "configure_task"
                         ) as mock_configure:
                             mock_configure.return_value = Mock(config_dict={})
-                            
+
                             # Mock metrics collection
-                            with patch.object(
-                                orchestrator.metrics_collector, 'start_collection'
-                            ):
+                            with patch.object(orchestrator.metrics_collector, "start_collection"):
                                 with patch.object(
-                                    orchestrator.metrics_collector, 'finalize_collection'
+                                    orchestrator.metrics_collector, "finalize_collection"
                                 ) as mock_finalize:
                                     mock_finalize.return_value = {}
-                                    
+
                                     # Mock training execution with different results per framework
                                     def mock_execute_side_effect(config, env):
                                         return TrainingResult(
@@ -455,9 +438,15 @@ def test_multi_framework_execution(
                                             epochs_completed=2,
                                             final_train_loss=0.4,
                                             final_val_loss=0.45,
-                                            test_accuracy=0.82 if env.framework_name == "HistoCore" else 0.78,
-                                            test_auc=0.88 if env.framework_name == "HistoCore" else 0.85,
-                                            test_f1=0.80 if env.framework_name == "HistoCore" else 0.76,
+                                            test_accuracy=(
+                                                0.82 if env.framework_name == "HistoCore" else 0.78
+                                            ),
+                                            test_auc=(
+                                                0.88 if env.framework_name == "HistoCore" else 0.85
+                                            ),
+                                            test_f1=(
+                                                0.80 if env.framework_name == "HistoCore" else 0.76
+                                            ),
                                             test_precision=0.79,
                                             test_recall=0.81,
                                             accuracy_ci=(0.80, 0.84),
@@ -469,52 +458,58 @@ def test_multi_framework_execution(
                                             samples_per_second=50.0,
                                             inference_time_ms=20.0,
                                             model_parameters=500000,
-                                            checkpoint_path=tmp_path / "checkpoints" / f"{env.framework_name}.pt",
-                                            metrics_path=tmp_path / "metrics" / f"{env.framework_name}.json",
-                                            log_path=tmp_path / "logs" / f"{env.framework_name}.log",
+                                            checkpoint_path=tmp_path
+                                            / "checkpoints"
+                                            / f"{env.framework_name}.pt",
+                                            metrics_path=tmp_path
+                                            / "metrics"
+                                            / f"{env.framework_name}.json",
+                                            log_path=tmp_path
+                                            / "logs"
+                                            / f"{env.framework_name}.log",
                                             status="success",
                                             error_message=None,
                                         )
-                                    
+
                                     with patch.object(
-                                        orchestrator.task_executor, 'execute_training'
+                                        orchestrator.task_executor, "execute_training"
                                     ) as mock_execute:
                                         mock_execute.side_effect = mock_execute_side_effect
-                                        
+
                                         # Mock report generation
                                         with patch.object(
                                             orchestrator.report_generator,
-                                            'generate_visualizations',
+                                            "generate_visualizations",
                                         ):
                                             with patch.object(
                                                 orchestrator.report_generator,
-                                                'update_performance_comparison_md',
+                                                "update_performance_comparison_md",
                                             ):
                                                 with patch.object(
                                                     orchestrator.report_generator,
-                                                    'export_to_csv',
+                                                    "export_to_csv",
                                                 ):
                                                     with patch.object(
                                                         orchestrator.report_generator,
-                                                        'export_to_json',
+                                                        "export_to_json",
                                                     ):
                                                         # Run benchmark suite
                                                         result = orchestrator.run_benchmark_suite()
-    
+
     # Verify both frameworks completed
     assert len(result.successful_frameworks) == 2
     assert "HistoCore" in result.successful_frameworks
     assert "PathML" in result.successful_frameworks
     assert len(result.failed_frameworks) == 0
-    
+
     # Verify framework results are independent
     histocore_result = result.framework_results["HistoCore"]
     pathml_result = result.framework_results["PathML"]
-    
+
     assert histocore_result.test_accuracy == 0.82
     assert pathml_result.test_accuracy == 0.78
     assert histocore_result.test_accuracy != pathml_result.test_accuracy
-    
+
     # Verify GPU was allocated and cleaned up for each framework
     assert mock_allocate.call_count == 2
     assert mock_clear.call_count == 2
@@ -530,13 +525,13 @@ def test_error_recovery_with_injected_failures(
 ):
     """
     Test error recovery when one framework fails.
-    
+
     This test verifies:
     - Framework failure is caught and logged
     - Benchmark continues with remaining frameworks
     - Failed framework is marked appropriately
     - Successful frameworks complete normally
-    
+
     **Validates: Requirement 8.1**
     """
     # Create config with 3 frameworks
@@ -551,16 +546,14 @@ def test_error_recovery_with_injected_failures(
         checkpoint_interval_minutes=1,
         random_seed=42,
     )
-    
+
     config.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create orchestrator
     orchestrator = BenchmarkOrchestrator(config=config)
-    
+
     # Mock GPU availability
-    with patch.object(
-        orchestrator.resource_manager, 'verify_gpu_availability'
-    ) as mock_gpu_check:
+    with patch.object(orchestrator.resource_manager, "verify_gpu_availability") as mock_gpu_check:
         mock_gpu_check.return_value = Mock(
             available=True,
             name="Mock GPU",
@@ -568,12 +561,12 @@ def test_error_recovery_with_injected_failures(
             cuda_available=True,
             error_message=None,
         )
-        
+
         # Mock framework installation - PathML fails
         def mock_install_side_effect(framework_name):
             if framework_name == "PathML":
                 raise RuntimeError("PathML installation failed (simulated)")
-            
+
             env = FrameworkEnvironment(
                 framework_name=framework_name,
                 venv_path=tmp_path / "venv" / framework_name.lower(),
@@ -586,43 +579,37 @@ def test_error_recovery_with_injected_failures(
                 validation_errors=[],
             )
             return env
-        
-        with patch.object(
-            orchestrator.framework_manager, 'install_framework'
-        ) as mock_install:
+
+        with patch.object(orchestrator.framework_manager, "install_framework") as mock_install:
             mock_install.side_effect = mock_install_side_effect
-            
+
             # Mock framework validation
             with patch.object(
-                orchestrator.framework_manager, 'validate_installation'
+                orchestrator.framework_manager, "validate_installation"
             ) as mock_validate:
                 mock_validate.side_effect = lambda env: env
-                
+
                 # Mock GPU operations
-                with patch.object(
-                    orchestrator.resource_manager, 'allocate_gpu'
-                ) as mock_allocate:
+                with patch.object(orchestrator.resource_manager, "allocate_gpu") as mock_allocate:
                     mock_allocate.return_value = Mock()
-                    
+
                     with patch.object(
-                        orchestrator.resource_manager, 'clear_gpu_memory'
+                        orchestrator.resource_manager, "clear_gpu_memory"
                     ) as mock_clear:
-                        
+
                         # Mock task configuration
                         with patch.object(
-                            orchestrator.task_executor, 'configure_task'
+                            orchestrator.task_executor, "configure_task"
                         ) as mock_configure:
                             mock_configure.return_value = Mock(config_dict={})
-                            
+
                             # Mock metrics collection
-                            with patch.object(
-                                orchestrator.metrics_collector, 'start_collection'
-                            ):
+                            with patch.object(orchestrator.metrics_collector, "start_collection"):
                                 with patch.object(
-                                    orchestrator.metrics_collector, 'finalize_collection'
+                                    orchestrator.metrics_collector, "finalize_collection"
                                 ) as mock_finalize:
                                     mock_finalize.return_value = {}
-                                    
+
                                     # Mock training execution
                                     def mock_execute_side_effect(config, env):
                                         return TrainingResult(
@@ -646,50 +633,56 @@ def test_error_recovery_with_injected_failures(
                                             samples_per_second=50.0,
                                             inference_time_ms=20.0,
                                             model_parameters=500000,
-                                            checkpoint_path=tmp_path / "checkpoints" / f"{env.framework_name}.pt",
-                                            metrics_path=tmp_path / "metrics" / f"{env.framework_name}.json",
-                                            log_path=tmp_path / "logs" / f"{env.framework_name}.log",
+                                            checkpoint_path=tmp_path
+                                            / "checkpoints"
+                                            / f"{env.framework_name}.pt",
+                                            metrics_path=tmp_path
+                                            / "metrics"
+                                            / f"{env.framework_name}.json",
+                                            log_path=tmp_path
+                                            / "logs"
+                                            / f"{env.framework_name}.log",
                                             status="success",
                                             error_message=None,
                                         )
-                                    
+
                                     with patch.object(
-                                        orchestrator.task_executor, 'execute_training'
+                                        orchestrator.task_executor, "execute_training"
                                     ) as mock_execute:
                                         mock_execute.side_effect = mock_execute_side_effect
-                                        
+
                                         # Mock report generation
                                         with patch.object(
                                             orchestrator.report_generator,
-                                            'generate_visualizations',
+                                            "generate_visualizations",
                                         ):
                                             with patch.object(
                                                 orchestrator.report_generator,
-                                                'update_performance_comparison_md',
+                                                "update_performance_comparison_md",
                                             ):
                                                 with patch.object(
                                                     orchestrator.report_generator,
-                                                    'export_to_csv',
+                                                    "export_to_csv",
                                                 ):
                                                     with patch.object(
                                                         orchestrator.report_generator,
-                                                        'export_to_json',
+                                                        "export_to_json",
                                                     ):
                                                         # Run benchmark suite
                                                         result = orchestrator.run_benchmark_suite()
-    
+
     # Verify PathML failed but others succeeded
     assert len(result.successful_frameworks) == 2
     assert "HistoCore" in result.successful_frameworks
     assert "CLAM" in result.successful_frameworks
     assert len(result.failed_frameworks) == 1
     assert "PathML" in result.failed_frameworks
-    
+
     # Verify successful frameworks have results
     assert "HistoCore" in result.framework_results
     assert "CLAM" in result.framework_results
     assert "PathML" not in result.framework_results
-    
+
     # Verify error is recorded
     assert "PathML" in result.errors
 
@@ -704,26 +697,24 @@ def test_report_generation_pipeline(
 ):
     """
     Test complete report generation pipeline.
-    
+
     This test verifies:
     - Comparison table generation
     - Statistical significance tests
     - Visualization generation
     - CSV/JSON export
     - PERFORMANCE_COMPARISON.md update
-    
+
     **Validates: Requirements 7.1-7.10**
     """
     # Create output directories
     integration_config.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create orchestrator
     orchestrator = BenchmarkOrchestrator(config=integration_config)
-    
+
     # Mock GPU availability
-    with patch.object(
-        orchestrator.resource_manager, 'verify_gpu_availability'
-    ) as mock_gpu_check:
+    with patch.object(orchestrator.resource_manager, "verify_gpu_availability") as mock_gpu_check:
         mock_gpu_check.return_value = Mock(
             available=True,
             name="Mock GPU",
@@ -731,80 +722,72 @@ def test_report_generation_pipeline(
             cuda_available=True,
             error_message=None,
         )
-        
+
         # Mock framework installation
-        with patch.object(
-            orchestrator.framework_manager, 'install_framework'
-        ) as mock_install:
+        with patch.object(orchestrator.framework_manager, "install_framework") as mock_install:
             mock_install.return_value = mock_framework_env
-            
+
             # Mock framework validation
             with patch.object(
-                orchestrator.framework_manager, 'validate_installation'
+                orchestrator.framework_manager, "validate_installation"
             ) as mock_validate:
                 mock_validate.return_value = mock_framework_env
-                
+
                 # Mock GPU operations
-                with patch.object(
-                    orchestrator.resource_manager, 'allocate_gpu'
-                ) as mock_allocate:
+                with patch.object(orchestrator.resource_manager, "allocate_gpu") as mock_allocate:
                     mock_allocate.return_value = Mock()
-                    
-                    with patch.object(
-                        orchestrator.resource_manager, 'clear_gpu_memory'
-                    ):
-                        
+
+                    with patch.object(orchestrator.resource_manager, "clear_gpu_memory"):
+
                         # Mock task configuration
                         with patch.object(
-                            orchestrator.task_executor, 'configure_task'
+                            orchestrator.task_executor, "configure_task"
                         ) as mock_configure:
                             mock_configure.return_value = Mock(config_dict={})
-                            
+
                             # Mock metrics collection
-                            with patch.object(
-                                orchestrator.metrics_collector, 'start_collection'
-                            ):
+                            with patch.object(orchestrator.metrics_collector, "start_collection"):
                                 with patch.object(
-                                    orchestrator.metrics_collector, 'finalize_collection'
+                                    orchestrator.metrics_collector, "finalize_collection"
                                 ) as mock_finalize:
                                     mock_finalize.return_value = {}
-                                    
+
                                     # Mock training execution
                                     with patch.object(
-                                        orchestrator.task_executor, 'execute_training'
+                                        orchestrator.task_executor, "execute_training"
                                     ) as mock_execute:
                                         mock_execute.return_value = mock_training_result
-                                        
+
                                         # Mock report generation - verify all methods called
                                         with patch.object(
                                             orchestrator.report_generator,
-                                            'generate_visualizations',
+                                            "generate_visualizations",
                                         ) as mock_viz:
                                             with patch.object(
                                                 orchestrator.report_generator,
-                                                'update_performance_comparison_md',
+                                                "update_performance_comparison_md",
                                             ) as mock_update:
                                                 with patch.object(
                                                     orchestrator.report_generator,
-                                                    'export_to_csv',
+                                                    "export_to_csv",
                                                 ) as mock_csv:
                                                     with patch.object(
                                                         orchestrator.report_generator,
-                                                        'export_to_json',
+                                                        "export_to_json",
                                                     ) as mock_json:
                                                         # Run benchmark suite
                                                         result = orchestrator.run_benchmark_suite()
-                                                        
+
                                                         # Verify all report generation methods called
                                                         mock_viz.assert_called_once()
                                                         mock_update.assert_called_once()
                                                         mock_csv.assert_called_once()
                                                         mock_json.assert_called_once()
-    
+
     # Verify result contains report paths
     assert result.report_path is not None
     assert result.visualization_dir is not None
-    
+
     # Verify report paths are correct
     assert result.report_path == integration_config.output_dir / "benchmark_report.md"
     assert result.visualization_dir == integration_config.output_dir / "visualizations"

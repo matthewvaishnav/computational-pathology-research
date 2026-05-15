@@ -695,7 +695,9 @@ class AllscriptsEMRPlugin(EMRPlugin):
                 try:
                     dob = datetime.strptime(dob_str, "%m/%d/%Y")
                 except (ValueError, TypeError) as e:
-                    self.logger.warning(f"Invalid DOB format in delimited data: error_code=INVALID_DOB")
+                    self.logger.warning(
+                        f"Invalid DOB format in delimited data: error_code=INVALID_DOB"
+                    )
                     pass
 
             gender = fields[7] if len(fields) > 7 else "U"

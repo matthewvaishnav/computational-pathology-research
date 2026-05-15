@@ -371,7 +371,7 @@ class PrivacyAccountant:
                 "Opacus is required for privacy accounting but is not installed. "
                 "Install with: pip install opacus"
             )
-        
+
         self.accountant = RDPAccountant()
         self.steps = 0
 

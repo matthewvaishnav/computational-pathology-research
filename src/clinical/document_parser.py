@@ -398,7 +398,7 @@ class ClinicalDocumentParser:
                 f"Document too large: {file_size} bytes (max {MAX_DOCUMENT_SIZE} bytes). "
                 "Large documents should be processed in chunks."
             )
-        
+
         with open(file_path, "r", encoding="utf-8") as f:
             # Read with size limit as additional safety
             return f.read(MAX_DOCUMENT_SIZE)

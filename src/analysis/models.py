@@ -15,6 +15,7 @@ from jsonschema import validate, ValidationError
 
 class SecretFinding(TypedDict):
     """Structured hardcoded secret finding."""
+
     type: str
     severity: str
     file: str
@@ -24,6 +25,7 @@ class SecretFinding(TypedDict):
 
 class Severity(str, Enum):
     """Issue severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -32,6 +34,7 @@ class Severity(str, Enum):
 
 class Priority(str, Enum):
     """Task priority levels."""
+
     P0 = "P0"  # Critical
     P1 = "P1"  # High
     P2 = "P2"  # Medium
@@ -40,6 +43,7 @@ class Priority(str, Enum):
 
 class Role(str, Enum):
     """Engineering roles for task assignment."""
+
     BACKEND = "backend"
     ML = "ml"
     DEVOPS = "devops"
@@ -50,6 +54,7 @@ class Role(str, Enum):
 @dataclass
 class Issue:
     """Individual finding from analysis."""
+
     id: str
     dimension: str  # architecture, performance, coverage, etc.
     severity: Severity
@@ -67,24 +72,25 @@ class Issue:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         d = asdict(self)
-        d['severity'] = self.severity.value
-        d['priority'] = self.priority.value
-        d['role'] = self.role.value
+        d["severity"] = self.severity.value
+        d["priority"] = self.priority.value
+        d["role"] = self.role.value
         return d
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Issue':
+    def from_dict(cls, data: Dict[str, Any]) -> "Issue":
         """Create from dictionary."""
         data = data.copy()
-        data['severity'] = Severity(data['severity'])
-        data['priority'] = Priority(data['priority'])
-        data['role'] = Role(data['role'])
+        data["severity"] = Severity(data["severity"])
+        data["priority"] = Priority(data["priority"])
+        data["role"] = Role(data["role"])
         return cls(**data)
 
 
 @dataclass
 class ArchitectureAnalysis:
     """Architecture quality analysis results."""
+
     total_files: int = 0
     large_files: List[Dict[str, Any]] = field(default_factory=list)
     circular_dependencies: List[List[str]] = field(default_factory=list)
@@ -96,6 +102,7 @@ class ArchitectureAnalysis:
 @dataclass
 class PerformanceAnalysis:
     """Performance profiling results."""
+
     gpu_utilization: float = 0.0
     bottlenecks: List[Dict[str, Any]] = field(default_factory=list)
     flame_graph_path: str = ""
@@ -107,6 +114,7 @@ class PerformanceAnalysis:
 @dataclass
 class CoverageAnalysis:
     """Test coverage analysis results."""
+
     line_coverage: float = 0.0
     branch_coverage: float = 0.0
     untested_critical_paths: List[str] = field(default_factory=list)
@@ -119,6 +127,7 @@ class CoverageAnalysis:
 @dataclass
 class CodeQualityAnalysis:
     """Code quality metrics."""
+
     average_complexity: float = 0.0
     high_complexity_functions: List[Dict[str, Any]] = field(default_factory=list)
     duplication_percentage: float = 0.0
@@ -131,6 +140,7 @@ class CodeQualityAnalysis:
 @dataclass
 class DependencyAnalysis:
     """Dependency security and health."""
+
     total_dependencies: int = 0
     vulnerabilities: List[Dict[str, Any]] = field(default_factory=list)
     outdated_packages: List[str] = field(default_factory=list)
@@ -144,6 +154,7 @@ class DependencyAnalysis:
 @dataclass
 class DeploymentAnalysis:
     """Deployment readiness assessment."""
+
     dockerfile_score: float = 0.0
     k8s_readiness: float = 0.0
     ci_cd_completeness: float = 0.0
@@ -154,6 +165,7 @@ class DeploymentAnalysis:
 @dataclass
 class SecurityAnalysis:
     """Security vulnerability assessment."""
+
     vulnerabilities: List[Dict[str, Any]] = field(default_factory=list)
     hipaa_compliance_score: float = 0.0
     hardcoded_secrets: List[SecretFinding] = field(default_factory=list)
@@ -165,6 +177,7 @@ class SecurityAnalysis:
 @dataclass
 class ScalabilityAnalysis:
     """Scalability assessment."""
+
     ddp_correctness: bool = False
     scaling_efficiency: str = "unknown"  # linear, sub-linear, super-linear
     memory_bottlenecks: List[str] = field(default_factory=list)
@@ -176,6 +189,7 @@ class ScalabilityAnalysis:
 @dataclass
 class AnalysisResult:
     """Unified analysis result from all dimensions."""
+
     timestamp: str
     project_path: str
     git_commit: str
@@ -196,9 +210,20 @@ class AnalysisResult:
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "required": ["timestamp", "project_path", "git_commit", "architecture", "performance",
-                        "coverage", "code_quality", "dependencies", "deployment", "security",
-                        "scalability", "overall_score"],
+            "required": [
+                "timestamp",
+                "project_path",
+                "git_commit",
+                "architecture",
+                "performance",
+                "coverage",
+                "code_quality",
+                "dependencies",
+                "deployment",
+                "security",
+                "scalability",
+                "overall_score",
+            ],
             "properties": {
                 "timestamp": {"type": "string"},
                 "project_path": {"type": "string"},
@@ -212,17 +237,28 @@ class AnalysisResult:
                 "security": {"type": "object"},
                 "scalability": {"type": "object"},
                 "overall_score": {"type": "number", "minimum": 0, "maximum": 100},
-                "critical_issues": {"type": "array"}
-            }
+                "critical_issues": {"type": "array"},
+            },
         }
 
     def to_json(self, validate_schema: bool = True) -> str:
         """Serialize to JSON format with optional schema validation."""
+
         def convert_value(obj):
             """Convert dataclass objects to serializable format."""
-            if isinstance(obj, (ArchitectureAnalysis, PerformanceAnalysis, CoverageAnalysis,
-                               CodeQualityAnalysis, DependencyAnalysis, DeploymentAnalysis,
-                               SecurityAnalysis, ScalabilityAnalysis)):
+            if isinstance(
+                obj,
+                (
+                    ArchitectureAnalysis,
+                    PerformanceAnalysis,
+                    CoverageAnalysis,
+                    CodeQualityAnalysis,
+                    DependencyAnalysis,
+                    DeploymentAnalysis,
+                    SecurityAnalysis,
+                    ScalabilityAnalysis,
+                ),
+            ):
                 return asdict(obj)
             elif isinstance(obj, Issue):
                 return obj.to_dict()
@@ -236,7 +272,9 @@ class AnalysisResult:
             if isinstance(value, dict):
                 data[key] = value
             elif isinstance(value, list):
-                data[key] = [convert_value(item) if isinstance(item, Issue) else item for item in value]
+                data[key] = [
+                    convert_value(item) if isinstance(item, Issue) else item for item in value
+                ]
 
         # Validate against schema
         if validate_schema:
@@ -248,7 +286,7 @@ class AnalysisResult:
         return json.dumps(data, indent=2, default=str)
 
     @classmethod
-    def from_json(cls, json_str: str, validate_schema: bool = True) -> 'AnalysisResult':
+    def from_json(cls, json_str: str, validate_schema: bool = True) -> "AnalysisResult":
         """Deserialize from JSON format with optional schema validation."""
         try:
             data = json.loads(json_str)
@@ -264,18 +302,20 @@ class AnalysisResult:
 
         # Convert nested structures
         try:
-            data['architecture'] = ArchitectureAnalysis(**data['architecture'])
-            data['performance'] = PerformanceAnalysis(**data['performance'])
-            data['coverage'] = CoverageAnalysis(**data['coverage'])
-            data['code_quality'] = CodeQualityAnalysis(**data['code_quality'])
-            data['dependencies'] = DependencyAnalysis(**data['dependencies'])
-            data['deployment'] = DeploymentAnalysis(**data['deployment'])
-            data['security'] = SecurityAnalysis(**data['security'])
-            data['scalability'] = ScalabilityAnalysis(**data['scalability'])
+            data["architecture"] = ArchitectureAnalysis(**data["architecture"])
+            data["performance"] = PerformanceAnalysis(**data["performance"])
+            data["coverage"] = CoverageAnalysis(**data["coverage"])
+            data["code_quality"] = CodeQualityAnalysis(**data["code_quality"])
+            data["dependencies"] = DependencyAnalysis(**data["dependencies"])
+            data["deployment"] = DeploymentAnalysis(**data["deployment"])
+            data["security"] = SecurityAnalysis(**data["security"])
+            data["scalability"] = ScalabilityAnalysis(**data["scalability"])
 
             # Convert issues
-            if 'critical_issues' in data:
-                data['critical_issues'] = [Issue.from_dict(issue) for issue in data['critical_issues']]
+            if "critical_issues" in data:
+                data["critical_issues"] = [
+                    Issue.from_dict(issue) for issue in data["critical_issues"]
+                ]
 
             return cls(**data)
         except (TypeError, KeyError) as e:
@@ -285,6 +325,7 @@ class AnalysisResult:
 @dataclass
 class Task:
     """Individual optimization task."""
+
     id: str
     title: str
     description: str
@@ -300,6 +341,7 @@ class Task:
 @dataclass
 class OptimizationPlan:
     """Actionable task list with prioritization."""
+
     tasks: List[Task]
     dependencies: Dict[str, List[str]] = field(default_factory=dict)
     total_effort_hours: float = 0.0
@@ -308,7 +350,7 @@ class OptimizationPlan:
     def to_gantt_chart(self) -> str:
         """
         Generate Gantt chart visualization using matplotlib.
-        
+
         Returns:
             Path to generated Gantt chart PNG file
         """
@@ -317,86 +359,94 @@ class OptimizationPlan:
             import matplotlib.dates as mdates
             from datetime import datetime, timedelta
             from pathlib import Path
-            
+
             if not self.tasks:
                 return "No tasks to visualize"
-            
+
             # Create figure
             fig, ax = plt.subplots(figsize=(12, max(6, len(self.tasks) * 0.4)))
-            
+
             # Start date (today)
             start_date = datetime.now()
-            
+
             # Prepare data
             task_names = []
             start_dates = []
             durations = []
             colors = []
-            
+
             current_date = start_date
             for task in self.tasks:
                 task_names.append(task.name[:40])  # Truncate long names
                 start_dates.append(current_date)
-                
+
                 # Convert effort to days (assuming 8 hours/day)
                 duration_days = task.effort_hours / 8.0
                 durations.append(duration_days)
-                
+
                 # Color by priority
-                if task.priority == 'critical':
-                    colors.append('#d32f2f')  # Red
-                elif task.priority == 'high':
-                    colors.append('#f57c00')  # Orange
-                elif task.priority == 'medium':
-                    colors.append('#fbc02d')  # Yellow
+                if task.priority == "critical":
+                    colors.append("#d32f2f")  # Red
+                elif task.priority == "high":
+                    colors.append("#f57c00")  # Orange
+                elif task.priority == "medium":
+                    colors.append("#fbc02d")  # Yellow
                 else:
-                    colors.append('#388e3c')  # Green
-                
+                    colors.append("#388e3c")  # Green
+
                 # Next task starts after this one (sequential)
                 current_date += timedelta(days=duration_days)
-            
+
             # Create Gantt chart
             y_pos = range(len(task_names))
-            
+
             for i, (start, duration, color) in enumerate(zip(start_dates, durations, colors)):
-                ax.barh(i, duration, left=mdates.date2num(start), 
-                       height=0.6, color=color, alpha=0.8, edgecolor='black')
-            
+                ax.barh(
+                    i,
+                    duration,
+                    left=mdates.date2num(start),
+                    height=0.6,
+                    color=color,
+                    alpha=0.8,
+                    edgecolor="black",
+                )
+
             # Format axes
             ax.set_yticks(y_pos)
             ax.set_yticklabels(task_names)
-            ax.set_xlabel('Timeline')
-            ax.set_title('Project Gantt Chart')
-            
+            ax.set_xlabel("Timeline")
+            ax.set_title("Project Gantt Chart")
+
             # Format x-axis as dates
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
             ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
-            plt.xticks(rotation=45, ha='right')
-            
+            plt.xticks(rotation=45, ha="right")
+
             # Add grid
-            ax.grid(True, axis='x', alpha=0.3)
-            
+            ax.grid(True, axis="x", alpha=0.3)
+
             # Add legend
             from matplotlib.patches import Patch
+
             legend_elements = [
-                Patch(facecolor='#d32f2f', label='Critical'),
-                Patch(facecolor='#f57c00', label='High'),
-                Patch(facecolor='#fbc02d', label='Medium'),
-                Patch(facecolor='#388e3c', label='Low')
+                Patch(facecolor="#d32f2f", label="Critical"),
+                Patch(facecolor="#f57c00", label="High"),
+                Patch(facecolor="#fbc02d", label="Medium"),
+                Patch(facecolor="#388e3c", label="Low"),
             ]
-            ax.legend(handles=legend_elements, loc='upper right')
-            
+            ax.legend(handles=legend_elements, loc="upper right")
+
             # Tight layout
             plt.tight_layout()
-            
+
             # Save figure
-            output_path = Path('performance_analysis') / 'gantt_chart.png'
+            output_path = Path("performance_analysis") / "gantt_chart.png"
             output_path.parent.mkdir(exist_ok=True)
-            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.savefig(output_path, dpi=150, bbox_inches="tight")
             plt.close()
-            
+
             return str(output_path)
-        
+
         except ImportError:
             return "matplotlib not installed - cannot generate Gantt chart"
         except Exception as e:
@@ -405,8 +455,8 @@ class OptimizationPlan:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
-            'tasks': [asdict(task) for task in self.tasks],
-            'dependencies': self.dependencies,
-            'total_effort_hours': self.total_effort_hours,
-            'estimated_completion_weeks': self.estimated_completion_weeks
+            "tasks": [asdict(task) for task in self.tasks],
+            "dependencies": self.dependencies,
+            "total_effort_hours": self.total_effort_hours,
+            "estimated_completion_weeks": self.estimated_completion_weeks,
         }

@@ -36,13 +36,13 @@ CONFIG_SCHEMA = {
             "type": "number",
             "minimum": 1,
             "maximum": 3600,
-            "description": "Interval between monitoring checks in seconds"
+            "description": "Interval between monitoring checks in seconds",
         },
         "metrics_retention_hours": {
             "type": "number",
             "minimum": 1,
             "maximum": 168,  # 1 week
-            "description": "How long to retain metrics history in hours"
+            "description": "How long to retain metrics history in hours",
         },
         "thresholds": {
             "type": "object",
@@ -51,59 +51,53 @@ CONFIG_SCHEMA = {
                     "type": "number",
                     "minimum": 0,
                     "maximum": 100,
-                    "description": "CPU usage threshold percentage"
+                    "description": "CPU usage threshold percentage",
                 },
                 "memory_percent": {
                     "type": "number",
                     "minimum": 0,
                     "maximum": 100,
-                    "description": "Memory usage threshold percentage"
+                    "description": "Memory usage threshold percentage",
                 },
                 "disk_percent": {
                     "type": "number",
                     "minimum": 0,
                     "maximum": 100,
-                    "description": "Disk usage threshold percentage"
+                    "description": "Disk usage threshold percentage",
                 },
                 "gpu_utilization": {
                     "type": "number",
                     "minimum": 0,
                     "maximum": 100,
-                    "description": "GPU utilization threshold percentage"
+                    "description": "GPU utilization threshold percentage",
                 },
                 "round_duration_minutes": {
                     "type": "number",
                     "minimum": 0,
-                    "description": "Maximum round duration in minutes"
+                    "description": "Maximum round duration in minutes",
                 },
                 "client_dropout_rate": {
                     "type": "number",
                     "minimum": 0,
                     "maximum": 1,
-                    "description": "Maximum acceptable client dropout rate (0-1)"
-                }
+                    "description": "Maximum acceptable client dropout rate (0-1)",
+                },
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "alerting": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Whether alerting is enabled"
-                },
+                "enabled": {"type": "boolean", "description": "Whether alerting is enabled"},
                 "channels": {
                     "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": ["log", "slack", "email", "webhook"]
-                    },
-                    "description": "List of alert channels to use"
+                    "items": {"type": "string", "enum": ["log", "slack", "email", "webhook"]},
+                    "description": "List of alert channels to use",
                 },
                 "rate_limit_minutes": {
                     "type": "number",
                     "minimum": 0,
-                    "description": "Minimum minutes between duplicate alerts"
+                    "description": "Minimum minutes between duplicate alerts",
                 },
                 "slack": {
                     "type": "object",
@@ -111,15 +105,12 @@ CONFIG_SCHEMA = {
                         "webhook_url": {
                             "type": "string",
                             "pattern": "^https://hooks\\.slack\\.com/",
-                            "description": "Slack webhook URL"
+                            "description": "Slack webhook URL",
                         },
-                        "channel": {
-                            "type": "string",
-                            "description": "Slack channel name"
-                        }
+                        "channel": {"type": "string", "description": "Slack channel name"},
                     },
                     "required": ["webhook_url"],
-                    "additionalProperties": False
+                    "additionalProperties": False,
                 },
                 "email": {
                     "type": "object",
@@ -127,63 +118,53 @@ CONFIG_SCHEMA = {
                         "smtp_server": {
                             "type": "string",
                             "minLength": 1,
-                            "description": "SMTP server hostname"
+                            "description": "SMTP server hostname",
                         },
                         "smtp_port": {
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 65535,
-                            "description": "SMTP server port"
+                            "description": "SMTP server port",
                         },
                         "username": {
                             "type": "string",
                             "minLength": 1,
-                            "description": "SMTP username"
+                            "description": "SMTP username",
                         },
                         "password": {
                             "type": "string",
                             "minLength": 1,
-                            "description": "SMTP password"
+                            "description": "SMTP password",
                         },
                         "from_email": {
                             "type": "string",
                             "format": "email",
-                            "description": "From email address"
+                            "description": "From email address",
                         },
                         "to_emails": {
                             "type": "array",
-                            "items": {
-                                "type": "string",
-                                "format": "email"
-                            },
+                            "items": {"type": "string", "format": "email"},
                             "minItems": 1,
-                            "description": "List of recipient email addresses"
-                        }
+                            "description": "List of recipient email addresses",
+                        },
                     },
                     "required": ["smtp_server", "username", "password", "from_email", "to_emails"],
-                    "additionalProperties": False
+                    "additionalProperties": False,
                 },
                 "webhook": {
                     "type": "object",
                     "properties": {
-                        "url": {
-                            "type": "string",
-                            "format": "uri",
-                            "description": "Webhook URL"
-                        },
-                        "headers": {
-                            "type": "object",
-                            "description": "Optional HTTP headers"
-                        }
+                        "url": {"type": "string", "format": "uri", "description": "Webhook URL"},
+                        "headers": {"type": "object", "description": "Optional HTTP headers"},
                     },
                     "required": ["url"],
-                    "additionalProperties": False
-                }
+                    "additionalProperties": False,
+                },
             },
-            "additionalProperties": False
-        }
+            "additionalProperties": False,
+        },
     },
-    "additionalProperties": True  # Allow additional fields for extensibility
+    "additionalProperties": True,  # Allow additional fields for extensibility
 }
 
 
@@ -597,7 +578,7 @@ class FederatedLearningMonitor:
         # Monitoring state
         self.monitoring_active = False
         self.monitoring_thread: Optional[GracefulThread] = None
-        
+
         # Rate limiting: track last alert time per alert type
         self.last_alert_times: Dict[str, datetime] = {}
         self.rate_limit_lock = threading.Lock()
@@ -607,7 +588,7 @@ class FederatedLearningMonitor:
     def _load_config(self, config_path: Optional[Path]) -> Dict[str, Any]:
         """
         Load monitoring configuration.
-        
+
         Requirements: 11.2, 11.3, 11.6
         """
         default_config = {
@@ -628,7 +609,7 @@ class FederatedLearningMonitor:
             try:
                 with open(config_path, "r") as f:
                     user_config = json.load(f)
-                
+
                 # Validate configuration against schema
                 # Requirements: 11.2, 11.3
                 try:
@@ -638,13 +619,11 @@ class FederatedLearningMonitor:
                     # Log configuration validation errors with specific field and constraint
                     # Requirement: 11.6
                     error_path = ".".join(str(p) for p in e.path) if e.path else "root"
-                    logger.error(
-                        f"Configuration validation failed at '{error_path}': {e.message}"
-                    )
+                    logger.error(f"Configuration validation failed at '{error_path}': {e.message}")
                     raise ValueError(
                         f"Configuration validation failed at '{error_path}': {e.message}"
                     ) from e
-                
+
                 default_config.update(user_config)
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse config JSON from {config_path}: {e}")
@@ -659,7 +638,7 @@ class FederatedLearningMonitor:
     def _setup_alerters(self) -> Dict[AlertChannel, Any]:
         """
         Setup alert channels.
-        
+
         Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6
         """
         alerters = {}
@@ -675,7 +654,7 @@ class FederatedLearningMonitor:
         if "slack" in alerting_config:
             slack_config = alerting_config["slack"]
             webhook_url = slack_config.get("webhook_url")
-            
+
             if webhook_url:
                 # Validate Slack webhook URL starts with correct prefix
                 # Requirement: 12.1
@@ -684,16 +663,16 @@ class FederatedLearningMonitor:
                         f"Invalid Slack webhook URL: must start with 'https://hooks.slack.com/', "
                         f"got '{webhook_url[:50]}...'"
                     )
-                
+
                 # Test Slack webhook by sending test message
                 # Requirements: 12.2, 12.3
                 try:
                     test_response = requests.post(
                         webhook_url,
                         json={"text": "HistoCore monitoring system initialized"},
-                        timeout=30
+                        timeout=30,
                     )
-                    
+
                     if test_response.status_code == 200:
                         logger.info("Slack webhook test successful")
                     else:
@@ -705,7 +684,7 @@ class FederatedLearningMonitor:
                         )
                 except Exception as e:
                     logger.warning(f"Slack webhook test failed: {e}")
-                
+
                 alerters[AlertChannel.SLACK] = SlackAlerter(
                     webhook_url=webhook_url,
                     channel=slack_config.get("channel", "#alerts"),
@@ -715,19 +694,19 @@ class FederatedLearningMonitor:
         # Requirements: 12.4, 12.5, 12.6
         if "email" in alerting_config:
             email_config = alerting_config["email"]
-            
+
             # Validate email configurations contain all required fields
             # Requirement: 12.4
             required_fields = ["smtp_server", "username", "password", "from_email", "to_emails"]
             missing_fields = [field for field in required_fields if field not in email_config]
-            
+
             if missing_fields:
                 # Raise ValueError with missing field if validation fails
                 # Requirement: 12.6
                 raise ValueError(
                     f"Email configuration missing required fields: {', '.join(missing_fields)}"
                 )
-            
+
             # Validate to_emails is a list type
             # Requirement: 12.5
             if not isinstance(email_config["to_emails"], list):
@@ -737,12 +716,12 @@ class FederatedLearningMonitor:
                     f"Email configuration field 'to_emails' must be a list, "
                     f"got {type(email_config['to_emails']).__name__}"
                 )
-            
+
             if len(email_config["to_emails"]) == 0:
                 raise ValueError(
                     "Email configuration field 'to_emails' must contain at least one email address"
                 )
-            
+
             alerters[AlertChannel.EMAIL] = EmailAlerter(
                 smtp_server=email_config["smtp_server"],
                 smtp_port=email_config.get("smtp_port", 587),
@@ -769,16 +748,16 @@ class FederatedLearningMonitor:
             return
 
         self.monitoring_active = True
-        
+
         def cleanup_callback():
             """Cleanup callback for graceful shutdown."""
             logger.info("Production monitoring cleanup completed")
-        
+
         self.monitoring_thread = GracefulThread(
             target=self._monitoring_loop,
             name="production_monitor",
             daemon=False,
-            cleanup_callback=cleanup_callback
+            cleanup_callback=cleanup_callback,
         )
         self.monitoring_thread.start()
 
@@ -796,7 +775,7 @@ class FederatedLearningMonitor:
 
     def _monitoring_loop(self, thread: GracefulThread):
         """Main monitoring loop.
-        
+
         Args:
             thread: GracefulThread instance for shutdown coordination
         """
@@ -939,11 +918,11 @@ class FederatedLearningMonitor:
         # Rate limiting per alert type
         alert_key = f"{alert.alert_type}:{alert.severity}"
         rate_limit_minutes = self.config.get("alerting", {}).get("rate_limit_minutes", 5)
-        
+
         with self.rate_limit_lock:
             last_alert_time = self.last_alert_times.get(alert_key)
             now = datetime.now()
-            
+
             if last_alert_time:
                 time_since_last = (now - last_alert_time).total_seconds() / 60
                 if time_since_last < rate_limit_minutes:
@@ -953,7 +932,7 @@ class FederatedLearningMonitor:
                         f"(limit: {rate_limit_minutes}m)"
                     )
                     return
-            
+
             # Update last alert time
             self.last_alert_times[alert_key] = now
 

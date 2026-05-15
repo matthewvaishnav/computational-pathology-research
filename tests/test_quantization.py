@@ -137,9 +137,7 @@ class TestModelQuantizer:
         # Check output shape
         assert quantized_output.shape == (4, 10)
 
-    def test_quantize_to_int8_static(
-        self, simple_model, test_input, calibration_dataloader
-    ):
+    def test_quantize_to_int8_static(self, simple_model, test_input, calibration_dataloader):
         """Test INT8 static quantization."""
         quantizer = ModelQuantizer()
 
@@ -163,9 +161,7 @@ class TestModelQuantizer:
         quantized_model = quantizer.quantize_dynamic(simple_model)
 
         # Compare models
-        results = quantizer.compare_models(
-            simple_model, quantized_model, test_input, num_runs=10
-        )
+        results = quantizer.compare_models(simple_model, quantized_model, test_input, num_runs=10)
 
         # Check results structure
         assert "original" in results
@@ -196,9 +192,7 @@ class TestModelQuantizer:
 
         # Save model
         save_path = tmp_path / "quantized_model.pth"
-        quantizer.save_quantized_model(
-            quantized_model, save_path, metadata={"test": "value"}
-        )
+        quantizer.save_quantized_model(quantized_model, save_path, metadata={"test": "value"})
 
         # Check file exists
         assert save_path.exists()
@@ -263,9 +257,7 @@ class TestQuantizationHelpers:
         from src.models import AttentionMIL
 
         # Create model
-        model = AttentionMIL(
-            feature_dim=2048, hidden_dim=256, num_classes=2, dropout=0.25
-        )
+        model = AttentionMIL(feature_dim=2048, hidden_dim=256, num_classes=2, dropout=0.25)
         model.eval()
 
         # Quantize
@@ -284,9 +276,7 @@ class TestQuantizationHelpers:
         from src.models import AttentionMIL
 
         # Create model
-        model = AttentionMIL(
-            feature_dim=2048, hidden_dim=256, num_classes=2, dropout=0.25
-        )
+        model = AttentionMIL(feature_dim=2048, hidden_dim=256, num_classes=2, dropout=0.25)
         model.eval()
 
         # Quantize
@@ -306,9 +296,7 @@ class TestQuantizationHelpers:
         from src.models import AttentionMIL
 
         # Create model
-        model = AttentionMIL(
-            feature_dim=2048, hidden_dim=256, num_classes=2, dropout=0.25
-        )
+        model = AttentionMIL(feature_dim=2048, hidden_dim=256, num_classes=2, dropout=0.25)
         model.eval()
 
         # Should raise error without calibration data
@@ -385,9 +373,7 @@ class TestQuantizationPerformance:
 
         # Quantize and benchmark
         quantized_model = quantizer.quantize_dynamic(simple_model)
-        quantized_stats = quantizer._benchmark_model(
-            quantized_model, test_input, num_runs=20
-        )
+        quantized_stats = quantizer._benchmark_model(quantized_model, test_input, num_runs=20)
 
         # Check speedup (may not always be faster on CPU, but should be comparable)
         speedup = original_stats["mean_time"] / quantized_stats["mean_time"]

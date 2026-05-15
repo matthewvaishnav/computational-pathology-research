@@ -338,16 +338,12 @@ def validate_inference_request(data: Dict[str, Any]) -> Dict[str, Any]:
 
     # Validate image path
     if "image_path" in data:
-        validated["image_path"] = InputValidator.validate_path(
-            data["image_path"], must_exist=True
-        )
+        validated["image_path"] = InputValidator.validate_path(data["image_path"], must_exist=True)
         InputValidator.validate_image_file(str(validated["image_path"]))
 
     # Validate model path
     if "model_path" in data:
-        validated["model_path"] = InputValidator.validate_path(
-            data["model_path"], must_exist=True
-        )
+        validated["model_path"] = InputValidator.validate_path(data["model_path"], must_exist=True)
         InputValidator.validate_model_file(str(validated["model_path"]))
 
     # Validate batch size

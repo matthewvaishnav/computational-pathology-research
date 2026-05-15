@@ -241,7 +241,10 @@ class WSIStreamReader:
 
         logger.info(
             "Initialized WSIStreamReader for %s (tile_size=%d, overlap=%d, stride=%d)",
-            self.wsi_path, tile_size, overlap, self.stride
+            self.wsi_path,
+            tile_size,
+            overlap,
+            self.stride,
         )
 
     def initialize_streaming(self) -> StreamingMetadata:
@@ -348,7 +351,8 @@ class WSIStreamReader:
 
             logger.info(
                 "Buffer optimization - Memory budget: %.2fGB, Buffer size: %d tiles",
-                memory_budget_gb, optimal_buffer_size
+                memory_budget_gb,
+                optimal_buffer_size,
             )
 
             # Initialize buffer pool
@@ -375,7 +379,9 @@ class WSIStreamReader:
 
             logger.info(
                 "Streaming initialized: %s pixels, %d patches, format: %s",
-                dimensions, estimated_patches, self.wsi_path.suffix
+                dimensions,
+                estimated_patches,
+                self.wsi_path.suffix,
             )
             return self.metadata
 
@@ -568,7 +574,7 @@ class WSIStreamReader:
 
         self.deepzoom = None
         gc.collect()
-    
+
     def __del__(self):
         """Ensure cleanup even if close() not called."""
         try:

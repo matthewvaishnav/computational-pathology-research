@@ -105,7 +105,7 @@ class SecurityManager:
         self._active_connections: Dict[str, SecureConnection] = {}
         self._certificate_cache: Dict[str, x509.Certificate] = {}
         self._validation_cache: Dict[str, CertificateValidationResult] = {}
-        
+
         # Rate limiting for connection attempts
         self._connection_attempts: Dict[str, List[datetime]] = {}
         self._max_attempts_per_minute = 10
@@ -135,16 +135,17 @@ class SecurityManager:
         # Input validation
         if not pacs_endpoint or not pacs_endpoint.host:
             raise ValueError("Invalid PACS endpoint")
-        
+
         # Validate hostname format
         import re
-        if not re.match(r'^[a-zA-Z0-9.-]+$', pacs_endpoint.host) or len(pacs_endpoint.host) > 253:
+
+        if not re.match(r"^[a-zA-Z0-9.-]+$", pacs_endpoint.host) or len(pacs_endpoint.host) > 253:
             raise ValueError("Invalid hostname format")
-        
+
         # Validate port range
         if not (1 <= pacs_endpoint.port <= 65535):
             raise ValueError("Invalid port number")
-        
+
         # Validate certificate paths if provided
         if pacs_endpoint.security_config:
             sec_config = pacs_endpoint.security_config
@@ -163,10 +164,10 @@ class SecurityManager:
             self._log_security_event(
                 event_type="rate_limit_exceeded",
                 endpoint=pacs_endpoint,
-                details={"endpoint": endpoint_key}
+                details={"endpoint": endpoint_key},
             )
             raise ConnectionError(error_msg)
-        
+
         # Track connection attempt
         self._record_connection_attempt(endpoint_key)
 
@@ -199,7 +200,7 @@ class SecurityManager:
 
                 if not validation_result.is_valid:
                     ssl_sock.close()
-                    
+
                     # Trigger security alert for validation failure
                     logger.critical(
                         f"SECURITY ALERT: Certificate validation failed for {pacs_endpoint.host}"
@@ -210,10 +211,10 @@ class SecurityManager:
                         details={
                             "errors": validation_result.errors,
                             "warnings": validation_result.warnings,
-                            "severity": "CRITICAL"
-                        }
+                            "severity": "CRITICAL",
+                        },
                     )
-                    
+
                     raise ssl.SSLError("Certificate validation failed")
 
             # Create secure connection object
@@ -240,14 +241,19 @@ class SecurityManager:
         except Exception as e:
             # Log connection failure without exposing sensitive details
             self._log_security_event(
-                event_type="connection_failed", endpoint=pacs_endpoint, details={"error_type": type(e).__name__}
+                event_type="connection_failed",
+                endpoint=pacs_endpoint,
+                details={"error_type": type(e).__name__},
             )
 
             logger.error(f"Failed to establish secure connection to {pacs_endpoint.host}")
             raise ConnectionError("Secure connection failed")
 
     def validate_certificate(
-        self, certificate: x509.Certificate, ca_bundle_path: Optional[Path], hostname: Optional[str] = None
+        self,
+        certificate: x509.Certificate,
+        ca_bundle_path: Optional[Path],
+        hostname: Optional[str] = None,
     ) -> CertificateValidationResult:
         """
         Validate X.509 certificate against configured Certificate Authority.
@@ -350,11 +356,11 @@ class SecurityManager:
     def _verify_hostname(self, certificate: x509.Certificate, hostname: str) -> bool:
         """Verify certificate hostname matches expected hostname."""
         import ipaddress
-        
+
         # Validate hostname format
         if not hostname or len(hostname) > 253:
             return False
-        
+
         # Check if hostname is an IP address
         try:
             ip = ipaddress.ip_address(hostname)
@@ -369,20 +375,20 @@ class SecurityManager:
                 return False
         except ValueError:
             pass
-        
+
         # Check Subject Alternative Names
         try:
             san_ext = certificate.extensions.get_extension_for_oid(
                 x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME
             ).value
             dns_names = san_ext.get_values_for_type(x509.DNSName)
-            
+
             for dns_name in dns_names:
                 if self._match_hostname(dns_name, hostname):
                     return True
         except x509.ExtensionNotFound:
             pass
-        
+
         # Check Common Name as fallback
         try:
             subject = certificate.subject
@@ -393,22 +399,22 @@ class SecurityManager:
                     return True
         except Exception as e:
             logger.debug(f"Failed to extract CN from certificate: {e}")
-        
+
         return False
-    
+
     def _match_hostname(self, cert_hostname: str, hostname: str) -> bool:
         """Match hostname with wildcard support."""
         # Exact match
         if cert_hostname.lower() == hostname.lower():
             return True
-        
+
         # Wildcard match
-        if cert_hostname.startswith('*.'):
+        if cert_hostname.startswith("*."):
             pattern = cert_hostname[2:].lower()
-            if '.' in hostname:
-                domain = hostname.split('.', 1)[1].lower()
+            if "." in hostname:
+                domain = hostname.split(".", 1)[1].lower()
                 return domain == pattern
-        
+
         return False
 
     def rotate_credentials(
@@ -737,7 +743,7 @@ class SecurityManager:
                 if key_password
                 else serialization.NoEncryption()
             )
-            
+
             with open(output_key_path, "wb") as f:
                 f.write(
                     private_key.private_bytes(
@@ -777,32 +783,34 @@ class SecurityManager:
         """Check if endpoint is rate limited with exponential backoff."""
         if endpoint_key not in self._connection_attempts:
             return False
-        
+
         now = datetime.now()
         attempts = self._connection_attempts[endpoint_key]
-        
+
         # Remove attempts older than lockout window
         lockout_window = timedelta(minutes=self._lockout_duration_minutes)
         recent_attempts = [t for t in attempts if now - t < lockout_window]
         self._connection_attempts[endpoint_key] = recent_attempts
-        
+
         if len(recent_attempts) >= self._max_attempts_per_minute:
             # Calculate exponential backoff
             attempt_count = len(recent_attempts)
-            backoff_minutes = min(2 ** (attempt_count - self._max_attempts_per_minute), 60)  # Max 1 hour
-            
+            backoff_minutes = min(
+                2 ** (attempt_count - self._max_attempts_per_minute), 60
+            )  # Max 1 hour
+
             if recent_attempts:
                 last_attempt = max(recent_attempts)
                 if now - last_attempt < timedelta(minutes=backoff_minutes):
                     return True
-        
+
         return False
-    
+
     def _record_connection_attempt(self, endpoint_key: str) -> None:
         """Record connection attempt for rate limiting."""
         if endpoint_key not in self._connection_attempts:
             self._connection_attempts[endpoint_key] = []
-        
+
         self._connection_attempts[endpoint_key].append(datetime.now())
 
     def get_security_statistics(self) -> Dict[str, Any]:

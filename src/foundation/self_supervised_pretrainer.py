@@ -93,7 +93,7 @@ class HistopathologyAugmentation:
         # Stain normalization (critical for histopathology)
         if self.config.stain_normalize and torch.rand(1) < 0.7:
             image = self._stain_normalize(image)
-        
+
         # Color jitter (adapted for H&E staining)
         if torch.rand(1) < 0.8:
             image = self._histopathology_color_jitter(image)
@@ -110,11 +110,11 @@ class HistopathologyAugmentation:
         # Gaussian blur (simulate focus variations)
         if torch.rand(1) < self.config.blur_prob:
             image = self._gaussian_blur(image)
-            
+
         # Elastic deformation (simulate tissue deformation)
         if torch.rand(1) < 0.3:
             image = self._elastic_deformation(image)
-            
+
         # Random erasing (simulate artifacts/bubbles)
         if torch.rand(1) < 0.2:
             image = self._random_erasing(image)
@@ -156,28 +156,28 @@ class HistopathologyAugmentation:
         """Apply stain normalization for H&E consistency"""
         # Simplified stain normalization using color constancy
         # In practice, would use Macenko or Reinhard normalization
-        
+
         # Convert to LAB color space approximation
         image_np = image.permute(1, 2, 0).numpy()
-        
+
         # Apply simple color constancy (Gray World assumption)
         mean_rgb = image_np.mean(axis=(0, 1))
         target_mean = np.array([0.7, 0.5, 0.7])  # Target H&E appearance
-        
+
         # Scale factors
         scale_factors = target_mean / (mean_rgb + 1e-8)
         scale_factors = np.clip(scale_factors, 0.5, 2.0)  # Limit scaling
-        
+
         # Apply scaling
         normalized = image_np * scale_factors
         normalized = np.clip(normalized, 0, 1)
-        
+
         return torch.from_numpy(normalized).permute(2, 0, 1).float()
-    
+
     def _histopathology_color_jitter(self, image: torch.Tensor) -> torch.Tensor:
         """Apply color jitter adapted for histopathology"""
         # More conservative color jitter for medical images
-        
+
         # Brightness (less aggressive than natural images)
         brightness_factor = 1 + torch.rand(1) * 0.2 - 0.1  # ±10%
         image = image * brightness_factor
@@ -197,100 +197,98 @@ class HistopathologyAugmentation:
         image = self._apply_hue_shift(image, hue_shift)
 
         return torch.clamp(image, 0, 1)
-    
+
     def _apply_hue_shift(self, image: torch.Tensor, hue_shift: float) -> torch.Tensor:
         """Apply small hue shift to simulate staining variations"""
         # Simplified hue shift in RGB space
         # In practice, would convert to HSV, shift hue, convert back
-        
+
         # Create rotation matrix for hue shift
         cos_h = torch.cos(hue_shift * 2 * np.pi)
         sin_h = torch.sin(hue_shift * 2 * np.pi)
-        
+
         # Apply hue rotation (simplified)
         r, g, b = image[0], image[1], image[2]
-        
+
         new_r = r * cos_h - g * sin_h
         new_g = r * sin_h + g * cos_h
         new_b = b  # Blue channel less affected in H&E
-        
+
         return torch.stack([new_r, new_g, new_b])
-    
+
     def _elastic_deformation(self, image: torch.Tensor) -> torch.Tensor:
         """Apply elastic deformation to simulate tissue deformation"""
         # Simplified elastic deformation using random displacement fields
         h, w = image.shape[-2:]
-        
+
         # Create random displacement field
         displacement_x = torch.randn(h // 8, w // 8) * 2
         displacement_y = torch.randn(h // 8, w // 8) * 2
-        
+
         # Upsample displacement field
         displacement_x = F.interpolate(
-            displacement_x.unsqueeze(0).unsqueeze(0), 
-            size=(h, w), 
-            mode='bilinear', 
-            align_corners=False
+            displacement_x.unsqueeze(0).unsqueeze(0),
+            size=(h, w),
+            mode="bilinear",
+            align_corners=False,
         ).squeeze()
-        
+
         displacement_y = F.interpolate(
-            displacement_y.unsqueeze(0).unsqueeze(0), 
-            size=(h, w), 
-            mode='bilinear', 
-            align_corners=False
+            displacement_y.unsqueeze(0).unsqueeze(0),
+            size=(h, w),
+            mode="bilinear",
+            align_corners=False,
         ).squeeze()
-        
+
         # Create sampling grid
         grid_x, grid_y = torch.meshgrid(
-            torch.linspace(-1, 1, w),
-            torch.linspace(-1, 1, h),
-            indexing='xy'
+            torch.linspace(-1, 1, w), torch.linspace(-1, 1, h), indexing="xy"
         )
-        
+
         # Apply displacement
         grid_x = grid_x + displacement_x / w * 0.1  # Small displacement
         grid_y = grid_y + displacement_y / h * 0.1
-        
+
         # Stack grid
         grid = torch.stack([grid_x, grid_y], dim=-1).unsqueeze(0)
-        
+
         # Apply grid sampling
         deformed = F.grid_sample(
-            image.unsqueeze(0), 
-            grid, 
-            mode='bilinear', 
-            padding_mode='reflection',
-            align_corners=False
+            image.unsqueeze(0),
+            grid,
+            mode="bilinear",
+            padding_mode="reflection",
+            align_corners=False,
         ).squeeze(0)
-        
+
         return deformed
-    
+
     def _random_erasing(self, image: torch.Tensor) -> torch.Tensor:
         """Apply random erasing to simulate artifacts"""
         if torch.rand(1) < 0.5:
             return image
-            
+
         h, w = image.shape[-2:]
-        
+
         # Random erasing parameters
         area_ratio = torch.rand(1) * 0.02 + 0.01  # 1-3% of image
-        aspect_ratio = torch.rand(1) * 0.5 + 0.5   # 0.5-1.0
-        
+        aspect_ratio = torch.rand(1) * 0.5 + 0.5  # 0.5-1.0
+
         # Calculate dimensions
         area = h * w * area_ratio
         erase_h = int(torch.sqrt(area / aspect_ratio))
         erase_w = int(torch.sqrt(area * aspect_ratio))
-        
+
         # Random position
         top = torch.randint(0, max(1, h - erase_h), (1,)).item()
         left = torch.randint(0, max(1, w - erase_w), (1,)).item()
-        
+
         # Random fill value (simulate bubble/artifact)
         fill_value = torch.rand(3, 1, 1) * 0.3 + 0.7  # Light colored artifacts
-        
+
         # Apply erasing
-        image[:, top:top+erase_h, left:left+erase_w] = fill_value
-        
+        image[:, top : top + erase_h, left : left + erase_w] = fill_value
+
         return image
 
     def _gaussian_blur(self, image: torch.Tensor) -> torch.Tensor:
@@ -478,19 +476,14 @@ class SelfSupervisedPreTrainer:
         # Wrap model for distributed training
         if self.config.distributed:
             self.model = torch.nn.parallel.DistributedDataParallel(
-                self.model, 
-                device_ids=[torch.cuda.current_device()],
-                find_unused_parameters=True
+                self.model, device_ids=[torch.cuda.current_device()], find_unused_parameters=True
             )
 
         # Create distributed sampler if needed
         sampler = None
         if self.config.distributed:
             sampler = torch.utils.data.distributed.DistributedSampler(
-                dataset,
-                num_replicas=self.config.world_size,
-                rank=self.config.rank,
-                shuffle=True
+                dataset, num_replicas=self.config.world_size, rank=self.config.rank, shuffle=True
             )
 
         # Create data loader with distributed sampler
@@ -506,7 +499,9 @@ class SelfSupervisedPreTrainer:
 
         self.logger.info(f"Starting {self.config.method} pre-training for {num_epochs} epochs")
         if self.config.distributed:
-            self.logger.info(f"Distributed training: rank {self.config.rank}/{self.config.world_size}")
+            self.logger.info(
+                f"Distributed training: rank {self.config.rank}/{self.config.world_size}"
+            )
 
         start_time = time.time()
 
@@ -521,7 +516,9 @@ class SelfSupervisedPreTrainer:
             train_metrics = self._train_epoch(dataloader, epoch)
 
             # Validation (only on rank 0 to avoid duplication)
-            if validation_dataset is not None and (not self.config.distributed or self.config.rank == 0):
+            if validation_dataset is not None and (
+                not self.config.distributed or self.config.rank == 0
+            ):
                 val_metrics = self._validate_epoch(validation_dataset, epoch)
                 train_metrics.update(val_metrics)
 
@@ -550,7 +547,7 @@ class SelfSupervisedPreTrainer:
                 dist.barrier()
 
         total_time = time.time() - start_time
-        
+
         if not self.config.distributed or self.config.rank == 0:
             self.logger.info(f"Pre-training completed in {total_time:.2f}s")
 
@@ -690,35 +687,41 @@ class SelfSupervisedPreTrainer:
 
     def _init_distributed_training(self):
         """Initialize distributed training"""
-        if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+        if "RANK" in os.environ and "WORLD_SIZE" in os.environ:
             try:
-                self.config.rank = int(os.environ['RANK'])
-                self.config.world_size = int(os.environ['WORLD_SIZE'])
-                
+                self.config.rank = int(os.environ["RANK"])
+                self.config.world_size = int(os.environ["WORLD_SIZE"])
+
                 # Validate values are reasonable
                 if self.config.rank < 0 or self.config.rank >= self.config.world_size:
-                    raise ValueError(f"Invalid RANK {self.config.rank} for WORLD_SIZE {self.config.world_size}")
+                    raise ValueError(
+                        f"Invalid RANK {self.config.rank} for WORLD_SIZE {self.config.world_size}"
+                    )
                 if self.config.world_size < 1 or self.config.world_size > 1024:
-                    raise ValueError(f"Invalid WORLD_SIZE {self.config.world_size}, must be between 1 and 1024")
+                    raise ValueError(
+                        f"Invalid WORLD_SIZE {self.config.world_size}, must be between 1 and 1024"
+                    )
             except (ValueError, TypeError) as e:
                 raise RuntimeError(f"Invalid distributed training environment variables: {e}")
-        
+
         # Initialize process group
         dist.init_process_group(
-            backend='nccl' if torch.cuda.is_available() else 'gloo',
-            init_method='env://',
+            backend="nccl" if torch.cuda.is_available() else "gloo",
+            init_method="env://",
             world_size=self.config.world_size,
-            rank=self.config.rank
+            rank=self.config.rank,
         )
-        
+
         # Set device for current process
         if torch.cuda.is_available():
             torch.cuda.set_device(self.config.rank % torch.cuda.device_count())
             self.model = self.model.cuda()
-            if hasattr(self, 'momentum_encoder'):
+            if hasattr(self, "momentum_encoder"):
                 self.momentum_encoder = self.momentum_encoder.cuda()
-        
-        self.logger.info(f"Initialized distributed training: rank {self.config.rank}/{self.config.world_size}")
+
+        self.logger.info(
+            f"Initialized distributed training: rank {self.config.rank}/{self.config.world_size}"
+        )
 
     def _update_momentum_encoder(self, epoch: int):
         """Update momentum encoder parameters"""
@@ -760,8 +763,11 @@ class SelfSupervisedPreTrainer:
         """Save comprehensive training checkpoint"""
         checkpoint = {
             "epoch": epoch,
-            "model_state_dict": self.model.state_dict() if not self.config.distributed 
-                               else self.model.module.state_dict(),
+            "model_state_dict": (
+                self.model.state_dict()
+                if not self.config.distributed
+                else self.model.module.state_dict()
+            ),
             "optimizer_state_dict": self.optimizer.state_dict(),
             "scheduler_state_dict": self.scheduler.state_dict(),
             "config": self.config,
@@ -772,33 +778,34 @@ class SelfSupervisedPreTrainer:
 
         if hasattr(self, "momentum_encoder"):
             checkpoint["momentum_encoder_state_dict"] = (
-                self.momentum_encoder.state_dict() if not self.config.distributed
+                self.momentum_encoder.state_dict()
+                if not self.config.distributed
                 else self.momentum_encoder.module.state_dict()
             )
 
         if hasattr(self, "queue"):
             checkpoint["queue_state"] = {
                 "queue": self.queue.queue.clone(),
-                "queue_ptr": self.queue.queue_ptr
+                "queue_ptr": self.queue.queue_ptr,
             }
 
         # Save with atomic write to prevent corruption
         temp_path = path + ".tmp"
         torch.save(checkpoint, temp_path)
-        
+
         # Atomic rename
         if os.path.exists(temp_path):
             if os.path.exists(path):
                 os.remove(path)
             os.rename(temp_path, path)
-            
+
         self.logger.info(f"Checkpoint saved: {path}")
 
     def resume_from_checkpoint(self, path: str) -> int:
         """Resume training from checkpoint with full state restoration"""
         if not os.path.exists(path):
             raise FileNotFoundError(f"Checkpoint not found: {path}")
-            
+
         checkpoint = torch.load(path, map_location="cpu", weights_only=True)
 
         # Load model state
@@ -806,14 +813,16 @@ class SelfSupervisedPreTrainer:
             self.model.module.load_state_dict(checkpoint["model_state_dict"])
         else:
             self.model.load_state_dict(checkpoint["model_state_dict"])
-            
+
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         self.scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
 
         # Load momentum encoder if exists
         if hasattr(self, "momentum_encoder") and "momentum_encoder_state_dict" in checkpoint:
             if self.config.distributed:
-                self.momentum_encoder.module.load_state_dict(checkpoint["momentum_encoder_state_dict"])
+                self.momentum_encoder.module.load_state_dict(
+                    checkpoint["momentum_encoder_state_dict"]
+                )
             else:
                 self.momentum_encoder.load_state_dict(checkpoint["momentum_encoder_state_dict"])
 
@@ -841,21 +850,21 @@ class SelfSupervisedPreTrainer:
         checkpoint_dir = Path(checkpoint_dir)
         if not checkpoint_dir.exists():
             return None
-            
+
         # Find all checkpoint files
         checkpoint_files = list(checkpoint_dir.glob("checkpoint_epoch_*.pth"))
         if not checkpoint_files:
             return None
-            
+
         # Sort by epoch number
         def extract_epoch(path):
             try:
                 return int(path.stem.split("_")[-1])
             except (ValueError, IndexError):
                 return 0
-                
+
         latest_checkpoint = max(checkpoint_files, key=extract_epoch)
-        
+
         try:
             epoch = self.resume_from_checkpoint(str(latest_checkpoint))
             self.logger.info(f"Auto-resumed from latest checkpoint: {latest_checkpoint}")

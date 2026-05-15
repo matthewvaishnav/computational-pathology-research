@@ -144,7 +144,7 @@ def test_get_global_model():
     assert isinstance(model_state, dict)
     assert "fc.weight" in model_state
     assert "fc.bias" in model_state
-    
+
     # Note: state_dict() returns references to parameters, not copies
     # This is expected PyTorch behavior
 
@@ -316,7 +316,9 @@ def test_aggregation_with_byzantine_detection():
 def test_aggregation_without_byzantine_detection():
     """Test aggregation without Byzantine detection."""
     model = TinyModel()
-    orchestrator = TrainingOrchestrator(model, enable_byzantine_detection=False, min_clients_per_round=2)
+    orchestrator = TrainingOrchestrator(
+        model, enable_byzantine_detection=False, min_clients_per_round=2
+    )
 
     orchestrator.register_client("client_0")
     orchestrator.register_client("client_1")

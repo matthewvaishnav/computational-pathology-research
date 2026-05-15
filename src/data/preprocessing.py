@@ -47,9 +47,9 @@ def extract_wsi_patches(
     # Validate input dimensions
     if len(wsi_image.shape) < 2:
         raise ValueError("Invalid image dimensions")
-    
+
     height, width = wsi_image.shape[:2]
-    
+
     # Validate patch size
     if patch_size <= 0 or patch_size > min(height, width):
         raise ValueError(f"Invalid patch_size: {patch_size}")
@@ -61,9 +61,9 @@ def extract_wsi_patches(
             # Extract patch with bounds checking
             if i + patch_size > height or j + patch_size > width:
                 continue  # Skip patches that exceed image bounds
-            
+
             patch = wsi_image[i : i + patch_size, j : j + patch_size]
-            
+
             # Validate patch shape
             if patch.shape[0] != patch_size or patch.shape[1] != patch_size:
                 continue  # Skip malformed patches
@@ -521,14 +521,14 @@ def load_features_from_hdf5(
         Feature array, or tuple of (features, metadata) if load_metadata=True
     """
     input_path = Path(input_path).resolve()
-    
+
     # Validate path doesn't contain traversal attempts
     if ".." in str(input_path):
         raise ValueError("Path traversal detected in input path")
-    
+
     if not input_path.exists():
         raise FileNotFoundError(f"Feature file not found: {input_path}")
-    
+
     if not input_path.is_file():
         raise ValueError("Path must be a file")
 

@@ -10,7 +10,7 @@ from typing import Optional
 
 class SecureDBConfig:
     """Secure database configuration."""
-    
+
     def __init__(
         self,
         host: str,
@@ -36,28 +36,30 @@ class SecureDBConfig:
         self.pool_recycle = pool_recycle
         self.connect_timeout = connect_timeout
         self.ssl_required = ssl_required
-    
+
     def get_connection_string(self) -> str:
         """Get connection string with security parameters."""
         # Build connection string
-        conn_str = f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
-        
+        conn_str = (
+            f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        )
+
         # Add security parameters
         params = []
         if self.ssl_required:
             params.append("sslmode=require")
         params.append(f"connect_timeout={self.connect_timeout}")
-        
+
         if params:
             conn_str += "?" + "&".join(params)
-        
+
         return conn_str
-    
+
     @classmethod
     def from_env(cls) -> "SecureDBConfig":
         """Create config from environment variables."""
         import os
-        
+
         return cls(
             host=os.getenv("DB_HOST", "localhost"),
             port=int(os.getenv("DB_PORT", "5432")),
@@ -71,15 +73,15 @@ class SecureDBConfig:
 @contextmanager
 def get_secure_connection(config: SecureDBConfig):
     """Get secure database connection with timeout.
-    
+
     Args:
         config: Database configuration
-        
+
     Yields:
         Database connection
     """
     import psycopg2
-    
+
     conn = None
     try:
         # Connect with timeout
@@ -90,15 +92,15 @@ def get_secure_connection(config: SecureDBConfig):
             user=config.username,
             password=config.password,
             connect_timeout=config.connect_timeout,
-            sslmode='require' if config.ssl_required else 'prefer',
+            sslmode="require" if config.ssl_required else "prefer",
         )
-        
+
         # Set statement timeout (prevent long-running queries)
         with conn.cursor() as cur:
             cur.execute("SET statement_timeout = '30s'")
-        
+
         yield conn
-        
+
     finally:
         if conn:
             conn.close()

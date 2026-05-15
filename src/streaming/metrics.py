@@ -292,14 +292,14 @@ _metrics_instance: Optional[StreamingMetrics] = None
 def get_metrics() -> StreamingMetrics:
     """
     Get the global metrics instance for streaming operations.
-    
+
     This function implements a singleton pattern to ensure consistent
     metrics collection across the entire application. The metrics instance
     is automatically initialized with monitoring enabled.
-    
+
     Returns:
         StreamingMetrics: Global metrics collector instance
-        
+
     Example:
         >>> metrics = get_metrics()
         >>> metrics.record_slide_processed("success", "wsi")
@@ -315,24 +315,24 @@ def get_metrics() -> StreamingMetrics:
 def timed_operation(stage: str, slide_type: str = "wsi"):
     """
     Decorator to automatically time operations and record performance metrics.
-    
+
     This decorator wraps functions to measure execution time and automatically
     record the metrics using the global metrics collector. It also handles
     error cases by recording both the error and the time taken before failure.
-    
+
     Args:
         stage: Name of the processing stage (e.g., "patch_extraction", "feature_generation")
         slide_type: Type of slide being processed (default: "wsi")
-        
+
     Returns:
         Callable: Decorated function with automatic timing
-        
+
     Example:
         @timed_operation("feature_extraction", "wsi")
         def extract_features(patches):
             # Feature extraction logic
             return features
-            
+
         # Timing is automatically recorded when function is called
         features = extract_features(patch_data)
     """

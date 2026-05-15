@@ -37,6 +37,7 @@ limiter = Limiter(key_func=get_remote_address)
 # Pydantic models
 class AnalysisRequest(BaseModel):
     """Analysis request model for pathology case processing."""
+
     case_id: Optional[str] = None
     priority: str = "normal"
     case_type: str = "breast_cancer_screening"
@@ -44,6 +45,7 @@ class AnalysisRequest(BaseModel):
 
 class CaseData(BaseModel):
     """Case data model for pathology analysis."""
+
     patient_id: str
     study_id: str
     priority: str = "normal"
@@ -52,6 +54,7 @@ class CaseData(BaseModel):
 
 class CaseStatusUpdate(BaseModel):
     """Case status update model for tracking analysis progress."""
+
     status: str
     notes: Optional[str] = None
 
@@ -117,9 +120,7 @@ async def upload_for_analysis(
 
             # Start background processing with real inference
             # Pass only file path to avoid keeping file content in memory
-            background_tasks.add_task(
-                process_real_analysis, str(analysis.id), temp_path
-            )
+            background_tasks.add_task(process_real_analysis, str(analysis.id), temp_path)
 
             logger.info(
                 f"Analysis created: {analysis.id} for file {sanitize_for_log(safe_filename)}"
@@ -310,21 +311,21 @@ async def upload_dicom(
     current_user: dict = Depends(get_current_user),
 ):
     """Upload DICOM file."""
-    
+
     # Enforce size limit before reading entire file into memory (DoS prevention)
     max_size = 500 * 1024 * 1024  # 500MB for DICOM files
     content_length = request.headers.get("content-length") if request else None
     if content_length and int(content_length) > max_size:
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 500MB")
-    
+
     # Read file content with size limit
     file_content = await file.read(max_size + 1)
     if len(file_content) > max_size:
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 500MB")
-    
+
     # Use centralized file validator for DICOM files
     detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
-    
+
     # Ensure it's actually a DICOM file
     if detected_mime != "application/dicom":
         raise HTTPException(
@@ -373,19 +374,22 @@ async def get_cases(
     current_user: dict = Depends(get_current_user),
 ):
     """Get list of cases from database.
-    
+
     Args:
         limit: Maximum number of cases (1-1000)
         status: Filter by status
     """
     # Validate limit to prevent DoS via excessive queries
     validate_limit(limit)
-    
+
     try:
         case_ops = CaseOperations(db)
         # Use joined loading to avoid N+1 queries when accessing assigned_user
         from sqlalchemy.orm import joinedload
-        cases = case_ops.list_cases(status=status, limit=limit, options=[joinedload(Case.assigned_user)])
+
+        cases = case_ops.list_cases(
+            status=status, limit=limit, options=[joinedload(Case.assigned_user)]
+        )
 
         case_list = []
         for case in cases:

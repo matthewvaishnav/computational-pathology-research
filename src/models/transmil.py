@@ -407,7 +407,9 @@ class TransMIL(nn.Module):
 
             # Apply layer normalization
             cls_repr = (
-                self.norm[0](cls_repr) if isinstance(self.norm, nn.ModuleList) else self.norm(cls_repr)
+                self.norm[0](cls_repr)
+                if isinstance(self.norm, nn.ModuleList)
+                else self.norm(cls_repr)
             )
 
             # Classify
@@ -426,11 +428,11 @@ class TransMIL(nn.Module):
     ) -> torch.Tensor:
         """
         Extract feature representation before classification.
-        
+
         Args:
             features: Patch features [batch_size, num_patches, feature_dim]
             num_patches: Actual patch counts [batch_size] for masking padded patches
-        
+
         Returns:
             cls_repr: CLS token representation [batch_size, hidden_dim]
         """
@@ -493,7 +495,9 @@ class TransMIL(nn.Module):
 
             # Apply layer normalization
             cls_repr = (
-                self.norm[0](cls_repr) if isinstance(self.norm, nn.ModuleList) else self.norm(cls_repr)
+                self.norm[0](cls_repr)
+                if isinstance(self.norm, nn.ModuleList)
+                else self.norm(cls_repr)
             )
 
             return cls_repr

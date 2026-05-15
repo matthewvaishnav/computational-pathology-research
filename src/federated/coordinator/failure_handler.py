@@ -109,16 +109,18 @@ class ClientFailureHandler:
         self.notification_callback = notification_callback
 
         # Client tracking
-        self.client_metrics: ThreadSafeDict[str, ClientHealthMetrics] = ThreadSafeDict(name='client_metrics')
-        self.active_clients: ThreadSafeSet[str] = ThreadSafeSet(name='active_clients')
-        self.failed_clients: ThreadSafeSet[str] = ThreadSafeSet(name='failed_clients')
-        self.blacklisted_clients: ThreadSafeSet[str] = ThreadSafeSet(name='blacklisted_clients')
+        self.client_metrics: ThreadSafeDict[str, ClientHealthMetrics] = ThreadSafeDict(
+            name="client_metrics"
+        )
+        self.active_clients: ThreadSafeSet[str] = ThreadSafeSet(name="active_clients")
+        self.failed_clients: ThreadSafeSet[str] = ThreadSafeSet(name="failed_clients")
+        self.blacklisted_clients: ThreadSafeSet[str] = ThreadSafeSet(name="blacklisted_clients")
 
         # Round tracking
         self.current_round_id: int = 0
         self.round_start_time: Optional[datetime] = None
-        self.expected_clients: ThreadSafeSet[str] = ThreadSafeSet(name='expected_clients')
-        self.received_updates: ThreadSafeSet[str] = ThreadSafeSet(name='received_updates')
+        self.expected_clients: ThreadSafeSet[str] = ThreadSafeSet(name="expected_clients")
+        self.received_updates: ThreadSafeSet[str] = ThreadSafeSet(name="received_updates")
 
         # Monitoring
         self.monitoring_active = False
@@ -438,16 +440,16 @@ class ClientFailureHandler:
 
         self.monitoring_active = True
         self.stop_event.clear()
-        
+
         def cleanup_callback():
             """Cleanup callback for graceful shutdown."""
             logger.info("Failure handler monitoring cleanup completed")
-        
+
         self.monitor_thread = GracefulThread(
             target=self._monitoring_loop,
             name="failure_handler_monitor",
             daemon=False,
-            cleanup_callback=cleanup_callback
+            cleanup_callback=cleanup_callback,
         )
         self.monitor_thread.start()
         logger.info("Started client failure monitoring")
@@ -469,7 +471,7 @@ class ClientFailureHandler:
 
     def _monitoring_loop(self, thread: GracefulThread) -> None:
         """Background monitoring loop.
-        
+
         Args:
             thread: GracefulThread instance for shutdown coordination
         """

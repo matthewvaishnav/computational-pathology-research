@@ -13,10 +13,4 @@ from .nnmil_trainer import nnMILTrainer
 from .unified_trainer import UnifiedTrainer
 from .quick import QuickTrainer, train, evaluate
 
-__all__ = [
-    "nnMILTrainer",
-    "UnifiedTrainer",
-    "QuickTrainer",
-    "train",
-    "evaluate"
-]
+__all__ = ["nnMILTrainer", "UnifiedTrainer", "QuickTrainer", "train", "evaluate"]

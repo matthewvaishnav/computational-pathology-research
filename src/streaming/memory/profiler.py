@@ -9,11 +9,11 @@ Components:
 
 Usage:
     from streaming.memory.profiler import MemoryProfiler, MemorySnapshot
-    
+
     profiler = MemoryProfiler(device=torch.device("cuda"))
     snapshot = profiler.take_snapshot()
     print(f"GPU Memory: {snapshot.allocated_gb:.2f}GB")
-    
+
     # Track peak usage
     peak = profiler.get_peak_usage()
     print(f"Peak GPU: {peak['gpu_gb']:.2f}GB")
@@ -119,9 +119,7 @@ class MemoryProfiler:
 
         # Get total device memory
         if device.type == "cuda":
-            self.total_memory_gb = torch.cuda.get_device_properties(device).total_memory / (
-                1024**3
-            )
+            self.total_memory_gb = torch.cuda.get_device_properties(device).total_memory / (1024**3)
         else:
             self.total_memory_gb = memory_limit_gb
 

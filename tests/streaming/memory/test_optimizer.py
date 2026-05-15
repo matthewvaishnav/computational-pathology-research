@@ -105,9 +105,7 @@ class TestBatchOptimizer:
         """Test OOM adjustment reduces batch size."""
         opt = BatchOptimizer()
 
-        new_batch, new_tile = opt.adjust_for_oom(
-            current_batch_size=32, current_tile_size=224
-        )
+        new_batch, new_tile = opt.adjust_for_oom(current_batch_size=32, current_tile_size=224)
 
         # Should halve batch size
         assert new_batch == 16

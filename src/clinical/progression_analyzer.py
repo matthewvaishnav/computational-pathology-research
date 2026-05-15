@@ -23,14 +23,16 @@ try:
 except ImportError:
     # Fallback if treatment_response not available yet
     from enum import Enum
-    
+
     class ResponseKinetics(str, Enum):
         """Biological response kinetics patterns."""
+
         RAPID = "rapid"
         STANDARD = "standard"
         DELAYED = "delayed"
         BIPHASIC = "biphasic"
         PROGRESSIVE = "progressive"
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,7 @@ logger = logging.getLogger(__name__)
 class ProgressionAnalyzer:
     """
     Analyze disease progression patterns and treatment response kinetics.
-    
+
     Handles trajectory analysis, phase identification, and kinetics classification.
     """
 

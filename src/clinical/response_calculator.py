@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class ResponseCalculator:
     """
     Calculate treatment response metrics including magnitude and consistency.
-    
+
     Implements RECIST criteria and quantitative response assessment.
     """
 

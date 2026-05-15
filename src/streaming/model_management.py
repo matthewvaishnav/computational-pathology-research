@@ -275,11 +275,7 @@ class ModelDriftDetector:
         """
         self.performance_tracker = performance_tracker
         # Bounded queue to prevent memory exhaustion from alert accumulation
-        self.alert_queue = BoundedQueue(
-            maxsize=1000,
-            drop_policy='oldest',
-            name='alert_queue'
-        )
+        self.alert_queue = BoundedQueue(maxsize=1000, drop_policy="oldest", name="alert_queue")
         self.monitoring_active = False
         self.monitor_thread: Optional[GracefulThread] = None
 
@@ -297,16 +293,16 @@ class ModelDriftDetector:
             return
 
         self.monitoring_active = True
-        
+
         def cleanup_callback():
             """Cleanup callback for graceful shutdown."""
             logger.info("Drift monitoring cleanup completed")
-        
+
         self.monitor_thread = GracefulThread(
             target=self._monitoring_loop,
             name="drift_monitor",
             daemon=False,
-            cleanup_callback=cleanup_callback
+            cleanup_callback=cleanup_callback,
         )
         # Pass arguments through a wrapper since GracefulThread target receives thread as first arg
         self._monitor_args = (model_version, check_interval_minutes)
@@ -408,13 +404,13 @@ class ModelDriftDetector:
 
     def _monitoring_loop(self, thread: GracefulThread):
         """Continuous monitoring loop.
-        
+
         Args:
             thread: GracefulThread instance for shutdown coordination
         """
         # Get monitoring arguments
         model_version, check_interval_minutes = self._monitor_args
-        
+
         while not thread.should_stop():
             try:
                 alerts = self.check_for_drift(model_version)
@@ -469,7 +465,7 @@ class ModelDriftDetector:
 
     def get_queue_statistics(self) -> Dict[str, Any]:
         """Get alert queue statistics.
-        
+
         Returns:
             Dictionary with queue statistics including size, maxsize, and dropped count
         """
@@ -493,9 +489,7 @@ class AutomatedRetrainingManager:
         }
         # Bounded queue to prevent memory exhaustion from retraining request accumulation
         self.retraining_queue = BoundedQueue(
-            maxsize=1000,
-            drop_policy='oldest',
-            name='retraining_queue'
+            maxsize=1000, drop_policy="oldest", name="retraining_queue"
         )
 
         logger.info("AutomatedRetrainingManager initialized")
@@ -598,7 +592,7 @@ class AutomatedRetrainingManager:
 
     def get_queue_statistics(self) -> Dict[str, Any]:
         """Get retraining queue statistics.
-        
+
         Returns:
             Dictionary with queue statistics including size, maxsize, and dropped count
         """
