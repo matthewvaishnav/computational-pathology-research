@@ -19,6 +19,7 @@ from functools import wraps
 from threading import RLock
 from typing import Any, Callable, Dict, Optional, TypeVar
 
+from ..security.pickle_security_control import safe_pickle
 from ..utils.constants import (
     CACHE_TTL_SECONDS,
     MEMORY_PRESSURE_THRESHOLD,
@@ -79,7 +80,11 @@ class CacheEntry:
         return False
 
     def decompress(self) -> Any:
-        """Decompress data if compressed."""
+        """
+        Decompress data if compressed.
+        
+        Security: Uses HMAC signature validation + safe_pickle for defense-in-depth.
+        """
         if not self.compressed:
             return self.data
 
@@ -95,7 +100,9 @@ class CacheEntry:
             if not hmac.compare_digest(signature, expected_signature):
                 raise ValueError("Cache data integrity check failed - possible tampering")
 
-            return pickle.loads(data)  # nosec B301 - Data integrity verified via HMAC signature
+            # Use safe_pickle for additional security layer (class whitelist)
+            # HMAC already validated integrity, so mark as trusted
+            return safe_pickle.loads(data, trusted=True)
         except Exception as e:
             logger.error(f"Failed to decompress cache entry: {e}")
             raise

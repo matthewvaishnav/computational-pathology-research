@@ -14,6 +14,10 @@ Security Features:
 Usage:
     control = PickleSecurityControl(trusted_paths=["/app/models"])
     data = control.safe_load("/app/models/model.pkl")
+    
+    # Or use global instance for bytes deserialization
+    from src.security.pickle_security_control import safe_pickle
+    data = safe_pickle.loads(hmac_validated_bytes, trusted=True)
 """
 
 import io
@@ -220,6 +224,37 @@ class PickleSecurityControl:
             logger.error(f"Failed to load pickle from {check_path}: {e}")
             raise
 
+    def loads(self, data: bytes, trusted: bool = False) -> Any:
+        """
+        Safely deserialize pickle data from bytes.
+
+        Args:
+            data: Pickled bytes to deserialize
+            trusted: If True, use standard pickle (for HMAC-validated data)
+                    If False, use RestrictedUnpickler with class whitelist
+
+        Returns:
+            Deserialized object
+
+        Raises:
+            PickleSecurityError: If untrusted data contains unsafe classes
+        """
+        logger.debug(f"Pickle loads: trusted={trusted}, size={len(data)} bytes")
+
+        try:
+            if trusted:
+                # Trusted source (e.g., HMAC-validated cache data)
+                return pickle.loads(data)  # nosec B301 - Caller validated data integrity
+            else:
+                # Untrusted source - use restricted unpickler
+                return RestrictedUnpickler(io.BytesIO(data)).load()
+
+        except PickleSecurityError:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to deserialize pickle data: {e}")
+            raise
+
     def get_alternative_format(self) -> str:
         """
         Get recommendations for safer alternative formats.
@@ -254,3 +289,7 @@ class PickleSecurityControl:
         }
 
         logger.info(f"Security audit: {log_entry}")
+
+
+# Global instance for convenient access
+safe_pickle = PickleSecurityControl()
