@@ -82,7 +82,7 @@ class CacheEntry:
     def decompress(self) -> Any:
         """
         Decompress data if compressed.
-        
+
         Security: Uses HMAC signature validation + safe_pickle for defense-in-depth.
         """
         if not self.compressed:

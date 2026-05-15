@@ -14,7 +14,7 @@ Security Features:
 Usage:
     control = PickleSecurityControl(trusted_paths=["/app/models"])
     data = control.safe_load("/app/models/model.pkl")
-    
+
     # Or use global instance for bytes deserialization
     from src.security.pickle_security_control import safe_pickle
     data = safe_pickle.loads(hmac_validated_bytes, trusted=True)
