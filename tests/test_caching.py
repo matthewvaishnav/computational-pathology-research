@@ -126,3 +126,53 @@ def test_cache_with_safe_pickle():
     finally:
         if "CACHE_SECRET_KEY" in os.environ:
             del os.environ["CACHE_SECRET_KEY"]
+
+
+def test_cache_hmac_validation():
+    """Test that HMAC validation detects tampered cache data."""
+    data = {"test": "data" * 100, "list": list(range(500))}
+    entry = CacheEntry(data=data, timestamp=time.time())
+    
+    os.environ["CACHE_SECRET_KEY"] = "test-secret-key"
+    
+    try:
+        # Compress entry
+        entry.compress()
+        assert entry.compressed
+        
+        # Decompress to get signed data, then tamper with HMAC signature
+        import zlib
+        decompressed = zlib.decompress(entry.data)
+        
+        # Tamper with HMAC signature (first 32 bytes)
+        tampered_sig = bytearray(decompressed)
+        tampered_sig[0] ^= 0xFF  # Flip bits in signature
+        
+        # Re-compress tampered data
+        entry.data = zlib.compress(bytes(tampered_sig))
+        
+        # Decompress should raise ValueError due to HMAC mismatch
+        with pytest.raises(ValueError, match="integrity check failed"):
+            entry.decompress()
+    finally:
+        if "CACHE_SECRET_KEY" in os.environ:
+            del os.environ["CACHE_SECRET_KEY"]
+
+
+def test_malicious_pickle_rejected():
+    """Test that safe_pickle rejects malicious pickle payloads."""
+    from src.security.pickle_security_control import safe_pickle
+    from src.security.exceptions import PickleSecurityError
+    
+    # Create malicious pickle that tries to execute code
+    class MaliciousClass:
+        def __reduce__(self):
+            import os
+            return (os.system, ("echo pwned",))
+    
+    malicious_obj = MaliciousClass()
+    malicious_pickle = pickle.dumps(malicious_obj)
+    
+    # safe_pickle should reject this (not in whitelist)
+    with pytest.raises((pickle.UnpicklingError, TypeError, AttributeError, PickleSecurityError)):
+        safe_pickle.loads(malicious_pickle, trusted=False)
