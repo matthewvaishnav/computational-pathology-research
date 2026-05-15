@@ -186,7 +186,7 @@ class SMSNotifier(NotificationChannel):
             # Block private IP ranges
             if any(
                 x in parsed.netloc.lower()
-                for x in [
+                for x in [  # nosec B104
                     "localhost",
                     "127.0.0.1",
                     "0.0.0.0",
