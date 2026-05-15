@@ -218,7 +218,8 @@ def load_checkpoint_distributed(
     Returns:
         Checkpoint dictionary
     """
-    checkpoint = torch.load(filepath, map_location=device)
+    # nosec B614 - Safe: weights_only=True prevents code execution
+    checkpoint = torch.load(filepath, map_location=device, weights_only=True)
 
     # Load model state dict (handle DDP wrapper)
     if isinstance(model, (DataParallel, DistributedDataParallel)):

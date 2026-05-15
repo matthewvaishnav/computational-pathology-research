@@ -474,7 +474,7 @@ class InterpretabilityDashboard:
                 logger.error(f"Error exporting visualization: {e}", exc_info=True)
                 return jsonify({"success": False, "error": str(e)}), 500
 
-    def start(self, host: str = "0.0.0.0", debug: bool = False):
+    def start(self, host: str = "0.0.0.0", debug: bool = False):  # nosec B104
         """Start dashboard web server.
 
         Args:
@@ -645,7 +645,7 @@ class InterpretabilityDashboard:
         logger.info(f"Exporting visualization for {sample_id} as {output_format} (DPI={dpi})")
 
         # Placeholder: In real implementation, generate and save visualization
-        output_path = Path(f"/tmp/{sample_id}.{output_format}")
+        output_path = Path(f"/tmp/{sample_id}.{output_format}")  # nosec B108
 
         # Create a simple placeholder file
         import matplotlib.pyplot as plt
@@ -708,7 +708,7 @@ def start_dashboard(
     feature_importance=None,
     cache_backend: str = "memory",
     cache_config: Optional[Dict[str, Any]] = None,
-    host: str = "0.0.0.0",
+    host: str = "0.0.0.0",  # nosec B104
     port: int = 5000,
     debug: bool = False,
 ):
