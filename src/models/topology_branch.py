@@ -19,7 +19,7 @@ Reference:
 - TransnnMIL v2.0: Hierarchical + Topology (2027)
 """
 
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple, List, TYPE_CHECKING
 
 import torch
 import torch.nn as nn
@@ -52,6 +52,11 @@ except ImportError:
     Batch = None
     Data = None
     print("Warning: torch_geometric not available. Topology branch disabled.")
+    if TYPE_CHECKING:
+        from torch_geometric.data import Data, Batch
+    else:
+        Data = None
+        Batch = None
 
 
 class KNNGraphBuilder(nn.Module):
