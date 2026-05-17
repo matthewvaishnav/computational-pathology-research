@@ -21,6 +21,12 @@ Distributed Medical Intelligence (DMI):
   - Knowledge synthesis from multiple institutions
   - Specialization matching and contribution weighting
 
+Claude 3.5 Sonnet Integration:
+  - Free, unlimited research assistant powered by Puter.js
+  - Hypothesis generation, report analysis, and code explanation
+  - Python client and interactive web component
+  - No-cost access to state-of-the-art LLMs for research workflows
+
 Federated Learning Integration:
   - PathologyFL with expertise-weighted aggregation (hospital types, cancer-specific strategies)
   - Production security (DP-SGD, secure aggregation with TenSEAL, Byzantine robustness)
