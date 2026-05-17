@@ -48,6 +48,9 @@ try:
     TORCH_GEOMETRIC_AVAILABLE = True
 except ImportError:
     TORCH_GEOMETRIC_AVAILABLE = False
+    # Dummy types for type hints
+    Batch = None
+    Data = None
     print("Warning: torch_geometric not available. Topology branch disabled.")
 
 
@@ -252,7 +255,7 @@ class KNNGraphBuilder(nn.Module):
         coords_batch: torch.Tensor,
         features_batch: torch.Tensor,
         mask: Optional[torch.Tensor] = None,
-    ) -> Batch:
+    ):
         """
         Build batched PyG graphs.
 
