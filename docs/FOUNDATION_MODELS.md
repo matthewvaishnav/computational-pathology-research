@@ -54,6 +54,37 @@ python scripts/download_foundation_models.py --list
 
 ---
 
+## Claude 3.5 Sonnet Integration
+
+HistoCore now integrates with **Claude 3.5 Sonnet** via Puter.js, providing an intelligent research assistant for hypothesis generation, report analysis, and code explanation.
+
+### 1. Interactive Research Assistant
+
+The HistoCore documentation website includes an interactive Claude Research Assistant. This tool can be used to generate research hypotheses, explain model architectures, or assist with clinical validation strategies.
+
+### 2. Python Research Client
+
+For automated research workflows, a Python client is provided in `scripts/puter_claude_client.py`.
+
+```python
+from scripts.puter_claude_client import PuterClaudeClient
+
+# Initialize client (requires PUTER_AUTH_TOKEN)
+client = PuterClaudeClient()
+
+# Ask for research insights
+prompt = "Suggest three potential downstream tasks for Phikon features in prostate cancer analysis."
+response = client.chat(prompt)
+print(response)
+```
+
+**Setup:**
+1. Obtain a Puter Auth Token from the [Puter Dashboard](https://puter.com/dashboard).
+2. Set the `PUTER_AUTH_TOKEN` environment variable.
+3. Refer to [PUTER_SETUP.md](../PUTER_SETUP.md) for detailed instructions.
+
+---
+
 ## Model Comparison
 
 ### Performance Metrics
