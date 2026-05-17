@@ -19,7 +19,7 @@ Reference:
 - TransnnMIL v2.0: Hierarchical + Topology (2027)
 """
 
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, TYPE_CHECKING
 
 import torch
 import torch.nn as nn
@@ -34,6 +34,11 @@ try:
 except ImportError:
     TORCH_GEOMETRIC_AVAILABLE = False
     print("Warning: torch_geometric not available. Topology branch disabled.")
+    if TYPE_CHECKING:
+        from torch_geometric.data import Data, Batch
+    else:
+        Data = None
+        Batch = None
 
 
 class KNNGraphBuilder(nn.Module):
@@ -156,7 +161,7 @@ class KNNGraphBuilder(nn.Module):
         coords_batch: torch.Tensor,
         features_batch: torch.Tensor,
         mask: Optional[torch.Tensor] = None,
-    ) -> Batch:
+    ) -> "Batch":
         """
         Build batched PyG graphs.
         
