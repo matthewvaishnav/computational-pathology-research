@@ -2,10 +2,11 @@
 Tests for publication table generation.
 """
 
-import pytest
-from pathlib import Path
-import tempfile
 import shutil
+import tempfile
+from pathlib import Path
+
+import pytest
 
 from src.clinical.publication_tables import PublicationTableGenerator
 
@@ -141,7 +142,10 @@ class TestPublicationTableGenerator:
         }
 
         output_files = generator.generate_comparison_table(
-            model_results, output_name="test_comparison_no_bold", format="latex", highlight_best=False
+            model_results,
+            output_name="test_comparison_no_bold",
+            format="latex",
+            highlight_best=False,
         )
 
         latex_content = output_files["latex"].read_text()

@@ -10,7 +10,6 @@ import json
 import logging
 import re
 import uuid
-import defusedxml.ElementTree as ET
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -18,6 +17,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import aiohttp
+import defusedxml.ElementTree as ET
 from fhir.resources.diagnosticreport import DiagnosticReport
 from fhir.resources.observation import Observation
 from fhir.resources.servicerequest import ServiceRequest

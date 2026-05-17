@@ -28,13 +28,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Database and monitoring
-from src.database import initialize_database, DatabaseManager
-from src.monitoring.tracing import get_tracer
-
 # API components
 from src.api.dependencies import get_inference_engine
-from src.api.errors import http_exception_handler
+from src.api.errors import (
+    http_exception_handler,
+    internal_error_handler,
+    not_found_handler,
+    validation_error_handler,
+)
 from src.api.routers import admin, analysis, auth, mobile, monitoring
 from src.api.security import (
     get_security_headers,
@@ -42,11 +43,10 @@ from src.api.security import (
     log_security_event,
     validate_security_configuration,
 )
-from src.api.errors import (
-    internal_error_handler,
-    not_found_handler,
-    validation_error_handler,
-)
+
+# Database and monitoring
+from src.database import DatabaseManager, initialize_database
+from src.monitoring.tracing import get_tracer
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -68,14 +68,17 @@ app.state.start_time = time.time()
 # Add CORS middleware with environment-specific origins
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
+
 # Request ID middleware for tracing
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """Middleware to track requests with unique IDs for distributed tracing."""
+
     async def dispatch(self, request, call_next):
         request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
         return response
+
 
 app.add_middleware(RequestIDMiddleware)
 
@@ -160,21 +163,21 @@ async def shutdown_event() -> None:
     """Gracefully shutdown resources."""
     try:
         logger.info("Initiating graceful shutdown...")
-        
+
         # Close database connections
         db_manager = DatabaseManager()
         if db_manager:
             db_manager.close()
             logger.info("Database connections closed")
-        
+
         # Shutdown tracing
         tracer = get_tracer("histocore-api")
         if tracer:
             tracer.shutdown()
             logger.info("Distributed tracing shutdown")
-        
+
         log_security_event("system_shutdown", details="API server shutdown", success=True)
-        
+
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
         log_security_event("system_shutdown", details=f"Shutdown error: {e}", success=False)

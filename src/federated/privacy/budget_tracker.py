@@ -587,6 +587,7 @@ if __name__ == "__main__":
         round_num = i + 1
         # Use secrets for cryptographically secure random
         import secrets
+
         client_count = secrets.randbelow(5) + 3  # Range: 3-7
 
         print(f"\n--- Round {round_num} ---")

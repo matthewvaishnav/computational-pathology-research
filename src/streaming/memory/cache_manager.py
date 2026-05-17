@@ -9,11 +9,11 @@ Components:
 
 Usage:
     from streaming.memory.cache_manager import CacheManager
-    
+
     cache = CacheManager(max_size_mb=1000)
     cache.put("tile_123", tile_data)
     tile = cache.get("tile_123")
-    
+
     # Check cache stats
     stats = cache.get_stats()
     print(f"Hit rate: {stats['hit_rate']:.2%}")
@@ -329,8 +329,7 @@ class CacheManager:
                 self._evict_lru()
 
             logger.info(
-                f"Cache resized: {old_max / (1024 * 1024):.2f}MB -> "
-                f"{new_max_size_mb:.2f}MB"
+                f"Cache resized: {old_max / (1024 * 1024):.2f}MB -> " f"{new_max_size_mb:.2f}MB"
             )
 
     def __len__(self) -> int:

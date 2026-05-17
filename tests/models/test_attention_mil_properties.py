@@ -26,7 +26,9 @@ from pathlib import Path
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 # Import the refactored AttentionMIL
 from src.models.attention_mil import AttentionMIL
@@ -38,11 +40,11 @@ if not backup_path.exists():
 
 # Read the backup file and execute it in a separate namespace
 backup_namespace = {}
-with open(backup_path, 'r', encoding='utf-8') as f:
+with open(backup_path, "r", encoding="utf-8") as f:
     backup_code = f.read()
     exec(backup_code, backup_namespace)
 
-OldAttentionMIL = backup_namespace['AttentionMIL']
+OldAttentionMIL = backup_namespace["AttentionMIL"]
 
 
 # Hypothesis strategies for generating test data
@@ -52,19 +54,19 @@ def feature_tensor_strategy(draw):
     batch_size = draw(st.integers(min_value=1, max_value=8))
     num_patches = draw(st.integers(min_value=10, max_value=200))
     feature_dim = draw(st.sampled_from([512, 1024, 2048]))
-    
+
     # Generate random features
     features = torch.randn(batch_size, num_patches, feature_dim)
-    
+
     # Generate num_patches tensor (some samples may have fewer valid patches)
     actual_patches = []
     for _ in range(batch_size):
         # Each sample has between 50% and 100% of max patches
         actual = draw(st.integers(min_value=max(1, num_patches // 2), max_value=num_patches))
         actual_patches.append(actual)
-    
+
     num_patches_tensor = torch.tensor(actual_patches)
-    
+
     return features, num_patches_tensor, feature_dim
 
 
@@ -77,7 +79,7 @@ def model_config_strategy(draw):
     dropout = draw(st.floats(min_value=0.0, max_value=0.5))
     gated = draw(st.booleans())
     attention_mode = draw(st.sampled_from(["instance", "bag"]))
-    
+
     return {
         "feature_dim": feature_dim,
         "hidden_dim": hidden_dim,
@@ -101,7 +103,7 @@ def multi_scale_config_strategy(draw):
     gated = draw(st.booleans())
     num_scales = draw(st.integers(min_value=2, max_value=3))
     fusion_strategy = draw(st.sampled_from(["early", "late"]))
-    
+
     return {
         "feature_dim": feature_dim,
         "hidden_dim": hidden_dim,
@@ -133,9 +135,9 @@ class TestAttentionMILEquivalence:
     def test_attention_mil_single_scale_equivalence(self, config, features_data):
         """
         Property test: Refactored AttentionMIL produces identical outputs to original.
-        
+
         **Validates: Requirements FR-4, NFR-1**
-        
+
         Tests single-scale configurations with various:
         - Batch sizes (1-8)
         - Patch counts (10-200)
@@ -144,25 +146,25 @@ class TestAttentionMILEquivalence:
         - Different hidden dimensions
         """
         features, num_patches, feature_dim = features_data
-        
+
         # Skip if feature dimensions don't match
         if config["feature_dim"] != feature_dim:
             return
-        
+
         # Set random seed for reproducibility
         torch.manual_seed(42)
-        
+
         # Create old model
         old_model = OldAttentionMIL(**config)
         old_model.eval()
-        
+
         # Set random seed again for new model
         torch.manual_seed(42)
-        
+
         # Create new model
         new_model = AttentionMIL(**config)
         new_model.eval()
-        
+
         # Forward pass with old model
         with torch.no_grad():
             old_output = old_model(features, num_patches, return_attention=True)
@@ -171,7 +173,7 @@ class TestAttentionMILEquivalence:
             else:
                 old_logits = old_output
                 old_attention = None
-        
+
         # Forward pass with new model
         with torch.no_grad():
             new_output = new_model(features, num_patches, return_attention=True)
@@ -180,24 +182,26 @@ class TestAttentionMILEquivalence:
             else:
                 new_logits = new_output
                 new_attention = None
-        
+
         # Verify logits are identical
-        assert torch.allclose(old_logits, new_logits, atol=1e-6), \
-            f"Logits differ: max diff = {(old_logits - new_logits).abs().max()}"
-        
+        assert torch.allclose(
+            old_logits, new_logits, atol=1e-6
+        ), f"Logits differ: max diff = {(old_logits - new_logits).abs().max()}"
+
         # Verify attention weights are identical (if returned)
         if old_attention is not None and new_attention is not None:
-            assert torch.allclose(old_attention, new_attention, atol=1e-6), \
-                f"Attention weights differ: max diff = {(old_attention - new_attention).abs().max()}"
+            assert torch.allclose(
+                old_attention, new_attention, atol=1e-6
+            ), f"Attention weights differ: max diff = {(old_attention - new_attention).abs().max()}"
 
     @given(config=multi_scale_config_strategy())
     @settings(max_examples=50, deadline=None)
     def test_attention_mil_multi_scale_equivalence(self, config):
         """
         Property test: Multi-scale AttentionMIL produces identical outputs.
-        
+
         **Validates: Requirements FR-4, NFR-1**
-        
+
         Tests multi-scale configurations with:
         - 2-3 scales
         - Early vs late fusion
@@ -208,29 +212,29 @@ class TestAttentionMILEquivalence:
         num_patches = 100
         feature_dim = config["feature_dim"]
         num_scales = config["num_scales"]
-        
+
         # Generate features for each scale
         features = []
         for _ in range(num_scales):
             scale_features = torch.randn(batch_size, num_patches, feature_dim)
             features.append(scale_features)
-        
+
         num_patches_tensor = torch.tensor([num_patches] * batch_size)
-        
+
         # Set random seed for reproducibility
         torch.manual_seed(42)
-        
+
         # Create old model
         old_model = OldAttentionMIL(**config)
         old_model.eval()
-        
+
         # Set random seed again for new model
         torch.manual_seed(42)
-        
+
         # Create new model
         new_model = AttentionMIL(**config)
         new_model.eval()
-        
+
         # Forward pass with old model
         with torch.no_grad():
             old_output = old_model(features, num_patches_tensor, return_attention=True)
@@ -239,7 +243,7 @@ class TestAttentionMILEquivalence:
             else:
                 old_logits = old_output
                 old_attention = None
-        
+
         # Forward pass with new model
         with torch.no_grad():
             new_output = new_model(features, num_patches_tensor, return_attention=True)
@@ -248,20 +252,22 @@ class TestAttentionMILEquivalence:
             else:
                 new_logits = new_output
                 new_attention = None
-        
+
         # Verify logits are identical
-        assert torch.allclose(old_logits, new_logits, atol=1e-6), \
-            f"Multi-scale logits differ: max diff = {(old_logits - new_logits).abs().max()}"
-        
+        assert torch.allclose(
+            old_logits, new_logits, atol=1e-6
+        ), f"Multi-scale logits differ: max diff = {(old_logits - new_logits).abs().max()}"
+
         # Verify attention weights are identical (if returned)
         if old_attention is not None and new_attention is not None:
-            assert torch.allclose(old_attention, new_attention, atol=1e-6), \
-                f"Multi-scale attention weights differ: max diff = {(old_attention - new_attention).abs().max()}"
+            assert torch.allclose(
+                old_attention, new_attention, atol=1e-6
+            ), f"Multi-scale attention weights differ: max diff = {(old_attention - new_attention).abs().max()}"
 
     def test_attention_mil_equivalence_fixed_example(self):
         """
         Unit test: Verify equivalence with a fixed example.
-        
+
         This is a simpler test case to debug if property tests fail.
         """
         # Fixed configuration
@@ -276,22 +282,22 @@ class TestAttentionMILEquivalence:
             "num_scales": 1,
             "fusion_strategy": "early",
         }
-        
+
         # Fixed input
         batch_size = 4
         num_patches = 100
         features = torch.randn(batch_size, num_patches, 1024)
         num_patches_tensor = torch.tensor([100, 80, 90, 100])
-        
+
         # Set random seed
         torch.manual_seed(42)
         old_model = OldAttentionMIL(**config)
         old_model.eval()
-        
+
         torch.manual_seed(42)
         new_model = AttentionMIL(**config)
         new_model.eval()
-        
+
         # Forward pass
         with torch.no_grad():
             old_output = old_model(features, num_patches_tensor, return_attention=True)
@@ -300,14 +306,14 @@ class TestAttentionMILEquivalence:
             else:
                 old_logits = old_output
                 old_attention = None
-            
+
             new_output = new_model(features, num_patches_tensor, return_attention=True)
             if isinstance(new_output, tuple):
                 new_logits, new_attention = new_output
             else:
                 new_logits = new_output
                 new_attention = None
-        
+
         # Verify
         assert torch.allclose(old_logits, new_logits, atol=1e-6)
         if old_attention is not None and new_attention is not None:
@@ -328,20 +334,20 @@ class TestAttentionMILEquivalence:
             "num_scales": 1,
             "fusion_strategy": "early",
         }
-        
+
         batch_size = 4
         num_patches = 100
         features = torch.randn(batch_size, num_patches, 1024)
         num_patches_tensor = torch.tensor([100, 80, 90, 100])
-        
+
         torch.manual_seed(42)
         old_model = OldAttentionMIL(**config)
         old_model.eval()
-        
+
         torch.manual_seed(42)
         new_model = AttentionMIL(**config)
         new_model.eval()
-        
+
         with torch.no_grad():
             old_output = old_model(features, num_patches_tensor, return_attention=True)
             if isinstance(old_output, tuple):
@@ -349,14 +355,14 @@ class TestAttentionMILEquivalence:
             else:
                 old_logits = old_output
                 old_attention = None
-            
+
             new_output = new_model(features, num_patches_tensor, return_attention=True)
             if isinstance(new_output, tuple):
                 new_logits, new_attention = new_output
             else:
                 new_logits = new_output
                 new_attention = None
-        
+
         assert torch.allclose(old_logits, new_logits, atol=1e-6)
         if old_attention is not None and new_attention is not None:
             assert torch.allclose(old_attention, new_attention, atol=1e-6)
@@ -376,22 +382,22 @@ class TestAttentionMILEquivalence:
             "num_scales": 2,
             "fusion_strategy": "early",
         }
-        
+
         batch_size = 4
         num_patches = 100
         scale1 = torch.randn(batch_size, num_patches, 1024)
         scale2 = torch.randn(batch_size, num_patches, 1024)
         features = [scale1, scale2]
         num_patches_tensor = torch.tensor([100, 80, 90, 100])
-        
+
         torch.manual_seed(42)
         old_model = OldAttentionMIL(**config)
         old_model.eval()
-        
+
         torch.manual_seed(42)
         new_model = AttentionMIL(**config)
         new_model.eval()
-        
+
         with torch.no_grad():
             old_output = old_model(features, num_patches_tensor, return_attention=True)
             if isinstance(old_output, tuple):
@@ -399,14 +405,14 @@ class TestAttentionMILEquivalence:
             else:
                 old_logits = old_output
                 old_attention = None
-            
+
             new_output = new_model(features, num_patches_tensor, return_attention=True)
             if isinstance(new_output, tuple):
                 new_logits, new_attention = new_output
             else:
                 new_logits = new_output
                 new_attention = None
-        
+
         assert torch.allclose(old_logits, new_logits, atol=1e-6)
         if old_attention is not None and new_attention is not None:
             assert torch.allclose(old_attention, new_attention, atol=1e-6)
@@ -426,22 +432,22 @@ class TestAttentionMILEquivalence:
             "num_scales": 2,
             "fusion_strategy": "late",
         }
-        
+
         batch_size = 4
         num_patches = 100
         scale1 = torch.randn(batch_size, num_patches, 1024)
         scale2 = torch.randn(batch_size, num_patches, 1024)
         features = [scale1, scale2]
         num_patches_tensor = torch.tensor([100, 80, 90, 100])
-        
+
         torch.manual_seed(42)
         old_model = OldAttentionMIL(**config)
         old_model.eval()
-        
+
         torch.manual_seed(42)
         new_model = AttentionMIL(**config)
         new_model.eval()
-        
+
         with torch.no_grad():
             old_output = old_model(features, num_patches_tensor, return_attention=True)
             if isinstance(old_output, tuple):
@@ -449,14 +455,14 @@ class TestAttentionMILEquivalence:
             else:
                 old_logits = old_output
                 old_attention = None
-            
+
             new_output = new_model(features, num_patches_tensor, return_attention=True)
             if isinstance(new_output, tuple):
                 new_logits, new_attention = new_output
             else:
                 new_logits = new_output
                 new_attention = None
-        
+
         assert torch.allclose(old_logits, new_logits, atol=1e-6)
         if old_attention is not None and new_attention is not None:
             assert torch.allclose(old_attention, new_attention, atol=1e-6)

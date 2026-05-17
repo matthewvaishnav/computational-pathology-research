@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class CellType(IntEnum):
     """Cell type classification for histopathology analysis."""
+
     TUMOR = 0
     LYMPHOCYTE = 1
     PLASMA = 2
@@ -31,6 +32,7 @@ class CellType(IntEnum):
 
 class ImmunoePhenotype(IntEnum):
     """Tumor immune microenvironment phenotype classification."""
+
     INFLAMED = 0  # TILs infiltrating tumour
     EXCLUDED = 1  # TILs at tumour margin only
     DESERT = 2  # TILs absent

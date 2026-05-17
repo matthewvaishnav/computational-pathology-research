@@ -366,7 +366,9 @@ class IntegrationTestRunner:
         if self.config["docker"]["auto_start"]:
             try:
                 compose_file = self.config["docker"]["compose_file"]
-                subprocess.run(["docker-compose", "-f", compose_file, "down"], capture_output=True, check=False)
+                subprocess.run(
+                    ["docker-compose", "-f", compose_file, "down"], capture_output=True, check=False
+                )
                 print("✅ Docker services stopped")
             except Exception as e:
                 print(f"⚠️ Docker cleanup warning: {e}")

@@ -11,7 +11,7 @@ import numpy as np
 @dataclass
 class InferenceResult:
     """Result of model inference."""
-    
+
     prediction: float
     confidence: float
     class_probabilities: Dict[str, float]
@@ -24,7 +24,7 @@ class InferenceResult:
 @dataclass
 class BatchInferenceResult:
     """Result of batch inference."""
-    
+
     results: List[InferenceResult]
     batch_size: int
     total_processing_time: float
@@ -35,7 +35,7 @@ class BatchInferenceResult:
 @dataclass
 class StreamingInferenceResult:
     """Result of streaming inference."""
-    
+
     tile_results: List[InferenceResult]
     aggregated_result: InferenceResult
     tile_coordinates: List[Tuple[int, int, int, int]]

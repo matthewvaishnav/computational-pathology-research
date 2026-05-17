@@ -120,7 +120,9 @@ class WSIPipelineValidator:
             test_patches = np.random.randint(0, 255, (4, 256, 256, 3), dtype=np.uint8)
             features = generator.extract_features(test_patches)
             assert features.shape[0] == 4, f"Wrong batch size: {features.shape[0]}"
-            assert features.shape[1] == generator.feature_dim, f"Wrong feature dim: {features.shape[1]}"
+            assert (
+                features.shape[1] == generator.feature_dim
+            ), f"Wrong feature dim: {features.shape[1]}"
             results["feature_generator"] = {
                 "status": "pass",
                 "error": None,
@@ -148,8 +150,12 @@ class WSIPipelineValidator:
                 )
 
                 loaded_data = cache.load_features("test_slide")
-                assert np.array_equal(loaded_data["features"], test_features), "Features don't match"
-                assert np.array_equal(loaded_data["coordinates"], test_coords), "Coordinates don't match"
+                assert np.array_equal(
+                    loaded_data["features"], test_features
+                ), "Features don't match"
+                assert np.array_equal(
+                    loaded_data["coordinates"], test_coords
+                ), "Coordinates don't match"
 
                 results["feature_cache"] = {
                     "status": "pass",
@@ -321,8 +327,12 @@ class WSIPipelineValidator:
                 processing_time = time.time() - start_time
 
                 # Validate results
-                assert loaded_data["features"].shape == features.shape, "Feature shape mismatch after caching"
-                assert loaded_data["coordinates"].shape == coords_array.shape, "Coordinate shape mismatch after caching"
+                assert (
+                    loaded_data["features"].shape == features.shape
+                ), "Feature shape mismatch after caching"
+                assert (
+                    loaded_data["coordinates"].shape == coords_array.shape
+                ), "Coordinate shape mismatch after caching"
                 if not ("blur_scores" in qc_report):
                     raise ValueError("Missing QC metrics")
 

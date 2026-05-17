@@ -15,9 +15,9 @@ import torch
 import torch.nn as nn
 import torch.quantization as quant
 from torch.quantization import (
+    convert,
     get_default_qconfig,
     prepare,
-    convert,
     prepare_qat,
     quantize_dynamic,
 )
@@ -327,18 +327,14 @@ class ModelQuantizer:
             "improvements": {
                 "speedup": speedup,
                 "memory_reduction": memory_reduction,
-                "latency_reduction_ms": (
-                    original_stats["mean_time"] - quantized_stats["mean_time"]
-                )
+                "latency_reduction_ms": (original_stats["mean_time"] - quantized_stats["mean_time"])
                 * 1000,
             },
         }
 
         logger.info(f"Speedup: {speedup:.2f}x")
         logger.info(f"Memory reduction: {memory_reduction:.2f}x")
-        logger.info(
-            f"Latency reduction: {results['improvements']['latency_reduction_ms']:.2f}ms"
-        )
+        logger.info(f"Latency reduction: {results['improvements']['latency_reduction_ms']:.2f}ms")
 
         return results
 
@@ -432,9 +428,7 @@ class ModelQuantizer:
         size_mb = save_path.stat().st_size / (1024 * 1024)
         logger.info(f"Model size: {size_mb:.2f} MB")
 
-    def load_quantized_model(
-        self, model: nn.Module, load_path: Path
-    ) -> Tuple[nn.Module, Dict]:
+    def load_quantized_model(self, model: nn.Module, load_path: Path) -> Tuple[nn.Module, Dict]:
         """Load quantized model.
 
         Args:
@@ -534,9 +528,5 @@ if __name__ == "__main__":
     print(f"\nQuantization Results:")
     print(f"  Speedup: {results['improvements']['speedup']:.2f}x")
     print(f"  Memory reduction: {results['improvements']['memory_reduction']:.2f}x")
-    print(
-        f"  Original size: {results['original']['model_size'] / 1024:.2f} KB"
-    )
-    print(
-        f"  Quantized size: {results['quantized']['model_size'] / 1024:.2f} KB"
-    )
+    print(f"  Original size: {results['original']['model_size'] / 1024:.2f} KB")
+    print(f"  Quantized size: {results['quantized']['model_size'] / 1024:.2f} KB")

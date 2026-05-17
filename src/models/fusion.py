@@ -50,7 +50,7 @@ class CrossModalAttention(nn.Module):
         self.num_heads = num_heads
         self.dropout = dropout
         self.head_dim = embed_dim // num_heads
-        
+
         # Gradient checkpointing flag
         self.use_checkpoint = False
 
@@ -71,7 +71,7 @@ class CrossModalAttention(nn.Module):
 
         # Layer normalization
         self.norm = nn.LayerNorm(embed_dim)
-    
+
     def enable_gradient_checkpointing(self):
         """Enable gradient checkpointing to save memory."""
         self.use_checkpoint = True
@@ -100,7 +100,7 @@ class CrossModalAttention(nn.Module):
                 self._forward_impl, query, key, value, key_mask, use_reentrant=False
             )
         return self._forward_impl(query, key, value, key_mask)
-    
+
     def _forward_impl(
         self,
         query: torch.Tensor,
@@ -336,7 +336,7 @@ class MultiModalFusionLayer(nn.Module):
         fused = self.fusion_proj(concatenated)  # [B, embed_dim]
 
         return fused
-    
+
     def enable_gradient_checkpointing(self):
         """Enable gradient checkpointing in all cross-attention modules."""
         for cross_attn in self.cross_attentions.values():

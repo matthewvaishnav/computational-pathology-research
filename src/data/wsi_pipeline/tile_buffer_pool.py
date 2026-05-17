@@ -18,31 +18,31 @@ import logging
 import threading
 import time
 import weakref
+import zlib
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-import zlib
 
 import numpy as np
 import psutil
 import torch
 from PIL import Image
 
-from .exceptions import ProcessingError, ResourceError
-from ..utils.common import log_operation, format_bytes
+from ..utils.common import format_bytes, log_operation
 from ..utils.constants import (
+    COMPRESSION_THRESHOLD_MB,
+    DEFAULT_BUFFER_SIZE,
     DEFAULT_MAX_MEMORY_GB,
     DEFAULT_MIN_MEMORY_GB,
-    DEFAULT_BUFFER_SIZE,
+    GC_FREQUENCY,
     MAX_BUFFER_SIZE,
+    MAX_TILE_SIZE,
     MEMORY_PRESSURE_THRESHOLD,
     MEMORY_TARGET_USAGE,
-    COMPRESSION_THRESHOLD_MB,
-    GC_FREQUENCY,
     MIN_TILE_SIZE,
-    MAX_TILE_SIZE,
 )
+from .exceptions import ProcessingError, ResourceError
 
 logger = logging.getLogger(__name__)
 
@@ -58,13 +58,13 @@ class TileBufferConfig:
     # Buffer settings (using constants)
     initial_buffer_size: int = DEFAULT_BUFFER_SIZE
     max_buffer_size: int = MAX_BUFFER_SIZE
-    
+
     # Memory optimization settings (using constants)
     enable_compression: bool = True
     compression_threshold_mb: float = COMPRESSION_THRESHOLD_MB
     memory_pressure_threshold: float = MEMORY_PRESSURE_THRESHOLD
     gc_frequency: int = GC_FREQUENCY
-    
+
     # Adaptive sizing (using constants)
     enable_adaptive_sizing: bool = True
     min_tile_size: int = MIN_TILE_SIZE
@@ -1061,38 +1061,36 @@ class TileBufferPool:
 
     def optimize_memory_usage(self):
         """Optimize memory usage through intelligent cleanup and compression."""
+
         def _optimize():
             if not self._tiles:
                 return
-            
+
             current_memory = self.get_memory_usage()
             max_memory = self.config.max_memory_gb * 1024**3
-            
+
             # If over memory pressure threshold, start cleanup
             if current_memory > max_memory * self.config.memory_pressure_threshold:
                 # Sort tiles by last access time (LRU)
-                sorted_tiles = sorted(
-                    self._tiles.items(),
-                    key=lambda x: x[1].last_accessed
-                )
-                
+                sorted_tiles = sorted(self._tiles.items(), key=lambda x: x[1].last_accessed)
+
                 evicted = 0
                 target_memory = max_memory * MEMORY_TARGET_USAGE
-                
+
                 for tile_key, metadata in sorted_tiles:
                     if current_memory <= target_memory:
                         break
-                    
+
                     current_memory -= self._calculate_tile_memory_size(metadata.data)
                     del self._tiles[tile_key]
                     evicted += 1
-                
+
                 if evicted > 0:
                     logger.info(f"Memory optimization: evicted {evicted} tiles")
-            
+
             # Force garbage collection to free memory
             gc.collect()
-        
+
         return self._with_lock(_optimize)
 
     def __enter__(self):

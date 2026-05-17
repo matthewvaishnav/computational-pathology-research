@@ -13,7 +13,7 @@ title: Home
   <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg" alt="PyTorch">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-  <img src="https://img.shields.io/badge/tests-4740-green.svg" alt="4,740 tests">
+  <img src="https://img.shields.io/badge/tests-5071-green.svg" alt="5,071 tests">
 </div>
 
 ---
@@ -22,7 +22,7 @@ title: Home
 
 HistoCore provides a production-grade PyTorch implementation for computational pathology research, enabling reproducible experiments on whole slide image (WSI) analysis. Built on PyTorch 2.0+, it includes working pipelines for PatchCamelyon and CAMELYON16 benchmarks, achieving **95.37% validation AUC** and **93.100% validation AUC** on real histopathology data (262K training samples, 32K test samples) with state-of-the-art attention-based Multiple Instance Learning (MIL) models.
 
-The framework features **8-12x optimized training pipeline** with torch.compile, mixed precision (AMP), and advanced GPU optimizations, reducing training time from 20-40 hours to 2-3 hours on consumer hardware. Includes first open-source **federated learning system** for digital pathology with ε ≤ 1.0 differential privacy (8/8 property tests passing), production-ready **PACS integration** with multi-vendor support and HIPAA compliance (40/48 properties validated), advanced model interpretability tools, comprehensive testing infrastructure (4,740 tests), and real-time inference performance (<5 seconds) suitable for production clinical environments.
+The framework features **8-12x optimized training pipeline** with torch.compile, mixed precision (AMP), and advanced GPU optimizations, reducing training time from 20-40 hours to 2-3 hours on consumer hardware. Includes first open-source **federated learning system** for digital pathology with ε ≤ 1.0 differential privacy (8/8 property tests passing), production-ready **PACS integration** with multi-vendor support and HIPAA compliance (40/48 properties validated), advanced model interpretability tools, comprehensive testing infrastructure (5,071 tests), and real-time inference performance (<5 seconds) suitable for production clinical environments.
 
 <div class="callout callout-warning">
   <strong>Research Use Only:</strong> This framework is designed for research purposes and has not been validated for clinical diagnostic use.
@@ -65,7 +65,7 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
   
   <div class="feature-card">
     <h3>🏥 Production Ready</h3>
-    <p><5 second inference, PACS integration, HIPAA compliance, 4,740 tests. Ready for clinical deployment.</p>
+    <p><5 second inference, PACS integration, HIPAA compliance, 5,071 tests. Ready for clinical deployment.</p>
   </div>
   
   <div class="feature-card">
@@ -243,10 +243,16 @@ The framework features **8-12x optimized training pipeline** with torch.compile,
 - **<30s streaming** for gigapixel slides
 
 **Production Features:**
-- **5,000+ tests** across 310 modules with property-based testing
+- **5,071 tests** across 310 modules with property-based testing
 - **39+ security commits** (authentication, input validation, privacy)
 - **Privacy guarantees:** TenSEAL + Opacus required (no silent degradation)
 - **HIPAA compliance:** Audit logging, encryption, access controls
+
+**Current Development (May 2026):**
+- **TransnnMIL v2.0** (Week 7 of 12): Hierarchical pooling + topology-aware GNNs
+- **Feature-level fusion** ✅ completed with comprehensive testing
+- **3-branch architecture** ✅ integrated (attention + hierarchical + topology)
+- See [Current Status](CURRENT_STATUS) for detailed progress
 
 ---
 
@@ -275,6 +281,7 @@ Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
 ## Documentation
 
 <div class="doc-links">
+  <a href="CURRENT_STATUS" class="doc-link">📊 Current Status (May 2026)</a>
   <a href="GETTING_STARTED" class="doc-link">Getting Started</a>
   <a href="ARCHITECTURE" class="doc-link">🏗️ Architecture</a>
   <a href="PERFORMANCE_COMPARISON" class="doc-link">📊 Performance vs Competitors</a>
@@ -328,6 +335,7 @@ If you use this framework in your research, please cite:
 ---
 
 <div class="footer-note">
+  <p><strong>📊 Current Status:</strong> Week 7 of 12 for TransnnMIL v2.0 development. See <a href="CURRENT_STATUS">Current Status</a> for detailed progress.</p>
   <p><strong>Contact:</strong> For questions or collaboration opportunities, please open an issue on <a href="https://github.com/matthewvaishnav/histocore/issues">GitHub</a>.</p>
-  <p><em>Last updated: May 2026</em></p>
+  <p><em>Last updated: May 14, 2026</em></p>
 </div>

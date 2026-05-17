@@ -12,10 +12,11 @@ import pickle
 import sqlite3
 import threading
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
 from .safe_pickle import safe_pickle_loads
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FeatureCacheConfig:
     """Configuration for feature caching."""
+
     max_cache_size_mb: int = 1000  # Maximum cache size in MB
     max_entries: int = 50000  # Maximum number of feature entries
     ttl_hours: int = 48  # Time to live in hours
@@ -40,6 +42,7 @@ class FeatureCacheConfig:
 @dataclass
 class FeatureEntry:
     """Feature cache entry containing computed features and metadata."""
+
     key: str
     input_hash: str
     layer_name: str
@@ -56,7 +59,7 @@ class FeatureEntry:
 class FeatureCacheManager:
     """
     Manages caching of intermediate features and embeddings for mobile inference.
-    
+
     Enables reuse of computed features across similar inputs or when processing
     different model layers, significantly reducing computation time.
     """
@@ -69,23 +72,25 @@ class FeatureCacheManager:
         self.layer_index: Dict[str, List[str]] = {}  # layer_name -> [keys]
         self.total_size_bytes = 0
         self.lock = threading.RLock()
-        
+
         # Setup cache directory
         self.cache_dir = Path(config.cache_directory)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Setup persistent storage
         if config.enable_persistence:
             self.db_path = self.cache_dir / "feature_cache.db"
             self._init_database()
             self._load_from_database()
-        
+
         # Start cleanup thread
         self._start_cleanup_thread()
-        
+
         logger.info(
             "Feature cache initialized: max_size=%dMB, max_entries=%d, similarity=%s",
-            config.max_cache_size_mb, config.max_entries, config.feature_similarity_method
+            config.max_cache_size_mb,
+            config.max_entries,
+            config.feature_similarity_method,
         )
 
     def _init_database(self) -> None:
@@ -127,28 +132,42 @@ class FeatureCacheManager:
         """Load feature entries from persistent database."""
         if not self.db_path.exists():
             return
-            
+
         try:
             with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT key, input_hash, layer_name, features, feature_hash, model_version,
                            created_at, last_accessed, access_count, size_bytes, metadata
                     FROM feature_entries
                     ORDER BY last_accessed DESC
                     LIMIT ?
-                """, (self.config.max_entries,))
-                
+                """,
+                    (self.config.max_entries,),
+                )
+
                 for row in cursor.fetchall():
                     try:
-                        key, input_hash, layer_name, features_blob, feature_hash, model_version, \
-                        created_at_str, last_accessed_str, access_count, size_bytes, metadata_str = row
-                        
+                        (
+                            key,
+                            input_hash,
+                            layer_name,
+                            features_blob,
+                            feature_hash,
+                            model_version,
+                            created_at_str,
+                            last_accessed_str,
+                            access_count,
+                            size_bytes,
+                            metadata_str,
+                        ) = row
+
                         # Deserialize data
                         features = safe_pickle_loads(features_blob)
                         created_at = datetime.fromisoformat(created_at_str)
                         last_accessed = datetime.fromisoformat(last_accessed_str)
                         metadata = json.loads(metadata_str) if metadata_str else {}
-                        
+
                         # Create feature entry
                         entry = FeatureEntry(
                             key=key,
@@ -161,27 +180,27 @@ class FeatureCacheManager:
                             last_accessed=last_accessed,
                             access_count=access_count,
                             size_bytes=size_bytes,
-                            metadata=metadata
+                            metadata=metadata,
                         )
-                        
+
                         # Add to cache and indices
                         self.cache[key] = entry
                         self.total_size_bytes += size_bytes
-                        
+
                         # Update indices
                         if feature_hash not in self.feature_index:
                             self.feature_index[feature_hash] = []
                         self.feature_index[feature_hash].append(key)
-                        
+
                         if layer_name not in self.layer_index:
                             self.layer_index[layer_name] = []
                         self.layer_index[layer_name].append(key)
-                        
+
                     except Exception as e:
                         logger.warning("Failed to load feature entry %s: %s", row[0], e)
-                        
+
             logger.info("Loaded %d feature entries from database", len(self.cache))
-            
+
         except Exception as e:
             logger.error("Failed to load feature cache from database: %s", e)
 
@@ -189,33 +208,36 @@ class FeatureCacheManager:
         """Save feature entry to persistent database."""
         if not self.config.enable_persistence:
             return
-            
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Serialize data
                 features_blob = pickle.dumps(entry.features)
                 metadata_str = str(entry.metadata)
-                
-                conn.execute("""
+
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO feature_entries
                     (key, input_hash, layer_name, features, feature_hash, model_version,
                      created_at, last_accessed, access_count, size_bytes, metadata)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    entry.key,
-                    entry.input_hash,
-                    entry.layer_name,
-                    features_blob,
-                    entry.feature_hash,
-                    entry.model_version,
-                    entry.created_at.isoformat(),
-                    entry.last_accessed.isoformat(),
-                    entry.access_count,
-                    entry.size_bytes,
-                    metadata_str
-                ))
+                """,
+                    (
+                        entry.key,
+                        entry.input_hash,
+                        entry.layer_name,
+                        features_blob,
+                        entry.feature_hash,
+                        entry.model_version,
+                        entry.created_at.isoformat(),
+                        entry.last_accessed.isoformat(),
+                        entry.access_count,
+                        entry.size_bytes,
+                        metadata_str,
+                    ),
+                )
                 conn.commit()
-                
+
         except Exception as e:
             logger.error("Failed to save feature entry to database: %s", e)
 
@@ -223,7 +245,7 @@ class FeatureCacheManager:
         """Remove feature entry from persistent database."""
         if not self.config.enable_persistence:
             return
-            
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("DELETE FROM feature_entries WHERE key = ?", (key,))
@@ -236,8 +258,8 @@ class FeatureCacheManager:
         if isinstance(input_data, np.ndarray):
             data_bytes = input_data.tobytes()
         else:
-            data_bytes = str(input_data).encode('utf-8')
-        
+            data_bytes = str(input_data).encode("utf-8")
+
         return hashlib.sha256(data_bytes).hexdigest()
 
     def _compute_feature_hash(self, features: np.ndarray) -> str:
@@ -249,69 +271,66 @@ class FeatureCacheManager:
             sample_features = features.flat[indices]
         else:
             sample_features = features
-        
+
         return hashlib.sha256(sample_features.tobytes()).hexdigest()
 
     def _compute_feature_similarity(self, features1: np.ndarray, features2: np.ndarray) -> float:
         """Compute similarity between two feature arrays."""
         if features1.shape != features2.shape:
             return 0.0
-        
+
         if self.config.feature_similarity_method == "cosine":
             # Cosine similarity
             dot_product = np.dot(features1.flatten(), features2.flatten())
             norm1 = np.linalg.norm(features1)
             norm2 = np.linalg.norm(features2)
-            
+
             if norm1 == 0 or norm2 == 0:
                 return 0.0
-            
+
             return dot_product / (norm1 * norm2)
-            
+
         elif self.config.feature_similarity_method == "euclidean":
             # Euclidean distance (converted to similarity)
             distance = np.linalg.norm(features1 - features2)
             max_distance = np.linalg.norm(features1) + np.linalg.norm(features2)
-            
+
             if max_distance == 0:
                 return 1.0
-            
+
             return 1.0 - (distance / max_distance)
-            
+
         elif self.config.feature_similarity_method == "manhattan":
             # Manhattan distance (converted to similarity)
             distance = np.sum(np.abs(features1 - features2))
             max_distance = np.sum(np.abs(features1)) + np.sum(np.abs(features2))
-            
+
             if max_distance == 0:
                 return 1.0
-            
+
             return 1.0 - (distance / max_distance)
-        
+
         else:
             raise ValueError(f"Unknown similarity method: {self.config.feature_similarity_method}")
 
     def _find_similar_features(
-        self, 
-        features: np.ndarray, 
-        layer_name: str,
-        model_version: str
+        self, features: np.ndarray, layer_name: str, model_version: str
     ) -> Optional[FeatureEntry]:
         """Find similar cached features."""
         best_similarity = 0.0
         best_entry = None
-        
+
         # Check entries for the same layer and model version
         layer_keys = self.layer_index.get(layer_name, [])
-        
+
         for key in layer_keys:
             if key not in self.cache:
                 continue
-                
+
             entry = self.cache[key]
             if entry.model_version != model_version:
                 continue
-            
+
             try:
                 similarity = self._compute_feature_similarity(features, entry.features)
                 if similarity >= self.config.similarity_threshold and similarity > best_similarity:
@@ -319,7 +338,7 @@ class FeatureCacheManager:
                     best_entry = entry
             except Exception as e:
                 logger.warning("Failed to compute feature similarity: %s", e)
-        
+
         return best_entry
 
     def _update_access_tracking(self, key: str) -> None:
@@ -338,20 +357,17 @@ class FeatureCacheManager:
         """Evict feature cache entries using LRU policy."""
         if not self._should_evict():
             return
-        
+
         # Sort by last accessed time (oldest first)
-        sorted_entries = sorted(
-            self.cache.items(),
-            key=lambda x: x[1].last_accessed
-        )
-        
+        sorted_entries = sorted(self.cache.items(), key=lambda x: x[1].last_accessed)
+
         # Remove oldest entries until under limits
         target_count = self.config.max_entries // 2
-        entries_to_remove = sorted_entries[:len(sorted_entries) - target_count]
-        
+        entries_to_remove = sorted_entries[: len(sorted_entries) - target_count]
+
         for key, _ in entries_to_remove:
             self._remove_entry(key)
-        
+
         if entries_to_remove:
             logger.info("Evicted %d feature cache entries", len(entries_to_remove))
 
@@ -359,33 +375,34 @@ class FeatureCacheManager:
         """Remove feature cache entry."""
         if key not in self.cache:
             return
-            
+
         entry = self.cache[key]
-        
+
         # Update size tracking
         self.total_size_bytes -= entry.size_bytes
-        
+
         # Remove from indices
         if entry.feature_hash in self.feature_index:
             if key in self.feature_index[entry.feature_hash]:
                 self.feature_index[entry.feature_hash].remove(key)
             if not self.feature_index[entry.feature_hash]:
                 del self.feature_index[entry.feature_hash]
-        
+
         if entry.layer_name in self.layer_index:
             if key in self.layer_index[entry.layer_name]:
                 self.layer_index[entry.layer_name].remove(key)
             if not self.layer_index[entry.layer_name]:
                 del self.layer_index[entry.layer_name]
-        
+
         # Remove from cache
         del self.cache[key]
-        
+
         # Remove from database
         self._remove_from_database(key)
 
     def _start_cleanup_thread(self) -> None:
         """Start background cleanup thread."""
+
         def cleanup_worker():
             while True:
                 try:
@@ -395,54 +412,54 @@ class FeatureCacheManager:
                         self._cleanup_expired()
                 except Exception as e:
                     logger.error("Feature cache cleanup error: %s", e)
-        
+
         cleanup_thread = threading.Thread(target=cleanup_worker, daemon=True)
         cleanup_thread.start()
 
     def get_features(
-        self, 
-        input_data: Any, 
+        self,
+        input_data: Any,
         layer_name: str,
         model_version: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[np.ndarray]:
         """
         Get cached features for input data and layer.
-        
+
         Args:
             input_data: Input data for feature lookup
             layer_name: Name of the model layer
             model_version: Version of the model
             metadata: Optional metadata for lookup
-            
+
         Returns:
             Cached features if found, None otherwise
         """
         with self.lock:
             input_hash = self._compute_input_hash(input_data)
             cache_key = f"{model_version}:{layer_name}:{input_hash}"
-            
+
             # Try exact match first
             if cache_key in self.cache:
                 entry = self.cache[cache_key]
                 self._update_access_tracking(cache_key)
                 logger.debug("Feature cache hit (exact): %s", cache_key[:32])
                 return entry.features.copy()
-            
+
             logger.debug("Feature cache miss: %s", cache_key[:32])
             return None
 
     def put_features(
-        self, 
-        input_data: Any, 
+        self,
+        input_data: Any,
         layer_name: str,
         features: np.ndarray,
         model_version: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Store computed features in cache.
-        
+
         Args:
             input_data: Input data that generated the features
             layer_name: Name of the model layer
@@ -454,7 +471,7 @@ class FeatureCacheManager:
             input_hash = self._compute_input_hash(input_data)
             feature_hash = self._compute_feature_hash(features)
             cache_key = f"{model_version}:{layer_name}:{input_hash}"
-            
+
             # Calculate size
             try:
                 if self.config.enable_compression:
@@ -465,7 +482,7 @@ class FeatureCacheManager:
             except Exception as e:
                 logger.warning("Failed to serialize features for caching: %s", e)
                 return
-            
+
             # Create feature entry
             entry = FeatureEntry(
                 key=cache_key,
@@ -478,35 +495,35 @@ class FeatureCacheManager:
                 last_accessed=datetime.now(),
                 access_count=1,
                 size_bytes=size_bytes,
-                metadata=metadata or {}
+                metadata=metadata or {},
             )
-            
+
             # Check if we need to evict first
             if self._should_evict():
                 self._evict_entries()
-            
+
             # Add to cache
             if cache_key in self.cache:
                 # Update existing entry
                 old_entry = self.cache[cache_key]
                 self.total_size_bytes -= old_entry.size_bytes
                 self._remove_from_indices(cache_key, old_entry)
-            
+
             self.cache[cache_key] = entry
             self.total_size_bytes += size_bytes
-            
+
             # Update indices
             if feature_hash not in self.feature_index:
                 self.feature_index[feature_hash] = []
             self.feature_index[feature_hash].append(cache_key)
-            
+
             if layer_name not in self.layer_index:
                 self.layer_index[layer_name] = []
             self.layer_index[layer_name].append(cache_key)
-            
+
             # Save to database
             self._save_to_database(entry)
-            
+
             logger.debug("Cached features: %s (%.1fKB)", cache_key[:32], size_bytes / 1024)
 
     def _remove_from_indices(self, key: str, entry: FeatureEntry) -> None:
@@ -516,7 +533,7 @@ class FeatureCacheManager:
                 self.feature_index[entry.feature_hash].remove(key)
             if not self.feature_index[entry.feature_hash]:
                 del self.feature_index[entry.feature_hash]
-        
+
         if entry.layer_name in self.layer_index:
             if key in self.layer_index[entry.layer_name]:
                 self.layer_index[entry.layer_name].remove(key)
@@ -524,98 +541,95 @@ class FeatureCacheManager:
                 del self.layer_index[entry.layer_name]
 
     def get_similar_features(
-        self, 
-        features: np.ndarray, 
-        layer_name: str,
-        model_version: str
+        self, features: np.ndarray, layer_name: str, model_version: str
     ) -> Optional[Tuple[np.ndarray, float]]:
         """
         Find similar cached features.
-        
+
         Args:
             features: Features to find similar matches for
             layer_name: Name of the model layer
             model_version: Version of the model
-            
+
         Returns:
             Tuple of (similar_features, similarity_score) if found, None otherwise
         """
         with self.lock:
             similar_entry = self._find_similar_features(features, layer_name, model_version)
-            
+
             if similar_entry:
                 self._update_access_tracking(similar_entry.key)
                 similarity = self._compute_feature_similarity(features, similar_entry.features)
-                logger.debug("Similar features found: %s (similarity=%.3f)", 
-                           similar_entry.key[:32], similarity)
+                logger.debug(
+                    "Similar features found: %s (similarity=%.3f)",
+                    similar_entry.key[:32],
+                    similarity,
+                )
                 return similar_entry.features.copy(), similarity
-            
+
             return None
 
     def invalidate_layer(self, layer_name: str, model_version: Optional[str] = None) -> int:
         """
         Invalidate cached features for a specific layer.
-        
+
         Args:
             layer_name: Name of the layer to invalidate
             model_version: If specified, only invalidate for this model version
-            
+
         Returns:
             Number of entries invalidated
         """
         with self.lock:
             layer_keys = self.layer_index.get(layer_name, []).copy()
             removed_count = 0
-            
+
             for key in layer_keys:
                 if key not in self.cache:
                     continue
-                    
+
                 entry = self.cache[key]
                 if model_version is None or entry.model_version == model_version:
                     self._remove_entry(key)
                     removed_count += 1
-            
+
             logger.info("Invalidated %d feature entries for layer %s", removed_count, layer_name)
             return removed_count
 
     def invalidate_model(self, model_version: str) -> int:
         """
         Invalidate all cached features for a specific model version.
-        
+
         Args:
             model_version: Model version to invalidate
-            
+
         Returns:
             Number of entries invalidated
         """
         with self.lock:
             keys_to_remove = [
-                key for key, entry in self.cache.items()
-                if entry.model_version == model_version
+                key for key, entry in self.cache.items() if entry.model_version == model_version
             ]
-            
+
             for key in keys_to_remove:
                 self._remove_entry(key)
-            
-            logger.info("Invalidated %d feature entries for model %s", 
-                       len(keys_to_remove), model_version)
+
+            logger.info(
+                "Invalidated %d feature entries for model %s", len(keys_to_remove), model_version
+            )
             return len(keys_to_remove)
 
     def _cleanup_expired(self) -> int:
         """Clean up expired feature entries."""
         cutoff_time = datetime.now() - timedelta(hours=self.config.ttl_hours)
-        expired_keys = [
-            key for key, entry in self.cache.items()
-            if entry.created_at < cutoff_time
-        ]
-        
+        expired_keys = [key for key, entry in self.cache.items() if entry.created_at < cutoff_time]
+
         for key in expired_keys:
             self._remove_entry(key)
-        
+
         if expired_keys:
             logger.info("Cleaned up %d expired feature entries", len(expired_keys))
-        
+
         return len(expired_keys)
 
     def get_stats(self) -> Dict[str, Any]:
@@ -623,21 +637,24 @@ class FeatureCacheManager:
         with self.lock:
             total_accesses = sum(entry.access_count for entry in self.cache.values())
             avg_access_count = total_accesses / len(self.cache) if self.cache else 0
-            
+
             layer_stats = {}
             for layer_name, keys in self.layer_index.items():
                 layer_stats[layer_name] = len(keys)
-            
+
             return {
                 "total_entries": len(self.cache),
                 "total_size_mb": self.total_size_bytes / (1024 * 1024),
                 "max_size_mb": self.config.max_cache_size_mb,
                 "utilization_percent": (len(self.cache) / self.config.max_entries) * 100,
-                "size_utilization_percent": (self.total_size_bytes / (self.config.max_cache_size_mb * 1024 * 1024)) * 100,
+                "size_utilization_percent": (
+                    self.total_size_bytes / (self.config.max_cache_size_mb * 1024 * 1024)
+                )
+                * 100,
                 "total_accesses": total_accesses,
                 "average_access_count": avg_access_count,
                 "layers_cached": len(self.layer_index),
                 "layer_distribution": layer_stats,
                 "similarity_method": self.config.feature_similarity_method,
-                "similarity_threshold": self.config.similarity_threshold
+                "similarity_threshold": self.config.similarity_threshold,
             }

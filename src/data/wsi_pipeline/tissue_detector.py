@@ -210,7 +210,9 @@ class TissueDetector:
             if self.model_path and self.model_path != "default":
                 # Load custom model
                 logger.info(f"Loading custom tissue model from {self.model_path}")
-                self.model = torch.load(self.model_path, map_location=self.device, weights_only=True)
+                self.model = torch.load(
+                    self.model_path, map_location=self.device, weights_only=True
+                )
             else:
                 # Use default simple model (randomly initialized)
                 logger.info("Using default tissue segmentation model (randomly initialized)")

@@ -311,12 +311,12 @@ class InputValidator:
         filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
 
         # Limit length
-        if len(filename) > cls.MAX_FILENAME_LENGTH:
+        if len(filename) > InputValidator.MAX_FILENAME_LENGTH:
             name, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
             filename = (
-                name[: cls.MAX_FILENAME_LENGTH - len(ext) - 1] + "." + ext
+                name[: InputValidator.MAX_FILENAME_LENGTH - len(ext) - 1] + "." + ext
                 if ext
-                else name[: cls.MAX_FILENAME_LENGTH]
+                else name[: InputValidator.MAX_FILENAME_LENGTH]
             )
 
         return filename
@@ -338,16 +338,12 @@ def validate_inference_request(data: Dict[str, Any]) -> Dict[str, Any]:
 
     # Validate image path
     if "image_path" in data:
-        validated["image_path"] = InputValidator.validate_path(
-            data["image_path"], must_exist=True
-        )
+        validated["image_path"] = InputValidator.validate_path(data["image_path"], must_exist=True)
         InputValidator.validate_image_file(str(validated["image_path"]))
 
     # Validate model path
     if "model_path" in data:
-        validated["model_path"] = InputValidator.validate_path(
-            data["model_path"], must_exist=True
-        )
+        validated["model_path"] = InputValidator.validate_path(data["model_path"], must_exist=True)
         InputValidator.validate_model_file(str(validated["model_path"]))
 
     # Validate batch size

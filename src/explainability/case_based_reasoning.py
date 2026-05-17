@@ -191,7 +191,9 @@ class CaseDatabase:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_institution ON cases(institution)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_quality ON cases(image_quality_score)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_confidence ON cases(confidence_score)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_annotation_time ON cases(annotation_time)")
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_annotation_time ON cases(annotation_time)"
+            )
 
             conn.commit()
         except Exception as e:

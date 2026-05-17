@@ -89,7 +89,7 @@ class BenchmarkManifest:
                     json.dump(asdict(e), f, separators=(",", ":"))
                     f.write("\n")
             return True
-        
+
         # Append new entry
         self.add_entry(entry)
         return False

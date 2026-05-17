@@ -11,7 +11,6 @@ import hashlib
 import json
 import logging
 import ssl
-import defusedxml.ElementTree as ET
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -19,6 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
+import defusedxml.ElementTree as ET
 import zeep
 from zeep import wsse
 
@@ -695,7 +695,9 @@ class AllscriptsEMRPlugin(EMRPlugin):
                 try:
                     dob = datetime.strptime(dob_str, "%m/%d/%Y")
                 except (ValueError, TypeError) as e:
-                    self.logger.warning(f"Invalid DOB format in delimited data: error_code=INVALID_DOB")
+                    self.logger.warning(
+                        f"Invalid DOB format in delimited data: error_code=INVALID_DOB"
+                    )
                     pass
 
             gender = fields[7] if len(fields) > 7 else "U"

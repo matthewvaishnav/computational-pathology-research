@@ -615,6 +615,7 @@ class ModelOptimizer:
             onnx_path = None
             if self.onnx_optimizer:
                 import tempfile
+
                 # Use secure temp file creation to prevent race conditions
                 fd, onnx_path = tempfile.mkstemp(suffix=".onnx", prefix=f"{model_name}_")
                 os.close(fd)  # Close fd, we just need the path

@@ -71,7 +71,9 @@ class CLAM(MILBase):
                     dropout=dropout,
                 )
             else:
-                raise ValueError(f"fusion_strategy must be 'early' or 'late', got {fusion_strategy}")
+                raise ValueError(
+                    f"fusion_strategy must be 'early' or 'late', got {fusion_strategy}"
+                )
 
         super().__init__(feature_dim, num_classes, attention, fusion)
 
@@ -89,8 +91,12 @@ class CLAM(MILBase):
         # Feature projection layer(s)
         if multi_scale and num_scales > 1:
             self.feature_proj = nn.ModuleList(
-                [nn.Sequential(nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout))
-                 for _ in range(num_scales)]
+                [
+                    nn.Sequential(
+                        nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
+                    )
+                    for _ in range(num_scales)
+                ]
             )
         else:
             self.feature_proj = nn.Sequential(
@@ -100,14 +106,22 @@ class CLAM(MILBase):
         # Instance-level classifier for clustering
         if multi_scale and num_scales > 1 and fusion_strategy == "late":
             self.instance_classifier = nn.ModuleList(
-                [nn.Sequential(nn.Linear(hidden_dim, hidden_dim // 2), nn.ReLU(),
-                              nn.Dropout(dropout), nn.Linear(hidden_dim // 2, num_clusters))
-                 for _ in range(num_scales)]
+                [
+                    nn.Sequential(
+                        nn.Linear(hidden_dim, hidden_dim // 2),
+                        nn.ReLU(),
+                        nn.Dropout(dropout),
+                        nn.Linear(hidden_dim // 2, num_clusters),
+                    )
+                    for _ in range(num_scales)
+                ]
             )
         else:
             self.instance_classifier = nn.Sequential(
-                nn.Linear(hidden_dim, hidden_dim // 2), nn.ReLU(),
-                nn.Dropout(dropout), nn.Linear(hidden_dim // 2, num_clusters)
+                nn.Linear(hidden_dim, hidden_dim // 2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(hidden_dim // 2, num_clusters),
             )
 
         # Attention branches
@@ -137,8 +151,10 @@ class CLAM(MILBase):
             bag_input_dim = hidden_dim * 2 if multi_branch else hidden_dim
 
         self.bag_classifier = nn.Sequential(
-            nn.Linear(bag_input_dim, hidden_dim), nn.ReLU(),
-            nn.Dropout(dropout), nn.Linear(hidden_dim, num_classes)
+            nn.Linear(bag_input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, num_classes),
         )
 
     def _project_features(self, features: torch.Tensor, scale_idx: int = 0) -> torch.Tensor:
@@ -197,10 +213,13 @@ class CLAM(MILBase):
         if self.multi_branch:
             attention_pos = self._compute_attention_weights(h, mask, "positive", scale_idx)
             attention_neg = self._compute_attention_weights(h, mask, "negative", scale_idx)
-            slide_repr = torch.cat([
-                self._aggregate_with_attention(h, attention_pos),
-                self._aggregate_with_attention(h, attention_neg)
-            ], dim=1)
+            slide_repr = torch.cat(
+                [
+                    self._aggregate_with_attention(h, attention_pos),
+                    self._aggregate_with_attention(h, attention_neg),
+                ],
+                dim=1,
+            )
             attention_weights = {"positive": attention_pos, "negative": attention_neg}
         else:
             attention_weights = self._compute_attention_weights(h, mask, "single", scale_idx)
@@ -218,10 +237,13 @@ class CLAM(MILBase):
         if self.multi_branch:
             attention_pos = self._compute_attention_weights(h, mask, "positive", 0)
             attention_neg = self._compute_attention_weights(h, mask, "negative", 0)
-            slide_repr = torch.cat([
-                self._aggregate_with_attention(h, attention_pos),
-                self._aggregate_with_attention(h, attention_neg)
-            ], dim=1)
+            slide_repr = torch.cat(
+                [
+                    self._aggregate_with_attention(h, attention_pos),
+                    self._aggregate_with_attention(h, attention_neg),
+                ],
+                dim=1,
+            )
             attention_weights = {"positive": attention_pos, "negative": attention_neg}
         else:
             attention_weights = self._compute_attention_weights(h, mask, "single", 0)
@@ -274,11 +296,16 @@ class CLAM(MILBase):
         features: Union[torch.Tensor, List[torch.Tensor]],
         num_patches: Optional[torch.Tensor] = None,
         return_attention: bool = False,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, Union[torch.Tensor, Dict[str, torch.Tensor]], torch.Tensor]]:
+    ) -> Union[
+        torch.Tensor,
+        Tuple[torch.Tensor, Union[torch.Tensor, Dict[str, torch.Tensor]], torch.Tensor],
+    ]:
         """Forward pass through CLAM model."""
         if isinstance(features, list):
             if not self.multi_scale:
-                raise ValueError("Model was not initialized with multi_scale=True but received list of features")
+                raise ValueError(
+                    "Model was not initialized with multi_scale=True but received list of features"
+                )
 
             first_scale = next((f for f in features if f is not None), None)
             if first_scale is None:
@@ -292,9 +319,13 @@ class CLAM(MILBase):
                 ) < num_patches.unsqueeze(1)
 
             if self.fusion_strategy == "early":
-                slide_repr, attention_weights, instance_preds = self._early_fusion_forward(features, mask)
+                slide_repr, attention_weights, instance_preds = self._early_fusion_forward(
+                    features, mask
+                )
             elif self.fusion_strategy == "late":
-                slide_repr, attention_weights, instance_preds = self._late_fusion_forward(features, mask)
+                slide_repr, attention_weights, instance_preds = self._late_fusion_forward(
+                    features, mask
+                )
             else:
                 raise ValueError(f"Unknown fusion_strategy: {self.fusion_strategy}")
         else:
@@ -305,7 +336,9 @@ class CLAM(MILBase):
                     0
                 ) < num_patches.unsqueeze(1)
 
-            slide_repr, attention_weights, instance_preds = self._process_single_scale(features, mask, 0)
+            slide_repr, attention_weights, instance_preds = self._process_single_scale(
+                features, mask, 0
+            )
 
         logits = self.bag_classifier(slide_repr)
         return (logits, attention_weights, instance_preds) if return_attention else logits

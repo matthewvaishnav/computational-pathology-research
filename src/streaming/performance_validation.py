@@ -442,10 +442,12 @@ class PerformanceValidator:
             }
 
         # Build log message efficiently
-        avg_speed = np.mean([v['speed_advantage_x'] for v in competitive_analysis.values()])
-        avg_memory = np.mean([v['memory_efficiency_x'] for v in competitive_analysis.values()])
-        avg_throughput = np.mean([v['throughput_advantage_x'] for v in competitive_analysis.values()])
-        
+        avg_speed = np.mean([v["speed_advantage_x"] for v in competitive_analysis.values()])
+        avg_memory = np.mean([v["memory_efficiency_x"] for v in competitive_analysis.values()])
+        avg_throughput = np.mean(
+            [v["throughput_advantage_x"] for v in competitive_analysis.values()]
+        )
+
         logger.info(
             f"Competitive benchmarking completed. "
             f"Average advantages: "

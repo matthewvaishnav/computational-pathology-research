@@ -144,7 +144,7 @@ class CaseOperations(BaseOperations):
             query = query.filter(Case.priority == priority)
         if assigned_user_id:
             query = query.filter(Case.assigned_user_id == assigned_user_id)
-        
+
         # Apply any additional query options (e.g., joinedload)
         if options:
             for option in options:
@@ -271,7 +271,9 @@ class AnalysisOperations(BaseOperations):
 
     def get_analysis_count_by_case(self, case_id: UUID) -> int:
         """Get count of analyses for a case."""
-        return self.session.query(func.count(Analysis.id)).filter(Analysis.case_id == case_id).scalar()
+        return (
+            self.session.query(func.count(Analysis.id)).filter(Analysis.case_id == case_id).scalar()
+        )
 
 
 class DicomOperations(BaseOperations):

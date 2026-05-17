@@ -50,9 +50,7 @@ class TestCLIParser:
     def test_parse_run_command_with_frameworks(self):
         """Test parsing run command with specific frameworks."""
         parser = create_parser()
-        args = parser.parse_args(
-            ["run", "--mode", "quick", "--frameworks", "HistoCore", "PathML"]
-        )
+        args = parser.parse_args(["run", "--mode", "quick", "--frameworks", "HistoCore", "PathML"])
 
         assert args.command == "run"
         assert args.frameworks == ["HistoCore", "PathML"]
@@ -164,9 +162,7 @@ class TestConfigLoading:
             },
         }
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_dict, f)
             config_path = Path(f.name)
 
@@ -206,9 +202,7 @@ class TestConfigLoading:
             },
         }
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(config_dict, f)
             config_path = Path(f.name)
 

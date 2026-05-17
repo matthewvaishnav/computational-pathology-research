@@ -445,7 +445,7 @@ class ModelPerformanceMonitor:
         """Check for performance degradation and generate alerts."""
         # Check accuracy threshold
         if current_metrics.accuracy < self.monitoring_config["accuracy_threshold"]:
-            threshold = self.monitoring_config['accuracy_threshold']
+            threshold = self.monitoring_config["accuracy_threshold"]
             message = (
                 f"Model accuracy ({current_metrics.accuracy:.3f}) "
                 f"below threshold ({threshold:.3f})"
@@ -499,7 +499,7 @@ class ModelPerformanceMonitor:
 
         # Accuracy-based retraining trigger
         if current_metrics.accuracy < self.monitoring_config["retraining_threshold"]:
-            threshold = self.monitoring_config['retraining_threshold']
+            threshold = self.monitoring_config["retraining_threshold"]
             justification = (
                 f"Accuracy ({current_metrics.accuracy:.3f}) "
                 f"below retraining threshold ({threshold:.3f})"
@@ -545,10 +545,9 @@ class ModelPerformanceMonitor:
             )
 
             if recent_performance < historical_performance - 0.02:  # 2% degradation
-                degradation_pct = ((historical_performance - recent_performance) * 100)
+                degradation_pct = (historical_performance - recent_performance) * 100
                 justification = (
-                    f"Performance degraded by {degradation_pct:.1f}% "
-                    f"over recent period"
+                    f"Performance degraded by {degradation_pct:.1f}% " f"over recent period"
                 )
                 recommendations.append(
                     RetrainingRecommendation(

@@ -26,6 +26,9 @@ This module has been refactored to use focused components:
 import logging
 from typing import Any, Dict, List, Optional
 
+# Import visualization functions
+from . import treatment_response_viz
+
 # Re-export components for backward compatibility
 from .outcome_predictor import (
     TreatmentResponseMetrics,
@@ -34,15 +37,12 @@ from .outcome_predictor import (
 from .progression_analyzer import ResponseKinetics
 from .treatment_facade import TreatmentResponseAnalyzer
 
-# Import visualization functions
-from . import treatment_response_viz
-
 logger = logging.getLogger(__name__)
 
 # Re-export all public classes for backward compatibility
 __all__ = [
     "ResponseKinetics",
-    "UnexpectedResponseType", 
+    "UnexpectedResponseType",
     "TreatmentResponseMetrics",
     "TreatmentResponseAnalyzer",
     "treatment_response_viz",

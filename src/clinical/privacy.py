@@ -144,22 +144,22 @@ class AES256Encryption(EncryptionProvider):
     def key(self) -> bytes:
         """Get encryption key."""
         return self._key
-    
+
     def rotate_key(self, new_key: Optional[bytes] = None) -> bytes:
         """
         Rotate encryption key.
-        
+
         Args:
             new_key: New encryption key (generated if not provided)
-            
+
         Returns:
             New encryption key
         """
         if new_key is None:
             new_key = Fernet.generate_key()
-        
+
         old_key = self._key
-        
+
         # Securely wipe old key from memory
         if old_key:
             # Overwrite with random data multiple times
@@ -169,30 +169,30 @@ class AES256Encryption(EncryptionProvider):
                     old_key_array[i] = secrets.randbits(8)
             del old_key_array
             del old_key
-        
+
         self._key = new_key
         self.fernet = Fernet(new_key)
-        
+
         logger.info("Encryption key rotated securely")
         return new_key
-    
+
     def re_encrypt_with_new_key(self, encrypted_data: bytes, new_key: bytes) -> bytes:
         """
         Re-encrypt data with new key during key rotation.
-        
+
         Args:
             encrypted_data: Data encrypted with old key
             new_key: New encryption key
-            
+
         Returns:
             Data encrypted with new key
         """
         # Decrypt with old key
         decrypted = self.decrypt(encrypted_data)
-        
+
         # Rotate to new key
         self.rotate_key(new_key)
-        
+
         # Encrypt with new key
         return self.encrypt(decrypted)
 
@@ -211,7 +211,7 @@ class PatientIdentifierAnonymizer:
         # Validate input
         if not patient_id or len(patient_id) > 100:
             raise ValueError("Invalid patient ID")
-        
+
         # Use HMAC-SHA256 for consistent, irreversible anonymization
         mac = hmac.new(self.secret_key, patient_id.encode(), hashlib.sha256)
         return f"anon_{mac.hexdigest()[:16]}"  # 16 hex chars for 21 total length
@@ -301,9 +301,10 @@ class RBACManager:
         if not user_id or len(user_id) > 64:
             raise ValueError("Invalid user ID")
         import re
-        if not re.match(r'^[a-zA-Z0-9._-]+$', user_id):
+
+        if not re.match(r"^[a-zA-Z0-9._-]+$", user_id):
             raise ValueError("Invalid user ID format")
-        
+
         session_token = secrets.token_urlsafe(32)
         permissions = custom_permissions or self.ROLE_PERMISSIONS.get(role, set())
 
@@ -319,13 +320,15 @@ class RBACManager:
 
         self.active_sessions[session_token] = session
         # Store encrypted session data
-        session_data = json.dumps({
-            'user_id': session.user_id,
-            'role': session.role.value,
-            'created_at': session.created_at.isoformat(),
-            'last_activity': session.last_activity.isoformat(),
-            'ip_address': session.ip_address
-        }).encode()
+        session_data = json.dumps(
+            {
+                "user_id": session.user_id,
+                "role": session.role.value,
+                "created_at": session.created_at.isoformat(),
+                "last_activity": session.last_activity.isoformat(),
+                "ip_address": session.ip_address,
+            }
+        ).encode()
         self._encrypted_sessions[session_token] = self._session_encryption.encrypt(session_data)
         self.logger.info(f"Created session for user {user_id}")
         return session_token

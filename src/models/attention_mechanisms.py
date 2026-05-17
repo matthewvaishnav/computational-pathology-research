@@ -65,9 +65,7 @@ class AttentionMechanism(ABC, nn.Module):
         self.hidden_dim = hidden_dim
 
     @abstractmethod
-    def forward(
-        self, features: torch.Tensor, mask: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Compute attention weights or transform features.
 
@@ -128,9 +126,7 @@ class GatedAttention(AttentionMechanism):
         # Final projection to scalar attention score
         self.attention_w = nn.Linear(hidden_dim, 1)
 
-    def forward(
-        self, features: torch.Tensor, mask: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Compute gated attention weights.
 
@@ -194,9 +190,7 @@ class SimpleAttention(AttentionMechanism):
             nn.Linear(feature_dim, hidden_dim), nn.Tanh(), nn.Linear(hidden_dim, 1)
         )
 
-    def forward(
-        self, features: torch.Tensor, mask: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
+    def forward(self, features: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Compute simple attention weights.
 

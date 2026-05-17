@@ -15,11 +15,10 @@ import pytest
 import torch
 
 from src.streaming.memory.profiler import (
-    MemoryProfiler,
     MemoryPressureLevel,
+    MemoryProfiler,
     MemorySnapshot,
 )
-
 
 # ============================================================================
 # Fixtures
@@ -172,9 +171,7 @@ class TestMemoryProfiler:
     @patch("torch.cuda.memory_allocated", return_value=1024**3)  # 1GB
     @patch("torch.cuda.memory_reserved", return_value=2 * 1024**3)  # 2GB
     @patch("torch.cuda.get_device_properties")
-    def test_take_snapshot_cuda(
-        self, mock_props, mock_reserved, mock_allocated, mock_available
-    ):
+    def test_take_snapshot_cuda(self, mock_props, mock_reserved, mock_allocated, mock_available):
         """Test taking snapshot on CUDA device."""
         # Mock device properties
         mock_device_props = MagicMock()

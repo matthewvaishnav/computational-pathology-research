@@ -24,8 +24,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .metrics import record_processing_time, timed_operation
 from src.utils.safe_threading import TimeoutLock
+
+from .metrics import record_processing_time, timed_operation
 
 logger = logging.getLogger(__name__)
 
@@ -318,7 +319,7 @@ class ModelValidator:
             # Validate version format and extract numeric parts only
             v1_parts = [int(x) for x in version1.split(".") if x.isdigit()]
             v2_parts = [int(x) for x in version2.split(".") if x.isdigit()]
-            
+
             # Ensure we have valid version parts
             if not v1_parts or not v2_parts:
                 return False
@@ -356,7 +357,7 @@ class ModelHotSwapper:
 
         self.current_model: Optional[nn.Module] = None
         self.current_metadata: Optional[ModelMetadata] = None
-        self.model_lock = TimeoutLock(timeout=30.0, name='model_swap_lock')
+        self.model_lock = TimeoutLock(timeout=30.0, name="model_swap_lock")
 
         logger.info("Model hot swapper initialized")
 
@@ -489,7 +490,7 @@ class ABTestingManager:
         self.stats_a = {"requests": 0, "total_time": 0.0, "errors": 0}
         self.stats_b = {"requests": 0, "total_time": 0.0, "errors": 0}
 
-        self.lock = TimeoutLock(timeout=30.0, name='ab_testing_lock')
+        self.lock = TimeoutLock(timeout=30.0, name="ab_testing_lock")
 
         logger.info(f"A/B testing manager initialized: traffic_split={traffic_split}")
 
@@ -599,8 +600,12 @@ class ABTestingManager:
                 # Calculate winner
                 if results["model_a"]["requests"] > 0 and results["model_b"]["requests"] > 0:
                     # Compare by avg time and error rate
-                    a_score = results["model_a"]["avg_time_ms"] * (1 + results["model_a"]["error_rate"])
-                    b_score = results["model_b"]["avg_time_ms"] * (1 + results["model_b"]["error_rate"])
+                    a_score = results["model_a"]["avg_time_ms"] * (
+                        1 + results["model_a"]["error_rate"]
+                    )
+                    b_score = results["model_b"]["avg_time_ms"] * (
+                        1 + results["model_b"]["error_rate"]
+                    )
 
                     results["winner"] = "A" if a_score < b_score else "B"
                     results["improvement_pct"] = abs((b_score - a_score) / a_score * 100)
@@ -616,7 +621,7 @@ class ABTestingManager:
                 "model_a": {"model_id": None, "requests": 0, "avg_time_ms": 0, "error_rate": 0},
                 "model_b": {"model_id": None, "requests": 0, "avg_time_ms": 0, "error_rate": 0},
                 "winner": None,
-                "improvement_pct": 0
+                "improvement_pct": 0,
             }
 
     def finalize_test(self, promote_winner: bool = True) -> str:

@@ -649,13 +649,15 @@ class FoundationModelTrainer:
             parts.append("\n")
 
         # Performance targets
-        parts.extend([
-            "## Performance Targets\n",
-            "- ✅ Processing time <30s per slide\n",
-            "- ✅ Memory usage <2GB\n",
-            "- ✅ Accuracy >90% per disease\n",
-            "- ✅ Zero-shot detection capability\n\n",
-        ])
+        parts.extend(
+            [
+                "## Performance Targets\n",
+                "- ✅ Processing time <30s per slide\n",
+                "- ✅ Memory usage <2GB\n",
+                "- ✅ Accuracy >90% per disease\n",
+                "- ✅ Zero-shot detection capability\n\n",
+            ]
+        )
 
         return "".join(parts)
 

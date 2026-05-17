@@ -22,7 +22,7 @@ Example:
     >>> snapshot = monitor.get_current_snapshot()
     >>> print(f"Usage: {snapshot.utilization_percent:.1f}%")
     >>> monitor.stop_monitoring()
-    
+
     # Or use as context manager:
     >>> with MemoryMonitor(device=torch.device('cuda')) as monitor:
     ...     # Monitoring runs automatically
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MemoryAlert:
     """Memory alert notification.
-    
+
     Attributes:
         timestamp: Unix timestamp when alert was generated
         alert_type: Type of alert ('pressure', 'threshold', 'oom_risk')
@@ -82,7 +82,7 @@ class MemoryAlert:
 @dataclass
 class MemoryAnalytics:
     """Memory usage analytics and statistics.
-    
+
     Attributes:
         monitoring_duration_seconds: Total monitoring duration
         total_snapshots: Number of snapshots collected
@@ -132,7 +132,7 @@ class MemoryMonitor:
     - Alert generation for memory issues
     - Analytics and reporting capabilities
     - Integration with memory optimizer components
-    
+
     Thread Safety:
         All public methods are thread-safe. Internal state is protected
         by a lock to allow safe concurrent access from monitoring thread

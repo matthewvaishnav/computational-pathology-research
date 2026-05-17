@@ -58,10 +58,12 @@ class SecurityConfig:
     key_rotation_days: int = 90
     key_storage_path: str = "./keys"
     enable_key_rotation: bool = True
-    
+
     # HSM configuration
     enable_hsm: bool = False
-    hsm_library_path: Optional[str] = None  # Path to PKCS#11 library (e.g., /usr/lib/softhsm/libsofthsm2.so)
+    hsm_library_path: Optional[str] = (
+        None  # Path to PKCS#11 library (e.g., /usr/lib/softhsm/libsofthsm2.so)
+    )
     hsm_slot_id: Optional[int] = None  # HSM slot ID
     hsm_pin: Optional[str] = None  # HSM PIN (should be from env var)
     hsm_key_label: str = "histocore_master_key"  # Key label in HSM
@@ -82,7 +84,7 @@ class SecurityConfig:
 
         if self.encryption_algorithm not in ["AES-256-GCM", "ChaCha20-Poly1305"]:
             raise ValueError(f"Invalid encryption algorithm: {self.encryption_algorithm}")
-        
+
         if self.enable_hsm:
             if not self.hsm_library_path:
                 raise ValueError("HSM enabled but hsm_library_path not provided")
@@ -127,7 +129,7 @@ class SecurityManager:
             self.encryption_manager.initialize_master_key(master_password)
 
         logger.info("Security manager initialized")
-    
+
     def cleanup(self):
         """Cleanup resources (disconnect from HSM)."""
         if self.hsm_manager:
@@ -166,8 +168,8 @@ class SecurityManager:
 
 
 def create_security_manager(
-    enable_tls: bool = True, 
-    enable_encryption: bool = True, 
+    enable_tls: bool = True,
+    enable_encryption: bool = True,
     key_storage_path: str = "./keys",
     enable_hsm: bool = False,
     hsm_library_path: Optional[str] = None,

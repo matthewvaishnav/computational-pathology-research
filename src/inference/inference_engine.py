@@ -88,7 +88,9 @@ class InferenceEngine:
 
             logger.info(
                 "Inference completed: %s (%.3f) in %dms",
-                result.prediction_class, result.confidence_score, processing_time_ms
+                result.prediction_class,
+                result.confidence_score,
+                processing_time_ms,
             )
 
             return result
@@ -116,13 +118,13 @@ class InferenceEngine:
             # Input validation
             if not image_bytes or len(image_bytes) > 50 * 1024 * 1024:  # Max 50MB
                 raise ValueError("Invalid image data size")
-            
+
             # Validate filename
             if not filename or len(filename) > 255:
                 raise ValueError("Invalid filename")
-            
+
             # Check file extension
-            allowed_extensions = {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.bmp'}
+            allowed_extensions = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp"}
             file_ext = Path(filename).suffix.lower()
             if file_ext not in allowed_extensions:
                 raise ValueError(f"Unsupported file type: {file_ext}")
@@ -134,21 +136,21 @@ class InferenceEngine:
                     width, height = image.size
                     if width > 10000 or height > 10000:
                         raise ValueError(f"Image too large: {width}x{height}")
-                    
+
                     # Verify image format
-                    if image.format.lower() not in ['jpeg', 'png', 'tiff', 'bmp']:
+                    if image.format.lower() not in ["jpeg", "png", "tiff", "bmp"]:
                         raise ValueError(f"Invalid image format: {image.format}")
-                    
+
                     # Load image data safely
                     image.load()
-                    
+
                     # Convert to RGB if needed
                     if image.mode != "RGB":
                         image = image.convert("RGB")
-                    
+
                     # Create copy to close BytesIO
                     image = image.copy()
-                    
+
             except Exception as e:
                 raise ValueError(f"Failed to load image: {type(e).__name__}")
 
@@ -182,7 +184,10 @@ class InferenceEngine:
 
             logger.info(
                 "Inference completed for %s: %s (%.3f) in %dms",
-                filename, result.prediction_class, result.confidence_score, processing_time_ms
+                filename,
+                result.prediction_class,
+                result.confidence_score,
+                processing_time_ms,
             )
 
             return result
@@ -206,7 +211,7 @@ class InferenceEngine:
         # Limit batch size to prevent memory exhaustion
         if len(image_paths) > 100:
             raise ValueError(f"Batch size too large: {len(image_paths)} (max 100)")
-        
+
         results = []
 
         for image_path in image_paths:
@@ -254,8 +259,10 @@ class InferenceEngine:
             raise ValueError(f"Image file too large: {file_size} bytes (max 50MB)")
 
         # Validate path is within allowed directories (prevent path traversal)
-        from src.security.temp_file import TempFileManager
         import tempfile
+
+        from src.security.temp_file import TempFileManager
+
         allowed_dirs = [TempFileManager.get_temp_dir(), tempfile.gettempdir(), os.getcwd()]
         path_str = str(image_path)
         if not any(path_str.startswith(os.path.abspath(d)) for d in allowed_dirs):
@@ -268,18 +275,18 @@ class InferenceEngine:
                 width, height = image.size
                 if width > 10000 or height > 10000:
                     raise ValueError(f"Image too large: {width}x{height} (max 10000x10000)")
-                
+
                 # Verify image format matches extension
-                if image.format.lower() not in ['jpeg', 'png', 'tiff', 'bmp']:
+                if image.format.lower() not in ["jpeg", "png", "tiff", "bmp"]:
                     raise ValueError(f"Invalid image format: {image.format}")
-                
+
                 # Load image data safely
                 image.load()
-                
+
                 # Convert to RGB if needed
                 if image.mode != "RGB":
                     image = image.convert("RGB")
-                
+
                 return image.copy()  # Return copy to close original file
 
         except Exception as e:

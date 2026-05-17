@@ -12,8 +12,9 @@ import psutil
 import torch
 from aiohttp import web
 
-from .metrics import get_metrics
 from src.security.network_binding import NetworkBindingManager
+
+from .metrics import get_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -617,7 +618,7 @@ def get_health_checker() -> HealthChecker:
 
 async def start_health_server(host: Optional[str] = None, port: int = 8080) -> HealthServer:
     """Start health check server.
-    
+
     Args:
         host: Host to bind to. If None, uses NetworkBindingManager for secure binding.
         port: Port to bind to.

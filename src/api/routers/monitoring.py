@@ -14,10 +14,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from src.database import get_db_session
-from src.inference import get_model_loader
 from src.api.dependencies import get_current_user
 from src.api.validators import validate_limit
+from src.database import get_db_session
+from src.inference import get_model_loader
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ router = APIRouter(tags=["monitoring"])
 # Pydantic models
 class HealthResponse(BaseModel):
     """Health check response model with component status."""
+
     status: str
     timestamp: str
     version: str
@@ -35,6 +36,7 @@ class HealthResponse(BaseModel):
 
 class BuildInfo(BaseModel):
     """Build information model for deployment tracking."""
+
     version: str
     commit_hash: str
     build_date: str
@@ -54,6 +56,7 @@ async def health_check(db: Session = Depends(get_db_session)):
     try:
         # Check database connectivity with proper parameterized query
         from sqlalchemy import text
+
         db.execute(text("SELECT 1"))
         db_healthy = True
     except Exception as e:
@@ -127,7 +130,7 @@ async def get_ids_alerts(
     current_user: dict = Depends(require_admin),
 ):
     """Get IDS alerts.
-    
+
     Args:
         severity: Filter by severity (low, medium, high, critical)
         source_ip: Filter by source IP
@@ -135,18 +138,18 @@ async def get_ids_alerts(
     """
     # Validate limit to prevent DoS via excessive queries
     validate_limit(limit)
-    
+
     try:
         from src.monitoring.ids import get_ids_engine
-        
+
         ids_engine = get_ids_engine()
         alerts = ids_engine.get_alerts(severity=severity, source_ip=source_ip, limit=limit)
-        
+
         return {
             "alerts": alerts,
             "total": len(alerts),
         }
-        
+
     except ImportError:
         raise HTTPException(status_code=503, detail="IDS module not available")
     except HTTPException:
@@ -165,7 +168,7 @@ async def get_siem_incidents(
     current_user: dict = Depends(require_admin),
 ):
     """Get SIEM security incidents.
-    
+
     Args:
         severity: Filter by severity (low, medium, high, critical)
         source_ip: Filter by source IP
@@ -173,18 +176,18 @@ async def get_siem_incidents(
     """
     # Validate limit to prevent DoS via excessive queries
     validate_limit(limit)
-    
+
     try:
         from src.monitoring.siem import get_siem_engine
-        
+
         siem_engine = get_siem_engine()
         incidents = siem_engine.get_incidents(severity=severity, source_ip=source_ip, limit=limit)
-        
+
         return {
             "incidents": incidents,
             "total": len(incidents),
         }
-        
+
     except ImportError:
         raise HTTPException(status_code=503, detail="SIEM module not available")
     except HTTPException:

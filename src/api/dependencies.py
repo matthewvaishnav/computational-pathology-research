@@ -12,9 +12,9 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from src.api.security import decode_access_token, log_security_event
 from src.database import UserOperations, get_db_session
 from src.inference import InferenceEngine
-from src.api.security import decode_access_token, log_security_event
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,9 @@ def get_current_user(
 ):
     """Get current authenticated user from JWT token."""
     if not credentials:
-        log_security_event("authentication_failed", details="No credentials provided", success=False)
+        log_security_event(
+            "authentication_failed", details="No credentials provided", success=False
+        )
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     token = credentials.credentials
@@ -53,14 +55,18 @@ def get_current_user(
         user_id = payload.get("sub")
 
         if not user_id:
-            log_security_event("authentication_failed", details="Invalid token payload", success=False)
+            log_security_event(
+                "authentication_failed", details="Invalid token payload", success=False
+            )
             raise HTTPException(status_code=401, detail="Invalid token")
 
         user_ops = UserOperations(db)
         user = user_ops.get_user_by_id(uuid.UUID(user_id))
 
         if not user:
-            log_security_event("authentication_failed", username=user_id, details="User not found", success=False)
+            log_security_event(
+                "authentication_failed", username=user_id, details="User not found", success=False
+            )
             raise HTTPException(status_code=401, detail="User not found")
 
         return user

@@ -216,7 +216,9 @@ class RealTimeWSIProcessor:
             if self.config.attention_model_path:
                 self.logger.info(f"Loading attention model from {self.config.attention_model_path}")
                 try:
-                    self._attention_model = torch.load(self.config.attention_model_path, weights_only=True)
+                    self._attention_model = torch.load(
+                        self.config.attention_model_path, weights_only=True
+                    )
                 except Exception as e:
                     self.logger.warning(f"Failed to load attention model: {e}. Using mock model.")
                     from .mock_models import create_mock_attention_model

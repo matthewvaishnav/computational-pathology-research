@@ -19,6 +19,7 @@ from typing import Dict, Optional, Tuple
 
 try:
     import magic
+
     MAGIC_AVAILABLE = True
 except ImportError:
     MAGIC_AVAILABLE = False
@@ -26,6 +27,7 @@ except ImportError:
 
 try:
     import pyclamd
+
     CLAMAV_AVAILABLE = True
 except ImportError:
     CLAMAV_AVAILABLE = False
@@ -35,6 +37,7 @@ from fastapi import HTTPException, Request
 
 try:
     from jose import JWTError, jwt
+
     JWT_AVAILABLE = True
 except ImportError:
     JWT_AVAILABLE = False
@@ -43,6 +46,7 @@ except ImportError:
 
 try:
     from passlib.context import CryptContext
+
     PASSLIB_AVAILABLE = True
 except ImportError:
     PASSLIB_AVAILABLE = False
@@ -50,6 +54,7 @@ except ImportError:
 
 try:
     from PIL import Image
+
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
@@ -77,12 +82,13 @@ if not SECRET_KEY:
         )
     # For development/testing only - generate temporary key
     import secrets
+
     SECRET_KEY = secrets.token_urlsafe(32)
     logger.warning(
         "Generated temporary JWT secret key for development. "
         "Set JWT_SECRET_KEY environment variable for production."
     )
-    
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -91,23 +97,24 @@ MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/tiff", "image/bmp"]
 ALLOWED_DICOM_TYPES = ["application/dicom"]
 
+
 # Rate limiting configuration
 # Security: Use custom key function to prevent X-Forwarded-For spoofing
 def get_client_ip(request: Request) -> str:
     """Get client IP with X-Forwarded-For validation.
-    
+
     Only trusts X-Forwarded-For if request comes from trusted proxy.
     Otherwise uses direct connection IP to prevent rate limit bypass.
     """
     import ipaddress
-    
+
     # Get direct connection IP
     client_host = request.client.host if request.client else "unknown"
-    
+
     # Trusted proxy IPs (configure for your infrastructure)
     trusted_proxies_str = os.getenv("TRUSTED_PROXIES", "")
     trusted_proxies = set()
-    
+
     # Validate and parse trusted proxy IPs
     for ip_str in trusted_proxies_str.split(","):
         ip_str = ip_str.strip()
@@ -119,16 +126,17 @@ def get_client_ip(request: Request) -> str:
             trusted_proxies.add(ip_str)
         except ValueError:
             logger.warning(f"Invalid trusted proxy IP address: {ip_str}")
-    
+
     # Only trust X-Forwarded-For from known proxies
     if client_host in trusted_proxies:
         forwarded = request.headers.get("X-Forwarded-For")
         if forwarded:
             # Take first IP (original client)
             return forwarded.split(",")[0].strip()
-    
+
     # Use direct connection IP
     return client_host
+
 
 limiter = Limiter(key_func=get_client_ip, default_limits=["30/minute"])  # Reduced from 100/minute
 
@@ -225,7 +233,7 @@ def decode_access_token(token: str) -> Optional[dict]:
     """
     if not JWT_AVAILABLE or not jwt:
         raise HTTPException(status_code=500, detail="JWT functionality not available")
-        
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
@@ -320,7 +328,7 @@ def secure_filename(filename: str) -> str:
 
     # Remove any path components (prevent directory traversal)
     filename = os.path.basename(filename)
-    
+
     # Additional path traversal protection
     if ".." in filename or "/" in filename or "\\" in filename:
         logger.warning(f"Path traversal attempt detected in filename: {filename}")
@@ -331,7 +339,7 @@ def secure_filename(filename: str) -> str:
 
     # Replace spaces with underscores
     filename = filename.replace(" ", "_")
-    
+
     # Prevent hidden files
     if filename.startswith("."):
         filename = "file" + filename
@@ -386,16 +394,16 @@ def validate_image_magic_bytes(file_content: bytes) -> str:
             detected_type = magic.from_buffer(file_content, mime=True)
         else:
             # Fallback: try to detect from file header
-            if file_content.startswith(b'\xff\xd8\xff'):
-                detected_type = 'image/jpeg'
-            elif file_content.startswith(b'\x89PNG\r\n\x1a\n'):
-                detected_type = 'image/png'
-            elif file_content.startswith(b'GIF87a') or file_content.startswith(b'GIF89a'):
-                detected_type = 'image/gif'
-            elif file_content.startswith(b'RIFF') and b'WEBP' in file_content[:12]:
-                detected_type = 'image/webp'
+            if file_content.startswith(b"\xff\xd8\xff"):
+                detected_type = "image/jpeg"
+            elif file_content.startswith(b"\x89PNG\r\n\x1a\n"):
+                detected_type = "image/png"
+            elif file_content.startswith(b"GIF87a") or file_content.startswith(b"GIF89a"):
+                detected_type = "image/gif"
+            elif file_content.startswith(b"RIFF") and b"WEBP" in file_content[:12]:
+                detected_type = "image/webp"
             else:
-                detected_type = 'application/octet-stream'
+                detected_type = "application/octet-stream"
 
         if detected_type not in ALLOWED_IMAGE_TYPES:
             logger.warning(f"Invalid image type detected: {detected_type}")
@@ -491,10 +499,10 @@ def scan_for_malware(file_content: bytes) -> bool:
                 cd = pyclamd.ClamdNetworkSocket()
                 if not cd.ping():
                     raise ConnectionError("ClamAV daemon not available")
-            
+
             # Scan file content
             scan_result = cd.scan_stream(file_content)
-            
+
             if scan_result is None:
                 # Clean file
                 return True
@@ -502,7 +510,7 @@ def scan_for_malware(file_content: bytes) -> bool:
                 # Malware detected
                 logger.warning(f"ClamAV detected malware: {scan_result}")
                 return False
-                
+
         except (ConnectionError, Exception) as e:
             logger.warning(f"ClamAV not available ({e}), falling back to basic signature checks")
             # Fall through to basic checks
@@ -665,7 +673,9 @@ def validate_security_configuration() -> None:
     # Check CORS origins
     allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
     if not allowed_origins or allowed_origins == "*":
-        errors.append("ALLOWED_ORIGINS environment variable not set or set to '*' - CORS is insecure")
+        errors.append(
+            "ALLOWED_ORIGINS environment variable not set or set to '*' - CORS is insecure"
+        )
 
     # Check environment
     environment = os.getenv("ENVIRONMENT", "development")
@@ -719,17 +729,17 @@ def log_security_event(
 
     # Send to centralized audit logging system if configured
     _send_to_audit_system(log_entry)
-    
+
     # Send to IDS for intrusion detection
     _send_to_ids(event_type, username, ip_address, details, success)
 
 
 def _send_to_audit_system(log_entry: Dict) -> None:
     """Send audit log entry to centralized logging system.
-    
+
     Supports Elasticsearch, Splunk, or custom SIEM endpoints.
     Fails gracefully if system unavailable.
-    
+
     Args:
         log_entry: Audit log entry dictionary
     """
@@ -737,58 +747,46 @@ def _send_to_audit_system(log_entry: Dict) -> None:
     es_url = os.getenv("ELASTICSEARCH_URL")
     es_index = os.getenv("ELASTICSEARCH_AUDIT_INDEX", "security-audit")
     es_api_key = os.getenv("ELASTICSEARCH_API_KEY")
-    
+
     if es_url:
         try:
             import requests
-            
+
             headers = {"Content-Type": "application/json"}
             if es_api_key:
                 headers["Authorization"] = f"ApiKey {es_api_key}"
-            
+
             # Send to Elasticsearch
             response = requests.post(
-                f"{es_url}/{es_index}/_doc",
-                json=log_entry,
-                headers=headers,
-                timeout=5
+                f"{es_url}/{es_index}/_doc", json=log_entry, headers=headers, timeout=5
             )
             response.raise_for_status()
-            
+
         except ImportError:
             logger.debug("requests library not available for Elasticsearch integration")
         except Exception as e:
             # Don't fail application if audit system unavailable
             logger.debug(f"Failed to send audit log to Elasticsearch: {e}")
-    
+
     # Check for Splunk HEC configuration
     splunk_url = os.getenv("SPLUNK_HEC_URL")
     splunk_token = os.getenv("SPLUNK_HEC_TOKEN")
-    
+
     if splunk_url and splunk_token:
         try:
             import requests
-            
+
             # Format for Splunk HEC
-            splunk_event = {
-                "event": log_entry,
-                "sourcetype": "_json",
-                "source": "histocore-api"
-            }
-            
+            splunk_event = {"event": log_entry, "sourcetype": "_json", "source": "histocore-api"}
+
             headers = {
                 "Authorization": f"Splunk {splunk_token}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
-            
-            response = requests.post(
-                splunk_url,
-                json=splunk_event,
-                headers=headers,
-                timeout=5
-            )
+
+            response = requests.post(splunk_url, json=splunk_event, headers=headers, timeout=5)
             response.raise_for_status()
-            
+
         except ImportError:
             logger.debug("requests library not available for Splunk integration")
         except Exception as e:
@@ -804,7 +802,7 @@ def _send_to_ids(
     success: bool,
 ) -> None:
     """Send security event to IDS for intrusion detection.
-    
+
     Args:
         event_type: Type of security event
         username: Username if available
@@ -813,8 +811,8 @@ def _send_to_ids(
         success: Whether event was successful
     """
     try:
-        from src.monitoring.ids import get_ids_engine, create_ids_event_from_security_log
-        
+        from src.monitoring.ids import create_ids_event_from_security_log, get_ids_engine
+
         # Only send failed events to IDS (potential attacks)
         if not success:
             ids_engine = get_ids_engine()
@@ -825,7 +823,7 @@ def _send_to_ids(
                 details=details,
             )
             ids_engine.process_event(ids_event)
-            
+
     except ImportError:
         logger.debug("IDS module not available")
     except Exception as e:

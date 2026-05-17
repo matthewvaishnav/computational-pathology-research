@@ -204,7 +204,9 @@ class SubmissionGenerator:
             json.dump(risk_analysis, f, indent=2)
 
         # Load and export cybersecurity plan if exists
-        cybersecurity_file = self.cybersecurity_path / f"{device_name}_{device_version}_cybersecurity_plan.json"
+        cybersecurity_file = (
+            self.cybersecurity_path / f"{device_name}_{device_version}_cybersecurity_plan.json"
+        )
         if cybersecurity_file.exists():
             with open(cybersecurity_file, "r") as src:
                 cybersecurity_data = json.load(src)

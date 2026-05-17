@@ -32,6 +32,7 @@ except ImportError:
 # PKCS#11 HSM support
 try:
     import PyKCS11
+
     PKCS11_AVAILABLE = True
 except ImportError:
     PKCS11_AVAILABLE = False
@@ -40,45 +41,52 @@ except ImportError:
 
 class HSMManager:
     """Manages Hardware Security Module (HSM) integration via PKCS#11."""
-    
+
     def __init__(self, config):
         """Initialize HSM manager."""
         self.config = config
-        
+
         if not PKCS11_AVAILABLE:
-            raise RuntimeError("PyKCS11 library required for HSM support. Install: pip install PyKCS11")
-        
+            raise RuntimeError(
+                "PyKCS11 library required for HSM support. Install: pip install PyKCS11"
+            )
+
         self.pkcs11 = PyKCS11.PyKCS11Lib()
         self.session = None
-        
-        logger.info("HSM manager initialized: library=%s slot=%d", 
-                   config.hsm_library_path, config.hsm_slot_id)
-    
+
+        logger.info(
+            "HSM manager initialized: library=%s slot=%d",
+            config.hsm_library_path,
+            config.hsm_slot_id,
+        )
+
     def connect(self) -> None:
         """Connect to HSM and open session."""
         try:
             # Load PKCS#11 library
             self.pkcs11.load(self.config.hsm_library_path)
-            
+
             # Get slot
             slots = self.pkcs11.getSlotList(tokenPresent=True)
             if self.config.hsm_slot_id >= len(slots):
                 raise ValueError(f"HSM slot {self.config.hsm_slot_id} not found")
-            
+
             slot = slots[self.config.hsm_slot_id]
-            
+
             # Open session
-            self.session = self.pkcs11.openSession(slot, PyKCS11.CKF_SERIAL_SESSION | PyKCS11.CKF_RW_SESSION)
-            
+            self.session = self.pkcs11.openSession(
+                slot, PyKCS11.CKF_SERIAL_SESSION | PyKCS11.CKF_RW_SESSION
+            )
+
             # Login with PIN
             self.session.login(self.config.hsm_pin)
-            
+
             logger.info("Connected to HSM slot %d", self.config.hsm_slot_id)
-            
+
         except Exception as e:
             logger.error(f"Failed to connect to HSM: {e}")
             raise RuntimeError(f"HSM connection failed: {e}") from e
-    
+
     def disconnect(self) -> None:
         """Disconnect from HSM."""
         if self.session:
@@ -88,18 +96,18 @@ class HSMManager:
                 logger.info("Disconnected from HSM")
             except Exception as e:
                 logger.warning(f"Error disconnecting from HSM: {e}")
-    
+
     def generate_key(self, key_label: Optional[str] = None) -> int:
         """Generate AES-256 key in HSM.
-        
+
         Returns:
             Key handle (CK_OBJECT_HANDLE)
         """
         if not self.session:
             raise RuntimeError("Not connected to HSM")
-        
+
         label = key_label or self.config.hsm_key_label
-        
+
         # Key template for AES-256
         template = [
             (PyKCS11.CKA_CLASS, PyKCS11.CKO_SECRET_KEY),
@@ -113,104 +121,110 @@ class HSMManager:
             (PyKCS11.CKA_DECRYPT, True),
             (PyKCS11.CKA_EXTRACTABLE, False),  # Cannot export key
         ]
-        
+
         # Generate key
         key_handle = self.session.generateKey(template)
-        
+
         logger.info(f"Generated AES-256 key in HSM: label={label} handle={key_handle}")
-        
+
         return key_handle
-    
+
     def find_key(self, key_label: Optional[str] = None) -> Optional[int]:
         """Find key in HSM by label.
-        
+
         Returns:
             Key handle if found, None otherwise
         """
         if not self.session:
             raise RuntimeError("Not connected to HSM")
-        
+
         label = key_label or self.config.hsm_key_label
-        
+
         # Search template
         template = [
             (PyKCS11.CKA_CLASS, PyKCS11.CKO_SECRET_KEY),
             (PyKCS11.CKA_LABEL, label),
         ]
-        
+
         # Find objects
         objects = self.session.findObjects(template)
-        
+
         if objects:
             logger.info(f"Found key in HSM: label={label} handle={objects[0]}")
             return objects[0]
         else:
             logger.warning(f"Key not found in HSM: label={label}")
             return None
-    
+
     def encrypt(self, key_handle: int, plaintext: bytes) -> bytes:
         """Encrypt data using HSM key.
-        
+
         Args:
             key_handle: HSM key handle
             plaintext: Data to encrypt
-            
+
         Returns:
             Encrypted data (IV + ciphertext + tag for AES-GCM)
         """
         if not self.session:
             raise RuntimeError("Not connected to HSM")
-        
+
         # Generate random IV (12 bytes for GCM)
         iv = os.urandom(12)
-        
+
         # AES-GCM mechanism
-        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_AES_GCM, {
-            'pIv': iv,
-            'ulIvLen': len(iv),
-            'ulTagBits': 128,  # 16-byte tag
-        })
-        
+        mechanism = PyKCS11.Mechanism(
+            PyKCS11.CKM_AES_GCM,
+            {
+                "pIv": iv,
+                "ulIvLen": len(iv),
+                "ulTagBits": 128,  # 16-byte tag
+            },
+        )
+
         # Encrypt
         ciphertext = bytes(self.session.encrypt(key_handle, plaintext, mechanism))
-        
+
         # Return IV + ciphertext (tag is appended by HSM)
         return iv + ciphertext
-    
+
     def decrypt(self, key_handle: int, ciphertext: bytes) -> bytes:
         """Decrypt data using HSM key.
-        
+
         Args:
             key_handle: HSM key handle
             ciphertext: Encrypted data (IV + ciphertext + tag)
-            
+
         Returns:
             Decrypted plaintext
         """
         if not self.session:
             raise RuntimeError("Not connected to HSM")
-        
+
         # Extract IV (first 12 bytes)
         iv = ciphertext[:12]
         encrypted_data = ciphertext[12:]
-        
+
         # AES-GCM mechanism
-        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_AES_GCM, {
-            'pIv': iv,
-            'ulIvLen': len(iv),
-            'ulTagBits': 128,
-        })
-        
+        mechanism = PyKCS11.Mechanism(
+            PyKCS11.CKM_AES_GCM,
+            {
+                "pIv": iv,
+                "ulIvLen": len(iv),
+                "ulTagBits": 128,
+            },
+        )
+
         # Decrypt
         plaintext = bytes(self.session.decrypt(key_handle, encrypted_data, mechanism))
-        
+
         return plaintext
-    
+
     def delete_key(self, key_handle: int) -> None:
         """Delete key from HSM."""
         if not self.session:
             raise RuntimeError("Not connected to HSM")
-        
+
         self.session.destroyObject(key_handle)
         logger.info(f"Deleted key from HSM: handle={key_handle}")
 
@@ -228,19 +242,22 @@ class EncryptionManager:
         # Initialize encryption key
         self.master_key = None
         self.fernet = None
-        
+
         # HSM support
         self.hsm_manager = None
         self.hsm_key_handle = None
         if config.enable_hsm:
             self.hsm_manager = HSMManager(config)
 
-        logger.info("Encryption manager initialized: algorithm=%s hsm=%s", 
-                   config.encryption_algorithm, config.enable_hsm)
+        logger.info(
+            "Encryption manager initialized: algorithm=%s hsm=%s",
+            config.encryption_algorithm,
+            config.enable_hsm,
+        )
 
     def initialize_master_key(self, password: Optional[str] = None) -> bytes:
         """Initialize or load master encryption key.
-        
+
         If HSM enabled, uses HSM for key storage and encryption.
         Otherwise, uses file-based key storage with Fernet.
         """
@@ -250,30 +267,30 @@ class EncryptionManager:
         else:
             # File-based key management
             return self._initialize_file_key(password)
-    
+
     def _initialize_hsm_key(self) -> bytes:
         """Initialize HSM-based encryption key."""
         try:
             # Connect to HSM
             self.hsm_manager.connect()
-            
+
             # Try to find existing key
             self.hsm_key_handle = self.hsm_manager.find_key()
-            
+
             if self.hsm_key_handle is None:
                 # Generate new key in HSM
                 self.hsm_key_handle = self.hsm_manager.generate_key()
                 logger.info("Generated new master key in HSM")
             else:
                 logger.info("Loaded existing master key from HSM")
-            
+
             # Return dummy key (actual key never leaves HSM)
             return b"HSM_KEY_HANDLE_" + str(self.hsm_key_handle).encode()
-            
+
         except Exception as e:
             logger.error(f"HSM initialization failed: {e}")
             raise RuntimeError(f"Failed to initialize HSM key: {e}") from e
-    
+
     def _initialize_file_key(self, password: Optional[str] = None) -> bytes:
         """Initialize file-based encryption key."""
         key_path = Path(self.config.key_storage_path) / "master.key"
@@ -316,21 +333,22 @@ class EncryptionManager:
         self.fernet = Fernet(self.master_key)
 
         return self.master_key
-    
+
     def _secure_file_permissions(self, filepath: Path) -> None:
         """Set secure file permissions (Unix and Windows)."""
         try:
-            if os.name == 'posix':
+            if os.name == "posix":
                 os.chmod(filepath, 0o600)
                 logger.debug(f"Set Unix permissions 0600 on {filepath}")
-            elif os.name == 'nt':
+            elif os.name == "nt":
                 # Windows: Use icacls to set restrictive ACLs
                 import subprocess
+
                 result = subprocess.run(
-                    ['icacls', str(filepath), '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    ["icacls", str(filepath), "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
                     check=True,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 logger.debug(f"Set Windows ACLs on {filepath}")
             else:
@@ -373,7 +391,7 @@ class EncryptionManager:
         file_size = os.path.getsize(input_path)
         if file_size > max_size:
             raise ValueError(f"File too large: {file_size} bytes (max {max_size})")
-        
+
         with open(input_path, "rb") as f:
             data = f.read()
 
@@ -392,7 +410,7 @@ class EncryptionManager:
         file_size = os.path.getsize(input_path)
         if file_size > max_size:
             raise ValueError(f"File too large: {file_size} bytes")
-        
+
         with open(input_path, "rb") as f:
             encrypted_data = f.read()
 
@@ -407,7 +425,7 @@ class EncryptionManager:
 
     def rotate_key(self, new_password: Optional[str] = None) -> bytes:
         """Rotate encryption key.
-        
+
         For HSM: generates new key in HSM and re-encrypts data.
         For file-based: generates new Fernet key and re-encrypts data.
         """
@@ -416,19 +434,19 @@ class EncryptionManager:
         if self.config.enable_hsm:
             # HSM key rotation
             old_key_handle = self.hsm_key_handle
-            
+
             # Generate new key
             self.hsm_key_handle = self.hsm_manager.generate_key(
                 key_label=f"{self.config.hsm_key_label}_rotated_{int(datetime.utcnow().timestamp())}"
             )
-            
+
             # Re-encrypt all encrypted files would happen here
             # (Implementation depends on file storage structure)
-            
+
             # Delete old key
             if old_key_handle:
                 self.hsm_manager.delete_key(old_key_handle)
-            
+
             logger.info("HSM key rotation complete")
             return b"HSM_KEY_HANDLE_" + str(self.hsm_key_handle).encode()
         else:
@@ -493,21 +511,22 @@ class KeyManager:
         logger.info("Generated key: %s (type=%s)", key_id, key_type)
 
         return key
-    
+
     def _secure_file_permissions(self, filepath: Path) -> None:
         """Set secure file permissions (Unix and Windows)."""
         try:
-            if os.name == 'posix':
+            if os.name == "posix":
                 os.chmod(filepath, 0o600)
                 logger.debug(f"Set Unix permissions 0600 on {filepath}")
-            elif os.name == 'nt':
+            elif os.name == "nt":
                 # Windows: Use icacls to set restrictive ACLs
                 import subprocess
+
                 result = subprocess.run(
-                    ['icacls', str(filepath), '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    ["icacls", str(filepath), "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
                     check=True,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 logger.debug(f"Set Windows ACLs on {filepath}")
             else:

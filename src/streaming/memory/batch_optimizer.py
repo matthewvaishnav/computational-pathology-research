@@ -59,8 +59,7 @@ class BatchOptimizer:
         self.tile_size_options = [96, 224, 256, 512]
 
         logger.info(
-            f"BatchOptimizer init: {available_memory_gb:.2f}GB, "
-            f"margin={safety_margin:.2f}"
+            f"BatchOptimizer init: {available_memory_gb:.2f}GB, " f"margin={safety_margin:.2f}"
         )
 
     def optimize_batch_size(
@@ -213,9 +212,7 @@ class BatchOptimizer:
 
         return result
 
-    def adjust_for_oom(
-        self, current_batch_size: int, current_tile_size: int
-    ) -> Tuple[int, int]:
+    def adjust_for_oom(self, current_batch_size: int, current_tile_size: int) -> Tuple[int, int]:
         """Adjust sizes after OOM event.
 
         Args:

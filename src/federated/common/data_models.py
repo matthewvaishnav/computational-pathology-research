@@ -16,7 +16,9 @@ class TrainingRound:
     start_time: datetime
     end_time: Optional[datetime] = None
     participants: List[str] = field(default_factory=list)  # Client IDs
-    aggregation_algorithm: str = "fedavg"  # "fedavg", "fedprox", "fedadam", "secure", "pathology_fl"
+    aggregation_algorithm: str = (
+        "fedavg"  # "fedavg", "fedprox", "fedadam", "secure", "pathology_fl"
+    )
     convergence_metrics: Dict[str, float] = field(default_factory=dict)  # loss, accuracy, grad_norm
     status: str = "in_progress"  # "in_progress", "completed", "failed"
 

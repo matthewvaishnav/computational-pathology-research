@@ -28,7 +28,6 @@ from experiments.benchmark_system.models import (
 )
 from experiments.benchmark_system.orchestrator import BenchmarkOrchestrator
 
-
 # ============================================================================
 # Fixtures
 # ============================================================================
@@ -153,18 +152,18 @@ def mock_training_result(task_spec):
 def test_quick_mode_configuration(quick_config):
     """
     Test quick mode configuration reduces epochs and samples.
-    
+
     **Validates: Requirement 6.3**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     # Apply mode-specific configuration
     modified_task_spec = orchestrator._apply_mode_configuration()
-    
+
     # Verify quick mode reduces epochs
     assert modified_task_spec.num_epochs == quick_config.quick_mode_epochs
     assert modified_task_spec.num_epochs == 3
-    
+
     # Verify other settings preserved
     assert modified_task_spec.dataset_name == "PatchCamelyon"
     assert modified_task_spec.batch_size == 32
@@ -174,12 +173,12 @@ def test_quick_mode_configuration(quick_config):
 def test_quick_mode_preserves_other_settings(quick_config):
     """
     Test quick mode preserves non-epoch settings.
-    
+
     **Validates: Requirement 6.3**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
     modified_task_spec = orchestrator._apply_mode_configuration()
-    
+
     # Verify all other settings preserved
     assert modified_task_spec.dataset_name == quick_config.task_spec.dataset_name
     assert modified_task_spec.model_architecture == quick_config.task_spec.model_architecture
@@ -192,14 +191,14 @@ def test_quick_mode_preserves_other_settings(quick_config):
 def test_quick_mode_logs_configuration(quick_config, caplog):
     """
     Test quick mode logs configuration changes.
-    
+
     **Validates: Requirement 6.3**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     with caplog.at_level("INFO"):
         orchestrator._apply_mode_configuration()
-    
+
     # Verify logging
     assert any("quick mode configuration" in record.message.lower() for record in caplog.records)
     assert any("epochs=3" in record.message.lower() for record in caplog.records)
@@ -213,18 +212,18 @@ def test_quick_mode_logs_configuration(quick_config, caplog):
 def test_full_mode_configuration(full_config):
     """
     Test full mode uses complete configuration without modifications.
-    
+
     **Validates: Requirement 6.4**
     """
     orchestrator = BenchmarkOrchestrator(config=full_config)
-    
+
     # Apply mode-specific configuration
     modified_task_spec = orchestrator._apply_mode_configuration()
-    
+
     # Verify full mode does NOT reduce epochs
     assert modified_task_spec.num_epochs == full_config.task_spec.num_epochs
     assert modified_task_spec.num_epochs == 10  # Original value
-    
+
     # Verify all settings preserved
     assert modified_task_spec.dataset_name == full_config.task_spec.dataset_name
     assert modified_task_spec.batch_size == full_config.task_spec.batch_size
@@ -234,14 +233,14 @@ def test_full_mode_configuration(full_config):
 def test_full_mode_logs_no_modifications(full_config, caplog):
     """
     Test full mode logs that no modifications are applied.
-    
+
     **Validates: Requirement 6.4**
     """
     orchestrator = BenchmarkOrchestrator(config=full_config)
-    
+
     with caplog.at_level("INFO"):
         orchestrator._apply_mode_configuration()
-    
+
     # Verify logging indicates no modifications
     assert any("full mode" in record.message.lower() for record in caplog.records)
     assert any("no modifications" in record.message.lower() for record in caplog.records)
@@ -250,13 +249,13 @@ def test_full_mode_logs_no_modifications(full_config, caplog):
 def test_full_mode_preserves_all_settings(full_config):
     """
     Test full mode preserves all task specification settings.
-    
+
     **Validates: Requirement 6.4**
     """
     orchestrator = BenchmarkOrchestrator(config=full_config)
     original_task_spec = full_config.task_spec
     modified_task_spec = orchestrator._apply_mode_configuration()
-    
+
     # Verify all fields match
     assert modified_task_spec.dataset_name == original_task_spec.dataset_name
     assert modified_task_spec.data_root == original_task_spec.data_root
@@ -282,7 +281,7 @@ def test_full_mode_preserves_all_settings(full_config):
 def test_framework_selection_filtering(task_spec):
     """
     Test framework selection filtering works correctly.
-    
+
     **Validates: Requirement 6.7**
     """
     # Create config with only 2 frameworks
@@ -292,9 +291,9 @@ def test_framework_selection_filtering(task_spec):
         task_spec=task_spec,
         output_dir=Path("results/test"),
     )
-    
+
     orchestrator = BenchmarkOrchestrator(config=config)
-    
+
     # Verify only selected frameworks are configured
     assert orchestrator.config.frameworks == ["HistoCore", "PathML"]
     assert len(orchestrator.config.frameworks) == 2
@@ -303,7 +302,7 @@ def test_framework_selection_filtering(task_spec):
 def test_framework_selection_single_framework(task_spec):
     """
     Test framework selection with single framework.
-    
+
     **Validates: Requirement 6.7**
     """
     # Create config with only HistoCore
@@ -313,9 +312,9 @@ def test_framework_selection_single_framework(task_spec):
         task_spec=task_spec,
         output_dir=Path("results/test"),
     )
-    
+
     orchestrator = BenchmarkOrchestrator(config=config)
-    
+
     # Verify only HistoCore is configured
     assert orchestrator.config.frameworks == ["HistoCore"]
     assert len(orchestrator.config.frameworks) == 1
@@ -324,7 +323,7 @@ def test_framework_selection_single_framework(task_spec):
 def test_framework_selection_all_frameworks(task_spec):
     """
     Test framework selection with all frameworks.
-    
+
     **Validates: Requirement 6.7**
     """
     # Create config with all frameworks
@@ -334,9 +333,9 @@ def test_framework_selection_all_frameworks(task_spec):
         task_spec=task_spec,
         output_dir=Path("results/test"),
     )
-    
+
     orchestrator = BenchmarkOrchestrator(config=config)
-    
+
     # Verify all frameworks are configured
     assert len(orchestrator.config.frameworks) == 4
     assert "HistoCore" in orchestrator.config.frameworks
@@ -353,31 +352,31 @@ def test_framework_selection_all_frameworks(task_spec):
 def test_progress_logging_every_10_minutes(quick_config, caplog):
     """
     Test progress logging occurs every 10 minutes.
-    
+
     **Validates: Requirement 5.5**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
     orchestrator.start_time = datetime.now()
-    
+
     # Initialize last progress log time
     orchestrator.last_progress_log_time = time.time()
-    
+
     # Simulate 9 minutes elapsed (should NOT log)
-    with patch('time.time', return_value=orchestrator.last_progress_log_time + 9 * 60):
+    with patch("time.time", return_value=orchestrator.last_progress_log_time + 9 * 60):
         with caplog.at_level("INFO"):
             orchestrator._log_progress_if_needed()
-    
+
     # Verify no progress log
     assert not any("PROGRESS UPDATE" in record.message for record in caplog.records)
-    
+
     # Clear logs
     caplog.clear()
-    
+
     # Simulate 10 minutes elapsed (should log)
-    with patch('time.time', return_value=orchestrator.last_progress_log_time + 10 * 60):
+    with patch("time.time", return_value=orchestrator.last_progress_log_time + 10 * 60):
         with caplog.at_level("INFO"):
             orchestrator._log_progress_if_needed()
-    
+
     # Verify progress log
     assert any("PROGRESS UPDATE" in record.message for record in caplog.records)
 
@@ -385,22 +384,22 @@ def test_progress_logging_every_10_minutes(quick_config, caplog):
 def test_progress_logging_includes_framework_status(quick_config, caplog):
     """
     Test progress logging includes framework completion status.
-    
+
     **Validates: Requirement 5.5**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
     orchestrator.start_time = datetime.now()
     orchestrator.last_progress_log_time = time.time()
-    
+
     # Add some completed frameworks
     orchestrator.framework_results = {"HistoCore": Mock()}
     orchestrator.failed_frameworks = ["PathML"]
-    
+
     # Simulate 10 minutes elapsed
-    with patch('time.time', return_value=orchestrator.last_progress_log_time + 10 * 60):
+    with patch("time.time", return_value=orchestrator.last_progress_log_time + 10 * 60):
         with caplog.at_level("INFO"):
             orchestrator._log_progress_if_needed()
-    
+
     # Verify progress log includes status
     progress_logs = [r.message for r in caplog.records if "PROGRESS UPDATE" in r.message]
     assert len(progress_logs) > 0
@@ -412,20 +411,20 @@ def test_progress_logging_includes_framework_status(quick_config, caplog):
 def test_progress_logging_updates_timestamp(quick_config):
     """
     Test progress logging updates last progress log timestamp.
-    
+
     **Validates: Requirement 5.5**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
     orchestrator.start_time = datetime.now()
     orchestrator.last_progress_log_time = time.time()
-    
+
     initial_time = orchestrator.last_progress_log_time
-    
+
     # Simulate 10 minutes elapsed
     new_time = initial_time + 10 * 60
-    with patch('time.time', return_value=new_time):
+    with patch("time.time", return_value=new_time):
         orchestrator._log_progress_if_needed()
-    
+
     # Verify timestamp updated
     assert orchestrator.last_progress_log_time == new_time
     assert orchestrator.last_progress_log_time > initial_time
@@ -434,18 +433,18 @@ def test_progress_logging_updates_timestamp(quick_config):
 def test_progress_logging_initializes_on_first_call(quick_config):
     """
     Test progress logging initializes timestamp on first call.
-    
+
     **Validates: Requirement 5.5**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
     orchestrator.start_time = datetime.now()
-    
+
     # Verify last_progress_log_time is None initially
     assert orchestrator.last_progress_log_time is None
-    
+
     # Call progress logging
     orchestrator._log_progress_if_needed()
-    
+
     # Verify timestamp initialized
     assert orchestrator.last_progress_log_time is not None
 
@@ -458,14 +457,14 @@ def test_progress_logging_initializes_on_first_call(quick_config):
 def test_completion_notification_sent(quick_config, mock_training_result, caplog):
     """
     Test completion notification is sent when benchmark completes.
-    
+
     **Validates: Requirement 5.7**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     # Create mock benchmark suite result
     from experiments.benchmark_system.models import BenchmarkSuiteResult
-    
+
     result = BenchmarkSuiteResult(
         config=quick_config,
         framework_results={"HistoCore": mock_training_result},
@@ -482,10 +481,10 @@ def test_completion_notification_sent(quick_config, mock_training_result, caplog
         failed_frameworks=[],
         errors={},
     )
-    
+
     with caplog.at_level("INFO"):
         orchestrator._send_completion_notification(result)
-    
+
     # Verify completion notification logged
     assert any("BENCHMARK SUITE COMPLETED" in record.message for record in caplog.records)
 
@@ -493,13 +492,13 @@ def test_completion_notification_sent(quick_config, mock_training_result, caplog
 def test_completion_notification_includes_duration(quick_config, mock_training_result, caplog):
     """
     Test completion notification includes total duration.
-    
+
     **Validates: Requirement 5.7**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     from experiments.benchmark_system.models import BenchmarkSuiteResult
-    
+
     result = BenchmarkSuiteResult(
         config=quick_config,
         framework_results={"HistoCore": mock_training_result},
@@ -516,26 +515,30 @@ def test_completion_notification_includes_duration(quick_config, mock_training_r
         failed_frameworks=[],
         errors={},
     )
-    
+
     with caplog.at_level("INFO"):
         orchestrator._send_completion_notification(result)
-    
+
     # Verify duration included
-    notification_logs = [r.message for r in caplog.records if "BENCHMARK SUITE COMPLETED" in r.message]
+    notification_logs = [
+        r.message for r in caplog.records if "BENCHMARK SUITE COMPLETED" in r.message
+    ]
     assert len(notification_logs) > 0
     assert "3.5" in notification_logs[0] or "3.50" in notification_logs[0]
 
 
-def test_completion_notification_includes_framework_status(quick_config, mock_training_result, caplog):
+def test_completion_notification_includes_framework_status(
+    quick_config, mock_training_result, caplog
+):
     """
     Test completion notification includes successful and failed frameworks.
-    
+
     **Validates: Requirement 5.7**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     from experiments.benchmark_system.models import BenchmarkSuiteResult
-    
+
     result = BenchmarkSuiteResult(
         config=quick_config,
         framework_results={"HistoCore": mock_training_result},
@@ -552,12 +555,14 @@ def test_completion_notification_includes_framework_status(quick_config, mock_tr
         failed_frameworks=["PathML"],
         errors={},
     )
-    
+
     with caplog.at_level("INFO"):
         orchestrator._send_completion_notification(result)
-    
+
     # Verify framework status included
-    notification_logs = [r.message for r in caplog.records if "BENCHMARK SUITE COMPLETED" in r.message]
+    notification_logs = [
+        r.message for r in caplog.records if "BENCHMARK SUITE COMPLETED" in r.message
+    ]
     assert len(notification_logs) > 0
     assert "HistoCore" in notification_logs[0]
     assert "PathML" in notification_logs[0]
@@ -566,13 +571,13 @@ def test_completion_notification_includes_framework_status(quick_config, mock_tr
 def test_completion_notification_includes_report_paths(quick_config, mock_training_result, caplog):
     """
     Test completion notification includes report and visualization paths.
-    
+
     **Validates: Requirement 5.7**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     from experiments.benchmark_system.models import BenchmarkSuiteResult
-    
+
     result = BenchmarkSuiteResult(
         config=quick_config,
         framework_results={"HistoCore": mock_training_result},
@@ -589,12 +594,14 @@ def test_completion_notification_includes_report_paths(quick_config, mock_traini
         failed_frameworks=[],
         errors={},
     )
-    
+
     with caplog.at_level("INFO"):
         orchestrator._send_completion_notification(result)
-    
+
     # Verify paths included
-    notification_logs = [r.message for r in caplog.records if "BENCHMARK SUITE COMPLETED" in r.message]
+    notification_logs = [
+        r.message for r in caplog.records if "BENCHMARK SUITE COMPLETED" in r.message
+    ]
     assert len(notification_logs) > 0
     assert "benchmark_report.md" in notification_logs[0]
     assert "visualizations" in notification_logs[0]
@@ -608,14 +615,14 @@ def test_completion_notification_includes_report_paths(quick_config, mock_traini
 def test_timeout_enforcement_configuration(quick_config):
     """
     Test timeout is configured correctly from config.
-    
+
     **Validates: Requirement 5.8**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     # Verify timeout configured
     assert orchestrator.config.timeout_hours == 4.0
-    
+
     # Verify timeout converted to seconds in run_single_framework
     timeout_seconds = orchestrator.config.timeout_hours * 3600
     assert timeout_seconds == 4.0 * 3600
@@ -625,7 +632,7 @@ def test_timeout_enforcement_configuration(quick_config):
 def test_timeout_enforcement_different_modes(task_spec):
     """
     Test timeout differs between quick and full modes.
-    
+
     **Validates: Requirement 5.8**
     """
     # Quick mode with short timeout
@@ -636,7 +643,7 @@ def test_timeout_enforcement_different_modes(task_spec):
         timeout_hours=4.0,
         output_dir=Path("results/test"),
     )
-    
+
     # Full mode with long timeout
     full_config = BenchmarkConfig(
         mode="full",
@@ -645,10 +652,10 @@ def test_timeout_enforcement_different_modes(task_spec):
         timeout_hours=48.0,
         output_dir=Path("results/test"),
     )
-    
+
     quick_orchestrator = BenchmarkOrchestrator(config=quick_config)
     full_orchestrator = BenchmarkOrchestrator(config=full_config)
-    
+
     # Verify different timeouts
     assert quick_orchestrator.config.timeout_hours == 4.0
     assert full_orchestrator.config.timeout_hours == 48.0
@@ -658,34 +665,36 @@ def test_timeout_enforcement_different_modes(task_spec):
 def test_timeout_enforcement_in_run_single_framework(quick_config, mock_framework_env):
     """
     Test timeout is enforced in run_single_framework.
-    
+
     **Validates: Requirement 5.8**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
     orchestrator.framework_environments = {"HistoCore": mock_framework_env}
-    
+
     # Mock dependencies
-    with patch.object(orchestrator.resource_manager, 'allocate_gpu') as mock_allocate:
-        with patch.object(orchestrator.resource_manager, 'clear_gpu_memory'):
-            with patch.object(orchestrator.task_executor, 'configure_task') as mock_configure:
-                with patch.object(orchestrator.metrics_collector, 'start_collection'):
-                    with patch.object(orchestrator.metrics_collector, 'finalize_collection'):
-                        with patch.object(orchestrator.task_executor, 'execute_training') as mock_execute:
-                            
+    with patch.object(orchestrator.resource_manager, "allocate_gpu") as mock_allocate:
+        with patch.object(orchestrator.resource_manager, "clear_gpu_memory"):
+            with patch.object(orchestrator.task_executor, "configure_task") as mock_configure:
+                with patch.object(orchestrator.metrics_collector, "start_collection"):
+                    with patch.object(orchestrator.metrics_collector, "finalize_collection"):
+                        with patch.object(
+                            orchestrator.task_executor, "execute_training"
+                        ) as mock_execute:
+
                             mock_allocate.return_value = Mock()
                             mock_configure.return_value = Mock(config_dict={})
-                            
+
                             # Mock execute_training to raise NotImplementedError
                             mock_execute.side_effect = NotImplementedError("Not implemented")
-                            
+
                             # Verify timeout is calculated
                             task_spec = orchestrator._apply_mode_configuration()
-                            
+
                             try:
                                 orchestrator.run_single_framework("HistoCore", task_spec)
                             except NotImplementedError:
                                 pass  # Expected
-                            
+
                             # Verify timeout was calculated (4 hours * 3600 seconds)
                             # This is verified by checking the code path executes
                             assert orchestrator.config.timeout_hours == 4.0
@@ -699,19 +708,19 @@ def test_timeout_enforcement_in_run_single_framework(quick_config, mock_framewor
 def test_estimate_completion_time_quick_mode(quick_config):
     """
     Test estimated completion time for quick mode.
-    
+
     **Validates: Requirement 5.2**
     """
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     # Estimate completion time
     estimated_duration = orchestrator.estimate_completion_time()
-    
+
     # Quick mode: ~1 hour per framework * 2 frameworks * 1.1 overhead
     # Expected: ~2.2 hours
     assert isinstance(estimated_duration, timedelta)
     assert estimated_duration.total_seconds() > 0
-    
+
     # Should be approximately 2.2 hours (allow some tolerance)
     expected_hours = 1.0 * len(quick_config.frameworks) * 1.1
     actual_hours = estimated_duration.total_seconds() / 3600
@@ -721,19 +730,19 @@ def test_estimate_completion_time_quick_mode(quick_config):
 def test_estimate_completion_time_full_mode(full_config):
     """
     Test estimated completion time for full mode.
-    
+
     **Validates: Requirement 5.2**
     """
     orchestrator = BenchmarkOrchestrator(config=full_config)
-    
+
     # Estimate completion time
     estimated_duration = orchestrator.estimate_completion_time()
-    
+
     # Full mode: ~10 hours per framework * 4 frameworks * 1.1 overhead
     # Expected: ~44 hours
     assert isinstance(estimated_duration, timedelta)
     assert estimated_duration.total_seconds() > 0
-    
+
     # Should be approximately 44 hours (allow some tolerance)
     expected_hours = 10.0 * len(full_config.frameworks) * 1.1
     actual_hours = estimated_duration.total_seconds() / 3600
@@ -743,7 +752,7 @@ def test_estimate_completion_time_full_mode(full_config):
 def test_estimate_completion_time_scales_with_frameworks(task_spec):
     """
     Test estimated completion time scales with number of frameworks.
-    
+
     **Validates: Requirement 5.2**
     """
     # Config with 2 frameworks
@@ -753,7 +762,7 @@ def test_estimate_completion_time_scales_with_frameworks(task_spec):
         task_spec=task_spec,
         output_dir=Path("results/test"),
     )
-    
+
     # Config with 4 frameworks
     config_4 = BenchmarkConfig(
         mode="quick",
@@ -761,13 +770,13 @@ def test_estimate_completion_time_scales_with_frameworks(task_spec):
         task_spec=task_spec,
         output_dir=Path("results/test"),
     )
-    
+
     orchestrator_2 = BenchmarkOrchestrator(config=config_2)
     orchestrator_4 = BenchmarkOrchestrator(config=config_4)
-    
+
     duration_2 = orchestrator_2.estimate_completion_time()
     duration_4 = orchestrator_4.estimate_completion_time()
-    
+
     # Duration should scale approximately linearly
     ratio = duration_4.total_seconds() / duration_2.total_seconds()
     assert 1.9 < ratio < 2.1  # Should be approximately 2x
@@ -781,7 +790,7 @@ def test_estimate_completion_time_scales_with_frameworks(task_spec):
 def test_orchestrator_initialization(quick_config):
     """Test orchestrator initializes correctly with all components."""
     orchestrator = BenchmarkOrchestrator(config=quick_config)
-    
+
     # Verify components initialized
     assert orchestrator.config == quick_config
     assert orchestrator.framework_manager is not None
@@ -792,7 +801,7 @@ def test_orchestrator_initialization(quick_config):
     assert orchestrator.error_handler is not None
     assert orchestrator.report_generator is not None
     assert orchestrator.result_validator is not None
-    
+
     # Verify state tracking initialized
     assert orchestrator.start_time is None
     assert orchestrator.framework_results == {}
@@ -807,14 +816,14 @@ def test_orchestrator_with_custom_components(quick_config):
     mock_framework_manager = Mock()
     mock_task_executor = Mock()
     mock_resource_manager = Mock()
-    
+
     orchestrator = BenchmarkOrchestrator(
         config=quick_config,
         framework_manager=mock_framework_manager,
         task_executor=mock_task_executor,
         resource_manager=mock_resource_manager,
     )
-    
+
     # Verify custom components used
     assert orchestrator.framework_manager == mock_framework_manager
     assert orchestrator.task_executor == mock_task_executor
