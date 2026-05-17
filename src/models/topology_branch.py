@@ -26,6 +26,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 try:
+    import faiss
+    import numpy as np
+
+    FAISS_AVAILABLE = True
+except ImportError:
+    FAISS_AVAILABLE = False
+
+try:
     import torch_geometric
     from torch_geometric.data import Batch, Data
     from torch_geometric.nn import (
@@ -76,6 +84,8 @@ class KNNGraphBuilder(nn.Module):
         k: int = 8,
         self_loops: bool = True,
         directed: bool = False,
+        use_faiss: bool = False,
+        faiss_threshold: int = 1000,
     ):
         super().__init__()
 
@@ -88,6 +98,11 @@ class KNNGraphBuilder(nn.Module):
         self.k = k
         self.self_loops = self_loops
         self.directed = directed
+        self.use_faiss = use_faiss
+        self.faiss_threshold = faiss_threshold
+
+        if use_faiss and not FAISS_AVAILABLE:
+            raise ImportError("faiss-cpu or faiss-gpu required for approximate k-NN")
 
     def forward(
         self,
@@ -107,6 +122,20 @@ class KNNGraphBuilder(nn.Module):
             edge_attr: Edge features [num_edges, 2] (distance, similarity)
                       None if features not provided
         """
+        num_patches = coords.shape[0]
+
+        # Use FAISS for large N
+        if self.use_faiss and num_patches >= self.faiss_threshold:
+            return self._build_graph_faiss(coords, features)
+        else:
+            return self._build_graph_exact(coords, features)
+
+    def _build_graph_exact(
+        self,
+        coords: torch.Tensor,
+        features: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+        """Exact k-NN using PyTorch (O(N²))."""
         num_patches = coords.shape[0]
         device = coords.device
 
@@ -133,6 +162,64 @@ class KNNGraphBuilder(nn.Module):
         # Build edge_index [2, E]
         source = torch.arange(num_patches, device=device).unsqueeze(1).expand(-1, self.k)
         target = indices
+
+        edge_index = torch.stack([source.flatten(), target.flatten()], dim=0)
+
+        # Make undirected (add reverse edges)
+        if not self.directed:
+            edge_index = torch.cat([edge_index, edge_index.flip(0)], dim=1)
+
+        # Compute edge features
+        edge_attr = None
+        if features is not None:
+            # Distance feature
+            src_coords = coords[edge_index[0]]  # [E, 2]
+            tgt_coords = coords[edge_index[1]]  # [E, 2]
+            edge_distances = torch.norm(src_coords - tgt_coords, dim=-1, keepdim=True)  # [E, 1]
+
+            # Cosine similarity feature
+            src_features = features[edge_index[0]]  # [E, D]
+            tgt_features = features[edge_index[1]]  # [E, D]
+            edge_similarity = F.cosine_similarity(
+                src_features, tgt_features, dim=-1, keepdim=True
+            )  # [E, 1]
+
+            # Concatenate
+            edge_attr = torch.cat([edge_distances, edge_similarity], dim=-1)  # [E, 2]
+
+        return edge_index, edge_attr
+
+    def _build_graph_faiss(
+        self,
+        coords: torch.Tensor,
+        features: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+        """Approximate k-NN using FAISS (O(N log N))."""
+        num_patches = coords.shape[0]
+        device = coords.device
+
+        # Convert to numpy for FAISS
+        coords_np = coords.cpu().numpy().astype(np.float32)
+
+        # Build FAISS index
+        index = faiss.IndexFlatL2(2)  # L2 distance, 2D coords
+        index.add(coords_np)
+
+        # Search k+1 neighbors (includes self)
+        k_search = self.k + 1 if not self.self_loops else self.k
+        distances_np, indices_np = index.search(coords_np, k_search)
+
+        # Convert back to torch
+        indices = torch.from_numpy(indices_np).to(device)
+
+        # Remove self-loops if needed
+        if not self.self_loops:
+            # First column is self, remove it
+            indices = indices[:, 1:]
+
+        # Build edge_index [2, E]
+        source = torch.arange(num_patches, device=device).unsqueeze(1).expand(-1, self.k)
+        target = indices[:, : self.k]
 
         edge_index = torch.stack([source.flatten(), target.flatten()], dim=0)
 
@@ -425,6 +512,7 @@ class TopologyBranch(nn.Module):
         gnn_type: str = "gat",
         pooling: str = "attention",
         dropout: float = 0.1,
+        use_faiss: bool = False,
     ):
         super().__init__()
 
@@ -444,7 +532,7 @@ class TopologyBranch(nn.Module):
         self.pooling = pooling
 
         # k-NN graph builder
-        self.graph_builder = KNNGraphBuilder(k=k_neighbors)
+        self.graph_builder = KNNGraphBuilder(k=k_neighbors, use_faiss=use_faiss)
 
         # Input projection
         self.input_proj = nn.Linear(feature_dim, hidden_dim)
