@@ -5,6 +5,7 @@ Inference Engine
 Real AI model inference for pathology image analysis.
 """
 
+import io
 import logging
 import time
 from dataclasses import dataclass
