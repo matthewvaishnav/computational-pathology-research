@@ -42,12 +42,10 @@ class PathologyFLAggregator(BaseAggregator):
         cancer_type = self._resolve_cancer_type(client_updates)
         gradients = {update.client_id: update.gradients for update in client_updates}
         hospital_metadata = {
-            update.client_id: self._parse_hospital_metadata(update)
-            for update in client_updates
+            update.client_id: self._parse_hospital_metadata(update) for update in client_updates
         }
         slide_quality = {
-            update.client_id: self._parse_slide_quality(update)
-            for update in client_updates
+            update.client_id: self._parse_slide_quality(update) for update in client_updates
         }
 
         return self.pathology_aggregator.aggregate_updates(
@@ -59,8 +57,7 @@ class PathologyFLAggregator(BaseAggregator):
 
     def _resolve_cancer_type(self, client_updates: List[ClientUpdate]) -> CancerType:
         cancer_types = {
-            (update.cancer_type or self.default_cancer_type).lower()
-            for update in client_updates
+            (update.cancer_type or self.default_cancer_type).lower() for update in client_updates
         }
         if len(cancer_types) != 1:
             raise ValueError("PathologyFL requires all client updates to share one cancer_type")

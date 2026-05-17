@@ -62,7 +62,9 @@ class CheckpointLoader:
         """
         try:
             logger.info(f"Loading checkpoint from: {self.checkpoint_path}")
-            checkpoint = torch.load(self.checkpoint_path, map_location=self.device, weights_only=True)
+            checkpoint = torch.load(
+                self.checkpoint_path, map_location=self.device, weights_only=True
+            )
 
             # Validate checkpoint structure
             required_keys = [

@@ -8,7 +8,4 @@ infrastructure for clinical deployment.
 from .model_validator import ModelValidator
 from .performance_monitor import PerformanceMonitor
 
-__all__ = [
-    'ModelValidator',
-    'PerformanceMonitor'
-]
+__all__ = ["ModelValidator", "PerformanceMonitor"]

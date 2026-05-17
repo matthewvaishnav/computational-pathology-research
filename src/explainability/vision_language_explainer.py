@@ -17,8 +17,9 @@ import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
 
-from .case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery, SimilarCase
 from src.security.model_download import ModelDownloadManager
+
+from .case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery, SimilarCase
 from .counterfactual_explanations import (
     BiologicalPlausibilityValidator,
     CounterfactualExplanation,
@@ -68,7 +69,9 @@ class VisionLanguageExplainer:
         # Load vision-language model
         revision = ModelDownloadManager.get_pinned_revision(vision_language_model)
         self.clip_model = CLIPModel.from_pretrained(vision_language_model, revision=revision)
-        self.clip_processor = CLIPProcessor.from_pretrained(vision_language_model, revision=revision)
+        self.clip_processor = CLIPProcessor.from_pretrained(
+            vision_language_model, revision=revision
+        )
         self.clip_model.to(device)
         self.clip_model.eval()
 
@@ -309,14 +312,20 @@ class VisionLanguageExplainer:
         # Add disease-specific interpretation
         if disease_type == "breast":
             if pred_class == 1:
-                parts.append("malignant breast tissue with irregular ductal architecture and nuclear atypia. ")
+                parts.append(
+                    "malignant breast tissue with irregular ductal architecture and nuclear atypia. "
+                )
             else:
                 parts.append("benign breast tissue with preserved ductal architecture. ")
         elif disease_type == "lung":
             if pred_class == 0:
-                parts.append("adenocarcinoma pattern with glandular structures and mucin production. ")
+                parts.append(
+                    "adenocarcinoma pattern with glandular structures and mucin production. "
+                )
             elif pred_class == 1:
-                parts.append("squamous cell carcinoma with keratinization and intercellular bridges. ")
+                parts.append(
+                    "squamous cell carcinoma with keratinization and intercellular bridges. "
+                )
             else:
                 parts.append("atypical lung tissue requiring further evaluation. ")
         elif disease_type == "prostate":
@@ -326,7 +335,9 @@ class VisionLanguageExplainer:
             else:
                 parts.append("well to moderately differentiated glandular pattern. ")
         elif disease_type == "colon":
-            parts.append(f"Stage {['I', 'II', 'III', 'IV'][min(pred_class, 3)]} colorectal adenocarcinoma ")
+            parts.append(
+                f"Stage {['I', 'II', 'III', 'IV'][min(pred_class, 3)]} colorectal adenocarcinoma "
+            )
             if pred_class >= 2:
                 parts.append("with lymphovascular invasion. ")
             else:

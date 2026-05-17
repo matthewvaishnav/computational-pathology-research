@@ -17,6 +17,7 @@ import numpy as np
 from scipy import stats
 
 from .longitudinal import PatientTimeline, ScanRecord, TreatmentEvent, TreatmentResponseCategory
+from .progression_analyzer import ResponseKinetics
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,7 @@ class TreatmentResponseMetrics:
 class OutcomePredictor:
     """
     Predict treatment outcomes including durability and unexpected responses.
-    
+
     Handles patient factor correlation and outcome modeling.
     """
 

@@ -15,10 +15,10 @@ Components:
 
 Usage:
     from streaming.memory import MemoryCoordinator, OptimizerConfig
-    
+
     config = OptimizerConfig(cache_size_mb=1000, alert_threshold_mb=8000)
     coordinator = MemoryCoordinator(config)
-    
+
     # Optimize for workload
     optimal_sizes = coordinator.optimize_for_workload(workload_size=1000)
 
@@ -35,23 +35,23 @@ See Also:
 
 __version__ = "1.0.0"
 
-# Import profiler components
-from .profiler import MemoryProfiler, MemoryPressureLevel, MemorySnapshot
-
-# Import cache manager
-from .cache_manager import CacheManager, CacheEntry
-
 # Import batch optimizer
 from .batch_optimizer import BatchOptimizer, OptimalSizes
 
-# Import monitor
-from .monitor import MemoryAlert, MemoryAnalytics, MemoryMonitor
+# Import cache manager
+from .cache_manager import CacheEntry, CacheManager
 
 # Import config
 from .config import OptimizerConfig
 
 # Import coordinator
 from .coordinator import MemoryCoordinator
+
+# Import monitor
+from .monitor import MemoryAlert, MemoryAnalytics, MemoryMonitor
+
+# Import profiler components
+from .profiler import MemoryPressureLevel, MemoryProfiler, MemorySnapshot
 
 __all__ = [
     "MemoryProfiler",

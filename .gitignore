@@ -322,6 +322,17 @@ dist/
 *.pstats
 .gdb_history
 
+# Temporary test/debug scripts
+test_*.py
+check_*.py
+quick_*.py
+verify_*.py
+train_*.py
+bandit*.json
+safety_results.json
+security*.json
+security*.html
+
 # Editor temporary files
 .#*
 #*#

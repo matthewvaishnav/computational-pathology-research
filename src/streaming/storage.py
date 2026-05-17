@@ -245,7 +245,7 @@ class LocalStorage:
         """Get filepath for slide features."""
         # Sanitize slide_id to prevent path traversal
         slide_id = self._sanitize_slide_id(slide_id)
-        
+
         format_extensions = {
             "hdf5": ".h5",
             "npz": ".npz",
@@ -257,28 +257,29 @@ class LocalStorage:
 
         ext = format_extensions[self.config.feature_format]
         return os.path.join(self.config.cache_dir, f"{slide_id}_features{ext}")
-    
+
     def _sanitize_slide_id(self, slide_id: str) -> str:
         """Sanitize slide_id to prevent path traversal attacks."""
         # Remove path separators and parent directory references
-        slide_id = slide_id.replace('/', '_').replace('\\', '_')
-        slide_id = slide_id.replace('..', '_')
-        
+        slide_id = slide_id.replace("/", "_").replace("\\", "_")
+        slide_id = slide_id.replace("..", "_")
+
         # Remove any remaining dangerous characters
         import re
-        slide_id = re.sub(r'[^\w\-.]', '_', slide_id)
-        
+
+        slide_id = re.sub(r"[^\w\-.]", "_", slide_id)
+
         # Ensure not empty after sanitization
-        if not slide_id or slide_id.strip('_') == '':
+        if not slide_id or slide_id.strip("_") == "":
             raise ValueError("Invalid slide_id: empty after sanitization")
-        
+
         return slide_id
 
     def write_result(self, slide_id: str, result: Dict[str, Any]) -> str:
         """Write processing result to storage."""
         # Sanitize slide_id to prevent path traversal
         slide_id = self._sanitize_slide_id(slide_id)
-        
+
         filepath = os.path.join(self.config.results_dir, f"{slide_id}_result.json")
 
         if self.config.enable_compression:
@@ -297,7 +298,7 @@ class LocalStorage:
         """Read processing result from storage."""
         # Sanitize slide_id to prevent path traversal
         slide_id = self._sanitize_slide_id(slide_id)
-        
+
         filepath = os.path.join(self.config.results_dir, f"{slide_id}_result.json")
 
         # Try compressed first
@@ -315,18 +316,19 @@ class LocalStorage:
     def create_temp_file(self, suffix: str = "") -> str:
         """Create temporary file with secure permissions."""
         fd, filepath = tempfile.mkstemp(suffix=suffix, dir=self.config.temp_dir)
-        
+
         # Secure file permissions immediately after creation
         try:
-            if os.name == 'posix':
+            if os.name == "posix":
                 os.chmod(filepath, 0o600)
-            elif os.name == 'nt':
+            elif os.name == "nt":
                 # Windows: Use icacls to set restrictive ACLs
                 import subprocess
+
                 subprocess.run(
-                    ['icacls', filepath, '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    ["icacls", filepath, "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
                     check=True,
-                    capture_output=True
+                    capture_output=True,
                 )
         except Exception as e:
             logger.warning(f"Failed to set secure permissions on temp file: {e}")
@@ -337,25 +339,26 @@ class LocalStorage:
             except Exception as cleanup_err:
                 logger.error(f"Failed to remove insecure temp file: {cleanup_err}", exc_info=True)
             raise RuntimeError(f"Cannot create secure temp file: {e}")
-        
+
         os.close(fd)
         return filepath
 
     def create_temp_dir(self) -> str:
         """Create temporary directory with secure permissions."""
         dirpath = tempfile.mkdtemp(dir=self.config.temp_dir)
-        
+
         # Secure directory permissions immediately after creation
         try:
-            if os.name == 'posix':
+            if os.name == "posix":
                 os.chmod(dirpath, 0o700)
-            elif os.name == 'nt':
+            elif os.name == "nt":
                 # Windows: Use icacls to set restrictive ACLs
                 import subprocess
+
                 subprocess.run(
-                    ['icacls', dirpath, '/inheritance:r', '/grant:r', f'{os.getlogin()}:F'],
+                    ["icacls", dirpath, "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
                     check=True,
-                    capture_output=True
+                    capture_output=True,
                 )
         except Exception as e:
             logger.warning(f"Failed to set secure permissions on temp dir: {e}")
@@ -363,9 +366,11 @@ class LocalStorage:
             try:
                 shutil.rmtree(dirpath)
             except Exception as cleanup_err:
-                logger.error(f"Failed to remove insecure temp directory: {cleanup_err}", exc_info=True)
+                logger.error(
+                    f"Failed to remove insecure temp directory: {cleanup_err}", exc_info=True
+                )
             raise RuntimeError(f"Cannot create secure temp directory: {e}")
-        
+
         return dirpath
 
     def cleanup_temp_files(self, max_age_hours: Optional[int] = None) -> int:
@@ -390,6 +395,7 @@ class LocalStorage:
                         file_size = os.path.getsize(filepath)
                         # Safe deletion with archival
                         from src.utils.safe_operations import safe_delete
+
                         archive_dir = self.cache_dir / "archive"
                         safe_delete(Path(filepath), archive_dir=archive_dir)
                         cleaned_count += 1

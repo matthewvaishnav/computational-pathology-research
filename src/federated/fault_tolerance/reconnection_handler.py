@@ -10,7 +10,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ _secure_random = secrets.SystemRandom()
 
 class ReconnectionStrategy(Enum):
     """Reconnection strategy types."""
-    
+
     IMMEDIATE = "immediate"  # Reconnect immediately
     LINEAR_BACKOFF = "linear_backoff"  # Linear delay increase
     EXPONENTIAL_BACKOFF = "exponential_backoff"  # Exponential delay increase
@@ -30,7 +30,7 @@ class ReconnectionStrategy(Enum):
 @dataclass
 class ReconnectionAttempt:
     """Records a reconnection attempt."""
-    
+
     attempt_number: int
     timestamp: datetime
     delay_seconds: float
@@ -41,16 +41,16 @@ class ReconnectionAttempt:
 class ReconnectionHandler:
     """
     Handles automatic reconnection with exponential backoff.
-    
+
     **Validates: Requirements 9.4, 9.6**
-    
+
     Features:
     - Multiple reconnection strategies
     - Exponential backoff with jitter
     - Maximum retry limits
     - Connection state management
     """
-    
+
     def __init__(
         self,
         connect_callback: Callable,
@@ -65,7 +65,7 @@ class ReconnectionHandler:
     ):
         """
         Initialize reconnection handler.
-        
+
         Args:
             connect_callback: Async function to establish connection
             strategy: Reconnection strategy to use
@@ -86,44 +86,44 @@ class ReconnectionHandler:
         self.jitter_factor = jitter_factor
         self.success_callback = success_callback
         self.failure_callback = failure_callback
-        
+
         # State tracking
         self.is_connected = False
         self.is_reconnecting = False
         self.attempt_count = 0
         self.attempts: list[ReconnectionAttempt] = []
         self.reconnection_task: Optional[asyncio.Task] = None
-        
+
         logger.info(f"Reconnection handler initialized with {strategy.value} strategy")
-    
+
     async def start_reconnection(self) -> bool:
         """
         Start reconnection process.
-        
+
         Returns:
             True if reconnection successful
-        
+
         **Validates: Requirements 9.4**
         """
         if self.is_reconnecting:
             logger.warning("Reconnection already in progress")
             return False
-        
+
         if self.is_connected:
             logger.info("Already connected, no reconnection needed")
             return True
-        
+
         self.is_reconnecting = True
         self.attempt_count = 0
-        
+
         logger.info("Starting reconnection process")
-        
+
         success = await self._reconnection_loop()
-        
+
         self.is_reconnecting = False
-        
+
         return success
-    
+
     async def _reconnection_loop(self) -> bool:
         """Execute reconnection loop with backoff."""
         while True:
@@ -132,30 +132,27 @@ class ReconnectionHandler:
                 logger.error(f"Max reconnection attempts ({self.max_attempts}) reached")
                 self._notify_failure("Max attempts reached")
                 return False
-            
+
             self.attempt_count += 1
-            
+
             # Calculate delay
             delay = self._calculate_delay()
-            
-            logger.info(
-                f"Reconnection attempt {self.attempt_count} "
-                f"(delay: {delay:.2f}s)"
-            )
-            
+
+            logger.info(f"Reconnection attempt {self.attempt_count} " f"(delay: {delay:.2f}s)")
+
             # Wait before attempting
             if self.attempt_count > 1:  # No delay on first attempt
                 await asyncio.sleep(delay)
-            
+
             # Attempt connection
             attempt_start = datetime.now()
-            
+
             try:
                 await self.connect_callback()
-                
+
                 # Connection successful
                 self.is_connected = True
-                
+
                 attempt = ReconnectionAttempt(
                     attempt_number=self.attempt_count,
                     timestamp=attempt_start,
@@ -163,19 +160,17 @@ class ReconnectionHandler:
                     success=True,
                 )
                 self.attempts.append(attempt)
-                
-                logger.info(
-                    f"Reconnection successful after {self.attempt_count} attempts"
-                )
-                
+
+                logger.info(f"Reconnection successful after {self.attempt_count} attempts")
+
                 self._notify_success()
-                
+
                 return True
-                
+
             except Exception as e:
                 # Connection failed
                 error_msg = str(e)
-                
+
                 attempt = ReconnectionAttempt(
                     attempt_number=self.attempt_count,
                     timestamp=attempt_start,
@@ -184,42 +179,40 @@ class ReconnectionHandler:
                     error_message=error_msg,
                 )
                 self.attempts.append(attempt)
-                
-                logger.warning(
-                    f"Reconnection attempt {self.attempt_count} failed: {error_msg}"
-                )
-                
+
+                logger.warning(f"Reconnection attempt {self.attempt_count} failed: {error_msg}")
+
                 # Continue to next attempt
                 continue
-    
+
     def _calculate_delay(self) -> float:
         """
         Calculate delay for next reconnection attempt.
-        
+
         Returns:
             Delay in seconds
         """
         if self.strategy == ReconnectionStrategy.IMMEDIATE:
             return 0.0
-        
+
         elif self.strategy == ReconnectionStrategy.LINEAR_BACKOFF:
             delay = self.initial_delay * self.attempt_count
-        
+
         elif self.strategy == ReconnectionStrategy.EXPONENTIAL_BACKOFF:
             delay = self.initial_delay * (self.backoff_multiplier ** (self.attempt_count - 1))
-        
+
         elif self.strategy == ReconnectionStrategy.JITTERED_BACKOFF:
             # Exponential backoff with jitter
             base_delay = self.initial_delay * (self.backoff_multiplier ** (self.attempt_count - 1))
             jitter = base_delay * self.jitter_factor * (_secure_random.random() * 2 - 1)
             delay = base_delay + jitter
-        
+
         else:
             delay = self.initial_delay
-        
+
         # Cap at max_delay
         return min(delay, self.max_delay)
-    
+
     def _notify_success(self) -> None:
         """Notify success callback."""
         if self.success_callback:
@@ -227,7 +220,7 @@ class ReconnectionHandler:
                 self.success_callback(self.attempt_count)
             except Exception as e:
                 logger.error(f"Success callback failed: {e}")
-    
+
     def _notify_failure(self, reason: str) -> None:
         """Notify failure callback."""
         if self.failure_callback:
@@ -235,57 +228,53 @@ class ReconnectionHandler:
                 self.failure_callback(reason, self.attempt_count)
             except Exception as e:
                 logger.error(f"Failure callback failed: {e}")
-    
+
     def stop_reconnection(self) -> None:
         """Stop ongoing reconnection process."""
         if not self.is_reconnecting:
             return
-        
+
         self.is_reconnecting = False
-        
+
         if self.reconnection_task:
             self.reconnection_task.cancel()
-        
+
         logger.info("Stopped reconnection process")
-    
+
     def mark_disconnected(self) -> None:
         """Mark connection as disconnected."""
         self.is_connected = False
         logger.info("Marked as disconnected")
-    
+
     def mark_connected(self) -> None:
         """Mark connection as connected."""
         self.is_connected = True
         self.attempt_count = 0
         logger.info("Marked as connected")
-    
+
     def get_statistics(self) -> dict:
         """Get reconnection statistics."""
         if not self.attempts:
             return {
-                'total_attempts': 0,
-                'successful_attempts': 0,
-                'failed_attempts': 0,
+                "total_attempts": 0,
+                "successful_attempts": 0,
+                "failed_attempts": 0,
             }
-        
+
         successful = sum(1 for a in self.attempts if a.success)
         failed = len(self.attempts) - successful
-        
+
         return {
-            'total_attempts': len(self.attempts),
-            'successful_attempts': successful,
-            'failed_attempts': failed,
-            'current_attempt': self.attempt_count,
-            'is_connected': self.is_connected,
-            'is_reconnecting': self.is_reconnecting,
-            'strategy': self.strategy.value,
-            'last_attempt': (
-                self.attempts[-1].timestamp.isoformat()
-                if self.attempts
-                else None
-            ),
+            "total_attempts": len(self.attempts),
+            "successful_attempts": successful,
+            "failed_attempts": failed,
+            "current_attempt": self.attempt_count,
+            "is_connected": self.is_connected,
+            "is_reconnecting": self.is_reconnecting,
+            "strategy": self.strategy.value,
+            "last_attempt": (self.attempts[-1].timestamp.isoformat() if self.attempts else None),
         }
-    
+
     def reset(self) -> None:
         """Reset reconnection state."""
         self.attempt_count = 0
@@ -298,24 +287,24 @@ async def example_connect():
     """Example connection function."""
     # Simulate connection attempt
     await asyncio.sleep(0.1)
-    
+
     # Simulate random failures
     if _secure_random.random() < 0.7:  # 70% failure rate for demo
         raise ConnectionError("Simulated connection failure")
-    
+
     logger.info("Connection established!")
 
 
 async def demo_reconnection():
     """Demo reconnection handler."""
     print("=== Reconnection Handler Demo ===\n")
-    
+
     def on_success(attempts):
         print(f"✓ Reconnected successfully after {attempts} attempts")
-    
+
     def on_failure(reason, attempts):
         print(f"✗ Reconnection failed: {reason} ({attempts} attempts)")
-    
+
     handler = ReconnectionHandler(
         connect_callback=example_connect,
         strategy=ReconnectionStrategy.JITTERED_BACKOFF,
@@ -325,16 +314,16 @@ async def demo_reconnection():
         success_callback=on_success,
         failure_callback=on_failure,
     )
-    
+
     # Attempt reconnection
     success = await handler.start_reconnection()
-    
+
     # Show statistics
     stats = handler.get_statistics()
     print(f"\nStatistics:")
     for key, value in stats.items():
         print(f"  {key}: {value}")
-    
+
     print("\n=== Demo Complete ===")
 
 

@@ -178,14 +178,26 @@ class SMSNotifier(NotificationChannel):
         # Validate gateway_url to prevent SSRF attacks
         if gateway_url:
             from urllib.parse import urlparse
+
             parsed = urlparse(gateway_url)
             # Only allow https and specific domains
-            if parsed.scheme != 'https':
+            if parsed.scheme != "https":
                 raise ValueError("SMS gateway URL must use HTTPS")
             # Block private IP ranges
-            if any(x in parsed.netloc.lower() for x in ['localhost', '127.0.0.1', '0.0.0.0', '169.254', '10.', '172.16.', '192.168.']):  # nosec B104 - String literals for SSRF validation, not actual binding
+            if any(
+                x in parsed.netloc.lower()
+                for x in [  # nosec B104
+                    "localhost",
+                    "127.0.0.1",
+                    "0.0.0.0",
+                    "169.254",
+                    "10.",
+                    "172.16.",
+                    "192.168.",
+                ]
+            ):  # nosec B104 - String literals for SSRF validation, not actual binding
                 raise ValueError("SMS gateway URL cannot point to private IP ranges")
-        
+
         self.gateway_url = gateway_url
         self.api_key = api_key
         self.sender_id = sender_id
@@ -209,7 +221,7 @@ class SMSNotifier(NotificationChannel):
 
             # SECURITY: Use URLFetcherControl for secure URL opening
             from src.security.url_fetcher import URLFetcherControl
-            
+
             payload = _json.dumps({"to": recipient, "from": self.sender_id, "body": body}).encode()
             headers = {"Content-Type": "application/json"}
             if self.api_key:

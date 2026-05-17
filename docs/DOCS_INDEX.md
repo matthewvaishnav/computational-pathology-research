@@ -9,6 +9,10 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 
 ---
 
+## Project Status
+
+- [**Current Status (May 2026)**](CURRENT_STATUS.html) - Latest development progress, benchmarks, and roadmap
+
 ## Getting Started
 
 ### Installation and Setup
@@ -305,6 +309,7 @@ Historical documentation and implementation notes are available in [archive/](ar
 ---
 
 <div class="footer-note">
-  <p><em>Last updated: April 2026</em></p>
+  <p><strong>📊 Current Status:</strong> Week 7 of 12 for TransnnMIL v2.0 development. See <a href="CURRENT_STATUS">Current Status</a> for detailed progress.</p>
+  <p><em>Last updated: May 14, 2026</em></p>
   <p>For questions or suggestions, please <a href="https://github.com/matthewvaishnav/histocore/issues">open an issue</a>.</p>
 </div>

@@ -18,11 +18,14 @@ from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, R
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field
 from prometheus_client import Counter, Gauge, Histogram, generate_latest
 from prometheus_client.exposition import CONTENT_TYPE_LATEST
+from pydantic import BaseModel, Field
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+# Import distributed tracing
+from src.monitoring.tracing import get_tracer
 
 # Local imports grouped together
 from ..aggregator.factory import AggregatorFactory
@@ -30,12 +33,8 @@ from ..common.data_models import ClientUpdate
 from ..coordinator.orchestrator import TrainingOrchestrator
 from .config import get_config, validate_production_config
 from .database import get_db_manager, init_database
-from .security import RateLimiter
 from .monitoring import get_metrics_manager, setup_logging
-from .security import get_audit_logger, get_security_manager, validate_security_config
-
-# Import distributed tracing
-from src.monitoring.tracing import get_tracer
+from .security import RateLimiter, get_audit_logger, get_security_manager, validate_security_config
 
 # Configuration
 config = get_config()
@@ -46,9 +45,11 @@ audit_logger = get_audit_logger()
 # Logging setup
 logger = structlog.get_logger(__name__)
 
+
 # Pydantic models for request validation
 class ClientRegistration(BaseModel):
     """Client registration request."""
+
     client_id: str = Field(..., min_length=1, max_length=100)
     name: str = Field(..., min_length=1, max_length=200)
     organization: Optional[str] = Field(None, max_length=200)
@@ -56,7 +57,10 @@ class ClientRegistration(BaseModel):
 
 class TrainingConfig(BaseModel):
     """Training configuration request."""
-    algorithm: str = Field(default="fedavg", pattern="^(fedavg|fedprox|fedadam|secure|pathology_fl)$")
+
+    algorithm: str = Field(
+        default="fedavg", pattern="^(fedavg|fedprox|fedadam|secure|pathology_fl)$"
+    )
     min_clients: int = Field(default=2, ge=1, le=1000)
     max_clients: Optional[int] = Field(None, ge=1, le=1000)
     rounds: int = Field(default=10, ge=1, le=1000)
@@ -83,7 +87,7 @@ SERVER_START_TIME = datetime.now()
 def handle_api_errors(func):
     """Decorator to handle common API errors."""
     from functools import wraps
-    
+
     @wraps(func)
     async def wrapper(*args, **kwargs):
         try:
@@ -93,7 +97,7 @@ def handle_api_errors(func):
         except Exception as e:
             logger.error(f"{func.__name__} failed: {e}")
             raise HTTPException(status_code=500, detail="Internal server error")
-    
+
     return wrapper
 
 
@@ -128,7 +132,11 @@ async def lifespan(app: FastAPI):
             jaeger_endpoint=os.getenv("JAEGER_ENDPOINT"),
             otlp_endpoint=os.getenv("OTLP_ENDPOINT"),
             service_version="1.0.0",
-            environment=config.monitoring.sentry_environment if hasattr(config, "monitoring") else "development",
+            environment=(
+                config.monitoring.sentry_environment
+                if hasattr(config, "monitoring")
+                else "development"
+            ),
         )
         tracer.instrument_fastapi(app)
         logger.info("Distributed tracing initialized successfully")
@@ -195,7 +203,7 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)):
     """Verify user has admin role."""
     payload = current_user.get("payload", {})
     role = payload.get("role", "user")
-    
+
     if role != "admin":
         audit_logger.log_event(
             event_type="unauthorized_access",
@@ -204,7 +212,7 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)):
             user_id=current_user["user_id"],
         )
         raise HTTPException(status_code=403, detail="Admin access required")
-    
+
     return current_user
 
 
@@ -213,22 +221,22 @@ async def check_rate_limit(request: Request):
     """Check rate limit for endpoint."""
     import time
     from collections import defaultdict
-    
+
     if not hasattr(check_rate_limit, "requests"):
         check_rate_limit.requests = defaultdict(list)
-    
+
     client_ip = request.client.host
     now = time.time()
     window = 60
     limit = 100
-    
+
     check_rate_limit.requests[client_ip] = [
         t for t in check_rate_limit.requests[client_ip] if now - t < window
     ]
-    
+
     if len(check_rate_limit.requests[client_ip]) >= limit:
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
-    
+
     check_rate_limit.requests[client_ip].append(now)
 
 
@@ -267,21 +275,22 @@ async def log_requests(request: Request, call_next):
 def compute_model_checksum(model_state: Dict[str, Any]) -> str:
     """
     Compute SHA-256 checksum of model state dict.
-    
+
     Args:
         model_state: Model state dictionary
-        
+
     Returns:
         Hexadecimal SHA-256 checksum string
     """
-    import torch
     import io
-    
+
+    import torch
+
     # Serialize model state to bytes
     buffer = io.BytesIO()
     torch.save(model_state, buffer)
     model_bytes = buffer.getvalue()
-    
+
     # Compute SHA-256 hash
     sha256_hash = hashlib.sha256(model_bytes)
     return sha256_hash.hexdigest()
@@ -294,6 +303,7 @@ async def health_check():
     try:
         # Check database connection
         from sqlalchemy import text
+
         with db_manager.get_session() as session:
             session.execute(text("SELECT 1"))
 
@@ -314,21 +324,18 @@ async def metrics():
 async def register_client(
     client_data: ClientRegistration,
     current_user: dict = Depends(get_current_user),
-    _: None = Depends(check_rate_limit)
+    _: None = Depends(check_rate_limit),
 ):
     """Register a new FL client."""
     try:
         # Register client in database
         client = db_manager.register_client(
-            client_data.client_id,
-            client_data.name,
-            client_data.organization
+            client_data.client_id, client_data.name, client_data.organization
         )
 
         # Audit log
         audit_logger.log_client_registration(
-            client_id=client_data.client_id,
-            user_id=current_user["user_id"]
+            client_id=client_data.client_id, user_id=current_user["user_id"]
         )
 
         return {
@@ -371,7 +378,7 @@ async def start_training_round(
     training_config: TrainingConfig,
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
-    _: None = Depends(check_rate_limit)
+    _: None = Depends(check_rate_limit),
 ):
     """Start a new training round."""
     try:
@@ -501,9 +508,7 @@ async def get_system_stats(current_user: dict = Depends(get_admin_user)):
         # Get client stats
         total_clients = session.query(db_manager.Client).count()
         active_clients = (
-            session.query(db_manager.Client)
-            .filter(db_manager.Client.status == "active")
-            .count()
+            session.query(db_manager.Client).filter(db_manager.Client.status == "active").count()
         )
 
         # Get training stats
@@ -513,7 +518,7 @@ async def get_system_stats(current_user: dict = Depends(get_admin_user)):
             .filter(db_manager.TrainingRound.status == "completed")
             .count()
         )
-        
+
         # Calculate uptime
         uptime_delta = datetime.now() - SERVER_START_TIME
         uptime_seconds = int(uptime_delta.total_seconds())

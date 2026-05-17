@@ -25,9 +25,7 @@ class TestMILBaseInitialization:
     def test_initialization_without_fusion(self):
         """Test MILBase can be initialized without fusion strategy."""
         attention = GatedAttention(feature_dim=256, hidden_dim=256)
-        model = MILBase(
-            feature_dim=1024, num_classes=2, attention=attention, fusion=None
-        )
+        model = MILBase(feature_dim=1024, num_classes=2, attention=attention, fusion=None)
 
         assert model.feature_dim == 1024
         assert model.num_classes == 2
@@ -38,9 +36,7 @@ class TestMILBaseInitialization:
         """Test MILBase can be initialized with early fusion."""
         attention = GatedAttention(feature_dim=256, hidden_dim=256)
         fusion = EarlyFusion(feature_dim=1024, hidden_dim=256, num_scales=2)
-        model = MILBase(
-            feature_dim=1024, num_classes=2, attention=attention, fusion=fusion
-        )
+        model = MILBase(feature_dim=1024, num_classes=2, attention=attention, fusion=fusion)
 
         assert model.feature_dim == 1024
         assert model.num_classes == 2
@@ -51,9 +47,7 @@ class TestMILBaseInitialization:
         """Test MILBase can be initialized with late fusion."""
         attention = GatedAttention(feature_dim=256, hidden_dim=256)
         fusion = LateFusion(feature_dim=1024, hidden_dim=256, num_scales=2)
-        model = MILBase(
-            feature_dim=1024, num_classes=2, attention=attention, fusion=fusion
-        )
+        model = MILBase(feature_dim=1024, num_classes=2, attention=attention, fusion=fusion)
 
         assert model.feature_dim == 1024
         assert model.num_classes == 2
@@ -93,9 +87,7 @@ class TestComputeAttention:
         assert (attention_weights >= 0).all()
         # Check weights sum to 1 for each sample
         for i in range(4):
-            assert torch.allclose(
-                attention_weights[i].sum(), torch.tensor(1.0), atol=1e-6
-            )
+            assert torch.allclose(attention_weights[i].sum(), torch.tensor(1.0), atol=1e-6)
 
     def test_compute_attention_with_simple_attention(self):
         """Test compute_attention with SimpleAttention mechanism."""
@@ -131,13 +123,9 @@ class TestComputeAttention:
         attention_weights = model.compute_attention(features, mask)
 
         # Masked patches should have ~0 weight
-        assert torch.allclose(
-            attention_weights[0, 80:].sum(), torch.tensor(0.0), atol=1e-6
-        )
+        assert torch.allclose(attention_weights[0, 80:].sum(), torch.tensor(0.0), atol=1e-6)
         # Valid patches should sum to ~1.0
-        assert torch.allclose(
-            attention_weights[0, :80].sum(), torch.tensor(1.0), atol=1e-6
-        )
+        assert torch.allclose(attention_weights[0, :80].sum(), torch.tensor(1.0), atol=1e-6)
 
     def test_compute_attention_different_batch_sizes(self):
         """Test compute_attention with different batch sizes."""

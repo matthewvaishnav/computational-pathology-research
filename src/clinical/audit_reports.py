@@ -107,9 +107,7 @@ class ComplianceAuditLogger(AuditLogger):
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(compliance_report, f, indent=2)
 
-        self.compliance_logger.info(
-            f"Generated compliance report with {len(records)} records"
-        )
+        self.compliance_logger.info(f"Generated compliance report with {len(records)} records")
 
         return compliance_report
 

@@ -118,20 +118,14 @@ CLI Usage:
 
 # Core processing components
 from .batch_processor import BatchProcessor
-from .cache import FeatureCache
-from .config import ProcessingConfig
-from .extractor import PatchExtractor
-from .feature_generator import FeatureGenerator
-from .quality_control import QualityControl
-
-# Configuration and validation
-from .config_validator import ConfigValidator, get_recommended_config, validate_config
 
 # Utilities and monitoring
 from .benchmarks import PerformanceBenchmark, run_performance_benchmarks
-from .logging_utils import get_logger, setup_logging
-from .models import ProcessingResult, SlideMetadata
-from .progress_tracker import ProgressCallback, StreamingProgress, StreamingProgressTracker
+from .cache import FeatureCache
+from .config import ProcessingConfig
+
+# Configuration and validation
+from .config_validator import ConfigValidator, get_recommended_config, validate_config
 
 # Exception handling
 from .exceptions import (
@@ -140,6 +134,12 @@ from .exceptions import (
     ResourceError,
     WSIProcessingError,
 )
+from .extractor import PatchExtractor
+from .feature_generator import FeatureGenerator
+from .logging_utils import get_logger, setup_logging
+from .models import ProcessingResult, SlideMetadata
+from .progress_tracker import ProgressCallback, StreamingProgress, StreamingProgressTracker
+from .quality_control import QualityControl
 from .reader import WSIReader
 from .tissue_detector import TissueDetector
 from .validation import WSIPipelineValidator, run_comprehensive_validation

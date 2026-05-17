@@ -56,7 +56,7 @@ jobs:
     - name: Install PyG extensions
       run: |
         python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
-        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '--no-build-isolation', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Run tests
       run: |
@@ -127,7 +127,7 @@ jobs:
     - name: Install PyG extensions
       run: |
         python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
-        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '--no-build-isolation', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
         pip install mypy types-PyYAML
     
     - name: Run mypy
@@ -278,7 +278,7 @@ jobs:
     - name: Install PyG extensions
       run: |
         python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
-        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '--no-build-isolation', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Run quick demo
       run: |
@@ -328,7 +328,7 @@ jobs:
     - name: Install PyG extensions
       run: |
         python -c "import torch; print(f'Installing PyG for torch {torch.__version__}')"
-        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
+        python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '--no-build-isolation', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Generate coverage report
       run: |
@@ -368,3 +368,4 @@ jobs:
           exit 1
         fi
         echo "✓ Essential checks passed!"
+

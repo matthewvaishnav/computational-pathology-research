@@ -3,29 +3,30 @@ Azure Functions Integration
 
 Provides integration with Azure Functions for serverless processing of HistoCore workloads:
 - Slide preprocessing functions
-- Model inference functions  
+- Model inference functions
 - Result post-processing functions
 - Event-driven processing
 - Batch processing capabilities
 - Function monitoring and management
 """
 
+import asyncio
+import base64
 import json
 import logging
-import asyncio
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Callable, Union
-from dataclasses import dataclass, asdict
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import urlparse
-import base64
 
 try:
+    import aiohttp
+    import requests
     from azure.identity import DefaultAzureCredential
     from azure.mgmt.web import WebSiteManagementClient
-    from azure.mgmt.web.models import Site, SiteConfig, AppServicePlan
-    import requests
-    import aiohttp
+    from azure.mgmt.web.models import AppServicePlan, Site, SiteConfig
+
     AZURE_AVAILABLE = True
 except ImportError:
     AZURE_AVAILABLE = False
@@ -35,14 +36,16 @@ logger = logging.getLogger(__name__)
 
 class FunctionRuntime(Enum):
     """Azure Functions runtime versions."""
+
     PYTHON_3_8 = "python|3.8"
-    PYTHON_3_9 = "python|3.9" 
+    PYTHON_3_9 = "python|3.9"
     PYTHON_3_10 = "python|3.10"
     PYTHON_3_11 = "python|3.11"
 
 
 class FunctionTriggerType(Enum):
     """Azure Functions trigger types."""
+
     HTTP = "httpTrigger"
     BLOB = "blobTrigger"
     QUEUE = "queueTrigger"
@@ -54,6 +57,7 @@ class FunctionTriggerType(Enum):
 @dataclass
 class FunctionConfig:
     """Configuration for Azure Functions integration."""
+
     subscription_id: str
     resource_group: str
     function_app_name: str
@@ -67,6 +71,7 @@ class FunctionConfig:
 @dataclass
 class FunctionDefinition:
     """Definition of an Azure Function."""
+
     name: str
     trigger_type: FunctionTriggerType
     code: str
@@ -79,6 +84,7 @@ class FunctionDefinition:
 @dataclass
 class FunctionInvocation:
     """Function invocation request."""
+
     function_name: str
     input_data: Dict[str, Any]
     headers: Optional[Dict[str, str]] = None
@@ -88,6 +94,7 @@ class FunctionInvocation:
 @dataclass
 class FunctionResult:
     """Function execution result."""
+
     success: bool
     status_code: int
     response_data: Optional[Dict] = None
@@ -112,12 +119,12 @@ class AzureFunctionsIntegration:
         self.web_client = None
         self.function_app_url = None
         self.access_key = None
-        
+
         self._initialize_clients()
         logger.info(
             "Azure Functions integration initialized: app=%s, resource_group=%s",
             config.function_app_name,
-            config.resource_group
+            config.resource_group,
         )
 
     def _initialize_clients(self) -> None:
@@ -125,20 +132,19 @@ class AzureFunctionsIntegration:
         try:
             if self.config.use_managed_identity:
                 self.credential = DefaultAzureCredential()
-            
+
             self.web_client = WebSiteManagementClient(
-                credential=self.credential,
-                subscription_id=self.config.subscription_id
+                credential=self.credential, subscription_id=self.config.subscription_id
             )
-            
+
             # Get function app URL
             self.function_app_url = f"https://{self.config.function_app_name}.azurewebsites.net"
-            
+
             # Get function access key for authentication
             self._get_function_access_key()
-            
+
             logger.info("Azure Functions clients initialized")
-            
+
         except Exception as e:
             logger.error("Failed to initialize Azure Functions clients: %s", e)
             raise
@@ -148,18 +154,17 @@ class AzureFunctionsIntegration:
         try:
             # Get the master key for function authentication
             keys = self.web_client.web_apps.list_host_keys(
-                resource_group_name=self.config.resource_group,
-                name=self.config.function_app_name
+                resource_group_name=self.config.resource_group, name=self.config.function_app_name
             )
-            
-            if hasattr(keys, 'master_key'):
+
+            if hasattr(keys, "master_key"):
                 self.access_key = keys.master_key
-            elif hasattr(keys, 'function_keys') and keys.function_keys:
+            elif hasattr(keys, "function_keys") and keys.function_keys:
                 # Use the first available function key
                 self.access_key = list(keys.function_keys.values())[0]
             else:
                 logger.warning("No access key found, using managed identity")
-                
+
         except Exception as e:
             logger.warning("Failed to get function access key: %s", e)
 
@@ -170,7 +175,7 @@ class AzureFunctionsIntegration:
             try:
                 existing_app = self.web_client.web_apps.get(
                     resource_group_name=self.config.resource_group,
-                    name=self.config.function_app_name
+                    name=self.config.function_app_name,
                 )
                 logger.info("Function app %s already exists", self.config.function_app_name)
                 return True
@@ -179,53 +184,53 @@ class AzureFunctionsIntegration:
 
             # Create App Service Plan for the function app
             plan_name = f"{self.config.function_app_name}-plan"
-            
+
             app_service_plan = AppServicePlan(
                 location=self.config.location,
-                sku={
-                    "name": "Y1",  # Consumption plan
-                    "tier": "Dynamic"
-                },
-                kind="functionapp"
+                sku={"name": "Y1", "tier": "Dynamic"},  # Consumption plan
+                kind="functionapp",
             )
-            
+
             logger.info("Creating App Service Plan: %s", plan_name)
             plan_operation = self.web_client.app_service_plans.begin_create_or_update(
                 resource_group_name=self.config.resource_group,
                 name=plan_name,
-                app_service_plan=app_service_plan
+                app_service_plan=app_service_plan,
             )
             plan_result = plan_operation.result()
 
             # Create Function App
             site_config = SiteConfig(
                 app_settings=[
-                    {"name": "AzureWebJobsStorage", "value": "DefaultEndpointsProtocol=https;AccountName=..."},
+                    {
+                        "name": "AzureWebJobsStorage",
+                        "value": "DefaultEndpointsProtocol=https;AccountName=...",
+                    },
                     {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
                     {"name": "FUNCTIONS_WORKER_RUNTIME", "value": "python"},
-                    {"name": "WEBSITE_PYTHON_VERSION", "value": "3.11"}
+                    {"name": "WEBSITE_PYTHON_VERSION", "value": "3.11"},
                 ],
-                linux_fx_version=self.config.runtime.value
+                linux_fx_version=self.config.runtime.value,
             )
 
             site = Site(
                 location=self.config.location,
                 server_farm_id=plan_result.id,
                 site_config=site_config,
-                kind="functionapp,linux"
+                kind="functionapp,linux",
             )
 
             logger.info("Creating Function App: %s", self.config.function_app_name)
             create_operation = self.web_client.web_apps.begin_create_or_update(
                 resource_group_name=self.config.resource_group,
                 name=self.config.function_app_name,
-                site_envelope=site
+                site_envelope=site,
             )
-            
+
             result = create_operation.result()
             logger.info("Function app created successfully: %s", result.default_host_name)
             return True
-            
+
         except Exception as e:
             logger.error("Failed to create function app: %s", e)
             return False
@@ -235,34 +240,37 @@ class AzureFunctionsIntegration:
         try:
             # Create function.json configuration
             function_json = {
-                "bindings": function_def.bindings or self._get_default_bindings(function_def.trigger_type),
-                "scriptFile": "__init__.py"
+                "bindings": function_def.bindings
+                or self._get_default_bindings(function_def.trigger_type),
+                "scriptFile": "__init__.py",
             }
-            
+
             if function_def.timeout:
-                function_json["timeout"] = f"00:{function_def.timeout // 60:02d}:{function_def.timeout % 60:02d}"
+                function_json["timeout"] = (
+                    f"00:{function_def.timeout // 60:02d}:{function_def.timeout % 60:02d}"
+                )
 
             # Prepare deployment package
             deployment_files = {
                 f"{function_def.name}/function.json": json.dumps(function_json, indent=2),
-                f"{function_def.name}/__init__.py": function_def.code
+                f"{function_def.name}/__init__.py": function_def.code,
             }
-            
+
             if function_def.requirements:
                 deployment_files["requirements.txt"] = function_def.requirements
 
             # Deploy using Kudu API
             success = self._deploy_via_kudu(deployment_files)
-            
+
             if success:
                 logger.info("Function %s deployed successfully", function_def.name)
-                
+
                 # Update app settings if provided
                 if function_def.app_settings:
                     self._update_app_settings(function_def.app_settings)
-                    
+
             return success
-            
+
         except Exception as e:
             logger.error("Failed to deploy function %s: %s", function_def.name, e)
             return False
@@ -276,13 +284,9 @@ class AzureFunctionsIntegration:
                     "type": "httpTrigger",
                     "direction": "in",
                     "name": "req",
-                    "methods": ["get", "post"]
+                    "methods": ["get", "post"],
                 },
-                {
-                    "type": "http",
-                    "direction": "out",
-                    "name": "$return"
-                }
+                {"type": "http", "direction": "out", "name": "$return"},
             ]
         elif trigger_type == FunctionTriggerType.BLOB:
             return [
@@ -291,7 +295,7 @@ class AzureFunctionsIntegration:
                     "direction": "in",
                     "name": "blob",
                     "path": "histocore/{name}",
-                    "connection": "AzureWebJobsStorage"
+                    "connection": "AzureWebJobsStorage",
                 }
             ]
         elif trigger_type == FunctionTriggerType.QUEUE:
@@ -301,7 +305,7 @@ class AzureFunctionsIntegration:
                     "direction": "in",
                     "name": "msg",
                     "queueName": "histocore-queue",
-                    "connection": "AzureWebJobsStorage"
+                    "connection": "AzureWebJobsStorage",
                 }
             ]
         elif trigger_type == FunctionTriggerType.TIMER:
@@ -310,7 +314,7 @@ class AzureFunctionsIntegration:
                     "type": "timerTrigger",
                     "direction": "in",
                     "name": "timer",
-                    "schedule": "0 */5 * * * *"  # Every 5 minutes
+                    "schedule": "0 */5 * * * *",  # Every 5 minutes
                 }
             ]
         else:
@@ -320,32 +324,31 @@ class AzureFunctionsIntegration:
         """Deploy function files via Kudu API."""
         try:
             kudu_url = f"https://{self.config.function_app_name}.scm.azurewebsites.net"
-            
+
             # Get publishing credentials
             publish_profile = self.web_client.web_apps.list_publishing_credentials(
-                resource_group_name=self.config.resource_group,
-                name=self.config.function_app_name
+                resource_group_name=self.config.resource_group, name=self.config.function_app_name
             )
-            
+
             username = publish_profile.publishing_user_name
             password = publish_profile.publishing_password
-            
+
             # Deploy each file
             for file_path, content in files.items():
                 file_url = f"{kudu_url}/api/vfs/site/wwwroot/{file_path}"
-                
+
                 response = requests.put(
                     file_url,
-                    data=content.encode('utf-8'),
+                    data=content.encode("utf-8"),
                     auth=(username, password),
-                    headers={'Content-Type': 'application/octet-stream'},
-                    timeout=self.config.timeout
+                    headers={"Content-Type": "application/octet-stream"},
+                    timeout=self.config.timeout,
                 )
                 response.raise_for_status()
-                
+
             logger.debug("Files deployed via Kudu API")
             return True
-            
+
         except Exception as e:
             logger.error("Kudu deployment failed: %s", e)
             return False
@@ -355,45 +358,44 @@ class AzureFunctionsIntegration:
         try:
             # Get current settings
             current_settings = self.web_client.web_apps.list_application_settings(
-                resource_group_name=self.config.resource_group,
-                name=self.config.function_app_name
+                resource_group_name=self.config.resource_group, name=self.config.function_app_name
             )
-            
+
             # Merge with new settings
             updated_settings = dict(current_settings.properties)
             updated_settings.update(settings)
-            
+
             # Update settings
             self.web_client.web_apps.update_application_settings(
                 resource_group_name=self.config.resource_group,
                 name=self.config.function_app_name,
-                app_settings={"properties": updated_settings}
+                app_settings={"properties": updated_settings},
             )
-            
+
             logger.debug("App settings updated")
-            
+
         except Exception as e:
             logger.error("Failed to update app settings: %s", e)
 
     def _validate_function_url(self, url: str) -> None:
         """
         Validate function URL to prevent SSRF attacks.
-        
+
         Args:
             url: URL to validate
-            
+
         Raises:
             ValueError: If URL is not in allowed domains
         """
         parsed = urlparse(url)
-        
+
         # Define allowed domains for Azure Functions
         allowed_domains = [
             f"{self.config.function_app_name}.azurewebsites.net",
             "azure-api.net",
-            "azurewebsites.net"
+            "azurewebsites.net",
         ]
-        
+
         # Check if hostname ends with any allowed domain
         hostname = parsed.netloc.lower()
         if not any(hostname.endswith(domain) for domain in allowed_domains):
@@ -401,210 +403,202 @@ class AzureFunctionsIntegration:
                 f"Function URL not in allowed domains: {url}. "
                 f"Hostname must end with one of: {allowed_domains}"
             )
-        
+
         # Ensure HTTPS
         if parsed.scheme != "https":
             raise ValueError(f"Function URL must use HTTPS: {url}")
-        
+
         logger.debug("Function URL validated: %s", url)
 
     def invoke_function(self, invocation: FunctionInvocation) -> FunctionResult:
         """Invoke an Azure Function synchronously."""
         start_time = datetime.now()
-        
+
         try:
             function_url = f"{self.function_app_url}/api/{invocation.function_name}"
-            
+
             # Validate URL to prevent SSRF
             self._validate_function_url(function_url)
-            
-            headers = {
-                "Content-Type": "application/json",
-                **(invocation.headers or {})
-            }
-            
+
+            headers = {"Content-Type": "application/json", **(invocation.headers or {})}
+
             # Add authentication
             if self.access_key:
                 headers["x-functions-key"] = self.access_key
-            
+
             response = requests.post(
                 function_url,
                 json=invocation.input_data,
                 headers=headers,
                 params=invocation.query_params,
-                timeout=self.config.timeout
+                timeout=self.config.timeout,
             )
-            
+
             execution_time = (datetime.now() - start_time).total_seconds()
-            
+
             if response.status_code == 200:
                 try:
                     response_data = response.json()
                 except (ValueError, requests.exceptions.JSONDecodeError):
                     response_data = {"result": response.text}
-                    
+
                 return FunctionResult(
                     success=True,
                     status_code=response.status_code,
                     response_data=response_data,
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
             else:
                 return FunctionResult(
                     success=False,
                     status_code=response.status_code,
                     error_message=response.text,
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
-                
+
         except Exception as e:
             execution_time = (datetime.now() - start_time).total_seconds()
             error_msg = f"Function invocation failed: {e}"
             logger.error(error_msg)
-            
+
             return FunctionResult(
                 success=False,
                 status_code=500,
                 error_message=error_msg,
-                execution_time=execution_time
+                execution_time=execution_time,
             )
 
     async def invoke_function_async(self, invocation: FunctionInvocation) -> FunctionResult:
         """Invoke an Azure Function asynchronously."""
         start_time = datetime.now()
-        
+
         try:
             function_url = f"{self.function_app_url}/api/{invocation.function_name}"
-            
-            headers = {
-                "Content-Type": "application/json",
-                **(invocation.headers or {})
-            }
-            
+
+            headers = {"Content-Type": "application/json", **(invocation.headers or {})}
+
             # Add authentication
             if self.access_key:
                 headers["x-functions-key"] = self.access_key
-            
+
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     function_url,
                     json=invocation.input_data,
                     headers=headers,
                     params=invocation.query_params,
-                    timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
                 ) as response:
-                    
+
                     execution_time = (datetime.now() - start_time).total_seconds()
                     response_text = await response.text()
-                    
+
                     if response.status == 200:
                         try:
                             response_data = await response.json()
                         except (ValueError, aiohttp.ContentTypeError):
                             response_data = {"result": response_text}
-                            
+
                         return FunctionResult(
                             success=True,
                             status_code=response.status,
                             response_data=response_data,
-                            execution_time=execution_time
+                            execution_time=execution_time,
                         )
                     else:
                         return FunctionResult(
                             success=False,
                             status_code=response.status,
                             error_message=response_text,
-                            execution_time=execution_time
+                            execution_time=execution_time,
                         )
-                        
+
         except Exception as e:
             execution_time = (datetime.now() - start_time).total_seconds()
             error_msg = f"Async function invocation failed: {e}"
             logger.error(error_msg)
-            
+
             return FunctionResult(
                 success=False,
                 status_code=500,
                 error_message=error_msg,
-                execution_time=execution_time
+                execution_time=execution_time,
             )
 
     def invoke_functions_batch(self, invocations: List[FunctionInvocation]) -> List[FunctionResult]:
         """Invoke multiple functions concurrently."""
+
         async def run_batch():
             tasks = [self.invoke_function_async(inv) for inv in invocations]
             return await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         try:
             results = asyncio.run(run_batch())
-            
+
             # Convert exceptions to error results
             processed_results = []
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    processed_results.append(FunctionResult(
-                        success=False,
-                        status_code=500,
-                        error_message=str(result)
-                    ))
+                    processed_results.append(
+                        FunctionResult(success=False, status_code=500, error_message=str(result))
+                    )
                 else:
                     processed_results.append(result)
-            
+
             successful_invocations = sum(1 for r in processed_results if r.success)
             logger.info(
                 "Batch function invocation completed: %d/%d successful",
-                successful_invocations, len(invocations)
+                successful_invocations,
+                len(invocations),
             )
-            
+
             return processed_results
-            
+
         except Exception as e:
             logger.error("Batch function invocation failed: %s", e)
-            return [FunctionResult(
-                success=False,
-                status_code=500,
-                error_message=str(e)
-            ) for _ in invocations]
+            return [
+                FunctionResult(success=False, status_code=500, error_message=str(e))
+                for _ in invocations
+            ]
 
     def get_function_logs(self, function_name: str, hours: int = 1) -> List[str]:
         """Get function execution logs."""
         try:
             # Use Kudu API to get logs
             kudu_url = f"https://{self.config.function_app_name}.scm.azurewebsites.net"
-            
+
             # Get publishing credentials
             publish_profile = self.web_client.web_apps.list_publishing_credentials(
-                resource_group_name=self.config.resource_group,
-                name=self.config.function_app_name
+                resource_group_name=self.config.resource_group, name=self.config.function_app_name
             )
-            
+
             username = publish_profile.publishing_user_name
             password = publish_profile.publishing_password
-            
+
             # Get logs from Kudu
             logs_url = f"{kudu_url}/api/logs/recent"
-            
+
             # Validate URL to prevent SSRF
             self._validate_function_url(logs_url)
-            
+
             response = requests.get(
-                logs_url,
-                auth=(username, password),
-                timeout=self.config.timeout
+                logs_url, auth=(username, password), timeout=self.config.timeout
             )
             response.raise_for_status()
-            
+
             logs_data = response.json()
-            
+
             # Filter logs for the specific function
             function_logs = []
             for log_entry in logs_data:
                 if function_name in log_entry.get("message", ""):
                     function_logs.append(log_entry["message"])
-            
-            logger.debug("Retrieved %d log entries for function %s", len(function_logs), function_name)
+
+            logger.debug(
+                "Retrieved %d log entries for function %s", len(function_logs), function_name
+            )
             return function_logs
-            
+
         except Exception as e:
             logger.error("Failed to get function logs: %s", e)
             return []
@@ -622,12 +616,12 @@ class AzureFunctionsIntegration:
                 "failed_executions": 0,
                 "average_duration_ms": 0,
                 "total_duration_ms": 0,
-                "error_rate": 0.0
+                "error_rate": 0.0,
             }
-            
+
             logger.debug("Retrieved metrics for function %s", function_name)
             return metrics
-            
+
         except Exception as e:
             logger.error("Failed to get function metrics: %s", e)
             return {}
@@ -636,14 +630,15 @@ class AzureFunctionsIntegration:
         """List all functions in the function app."""
         try:
             functions = self.web_client.web_apps.list_functions(
-                resource_group_name=self.config.resource_group,
-                name=self.config.function_app_name
+                resource_group_name=self.config.resource_group, name=self.config.function_app_name
             )
-            
+
             function_names = [func.name for func in functions]
-            logger.debug("Found %d functions in app %s", len(function_names), self.config.function_app_name)
+            logger.debug(
+                "Found %d functions in app %s", len(function_names), self.config.function_app_name
+            )
             return function_names
-            
+
         except Exception as e:
             logger.error("Failed to list functions: %s", e)
             return []
@@ -654,12 +649,12 @@ class AzureFunctionsIntegration:
             self.web_client.web_apps.delete_function(
                 resource_group_name=self.config.resource_group,
                 name=self.config.function_app_name,
-                function_name=function_name
+                function_name=function_name,
             )
-            
+
             logger.info("Deleted function: %s", function_name)
             return True
-            
+
         except Exception as e:
             logger.error("Failed to delete function %s: %s", function_name, e)
             return False
@@ -669,17 +664,16 @@ class AzureFunctionsIntegration:
         try:
             # Try to get function app properties
             app = self.web_client.web_apps.get(
-                resource_group_name=self.config.resource_group,
-                name=self.config.function_app_name
+                resource_group_name=self.config.resource_group, name=self.config.function_app_name
             )
-            
+
             if app.state == "Running":
                 logger.info("Azure Functions health check passed")
                 return True
             else:
                 logger.warning("Function app is not running: %s", app.state)
                 return False
-                
+
         except Exception as e:
             logger.error("Azure Functions health check failed: %s", e)
             return False
@@ -724,13 +718,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 '''
-    
+
     return FunctionDefinition(
         name="slide-preprocessing",
         trigger_type=FunctionTriggerType.HTTP,
         code=code,
         requirements="azure-functions\nnumpy\nPillow",
-        timeout=300
+        timeout=300,
     )
 
 
@@ -778,28 +772,25 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json"
         )
 '''
-    
+
     return FunctionDefinition(
         name="model-inference",
         trigger_type=FunctionTriggerType.HTTP,
         code=code,
         requirements="azure-functions\ntorch\nnumpy",
-        timeout=600
+        timeout=600,
     )
 
 
 # Factory function for easy initialization
 def create_functions_integration(
-    subscription_id: str,
-    resource_group: str,
-    function_app_name: str,
-    **kwargs
+    subscription_id: str, resource_group: str, function_app_name: str, **kwargs
 ) -> AzureFunctionsIntegration:
     """Create Azure Functions integration with configuration."""
     config = FunctionConfig(
         subscription_id=subscription_id,
         resource_group=resource_group,
         function_app_name=function_app_name,
-        **kwargs
+        **kwargs,
     )
     return AzureFunctionsIntegration(config)

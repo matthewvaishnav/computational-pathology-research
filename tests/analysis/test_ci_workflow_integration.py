@@ -73,9 +73,7 @@ def sample_analysis_result():
         ),
         security=SecurityAnalysis(
             score=65.0,
-            hardcoded_secrets=[
-                {"file": "src/api/client.py", "line": 42, "type": "api_key"}
-            ],
+            hardcoded_secrets=[{"file": "src/api/client.py", "line": 42, "type": "api_key"}],
         ),
         scalability=ScalabilityAnalysis(
             score=73.0,
@@ -100,7 +98,7 @@ class TestWorkflowStructure:
         """Workflow has push, pull_request, schedule, and workflow_dispatch triggers."""
         import yaml
 
-        with open(workflow_yaml_path, encoding='utf-8') as f:
+        with open(workflow_yaml_path, encoding="utf-8") as f:
             workflow = yaml.safe_load(f)
 
         # YAML parses 'on' keyword as True
@@ -115,7 +113,7 @@ class TestWorkflowStructure:
         """Workflow has analysis job with required steps."""
         import yaml
 
-        with open(workflow_yaml_path, encoding='utf-8') as f:
+        with open(workflow_yaml_path, encoding="utf-8") as f:
             workflow = yaml.safe_load(f)
 
         assert "jobs" in workflow
@@ -134,7 +132,7 @@ class TestWorkflowStructure:
         """Workflow has permissions to write PR comments."""
         import yaml
 
-        with open(workflow_yaml_path, encoding='utf-8') as f:
+        with open(workflow_yaml_path, encoding="utf-8") as f:
             workflow = yaml.safe_load(f)
 
         job = workflow["jobs"]["analysis"]
@@ -276,9 +274,7 @@ class TestRegressionDetection:
 
             # Run regression detection
             detector = RegressionDetector()
-            regressions = detector.detect_regressions(
-                sample_analysis_result, str(baseline_file)
-            )
+            regressions = detector.detect_regressions(sample_analysis_result, str(baseline_file))
 
             # Verify regressions detected
             assert "coverage" in regressions
@@ -360,9 +356,7 @@ class TestRegressionDetection:
 
             # Run regression detection
             detector = RegressionDetector()
-            regressions = detector.detect_regressions(
-                sample_analysis_result, str(baseline_file)
-            )
+            regressions = detector.detect_regressions(sample_analysis_result, str(baseline_file))
 
             # Check if build should fail
             should_fail, reason = detector.should_fail_build(regressions)
@@ -405,11 +399,7 @@ class TestPRCommentPosting:
             status = (
                 "✅ Excellent"
                 if score >= 80
-                else "🟡 Good"
-                if score >= 60
-                else "🟠 Needs Work"
-                if score >= 40
-                else "🔴 Critical"
+                else "🟡 Good" if score >= 60 else "🟠 Needs Work" if score >= 40 else "🔴 Critical"
             )
             comment += f"| {name} | {score:.1f} | {status} |\n"
 
@@ -545,7 +535,7 @@ class TestWorkflowSchedule:
         """Workflow has weekly schedule on Sundays at 2 AM UTC."""
         import yaml
 
-        with open(workflow_yaml_path, encoding='utf-8') as f:
+        with open(workflow_yaml_path, encoding="utf-8") as f:
             workflow = yaml.safe_load(f)
 
         # YAML parses 'on' keyword as True
@@ -561,7 +551,7 @@ class TestWorkflowInputs:
         """Workflow has baseline_branch input for manual runs."""
         import yaml
 
-        with open(workflow_yaml_path, encoding='utf-8') as f:
+        with open(workflow_yaml_path, encoding="utf-8") as f:
             workflow = yaml.safe_load(f)
 
         # YAML parses 'on' keyword as True
@@ -573,7 +563,7 @@ class TestWorkflowInputs:
         """Workflow has generate_reports boolean input."""
         import yaml
 
-        with open(workflow_yaml_path, encoding='utf-8') as f:
+        with open(workflow_yaml_path, encoding="utf-8") as f:
             workflow = yaml.safe_load(f)
 
         # YAML parses 'on' keyword as True

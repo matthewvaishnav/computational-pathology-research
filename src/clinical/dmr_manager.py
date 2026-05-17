@@ -453,9 +453,7 @@ class DMRManager:
                 records.append((model_name, model_version))
         return records
 
-    def export_dmr_package(
-        self, device_name: str, device_version: str, output_path: str
-    ) -> str:
+    def export_dmr_package(self, device_name: str, device_version: str, output_path: str) -> str:
         """
         Export DMR package with all related documentation
 

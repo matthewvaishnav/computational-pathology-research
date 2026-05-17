@@ -16,6 +16,7 @@ import re
 from pathlib import Path
 
 import pytest
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -169,7 +170,9 @@ class TestGitHubPagesLayoutBugExploration:
         intermediate_breakpoint_pattern = (
             r"@media\s*\(\s*min-width\s*:\s*961px\s*\)\s*and\s*\(\s*max-width\s*:\s*1200px\s*\)"
         )
-        has_intermediate_breakpoint = re.search(intermediate_breakpoint_pattern, content, re.IGNORECASE)
+        has_intermediate_breakpoint = re.search(
+            intermediate_breakpoint_pattern, content, re.IGNORECASE
+        )
 
         if has_intermediate_breakpoint:
             # Fixed code: sidebar 280px, content margin 260px
@@ -220,7 +223,9 @@ class TestGitHubPagesLayoutBugExploration:
         intermediate_breakpoint_pattern = (
             r"@media\s*\(\s*min-width\s*:\s*961px\s*\)\s*and\s*\(\s*max-width\s*:\s*1200px\s*\)"
         )
-        has_intermediate_breakpoint = re.search(intermediate_breakpoint_pattern, content, re.IGNORECASE)
+        has_intermediate_breakpoint = re.search(
+            intermediate_breakpoint_pattern, content, re.IGNORECASE
+        )
 
         # Define expected behavior after fix
         expected_after_fix = {

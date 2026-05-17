@@ -158,9 +158,7 @@ class TestTransformerAttention:
 
     def test_initialization(self):
         """Test TransformerAttention can be initialized."""
-        attention = TransformerAttention(
-            feature_dim=256, num_heads=8, num_layers=2, dropout=0.1
-        )
+        attention = TransformerAttention(feature_dim=256, num_heads=8, num_layers=2, dropout=0.1)
         assert attention.feature_dim == 256
         assert attention.num_heads == 8
         assert attention.num_layers == 2
@@ -224,9 +222,7 @@ class TestTransformerAttention:
     def test_different_num_layers(self):
         """Test TransformerAttention works with different numbers of layers."""
         for num_layers in [1, 2, 4, 6]:
-            attention = TransformerAttention(
-                feature_dim=256, num_heads=8, num_layers=num_layers
-            )
+            attention = TransformerAttention(feature_dim=256, num_heads=8, num_layers=num_layers)
             features = torch.randn(4, 100, 256)
             output, _ = attention(features)
             assert output.shape == (4, 101, 256)
@@ -234,9 +230,7 @@ class TestTransformerAttention:
     def test_different_num_heads(self):
         """Test TransformerAttention works with different numbers of heads."""
         for num_heads in [1, 2, 4, 8]:
-            attention = TransformerAttention(
-                feature_dim=256, num_heads=num_heads, num_layers=2
-            )
+            attention = TransformerAttention(feature_dim=256, num_heads=num_heads, num_layers=2)
             features = torch.randn(4, 100, 256)
             output, _ = attention(features)
             assert output.shape == (4, 101, 256)

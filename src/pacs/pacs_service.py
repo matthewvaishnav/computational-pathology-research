@@ -60,6 +60,7 @@ class PACSIntegrationService:
             Configuration dictionary
         """
         from src.security.temp_file import TempFileManager
+
         default_config = {
             "dicom_server": {
                 "ae_title": "MEDICAL_AI",

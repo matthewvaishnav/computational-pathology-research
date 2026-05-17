@@ -89,9 +89,7 @@ class RateLimiter:
                 return False, f"Rate limit exceeded: {hour_count}/hour"
 
             # Check burst limit
-            recent_requests = [
-                ts for ts in self.minute_buckets[client_id] if ts > now - 1.0
-            ]
+            recent_requests = [ts for ts in self.minute_buckets[client_id] if ts > now - 1.0]
             if len(recent_requests) >= self.config.burst_size:
                 return False, f"Burst limit exceeded: {len(recent_requests)}/sec"
 

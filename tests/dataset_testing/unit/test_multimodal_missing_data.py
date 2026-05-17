@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 import torch
+from omegaconf import DictConfig
 
 from src.data.loaders import MultimodalDataset, collate_multimodal
 from tests.dataset_testing.synthetic.multimodal_generator import (

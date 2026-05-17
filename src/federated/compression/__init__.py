@@ -5,21 +5,21 @@ Provides quantization and sparsification techniques to reduce bandwidth
 usage during federated training.
 """
 
-from .quantization import (
-    quantize_gradients,
-    dequantize_gradients,
-    QuantizationConfig,
-)
-from .sparsification import (
-    sparsify_gradients,
-    densify_gradients,
-    SparsificationConfig,
-)
 from .compressor import (
-    GradientCompressor,
     CompressionConfig,
     CompressionMethod,
+    GradientCompressor,
     create_compressor,
+)
+from .quantization import (
+    QuantizationConfig,
+    dequantize_gradients,
+    quantize_gradients,
+)
+from .sparsification import (
+    SparsificationConfig,
+    densify_gradients,
+    sparsify_gradients,
 )
 
 __all__ = [

@@ -58,14 +58,14 @@ def task_spec():
 def test_task_executor_histocore_integration(framework_env, task_spec):
     """Test that task executor can execute HistoCore training."""
     executor = TrainingTaskExecutor()
-    
+
     # Configure task for HistoCore
     config = executor.configure_task(task_spec, "HistoCore")
-    
+
     assert config.framework_name == "HistoCore"
     assert config.task_spec == task_spec
     assert config.random_seed == task_spec.random_seed
-    
+
     # Execute training
     with tempfile.TemporaryDirectory() as tmpdir:
         result = executor.execute_training(
@@ -73,7 +73,7 @@ def test_task_executor_histocore_integration(framework_env, task_spec):
             env=framework_env,
             output_dir=Path(tmpdir),
         )
-        
+
         # Verify result
         assert result.framework_name == "HistoCore"
         assert result.status == "success"
@@ -85,7 +85,7 @@ def test_task_executor_histocore_integration(framework_env, task_spec):
 def test_task_executor_pathml_integration(task_spec):
     """Test that task executor can execute PathML training."""
     executor = TrainingTaskExecutor()
-    
+
     # Create PathML framework environment
     pathml_env = FrameworkEnvironment(
         framework_name="PathML",
@@ -98,14 +98,14 @@ def test_task_executor_pathml_integration(task_spec):
         validation_status="valid",
         validation_errors=[],
     )
-    
+
     # Configure task for PathML
     config = executor.configure_task(task_spec, "PathML")
-    
+
     assert config.framework_name == "PathML"
     assert config.task_spec == task_spec
     assert config.random_seed == task_spec.random_seed
-    
+
     # Execute training
     with tempfile.TemporaryDirectory() as tmpdir:
         result = executor.execute_training(
@@ -113,7 +113,7 @@ def test_task_executor_pathml_integration(task_spec):
             env=pathml_env,
             output_dir=Path(tmpdir),
         )
-        
+
         # Verify result
         assert result.framework_name == "PathML"
         assert result.status == "success"
@@ -125,7 +125,7 @@ def test_task_executor_pathml_integration(task_spec):
 def test_task_executor_clam_integration(task_spec):
     """Test that task executor can execute CLAM training."""
     executor = TrainingTaskExecutor()
-    
+
     # Create CLAM framework environment
     clam_env = FrameworkEnvironment(
         framework_name="CLAM",
@@ -138,14 +138,14 @@ def test_task_executor_clam_integration(task_spec):
         validation_status="valid",
         validation_errors=[],
     )
-    
+
     # Configure task for CLAM
     config = executor.configure_task(task_spec, "CLAM")
-    
+
     assert config.framework_name == "CLAM"
     assert config.task_spec == task_spec
     assert config.random_seed == task_spec.random_seed
-    
+
     # Execute training
     with tempfile.TemporaryDirectory() as tmpdir:
         result = executor.execute_training(
@@ -153,7 +153,7 @@ def test_task_executor_clam_integration(task_spec):
             env=clam_env,
             output_dir=Path(tmpdir),
         )
-        
+
         # Verify result
         assert result.framework_name == "CLAM"
         assert result.status == "success"
@@ -165,10 +165,10 @@ def test_task_executor_clam_integration(task_spec):
 def test_task_executor_unsupported_framework(framework_env, task_spec):
     """Test that task executor raises error for unsupported frameworks."""
     executor = TrainingTaskExecutor()
-    
+
     # Configure task for PyTorch (not yet implemented)
     config = executor.configure_task(task_spec, "PyTorch")
-    
+
     # Attempt to execute training should raise NotImplementedError
     with pytest.raises(NotImplementedError, match="PyTorch adapter not yet implemented"):
         executor.execute_training(

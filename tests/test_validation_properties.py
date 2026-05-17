@@ -7,21 +7,20 @@ and input validation across a wide range of inputs.
 
 import pytest
 import torch
-from hypothesis import given, settings, strategies as st
-from hypothesis import assume
-import hypothesis.extra.numpy as npst
 
+import hypothesis.extra.numpy as npst
+from hypothesis import assume, given, settings
+from hypothesis import strategies as st
 from src.utils.validation import (
-    validate_tensor_shape,
-    validate_wsi_features,
-    validate_genomic_features,
-    validate_clinical_text,
-    validate_multimodal_batch,
+    ValidationError,
     is_validation_enabled,
     set_validation_enabled,
-    ValidationError,
+    validate_clinical_text,
+    validate_genomic_features,
+    validate_multimodal_batch,
+    validate_tensor_shape,
+    validate_wsi_features,
 )
-
 
 # ============================================================================
 # Hypothesis Strategies
@@ -94,10 +93,10 @@ class TestTensorShapeProperties:
         """Property: Wrong number of dimensions always raises ValidationError."""
         tensor, shape = tensor_and_shape
         assume(len(shape) > 1)  # Ensure we can add a dimension
-        
+
         # Add an extra dimension to expected shape
         wrong_shape = shape + (10,)
-        
+
         with pytest.raises(ValidationError, match="Shape mismatch"):
             validate_tensor_shape(tensor, wrong_shape, "test_tensor")
 
@@ -107,10 +106,10 @@ class TestTensorShapeProperties:
         """Property: Wrong dimension size raises ValidationError."""
         tensor, shape = tensor_and_shape
         assume(len(shape) >= 2)
-        
+
         # Change last dimension size
         wrong_shape = shape[:-1] + (shape[-1] + 1,)
-        
+
         with pytest.raises(ValidationError, match="Shape mismatch"):
             validate_tensor_shape(tensor, wrong_shape, "test_tensor")
 
@@ -147,7 +146,7 @@ class TestWSIFeatureProperties:
         """Property: Wrong number of dimensions always fails."""
         # Create 2D tensor instead of 3D
         features = torch.randn(batch_size, num_instances)
-        
+
         with pytest.raises(ValidationError, match="Invalid shape"):
             validate_wsi_features(features)
 
@@ -160,9 +159,9 @@ class TestWSIFeatureProperties:
     def test_invalid_feature_dim_fails(self, batch_size, num_instances, feature_dim):
         """Property: Invalid feature dimensions fail validation."""
         assume(feature_dim not in [512, 1024, 2048, 4096])
-        
+
         features = torch.randn(batch_size, num_instances, feature_dim)
-        
+
         with pytest.raises(ValidationError, match="Feature dimension mismatch"):
             validate_wsi_features(features)
 
@@ -190,7 +189,7 @@ class TestGenomicFeatureProperties:
     def test_too_few_genes_fails(self, batch_size, num_genes):
         """Property: Too few genes always fails validation."""
         features = torch.randn(batch_size, num_genes)
-        
+
         with pytest.raises(ValidationError, match="Feature dimension mismatch"):
             validate_genomic_features(features)
 
@@ -200,7 +199,7 @@ class TestGenomicFeatureProperties:
         """Property: Wrong number of dimensions always fails."""
         # Create 3D tensor instead of 2D
         features = torch.randn(batch_size, 1000, 10)
-        
+
         with pytest.raises(ValidationError, match="Invalid shape"):
             validate_genomic_features(features)
 
@@ -226,7 +225,7 @@ class TestClinicalFeatureProperties:
         """Property: Wrong number of dimensions always fails."""
         # Create 3D tensor instead of 2D
         tokens = torch.randint(0, 30000, (batch_size, 100, 10))
-        
+
         with pytest.raises(ValidationError, match="Invalid shape"):
             validate_clinical_text(tokens)
 
@@ -251,14 +250,14 @@ class TestBatchValidationProperties:
         batch_size = wsi.shape[0]
         genomic = genomic[:batch_size]
         clinical = clinical[:batch_size]
-        
+
         batch = {
             "wsi_features": wsi,
             "genomic_features": genomic,
             "clinical_text": clinical,
             "labels": torch.randint(0, 2, (batch_size,)),
         }
-        
+
         # Should not raise
         validate_multimodal_batch(batch)
 
@@ -270,13 +269,13 @@ class TestBatchValidationProperties:
     def test_inconsistent_batch_sizes_fail(self, wsi, genomic):
         """Property: Inconsistent batch sizes always fail validation."""
         assume(wsi.shape[0] != genomic.shape[0])
-        
+
         batch = {
             "wsi_features": wsi,
             "genomic_features": genomic,
             "labels": torch.randint(0, 2, (wsi.shape[0],)),
         }
-        
+
         with pytest.raises(ValidationError, match="Inconsistent batch sizes"):
             validate_multimodal_batch(batch)
 
@@ -285,7 +284,7 @@ class TestBatchValidationProperties:
     def test_missing_labels_fails(self, wsi):
         """Property: Missing labels always fails validation."""
         batch = {"wsi_features": wsi}
-        
+
         with pytest.raises(ValidationError, match="Missing required key"):
             validate_multimodal_batch(batch)
 
@@ -303,11 +302,11 @@ class TestValidationToggleProperties:
     def test_disabled_validation_never_raises(self, tensor_and_shape):
         """Property: Disabled validation never raises errors."""
         tensor, shape = tensor_and_shape
-        
+
         # Disable validation
         original_state = is_validation_enabled()
         set_validation_enabled(False)
-        
+
         try:
             # Use wrong shape - should not raise
             wrong_shape = shape + (999,)
@@ -321,11 +320,11 @@ class TestValidationToggleProperties:
     def test_toggle_is_idempotent(self, enabled):
         """Property: Setting validation state is idempotent."""
         original_state = is_validation_enabled()
-        
+
         try:
             set_validation_enabled(enabled)
             assert is_validation_enabled() == enabled
-            
+
             # Set again - should still be the same
             set_validation_enabled(enabled)
             assert is_validation_enabled() == enabled
@@ -351,8 +350,8 @@ class TestNaNInfProperties:
         feature_dim = 1024  # Fixed dimension
         features = torch.randn(batch_size, num_instances, feature_dim)
         # Inject NaN
-        features[0, 0, 0] = float('nan')
-        
+        features[0, 0, 0] = float("nan")
+
         with pytest.raises(ValidationError, match="Invalid values detected"):
             validate_wsi_features(features)
 
@@ -366,9 +365,7 @@ class TestNaNInfProperties:
         feature_dim = 1024  # Fixed dimension
         features = torch.randn(batch_size, num_instances, feature_dim)
         # Inject Inf
-        features[0, 0, 0] = float('inf')
-        
+        features[0, 0, 0] = float("inf")
+
         with pytest.raises(ValidationError, match="Invalid values detected"):
             validate_wsi_features(features)
-
-

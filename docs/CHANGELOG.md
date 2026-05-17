@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- Fixed Bandit security findings (0 HIGH, 0 MEDIUM remaining)
+  - Added timeout parameter to requests.post() calls (B113)
+  - Replaced direct pickle.loads() with safe_pickle wrapper (B301)
+  - Verified Jinja2 autoescape enabled for XSS prevention
+  - Added comprehensive security documentation in SECURITY.md
+  - All nosec markers now include justification comments
+
 ### Added
 - Cross-validation infrastructure for robust model evaluation
   - Stratified K-fold splitting with 5 folds

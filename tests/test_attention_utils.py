@@ -19,7 +19,6 @@ import torch
 from src.exceptions import DataLoadError, DataSaveError
 from src.utils.attention_utils import load_attention_weights, save_attention_weights
 
-
 # ============================================================================
 # save_attention_weights Tests
 # ============================================================================
@@ -311,9 +310,7 @@ class TestIntegration:
 
             save_attention_weights(attention, coords, "zero_attention", Path(tmpdir))
 
-            loaded_attention, loaded_coords = load_attention_weights(
-                "zero_attention", Path(tmpdir)
-            )
+            loaded_attention, loaded_coords = load_attention_weights("zero_attention", Path(tmpdir))
 
             np.testing.assert_array_equal(loaded_attention, np.zeros(5))
 

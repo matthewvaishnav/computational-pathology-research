@@ -105,17 +105,13 @@ class EarlyFusion(FusionStrategy):
         torch.Size([4, 100, 256])
     """
 
-    def __init__(
-        self, feature_dim: int, hidden_dim: int, num_scales: int, dropout: float = 0.1
-    ):
+    def __init__(self, feature_dim: int, hidden_dim: int, num_scales: int, dropout: float = 0.1):
         super().__init__(feature_dim, hidden_dim, num_scales)
 
         # Scale-specific feature projection layers
         self.projections = nn.ModuleList(
             [
-                nn.Sequential(
-                    nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
-                )
+                nn.Sequential(nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout))
                 for _ in range(num_scales)
             ]
         )
@@ -194,17 +190,13 @@ class LateFusion(FusionStrategy):
         torch.Size([4, 100, 256])
     """
 
-    def __init__(
-        self, feature_dim: int, hidden_dim: int, num_scales: int, dropout: float = 0.1
-    ):
+    def __init__(self, feature_dim: int, hidden_dim: int, num_scales: int, dropout: float = 0.1):
         super().__init__(feature_dim, hidden_dim, num_scales)
 
         # Scale-specific feature projection layers
         self.projections = nn.ModuleList(
             [
-                nn.Sequential(
-                    nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout)
-                )
+                nn.Sequential(nn.Linear(feature_dim, hidden_dim), nn.ReLU(), nn.Dropout(dropout))
                 for _ in range(num_scales)
             ]
         )
