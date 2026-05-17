@@ -11,7 +11,8 @@ WHAT IT DOES
 ------------
 
 Core models:
-  - Attention-based MIL (nnMIL, AttentionMIL, CLAM, TransMIL)
+  - Attention-based MIL (nnMIL, AttentionMIL, CLAM, TransMIL, TransnnMIL)
+  - TransnnMIL v2.0: Hierarchical pooling + topology branch (GNN)
   - WSI processing pipeline (OpenSlide: .svs, .tiff, .ndpi, DICOM)
   - Model interpretability (Grad-CAM, attention heatmaps)
   - Training optimizations (torch.compile, AMP, channels_last)
@@ -96,9 +97,13 @@ DIRECTORY STRUCTURE
 
 src/
   api/              FastAPI server, JWT auth, input validation
-  models/           MIL implementations (nnMIL, AttentionMIL, CLAM, TransMIL)
+  models/           MIL implementations (nnMIL, AttentionMIL, CLAM, TransMIL, TransnnMIL)
+                    - hierarchical_pooling.py (spatial clustering + region transformer)
+                    - topology_branch.py (k-NN graph + GNN: GATv2, GraphSAGE, GIN)
+                    - graph_cache.py (precomputed k-NN graphs in HDF5)
   training/         Training loops, optimizers, distributed training
   data/             Data loaders, WSI pipeline, preprocessing
+                    - panda_dataset.py (PANDA prostate cancer dataset)
   federated/        Federated learning integration (PathologyFL, secure aggregation)
   dmi/              Distributed Medical Intelligence (expertise weighting)
   clinical/         PACS integration, FHIR adapter, patient context
@@ -110,7 +115,13 @@ src/
 tests/              5,071 test modules
 docs/               Technical documentation
 scripts/            Deployment, benchmarking, data preparation
+                    - download_panda.py (PANDA dataset download)
+                    - extract_panda_features_openslide.py (feature extraction)
+                    - visualize_graph.py (k-NN graph visualization)
 experiments/        Experiment configs and results
+                    - train_panda.py (PANDA training pipeline)
+                    - train_colorectal.py (colorectal cancer pipeline)
+                    - evaluate_panda.py (PANDA evaluation)
 k8s/                Kubernetes manifests
 ```
 
@@ -158,6 +169,15 @@ USAGE
 Train a model:
 
     python -m src.training.train --dataset pcam --model nnmil --epochs 20
+
+PANDA prostate cancer (Gleason grading):
+
+    python experiments/train_panda.py --config experiments/configs/panda.yaml
+    python experiments/evaluate_panda.py --checkpoint checkpoints/panda_best.pth
+
+Colorectal cancer classification:
+
+    python experiments/train_colorectal.py --config experiments/configs/colorectal.yaml
 
 Run inference:
 
@@ -252,6 +272,11 @@ See docs/ for technical documentation:
   - DOCS_INDEX.md                   Documentation index
   - PCAM_REAL_RESULTS.md            Benchmark results
   - CLINICAL_WORKFLOW_INTEGRATION.md Clinical deployment
+
+Quick start guides:
+
+  - PANDA_QUICK_START.md            PANDA dataset setup (5 min)
+  - PANDA_SETUP_GUIDE.md            Detailed PANDA guide
 
 ```bash
 # Start production API server
