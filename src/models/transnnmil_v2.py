@@ -32,7 +32,7 @@ import torch
 import torch.nn as nn
 
 from src.models.adaptive_pruning import AdaptivePruning
-from src.models.hierarchical_pooling import HierarchicalPooling
+from src.models.hierarchical_pooling import HierarchicalPooling, RegionAttentionPooling
 from src.models.topology_branch import TopologyBranch
 from src.models.transmil import TransMIL
 
@@ -103,11 +103,14 @@ class TransnnMILv2(nn.Module):
 
         # Branch B: Hierarchical pooling
         self.hierarchical = HierarchicalPooling(
-            feature_dim=feature_dim,
-            num_regions=num_regions,
-            hidden_dim=512,
+            num_clusters=num_regions,
+            temperature=1.0,
             clustering_method="learnable",
-            pooling_method="attention",
+            init_method="uniform",
+        )
+        self.hierarchical_pooling = RegionAttentionPooling(
+            feature_dim=feature_dim,
+            hidden_dim=512,
             dropout=dropout,
         )
 
@@ -123,7 +126,7 @@ class TransnnMILv2(nn.Module):
         )
 
         # Fusion layer
-        fusion_dim = feature_dim + 512 + 512  # TransMIL + Hierarchical + Topology
+        fusion_dim = 256 + feature_dim + 512  # TransMIL hidden + Hierarchical + Topology
         self.fusion = nn.Sequential(
             nn.Linear(fusion_dim, fusion_dim // 2),
             nn.ReLU(),
@@ -152,12 +155,15 @@ class TransnnMILv2(nn.Module):
         if self.use_pruning:
             pruned_features, pruned_mask, _ = self.pruning(features, mask)
             # TransMIL expects bag-level output, extract features before classifier
-            transmil_features = self.transmil.forward_features(pruned_features, pruned_mask)
+            transmil_features = self.transmil.get_features(pruned_features, pruned_mask)
         else:
-            transmil_features = self.transmil.forward_features(features, mask)
+            transmil_features = self.transmil.get_features(features, mask)
 
         # Branch B: Hierarchical pooling
-        hierarchical_features = self.hierarchical(features, coords, mask)
+        assignments = self.hierarchical(coords, mask)  # [B, N, R]
+        hierarchical_features = self.hierarchical_pooling(features, assignments, mask)  # [B, R, D]
+        # Global pooling over regions (mean)
+        hierarchical_features = hierarchical_features.mean(dim=1)  # [B, D]
 
         # Branch C: Topology branch
         topology_features = self.topology(features, coords, mask)
@@ -215,11 +221,14 @@ class TransnnMILv2TwoBranch(nn.Module):
         # Branch B: Hierarchical pooling
         if "B" in branches:
             self.hierarchical = HierarchicalPooling(
-                feature_dim=feature_dim,
-                num_regions=num_regions,
-                hidden_dim=512,
+                num_clusters=num_regions,
+                temperature=1.0,
                 clustering_method="learnable",
-                pooling_method="attention",
+                init_method="uniform",
+            )
+            self.hierarchical_pooling = RegionAttentionPooling(
+                feature_dim=feature_dim,
+                hidden_dim=512,
                 dropout=dropout,
             )
 
@@ -236,7 +245,7 @@ class TransnnMILv2TwoBranch(nn.Module):
             )
 
         # Fusion layer
-        fusion_dim = feature_dim + 512  # Two branches
+        fusion_dim = 256 + feature_dim if "B" in branches else 256 + 512  # TransMIL hidden + other branch
         self.fusion = nn.Sequential(
             nn.Linear(fusion_dim, fusion_dim // 2),
             nn.ReLU(),
@@ -255,12 +264,14 @@ class TransnnMILv2TwoBranch(nn.Module):
 
         # Branch A
         if "A" in self.branches:
-            transmil_features = self.transmil.forward_features(features, mask)
+            transmil_features = self.transmil.get_features(features, mask)
             branch_features.append(transmil_features)
 
         # Branch B
         if "B" in self.branches:
-            hierarchical_features = self.hierarchical(features, coords, mask)
+            assignments = self.hierarchical(coords, mask)
+            hierarchical_features = self.hierarchical_pooling(features, assignments, mask)
+            hierarchical_features = hierarchical_features.mean(dim=1)  # Global pooling
             branch_features.append(hierarchical_features)
 
         # Branch C
