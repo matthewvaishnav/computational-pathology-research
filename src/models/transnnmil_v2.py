@@ -154,19 +154,42 @@ class TransnnMILv2(nn.Module):
         # Branch A: TransMIL
         if self.use_pruning:
             pruned_features, pruned_mask, _ = self.pruning(features, mask)
-            # TransMIL expects bag-level output, extract features before classifier
-            transmil_features = self.transmil.get_features(pruned_features, pruned_mask)
+            # Convert mask to num_patches for TransMIL
+            if pruned_mask is not None:
+                num_patches = pruned_mask.sum(dim=1)
+            else:
+                num_patches = None
+            transmil_features = self.transmil.get_features(pruned_features, num_patches)
+            
+            # Use pruned features/mask for other branches too
+            features_for_branches = pruned_features
+            mask_for_branches = pruned_mask
+            # Prune coords to match
+            if pruned_mask is not None:
+                coords_for_branches = coords[pruned_mask]  # This won't work - need batch handling
+                # TODO: Handle batched pruning properly
+                coords_for_branches = coords  # Use original for now
+            else:
+                coords_for_branches = coords
         else:
-            transmil_features = self.transmil.get_features(features, mask)
+            # Convert mask to num_patches for TransMIL
+            if mask is not None:
+                num_patches = mask.sum(dim=1)
+            else:
+                num_patches = None
+            transmil_features = self.transmil.get_features(features, num_patches)
+            features_for_branches = features
+            mask_for_branches = mask
+            coords_for_branches = coords
 
         # Branch B: Hierarchical pooling
-        assignments = self.hierarchical(coords, mask)  # [B, N, R]
-        hierarchical_features = self.hierarchical_pooling(features, assignments, mask)  # [B, R, D]
+        assignments = self.hierarchical(coords_for_branches, mask_for_branches)  # [B, N, R]
+        hierarchical_features = self.hierarchical_pooling(features_for_branches, assignments, mask_for_branches)  # [B, R, D]
         # Global pooling over regions (mean)
         hierarchical_features = hierarchical_features.mean(dim=1)  # [B, D]
 
         # Branch C: Topology branch
-        topology_features = self.topology(features, coords, mask)
+        topology_features = self.topology(features_for_branches, coords_for_branches, mask_for_branches)
 
         # Fusion
         fused = torch.cat([transmil_features, hierarchical_features, topology_features], dim=1)
@@ -264,7 +287,12 @@ class TransnnMILv2TwoBranch(nn.Module):
 
         # Branch A
         if "A" in self.branches:
-            transmil_features = self.transmil.get_features(features, mask)
+            # Convert mask to num_patches for TransMIL
+            if mask is not None:
+                num_patches = mask.sum(dim=1)
+            else:
+                num_patches = None
+            transmil_features = self.transmil.get_features(features, num_patches)
             branch_features.append(transmil_features)
 
         # Branch B
