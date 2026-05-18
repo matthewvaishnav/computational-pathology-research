@@ -189,8 +189,8 @@ class KNNGraphBuilder(nn.Module):
             src_features = features[edge_index[0]]  # [E, D]
             tgt_features = features[edge_index[1]]  # [E, D]
             edge_similarity = F.cosine_similarity(
-                src_features, tgt_features, dim=-1, keepdim=True
-            )  # [E, 1]
+                src_features, tgt_features, dim=-1
+            ).unsqueeze(-1)  # [E, 1]
 
             # Concatenate
             edge_attr = torch.cat([edge_distances, edge_similarity], dim=-1)  # [E, 2]
@@ -247,8 +247,8 @@ class KNNGraphBuilder(nn.Module):
             src_features = features[edge_index[0]]  # [E, D]
             tgt_features = features[edge_index[1]]  # [E, D]
             edge_similarity = F.cosine_similarity(
-                src_features, tgt_features, dim=-1, keepdim=True
-            )  # [E, 1]
+                src_features, tgt_features, dim=-1
+            ).unsqueeze(-1)  # [E, 1]
 
             # Concatenate
             edge_attr = torch.cat([edge_distances, edge_similarity], dim=-1)  # [E, 2]
