@@ -620,7 +620,7 @@ class TopologyBranch(nn.Module):
         if self.pooling == "attention":
             # Attention pooling
             attn_scores = self.pool_attn(x)  # [total_nodes, 1]
-            attn_weights = torch_geometric.nn.softmax(attn_scores, batch.batch, dim=0)
+            attn_weights = torch_geometric.utils.softmax(attn_scores, batch.batch, dim=0)
             bag_features = torch_geometric.nn.global_add_pool(x * attn_weights, batch.batch)
         elif self.pooling == "mean":
             bag_features = global_mean_pool(x, batch.batch)
