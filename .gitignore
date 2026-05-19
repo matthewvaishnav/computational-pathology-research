@@ -322,16 +322,72 @@ dist/
 *.pstats
 .gdb_history
 
-# Temporary test/debug scripts
-test_*.py
-check_*.py
-quick_*.py
-verify_*.py
-train_*.py
+# Temporary test/debug scripts (root level only)
+/test_*.py
+/check_*.py
+/quick_*.py
+/setup_*.py
 bandit*.json
 safety_results.json
 security*.json
 security*.html
+
+# Generated index files
+**/slide_index.json
+**/dataset_index.json
+
+# Training logs
+*.log
+overnight_*.log
+
+# Virtual environments (all variants)
+.venv/
+.venv-*/
+.venv*/
+venv/
+venv*/
+venv_*/
+envs/
+
+# IDE and tool directories
+.vscode/
+.idea/
+.cursor/
+.qodo/
+.kilo/
+.kiro/
+.zap/
+opus-delegation/
+opus-delegation-system/
+
+# Experiment outputs
+demo_*/
+experiments/
+outputs/
+results/
+checkpoints/
+fl_checkpoints/
+fl_audit_logs/
+coverage_reports/
+dataset_test_results/
+
+# Cache directories
+pacs_cache/
+.cache/
+__pycache__/
+
+# Business/private content
+business/
+enterprise/
+patents/
+ecosystem/
+
+# Deployment artifacts
+deploy/
+kubernetes/
+k8s/
+mobile/
+website/
 
 # Editor temporary files
 .#*
