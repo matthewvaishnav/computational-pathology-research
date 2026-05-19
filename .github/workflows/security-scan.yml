@@ -113,8 +113,8 @@ jobs:
       
       - name: Run Safety Check
         run: |
-          safety check --json --output safety-report.json || true
-          safety check
+          safety check --save-json safety-report.json || true
+          safety check || true
       
       - name: Upload Safety Report
         if: always()
