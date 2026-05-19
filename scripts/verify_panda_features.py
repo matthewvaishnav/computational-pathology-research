@@ -25,20 +25,22 @@ def verify_hdf5_file(file_path):
     
     try:
         with h5py.File(file_path, 'r') as f:
-            # Check required keys
-            required_keys = ['features', 'coords']
-            optional_keys = ['label', 'slide_id']
+            # Check required keys (try both 'coords' and 'coordinates')
+            required_keys = ['features']
+            coord_key = 'coords' if 'coords' in f else 'coordinates' if 'coordinates' in f else None
+            optional_keys = ['label', 'slide_id', 'isup_grade', 'gleason_score']
             
             for key in required_keys:
                 if key not in f:
                     errors.append(f"Missing required key: {key}")
             
-            if errors:
+            if not coord_key:
+                errors.append("Missing coordinates (tried 'coords' and 'coordinates')")
                 return {'errors': errors, 'warnings': warnings, 'info': info}
             
             # Get features
             features = f['features'][:]
-            coords = f['coords'][:]
+            coords = f[coord_key][:]
             
             # Check shapes
             info['num_patches'] = features.shape[0]
