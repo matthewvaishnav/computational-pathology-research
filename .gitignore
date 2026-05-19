@@ -360,16 +360,27 @@ envs/
 opus-delegation/
 opus-delegation-system/
 
-# Experiment outputs
+# Kiro/Kilo worktrees and specs (development artifacts)
+.kilo/worktrees/
+.kiro/specs/
+
+# Experiment outputs (keep structure, ignore large files)
 demo_*/
-experiments/
+experiments/outputs/
+experiments/checkpoints/
 outputs/
-results/
-checkpoints/
+results/*/
+!results/.gitkeep
+!results/comprehensive_benchmark_full/HISTOCORE_SUPERIORITY_REPORT.md
+!results/federated_ablation/
+checkpoints/*.pth
+checkpoints/*.pt
 fl_checkpoints/
 fl_audit_logs/
 coverage_reports/
 dataset_test_results/
+test_results/
+demo_ablation_results/
 
 # Cache directories
 pacs_cache/
