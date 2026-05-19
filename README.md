@@ -1,9 +1,9 @@
 computational-pathology-research
 =================================
 
-**Production-grade framework combining Multiple Instance Learning (MIL), federated learning, and expertise-weighted Distributed Medical Intelligence (DMI) for privacy-preserving, multi-institutional pathology AI.**
+**Production-grade PyTorch framework for computational pathology research.** Features attention-based MIL models, foundation model integration (Phikon/UNI/CONCH), clinical PACS integration, and comprehensive testing (5,071+ tests). Validated on PCam (85.26% accuracy, 93.94% AUC). Built for research and clinical deployment.
 
-~195k LOC, 544 Python modules, 5,071 tests.
+**Novel contributions:** PathologyFL + DMI two-layer federated learning system for privacy-preserving multi-institutional collaboration.
 
 ---
 

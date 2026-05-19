@@ -1,15 +1,37 @@
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
+/**
+ * Creating a sidebar enables you to:
+ - create an ordered group of docs
+ - render a sidebar for each doc of that group
+ - provide next/previous navigation
+
+ The sidebars can be generated from the filesystem, or explicitly defined here.
+
+ Create as many sidebars as you want.
+ */
 const sidebars: SidebarsConfig = {
-  docsSidebar: [
-    'intro',
+  // By default, Docusaurus generates a sidebar from the docs folder structure
+  tutorialSidebar: [
+    {
+      type: 'doc',
+      id: 'intro',
+      label: 'Introduction',
+    },
     {
       type: 'category',
-      label: 'Platform',
+      label: 'Getting Started',
       collapsed: false,
       items: [
-        'DOCS_INDEX',
         'GETTING_STARTED',
+        'DOCS_INDEX',
+        'QUICK_REFERENCE',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Architecture',
+      items: [
         'FRAMEWORK_OVERVIEW',
         'ARCHITECTURE',
         'API_REFERENCE',
@@ -17,62 +39,23 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Modeling',
+      label: 'Models & Performance',
       items: [
         'FOUNDATION_MODELS',
         'INFERENCE_OPTIMIZATION',
         'BENCHMARK_SYSTEM',
         'PERFORMANCE_COMPARISON',
-        'TRANSNNMIL_IMPLEMENTATION',
-        'MODEL_INTERPRETABILITY',
       ],
     },
     {
       type: 'category',
-      label: 'Production',
+      label: 'Deployment',
       items: [
         'DEPLOYMENT',
         'SECURITY_HARDENING',
         'CLINICAL_VALIDATION',
         'TESTING',
-        'PACS_INTEGRATION',
-        'QUICK_REFERENCE',
         'TROUBLESHOOTING',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Project',
-      items: [
-        'PROJECT_STATUS',
-        'ROADMAP',
-        'CURRENT_STATUS_2026-05-14',
-        'CHANGELOG',
-        'CONTRIBUTING',
-        'STYLE_GUIDE',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Analysis',
-      items: [
-        'CODE_OPTIMIZATIONS',
-        'OPTIMIZATION_SUMMARY',
-        'PERFORMANCE',
-        'GPU_AND_TRAINING_FIXES',
-        'MISSING_ITEMS_ANALYSIS',
-        'UNPUBLISHED_BENCHMARKS_INVENTORY',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Resources',
-      items: [
-        'DEPENDENCIES',
-        'SECURITY_AUDIT',
-        'HistoCore_Presentation',
-        'PRESENTATION_ABSTRACT',
-        'LINKEDIN_UPDATES',
       ],
     },
   ],
