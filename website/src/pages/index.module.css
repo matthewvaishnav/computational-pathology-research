@@ -227,24 +227,50 @@
   word-wrap: break-word;
 }
 
+/* Dark mode specific improvements */
+:global([data-theme='dark']) .metric {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+:global([data-theme='dark']) .docLink {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+:global([data-theme='dark']) .docLink:hover {
+  border-color: #90caf9;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+:global([data-theme='dark']) .abstract {
+  background: #161b22;
+  border-left-color: #90caf9;
+}
+
+:global([data-theme='dark']) .citation {
+  background: #161b22;
+  border-color: #30363d;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .paperContainer {
     padding: 2rem 1rem;
   }
-  
+
   .paperTitle {
     font-size: 1.75rem;
   }
-  
+
   .metricsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .linksGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .paperMeta {
     flex-direction: column;
     gap: 0.25rem;
