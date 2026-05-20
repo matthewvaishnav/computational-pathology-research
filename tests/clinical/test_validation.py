@@ -21,8 +21,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from src.clinical.classifier import MultiClassDiseaseClassifier
-from src.clinical.validation import ModelValidator, PerformanceMonitor
+from src.features.clinical.workflow.classifier import MultiClassDiseaseClassifier
+from src.features.clinical.workflow.validation import ModelValidator, PerformanceMonitor
 
 
 class TestModelValidator(unittest.TestCase):

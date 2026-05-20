@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.interpretability.failure_analysis import FailureAnalyzer
+from src.features.interpretability.gradcam.failure_analysis import FailureAnalyzer
 
 
 class TestFailureAnalyzerInit:

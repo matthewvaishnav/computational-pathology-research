@@ -25,7 +25,7 @@ from src.streaming.emr_integration import EMRIntegrationClient
 from src.streaming.fhir_streaming_client import FHIRStreamingClient
 from src.streaming.gpu_pipeline import GPUPipeline
 from src.streaming.pacs_wsi_client import PACSWSIStreamingClient
-from src.streaming.wsi_stream_reader import WSIStreamReader
+from src.data.wsi.streaming import WSIStreamReader
 
 # ============================================================================
 # Test Data Models

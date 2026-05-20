@@ -14,7 +14,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
-from src.security.model_download import ModelDownloadManager
+from src.platform.security.model_download import ModelDownloadManager
 
 
 class FoundationModelEncoder(ABC, nn.Module):

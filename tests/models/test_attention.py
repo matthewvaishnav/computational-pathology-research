@@ -10,7 +10,7 @@ Tests the attention mechanisms extracted from attention_mil.py:
 import pytest
 import torch
 
-from src.models.attention_mechanisms import (
+from src.models.components.attention_mechanisms import (
     GatedAttention,
     SimpleAttention,
     TransformerAttention,

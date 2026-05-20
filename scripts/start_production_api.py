@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import uvicorn
 from dotenv import load_dotenv
-from src.security.network_binding import NetworkBindingManager
+from src.platform.security.network_binding import NetworkBindingManager
 
 # Load environment variables
 load_dotenv(".env.production")

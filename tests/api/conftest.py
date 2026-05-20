@@ -20,8 +20,8 @@ os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only"
 os.environ["ENVIRONMENT"] = "test"
 
 from src.api.main import app
-from src.database.connection import get_db_session
-from src.database.models import Base
+from src.platform.database.connection import get_db_session
+from src.platform.database.models import Base
 
 
 def get_test_db():

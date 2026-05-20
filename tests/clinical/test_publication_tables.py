@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from src.clinical.publication_tables import PublicationTableGenerator
+from src.features.clinical.workflow.publication_tables import PublicationTableGenerator
 
 
 class TestPublicationTableGenerator:

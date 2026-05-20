@@ -18,7 +18,7 @@ import torch
 from matplotlib.colors import LinearSegmentedColormap
 
 # Import BoundedQueue and GracefulThread for memory-safe queue operations and graceful shutdown
-from src.utils.safe_threading import BoundedQueue, GracefulThread
+from src.core.utils.safe_threading import BoundedQueue, GracefulThread
 
 # Import plotly for interactive visualizations
 try:

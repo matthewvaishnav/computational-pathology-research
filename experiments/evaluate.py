@@ -44,7 +44,7 @@ from tqdm import tqdm
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data import MultimodalDataset
-from src.data.loaders import collate_multimodal
+from src.data.loaders.loaders import collate_multimodal
 from src.models import ClassificationHead, MultimodalFusionModel, SurvivalPredictionHead
 
 # Configure logging

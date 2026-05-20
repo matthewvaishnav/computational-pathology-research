@@ -135,7 +135,7 @@ def run_demo_analysis(filepath: str, config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    from src.security.network_binding import NetworkBindingManager
+    from src.platform.security.network_binding import NetworkBindingManager
 
     # SECURITY: Never run with debug=True in production
     # Debug mode exposes sensitive information and allows code execution

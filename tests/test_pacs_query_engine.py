@@ -13,7 +13,7 @@ import pytest
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     DicomPriority,
     PACSEndpoint,
     PACSVendor,
@@ -21,7 +21,7 @@ from src.clinical.pacs.data_models import (
     SecurityConfig,
     StudyInfo,
 )
-from src.clinical.pacs.query_engine import QueryEngine
+from src.features.clinical.workflow.pacs.query_engine import QueryEngine
 
 # ---------------------------------------------------------------------------
 # Shared helpers

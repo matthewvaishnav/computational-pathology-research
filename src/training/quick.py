@@ -42,7 +42,7 @@ class QuickTrainer:
 
         # Load dataset
         if self.dataset == "pcam":
-            from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
+            from src.data.datasets.pcam_dataset import PCamDataset, get_pcam_transforms
 
             train_dataset = PCamDataset(
                 root="data/pcam", split="train", transform=get_pcam_transforms("train")
@@ -51,7 +51,7 @@ class QuickTrainer:
                 root="data/pcam", split="val", transform=get_pcam_transforms("val")
             )
         elif self.dataset == "camelyon":
-            from src.data.camelyon_dataset import CAMELYONSlideDataset
+            from src.data.datasets.camelyon_dataset import CAMELYONSlideDataset
 
             train_dataset = CAMELYONSlideDataset(split="train")
             val_dataset = CAMELYONSlideDataset(split="val")
@@ -68,15 +68,15 @@ class QuickTrainer:
 
         # Load model
         if self.model_name == "nnmil":
-            from src.models.nnmil import nnMIL
+            from src.models.mil.nnmil import nnMIL
 
             model = nnMIL(feature_dim=512, num_classes=2)
         elif self.model_name == "attention":
-            from src.models.attention_mil import AttentionMIL
+            from src.models.mil.attention_mil import AttentionMIL
 
             model = AttentionMIL(feature_dim=512, num_classes=2)
         elif self.model_name == "clam":
-            from src.models.clam import CLAM
+            from src.models.mil.clam import CLAM
 
             model = CLAM(feature_dim=512, num_classes=2)
         else:

@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 import torch
 
-from src.data.camelyon_dataset import (
+from src.data.datasets.camelyon_dataset import (
     CAMELYONPatchDataset,
     CAMELYONSlideDataset,
     CAMELYONSlideIndex,

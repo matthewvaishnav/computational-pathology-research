@@ -26,7 +26,7 @@ from src.database import (
     CaseOperations,
     get_db_session,
 )
-from src.database.models import Case
+from src.platform.database.models import Case
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ async def process_real_analysis(analysis_id: str, file_path: str) -> None:
     """Background task to process analysis with real AI model."""
 
     # Get database session for background task
-    from src.database.connection import get_database_manager
+    from src.platform.database.connection import get_database_manager
 
     db_manager = get_database_manager()
 

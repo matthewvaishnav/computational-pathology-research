@@ -8,7 +8,7 @@ Tests calibration methods (temperature scaling, Platt scaling), calibration metr
 import pytest
 import torch
 
-from src.clinical.uncertainty import UncertaintyQuantifier
+from src.features.clinical.workflow.uncertainty import UncertaintyQuantifier
 
 
 class TestUncertaintyQuantifier:

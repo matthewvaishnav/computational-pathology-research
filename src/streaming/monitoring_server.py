@@ -8,7 +8,7 @@ from typing import Optional
 
 from aiohttp import web, web_request, web_response
 
-from src.security.network_binding import NetworkBindingManager
+from src.platform.security.network_binding import NetworkBindingManager
 
 from .metrics import get_metrics
 

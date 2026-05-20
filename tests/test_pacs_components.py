@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     DicomPriority,
     OperationResult,
     PACSEndpoint,
@@ -19,9 +19,9 @@ from src.clinical.pacs.data_models import (
     SecurityConfig,
     StudyInfo,
 )
-from src.clinical.pacs.retrieval_engine import RetrievalEngine
-from src.clinical.pacs.security_manager import SecurityManager
-from src.clinical.pacs.workflow_orchestrator import WorkflowOrchestrator
+from src.features.clinical.workflow.pacs.retrieval_engine import RetrievalEngine
+from src.features.clinical.workflow.pacs.security_manager import SecurityManager
+from src.features.clinical.workflow.pacs.workflow_orchestrator import WorkflowOrchestrator
 
 
 def _make_workspace_temp_dir() -> Path:

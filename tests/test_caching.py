@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.utils.caching import CacheEntry, OptimizedLRUCache
+from src.core.utils.caching import CacheEntry, OptimizedLRUCache
 
 
 def test_cache_entry_compress_decompress():
@@ -161,8 +161,8 @@ def test_cache_hmac_validation():
 
 def test_malicious_pickle_rejected():
     """Test that safe_pickle rejects malicious pickle payloads."""
-    from src.security.exceptions import PickleSecurityError
-    from src.security.pickle_security_control import safe_pickle
+    from src.platform.security.exceptions import PickleSecurityError
+    from src.platform.security.pickle_security_control import safe_pickle
 
     # Create malicious pickle that tries to execute code
     class MaliciousClass:

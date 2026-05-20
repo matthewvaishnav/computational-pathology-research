@@ -7,7 +7,7 @@ specified in the design document.
 
 import torch
 
-from src.models.nnmil import nnMIL
+from src.models.mil.nnmil import nnMIL
 
 
 def count_parameters(model):

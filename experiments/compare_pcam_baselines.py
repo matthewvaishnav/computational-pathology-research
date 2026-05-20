@@ -30,7 +30,7 @@ import yaml
 
 # Add benchmark manifest import
 try:
-    from src.utils.benchmark_manifest import BenchmarkEntry, BenchmarkManifest
+    from src.core.utils.benchmark_manifest import BenchmarkEntry, BenchmarkManifest
 
     MANIFEST_AVAILABLE = True
 except ImportError:
@@ -40,7 +40,7 @@ except ImportError:
 
 # Add benchmark report generator import
 try:
-    from src.utils.benchmark_report import generate_benchmark_report
+    from src.core.utils.benchmark_report import generate_benchmark_report
 
     REPORT_GENERATOR_AVAILABLE = True
 except ImportError:

@@ -27,7 +27,7 @@ from scipy import stats
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
-from src.data.loaders import MultimodalDataset, collate_multimodal
+from src.data.loaders.loaders import MultimodalDataset, collate_multimodal
 
 # Configure logging
 logging.basicConfig(

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.clinical.fhir_adapter import (
+from src.features.clinical.workflow.fhir_adapter import (
     AuthenticationMethod,
     DiagnosticReportData,
     FHIRAdapter,

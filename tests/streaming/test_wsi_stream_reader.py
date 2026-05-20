@@ -9,7 +9,7 @@ import pytest
 import torch
 from PIL import Image
 
-from src.streaming.wsi_stream_reader import (
+from src.data.wsi.streaming import (
     StreamingMetadata,
     StreamingProgress,
     TileBatch,

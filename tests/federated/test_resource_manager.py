@@ -25,7 +25,7 @@ import torch
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.federated.client.resource_manager import (
+from src.features.federated.pathology_fl.client.resource_manager import (
     ResourceLimits,
     ResourceManager,
     ResourceUsage,

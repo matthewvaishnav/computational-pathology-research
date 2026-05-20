@@ -14,7 +14,7 @@ import pytest
 import torch
 from PIL import Image
 
-from src.data.wsi_pipeline import (
+from src.data.wsi.pipeline import (
     FeatureCache,
     FeatureGenerator,
     PatchExtractor,

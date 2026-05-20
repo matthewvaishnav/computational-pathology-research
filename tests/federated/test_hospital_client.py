@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from src.federated.client.hospital_client import HospitalClient
+from src.features.federated.pathology_fl.client.hospital_client import HospitalClient
 
 
 class SimpleTestModel(nn.Module):

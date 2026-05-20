@@ -40,7 +40,7 @@ from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
 # Import the thread-safe utilities
-from src.utils.safe_threading import (
+from src.core.utils.safe_threading import (
     BoundedQueue,
     GracefulThread,
     ThreadSafeDict,
@@ -972,7 +972,7 @@ class TestSQLiteCleanup:
         """Test connection is closed after successful operation."""
         from pathlib import Path
 
-        from src.utils.safe_operations import safe_db_transaction
+        from src.core.utils.safe_operations import safe_db_transaction
 
         # Perform successful operation
         with safe_db_transaction(Path(temp_db)) as conn:
@@ -989,8 +989,8 @@ class TestSQLiteCleanup:
         """Test connection is closed even when exception occurs."""
         from pathlib import Path
 
-        from src.exceptions import DatabaseError
-        from src.utils.safe_operations import safe_db_transaction
+        from src.core.exceptions import DatabaseError
+        from src.core.utils.safe_operations import safe_db_transaction
 
         conn_ref = None
         try:
@@ -1011,8 +1011,8 @@ class TestSQLiteCleanup:
         """Test rollback occurs when exception is raised."""
         from pathlib import Path
 
-        from src.exceptions import DatabaseError
-        from src.utils.safe_operations import safe_db_transaction
+        from src.core.exceptions import DatabaseError
+        from src.core.utils.safe_operations import safe_db_transaction
 
         # Create table first
         with safe_db_transaction(Path(temp_db)) as conn:
@@ -1044,7 +1044,7 @@ class TestSQLiteCleanup:
         """Test cleanup handles null connection gracefully."""
         from pathlib import Path
 
-        from src.utils.safe_operations import safe_db_transaction
+        from src.core.utils.safe_operations import safe_db_transaction
 
         # Test with non-existent path - should raise but not crash
         with pytest.raises(Exception):
@@ -2933,7 +2933,7 @@ class TestConfigurationValidation:
 
         try:
             # Should not raise - import directly to avoid protobuf issues
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             monitor = mon_module.FederatedLearningMonitor(config_path)
 
@@ -2958,7 +2958,7 @@ class TestConfigurationValidation:
 
         try:
             # Should raise ValueError
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -2992,7 +2992,7 @@ class TestConfigurationValidation:
 
         try:
             # Should raise ValueError for missing email fields
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -3020,7 +3020,7 @@ class TestConfigurationValidation:
 
         try:
             # Should raise ValueError
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -3048,7 +3048,7 @@ class TestConfigurationValidation:
 
         try:
             # Should raise ValueError for invalid Slack webhook
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -3077,7 +3077,7 @@ class TestConfigurationValidation:
 
         try:
             # Should raise ValueError due to schema validation
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -3111,7 +3111,7 @@ class TestConfigurationValidation:
 
         try:
             # Should raise ValueError
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -3148,7 +3148,7 @@ class TestConfigurationValidation:
             json.dump(invalid_config, f)
 
         try:
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)
@@ -3184,7 +3184,7 @@ class TestConfigurationValidation:
 
         try:
             # Should not raise
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             monitor = mon_module.FederatedLearningMonitor(config_path)
 
@@ -3208,7 +3208,7 @@ class TestConfigurationValidation:
             json.dump(invalid_config, f)
 
         try:
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with patch("src.federated.production.monitoring.logger") as mock_logger:
                 with pytest.raises(ValueError):
@@ -3226,7 +3226,7 @@ class TestConfigurationValidation:
 
     def test_default_configuration_when_no_file(self):
         """Test that default configuration is used when no config file provided."""
-        import src.federated.production.monitoring as mon_module
+        import src.features.federated.pathology_fl.production.monitoring as mon_module
 
         # Should not raise - uses defaults
         monitor = mon_module.FederatedLearningMonitor(config_path=None)
@@ -3245,7 +3245,7 @@ class TestConfigurationValidation:
             f.write("{invalid json content")
 
         try:
-            import src.federated.production.monitoring as mon_module
+            import src.features.federated.pathology_fl.production.monitoring as mon_module
 
             with pytest.raises(ValueError) as exc_info:
                 mon_module.FederatedLearningMonitor(config_path)

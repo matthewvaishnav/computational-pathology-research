@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from src.clinical.patient_context import (
+from src.features.clinical.workflow.patient_context import (
     AlcoholConsumption,
     ClinicalMetadata,
     ClinicalMetadataEncoder,

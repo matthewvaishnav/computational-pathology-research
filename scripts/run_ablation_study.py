@@ -22,7 +22,7 @@ from typing import Dict, List
 
 import pandas as pd
 
-from src.utils.monitoring import get_logger
+from src.core.utils.monitoring import get_logger
 
 logger = get_logger(__name__)
 

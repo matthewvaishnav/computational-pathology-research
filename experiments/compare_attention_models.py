@@ -72,7 +72,7 @@ from experiments.train_camelyon import (
     validate_config,
     validate_model_config,
 )
-from src.models.attention_mil import create_attention_model
+from src.models.mil.attention_mil import create_attention_model
 
 # Configure logging
 logging.basicConfig(

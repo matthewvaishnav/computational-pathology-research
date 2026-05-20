@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from src.security.temp_file_manager import TempFileManager
+from src.platform.security.temp_file_manager import TempFileManager
 
 
 class TestTempFileManager:

@@ -16,7 +16,7 @@ from omegaconf import DictConfig
 
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from src.data.loaders import MultimodalDataset, collate_multimodal
+from src.data.loaders.loaders import MultimodalDataset, collate_multimodal
 from tests.dataset_testing.hypothesis_strategies import (
     feature_dimension_strategy,
     multimodal_config_strategy,

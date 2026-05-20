@@ -15,7 +15,7 @@ This test suite validates:
 import pytest
 import torch
 
-from src.models.transnnmil import TransnnMIL
+from src.models.transnnmil.transnnmil import TransnnMIL
 
 
 class TestProjectionLayers:

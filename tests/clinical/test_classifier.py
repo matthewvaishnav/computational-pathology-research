@@ -9,8 +9,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.clinical.classifier import MultiClassDiseaseClassifier
-from src.clinical.taxonomy import DiseaseTaxonomy
+from src.features.clinical.workflow.classifier import MultiClassDiseaseClassifier
+from src.features.clinical.workflow.taxonomy import DiseaseTaxonomy
 
 
 class TestMultiClassDiseaseClassifier:

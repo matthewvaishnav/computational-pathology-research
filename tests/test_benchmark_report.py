@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from src.utils.benchmark_report import (
+from src.core.utils.benchmark_report import (
     _add_baseline_comparison,
     _add_dataset_description,
     _add_executive_summary,

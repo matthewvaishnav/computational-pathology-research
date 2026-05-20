@@ -9,8 +9,8 @@ from unittest.mock import patch
 
 import pytest
 
-from src.security.environment_detector import SecurityEnvironmentDetector
-from src.security.models import SecurityEnvironment
+from src.platform.security.environment_detector import SecurityEnvironmentDetector
+from src.platform.security.models import SecurityEnvironment
 
 
 class TestEnvironmentDetector:

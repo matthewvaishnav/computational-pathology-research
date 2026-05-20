@@ -17,7 +17,7 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.models.foundation_adapter import FoundationModelAdapter
-from src.models.nnmil import nnMIL
+from src.models.mil.nnmil import nnMIL
 
 # Foundation model dimensions (real-world values)
 FOUNDATION_MODELS = {"UNI": 1024, "CONCH": 512, "Phikon": 768, "ResNet50": 2048}

@@ -14,7 +14,7 @@ import torch.nn as nn
 import hypothesis.extra.numpy as npst
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.interpretability.gradcam import GradCAMGenerator
+from src.features.interpretability.gradcam.gradcam import GradCAMGenerator
 
 
 class SimpleCNN(nn.Module):

@@ -31,7 +31,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 # Import the refactored AttentionMIL
-from src.models.attention_mil import AttentionMIL
+from src.models.mil.attention_mil import AttentionMIL
 
 # Load the original AttentionMIL from backup by reading and executing the file
 backup_path = Path(__file__).parent.parent.parent / "src" / "models" / "attention_mil.py.backup"

@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 import torch
 
-from src.models.hierarchical_pooling import (
+from src.models.transnnmil.hierarchical_pooling import (
     GridClusterer,
     HierarchicalPooling,
     KMeansClusterer,
@@ -619,7 +619,7 @@ class TestRegionTransformer:
 
     def test_init(self):
         """Test initialization."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         transformer = RegionTransformer(
             feature_dim=1024,
@@ -633,7 +633,7 @@ class TestRegionTransformer:
 
     def test_invalid_inputs(self):
         """Test input validation."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         with pytest.raises(ValueError, match="feature_dim must be positive"):
             RegionTransformer(feature_dim=0)
@@ -655,7 +655,7 @@ class TestRegionTransformer:
 
     def test_forward_shape(self):
         """Test forward pass output shape."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         transformer = RegionTransformer(feature_dim=1024, num_layers=2)
         region_features = torch.randn(4, 16, 1024)
@@ -666,7 +666,7 @@ class TestRegionTransformer:
 
     def test_forward_with_mask(self):
         """Test forward with mask."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         transformer = RegionTransformer(feature_dim=1024, num_layers=2)
         region_features = torch.randn(4, 16, 1024)
@@ -680,7 +680,7 @@ class TestRegionTransformer:
 
     def test_positional_encoding(self):
         """Test positional encoding."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         transformer = RegionTransformer(
             feature_dim=1024,
@@ -697,7 +697,7 @@ class TestRegionTransformer:
 
     def test_positional_encoding_required(self):
         """Test positional encoding requires centers."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         transformer = RegionTransformer(
             feature_dim=1024,
@@ -711,7 +711,7 @@ class TestRegionTransformer:
 
     def test_gradients_flow(self):
         """Test gradients flow through transformer."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         transformer = RegionTransformer(feature_dim=1024, num_layers=2)
         region_features = torch.randn(4, 16, 1024, requires_grad=True)
@@ -724,7 +724,7 @@ class TestRegionTransformer:
 
     def test_multiple_layers(self):
         """Test different number of layers."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         region_features = torch.randn(4, 16, 1024)
 
@@ -738,7 +738,7 @@ class TestRegionTransformer:
 
     def test_different_num_heads(self):
         """Test different number of attention heads."""
-        from src.models.hierarchical_pooling import RegionTransformer
+        from src.models.transnnmil.hierarchical_pooling import RegionTransformer
 
         region_features = torch.randn(4, 16, 1024)
 

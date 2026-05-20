@@ -9,9 +9,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.security.exceptions import ModelSecurityError
-from src.security.model_download_manager import ModelDownloadManager
-from src.security.models import SecurityEnvironment
+from src.platform.security.exceptions import ModelSecurityError
+from src.platform.security.model_download_manager import ModelDownloadManager
+from src.platform.security.models import SecurityEnvironment
 
 
 class TestModelDownloadManager:

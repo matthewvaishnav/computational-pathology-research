@@ -65,7 +65,7 @@ def create_distributed_dataloaders(config: dict, rank: int, world_size: int):
         Tuple of (train_loader, val_loader, test_loader)
     """
     # Import here to avoid circular imports
-    from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
+    from src.data.datasets.pcam_dataset import PCamDataset, get_pcam_transforms
     from torch.utils.data import DataLoader
     
     # Get transforms

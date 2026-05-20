@@ -7,14 +7,14 @@ from datetime import datetime, timedelta
 import numpy as np
 import pytest
 
-from src.annotation_interface.backend.annotation_models import (
+from src.features.research.annotation.backend.annotation_models import (
     Annotation,
     AnnotationGeometry,
     AnnotationLabel,
     AnnotationType,
     Point,
 )
-from src.annotation_interface.backend.quality_control import (
+from src.features.research.annotation.backend.quality_control import (
     AnnotationValidator,
     InterRaterAgreement,
     QualityMetricsTracker,

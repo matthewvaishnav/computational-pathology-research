@@ -19,7 +19,7 @@ import yaml
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.config.nnmil_config import nnMILConfig
+from src.core.config.nnmil_config import nnMILConfig
 
 # ============================================================================
 # Property 28: Configuration Loading

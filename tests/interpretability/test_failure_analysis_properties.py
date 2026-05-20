@@ -10,7 +10,7 @@ import pytest
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra import numpy as npst
-from src.interpretability.failure_analysis import FailureAnalyzer
+from src.features.interpretability.gradcam.failure_analysis import FailureAnalyzer
 
 
 # Strategy for generating valid predictions and ground truth

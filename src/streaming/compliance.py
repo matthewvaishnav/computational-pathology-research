@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 # Import existing clinical compliance modules
-from src.clinical.privacy import (
+from src.features.clinical.workflow.privacy import (
     AESEncryption,
     ConsentRecord,
     EncryptionProvider,
@@ -20,7 +20,7 @@ from src.clinical.privacy import (
     Role,
     UserSession,
 )
-from src.clinical.regulatory import ComplianceValidator, RegulatoryFramework, RiskLevel
+from src.features.clinical.workflow.regulatory import ComplianceValidator, RegulatoryFramework, RiskLevel
 
 logger = logging.getLogger(__name__)
 

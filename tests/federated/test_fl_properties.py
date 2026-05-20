@@ -17,16 +17,16 @@ import torch.nn as nn
 
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
-from src.federated.aggregator.byzantine_robust import (
+from src.features.federated.pathology_fl.aggregator.byzantine_robust import (
     KrumAggregator,
     MedianAggregator,
     TrimmedMeanAggregator,
 )
-from src.federated.aggregator.fedavg import FedAvgAggregator
-from src.federated.common.data_models import ClientUpdate
-from src.federated.fault_tolerance.checkpoint_manager import CheckpointManager
-from src.federated.privacy.dp_sgd import DPSGDEngine
-from src.federated.security.secure_aggregation import SecureAggregator
+from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.fault_tolerance.checkpoint_manager import CheckpointManager
+from src.features.federated.pathology_fl.privacy.dp_sgd import DPSGDEngine
+from src.features.federated.pathology_fl.security.secure_aggregation import SecureAggregator
 
 # ============================================================================
 # Task 17.1: FedAvg Correctness Properties

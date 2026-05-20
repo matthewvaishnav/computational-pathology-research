@@ -17,7 +17,7 @@ import torch.nn.functional as F
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
 
-from src.security.model_download import ModelDownloadManager
+from src.platform.security.model_download import ModelDownloadManager
 
 
 @dataclass

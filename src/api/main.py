@@ -46,7 +46,7 @@ from src.api.security import (
 
 # Database and monitoring
 from src.database import DatabaseManager, initialize_database
-from src.monitoring.tracing import get_tracer
+from src.platform.monitoring.tracing import get_tracer
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -191,7 +191,7 @@ def main():
         request_size_and_timeout_middleware,
         security_headers_middleware,
     )
-    from src.security.network_binding import NetworkBindingManager
+    from src.platform.security.network_binding import NetworkBindingManager
 
     app.middleware("http")(https_redirect_middleware)
     app.middleware("http")(request_size_and_timeout_middleware)

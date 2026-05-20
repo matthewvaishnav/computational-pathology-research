@@ -10,8 +10,8 @@ from typing import Dict, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 
-from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
-from .fusion import MultiModalFusionLayer
+from src.models.components.encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
+from src.models.components.fusion import MultiModalFusionLayer
 
 
 class MultimodalFusionModel(nn.Module):

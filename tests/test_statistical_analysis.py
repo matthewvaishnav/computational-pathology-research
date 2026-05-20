@@ -12,7 +12,7 @@ from omegaconf import DictConfig
 from torch.utils.data import DataLoader
 
 from experiments.statistical_analysis import AblationStudy, run_cross_validation
-from src.data.loaders import MultimodalDataset
+from src.data.loaders.loaders import MultimodalDataset
 from src.models import ClassificationHead, MultimodalFusionModel
 
 

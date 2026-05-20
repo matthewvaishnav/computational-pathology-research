@@ -13,7 +13,7 @@ from experiments.generate_camelyon_baseline_heatmap import (
     load_baseline_model,
 )
 from experiments.run_camelyon_feature_baseline import run_camelyon_feature_baseline
-from src.data.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
+from src.data.datasets.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
 
 
 @pytest.fixture

@@ -15,7 +15,7 @@ import yaml
 
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from src.config.nnmil_config import nnMILConfig
+from src.core.config.nnmil_config import nnMILConfig
 
 
 class TestnnMILConfigProperties:

@@ -37,7 +37,7 @@ from torch.utils.data.distributed import DistributedSampler
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.data import MultimodalDataset
-from src.data.loaders import collate_multimodal
+from src.data.loaders.loaders import collate_multimodal
 from src.models import ClassificationHead, MultimodalFusionModel
 
 logging.basicConfig(level=logging.INFO)

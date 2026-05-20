@@ -15,7 +15,7 @@ from typing import Dict, Optional
 import torch
 import torch.nn as nn
 
-from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
+from src.models.components.encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 
 
 class SingleModalityModel(nn.Module):

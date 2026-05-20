@@ -4,7 +4,7 @@ Unit tests for clinical document parser.
 
 import pytest
 
-from src.clinical.document_parser import (
+from src.features.clinical.workflow.document_parser import (
     ClinicalDocumentParser,
     DocumentFormat,
     ExtractedEntity,

@@ -30,7 +30,7 @@ from torch.utils.data import DataLoader, Dataset
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.models import ClassificationHead, MultimodalFusionModel
-from src.utils.interpretability import AttentionVisualizer, EmbeddingAnalyzer, SaliencyMap
+from src.core.utils.interpretability import AttentionVisualizer, EmbeddingAnalyzer, SaliencyMap
 
 # Set random seeds
 torch.manual_seed(42)

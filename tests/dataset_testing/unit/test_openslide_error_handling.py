@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader, check_openslide_available
+from src.data.wsi.openslide_utils import WSIReader, check_openslide_available
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 

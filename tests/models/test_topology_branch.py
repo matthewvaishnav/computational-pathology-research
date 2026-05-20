@@ -31,8 +31,8 @@ try:
 except ImportError:
     FAISS_AVAILABLE = False
 
-from src.models.graph_cache import GraphCache
-from src.models.topology_branch import (
+from src.models.transnnmil.graph_cache import GraphCache
+from src.models.transnnmil.topology_branch import (
     GATv2Layer,
     GINLayer,
     GraphSAGELayer,

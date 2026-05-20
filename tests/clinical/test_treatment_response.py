@@ -15,14 +15,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.clinical.longitudinal import (
+from src.features.clinical.workflow.longitudinal import (
     PatientTimeline,
     ScanRecord,
     TreatmentEvent,
     TreatmentResponseCategory,
 )
-from src.clinical.taxonomy import DiseaseTaxonomy
-from src.clinical.treatment_response import (
+from src.features.clinical.workflow.taxonomy import DiseaseTaxonomy
+from src.features.clinical.workflow.treatment_response import (
     ResponseKinetics,
     TreatmentResponseAnalyzer,
     TreatmentResponseMetrics,

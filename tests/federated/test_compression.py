@@ -11,7 +11,7 @@ import torch
 
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from src.federated.compression import (
+from src.features.federated.pathology_fl.compression import (
     CompressionConfig,
     CompressionMethod,
     GradientCompressor,

@@ -118,7 +118,7 @@ class CheckpointLoader:
             # Check if it's a ResNet-based extractor
             if any("resnet" in k.lower() or "layer" in k.lower() for k in state_dict.keys()):
                 logger.info("Detected ResNet-based feature extractor")
-                from src.models.feature_extractors import ResNetFeatureExtractor
+                from src.models.components.feature_extractors import ResNetFeatureExtractor
 
                 # Get config if available
                 if config:
@@ -185,7 +185,7 @@ class CheckpointLoader:
                 logger.warning(
                     "Unknown feature extractor architecture, attempting to reconstruct from state dict"
                 )
-                from src.models.feature_extractors import ResNetFeatureExtractor
+                from src.models.components.feature_extractors import ResNetFeatureExtractor
 
                 # Default to ResNet50
                 feature_dim = self._infer_feature_dim(state_dict)
@@ -242,7 +242,7 @@ class CheckpointLoader:
             )
 
             # Create encoder
-            from src.models.encoders import WSIEncoder
+            from src.models.components.encoders import WSIEncoder
 
             # Get encoder config if available
             if config:
@@ -270,7 +270,7 @@ class CheckpointLoader:
                 )
 
             # Create head
-            from src.models.heads import ClassificationHead
+            from src.models.components.heads import ClassificationHead
 
             if config:
                 classification_config = config.get("task", {}).get("classification", {})

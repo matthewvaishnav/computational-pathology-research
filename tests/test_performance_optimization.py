@@ -11,11 +11,11 @@ from unittest.mock import patch
 import torch
 import torch.nn as nn
 
-from src.clinical.batch_inference import (
+from src.features.clinical.workflow.batch_inference import (
     ConcurrentInferenceManager,
     PerformanceMonitor,
 )
-from src.clinical.performance import (
+from src.features.clinical.workflow.performance import (
     BatchProcessor,
     GPUAccelerator,
     InferenceProfiler,

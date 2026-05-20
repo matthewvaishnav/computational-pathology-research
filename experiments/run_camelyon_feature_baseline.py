@@ -36,7 +36,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scripts.data.render_camelyon_heatmap import build_camelyon_heatmap_artifacts
-from src.data.camelyon_dataset import CAMELYONPatchDataset, CAMELYONSlideIndex
+from src.data.datasets.camelyon_dataset import CAMELYONPatchDataset, CAMELYONSlideIndex
 
 AggregationMethod = Literal["mean", "max"]
 

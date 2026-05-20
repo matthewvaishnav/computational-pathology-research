@@ -19,7 +19,7 @@ import redis
 import torch
 from redis.exceptions import ConnectionError, TimeoutError
 
-from src.exceptions import (
+from src.core.exceptions import (
     CacheConnectionError,
     CacheError,
     CacheSerializationError,

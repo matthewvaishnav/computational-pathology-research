@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.data.wsi_pipeline import (
+from src.data.wsi.pipeline import (
     BatchProcessor,
     FeatureCache,
     FeatureGenerator,

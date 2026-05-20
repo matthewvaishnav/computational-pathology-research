@@ -19,7 +19,7 @@ from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 
-from src.security.model_download import ModelDownloadManager
+from src.platform.security.model_download import ModelDownloadManager
 
 logger = logging.getLogger(__name__)
 
@@ -373,7 +373,7 @@ def create_wsi_encoder_with_pretrained(
     Returns:
         Tuple of (feature_extractor, wsi_encoder)
     """
-    from .encoders import WSIEncoder
+    from src.models.components.encoders import WSIEncoder
 
     # Load pretrained feature extractor
     extractor = PretrainedFeatureExtractor(

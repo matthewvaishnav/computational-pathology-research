@@ -10,13 +10,13 @@ Tests the MILBase class that provides common functionality for MIL models:
 import pytest
 import torch
 
-from src.models.attention_mechanisms import (
+from src.models.components.attention_mechanisms import (
     GatedAttention,
     SimpleAttention,
     TransformerAttention,
 )
-from src.models.fusion_strategies import EarlyFusion, LateFusion
-from src.models.mil_base import MILBase
+from src.models.components.fusion_strategies import EarlyFusion, LateFusion
+from src.models.mil.mil_base import MILBase
 
 
 class TestMILBaseInitialization:

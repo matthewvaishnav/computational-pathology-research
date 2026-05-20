@@ -9,7 +9,7 @@ import pytest
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.audit_logger import (
+from src.features.clinical.workflow.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,
     AuditSearchIndex,

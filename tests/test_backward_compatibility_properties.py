@@ -21,8 +21,8 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from scripts.migrate_transmil_to_nnmil import TransMILToNnMILMigrator
-from src.models.nnmil import nnMIL
-from src.models.transmil import TransMIL  # Assuming existing TransMIL implementation
+from src.models.mil.nnmil import nnMIL
+from src.models.mil.transmil import TransMIL  # Assuming existing TransMIL implementation
 from src.training.unified_trainer import UnifiedTrainer
 
 # ============================================================================

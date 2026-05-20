@@ -8,7 +8,7 @@ to ensure they correctly combine multi-scale features.
 import pytest
 import torch
 
-from src.models.fusion_strategies import EarlyFusion, FusionStrategy, LateFusion
+from src.models.components.fusion_strategies import EarlyFusion, FusionStrategy, LateFusion
 
 
 class TestFusionStrategyBase:

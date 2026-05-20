@@ -2,9 +2,9 @@
 
 import torch
 
-from src.federated.aggregator.factory import AggregatorFactory
-from src.federated.aggregator.pathology_fl import PathologyFLAggregator
-from src.federated.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.aggregator.factory import AggregatorFactory
+from src.features.federated.pathology_fl.aggregator.pathology_fl import PathologyFLAggregator
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 
 
 def _pathology_update(

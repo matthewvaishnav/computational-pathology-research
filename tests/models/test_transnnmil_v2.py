@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.models.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
+from src.models.transnnmil.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
 
 
 class TestTransnnMILv2:

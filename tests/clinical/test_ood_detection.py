@@ -8,7 +8,7 @@ detection methods (Mahalanobis distance, reconstruction error, ensemble disagree
 import pytest
 import torch
 
-from src.clinical.ood_detection import Autoencoder, OODDetector
+from src.features.clinical.workflow.ood_detection import Autoencoder, OODDetector
 
 
 class TestOODDetector:

@@ -261,7 +261,7 @@ class InferenceEngine:
         # Validate path is within allowed directories (prevent path traversal)
         import tempfile
 
-        from src.security.temp_file import TempFileManager
+        from src.platform.security.temp_file import TempFileManager
 
         allowed_dirs = [TempFileManager.get_temp_dir(), tempfile.gettempdir(), os.getcwd()]
         path_str = str(image_path)

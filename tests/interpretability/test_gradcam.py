@@ -7,7 +7,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.interpretability.gradcam import GradCAMGenerator
+from src.features.interpretability.gradcam.gradcam import GradCAMGenerator
 
 
 class SimpleCNN(nn.Module):

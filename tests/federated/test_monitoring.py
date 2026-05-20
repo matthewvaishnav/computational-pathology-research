@@ -9,8 +9,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.federated.common.data_models import ClientUpdate
-from src.federated.coordinator.monitoring import (
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.coordinator.monitoring import (
     AlertGenerator,
     ConvergenceDetector,
     MonitoringDashboard,

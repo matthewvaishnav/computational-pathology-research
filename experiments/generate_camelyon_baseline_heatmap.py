@@ -44,7 +44,7 @@ def load_baseline_model(model_path: Union[str, Path]) -> LogisticRegression:
             f"Security: Model path must be in results/ or checkpoints/ directory. Got: {model_path}"
         )
     
-    from src.security.pickle_security import PickleSecurityControl
+    from src.platform.security.pickle_security import PickleSecurityControl
     with open(model_path, "rb") as handle:
         model = PickleSecurityControl.safe_load(handle, source_path=str(model_path))
     if not isinstance(model, LogisticRegression):

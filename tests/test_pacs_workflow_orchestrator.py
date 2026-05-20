@@ -17,12 +17,12 @@ import torch
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     DicomPriority,
     OperationResult,
     StudyInfo,
 )
-from src.clinical.pacs.workflow_orchestrator import WorkflowOrchestrator
+from src.features.clinical.workflow.pacs.workflow_orchestrator import WorkflowOrchestrator
 
 # ---------------------------------------------------------------------------
 # Shared helpers

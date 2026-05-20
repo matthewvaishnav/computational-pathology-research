@@ -9,8 +9,8 @@ from urllib.error import URLError
 
 import pytest
 
-from src.security.exceptions import URLSecurityError
-from src.security.url_fetcher_control import URLFetcherControl
+from src.platform.security.exceptions import URLSecurityError
+from src.platform.security.url_fetcher_control import URLFetcherControl
 
 
 class TestURLFetcherControl:

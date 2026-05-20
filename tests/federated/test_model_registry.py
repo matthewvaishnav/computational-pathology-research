@@ -21,8 +21,8 @@ import torch.nn as nn
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.federated.common.data_models import ModelCheckpoint
-from src.federated.coordinator.model_registry import ModelRegistry
+from src.features.federated.pathology_fl.common.data_models import ModelCheckpoint
+from src.features.federated.pathology_fl.coordinator.model_registry import ModelRegistry
 
 # Test fixtures
 

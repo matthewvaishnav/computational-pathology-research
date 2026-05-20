@@ -13,8 +13,8 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.database.connection import DatabaseManager, initialize_database
-from src.database.operations import UserOperations
+from src.platform.database.connection import DatabaseManager, initialize_database
+from src.platform.database.operations import UserOperations
 import hashlib
 
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +50,7 @@ def create_admin_user(db_manager: DatabaseManager):
 def setup_sample_data(db_manager: DatabaseManager):
     """Set up sample data for testing."""
     with db_manager.get_session() as session:
-        from src.database.operations import CaseOperations
+        from src.platform.database.operations import CaseOperations
         
         case_ops = CaseOperations(session)
         

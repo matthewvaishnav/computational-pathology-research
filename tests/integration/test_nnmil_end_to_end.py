@@ -15,9 +15,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 # Import nnMIL components
-from src.config.nnmil_config import nnMILConfig
-from src.data.bag_samplers import FixedLengthBagSampler
-from src.data.batch_samplers import BalancedBatchSampler
+from src.core.config.nnmil_config import nnMILConfig
+from src.data.loaders.bag_samplers import FixedLengthBagSampler
+from src.data.loaders.batch_samplers import BalancedBatchSampler
 from src.data.data_models import Bag, InferenceOutput, TrainingBatch
 from src.inference.sliding_window import SlidingWindowInference
 from src.inference.uncertainty import UncertaintyEstimator

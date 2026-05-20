@@ -22,7 +22,7 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.models.pretrained import PRETRAINED_MODELS
-from src.security.model_download import ModelDownloadManager
+from src.platform.security.model_download import ModelDownloadManager
 
 logger = logging.getLogger(__name__)
 

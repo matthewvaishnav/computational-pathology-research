@@ -13,7 +13,7 @@ from unittest.mock import patch as mock_patch
 import numpy as np
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader
+from src.data.wsi.openslide_utils import WSIReader
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator
 

@@ -16,10 +16,10 @@ import pytest
 import torch
 from PIL import Image
 
-from src.clinical.pacs.data_models import DicomPriority, StudyInfo
+from src.features.clinical.workflow.pacs.data_models import DicomPriority, StudyInfo
 
 # Direct import to avoid protobuf issues
-from src.federated.client.pacs_connector import PACSConnector
+from src.features.federated.pathology_fl.client.pacs_connector import PACSConnector
 
 # ============================================================================
 # Test Fixtures

@@ -40,10 +40,10 @@ from tqdm import tqdm
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
-from src.models.encoders import WSIEncoder
-from src.models.feature_extractors import ResNetFeatureExtractor
-from src.models.heads import ClassificationHead
+from src.data.datasets.pcam_dataset import PCamDataset, get_pcam_transforms
+from src.models.components.encoders import WSIEncoder
+from src.models.components.feature_extractors import ResNetFeatureExtractor
+from src.models.components.heads import ClassificationHead
 
 logging.basicConfig(
     level=logging.INFO,

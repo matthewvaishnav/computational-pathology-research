@@ -14,7 +14,7 @@ import pytest
 import torch
 from omegaconf import DictConfig
 
-from src.data.loaders import (
+from src.data.loaders.loaders import (
     MultimodalDataset,
     TemporalDataset,
     collate_multimodal,

@@ -11,7 +11,7 @@ Task: 1.3 Implement multi-scale support for nnMIL
 import pytest
 import torch
 
-from src.models.nnmil import nnMIL
+from src.models.mil.nnmil import nnMIL
 
 
 class TestnnMILMultiScaleVerification:

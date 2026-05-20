@@ -17,7 +17,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.pacs.pacs_service import PACSIntegrationService
+from src.features.clinical.pacs.pacs_service import PACSIntegrationService
 
 
 class PACSServiceRunner:

@@ -13,7 +13,7 @@ import torch
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.data.bag_samplers import FixedLengthBagSampler
+from src.data.loaders.bag_samplers import FixedLengthBagSampler
 
 # ============================================================================
 # Property 7: Fixed-Length Bag Invariant

@@ -14,7 +14,7 @@ import pytest
 from pydicom.dataset import Dataset, FileDataset
 from pydicom.uid import ExplicitVRLittleEndian, JPEG2000Lossless, generate_uid
 
-from src.clinical.dicom_adapter import (
+from src.features.clinical.workflow.dicom_adapter import (
     DICOMAdapter,
     DICOMMetadata,
     PredictionResult,

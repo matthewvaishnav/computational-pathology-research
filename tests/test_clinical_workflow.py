@@ -11,16 +11,16 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.annotation_interface.workflow.active_learning_connector import ActiveLearningConnector
-from src.annotation_interface.workflow.clinical_integration import ClinicalWorkflowIntegrator
-from src.annotation_interface.workflow.notification_service import (
+from src.features.research.annotation.workflow.active_learning_connector import ActiveLearningConnector
+from src.features.research.annotation.workflow.clinical_integration import ClinicalWorkflowIntegrator
+from src.features.research.annotation.workflow.notification_service import (
     NotificationChannel,
     NotificationPriority,
     NotificationService,
 )
-from src.annotation_interface.workflow.pacs_connector import PACSConnector
-from src.clinical.pacs.data_models import OperationResult
-from src.clinical.pacs.pacs_adapter import PACSAdapter
+from src.features.research.annotation.workflow.pacs_connector import PACSConnector
+from src.features.clinical.workflow.pacs.data_models import OperationResult
+from src.features.clinical.workflow.pacs.pacs_adapter import PACSAdapter
 from src.continuous_learning.active_learning import (
     ActiveLearningSystem,
     AnnotationTask,

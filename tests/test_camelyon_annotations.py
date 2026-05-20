@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.data.camelyon_annotations import (
+from src.data.datasets.camelyon_annotations import (
     AnnotationPolygon,
     load_camelyon_annotations,
     overlay_heatmap_on_thumbnail,

@@ -15,7 +15,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.models.attention_mil import AttentionMIL
+from src.models.mil.attention_mil import AttentionMIL
 
 # ============================================================================
 # Fixtures

@@ -7,7 +7,7 @@ This test file verifies the core functionality of the nnMIL model class.
 import pytest
 import torch
 
-from src.models.nnmil import nnMIL
+from src.models.mil.nnmil import nnMIL
 
 
 class TestnnMILBasic:

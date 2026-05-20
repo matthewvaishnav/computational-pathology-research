@@ -16,13 +16,13 @@ import pytest
 # Configure pytest-asyncio
 pytest_plugins = ("pytest_asyncio",)
 
-from src.clinical.pacs.audit_logger import PACSAuditLogger
-from src.clinical.pacs.error_handling import DeadLetterQueue, NetworkErrorHandler
-from src.clinical.pacs.failover import PACSEndpoint
-from src.clinical.pacs.notification_system import ClinicalNotificationSystem
-from src.clinical.pacs.pacs_service import PACSService
-from src.clinical.pacs.workflow_orchestrator import WorkflowOrchestrator
-from src.clinical.workflow import ClinicalWorkflowSystem
+from src.features.clinical.workflow.pacs.audit_logger import PACSAuditLogger
+from src.features.clinical.workflow.pacs.error_handling import DeadLetterQueue, NetworkErrorHandler
+from src.features.clinical.workflow.pacs.failover import PACSEndpoint
+from src.features.clinical.workflow.pacs.notification_system import ClinicalNotificationSystem
+from src.features.clinical.workflow.pacs.pacs_service import PACSService
+from src.features.clinical.workflow.pacs.workflow_orchestrator import WorkflowOrchestrator
+from src.features.clinical.workflow.workflow import ClinicalWorkflowSystem
 
 
 class TestPACSSystemIntegration:
@@ -128,7 +128,7 @@ class TestPACSSystemIntegration:
     @pytest.mark.asyncio
     async def test_multi_vendor_pacs_integration(self, mock_pacs_endpoints):
         """Test multi-vendor PACS integration."""
-        from src.clinical.pacs.vendor_adapters import VendorAdapterFactory
+        from src.features.clinical.workflow.pacs.vendor_adapters import VendorAdapterFactory
 
         factory = VendorAdapterFactory()
 
@@ -418,7 +418,7 @@ class TestPACSSystemIntegration:
 
     def test_configuration_validation(self, test_config):
         """Test configuration validation."""
-        from src.clinical.pacs.configuration_manager import ConfigurationManager
+        from src.features.clinical.workflow.pacs.configuration_manager import ConfigurationManager
 
         config_manager = ConfigurationManager()
 

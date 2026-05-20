@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader, check_openslide_available, get_slide_info
+from src.data.wsi.openslide_utils import WSIReader, check_openslide_available, get_slide_info
 
 
 class TestOpenSlideAvailability:

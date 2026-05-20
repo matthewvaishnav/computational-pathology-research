@@ -22,13 +22,13 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 import torch
 
-from src.exceptions import (
+from src.core.exceptions import (
     DatabaseError,
     DataSaveError,
     DiskSpaceError,
     ResourceError,
 )
-from src.utils.safe_operations import (
+from src.core.utils.safe_operations import (
     CircuitBreaker,
     CircuitState,
     FileOperationRateLimiter,

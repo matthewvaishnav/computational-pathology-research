@@ -7,13 +7,13 @@ import pytest
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
     PerformanceConfig,
     SecurityConfig,
 )
-from src.clinical.pacs.error_handling import (
+from src.features.clinical.workflow.pacs.error_handling import (
     DeadLetterQueue,
     DicomCFindError,
     DicomCStoreError,
@@ -23,7 +23,7 @@ from src.clinical.pacs.error_handling import (
     PACSAuthenticationError,
     PACSConnectionError,
 )
-from src.clinical.pacs.failover import CircuitBreaker, CircuitState, FailoverManager
+from src.features.clinical.workflow.pacs.failover import CircuitBreaker, CircuitState, FailoverManager
 
 # ---------------------------------------------------------------------------
 # Shared fixtures / helpers

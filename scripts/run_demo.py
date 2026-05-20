@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.streaming.demo_scenarios import DemoScenarioRunner, DemoScenario
 from src.streaming.interactive_showcase import run_showcase
-from src.security.network_binding import NetworkBindingManager
+from src.platform.security.network_binding import NetworkBindingManager
 
 
 def main():

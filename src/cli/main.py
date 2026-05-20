@@ -67,7 +67,7 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
         if verbose:
             click.echo("Loading HistoCore modules...")
 
-        from src.data.wsi_pipeline import BatchProcessor, ProcessingConfig
+        from src.data.wsi.pipeline import BatchProcessor, ProcessingConfig
 
         # Create processing config
         config = ProcessingConfig(
@@ -308,7 +308,7 @@ def web():
     click.echo("🌐 Starting HistoCore Web Interface...")
 
     try:
-        from src.security.network_binding import NetworkBindingManager
+        from src.platform.security.network_binding import NetworkBindingManager
         from src.web.app import app
 
         safe_host = NetworkBindingManager.get_safe_host()

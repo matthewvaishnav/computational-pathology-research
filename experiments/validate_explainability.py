@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from src.foundation.multi_disease_model import create_foundation_model
-from src.explainability.vision_language_explainer import VisionLanguageExplainer
+from src.features.interpretability.advanced.vision_language_explainer import VisionLanguageExplainer
 from src.training.train_pcam import PCamDataset
 
 

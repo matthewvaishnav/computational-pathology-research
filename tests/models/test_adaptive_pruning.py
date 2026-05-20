@@ -11,7 +11,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.models.adaptive_pruning import AdaptivePruning, ImportanceScorer, PrunedTransMIL
+from src.models.transnnmil.adaptive_pruning import AdaptivePruning, ImportanceScorer, PrunedTransMIL
 
 
 class TestImportanceScorer:

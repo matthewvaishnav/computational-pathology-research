@@ -9,7 +9,7 @@ import torch
 
 def test_gnn_non_contiguous_batch():
     """Test that GNN fallback handles non-contiguous batch indices."""
-    from src.cells.gnn import _global_mean_pool_fallback
+    from src.features.advanced.cells.gnn import _global_mean_pool_fallback
 
     # Create features with non-contiguous batch indices
     x = torch.randn(6, 16)
@@ -27,7 +27,7 @@ def test_gnn_non_contiguous_batch():
 
 def test_omics_fusion_all_masked():
     """Test that MultiOmicsFusion handles all-masked samples without NaN."""
-    from src.omics.fusion import MultiOmicsFusion
+    from src.features.advanced.omics.fusion import MultiOmicsFusion
 
     fusion = MultiOmicsFusion(embed_dim=32, num_heads=2, output_dim=32)
     fusion.eval()
@@ -54,7 +54,7 @@ def test_omics_fusion_all_masked():
 
 def test_ipw_stabilization():
     """Test that IPW estimator handles extreme propensity scores."""
-    from src.causal.estimators import IPWEstimator
+    from src.features.advanced.causal.estimators import IPWEstimator
 
     # Create synthetic data with some extreme propensity scores
     np.random.seed(42)
@@ -76,7 +76,7 @@ def test_ipw_stabilization():
 
 def test_hypothesis_generator_timeout():
     """Test that HypothesisGenerator accepts timeout parameter."""
-    from src.hypothesis.generator import HypothesisGenerator
+    from src.features.research.testing.generator import HypothesisGenerator
 
     # Should accept timeout parameter without error
     gen = HypothesisGenerator(api_key="test-key")
@@ -91,7 +91,7 @@ def test_hypothesis_generator_timeout():
 
 def test_hypothesis_generator_fence_parsing():
     """Test robust markdown fence parsing."""
-    from src.hypothesis.generator import HypothesisGenerator
+    from src.features.research.testing.generator import HypothesisGenerator
 
     gen = HypothesisGenerator(api_key="test-key")
 
@@ -141,7 +141,7 @@ def test_spatial_chunked_loading():
 
 def test_delaunay_specific_exceptions():
     """Test that Delaunay exception handling is specific."""
-    from src.cells.graph import CellGraphBuilder
+    from src.features.advanced.cells.graph import CellGraphBuilder
 
     builder = CellGraphBuilder(k=5, use_delaunay=True)
 
