@@ -324,6 +324,7 @@ dist/
 
 # Temporary test/debug scripts (root level only)
 /test_*.py
+/test_*.html
 /check_*.py
 /quick_*.py
 /setup_*.py
@@ -331,6 +332,18 @@ bandit*.json
 safety_results.json
 security*.json
 security*.html
+
+# Temporary output files
+/output.txt
+/overnight_*.log
+/demo_output/
+/demo_ablation_results/
+/outputs/
+
+# Generated coverage reports
+/htmlcov/
+/coverage.xml
+/coverage_reports/
 
 # Generated index files
 **/slide_index.json
