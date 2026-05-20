@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..models.temporal import CrossSlideTemporalReasoner
+from ....models.temporal import CrossSlideTemporalReasoner
 from .patient_context import ClinicalMetadata
 
 logger = logging.getLogger(__name__)

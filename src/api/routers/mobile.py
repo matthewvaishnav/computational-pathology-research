@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from src.database import get_db_session
+from src.platform.database import get_db_session
 
 # Setup logging
 logger = logging.getLogger(__name__)

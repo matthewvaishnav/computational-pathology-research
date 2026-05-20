@@ -58,7 +58,7 @@ class TestMobileRouterComponents:
             content = f.read()
 
         # Check for database imports
-        assert "from src.database import" in content
+        assert "from src.platform.database import" in content
         assert "get_db_session" in content
 
     def test_mobile_router_dependencies_imports(self):

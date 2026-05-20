@@ -26,7 +26,7 @@ from src.api.security import (
     verify_password,
 )
 from src.api.validators import validate_email, validate_password
-from src.database import UserOperations, get_db_session
+from src.platform.database import UserOperations, get_db_session
 
 logger = logging.getLogger(__name__)
 

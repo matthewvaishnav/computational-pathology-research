@@ -24,7 +24,7 @@ import torch
 from sklearn.metrics import accuracy_score, calibration_curve, roc_auc_score
 
 from ..data.wsi_pipeline.batch_processor import BatchProcessor
-from ..models.attention_mil import AttentionMIL
+from ..models.mil.attention_mil import AttentionMIL
 from ..utils.config import StreamingConfig
 from .attention_aggregator import StreamingAttentionAggregator
 from .gpu_pipeline import GPUPipeline

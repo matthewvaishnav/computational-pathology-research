@@ -57,7 +57,7 @@ class TestAdminRouterComponents:
             content = f.read()
 
         # Check for database imports
-        assert "from src.database import" in content
+        assert "from src.platform.database import" in content
         assert "AuditOperations" in content
         assert "UserOperations" in content
         assert "get_db_session" in content

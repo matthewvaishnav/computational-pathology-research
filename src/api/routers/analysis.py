@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from src.api.dependencies import get_current_user, get_inference_engine
 from src.api.security import limiter, log_security_event, sanitize_for_log
 from src.api.validators import validate_file_upload, validate_limit
-from src.database import (
+from src.platform.database import (
     AnalysisOperations,
     CaseOperations,
     get_db_session,

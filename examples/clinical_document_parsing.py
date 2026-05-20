@@ -6,7 +6,7 @@ information from clinical notes, including diagnoses, medications, procedures,
 and observations, with negation and uncertainty detection.
 """
 
-from src.clinical import ClinicalDocumentParser, ClinicalMetadata, SmokingStatus, Sex
+from src.features.clinical.workflow import ClinicalDocumentParser, ClinicalMetadata, SmokingStatus, Sex
 
 
 def main():

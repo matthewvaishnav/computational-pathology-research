@@ -45,7 +45,7 @@ from src.api.security import (
 )
 
 # Database and monitoring
-from src.database import DatabaseManager, initialize_database
+from src.platform.database import DatabaseManager, initialize_database
 from src.platform.monitoring.tracing import get_tracer
 
 # Setup logging
