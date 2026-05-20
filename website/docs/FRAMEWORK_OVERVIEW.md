@@ -9,7 +9,7 @@ description: High-level orientation to the HistoCore platform architecture and m
 
 ## What Problem Does HistoCore Solve?
 
-### The Medical AI Challenge
+### The $50 Billion Medical AI Problem
 
 **Current Reality:**
 - 🏥 **Rural hospital** with 1 pathologist analyzing 500 cases/year
@@ -33,7 +33,7 @@ Traditional Federated Learning:
 
 HistoCore DMI:
 [Rural Hospital] ──┐ (weight: 1.12x)
-                   ├── [AI Model] ──> 78.5% rare cancer accuracy  
+                   ├── [AI Model] ──> 78.5% rare cancer accuracy
 [Mayo Clinic]   ──┘ (weight: 9.65x)
    (Medical expertise weighting)
 ```

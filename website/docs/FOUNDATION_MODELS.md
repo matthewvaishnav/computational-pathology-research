@@ -55,6 +55,37 @@ python scripts/download_foundation_models.py --list
 
 ---
 
+## Claude 3.5 Sonnet Integration
+
+HistoCore now integrates with **Claude 3.5 Sonnet** via Puter.js, providing an intelligent research assistant for hypothesis generation, report analysis, and code explanation.
+
+### 1. Interactive Research Assistant
+
+The HistoCore documentation website includes an interactive Claude Research Assistant. This tool can be used to generate research hypotheses, explain model architectures, or assist with clinical validation strategies.
+
+### 2. Python Research Client
+
+For automated research workflows, a Python client is provided in `scripts/puter_claude_client.py`.
+
+```python
+from scripts.puter_claude_client import PuterClaudeClient
+
+# Initialize client (requires PUTER_AUTH_TOKEN)
+client = PuterClaudeClient()
+
+# Ask for research insights
+prompt = "Suggest three potential downstream tasks for Phikon features in prostate cancer analysis."
+response = client.chat(prompt)
+print(response)
+```
+
+**Setup:**
+1. Obtain a Puter Auth Token from the [Puter Dashboard](https://puter.com/dashboard).
+2. Set the `PUTER_AUTH_TOKEN` environment variable.
+3. Refer to PUTER_SETUP.md for detailed instructions.
+
+---
+
 ## Model Comparison
 
 ### Performance Metrics
@@ -81,11 +112,11 @@ python experiments/benchmark_foundation_models.py \
 ```
 Foundation Model Benchmark Summary
 ================================================================================
-Model                Speed (ms)      Memory (MB)     Accuracy    AUC         
+Model                Speed (ms)      Memory (MB)     Accuracy    AUC
 --------------------------------------------------------------------------------
-uni                  45.23           2048.5          0.9234      0.9567      
-phikon               38.67           1536.2          0.9156      0.9489      
-resnet50_imagenet    18.45           512.8           0.8567      0.8923      
+uni                  45.23           2048.5          0.9234      0.9567
+phikon               38.67           1536.2          0.9156      0.9489
+resnet50_imagenet    18.45           512.8           0.8567      0.8923
 ================================================================================
 ```
 
@@ -182,10 +213,10 @@ extractor, wsi_encoder = create_wsi_encoder_with_pretrained(
 for batch in dataloader:
     # Extract patch features
     patch_features = extractor(batch['patches'])
-    
+
     # Aggregate to slide-level
     slide_embedding = wsi_encoder(patch_features)
-    
+
     # Classification
     logits = task_head(slide_embedding)
 ```

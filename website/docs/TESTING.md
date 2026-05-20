@@ -129,7 +129,7 @@ The live repository now includes dedicated property-based suites for the nnMIL a
   - API compatibility between TransMIL and nnMIL
   - Checkpoint migration and weight-transfer behavior
 
-Together, these suites document the current correctness contract for migration, inference, training, and adapter behavior instead of relying only on conventional unit tests.
+These suites document the current correctness contract for migration, inference, training, and adapter behavior instead of relying only on conventional unit tests.
 
 ### 3. Integration Tests (50+ tests)
 
@@ -473,7 +473,7 @@ Found a bug or test failure? Please report it:
 
 ### Contributing Tests
 
-Want to contribute tests? See [CONTRIBUTING.md](https://github.com/matthewvaishnav/computational-pathology-research/blob/main/CONTRIBUTING.md) for guidelines.
+Want to contribute tests? See CONTRIBUTING.md for guidelines.
 
 **Test Contribution Checklist**:
 - [ ] Test follows naming convention (`test_*.py`)
@@ -489,14 +489,14 @@ Want to contribute tests? See [CONTRIBUTING.md](https://github.com/matthewvaishn
 
 ### Testing Excellence
 
-✅ **Comprehensive Coverage**: 3,171 tests across all framework components  
-✅ **Production Quality**: 55% code coverage with focus on critical paths  
-✅ **Clinical Validation**: Real-world performance validated on 262K+ samples  
-✅ **Continuous Integration**: Automated testing on every commit  
-✅ **Multi-Platform**: Ubuntu, macOS, Windows support  
-✅ **Property-Based**: 100+ Hypothesis tests for edge cases  
-✅ **Performance Validated**: 8-12x training speedup, &lt;5s inference  
-✅ **Reproducible**: Deterministic results with fixed seeds  
+✅ **Comprehensive Coverage**: 3,171 tests across all framework components
+✅ **Production Quality**: 55% code coverage with focus on critical paths
+✅ **Clinical Validation**: Real-world performance validated on 262K+ samples
+✅ **Continuous Integration**: Automated testing on every commit
+✅ **Multi-Platform**: Ubuntu, macOS, Windows support
+✅ **Property-Based**: 100+ Hypothesis tests for edge cases
+✅ **Performance Validated**: 8-12x training speedup, &lt;5s inference
+✅ **Reproducible**: Deterministic results with fixed seeds
 
 ### Confidence Level
 
@@ -517,7 +517,7 @@ Want to contribute tests? See [CONTRIBUTING.md](https://github.com/matthewvaishn
 
 ---
 
-**Last Updated**: 2026-04-28  
-**Test Count**: 3,006 passing  
-**Coverage**: 55%  
+**Last Updated**: 2026-04-28
+**Test Count**: 3,006 passing
+**Coverage**: 55%
 **Status**: ✅ All systems operational
