@@ -14,7 +14,7 @@ Usage:
     # Precompute graphs
     cache = GraphCache(cache_dir='data/graph_cache', k=8)
     cache.build_cache(dataset, coords_key='coords', features_key='features')
-    
+
     # Load during training
     edge_index, edge_attr = cache.load_graph(slide_id)
 
@@ -48,10 +48,10 @@ class GraphCache:
 
     Example:
         >>> cache = GraphCache(cache_dir='data/graph_cache', k=8)
-        >>> 
+        >>>
         >>> # Build cache
         >>> cache.build_cache(dataset)
-        >>> 
+        >>>
         >>> # Load graph
         >>> edge_index, edge_attr = cache.load_graph('slide_001')
     """
@@ -149,7 +149,9 @@ class GraphCache:
                 grp.create_dataset("edge_index", data=edge_index.cpu().numpy(), compression="gzip")
 
                 if edge_attr is not None:
-                    grp.create_dataset("edge_attr", data=edge_attr.cpu().numpy(), compression="gzip")
+                    grp.create_dataset(
+                        "edge_attr", data=edge_attr.cpu().numpy(), compression="gzip"
+                    )
 
                 # Metadata
                 metadata[slide_id] = {

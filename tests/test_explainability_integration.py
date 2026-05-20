@@ -13,7 +13,11 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.features.interpretability.advanced.case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery
+from src.features.interpretability.advanced.case_based_reasoning import (
+    CaseDatabase,
+    CaseMetadata,
+    RetrievalQuery,
+)
 from src.features.interpretability.advanced.counterfactual_explanations import (
     BiologicalPlausibilityValidator,
     CounterfactualExplanationSystem,

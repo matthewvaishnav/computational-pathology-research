@@ -14,7 +14,11 @@ try:
 except ImportError:
     FLASK_AVAILABLE = False
 
-from src.features.interpretability.gradcam.dashboard import InMemoryCache, InterpretabilityDashboard, start_dashboard
+from src.features.interpretability.gradcam.dashboard import (
+    InMemoryCache,
+    InterpretabilityDashboard,
+    start_dashboard,
+)
 
 
 class TestInMemoryCache:

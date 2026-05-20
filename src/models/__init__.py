@@ -1,7 +1,12 @@
 """Neural network model definitions."""
 
 from src.models.mil.attention_mil import CLAM, AttentionMIL
-from src.models.baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
+from src.models.baselines import (
+    AttentionBaseline,
+    LateFusionModel,
+    SingleModalityModel,
+    get_baseline_model,
+)
 from src.models.components.encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
 from src.models.foundation import (
     CONCHEncoder,

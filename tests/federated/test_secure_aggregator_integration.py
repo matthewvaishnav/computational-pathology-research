@@ -8,7 +8,10 @@ federated learning infrastructure without requiring TenSEAL.
 import pytest
 import torch
 
-from src.features.federated.pathology_fl.aggregator.factory import AggregatorFactory, create_aggregator
+from src.features.federated.pathology_fl.aggregator.factory import (
+    AggregatorFactory,
+    create_aggregator,
+)
 from src.features.federated.pathology_fl.aggregator.secure import SecureAggregator
 from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 

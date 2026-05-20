@@ -20,7 +20,11 @@ from src.features.clinical.workflow.privacy import (
     Role,
     UserSession,
 )
-from src.features.clinical.workflow.regulatory import ComplianceValidator, RegulatoryFramework, RiskLevel
+from src.features.clinical.workflow.regulatory import (
+    ComplianceValidator,
+    RegulatoryFramework,
+    RiskLevel,
+)
 
 logger = logging.getLogger(__name__)
 
