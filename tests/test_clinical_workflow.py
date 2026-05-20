@@ -11,8 +11,12 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.features.research.annotation.workflow.active_learning_connector import ActiveLearningConnector
-from src.features.research.annotation.workflow.clinical_integration import ClinicalWorkflowIntegrator
+from src.features.research.annotation.workflow.active_learning_connector import (
+    ActiveLearningConnector,
+)
+from src.features.research.annotation.workflow.clinical_integration import (
+    ClinicalWorkflowIntegrator,
+)
 from src.features.research.annotation.workflow.notification_service import (
     NotificationChannel,
     NotificationPriority,

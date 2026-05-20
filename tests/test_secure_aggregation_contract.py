@@ -4,7 +4,10 @@ import pytest
 import torch
 
 from src.features.federated.pathology_fl.aggregator.secure import SecureAggregator
-from src.features.federated.pathology_fl.common.data_models import ClientUpdate, EncryptedClientUpdate
+from src.features.federated.pathology_fl.common.data_models import (
+    ClientUpdate,
+    EncryptedClientUpdate,
+)
 
 
 def _secure_aggregator_with_protocol(protocol):

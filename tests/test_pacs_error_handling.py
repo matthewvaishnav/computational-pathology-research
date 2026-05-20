@@ -23,7 +23,11 @@ from src.features.clinical.workflow.pacs.error_handling import (
     PACSAuthenticationError,
     PACSConnectionError,
 )
-from src.features.clinical.workflow.pacs.failover import CircuitBreaker, CircuitState, FailoverManager
+from src.features.clinical.workflow.pacs.failover import (
+    CircuitBreaker,
+    CircuitState,
+    FailoverManager,
+)
 
 # ---------------------------------------------------------------------------
 # Shared fixtures / helpers

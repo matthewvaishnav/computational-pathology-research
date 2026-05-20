@@ -14,12 +14,12 @@ from src.features.research.testing.generator import HypothesisGenerator, create_
 def test_ollama_timeout_parameter():
     """Test that create_ollama_llm passes timeout to requests.post()."""
     llm_fn = create_ollama_llm(timeout=60)
-    
+
     with patch("requests.post") as mock_post:
         mock_post.return_value.json.return_value = {"message": {"content": "test response"}}
-        
+
         llm_fn("system prompt", "user prompt")
-        
+
         # Verify timeout passed correctly
         assert mock_post.call_args[1]["timeout"] == 60
 
@@ -27,12 +27,12 @@ def test_ollama_timeout_parameter():
 def test_ollama_timeout_default():
     """Test that create_ollama_llm uses 30s default timeout."""
     llm_fn = create_ollama_llm()
-    
+
     with patch("requests.post") as mock_post:
         mock_post.return_value.json.return_value = {"message": {"content": "test response"}}
-        
+
         llm_fn("system prompt", "user prompt")
-        
+
         # Verify default timeout
         assert mock_post.call_args[1]["timeout"] == 30
 
@@ -40,10 +40,10 @@ def test_ollama_timeout_default():
 def test_ollama_timeout_exception():
     """Test that timeout exception is raised when request times out."""
     llm_fn = create_ollama_llm(timeout=1)
-    
+
     with patch("requests.post") as mock_post:
         mock_post.side_effect = requests.exceptions.Timeout("Request timed out")
-        
+
         with pytest.raises(requests.exceptions.Timeout):
             llm_fn("system prompt", "user prompt")
 

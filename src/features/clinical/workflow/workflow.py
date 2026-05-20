@@ -17,7 +17,10 @@ from src.features.clinical.workflow.audit import AuditLogger
 from src.features.clinical.workflow.classifier import MultiClassDiseaseClassifier
 from src.features.clinical.workflow.longitudinal import LongitudinalTracker, ScanRecord
 from src.features.clinical.workflow.ood_detection import OODDetector
-from src.features.clinical.workflow.patient_context import ClinicalMetadata, PatientContextIntegrator
+from src.features.clinical.workflow.patient_context import (
+    ClinicalMetadata,
+    PatientContextIntegrator,
+)
 from src.features.clinical.workflow.privacy import PrivacyManager
 from src.features.clinical.workflow.reporting import ClinicalReportGenerator
 from src.features.clinical.workflow.risk_analysis import RiskAnalyzer

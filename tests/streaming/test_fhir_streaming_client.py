@@ -5,7 +5,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.features.clinical.workflow.fhir_adapter import DiagnosticReportData, PatientClinicalMetadata
+from src.features.clinical.workflow.fhir_adapter import (
+    DiagnosticReportData,
+    PatientClinicalMetadata,
+)
 from src.streaming.fhir_streaming_client import FHIRStreamingClient, StreamingDiagnosticReport
 from src.streaming.pacs_wsi_client import AnalysisResult
 
