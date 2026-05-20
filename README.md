@@ -133,32 +133,37 @@ global_model = weighted_average(models, combined_weights)
 ```
 WSI Pipeline → Patches → MIL Model → Slide Features → DMI/FL → Clinical Decision
      ↓            ↓          ↓             ↓            ↓            ↓
-  data/        data/     models/      training/    federated/   clinical/
+  data/wsi/   data/      models/      training/    features/    features/
+              loaders/   mil/                      federated/   clinical/
 ```
 
-**Core models:**
-- Attention-based MIL (nnMIL, AttentionMIL, CLAM, TransMIL, TransnnMIL)
-- TransnnMIL v2.0: Hierarchical pooling + topology branch (GNN)
-- WSI processing pipeline (OpenSlide: .svs, .tiff, .ndpi, DICOM)
-- Model interpretability (Grad-CAM, attention heatmaps)
-- Training optimizations (torch.compile, AMP, channels_last)
+**Hybrid Architecture:** Core layers (data, models, training, inference) + domain features (federated, clinical, interpretability, research, advanced)
 
-**Federated Learning:**
-- PathologyFL with expertise-weighted aggregation
-- Production security (DP-SGD, secure aggregation with TenSEAL, Byzantine robustness)
-- Multi-institutional AI training without sharing patient data
-- HIPAA-compliant federated learning with audit logging
+**Core layers:**
+- `core/` - Shared infrastructure (config, utils, exceptions, constants)
+- `data/` - Data handling (loaders, datasets, WSI pipeline, preprocessing)
+- `models/` - Model architectures (MIL, TransnnMIL, components, foundation)
+- `training/` - Training infrastructure (loops, optimizers, distributed)
+- `inference/` - Inference engine (serving, quantization, streaming)
 
-**Clinical integration:**
-- PACS connectivity (DICOM C-FIND/C-MOVE/C-STORE)
-- FHIR adapter for patient metadata
-- Longitudinal analysis and patient context
+**Domain features:**
+- `features/federated/` - PathologyFL + DMI (privacy-preserving collaboration)
+- `features/clinical/` - PACS, FHIR, workflow (clinical deployment)
+- `features/interpretability/` - Grad-CAM, explainability (model transparency)
+- `features/research/` - Annotation, experiments (research platform)
+- `features/advanced/` - Causal, omics, spatial (advanced analysis)
 
-**Production infrastructure:**
-- FastAPI with JWT authentication
-- Input validation, SQL parameterization
-- WebSocket streaming for real-time inference
-- Docker/K8s deployment configs
+**Platform services:**
+- `api/` - REST API (FastAPI, JWT auth, validation)
+- `platform/` - Monitoring, security, database, deployment, cloud integration
+
+**Key capabilities:**
+- Attention-based MIL (nnMIL, AttentionMIL, CLAM, TransMIL, TransnnMIL v2.0)
+- Foundation model integration (Phikon, UNI, CONCH)
+- WSI processing (OpenSlide: .svs, .tiff, .ndpi, DICOM)
+- Federated learning (PathologyFL + DMI with DP-SGD, secure aggregation)
+- Clinical integration (PACS, FHIR, audit logging)
+- Production ready (Docker/K8s, monitoring, security hardening)
 
 
 FEDERATED LEARNING INTEGRATION
@@ -211,33 +216,91 @@ DIRECTORY STRUCTURE
 -------------------
 
 src/
-  api/              FastAPI server, JWT auth, input validation
-  models/           MIL implementations (nnMIL, AttentionMIL, CLAM, TransMIL, TransnnMIL)
-                    - hierarchical_pooling.py (spatial clustering + region transformer)
-                    - topology_branch.py (k-NN graph + GNN: GATv2, GraphSAGE, GIN)
-                    - graph_cache.py (precomputed k-NN graphs in HDF5)
-  training/         Training loops, optimizers, distributed training
-  data/             Data loaders, WSI pipeline, preprocessing
-                    - panda_dataset.py (PANDA prostate cancer dataset)
-  federated/        Federated learning integration (PathologyFL, secure aggregation)
-  dmi/              Distributed Medical Intelligence (expertise weighting)
-  clinical/         PACS integration, FHIR adapter, patient context
-  streaming/        Real-time WSI processing, WebSocket server
-  inference/        Model serving, batch inference
-  database/         Connection pooling, parameterized queries
-  utils/            Logging, metrics, visualization
+  core/                         # Core infrastructure
+    config/                     # Configuration management
+    utils/                      # Shared utilities (logging, metrics, validation)
+    constants.py                # Global constants
+    exceptions.py               # Exception hierarchy
+    http_status.py              # HTTP status codes
 
-tests/              5,071 test modules
-docs/               Technical documentation
-scripts/            Deployment, benchmarking, data preparation
-                    - download_panda.py (PANDA dataset download)
-                    - extract_panda_features_openslide.py (feature extraction)
-                    - visualize_graph.py (k-NN graph visualization)
-experiments/        Experiment configs and results
-                    - train_panda.py (PANDA training pipeline)
-                    - train_colorectal.py (colorectal cancer pipeline)
-                    - evaluate_panda.py (PANDA evaluation)
-k8s/                Kubernetes manifests
+  data/                         # Data layer
+    loaders/                    # Data loaders (bag samplers, batch samplers)
+    datasets/                   # Dataset implementations (PCam, PANDA, Camelyon)
+    wsi/                        # WSI pipeline, streaming, format handlers
+    preprocessing/              # Stain normalization, preprocessing
+
+  models/                       # Model architectures
+    mil/                        # Standard MIL (nnMIL, AttentionMIL, CLAM, TransMIL)
+    transnnmil/                 # TransnnMIL v2.0 (3-branch architecture)
+      - hierarchical_pooling.py # Spatial clustering + region transformer
+      - topology_branch.py      # k-NN graph + GNN (GATv2, GraphSAGE, GIN)
+      - graph_cache.py          # Precomputed k-NN graphs in HDF5
+      - adaptive_pruning.py     # 30% computation reduction
+    components/                 # Shared components (attention, encoders, heads, fusion)
+    foundation/                 # Foundation models (Phikon, UNI, CONCH)
+
+  training/                     # Training infrastructure
+                                # Training loops, optimizers, distributed training (DDP, FSDP)
+
+  inference/                    # Inference engine
+                                # Model serving, batch inference, quantization
+
+  features/                     # Domain features
+    federated/                  # Federated learning
+      pathology_fl/             # PathologyFL (domain-specific FL)
+      dmi/                      # Distributed Medical Intelligence (expertise weighting)
+      cpi/                      # Collaborative Pathology Intelligence
+      imr/                      # Intelligent Medical Referee
+      mkn/                      # Medical Knowledge Network
+
+    clinical/                   # Clinical integration
+      workflow/                 # Clinical workflow, FHIR adapter, patient context
+      pacs/                     # DICOM integration (C-FIND/C-MOVE/C-STORE)
+      validation/               # Clinical validation, bias detection
+
+    interpretability/           # Explainability
+      gradcam/                  # Grad-CAM implementation
+      advanced/                 # Advanced explainability (counterfactuals, uncertainty)
+      visualization/            # Attention heatmaps, timeline visualization
+
+    research/                   # Research platform
+      annotation/               # Annotation interface
+      experiment/               # Experiment tracking (MLflow, W&B, DVC)
+      testing/                  # Hypothesis testing
+
+    advanced/                   # Advanced features
+      causal/                   # Causal inference
+      discovery/                # Subtype discovery
+      omics/                    # Multi-omics integration
+      spatial/                  # Spatial analysis
+      cells/                    # Cell detection and GNN
+      multiscale/               # Multiscale analysis
+      segmentation/             # Nucleus segmentation
+
+  api/                          # REST API
+                                # FastAPI server, JWT auth, input validation
+
+  platform/                     # Platform services
+    monitoring/                 # Metrics, tracing, health checks
+    security/                   # Security utilities, rate limiting
+    database/                   # Connection pooling, parameterized queries
+    deployment/                 # Deployment utilities, validation
+    cloud/                      # Cloud integration (AWS, Azure)
+    integration/                # External integrations (EMR, LIS, scanners)
+
+  streaming/                    # Real-time WSI processing, WebSocket server
+
+tests/                          # 5,071+ test modules
+docs/                           # Technical documentation
+scripts/                        # Deployment, benchmarking, data preparation
+  - download_panda.py           # PANDA dataset download
+  - extract_panda_features_openslide.py  # Feature extraction
+  - visualize_graph.py          # k-NN graph visualization
+experiments/                    # Experiment configs and results
+  - train_panda.py              # PANDA training pipeline
+  - train_colorectal.py         # Colorectal cancer pipeline
+  - evaluate_panda.py           # PANDA evaluation
+k8s/                            # Kubernetes manifests
 ```
 
 ## 🚀 Quick Start
@@ -261,6 +324,29 @@ pip install -e .
 ### Basic Usage
 
 ```python
+# Import core utilities
+from src.core import constants, exceptions
+from src.core.config import ExperimentConfig
+
+# Load data
+from src.data.datasets import PCamDataset
+from src.data.loaders import create_bag_dataloader
+
+# Load model
+from src.models.mil import nnMIL, AttentionMIL
+from src.models.transnnmil import TransnnMILv2
+
+# Train
+from src.training import Trainer
+
+# Federated learning
+from src.features.federated.pathology_fl import PathologyFLAggregator
+from src.features.federated.dmi import DMICoordinator
+
+# Clinical integration
+from src.features.clinical.pacs import PACSClient
+from src.features.clinical.workflow import ClinicalWorkflow
+```
 
 
 INSTALLATION
@@ -416,7 +502,7 @@ API server:
 
 Database setup:
 
-    from src.database.connection import DatabaseManager
+    from src.platform.database.connection import DatabaseManager
     db = DatabaseManager(
         database_url="postgresql://user:pass@localhost/db",
         pool_size=10,
@@ -425,16 +511,16 @@ Database setup:
 
 DMI deployment (multi-center):
 
-    python -m src.dmi.coordinator --config configs/dmi/coordinator.yaml
-    python -m src.dmi.client --config configs/dmi/client.yaml
+    python -m src.features.federated.dmi.coordinator --config configs/dmi/coordinator.yaml
+    python -m src.features.federated.dmi.client --config configs/dmi/client.yaml
 
 Federated learning deployment:
 
     # Start FL coordinator
-    python -m src.federated.coordinator --config configs/fl/coordinator.yaml
+    python -m src.features.federated.pathology_fl.coordinator --config configs/fl/coordinator.yaml
     
     # Start hospital clients
-    python -m src.federated.client --config configs/fl/hospital_client.yaml
+    python -m src.features.federated.pathology_fl.client --config configs/fl/hospital_client.yaml
 
 
 CONFIGURATION
