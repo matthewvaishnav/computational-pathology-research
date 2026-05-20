@@ -215,6 +215,7 @@ See SECURITY.md for vulnerability reporting and security policies.
 DIRECTORY STRUCTURE
 -------------------
 
+```
 src/
   core/                         # Core infrastructure
     config/                     # Configuration management
