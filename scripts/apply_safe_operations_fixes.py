@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 # Add safe_operations import to files that need it
-IMPORT_STATEMENT = "from src.utils.safe_operations import "
+IMPORT_STATEMENT = "from src.core.utils.safe_operations import "
 
 # Files and their required fixes
 FIXES = {
@@ -19,7 +19,7 @@ FIXES = {
         "replacements": [
             {
                 "old": "with sqlite3.connect(self.db_path) as conn:",
-                "new": "from src.utils.safe_operations import safe_db_transaction\n        with safe_db_transaction(Path(self.db_path)) as conn:",
+                "new": "from src.core.utils.safe_operations import safe_db_transaction\n        with safe_db_transaction(Path(self.db_path)) as conn:",
             }
         ],
     },
@@ -38,7 +38,7 @@ FIXES = {
         "replacements": [
             {
                 "old": "response = requests.get(url, stream=True, timeout=30)",
-                "new": "from src.utils.safe_operations import fetch_with_retry\n    response = fetch_with_retry(url, timeout=60, stream=True)",
+                "new": "from src.core.utils.safe_operations import fetch_with_retry\n    response = fetch_with_retry(url, timeout=60, stream=True)",
             }
         ],
     },
@@ -47,7 +47,7 @@ FIXES = {
         "replacements": [
             {
                 "old": "response = requests.get(url, stream=True, timeout=30)",
-                "new": "from src.utils.safe_operations import fetch_with_retry\n            response = fetch_with_retry(url, timeout=60, stream=True)",
+                "new": "from src.core.utils.safe_operations import fetch_with_retry\n            response = fetch_with_retry(url, timeout=60, stream=True)",
             }
         ],
     },
@@ -57,7 +57,7 @@ FIXES = {
 def add_import_if_needed(content: str, imports: list) -> str:
     """Add imports if not already present."""
     for imp in imports:
-        import_line = f"from src.utils.safe_operations import {imp}"
+        import_line = f"from src.core.utils.safe_operations import {imp}"
         if import_line not in content:
             # Add after other imports
             lines = content.split('\n')

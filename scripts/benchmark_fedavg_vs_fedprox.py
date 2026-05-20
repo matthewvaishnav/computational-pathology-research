@@ -16,9 +16,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, ".")
-from src.federated.common.data_models import ClientUpdate
-from src.federated.aggregator.fedavg import FedAvgAggregator
-from src.federated.aggregator.fedprox import FedProxAggregator
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+from src.features.federated.pathology_fl.aggregator.fedprox import FedProxAggregator
 
 SEED = 42
 random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)

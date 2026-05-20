@@ -36,7 +36,7 @@ try:
 except ImportError:
     PLOTLY_AVAILABLE = False
 
-from src.models.hierarchical_pooling import HierarchicalPooling
+from src.models.transnnmil.hierarchical_pooling import HierarchicalPooling
 
 
 def visualize_regions_matplotlib(

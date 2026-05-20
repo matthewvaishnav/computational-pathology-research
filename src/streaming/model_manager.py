@@ -24,7 +24,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from src.utils.safe_threading import TimeoutLock
+from src.core.utils.safe_threading import TimeoutLock
 
 from .metrics import record_processing_time, timed_operation
 

@@ -18,8 +18,8 @@ from cryptography.fernet import Fernet
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.configuration_manager import ConfigurationManager
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.configuration_manager import ConfigurationManager
+from src.features.clinical.workflow.pacs.data_models import (
     PACSConfiguration,
     PACSEndpoint,
     PACSVendor,

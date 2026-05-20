@@ -36,7 +36,7 @@ import torch.nn as nn
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.models.heads import ClassificationHead, SurvivalPredictionHead
+from src.models.components.heads import ClassificationHead, SurvivalPredictionHead
 from src.models.multimodal import MultimodalFusionModel
 
 DEFAULT_WSI_NUM_PATCHES = 100

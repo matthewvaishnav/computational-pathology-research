@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.exceptions import CacheError, CacheSerializationError
+from src.core.exceptions import CacheError, CacheSerializationError
 
 pytestmark = pytest.mark.skip(reason="Requires OpenSlide DLL")
 

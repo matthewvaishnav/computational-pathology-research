@@ -9,7 +9,7 @@ import torch
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
-from src.streaming.wsi_stream_reader import TileBatch
+from src.data.wsi.streaming import TileBatch
 
 
 @st.composite

@@ -2,8 +2,8 @@
 
 import torch
 
-from src.federated.privacy import dp_sgd
-from src.federated.privacy.secure_aggregation import SecureAggregationClient
+from src.features.federated.pathology_fl.privacy import dp_sgd
+from src.features.federated.pathology_fl.privacy.secure_aggregation import SecureAggregationClient
 
 
 def test_secure_client_packages_encrypted_update_metadata(monkeypatch):

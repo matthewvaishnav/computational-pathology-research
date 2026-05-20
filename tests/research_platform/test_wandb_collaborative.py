@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.research_platform.wandb_integration import (
+from src.features.research.experiment.wandb_integration import (
     CollaboratorInfo,
     ExperimentTemplate,
     ProjectVisibility,

@@ -16,10 +16,10 @@ from typing import Dict
 import torch
 import torch.nn as nn
 
-from .attention_mil import AttentionMIL
-from .clam import CLAM
-from .transmil import TransMIL
-from .transnnmil import TransnnMIL
+from src.models.mil.attention_mil import AttentionMIL
+from src.models.mil.clam import CLAM
+from src.models.mil.transmil import TransMIL
+from src.models.transnnmil.transnnmil import TransnnMIL
 
 logger = logging.getLogger(__name__)
 

@@ -42,7 +42,7 @@ class SecurityVerifier:
         try:
             # Check if SecureJinja2Environment exists
             try:
-                from src.security.jinja2_control import SecureJinja2Environment
+                from src.platform.security.jinja2_control import SecureJinja2Environment
                 env = SecureJinja2Environment.create_environment()
                 
                 if not env.autoescape:
@@ -67,8 +67,8 @@ class SecurityVerifier:
         
         try:
             try:
-                from src.security.network_binding import NetworkBindingManager
-                from src.security.config import SecurityConfigManager
+                from src.platform.security.network_binding import NetworkBindingManager
+                from src.platform.security.config import SecurityConfigManager
                 
                 config = SecurityConfigManager.from_environment()
                 manager = NetworkBindingManager(config)
@@ -101,8 +101,8 @@ class SecurityVerifier:
         
         try:
             try:
-                from src.security.model_download import ModelDownloadManager
-                from src.security.config import SecurityConfigManager
+                from src.platform.security.model_download import ModelDownloadManager
+                from src.platform.security.config import SecurityConfigManager
                 
                 config = SecurityConfigManager.from_environment()
                 manager = ModelDownloadManager(config)
@@ -119,7 +119,7 @@ class SecurityVerifier:
                 return True
             except ImportError:
                 # Check if model_download.py exists with basic functionality
-                from src.security.model_download import ModelDownloadManager
+                from src.platform.security.model_download import ModelDownloadManager
                 print("  ✅ ModelDownloadManager exists")
                 return True
             
@@ -134,7 +134,7 @@ class SecurityVerifier:
         
         try:
             try:
-                from src.security.temp_file import TempFileManager
+                from src.platform.security.temp_file import TempFileManager
                 import tempfile
                 import stat
                 

@@ -36,7 +36,7 @@ class SelfSupervisedPretrainer:
         reconstruction_loss: Reconstruction loss type ('mse' or 'l1') (default: 'mse')
 
     Example:
-        >>> from src.models.encoders import WSIEncoder
+        >>> from src.models.components.encoders import WSIEncoder
         >>> encoder = WSIEncoder(input_dim=1024, output_dim=256)
         >>> pretrainer = SelfSupervisedPretrainer(
         ...     model=encoder,

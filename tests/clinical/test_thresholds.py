@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from src.clinical.thresholds import ClinicalThresholdSystem, ThresholdConfig
+from src.features.clinical.workflow.thresholds import ClinicalThresholdSystem, ThresholdConfig
 
 
 class TestThresholdConfig:

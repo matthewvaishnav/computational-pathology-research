@@ -132,7 +132,7 @@ def train_model(output_dir, num_epochs=20, batch_size=64, learning_rate=1e-3):
     
     # Try to load PCam dataset
     try:
-        from src.data.pcam_dataset import PCamDataset
+        from src.data.datasets.pcam_dataset import PCamDataset
         
         # Create datasets with single-threaded loading
         train_dataset = PCamDataset(

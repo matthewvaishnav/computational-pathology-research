@@ -39,7 +39,7 @@ from sklearn.metrics import (
 from experiments.generate_pcam_interpretability import (
     generate_pcam_interpretability_artifacts as build_pcam_interpretability_artifacts,
 )
-from src.utils.statistical import compute_all_metrics_with_ci
+from src.core.utils.statistical import compute_all_metrics_with_ci
 
 try:
     import matplotlib.pyplot as plt
@@ -49,10 +49,10 @@ try:
 except ImportError:
     PLOT_AVAILABLE = False
 
-from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
-from src.models.encoders import WSIEncoder
-from src.models.feature_extractors import ResNetFeatureExtractor
-from src.models.heads import ClassificationHead
+from src.data.datasets.pcam_dataset import PCamDataset, get_pcam_transforms
+from src.models.components.encoders import WSIEncoder
+from src.models.components.feature_extractors import ResNetFeatureExtractor
+from src.models.components.heads import ClassificationHead
 
 # Configure logging
 logging.basicConfig(

@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.exceptions import (
+from src.core.exceptions import (
     CacheConnectionError,
     CacheError,
     CacheSerializationError,
@@ -100,7 +100,7 @@ class TestDataExceptions:
     @pytest.mark.skip(reason="Requires OpenSlide DLL")
     def test_data_save_error_on_write_failure(self):
         """Test DataSaveError is raised on write failure."""
-        from src.utils.safe_operations import atomic_write
+        from src.core.utils.safe_operations import atomic_write
 
         # Try to write to a read-only location
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -114,7 +114,7 @@ class TestDataExceptions:
     @pytest.mark.skip(reason="Requires OpenSlide DLL")
     def test_data_load_error_on_read_failure(self):
         """Test DataLoadError is raised on read failure."""
-        from src.utils.attention_utils import load_attention_weights
+        from src.core.utils.attention_utils import load_attention_weights
 
         # Try to load from non-existent file
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -134,7 +134,7 @@ class TestResourceExceptions:
     @pytest.mark.skip(reason="Requires OpenSlide DLL")
     def test_disk_space_error_on_check_failure(self):
         """Test DiskSpaceError is raised on disk space check failure."""
-        from src.utils.safe_operations import check_disk_space
+        from src.core.utils.safe_operations import check_disk_space
 
         # Mock shutil.disk_usage to fail
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
@@ -204,7 +204,7 @@ class TestThreadingExceptions:
 
     def test_threading_error_on_thread_failure(self):
         """Test ThreadingError is raised on thread execution failure."""
-        from src.utils.safe_threading import GracefulThread
+        from src.core.utils.safe_threading import GracefulThread
 
         def failing_target(thread):
             raise ValueError("Thread failed")
@@ -226,7 +226,7 @@ class TestValidationExceptions:
         """Test ValidationError is raised on metric computation failure."""
         import numpy as np
 
-        from src.utils.statistical import compute_all_metrics_with_ci
+        from src.core.utils.statistical import compute_all_metrics_with_ci
 
         # Create invalid inputs (mismatched shapes)
         y_true = np.array([0, 1, 0, 1])
@@ -242,7 +242,7 @@ class TestExceptionInheritance:
 
     def test_all_exceptions_inherit_from_histocore_error(self):
         """Test all custom exceptions inherit from HistoCoreError."""
-        from src.exceptions import HistoCoreError
+        from src.core.exceptions import HistoCoreError
 
         exceptions = [
             CacheConnectionError,
@@ -267,7 +267,7 @@ class TestExceptionInheritance:
 
     def test_specific_exceptions_inherit_from_base(self):
         """Test specific exceptions inherit from their base classes."""
-        from src.exceptions import HistoCoreError
+        from src.core.exceptions import HistoCoreError
 
         # Cache exceptions
         assert issubclass(CacheConnectionError, CacheError)

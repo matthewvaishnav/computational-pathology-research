@@ -111,7 +111,7 @@ class TestArchitectureAnalyzer:
             """
 import os
 import sys
-from src.utils import helper
+from src.core.utils import helper
 from src.models.base import BaseModel
 """,
         )
@@ -610,7 +610,7 @@ src/file3.py - A (90.5)
             "src/main.py",
             '''
 import os
-from src.utils import helper
+from src.core.utils import helper
 from src.models.base import BaseModel
 
 class MainClass:

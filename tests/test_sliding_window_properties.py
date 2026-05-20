@@ -17,7 +17,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.data.data_models import Bag
 from src.inference.sliding_window import SlidingWindowInference
-from src.models.nnmil import nnMIL
+from src.models.mil.nnmil import nnMIL
 
 # ============================================================================
 # Property 16: Window Overlap Correctness

@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import torch
 
-from src.data.pcam_dataset import PCamDataset
+from src.data.datasets.pcam_dataset import PCamDataset
 
 
 @pytest.fixture
@@ -107,7 +107,7 @@ def test_evaluation_with_bootstrap_ci_generates_metrics(
     y_prob = np.random.rand(100)
 
     # Compute metrics with CI
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     metrics = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
@@ -149,7 +149,7 @@ def test_bootstrap_ci_bounds_in_output_json(tmp_path):
     y_prob = y_pred.astype(float)
 
     # Compute metrics with CI
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     metrics = compute_all_metrics_with_ci(
         y_true, y_pred, y_prob, n_bootstrap=100, confidence_level=0.95, random_state=42
@@ -182,7 +182,7 @@ def test_bootstrap_ci_bounds_in_output_json(tmp_path):
 
 def test_bootstrap_ci_with_different_sample_sizes(tmp_path):
     """Test bootstrap CI computation with different sample sizes."""
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     for n_samples in [50, 100, 500]:
         np.random.seed(42)
@@ -215,7 +215,7 @@ def test_bootstrap_ci_with_high_accuracy(tmp_path):
     y_pred[error_indices] = 1 - y_pred[error_indices]
     y_prob = y_pred.astype(float)
 
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     metrics = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
@@ -239,7 +239,7 @@ def test_bootstrap_ci_with_low_accuracy(tmp_path):
     y_pred[correct_indices] = y_true[correct_indices]
     y_prob = y_pred.astype(float)
 
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     metrics = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)
 
@@ -255,7 +255,7 @@ def test_bootstrap_config_saved_to_metrics(tmp_path):
     y_pred = np.random.randint(0, 2, size=n_samples)
     y_prob = np.random.rand(n_samples)
 
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     n_bootstrap = 500
     confidence_level = 0.90
@@ -298,7 +298,7 @@ def test_ci_computation_is_deterministic(tmp_path):
     y_pred = np.random.randint(0, 2, size=n_samples)
     y_prob = np.random.rand(n_samples)
 
-    from src.utils.statistical import compute_all_metrics_with_ci
+    from src.core.utils.statistical import compute_all_metrics_with_ci
 
     # First run
     metrics1 = compute_all_metrics_with_ci(y_true, y_pred, y_prob, n_bootstrap=100, random_state=42)

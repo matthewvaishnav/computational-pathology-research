@@ -38,7 +38,7 @@ def pcam_data():
     Returns subset of PCam for faster testing.
     """
     try:
-        from src.data.pcam_dataset import PatchCamelyonDataset
+        from src.data.datasets.pcam_dataset import PatchCamelyonDataset
 
         # Load small subset for testing
         dataset = PatchCamelyonDataset(
@@ -102,8 +102,8 @@ def test_e2e_deploy_coordinator_and_clients(simple_cnn_model, pcam_data):
     """
     import threading
 
-    from src.federated.client.client import FederatedClient
-    from src.federated.coordinator.server import FederatedCoordinator
+    from src.features.federated.pathology_fl.client.client import FederatedClient
+    from src.features.federated.pathology_fl.coordinator.server import FederatedCoordinator
 
     # Configuration
     num_clients = 3
@@ -176,9 +176,9 @@ def test_e2e_train_on_pcam_distributed(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 2.1, 2.2, 2.3**
     """
-    from src.federated.aggregator.fedavg import FedAvgAggregator
-    from src.federated.client.trainer import LocalTrainer
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
+    from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+    from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+    from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -297,9 +297,9 @@ def test_e2e_accuracy_comparison_centralized(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 2.4, 2.5**
     """
-    from src.federated.aggregator.fedavg import FedAvgAggregator
-    from src.federated.client.trainer import LocalTrainer
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
+    from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+    from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+    from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -424,10 +424,10 @@ def test_e2e_measure_bandwidth_usage(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 4.3, 4.4**
     """
-    from src.federated.aggregator.fedavg import FedAvgAggregator
-    from src.federated.client.trainer import LocalTrainer
-    from src.federated.compression.compressor import GradientCompressor
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
+    from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+    from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+    from src.features.federated.pathology_fl.compression.compressor import GradientCompressor
+    from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -500,9 +500,9 @@ def test_e2e_measure_round_time(simple_cnn_model, pcam_data):
 
     **Validates: Requirements 4.5, 4.6**
     """
-    from src.federated.aggregator.fedavg import FedAvgAggregator
-    from src.federated.client.trainer import LocalTrainer
-    from src.federated.coordinator.orchestrator import TrainingOrchestrator
+    from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+    from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+    from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 
     # Configuration
     num_clients = 3
@@ -624,7 +624,7 @@ def measure_bandwidth(
     compression=None,
 ) -> float:
     """Measure total bandwidth usage."""
-    from src.federated.client.trainer import LocalTrainer
+    from src.features.federated.pathology_fl.client.trainer import LocalTrainer
 
     total_bytes = 0
 

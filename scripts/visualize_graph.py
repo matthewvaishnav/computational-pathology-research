@@ -44,8 +44,8 @@ try:
 except ImportError:
     PLOTLY_AVAILABLE = False
 
-from src.models.graph_cache import GraphCache
-from src.models.topology_branch import KNNGraphBuilder
+from src.models.transnnmil.graph_cache import GraphCache
+from src.models.transnnmil.topology_branch import KNNGraphBuilder
 
 
 def visualize_graph_matplotlib(

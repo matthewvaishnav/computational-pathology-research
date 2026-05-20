@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from src.utils.monitoring import (
+from src.core.utils.monitoring import (
     JSONFormatter,
     MetricsTracker,
     ProgressTracker,
@@ -454,7 +454,7 @@ class TestPrometheusMetrics:
     )
     def test_initialization(self):
         """Test Prometheus metrics initialization."""
-        from src.utils.monitoring import PrometheusMetrics
+        from src.core.utils.monitoring import PrometheusMetrics
 
         metrics = PrometheusMetrics()
 
@@ -469,7 +469,7 @@ class TestPrometheusMetrics:
     )
     def test_update_training_metrics(self):
         """Test updating training metrics."""
-        from src.utils.monitoring import PrometheusMetrics
+        from src.core.utils.monitoring import PrometheusMetrics
 
         metrics = PrometheusMetrics()
         metrics.update_training_metrics(train_loss=0.5, val_loss=0.3, train_acc=0.9, val_acc=0.95)
@@ -484,7 +484,7 @@ class TestPrometheusMetrics:
     )
     def test_update_system_metrics(self):
         """Test updating system metrics."""
-        from src.utils.monitoring import PrometheusMetrics
+        from src.core.utils.monitoring import PrometheusMetrics
 
         metrics = PrometheusMetrics()
         monitor = ResourceMonitor()

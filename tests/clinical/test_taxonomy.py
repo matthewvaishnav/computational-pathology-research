@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.clinical.taxonomy import DiseaseTaxonomy
+from src.features.clinical.workflow.taxonomy import DiseaseTaxonomy
 
 
 class TestDiseaseTaxonomy:

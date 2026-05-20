@@ -17,7 +17,7 @@ from pydicom.sequence import Sequence
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     AnalysisResults,
     DetectedRegion,
     DiagnosticRecommendation,
@@ -26,7 +26,7 @@ from src.clinical.pacs.data_models import (
     PerformanceConfig,
     SecurityConfig,
 )
-from src.clinical.pacs.storage_engine import StorageEngine, StructuredReportBuilder
+from src.features.clinical.workflow.pacs.storage_engine import StorageEngine, StructuredReportBuilder
 
 # ---------------------------------------------------------------------------
 # Shared helpers

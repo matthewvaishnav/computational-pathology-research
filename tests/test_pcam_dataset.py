@@ -13,7 +13,7 @@ import pytest
 import torch
 from torchvision import transforms
 
-from src.data.pcam_dataset import (
+from src.data.datasets.pcam_dataset import (
     PCamDataset,
     get_pcam_transforms,
 )

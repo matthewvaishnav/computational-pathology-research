@@ -8,8 +8,8 @@ while still computing correct aggregated results.
 import pytest
 import torch
 
-from src.federated.aggregator.secure import SecureAggregator
-from src.federated.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.aggregator.secure import SecureAggregator
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 
 # Check if TenSEAL is available
 try:

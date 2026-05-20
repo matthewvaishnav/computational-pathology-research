@@ -9,19 +9,19 @@ from pathlib import Path
 
 import pytest
 
-from src.deployment.clinical_impact import (
+from src.platform.deployment.clinical_impact import (
     ClinicalImpactTracker,
     DiagnosticAccuracyMetric,
     TurnaroundTimeMetric,
     UserSatisfactionSurvey,
 )
-from src.deployment.production_optimization import (
+from src.platform.deployment.production_optimization import (
     AutoScaler,
     CapacityPlanner,
     OperationalExcellence,
     PerformanceMonitor,
 )
-from src.deployment.site_preparation import (
+from src.platform.deployment.site_preparation import (
     HospitalSite,
     SitePreparationManager,
     TechnicalRequirements,

@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from PIL import Image
 
-from src.data.camelyon_annotations import (
+from src.data.datasets.camelyon_annotations import (
     load_camelyon_annotations,
     rasterize_annotation_mask,
     save_heatmap_overlay,

@@ -3,7 +3,7 @@
 import torch
 
 from scripts.export_onnx import ONNXExporter
-from src.models.heads import ClassificationHead
+from src.models.components.heads import ClassificationHead
 from src.models.multimodal import MultimodalFusionModel
 
 

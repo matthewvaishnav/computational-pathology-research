@@ -5,7 +5,7 @@ Tests for tissue-aware sampling in FixedLengthBagSampler.
 import pytest
 import torch
 
-from src.data.bag_samplers import FixedLengthBagSampler
+from src.data.loaders.bag_samplers import FixedLengthBagSampler
 from src.models.tissue_classifier import TissueClassifier
 
 

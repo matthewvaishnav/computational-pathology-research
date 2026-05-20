@@ -18,12 +18,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from src.federated.aggregator.byzantine_robust import KrumAggregator
-from src.federated.aggregator.fedavg import FedAvgAggregator
-from src.federated.client.trainer import LocalTrainer
-from src.federated.common.data_models import ClientUpdate
-from src.federated.coordinator.orchestrator import TrainingOrchestrator
-from src.federated.privacy.dp_sgd import DPSGDEngine
+from src.features.federated.pathology_fl.aggregator.byzantine_robust import KrumAggregator
+from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
+from src.features.federated.pathology_fl.privacy.dp_sgd import DPSGDEngine
 
 
 # Simple model for testing

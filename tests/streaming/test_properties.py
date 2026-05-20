@@ -10,7 +10,7 @@ from hypothesis import HealthCheck, Phase, assume, given, settings
 from hypothesis import strategies as st
 from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import BatchSizeOptimizer, GPUMemoryManager
-from src.streaming.wsi_stream_reader import StreamingMetadata, TileBufferPool
+from src.data.wsi.streaming import StreamingMetadata, TileBufferPool
 
 
 # Hypothesis strategies

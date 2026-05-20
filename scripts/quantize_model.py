@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.inference.quantization import ModelQuantizer, quantize_attention_mil
 from src.models import AttentionMIL
-from src.data.pcam_dataset import PCamDataset
+from src.data.datasets.pcam_dataset import PCamDataset
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"

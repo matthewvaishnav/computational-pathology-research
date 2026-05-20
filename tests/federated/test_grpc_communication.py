@@ -17,19 +17,19 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.federated.communication.auth import (
+from src.features.federated.pathology_fl.communication.auth import (
     AuthenticatedFLClient,
     AuthenticatedFLServer,
     CertificateValidator,
     RoleBasedAccessControl,
 )
-from src.federated.communication.grpc_client import FLClientTrainer, SecureFLClient
-from src.federated.communication.grpc_server import (
+from src.features.federated.pathology_fl.communication.grpc_client import FLClientTrainer, SecureFLClient
+from src.features.federated.pathology_fl.communication.grpc_server import (
     FederatedLearningServicer,
     SecureFLServer,
 )
-from src.federated.communication.tls_utils import TLSManager, validate_certificate
-from src.federated.coordinator.orchestrator import TrainingOrchestrator
+from src.features.federated.pathology_fl.communication.tls_utils import TLSManager, validate_certificate
+from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 
 
 class SimpleModel(nn.Module):
@@ -250,7 +250,7 @@ class TestGRPCServer:
 
     def test_server_initialization(self, simple_model, tls_manager):
         """Test server initialization."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         server = SecureFLServer(
@@ -263,8 +263,8 @@ class TestGRPCServer:
 
     def test_servicer_client_registration(self, simple_model, tls_manager):
         """Test client registration through servicer."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
-        from src.federated.communication.federated_learning_pb2 import (
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.communication.federated_learning_pb2 import (
             ClientCapabilities,
             ClientRegistration,
         )
@@ -297,8 +297,8 @@ class TestGRPCServer:
 
     def test_servicer_get_global_model(self, simple_model, tls_manager):
         """Test getting global model through servicer."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
-        from src.federated.communication.federated_learning_pb2 import ModelRequest
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.communication.federated_learning_pb2 import ModelRequest
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         servicer = FederatedLearningServicer(orchestrator, tls_manager)
@@ -320,8 +320,8 @@ class TestGRPCServer:
 
     def test_servicer_submit_update(self, simple_model, tls_manager):
         """Test submitting client update through servicer."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
-        from src.federated.communication.federated_learning_pb2 import (
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.communication.federated_learning_pb2 import (
             ClientUpdateMessage,
             UpdateMetadata,
         )
@@ -451,8 +451,8 @@ class TestErrorHandling:
 
     def test_unregistered_client_rejected(self, simple_model, tls_manager):
         """Test that unregistered clients are rejected."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
-        from src.federated.communication.federated_learning_pb2 import ModelRequest
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.communication.federated_learning_pb2 import ModelRequest
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         servicer = FederatedLearningServicer(orchestrator, tls_manager)
@@ -481,7 +481,7 @@ class TestErrorHandling:
 
     def test_empty_update_list_handled(self, simple_model, tls_manager):
         """Test that empty update list is handled gracefully."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         servicer = FederatedLearningServicer(orchestrator, tls_manager)
@@ -515,8 +515,8 @@ class TestRoundManagement:
 
     def test_round_initialization(self, simple_model, tls_manager):
         """Test round initialization."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
-        from src.federated.communication.federated_learning_pb2 import RoundStartMessage
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.communication.federated_learning_pb2 import RoundStartMessage
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         servicer = FederatedLearningServicer(orchestrator, tls_manager)
@@ -534,8 +534,8 @@ class TestRoundManagement:
 
     def test_round_status_query(self, simple_model, tls_manager):
         """Test querying round status."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
-        from src.federated.communication.federated_learning_pb2 import RoundStatusRequest
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.communication.federated_learning_pb2 import RoundStatusRequest
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         servicer = FederatedLearningServicer(orchestrator, tls_manager)
@@ -554,7 +554,7 @@ class TestRoundManagement:
 
     def test_clear_round_updates(self, simple_model, tls_manager):
         """Test clearing round updates."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
 
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())
         servicer = FederatedLearningServicer(orchestrator, tls_manager)
@@ -574,7 +574,7 @@ class TestEndToEndCommunication:
     @pytest.mark.slow
     def test_client_server_handshake(self, simple_model, tls_manager):
         """Test complete client-server handshake."""
-        from src.federated.aggregator.fedavg import FedAvgAggregator
+        from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
 
         # Start server in background
         orchestrator = TrainingOrchestrator(simple_model, FedAvgAggregator())

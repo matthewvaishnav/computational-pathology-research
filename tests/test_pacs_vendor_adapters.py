@@ -16,13 +16,13 @@ from pynetdicom import AE
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
     PerformanceConfig,
     SecurityConfig,
 )
-from src.clinical.pacs.vendor_adapters import (
+from src.features.clinical.workflow.pacs.vendor_adapters import (
     AgfaAdapter,
     ConformanceNegotiator,
     GEAdapter,

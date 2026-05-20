@@ -16,14 +16,14 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.cloud.azure.blob_storage import (
+from src.platform.cloud.azure.blob_storage import (
     AzureBlobStorageConnector,
     BlobAccessTier,
     BlobStorageConfig,
     UploadResult,
     create_blob_storage_connector,
 )
-from src.cloud.azure.functions import (
+from src.platform.cloud.azure.functions import (
     AzureFunctionsIntegration,
     FunctionConfig,
     FunctionDefinition,
@@ -36,7 +36,7 @@ from src.cloud.azure.functions import (
 )
 
 # Import Azure integration modules
-from src.cloud.azure.health_data_services import (
+from src.platform.cloud.azure.health_data_services import (
     AzureHealthDataServices,
     DiagnosticReportData,
     HealthDataConfig,
@@ -44,13 +44,13 @@ from src.cloud.azure.health_data_services import (
     PatientData,
     create_health_data_services,
 )
-from src.cloud.azure.monitor import (
+from src.platform.cloud.azure.monitor import (
     AlertRule,
     AlertSeverity,
     AzureMonitorIntegration,
 )
-from src.cloud.azure.monitor import CustomMetric as MonitorMetric
-from src.cloud.azure.monitor import (
+from src.platform.cloud.azure.monitor import CustomMetric as MonitorMetric
+from src.platform.cloud.azure.monitor import (
     LogEntry,
     MetricType,
     MonitorConfig,
@@ -516,7 +516,7 @@ class TestAzureIntegrationEnd2End:
         # This would test a complete workflow using all Azure services
         # For now, just verify all services can be imported and initialized
 
-        from src.cloud.azure import (
+        from src.platform.cloud.azure import (
             AzureBlobStorageConnector,
             AzureFunctionsIntegration,
             AzureHealthDataServices,
@@ -533,7 +533,7 @@ class TestAzureIntegrationEnd2End:
         """Test Azure module imports work correctly."""
         # Verify __all__ exports
         import src.cloud.azure as azure_module
-        from src.cloud.azure import (
+        from src.platform.cloud.azure import (
             AzureBlobStorageConnector,
             AzureFunctionsIntegration,
             AzureHealthDataServices,

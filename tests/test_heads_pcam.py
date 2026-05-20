@@ -8,7 +8,7 @@ unlike the multi-class classification used in other parts of the codebase.
 import torch
 import torch.nn as nn
 
-from src.models.heads import ClassificationHead
+from src.models.components.heads import ClassificationHead
 
 
 class TestClassificationHeadPCamBinary:

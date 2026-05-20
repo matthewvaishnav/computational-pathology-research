@@ -336,7 +336,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.clinical.dicom_adapter import DICOMAdapter
+from src.features.clinical.workflow.dicom_adapter import DICOMAdapter
 import yaml
 
 def test_{vendor.lower()}_pacs():

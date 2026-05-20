@@ -15,8 +15,8 @@ import torch.nn as nn
 
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from src.federated.client.trainer import LocalTrainer
-from src.federated.privacy.dp_sgd import DPSGDEngine
+from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+from src.features.federated.pathology_fl.privacy.dp_sgd import DPSGDEngine
 
 # ============================================================================
 # Test Fixtures

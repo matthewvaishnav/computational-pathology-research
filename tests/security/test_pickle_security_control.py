@@ -12,9 +12,9 @@ from unittest.mock import patch
 
 import pytest
 
-from src.security.exceptions import PickleSecurityError
-from src.security.models import SecurityEnvironment
-from src.security.pickle_security_control import PickleSecurityControl
+from src.platform.security.exceptions import PickleSecurityError
+from src.platform.security.models import SecurityEnvironment
+from src.platform.security.pickle_security_control import PickleSecurityControl
 
 
 class TestPickleSecurityControl:

@@ -8,7 +8,7 @@ and patch filtering functionality.
 import numpy as np
 import pytest
 
-from src.data.wsi_pipeline import TissueDetector
+from src.data.wsi.pipeline import TissueDetector
 from src.data.wsi_pipeline.exceptions import ProcessingError
 
 

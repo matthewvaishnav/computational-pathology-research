@@ -10,7 +10,7 @@ import torch
 
 from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUMemoryManager, GPUPipeline
-from src.streaming.wsi_stream_reader import StreamingMetadata, TileBufferPool, WSIStreamReader
+from src.data.wsi.streaming import StreamingMetadata, TileBufferPool, WSIStreamReader
 
 
 class TestMemoryBounds:

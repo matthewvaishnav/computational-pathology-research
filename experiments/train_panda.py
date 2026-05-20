@@ -23,15 +23,15 @@ from tqdm import tqdm
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.panda_dataset import (
+from src.data.datasets.panda_dataset import (
     PANDASlideDataset,
     PANDASlideIndex,
     collate_panda_bags,
     compute_quadratic_weighted_kappa,
     validate_panda_dataset,
 )
-from src.models.nnmil import nnMIL
-from src.models.transnnmil import TransnnMIL
+from src.models.mil.nnmil import nnMIL
+from src.models.transnnmil.transnnmil import TransnnMIL
 
 logger = logging.getLogger(__name__)
 

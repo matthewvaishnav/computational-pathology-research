@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from src.utils.benchmark_manifest import BenchmarkEntry, BenchmarkManifest
+from src.core.utils.benchmark_manifest import BenchmarkEntry, BenchmarkManifest
 
 # ============================================================================
 # BENCHMARK ENTRY TESTS

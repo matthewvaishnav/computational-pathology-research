@@ -23,7 +23,7 @@ from tqdm import tqdm
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.panda_dataset import PANDASlideIndex
+from src.data.datasets.panda_dataset import PANDASlideIndex
 
 logger = logging.getLogger(__name__)
 

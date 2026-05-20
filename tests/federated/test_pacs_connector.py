@@ -19,8 +19,8 @@ from PIL import Image
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import DicomPriority, StudyInfo
-from src.federated.client.pacs_connector import PACSConnector
+from src.features.clinical.workflow.pacs.data_models import DicomPriority, StudyInfo
+from src.features.federated.pathology_fl.client.pacs_connector import PACSConnector
 
 # ============================================================================
 # Test Fixtures

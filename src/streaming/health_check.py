@@ -12,7 +12,7 @@ import psutil
 import torch
 from aiohttp import web
 
-from src.security.network_binding import NetworkBindingManager
+from src.platform.security.network_binding import NetworkBindingManager
 
 from .metrics import get_metrics
 

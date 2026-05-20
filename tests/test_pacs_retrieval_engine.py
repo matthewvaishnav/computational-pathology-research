@@ -19,13 +19,13 @@ from pydicom.uid import ExplicitVRLittleEndian
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
     PerformanceConfig,
     SecurityConfig,
 )
-from src.clinical.pacs.retrieval_engine import RetrievalEngine
+from src.features.clinical.workflow.pacs.retrieval_engine import RetrievalEngine
 
 # ---------------------------------------------------------------------------
 # Shared helpers

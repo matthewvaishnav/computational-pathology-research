@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 
 import psutil
 
-from src.security.temp_file_manager import TempFileManager
+from src.platform.security.temp_file_manager import TempFileManager
 
 
 class PerformanceMonitor:

@@ -23,7 +23,7 @@ import pytest
 from sklearn.metrics import accuracy_score
 
 # Import functions that will be modified
-from src.utils.statistical import compute_all_metrics_with_ci, compute_bootstrap_ci
+from src.core.utils.statistical import compute_all_metrics_with_ci, compute_bootstrap_ci
 
 
 class TestPreservation:

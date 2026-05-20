@@ -5,7 +5,7 @@ Unit tests for feature extractors used in PCam benchmark.
 import pytest
 import torch
 
-from src.models.feature_extractors import ResNetFeatureExtractor
+from src.models.components.feature_extractors import ResNetFeatureExtractor
 
 
 class TestResNetFeatureExtractor:

@@ -10,7 +10,7 @@ Tests cover:
 import pytest
 import torch
 
-from src.data.batch_samplers import (
+from src.data.loaders.batch_samplers import (
     BalancedBatchSampler,
     RegressionBatchSampler,
     SurvivalBatchSampler,

@@ -7,9 +7,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.models.encoders import WSIEncoder
-from src.models.feature_extractors import ResNetFeatureExtractor
-from src.models.heads import ClassificationHead
+from src.models.components.encoders import WSIEncoder
+from src.models.components.feature_extractors import ResNetFeatureExtractor
+from src.models.components.heads import ClassificationHead
 
 
 def test_batch_size(batch_size: int, device: str = "cuda") -> bool:

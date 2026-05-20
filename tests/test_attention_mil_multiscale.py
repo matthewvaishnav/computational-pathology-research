@@ -8,7 +8,7 @@ including early fusion and late fusion strategies.
 import pytest
 import torch
 
-from src.models.attention_mil import CLAM, AttentionMIL
+from src.models.mil.attention_mil import CLAM, AttentionMIL
 
 
 class TestAttentionMILMultiScale:
@@ -544,7 +544,7 @@ class TestTransMILMultiScale:
 
     def test_single_scale_backward_compatibility(self):
         """Test that single-scale input still works (backward compatibility)."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -576,7 +576,7 @@ class TestTransMILMultiScale:
 
     def test_early_fusion_two_scales(self):
         """Test early fusion with 2 scales."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -612,7 +612,7 @@ class TestTransMILMultiScale:
 
     def test_late_fusion_three_scales(self):
         """Test late fusion with 3 scales."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -649,7 +649,7 @@ class TestTransMILMultiScale:
 
     def test_missing_scale_handling(self):
         """Test that missing scales are handled gracefully (late fusion)."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -680,7 +680,7 @@ class TestTransMILMultiScale:
 
     def test_gradient_flow_multi_scale(self):
         """Test that gradients flow through multi-scale TransMIL mechanism."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -716,7 +716,7 @@ class TestTransMILMultiScale:
 
     def test_invalid_fusion_strategy(self):
         """Test that invalid fusion strategy raises error."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         with pytest.raises(ValueError, match="fusion_strategy must be"):
             TransMIL(
@@ -732,7 +732,7 @@ class TestTransMILMultiScale:
 
     def test_multi_scale_without_flag_raises_error(self):
         """Test that passing list of features to non-multi-scale model raises error."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -754,7 +754,7 @@ class TestTransMILMultiScale:
 
     def test_scale_specific_positional_encodings(self):
         """Test that scale-specific positional encodings are used in late fusion."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -787,7 +787,7 @@ class TestTransMILMultiScale:
 
     def test_scale_specific_transformers_late_fusion(self):
         """Test that scale-specific transformers are used in late fusion."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,
@@ -819,7 +819,7 @@ class TestTransMILMultiScale:
 
     def test_early_fusion_shared_transformer(self):
         """Test that early fusion uses a shared transformer."""
-        from src.models.attention_mil import TransMIL
+        from src.models.mil.attention_mil import TransMIL
 
         model = TransMIL(
             feature_dim=1024,

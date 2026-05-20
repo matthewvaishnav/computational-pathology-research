@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 import torch
 
-from src.exceptions import DataLoadError, DataSaveError
-from src.utils.attention_utils import load_attention_weights, save_attention_weights
+from src.core.exceptions import DataLoadError, DataSaveError
+from src.core.utils.attention_utils import load_attention_weights, save_attention_weights
 
 # ============================================================================
 # save_attention_weights Tests

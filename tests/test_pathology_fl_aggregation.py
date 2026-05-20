@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from src.federated.pathology_fl import (
+from src.features.federated.pathology_fl.pathology_fl import (
     CancerType,
     HospitalMetadata,
     HospitalType,

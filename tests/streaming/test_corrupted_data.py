@@ -11,7 +11,7 @@ from PIL import Image
 
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUPipeline
-from src.streaming.wsi_stream_reader import StreamingMetadata, TileBatch, WSIStreamReader
+from src.data.wsi.streaming import StreamingMetadata, TileBatch, WSIStreamReader
 
 
 class TestCorruptedWSIFiles:

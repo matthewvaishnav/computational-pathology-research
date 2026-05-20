@@ -22,7 +22,7 @@ from src.continuous_learning.active_learning import (
     SamplingStrategy,
     UncertaintyBasedSampler,
 )
-from src.explainability.uncertainty_quantification import UncertaintyMetrics
+from src.features.interpretability.advanced.uncertainty_quantification import UncertaintyMetrics
 
 
 @pytest.fixture

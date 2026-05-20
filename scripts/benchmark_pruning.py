@@ -18,7 +18,7 @@ from typing import List
 import torch
 import torch.nn as nn
 
-from src.models.adaptive_pruning import PrunedTransMIL
+from src.models.transnnmil.adaptive_pruning import PrunedTransMIL
 
 
 def benchmark_forward_time(

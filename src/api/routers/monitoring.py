@@ -140,7 +140,7 @@ async def get_ids_alerts(
     validate_limit(limit)
 
     try:
-        from src.monitoring.ids import get_ids_engine
+        from src.platform.monitoring.ids import get_ids_engine
 
         ids_engine = get_ids_engine()
         alerts = ids_engine.get_alerts(severity=severity, source_ip=source_ip, limit=limit)
@@ -178,7 +178,7 @@ async def get_siem_incidents(
     validate_limit(limit)
 
     try:
-        from src.monitoring.siem import get_siem_engine
+        from src.platform.monitoring.siem import get_siem_engine
 
         siem_engine = get_siem_engine()
         incidents = siem_engine.get_incidents(severity=severity, source_ip=source_ip, limit=limit)

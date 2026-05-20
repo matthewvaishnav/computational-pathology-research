@@ -12,9 +12,9 @@ import torch.nn as nn
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.federated.aggregator.fedavg import FedAvgAggregator
-from src.federated.common.data_models import ClientUpdate
-from src.federated.coordinator.orchestrator import TrainingOrchestrator
+from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
+from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 
 
 # Simple model for testing

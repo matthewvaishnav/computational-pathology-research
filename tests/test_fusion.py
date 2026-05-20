@@ -5,7 +5,7 @@ Unit tests for fusion mechanisms including CrossModalAttention and MultiModalFus
 import pytest
 import torch
 
-from src.models.fusion import CrossModalAttention, MultiModalFusionLayer
+from src.models.components.fusion import CrossModalAttention, MultiModalFusionLayer
 
 
 class TestCrossModalAttention:

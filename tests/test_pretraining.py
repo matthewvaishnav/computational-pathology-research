@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.models.encoders import WSIEncoder
+from src.models.components.encoders import WSIEncoder
 from src.pretraining.objectives import MaskedPatchReconstruction, PatchContrastiveLoss
 from src.pretraining.pretrainer import SelfSupervisedPretrainer
 

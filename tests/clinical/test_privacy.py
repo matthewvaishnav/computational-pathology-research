@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.clinical.privacy import (
+from src.features.clinical.workflow.privacy import (
     AES256Encryption,
     ConsentRecord,
     DataExportMonitor,

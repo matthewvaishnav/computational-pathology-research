@@ -13,7 +13,7 @@ Tests cover:
 import pytest
 import torch
 
-from src.data.bag_samplers import FixedLengthBagSampler
+from src.data.loaders.bag_samplers import FixedLengthBagSampler
 
 
 class TestFixedLengthBagSamplerInitialization:

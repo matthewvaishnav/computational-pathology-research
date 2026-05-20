@@ -8,14 +8,14 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.clinical.longitudinal import (
+from src.features.clinical.workflow.longitudinal import (
     LongitudinalTracker,
     PatientTimeline,
     ScanRecord,
     TreatmentEvent,
     TreatmentResponseCategory,
 )
-from src.clinical.taxonomy import DiseaseTaxonomy
+from src.features.clinical.workflow.taxonomy import DiseaseTaxonomy
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.clinical.pacs.data_models import OperationResult, SeriesInfo, StudyInfo
+from src.features.clinical.workflow.pacs.data_models import OperationResult, SeriesInfo, StudyInfo
 from src.streaming.pacs_wsi_client import AnalysisResult, PACSWSIStreamingClient, WorklistEntry
 
 

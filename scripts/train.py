@@ -35,7 +35,7 @@ if str(REPO_ROOT) not in sys.path:
 from src.data import MultimodalDataset, collate_multimodal
 from src.models import ClassificationHead, MultimodalFusionModel, get_baseline_model
 from src.training import SupervisedTrainer
-from src.utils.monitoring import get_logger
+from src.core.utils.monitoring import get_logger
 
 logger = get_logger(__name__)
 

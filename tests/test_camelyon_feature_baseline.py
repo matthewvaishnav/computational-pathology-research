@@ -17,7 +17,7 @@ from experiments.run_camelyon_feature_baseline import (
     run_camelyon_feature_baseline,
     train_logistic_baseline,
 )
-from src.data.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
+from src.data.datasets.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
 
 
 @pytest.fixture

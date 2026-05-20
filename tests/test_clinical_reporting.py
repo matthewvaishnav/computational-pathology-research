@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from src.clinical.reporting import (
+from src.features.clinical.workflow.reporting import (
     ClinicalReportGenerator,
     DiagnosisResult,
     ExportFormat,

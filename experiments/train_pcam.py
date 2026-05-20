@@ -38,13 +38,13 @@ from tqdm import tqdm
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.pcam_dataset import PCamDataset, get_pcam_transforms
-from src.models.encoders import WSIEncoder
-from src.models.feature_extractors import ResNetFeatureExtractor
+from src.data.datasets.pcam_dataset import PCamDataset, get_pcam_transforms
+from src.models.components.encoders import WSIEncoder
+from src.models.components.feature_extractors import ResNetFeatureExtractor
 from src.models.foundation import load_foundation_model
 from src.models.foundation.projector import FeatureProjector
 from src.models.foundation.cache import cache_features, CachedFeatureDataset, get_cache_path
-from src.models.heads import ClassificationHead
+from src.models.components.heads import ClassificationHead
 
 # Configure logging
 logging.basicConfig(

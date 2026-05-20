@@ -33,7 +33,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.models.hierarchical_pooling import (
+from src.models.transnnmil.hierarchical_pooling import (
     HierarchicalPooling,
     RegionAttentionPooling,
     RegionMeanPooling,

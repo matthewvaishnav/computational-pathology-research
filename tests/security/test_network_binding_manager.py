@@ -9,9 +9,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.security.exceptions import NetworkBindingSecurityError
-from src.security.models import SecurityEnvironment
-from src.security.network_binding_manager import NetworkBindingManager
+from src.platform.security.exceptions import NetworkBindingSecurityError
+from src.platform.security.models import SecurityEnvironment
+from src.platform.security.network_binding_manager import NetworkBindingManager
 
 
 class TestNetworkBindingManager:

@@ -19,7 +19,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from src.security.network_binding import NetworkBindingManager
+from src.platform.security.network_binding import NetworkBindingManager
 
 logger = logging.getLogger(__name__)
 

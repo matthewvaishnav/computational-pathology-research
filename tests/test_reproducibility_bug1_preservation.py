@@ -9,7 +9,7 @@ import os
 import tempfile
 import unittest
 
-from src.utils.benchmark_manifest import BenchmarkManifest
+from src.core.utils.benchmark_manifest import BenchmarkManifest
 
 
 class TestBug1Preservation(unittest.TestCase):

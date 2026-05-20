@@ -1,9 +1,9 @@
 """Neural network model definitions."""
 
-from .attention_mil import CLAM, AttentionMIL
-from .baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
-from .encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
-from .foundation import (
+from src.models.mil.attention_mil import CLAM, AttentionMIL
+from src.models.baselines import AttentionBaseline, LateFusionModel, SingleModalityModel, get_baseline_model
+from src.models.components.encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
+from src.models.foundation import (
     CONCHEncoder,
     FeatureProjector,
     FoundationModelEncoder,
@@ -11,38 +11,38 @@ from .foundation import (
     UNIEncoder,
     load_foundation_model,
 )
-from .foundation_adapter import FoundationModelAdapter
-from .fusion import CrossModalAttention, MultiModalFusionLayer
-from .heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
-from .instance_clustering import (
+from src.models.foundation_adapter import FoundationModelAdapter
+from src.models.components.fusion import CrossModalAttention, MultiModalFusionLayer
+from src.models.components.heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
+from src.models.mil.instance_clustering import (
     CLAMInstanceBranch,
     InstanceClusteringModule,
     cluster_instances,
 )
-from .mil_base import MILBase
-from .multimodal import MultimodalFusionModel
-from .nnmil import nnMIL
-from .pretrained import (
+from src.models.mil.mil_base import MILBase
+from src.models.multimodal import MultimodalFusionModel
+from src.models.mil.nnmil import nnMIL
+from src.models.pretrained import (
     PretrainedFeatureExtractor,
     create_wsi_encoder_with_pretrained,
     get_recommended_model,
     list_pretrained_models,
 )
-from .stain_normalization import (
+from src.models.stain_normalization import (
     ColorFeatureEncoder,
     PatchEmbedding,
     StainNormalizationTransformer,
     StyleConditioner,
     StyleTransferDecoder,
 )
-from .temporal import CrossSlideTemporalReasoner, TemporalAttention
-from .transmil import TransMIL
+from src.models.temporal import CrossSlideTemporalReasoner, TemporalAttention
+from src.models.mil.transmil import TransMIL
 
 
 def __getattr__(name):
     """Lazy import for ResNetFeatureExtractor to avoid eager torchvision import."""
     if name == "ResNetFeatureExtractor":
-        from .feature_extractors import ResNetFeatureExtractor
+        from src.models.components.feature_extractors import ResNetFeatureExtractor
 
         return ResNetFeatureExtractor
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

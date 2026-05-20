@@ -9,7 +9,7 @@ import os
 import pytest
 import torch
 
-from src.utils.validation import (
+from src.core.utils.validation import (
     ValidationError,
     get_validation_summary,
     is_validation_enabled,

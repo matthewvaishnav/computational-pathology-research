@@ -79,7 +79,7 @@ def backup(ctx, component, compress, output):
     click.echo(f"Creating backup: {output}")
     click.echo(f"Components: {', '.join(components_to_backup)}")
     
-    from src.security.temp_file import TempFileManager
+    from src.platform.security.temp_file import TempFileManager
     import tempfile
     temp_dir = Path(tempfile.mkdtemp(prefix=f"histocore_backup_{timestamp}_"))
     

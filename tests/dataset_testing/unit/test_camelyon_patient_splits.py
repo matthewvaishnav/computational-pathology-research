@@ -7,7 +7,7 @@ and missing slide scenarios.
 
 import pytest
 
-from src.data.camelyon_dataset import (
+from src.data.datasets.camelyon_dataset import (
     CAMELYONSlideIndex,
     SlideMetadata,
 )
@@ -269,7 +269,7 @@ class TestCAMELYONPatientSplitValidation:
             missing_file_path.unlink()
 
         # Test that missing files are handled gracefully
-        from src.data.camelyon_dataset import CAMELYONSlideDataset
+        from src.data.datasets.camelyon_dataset import CAMELYONSlideDataset
 
         # This should not crash but should handle missing files
         try:

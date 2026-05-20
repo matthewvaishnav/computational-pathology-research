@@ -5,7 +5,7 @@ Unit tests for task-specific prediction heads.
 import pytest
 import torch
 
-from src.models.heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
+from src.models.components.heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
 
 
 class TestClassificationHead:

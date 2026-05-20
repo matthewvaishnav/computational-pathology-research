@@ -22,13 +22,13 @@ from cryptography.x509.oid import NameOID
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.data_models import (
+from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,
     PerformanceConfig,
     SecurityConfig,
 )
-from src.clinical.pacs.security_manager import (
+from src.features.clinical.workflow.pacs.security_manager import (
     CertificateValidationResult,
     SecureConnection,
     SecurityManager,

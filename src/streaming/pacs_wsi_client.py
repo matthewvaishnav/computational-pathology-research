@@ -11,8 +11,8 @@ from functools import wraps
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional
 
-from src.clinical.pacs.data_models import SeriesInfo, StudyInfo
-from src.clinical.pacs.pacs_adapter import PACSAdapter
+from src.features.clinical.workflow.pacs.data_models import SeriesInfo, StudyInfo
+from src.features.clinical.workflow.pacs.pacs_adapter import PACSAdapter
 
 from .wsi_stream_reader import TileBatch, WSIStreamReader
 

@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from src.data.openslide_utils import WSIReader
+from src.data.wsi.openslide_utils import WSIReader
 
 
 class TestWSIFormatCompatibilityValidation:

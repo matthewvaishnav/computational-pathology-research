@@ -10,7 +10,7 @@ Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from src.clinical.fhir_adapter import (
+from src.features.clinical.workflow.fhir_adapter import (
     AuthenticationMethod,
     DiagnosticReportData,
     FHIRAdapter,

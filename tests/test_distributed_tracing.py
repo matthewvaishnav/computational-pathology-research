@@ -19,7 +19,7 @@ try:
 except ImportError:
     OTEL_AVAILABLE = False
 
-from src.monitoring.tracing import (
+from src.platform.monitoring.tracing import (
     DistributedTracer,
     add_span_attributes,
     add_span_event,

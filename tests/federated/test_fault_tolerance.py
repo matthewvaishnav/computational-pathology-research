@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 import torch
 
-from src.federated.fault_tolerance import (
+from src.features.federated.pathology_fl.fault_tolerance import (
     CheckpointManager,
     CheckpointMetadata,
     NetworkMonitor,

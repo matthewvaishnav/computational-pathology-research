@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from src.clinical.pacs.notification_system import (
+from src.features.clinical.workflow.pacs.notification_system import (
     DeliveryRecord,
     DeliveryTracker,
     EmailNotifier,

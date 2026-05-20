@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
-from src.hypothesis.generator import HypothesisGenerator, create_ollama_llm
+from src.features.research.testing.generator import HypothesisGenerator, create_ollama_llm
 
 
 def test_ollama_timeout_parameter():

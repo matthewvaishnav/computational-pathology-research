@@ -73,7 +73,7 @@ class ModelLoader:
 
         try:
             # Load checkpoint safely (always to CPU first to avoid OOM)
-            from src.utils.safe_operations import safe_torch_load
+            from src.core.utils.safe_operations import safe_torch_load
 
             checkpoint = safe_torch_load(checkpoint_path, device=None)  # Load to CPU first
 
@@ -94,7 +94,7 @@ class ModelLoader:
             model.eval()
 
             # Safely move model to device with memory checks
-            from src.utils.safe_operations import safe_model_to_device
+            from src.core.utils.safe_operations import safe_model_to_device
 
             model, actual_device = safe_model_to_device(model, self.device)
             model.eval()

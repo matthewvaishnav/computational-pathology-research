@@ -28,7 +28,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from src.models.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
+from src.models.transnnmil.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
 
 
 def train_epoch(

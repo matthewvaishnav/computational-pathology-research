@@ -19,7 +19,7 @@ from experiments.evaluate_camelyon import (
     render_slide_heatmaps,
     save_predictions_csv,
 )
-from src.data.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
+from src.data.datasets.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
 
 
 def test_evaluate_camelyon_script_exists():

@@ -4,8 +4,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from src.federated.client.trainer import LocalTrainer
-from src.federated.privacy import dp_sgd
+from src.features.federated.pathology_fl.client.trainer import LocalTrainer
+from src.features.federated.pathology_fl.privacy import dp_sgd
 
 
 def test_dpsgd_engine_fails_closed_without_opacus(monkeypatch):

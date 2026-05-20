@@ -8,9 +8,9 @@ and threshold flagging logic.
 import pytest
 import torch
 
-from src.clinical.patient_context import ClinicalMetadata, Sex, SmokingStatus
-from src.clinical.risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
-from src.clinical.taxonomy import DiseaseTaxonomy
+from src.features.clinical.workflow.patient_context import ClinicalMetadata, Sex, SmokingStatus
+from src.features.clinical.workflow.risk_analysis import ClinicalRiskFactorEncoder, RiskAnalyzer
+from src.features.clinical.workflow.taxonomy import DiseaseTaxonomy
 
 
 @pytest.fixture

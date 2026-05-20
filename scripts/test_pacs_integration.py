@@ -13,7 +13,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.clinical.pacs import (
+from src.features.clinical.workflow.pacs import (
     PACSAdapter, ConfigurationManager, SecurityManager,
     PACSEndpoint, PACSConfiguration, SecurityConfig, PerformanceConfig,
     PACSVendor, StudyInfo, AnalysisResults, DetectedRegion, DiagnosticRecommendation

@@ -50,7 +50,7 @@ class Round3Fixer:
             if 'from queue import' in content and 'BoundedQueue' not in content:
                 content = content.replace(
                     'from queue import Empty, Queue',
-                    'from queue import Empty\nfrom src.utils.safe_threading import BoundedQueue'
+                    'from queue import Empty\nfrom src.core.utils.safe_threading import BoundedQueue'
                 )
             
             # Fix: self.update_queue = Queue() -> BoundedQueue(maxsize=1000)
@@ -98,7 +98,7 @@ class Round3Fixer:
                 if 'import threading' in content:
                     content = content.replace(
                         'import threading',
-                        'import threading\nfrom src.utils.safe_threading import GracefulThread'
+                        'import threading\nfrom src.core.utils.safe_threading import GracefulThread'
                     )
             
             # Note: Actual thread replacement requires more context
@@ -131,7 +131,7 @@ class Round3Fixer:
                 if 'import threading' in content:
                     content = content.replace(
                         'import threading',
-                        'import threading\nfrom src.utils.safe_threading import TimeoutLock'
+                        'import threading\nfrom src.core.utils.safe_threading import TimeoutLock'
                     )
             
             # Replace RLock with TimeoutLock
@@ -169,7 +169,7 @@ class Round3Fixer:
                     # Add after typing imports
                     content = re.sub(
                         r'(from typing import [^\n]+\n)',
-                        r'\1from src.utils.safe_threading import ThreadSafeDict, ThreadSafeSet\n',
+                        r'\1from src.core.utils.safe_threading import ThreadSafeDict, ThreadSafeSet\n',
                         content,
                         count=1
                     )

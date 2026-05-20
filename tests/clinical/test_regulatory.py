@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.clinical.regulatory import (
+from src.features.clinical.workflow.regulatory import (
     CybersecurityControlSystem,
     RegulatoryComplianceManager,
     RegulatoryDocumentationSystem,

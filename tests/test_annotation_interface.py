@@ -8,8 +8,8 @@ from datetime import datetime
 import pytest
 from fastapi.testclient import TestClient
 
-from src.annotation_interface.backend.annotation_api import app
-from src.annotation_interface.backend.annotation_models import (
+from src.features.research.annotation.backend.annotation_api import app
+from src.features.research.annotation.backend.annotation_models import (
     AnnotationCreate,
     AnnotationGeometry,
     AnnotationLabel,
@@ -200,7 +200,7 @@ class TestAnnotationQueue:
     def test_assign_task(self, client, sample_queue_item):
         """Test assigning task to expert"""
         # Add task to queue first (would be done by active learning system)
-        from src.annotation_interface.backend.annotation_api import add_task_to_queue
+        from src.features.research.annotation.backend.annotation_api import add_task_to_queue
 
         add_task_to_queue(sample_queue_item)
 
@@ -218,7 +218,7 @@ class TestAnnotationQueue:
     def test_complete_task(self, client, sample_queue_item):
         """Test completing a task"""
         # Add task to queue
-        from src.annotation_interface.backend.annotation_api import add_task_to_queue
+        from src.features.research.annotation.backend.annotation_api import add_task_to_queue
 
         add_task_to_queue(sample_queue_item)
 
@@ -347,7 +347,7 @@ class TestIntegration:
     def test_complete_annotation_workflow(self, client, sample_annotation_data, sample_queue_item):
         """Test complete workflow from queue to annotation"""
         # 1. Add task to queue
-        from src.annotation_interface.backend.annotation_api import add_task_to_queue
+        from src.features.research.annotation.backend.annotation_api import add_task_to_queue
 
         add_task_to_queue(sample_queue_item)
 
@@ -390,7 +390,7 @@ class TestAnnotationTimeTracking:
 
     def test_task_time_tracking(self, client, sample_queue_item):
         """Test that task assignment and completion track time"""
-        from src.annotation_interface.backend.annotation_api import add_task_to_queue
+        from src.features.research.annotation.backend.annotation_api import add_task_to_queue
 
         add_task_to_queue(sample_queue_item)
 

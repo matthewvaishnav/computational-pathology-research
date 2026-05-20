@@ -10,8 +10,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.exceptions import ThreadingError
-from src.utils.safe_threading import (
+from src.core.exceptions import ThreadingError
+from src.core.utils.safe_threading import (
     BoundedQueue,
     GracefulThread,
     ThreadSafeDict,

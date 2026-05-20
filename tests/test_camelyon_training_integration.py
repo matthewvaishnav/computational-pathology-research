@@ -15,7 +15,7 @@ import torch
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.data.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
+from src.data.datasets.camelyon_dataset import CAMELYONSlideIndex, SlideMetadata
 
 
 @pytest.fixture

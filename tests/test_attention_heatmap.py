@@ -16,7 +16,7 @@ import pytest
 # Use non-interactive backend for testing
 matplotlib.use("Agg")
 
-from src.visualization.attention_heatmap import AttentionHeatmapGenerator
+from src.features.interpretability.visualization.attention_heatmap import AttentionHeatmapGenerator
 
 
 @pytest.fixture

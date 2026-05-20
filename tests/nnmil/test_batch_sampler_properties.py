@@ -12,7 +12,7 @@ import torch
 
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
-from src.data.batch_samplers import (
+from src.data.loaders.batch_samplers import (
     BalancedBatchSampler,
     RegressionBatchSampler,
     SurvivalBatchSampler,
