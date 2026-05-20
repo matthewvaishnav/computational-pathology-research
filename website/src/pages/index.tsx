@@ -10,29 +10,29 @@ export default function Home(): ReactNode {
     <Layout
       title="Computational Pathology Research Platform"
       description="A comprehensive computational pathology research platform with foundation model integration, clinical deployment capabilities, and rigorous benchmarking systems.">
-      
+
       <main className={styles.main}>
         <div className={styles.paperContainer}>
           {/* Medical Paper Header */}
           <header className={styles.paperHeader}>
             <Heading as="h1" className={styles.paperTitle}>
-              HistoCore: A Production-Grade Computational Pathology Platform for Clinical AI Deployment
+              Computational Pathology Research Platform: Production-Grade Framework for Clinical AI Deployment
             </Heading>
-            
+
             <div className={styles.authors}>
               <span className={styles.author}>Matthew Vaishnav</span>
             </div>
-            
+
             <div className={styles.affiliation}>
               Computational Pathology Research Laboratory
             </div>
-            
+
             <div className={styles.paperMeta}>
               <span className={styles.metaItem}>Research Platform</span>
               <span className={styles.metaItem}>•</span>
               <span className={styles.metaItem}>Version 2.0</span>
               <span className={styles.metaItem}>•</span>
-              <span className={styles.metaItem}>2024</span>
+              <span className={styles.metaItem}>2026</span>
             </div>
           </header>
 
@@ -40,16 +40,16 @@ export default function Home(): ReactNode {
           <section className={styles.abstract}>
             <h2 className={styles.sectionTitle}>Abstract</h2>
             <p className={styles.abstractText}>
-              I present HistoCore, a comprehensive computational pathology platform designed for clinical-scale 
-              deployment with integrated foundation models, security compliance, and production-ready inference 
-              capabilities. The platform addresses critical challenges in digital pathology including whole slide 
-              image (WSI) processing, model interpretability, and regulatory compliance. The system demonstrates 
-              superior performance across multiple benchmarks with 93.94% AUC on CAMELYON17, 12.3ms inference time 
-              per patch, and comprehensive test coverage exceeding 4,740 automated tests. The platform integrates 
-              seamlessly with clinical PACS systems and provides HIPAA-compliant deployment options for healthcare 
-              environments. Additionally, HistoCore features advanced federated learning integration with 
-              pathology-specific aggregation strategies and a novel Distributed Medical Intelligence (DMI) system 
-              that enables multi-institutional collaboration without compromising patient privacy.
+              This platform provides a comprehensive computational pathology framework designed for clinical-scale
+              deployment with integrated foundation models, security compliance, and production-ready inference
+              capabilities. The system addresses critical challenges in digital pathology including whole slide
+              image (WSI) processing, model interpretability, federated learning, and regulatory compliance.
+              Key achievements include 93.94% AUC on PCam (327K patches, #1 vs 10 published baselines), 85.26%
+              accuracy on 32,768-sample test set, and 5,071+ automated tests with comprehensive coverage. The
+              platform features a hybrid architecture with clean separation of concerns, HIPAA-compliant deployment
+              with clinical PACS integration, advanced federated learning with pathology-specific aggregation
+              strategies (PathologyFL), and a novel Distributed Medical Intelligence (DMI) system enabling
+              multi-institutional collaboration without compromising patient privacy.
             </p>
           </section>
 
@@ -72,20 +72,20 @@ export default function Home(): ReactNode {
             <h2 className={styles.sectionTitle}>Performance Metrics</h2>
             <div className={styles.metricsGrid}>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>4,740</div>
+                <div className={styles.metricValue}>5,071+</div>
                 <div className={styles.metricLabel}>Automated Tests</div>
               </div>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>12.3ms</div>
-                <div className={styles.metricLabel}>Inference Time</div>
-              </div>
-              <div className={styles.metric}>
                 <div className={styles.metricValue}>93.94%</div>
-                <div className={styles.metricLabel}>CAMELYON17 AUC</div>
+                <div className={styles.metricLabel}>PCam AUC</div>
               </div>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>Clinical</div>
-                <div className={styles.metricLabel}>Deployment Ready</div>
+                <div className={styles.metricValue}>85.26%</div>
+                <div className={styles.metricLabel}>PCam Accuracy</div>
+              </div>
+              <div className={styles.metric}>
+                <div className={styles.metricValue}>Hybrid</div>
+                <div className={styles.metricLabel}>Architecture</div>
               </div>
             </div>
           </section>
@@ -94,7 +94,7 @@ export default function Home(): ReactNode {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>System Architecture</h2>
             <p className={styles.sectionText}>
-              The HistoCore platform is built on a modular architecture supporting multiple deployment scenarios 
+              The HistoCore platform is built on a modular architecture supporting multiple deployment scenarios
               from research environments to clinical production systems. The core components include:
             </p>
             <ul className={styles.architectureList}>
@@ -112,11 +112,11 @@ export default function Home(): ReactNode {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Federated Learning Integration & Distributed Medical Intelligence</h2>
             <p className={styles.sectionText}>
-              HistoCore features advanced federated learning capabilities that enable multi-hospital AI training 
-              without sharing patient data, combined with a novel Distributed Medical Intelligence (DMI) system 
+              HistoCore features advanced federated learning capabilities that enable multi-hospital AI training
+              without sharing patient data, combined with a novel Distributed Medical Intelligence (DMI) system
               for medical knowledge collaboration.
             </p>
-            
+
             <h3 className={styles.subsectionTitle}>PathologyFL: Expertise-Weighted Aggregation</h3>
             <ul className={styles.architectureList}>
               <li><strong>Hospital Expertise Weighting:</strong> Cancer centers receive higher weights than community hospitals</li>
@@ -166,10 +166,6 @@ export default function Home(): ReactNode {
                 <h3>Security & Compliance</h3>
                 <p>HIPAA compliance and security implementation</p>
               </Link>
-              <Link to="/docs/FEDERATED_LEARNING" className={styles.docLink}>
-                <h3>Federated Learning & DMI</h3>
-                <p>Multi-hospital training and distributed medical intelligence</p>
-              </Link>
               <Link to="https://github.com/matthewvaishnav/computational-pathology-research" className={styles.docLink}>
                 <h3>Source Code</h3>
                 <p>Complete implementation and research codebase</p>
@@ -181,12 +177,12 @@ export default function Home(): ReactNode {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Citation</h2>
             <div className={styles.citation}>
-              <pre>{`@software{vaishnav2024histocore,
-  title={HistoCore: A Production-Grade Computational Pathology Platform},
+              <pre>{`@software{vaishnav2026computational_pathology,
+  title={Computational Pathology Research Platform: Production-Grade Framework for Clinical AI Deployment},
   author={Vaishnav, Matthew},
-  year={2024},
+  year={2026},
   url={https://github.com/matthewvaishnav/computational-pathology-research},
-  note={Research Platform for Clinical AI Deployment}
+  note={Research Platform v2.0 with PathologyFL and DMI}
 }`}</pre>
             </div>
           </section>
