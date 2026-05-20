@@ -7,7 +7,7 @@ to combine imaging features with clinical metadata for improved diagnostic predi
 
 import torch
 
-from src.clinical import (
+from src.features.clinical.workflow import (
     AlcoholConsumption,
     ClinicalMetadata,
     ExerciseFrequency,

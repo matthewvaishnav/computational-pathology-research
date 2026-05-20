@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from src.api.dependencies import get_current_user
 from src.api.validators import validate_limit
-from src.database import AuditOperations, UserOperations, get_db_session
+from src.platform.database import AuditOperations, UserOperations, get_db_session
 
 logger = logging.getLogger(__name__)
 

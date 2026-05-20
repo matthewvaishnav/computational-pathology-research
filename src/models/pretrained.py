@@ -181,15 +181,15 @@ class PretrainedFeatureExtractor(nn.Module):
 
                     return DistributedMedicalIntelligence()
                 elif model_type == "attention_mil":
-                    from ..models.attention_mil import AttentionMIL
+                    from ..models.mil.attention_mil import AttentionMIL
 
                     return AttentionMIL(feature_dim=2048, hidden_dim=256, num_classes=2)
                 elif model_type == "clam":
-                    from ..models.attention_mil import CLAM
+                    from ..models.mil.attention_mil import CLAM
 
                     return CLAM(feature_dim=2048, hidden_dim=256, num_classes=2)
                 elif model_type == "transmil":
-                    from ..models.attention_mil import TransMIL
+                    from ..models.mil.attention_mil import TransMIL
 
                     return TransMIL(feature_dim=2048, hidden_dim=256, num_classes=2)
 

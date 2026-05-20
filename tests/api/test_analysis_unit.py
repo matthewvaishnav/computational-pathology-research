@@ -67,7 +67,7 @@ class TestAnalysisRouterComponents:
             content = f.read()
 
         # Check for database imports
-        assert "from src.database import" in content
+        assert "from src.platform.database import" in content
         assert "AnalysisOperations" in content
         assert "CaseOperations" in content
         assert "DicomOperations" in content

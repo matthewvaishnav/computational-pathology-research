@@ -10,7 +10,7 @@ This example shows how to:
 
 import torch
 
-from src.clinical import (
+from src.features.clinical.workflow import (
     ClinicalMetadata,
     ClinicalThresholdSystem,
     DiseaseTaxonomy,

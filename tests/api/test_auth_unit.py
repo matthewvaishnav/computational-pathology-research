@@ -204,7 +204,7 @@ class TestAuthRouterComponents:
             content = f.read()
 
         # Check for database imports and usage
-        assert "from src.database import" in content
+        assert "from src.platform.database import" in content
         assert "UserOperations" in content
         assert "get_db_session" in content
 
