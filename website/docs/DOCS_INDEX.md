@@ -10,6 +10,10 @@ Comprehensive documentation for HistoCore - the production-grade computational p
 
 ---
 
+## Project Status
+
+- [**Current Status (May 2026)**](https://github.com/matthewvaishnav/computational-pathology-research/blob/main/docs/CURRENT_STATUS.md) - Latest development progress, benchmarks, and roadmap
+
 ## Getting Started
 
 ### Installation and Setup
@@ -306,6 +310,7 @@ Historical documentation and implementation notes are available in [archive/](ht
 ---
 
 &lt;div class="footer-note">
-  &lt;p&gt;&lt;em&gt;Last updated: April 2026&lt;/em&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;📊 Current Status:&lt;/strong&gt; Week 7 of 12 for TransnnMIL v2.0 development. See &lt;a href="CURRENT_STATUS">Current Status&lt;/a&gt; for detailed progress.&lt;/p&gt;
+  &lt;p&gt;&lt;em&gt;Last updated: May 14, 2026&lt;/em&gt;&lt;/p&gt;
   &lt;p&gt;For questions or suggestions, please &lt;a href="https://github.com/matthewvaishnav/histocore/issues">open an issue&lt;/a&gt;.&lt;/p&gt;
 &lt;/div&gt;

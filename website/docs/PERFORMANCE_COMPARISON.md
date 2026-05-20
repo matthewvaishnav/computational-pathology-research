@@ -37,25 +37,6 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 ---
 
-## Statistical Significance Analysis
-
-HistoCore demonstrates **statistically significant improvements** over state-of-the-art methods with **Large Effect** sizes across all comparisons:
-
-| Competitor | AUC Improvement | Effect Size | Parameter Efficiency |
-|------------|-----------------|-------------|---------------------|
-| Swin-Transformer (2021) | +0.82% | Large | 0.14x fewer parameters |
-| ConvNeXt (2022) | +1.03% | Large | 0.43x fewer parameters |
-| ViT-Base (2021) | +1.15% | Large | 0.14x fewer parameters |
-| PathViT (2023) | +1.37% | Large | 0.27x fewer parameters |
-| MedViT (2023) | +1.73% | Large | 0.55x fewer parameters |
-| HistoNet (2022) | +2.13% | Large | 0.39x fewer parameters |
-| EfficientNet-B0 (2019) | +2.85% | Large | 2.30x more parameters |
-| ResNet-50 (2016) | +4.13% | Large | 0.48x fewer parameters |
-| DenseNet-121 (2017) | +4.76% | Large | 1.53x more parameters |
-| ResNet-18 (2018) | +5.67% | Large | 1.04x more parameters |
-
----
-
 ## Training Speed Comparison
 
 ### Time to 90% AUC
@@ -183,13 +164,13 @@ Test AUC (%)
 95  │                    ● Full Scale (5.5h)
     │                  ● Fast Improved (4.5h)
     │              ● HistoCore Ultra Fast (2-3h)
-94  │              
-    │            
+94  │
+    │
 93  │          ● PathML (8-12h)
-    │        
+    │
 92  │      ● CLAM (10-15h)
-    │    
-91  │  
+    │
+91  │
     │
 90  │
     │● Baseline (20-40h)
@@ -271,20 +252,8 @@ All benchmarks are reproducible using:
 ```bash
 git clone https://github.com/matthewvaishnav/histocore.git
 cd histocore
-
-# Run comprehensive benchmark suite (all 11 methods)
-python experiments/comprehensive_benchmark_suite.py
-
-# Train HistoCore only
 python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
 ```
-
-**Benchmark Protocol:**
-- All methods trained on identical PCam dataset splits
-- Standardized hyperparameters where applicable
-- Same evaluation metrics (AUC, Accuracy, F1)
-- Statistical significance via bootstrap confidence intervals
-- Results validated across 3 independent runs
 
 ---
 
@@ -349,12 +318,12 @@ python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.ya
 
 ## Future Benchmarks
 
-Planned benchmarks:
-- **CAMELYON16** (full WSI classification) - in progress
-- **PANDA** (prostate cancer grading) - dataset downloading
+I plan to benchmark on:
+- **CAMELYON16** (full WSI classification)
 - **TCGA** (multi-cancer classification)
-- **Multi-GPU** scaling analysis
-- **Distributed federated** training benchmarks
+- **Custom datasets** (user-submitted)
+- **Multi-GPU** scaling
+- **Distributed training** (federated)
 
 Stay tuned for updates!
 
@@ -372,6 +341,5 @@ HistoCore achieves the **best balance** of:
 
 ---
 
-*Benchmarks last updated: May 2026*
-*Comprehensive benchmark suite validated across 3 independent runs*
+*Benchmarks last updated: April 2026*
 *For questions or to submit your own benchmarks, open an issue on [GitHub](https://github.com/matthewvaishnav/histocore/issues)*
