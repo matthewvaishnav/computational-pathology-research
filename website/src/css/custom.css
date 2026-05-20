@@ -14,34 +14,39 @@
   /* Clean Medical Background */
   --ifm-background-color: #ffffff;
   --ifm-background-surface-color: #fafafa;
-  
+
   /* Medical Typography */
   --ifm-font-family-base: 'Arial', 'Helvetica Neue', sans-serif;
   --ifm-heading-font-family: 'Times New Roman', 'Times', serif;
   --ifm-heading-font-weight: 600;
   --ifm-font-weight-bold: 600;
-  
+
   /* Layout */
   --ifm-navbar-height: 60px;
   --ifm-navbar-background-color: #ffffff;
   --ifm-navbar-link-color: #333333;
   --ifm-navbar-link-hover-color: #1565c0;
-  
+
   /* Text Colors - Medical Paper Style */
   --ifm-font-color-base: #212121;
   --ifm-font-color-secondary: #616161;
-  
+
   /* Borders */
   --ifm-toc-border-color: #e0e0e0;
   --ifm-hr-border-color: #e0e0e0;
   --ifm-table-border-color: #e0e0e0;
-  
+
+  /* Shadows */
+  --hc-border: #e0e0e0;
+  --hc-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --hc-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+
   /* Footer */
   --ifm-footer-background-color: #f5f5f5;
   --ifm-footer-color: #757575;
   --ifm-footer-link-color: #1565c0;
   --ifm-footer-title-color: #212121;
-  
+
   /* Code */
   --ifm-code-font-size: 0.875rem;
   --ifm-code-background: #f5f5f5;
@@ -52,22 +57,33 @@
 
 [data-theme='dark'] {
   --ifm-color-primary: #90caf9;
-  --ifm-color-primary-dark: #42a5f5;
-  --ifm-color-primary-darker: #1976d2;
-  --ifm-color-primary-darkest: #1565c0;
+  --ifm-color-primary-dark: #64b5f6;
+  --ifm-color-primary-darker: #42a5f5;
+  --ifm-color-primary-darkest: #1976d2;
   --ifm-color-primary-light: #bbdefb;
   --ifm-color-primary-lighter: #e3f2fd;
   --ifm-color-primary-lightest: #f3e5f5;
-  
-  --ifm-background-color: #121212;
-  --ifm-background-surface-color: #1e1e1e;
-  --ifm-navbar-background-color: #121212;
-  --ifm-navbar-link-color: #e0e0e0;
+
+  --ifm-background-color: #0d1117;
+  --ifm-background-surface-color: #161b22;
+  --ifm-navbar-background-color: #0d1117;
+  --ifm-navbar-link-color: #e6edf3;
   --ifm-navbar-link-hover-color: #90caf9;
-  --ifm-footer-background-color: #0a0a0a;
-  
-  --ifm-font-color-base: #e0e0e0;
-  --ifm-font-color-secondary: #bdbdbd;
+  --ifm-footer-background-color: #010409;
+
+  --ifm-font-color-base: #e6edf3;
+  --ifm-font-color-secondary: #8b949e;
+
+  --ifm-toc-border-color: #30363d;
+  --ifm-hr-border-color: #30363d;
+  --ifm-table-border-color: #30363d;
+
+  --ifm-code-background: #161b22;
+
+  /* Improved dark mode borders */
+  --hc-border: #30363d;
+  --hc-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --hc-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 [data-theme='light'] {
@@ -78,14 +94,14 @@
   --ifm-color-primary-light: #1976d2;
   --ifm-color-primary-lighter: #42a5f5;
   --ifm-color-primary-lightest: #90caf9;
-  
+
   --ifm-background-color: #ffffff;
   --ifm-background-surface-color: #fafafa;
   --ifm-navbar-background-color: #ffffff;
   --ifm-navbar-link-color: #333333;
   --ifm-navbar-link-hover-color: #1565c0;
   --ifm-footer-background-color: #f5f5f5;
-  
+
   --ifm-font-color-base: #212121;
   --ifm-font-color-secondary: #616161;
 }
@@ -276,25 +292,53 @@ body {
 [data-theme='dark'] code,
 [data-theme='dark'] pre,
 [data-theme='dark'] .prism-code {
-  -webkit-font-smoothing: subpixel-antialiased;
-  -moz-osx-font-smoothing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-weight: 400;
 }
 
 [data-theme='dark'] .theme-doc-markdown code {
-  background: #2d2d2d;
-  border-color: #404040;
-  color: #e0e0e0;
+  background: #161b22;
+  border-color: #30363d;
+  color: #e6edf3;
 }
 
 [data-theme='dark'] .theme-code-block {
-  background: #1e1e1e;
-  border-color: #404040;
+  background: #0d1117;
+  border-color: #30363d;
 }
 
 [data-theme='dark'] .prism-code {
-  background: #1e1e1e !important;
+  background: #0d1117 !important;
+}
+
+/* Dark mode improvements for better readability */
+[data-theme='dark'] .navbar {
+  border-bottom-color: #30363d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .theme-doc-markdown h1,
+[data-theme='dark'] .theme-doc-markdown h2,
+[data-theme='dark'] .theme-doc-markdown h3 {
+  border-bottom-color: #30363d;
+}
+
+[data-theme='dark'] .theme-doc-markdown blockquote {
+  background: rgba(144, 202, 249, 0.1);
+  border-left-color: #90caf9;
+}
+
+[data-theme='dark'] .card,
+[data-theme='dark'] .pagination-nav__link {
+  background: #161b22;
+  border-color: #30363d;
+}
+
+[data-theme='dark'] .card:hover,
+[data-theme='dark'] .pagination-nav__link:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .theme-code-block {
@@ -451,7 +495,7 @@ body {
   .navbar__items--right .navbar__item {
     display: none;
   }
-  
+
   .navbar__items--right .navbar__item:last-child {
     display: flex;
   }
@@ -460,7 +504,7 @@ body {
     max-width: 100%;
     padding: 0 1rem;
   }
-  
+
   .theme-doc-main {
     padding: 0 1rem !important;
   }
@@ -470,15 +514,15 @@ body {
   .navbar {
     padding: 0 1rem;
   }
-  
+
   .theme-doc-markdown h1 {
     font-size: 1.75rem;
   }
-  
+
   .theme-doc-markdown h2 {
     font-size: 1.5rem;
   }
-  
+
   .theme-doc-main {
     padding: 0 0.75rem !important;
   }
