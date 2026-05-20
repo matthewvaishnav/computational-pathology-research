@@ -3,8 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'HistoCore Research Platform',
-  tagline: 'Computational Pathology Research Platform for Clinical AI Deployment',
+  title: 'Computational Pathology Research Platform',
+  tagline: 'Production-Grade Framework for Clinical AI Deployment',
   favicon: 'img/favicon.svg',
   future: {
     v4: true,
@@ -99,7 +99,7 @@ const config: Config = {
     },
     navbar: {
       hideOnScroll: false,
-      title: 'HistoCore Research',
+      title: 'Computational Pathology Research',
       items: [
         {to: '/docs/GETTING_STARTED', label: 'Documentation', position: 'left'},
         {to: '/docs/FOUNDATION_MODELS', label: 'Models', position: 'left'},
@@ -152,7 +152,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `© ${new Date().getFullYear()} HistoCore Research Platform. Built for computational pathology research.`,
+      copyright: `© ${new Date().getFullYear()} Computational Pathology Research Platform. Built for computational pathology research.`,
     },
     prism: {
       theme: prismThemes.github,
@@ -174,7 +174,7 @@ const config: Config = {
       {
         name: 'description',
         content:
-          'HistoCore is a production-grade computational pathology platform with foundation model integration, security compliance, and clinical deployment capabilities.',
+          'Computational Pathology Research Platform is a production-grade framework with foundation model integration, security compliance, and clinical deployment capabilities. Features PathologyFL and DMI for multi-institutional collaboration.',
       },
     ],
   } satisfies Preset.ThemeConfig,
