@@ -6,12 +6,10 @@ to automatically derive optimal hyperparameters based on dataset characteristics
 """
 
 import logging
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import torch
 import yaml
 
 

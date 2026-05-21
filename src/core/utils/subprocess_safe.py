@@ -6,7 +6,7 @@ Provides safe wrappers for subprocess calls to prevent command injection.
 
 import logging
 import subprocess
-from typing import List, Optional, Union
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -12,14 +12,12 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, List, Tuple, TypeVar
 
 import torch
 
 from ..utils.constants import (
     DEFAULT_BATCH_SIZE,
-    MAX_MEMORY_PERCENT,
-    MEMORY_PRESSURE_THRESHOLD,
 )
 
 logger = logging.getLogger(__name__)
