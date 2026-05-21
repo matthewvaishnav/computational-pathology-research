@@ -2,7 +2,7 @@
 
 ## Overview
 
-HistoCore includes a production-ready PACS (Picture Archiving and Communication System) integration system that enables seamless integration with hospital imaging infrastructure. The system provides automated workflow orchestration for retrieving WSI studies from PACS, running AI analysis, and storing results back to PACS for radiologist review.
+the platform includes a production-ready PACS (Picture Archiving and Communication System) integration system that enables seamless integration with hospital imaging infrastructure. The system provides automated workflow orchestration for retrieving WSI studies from PACS, running AI analysis, and storing results back to PACS for radiologist review.
 
 **Status**: Production-ready with 40/48 correctness properties validated (83% complete) using property-based testing.
 
@@ -163,7 +163,7 @@ with PACSService(config_path=".kiro/pacs/config.production.yaml") as service:
     sr_result = service.store_analysis_results(
         study_instance_uid="1.2.840.113619.2.55.3.123456789",
         analysis_results={
-            "algorithm_name": "HistoCore-v1.0",
+            "algorithm_name": "the platform-v1.0",
             "findings": [
                 {
                     "finding_type": "tumor_detection",
@@ -186,21 +186,21 @@ pacs_endpoints:
     host: "pacs.hospital.org"
     port: 11112
     ae_title: "HOSPITAL_PACS"
-    calling_ae_title: "HISTOCORE"
+    calling_ae_title: "the platform"
     vendor: "GE"
     
   backup:
     host: "pacs-backup.hospital.org"
     port: 11112
     ae_title: "HOSPITAL_PACS_BACKUP"
-    calling_ae_title: "HISTOCORE"
+    calling_ae_title: "the platform"
     vendor: "GE"
 
 security:
   tls_enabled: true
   tls_version: "TLS_1_3"
-  cert_file: "/etc/ssl/certs/histocore.crt"
-  key_file: "/etc/ssl/private/histocore.key"
+  cert_file: "/etc/ssl/certs/the platform.crt"
+  key_file: "/etc/ssl/private/the platform.key"
   ca_bundle: "/etc/ssl/certs/ca-bundle.crt"
   mutual_auth: true
 
@@ -212,7 +212,7 @@ workflow:
 
 audit:
   enabled: true
-  log_directory: "/var/log/histocore/pacs_audit"
+  log_directory: "/var/log/the platform/pacs_audit"
   retention_years: 7
   encryption_enabled: true
 
@@ -221,7 +221,7 @@ notifications:
     enabled: true
     smtp_server: "smtp.hospital.org"
     smtp_port: 587
-    from_address: "histocore@hospital.org"
+    from_address: "the platform@hospital.org"
   
   sms:
     enabled: true
@@ -242,7 +242,7 @@ pacs_endpoints:
     host: "localhost"
     port: 11112
     ae_title: "ORTHANC"
-    calling_ae_title: "HISTOCORE_DEV"
+    calling_ae_title: "the platform_DEV"
     vendor: "Generic"
 
 security:
@@ -343,8 +343,8 @@ See [PACS_PROPERTY_TESTS_PROGRESS.md](../PACS_PROPERTY_TESTS_PROGRESS.md) for co
 - [ ] Configure PACS endpoints in `config.production.yaml`
 - [ ] Set up TLS certificates in `/etc/ssl/`
 - [ ] Configure environment variables for credentials
-- [ ] Set up audit log directory: `/var/log/histocore/pacs_audit`
-- [ ] Set up cache directory: `/var/histocore/pacs_cache`
+- [ ] Set up audit log directory: `/var/log/the platform/pacs_audit`
+- [ ] Set up cache directory: `/var/the platform/pacs_cache`
 - [ ] Test PACS connectivity: `telnet pacs.hospital.org 11112`
 - [ ] Verify C-FIND queries work
 - [ ] Test C-MOVE retrieval
@@ -451,7 +451,7 @@ workflow:
 ```yaml
 cache:
   enabled: true
-  directory: "/var/histocore/pacs_cache"
+  directory: "/var/the platform/pacs_cache"
   max_size_gb: 100
   ttl_hours: 24
 ```
@@ -504,9 +504,9 @@ DICOM C-STORE operations for storing results.
 For deployment assistance or questions:
 - **Documentation**: `.kiro/pacs/README.md`
 - **Configuration**: `.kiro/pacs/config.*.yaml`
-- **Logs**: `/var/log/histocore/pacs_service.log`
-- **Audit**: `/var/log/histocore/pacs_audit/`
-- **GitHub Issues**: https://github.com/matthewvaishnav/histocore/issues
+- **Logs**: `/var/log/the platform/pacs_service.log`
+- **Audit**: `/var/log/the platform/pacs_audit/`
+- **GitHub Issues**: https://github.com/matthewvaishnav/the platform/issues
 
 ## References
 

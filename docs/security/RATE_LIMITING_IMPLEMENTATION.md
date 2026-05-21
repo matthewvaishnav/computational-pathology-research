@@ -2,7 +2,7 @@
 
 ## Overview
 
-HistoCore implements comprehensive rate limiting to protect against abuse, DoS attacks, and resource exhaustion. The rate limiting system is environment-aware and integrates with the security audit trail.
+the platform implements comprehensive rate limiting to protect against abuse, DoS attacks, and resource exhaustion. The rate limiting system is environment-aware and integrates with the security audit trail.
 
 ## Architecture
 

@@ -17,11 +17,11 @@
 
 Dear Dr. [Last Name],
 
-I'm reaching out to explore a potential research collaboration between [Hospital Name] and HistoCore Medical AI. I've developed an AI-powered pathology system for lymph node metastasis detection and am seeking 1-2 academic medical centers as pilot partners for a multi-site clinical validation study.
+I'm reaching out to explore a potential research collaboration between [Hospital Name] and the platform Medical AI. I've developed an AI-powered pathology system for lymph node metastasis detection and am seeking 1-2 academic medical centers as pilot partners for a multi-site clinical validation study.
 
 ### What I've Built
 
-**HistoCore** is an FDA-ready AI system for whole-slide image analysis with:
+**the platform** is an FDA-ready AI system for whole-slide image analysis with:
 - **85.26% accuracy** (95% CI: 84.83%-85.63%) on PatchCamelyon benchmark (32,768 test samples)
 - **0.9394 AUC** on real clinical histopathology data
 - **HIPAA-compliant** PACS integration with TLS 1.3 encryption
@@ -102,14 +102,14 @@ If this aligns with [Hospital Name]'s research priorities, I'd welcome a 30-minu
 
 I'm available for a call at your convenience. You can also review the technical documentation and validation results at: https://github.com/matthewvaishnav/computational-pathology-research
 
-Thank you for considering this collaboration. I believe a partnership between [Hospital Name] and HistoCore could significantly advance the field of AI-assisted pathology.
+Thank you for considering this collaboration. I believe a partnership between [Hospital Name] and the platform could significantly advance the field of AI-assisted pathology.
 
 Best regards,
 
 Matthew Vaishnav  
 Founder & Lead Developer  
-HistoCore Medical AI  
-Email: matthew@histocore-medical.ai  
+the platform Medical AI  
+Email: matthew@the platform-medical.ai  
 Phone: +1 (650) 555-0197  
 GitHub: https://github.com/matthewvaishnav/computational-pathology-research
 
@@ -166,8 +166,8 @@ Worth a 15-minute call to explore?
 
 Best,  
 Matthew Vaishnav  
-HistoCore Medical AI  
-matthew@histocore-medical.ai
+the platform Medical AI  
+matthew@the platform-medical.ai
 
 ---
 
@@ -301,4 +301,4 @@ matthew@histocore-medical.ai
 
 ---
 
-**Note**: Update contact information (matthew@histocore-medical.ai, phone numbers) with your actual details before sending.
+**Note**: Update contact information (matthew@the platform-medical.ai, phone numbers) with your actual details before sending.

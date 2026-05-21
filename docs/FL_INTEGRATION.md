@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide shows how to integrate HistoCore's federated learning system into your digital pathology workflow. The FL system enables privacy-preserving multi-site training across hospitals without sharing patient data.
+This guide shows how to integrate the platform's federated learning system into your digital pathology workflow. The FL system enables privacy-preserving multi-site training across hospitals without sharing patient data.
 
 ## Architecture
 
@@ -51,12 +51,12 @@ This guide shows how to integrate HistoCore's federated learning system into you
 
 ## Installation
 
-### 1. Install HistoCore
+### 1. Install the platform
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/histocore.git
-cd histocore
+git clone https://github.com/yourusername/the platform.git
+cd the platform
 
 # Create virtual environment
 python -m venv venv
@@ -139,7 +139,7 @@ pacs:
   enable: true
   host: "pacs.hospital.local"
   port: 11112
-  aet: "HISTOCORE"
+  aet: "the platform"
 ```
 
 ## Usage
@@ -199,7 +199,7 @@ from src.federated.client.pacs_connector import PACSConnector
 pacs = PACSConnector(
     host="pacs.hospital.local",
     port=11112,
-    aet="HISTOCORE",
+    aet="the platform",
     calling_aet="FL_CLIENT"
 )
 
@@ -444,8 +444,8 @@ evaluator.generate_report(
 ## Support
 
 - **Documentation**: [docs/federated_learning/](docs/federated_learning/)
-- **GitHub Issues**: https://github.com/yourusername/histocore/issues
-- **Email**: support@histocore.org
+- **GitHub Issues**: https://github.com/yourusername/the platform/issues
+- **Email**: support@the platform.org
 
 ## References
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Security testing validates that security controls work as intended and vulnerabilities are prevented. This guide covers security testing approaches for HistoCore.
+Security testing validates that security controls work as intended and vulnerabilities are prevented. This guide covers security testing approaches for the platform.
 
 ## Testing Pyramid
 

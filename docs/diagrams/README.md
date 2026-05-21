@@ -1,6 +1,6 @@
 # Architecture Diagrams
 
-This directory contains generated architecture diagrams for HistoCore.
+This directory contains generated architecture diagrams for the platform.
 
 ## Available Diagrams
 

@@ -39,18 +39,18 @@ Use secrets manager:
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: histocore-secrets
+  name: the platform-secrets
 spec:
   refreshInterval: 1h
   secretStoreRef:
     name: vault-backend
     kind: SecretStore
   target:
-    name: histocore-secrets
+    name: the platform-secrets
   data:
     - secretKey: DB_PASSWORD
       remoteRef:
-        key: histocore/database
+        key: the platform/database
         property: password
 ```
 
@@ -58,12 +58,12 @@ spec:
 
 ```bash
 # Create secret from literal
-kubectl create secret generic histocore-secrets \
+kubectl create secret generic the platform-secrets \
   --from-literal=DB_PASSWORD='your-password' \
   --from-literal=ADMIN_API_KEY='your-key'
 
 # Create secret from file
-kubectl create secret generic histocore-secrets \
+kubectl create secret generic the platform-secrets \
   --from-env-file=.env.production
 ```
 
@@ -79,9 +79,9 @@ helm install vault hashicorp/vault
 kubectl exec -it vault-0 -- vault operator init
 
 # Store secret
-vault kv put secret/histocore/database \
+vault kv put secret/the platform/database \
   password="secure-password" \
-  username="histocore_user"
+  username="the platform_user"
 ```
 
 ### Access from App
@@ -93,7 +93,7 @@ client = hvac.Client(url='http://vault:8200')
 client.token = os.getenv('VAULT_TOKEN')
 
 secret = client.secrets.kv.v2.read_secret_version(
-    path='histocore/database'
+    path='the platform/database'
 )
 password = secret['data']['data']['password']
 ```
@@ -126,7 +126,7 @@ from azure.keyvault.secrets import SecretClient
 
 credential = DefaultAzureCredential()
 client = SecretClient(
-    vault_url="https://histocore-vault.vault.azure.net/",
+    vault_url="https://the platform-vault.vault.azure.net/",
     credential=credential
 )
 
@@ -143,7 +143,7 @@ password = secret.value
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: histocore-secrets
+  name: the platform-secrets
 spec:
   refreshInterval: 15m  # Check every 15 minutes
   target:
@@ -158,10 +158,10 @@ spec:
 NEW_PASSWORD=$(openssl rand -base64 32)
 
 # 2. Update in secrets manager
-vault kv put secret/histocore/database password="$NEW_PASSWORD"
+vault kv put secret/the platform/database password="$NEW_PASSWORD"
 
 # 3. Restart pods to pick up new secret
-kubectl rollout restart deployment/histocore
+kubectl rollout restart deployment/the platform
 ```
 
 ## Best Practices

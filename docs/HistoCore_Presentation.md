@@ -1,10 +1,10 @@
-# HistoCore: Revolutionary Medical AI Framework
+# the platform: Revolutionary Medical AI Framework
 ## Transforming Pathology Through Medical Expertise Weighting
 
 ---
 
 ## Slide 1: Title
-# HistoCore
+# the platform
 ## The First AI Framework That Makes Cancer Centers Smarter Than Community Hospitals
 
 **Subtitle:** Achieving 89% Better Rare Cancer Detection Through Medical Expertise Weighting
@@ -53,7 +53,7 @@
 
 ---
 
-## Slide 4: HistoCore Solution
+## Slide 4: the platform Solution
 
 ### Distributed Medical Intelligence (DMI)
 ```
@@ -113,7 +113,7 @@ Rural: 1.0 × 1.0 × 1.1 × 0.87 = 1.12x
 
 ## Slide 7: Competitive Analysis
 
-| Feature | Google TensorFlow FL | PySyft | PathAI | **HistoCore DMI** |
+| Feature | Google TensorFlow FL | PySyft | PathAI | **the platform DMI** |
 |---------|---------------------|---------|---------|-------------------|
 | **Medical Focus** | Generic ML | Generic | Pathology | ✅ **Pathology-optimized** |
 | **Expertise Weighting** | Equal weights | Equal weights | Manual | ✅ **Automated medical hierarchy** |
@@ -134,7 +134,7 @@ Rural: 1.0 × 1.0 × 1.1 × 0.87 = 1.12x
 **Case 1: Rare Ovarian Cancer**
 - 45-year-old woman, unusual ovarian mass
 - Traditional FL: 25.6% correct diagnosis → Missed cancer, delayed treatment
-- HistoCore DMI: 78.5% correct diagnosis → Early detection, better outcomes
+- the platform DMI: 78.5% correct diagnosis → Early detection, better outcomes
 - **Impact:** Potentially life-saving through earlier intervention
 
 **Case 2: Pediatric Brain Tumor**
@@ -154,7 +154,7 @@ Rural: 1.0 × 1.0 × 1.1 × 0.87 = 1.12x
 ### Production-Ready Medical AI Infrastructure
 
 ```
-HistoCore Framework
+the platform Framework
 ├── 🧠 DMI (Distributed Medical Intelligence)
 │   ├── Medical expertise weighting
 │   ├── Specialty matching algorithms
@@ -239,7 +239,7 @@ HistoCore Framework
 - Gaming of expertise metrics
 - Regulatory skepticism
 
-**HistoCore Solutions:**
+**the platform Solutions:**
 - ✅ **Rural hospital boost:** 20% weight increase for underserved areas
 - ✅ **Democratic fallback:** Equal weighting for routine cases
 - ✅ **Gaming detection:** External credential validation, audit trails

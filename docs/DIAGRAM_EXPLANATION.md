@@ -1,11 +1,11 @@
 # Architecture Diagram Explanation
 
-## HistoCore System Architecture
+## the platform System Architecture
 
-This diagram shows the complete HistoCore computational pathology framework:
+This diagram shows the complete the platform computational pathology framework:
 
 ```
-HistoCore System Architecture
+the platform System Architecture
 =============================
 ┌─────────────────────────────────────────────────────────────────────┐
 │                           INPUT LAYER                                │

@@ -5,7 +5,7 @@ title: Foundation Models
 
 # Foundation Models
 
-HistoCore integrates state-of-the-art foundation models pretrained on massive histopathology datasets, providing superior feature representations for downstream tasks.
+the platform integrates state-of-the-art foundation models pretrained on massive histopathology datasets, providing superior feature representations for downstream tasks.
 
 ## Overview
 
@@ -56,11 +56,11 @@ python scripts/download_foundation_models.py --list
 
 ## Claude 3.5 Sonnet Integration
 
-HistoCore now integrates with **Claude 3.5 Sonnet** via Puter.js, providing an intelligent research assistant for hypothesis generation, report analysis, and code explanation.
+the platform now integrates with **Claude 3.5 Sonnet** via Puter.js, providing an intelligent research assistant for hypothesis generation, report analysis, and code explanation.
 
 ### 1. Interactive Research Assistant
 
-The HistoCore documentation website includes an interactive Claude Research Assistant. This tool can be used to generate research hypotheses, explain model architectures, or assist with clinical validation strategies.
+The the platform documentation website includes an interactive Claude Research Assistant. This tool can be used to generate research hypotheses, explain model architectures, or assist with clinical validation strategies.
 
 ### 2. Python Research Client
 

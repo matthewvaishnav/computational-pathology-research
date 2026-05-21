@@ -58,7 +58,7 @@
 **Containment Commands**:
 ```bash
 # Stop affected service
-systemctl stop histocore-api
+systemctl stop the platform-api
 
 # Block suspicious IP
 iptables -A INPUT -s <suspicious-ip> -j DROP
@@ -142,7 +142,7 @@ python scripts/verify_security.py
 pytest tests/security/ -v
 
 # Restart services
-systemctl start histocore-api
+systemctl start the platform-api
 
 # Monitor logs
 tail -f logs/security_audit.log

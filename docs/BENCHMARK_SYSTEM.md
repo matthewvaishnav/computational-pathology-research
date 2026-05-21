@@ -5,7 +5,7 @@ title: Competitor Benchmark System
 
 # Competitor Benchmark System
 
-Automated framework for comparing HistoCore against PathML, CLAM, and baseline PyTorch under identical, reproducible conditions.
+Automated framework for comparing the platform against PathML, CLAM, and baseline PyTorch under identical, reproducible conditions.
 
 ---
 
@@ -14,7 +14,7 @@ Automated framework for comparing HistoCore against PathML, CLAM, and baseline P
 The benchmark system runs the same training task across all frameworks in isolated virtual environments, ensuring fair comparisons with identical data splits, random seeds, and hyperparameters.
 
 **Frameworks compared:**
-- **HistoCore** — this framework
+- **the platform** — this framework
 - **PathML** — pathml library
 - **CLAM** — Clustering-constrained Attention MIL
 - **PyTorch** — baseline vanilla PyTorch
@@ -31,7 +31,7 @@ experiments/benchmark_system/
 ├── orchestrator.py          # Coordinates full benchmark runs across frameworks
 ├── report_generator.py      # Generates JSON/HTML/Markdown reports with visualizations
 └── adapters/
-    ├── histocore_adapter.py # HistoCore framework integration
+    ├── the platform_adapter.py # the platform framework integration
     ├── pathml_adapter.py    # PathML framework integration
     ├── clam_adapter.py      # CLAM framework integration
     └── pytorch_adapter.py   # Baseline PyTorch integration
@@ -39,7 +39,7 @@ experiments/benchmark_system/
 
 ### `FrameworkManager`
 
-Manages isolated virtual environments per framework — no dependency conflicts between PathML, CLAM, and HistoCore.
+Manages isolated virtual environments per framework — no dependency conflicts between PathML, CLAM, and the platform.
 
 ```python
 from experiments.benchmark_system.framework_manager import FrameworkManager
@@ -103,7 +103,7 @@ task = TaskSpecification(
 # Run benchmark across all frameworks
 results = orchestrator.run_benchmark(
     task=task,
-    frameworks=["HistoCore", "PathML", "CLAM", "PyTorch"]
+    frameworks=["the platform", "PathML", "CLAM", "PyTorch"]
 )
 ```
 
@@ -157,7 +157,7 @@ python experiments/benchmark_system/example_orchestrator_usage.py
 python experiments/benchmark_system/example_orchestrator_usage.py --quick
 
 # Single framework
-python experiments/benchmark_system/example_orchestrator_usage.py --frameworks HistoCore
+python experiments/benchmark_system/example_orchestrator_usage.py --frameworks the platform
 
 # Generate reports from existing results
 python experiments/benchmark_system/example_orchestrator_usage.py --report-only
@@ -168,7 +168,7 @@ python experiments/benchmark_system/example_orchestrator_usage.py --report-only
 - ✅ Report Generator (Task 10)
 - ✅ Benchmark Orchestrator (Task 11)
 - ✅ Framework Adapters (Tasks 13.1-13.5)
-  - HistoCore, PathML, CLAM, PyTorch adapters complete
+  - the platform, PathML, CLAM, PyTorch adapters complete
   - 65 adapter tests passing
 - 🚧 VersionTracker (Task 14)
 - 🚧 CLI and main entry point (Task 15)
@@ -192,7 +192,7 @@ pytest tests/benchmark_system/test_configuration_properties.py \
 - `test_task_executor.py` — task translation, equivalence verification, execution
 - `test_orchestrator.py` — orchestration, checkpointing, error recovery
 - `test_report_generator.py` — report generation, visualization, format validation
-- `test_adapters.py` — all 4 framework adapters (HistoCore, PathML, CLAM, PyTorch)
+- `test_adapters.py` — all 4 framework adapters (the platform, PathML, CLAM, PyTorch)
 - `test_configuration_properties.py` — property-based config correctness
 - `test_serialization_properties.py` — property-based serialization round-trips
 

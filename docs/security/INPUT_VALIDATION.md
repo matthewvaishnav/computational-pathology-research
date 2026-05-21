@@ -2,7 +2,7 @@
 
 ## Overview
 
-Input validation is the first line of defense against injection attacks, data corruption, and application crashes. This guide covers secure input validation patterns for HistoCore.
+Input validation is the first line of defense against injection attacks, data corruption, and application crashes. This guide covers secure input validation patterns for the platform.
 
 ## Validation Principles
 
@@ -76,7 +76,7 @@ def process_file(filename: str):
     return process_image(safe_filename)
 ```
 
-## HistoCore Validation Utilities
+## the platform Validation Utilities
 
 ### InputValidator Class
 

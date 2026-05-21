@@ -2,7 +2,7 @@
 
 ## Overview
 
-Before deploying HistoCore to production with hospital PHI data, you **MUST** execute Business Associate Agreements (BAAs) with your cloud providers. This is a **HIPAA requirement** - without BAAs, you cannot legally store or process PHI in the cloud.
+Before deploying the platform to production with hospital PHI data, you **MUST** execute Business Associate Agreements (BAAs) with your cloud providers. This is a **HIPAA requirement** - without BAAs, you cannot legally store or process PHI in the cloud.
 
 ---
 
@@ -37,7 +37,7 @@ AWS provides BAAs automatically for eligible services. No manual request needed.
 **Cost**: Free (included with AWS account)
 
 #### 3. Verify HIPAA-Eligible Services
-Only certain AWS services are HIPAA-eligible. For HistoCore, use:
+Only certain AWS services are HIPAA-eligible. For the platform, use:
 
 **Compute**:
 - ✅ Amazon EC2 (virtual machines)
@@ -77,7 +77,7 @@ Full list: https://aws.amazon.com/compliance/hipaa-eligible-services-reference/
 ```bash
 # S3 bucket encryption (required for PHI)
 aws s3api put-bucket-encryption \
-  --bucket histocore-phi-data \
+  --bucket the platform-phi-data \
   --server-side-encryption-configuration '{
     "Rules": [{
       "ApplyServerSideEncryptionByDefault": {
@@ -99,18 +99,18 @@ aws ec2 create-volume \
 ```bash
 # CloudTrail (audit all API calls)
 aws cloudtrail create-trail \
-  --name histocore-audit-trail \
-  --s3-bucket-name histocore-audit-logs \
+  --name the platform-audit-trail \
+  --s3-bucket-name the platform-audit-logs \
   --is-multi-region-trail \
   --enable-log-file-validation
 
-aws cloudtrail start-logging --name histocore-audit-trail
+aws cloudtrail start-logging --name the platform-audit-trail
 ```
 
 **Configure VPC** (network isolation):
 ```bash
 # Create private VPC for PHI workloads
-aws ec2 create-vpc --cidr-block 10.0.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=histocore-phi-vpc}]'
+aws ec2 create-vpc --cidr-block 10.0.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=the platform-phi-vpc}]'
 ```
 
 #### 5. Document Compliance
@@ -181,7 +181,7 @@ Azure requires **manual BAA request** (not self-service like AWS).
 **Cost**: Free (included with Azure account)
 
 #### 3. Verify HIPAA-Eligible Services
-For HistoCore, use:
+For the platform, use:
 
 **Compute**:
 - ✅ Azure Virtual Machines
@@ -217,13 +217,13 @@ Full list: https://docs.microsoft.com/en-us/azure/compliance/offerings/offering-
 ```bash
 # Storage account encryption (required for PHI)
 az storage account create \
-  --name histocorephistorage \
-  --resource-group histocore-rg \
+  --name the platformphistorage \
+  --resource-group the platform-rg \
   --location eastus \
   --sku Standard_LRS \
   --encryption-services blob file \
   --encryption-key-source Microsoft.Keyvault \
-  --encryption-key-vault https://histocore-kv.vault.azure.net/ \
+  --encryption-key-vault https://the platform-kv.vault.azure.net/ \
   --encryption-key-name phi-encryption-key
 ```
 
@@ -231,18 +231,18 @@ az storage account create \
 ```bash
 # Azure Monitor (audit all operations)
 az monitor diagnostic-settings create \
-  --name histocore-audit-logs \
-  --resource /subscriptions/{subscription-id}/resourceGroups/histocore-rg \
+  --name the platform-audit-logs \
+  --resource /subscriptions/{subscription-id}/resourceGroups/the platform-rg \
   --logs '[{"category": "Administrative", "enabled": true}]' \
-  --workspace /subscriptions/{subscription-id}/resourceGroups/histocore-rg/providers/Microsoft.OperationalInsights/workspaces/histocore-logs
+  --workspace /subscriptions/{subscription-id}/resourceGroups/the platform-rg/providers/Microsoft.OperationalInsights/workspaces/the platform-logs
 ```
 
 **Configure Virtual Network**:
 ```bash
 # Create private VNet for PHI workloads
 az network vnet create \
-  --name histocore-phi-vnet \
-  --resource-group histocore-rg \
+  --name the platform-phi-vnet \
+  --resource-group the platform-rg \
   --address-prefix 10.0.0.0/16 \
   --subnet-name phi-subnet \
   --subnet-prefix 10.0.1.0/24
@@ -289,7 +289,7 @@ After executing BAAs, complete these steps:
 - [ ] Enable MFA for all admin accounts
 - [ ] Configure backup and disaster recovery
 
-### 3. Deploy HistoCore
+### 3. Deploy the platform
 - [ ] Deploy to HIPAA-compliant services only
 - [ ] Verify encryption at rest and in transit
 - [ ] Test audit logging (verify logs captured)
@@ -373,7 +373,7 @@ After executing BAAs, complete these steps:
 1. **This Week**: Execute AWS BAA (immediate)
 2. **Next Week**: Request Azure BAA (5-10 day wait)
 3. **Week 3**: Configure HIPAA-compliant infrastructure
-4. **Week 4**: Deploy HistoCore to test environment
+4. **Week 4**: Deploy the platform to test environment
 5. **Week 5**: Security assessment and compliance documentation
 6. **Week 6**: Ready for hospital pilot deployment
 
@@ -397,4 +397,4 @@ After executing BAAs, complete these steps:
 
 ---
 
-**Contact**: If you encounter issues, email support@histocore-medical.ai or call +1 (650) 555-0199.
+**Contact**: If you encounter issues, email support@the platform-medical.ai or call +1 (650) 555-0199.

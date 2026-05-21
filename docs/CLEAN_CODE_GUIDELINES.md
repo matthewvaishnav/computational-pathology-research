@@ -1,7 +1,7 @@
 # Clean Code Guidelines
 
 ## Overview
-This document outlines clean code practices for the HistoCore project.
+This document outlines clean code practices for the the platform project.
 
 ## Principles
 

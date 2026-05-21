@@ -1,8 +1,8 @@
-# Performance Comparison: HistoCore vs Competitors
+# Performance Comparison: the platform vs Competitors
 
 ## Executive Summary
 
-HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with **8-12x faster training** compared to unoptimized PyTorch baseline, making it ideal for rapid experimentation and production deployment.
+the platform achieves **95.37% validation AUC** and **93.100% validation AUC** with **8-12x faster training** compared to unoptimized PyTorch baseline, making it ideal for rapid experimentation and production deployment.
 
 **Note**: Competitor comparisons (PathML, CLAM) are based on published benchmarks and may use different hardware configurations. Direct head-to-head benchmarks on identical hardware are planned for future work.
 
@@ -12,11 +12,11 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 ### Test Set Performance
 
-**Note**: Competitor numbers are estimates from published literature and may use different hardware/configurations. HistoCore numbers are from direct benchmarks on RTX 4070.
+**Note**: Competitor numbers are estimates from published literature and may use different hardware/configurations. the platform numbers are from direct benchmarks on RTX 4070.
 
 | Framework | Validation AUC | Test Accuracy | Training Time | GPU | Parameters |
 |-----------|----------------|---------------|---------------|-----|------------|
-| **HistoCore** | **95.37%** | **85.26%** | **2-3 hours** | RTX 4070 | 12M |
+| **the platform** | **95.37%** | **85.26%** | **2-3 hours** | RTX 4070 | 12M |
 | PathML (est.) | ~92.0% | ~84.0% | 8-12 hours* | V100* | 15M |
 | CLAM (est.) | ~91.0% | ~83.5% | 10-15 hours* | V100* | 18M |
 | Baseline PyTorch | 89.0% | 82.0% | 20-40 hours | RTX 4070 | 12M |
@@ -38,7 +38,7 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 | Framework | Time to 90% AUC | Speedup vs Baseline |
 |-----------|-----------------|---------------------|
-| **HistoCore** | **1 hour** | **9x** |
+| **the platform** | **1 hour** | **9x** |
 | PathML | 4-6 hours | 3-4x |
 | CLAM | 5-8 hours | 2-3x |
 | Baseline | 9 hours | 1x |
@@ -47,7 +47,7 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 | Framework | it/s | Samples/sec | GPU Utilization |
 |-----------|------|-------------|-----------------|
-| **HistoCore** | **1.8-1.9** | **460-486** | **85%** |
+| **the platform** | **1.8-1.9** | **460-486** | **85%** |
 | PathML | 1.2-1.5 | 150-190 | 60% |
 | CLAM | 1.0-1.3 | 128-166 | 55% |
 | Baseline | 0.5-0.7 | 64-90 | 17% |
@@ -56,7 +56,7 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 ## Optimization Breakdown
 
-### HistoCore Optimizations
+### the platform Optimizations
 
 | Optimization | Speedup | Cumulative |
 |--------------|---------|------------|
@@ -108,7 +108,7 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 ### Dataset Size vs Training Time
 
-| Dataset Size | HistoCore | PathML | CLAM | Baseline |
+| Dataset Size | the platform | PathML | CLAM | Baseline |
 |--------------|-----------|--------|------|----------|
 | 10K samples | 15 min | 45 min | 1 hour | 2 hours |
 | 50K samples | 45 min | 3 hours | 4 hours | 8 hours |
@@ -116,7 +116,7 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 | **262K samples** | **2-3 hours** | **12 hours** | **15 hours** | **30 hours** |
 | 500K samples | 5.5 hours | 24 hours | 30 hours | 60 hours |
 
-**Scaling**: HistoCore maintains 3-5x advantage across dataset sizes!
+**Scaling**: the platform maintains 3-5x advantage across dataset sizes!
 
 ---
 
@@ -126,8 +126,8 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 | Configuration | Batch Size | Peak Memory | Samples/GB |
 |---------------|------------|-------------|------------|
-| **HistoCore (AMP)** | 256 | 8.2GB | 31.2 |
-| HistoCore (FP32) | 256 | 14.5GB | 17.7 |
+| **the platform (AMP)** | 256 | 8.2GB | 31.2 |
+| the platform (FP32) | 256 | 14.5GB | 17.7 |
 | PathML | 128 | 12.0GB | 10.7 |
 | CLAM | 128 | 13.5GB | 9.5 |
 | Baseline | 64 | 10.0GB | 6.4 |
@@ -142,12 +142,12 @@ HistoCore achieves **95.37% validation AUC** and **93.100% validation AUC** with
 
 | Framework | Single WSI | Batch (10 WSI) | Throughput |
 |-----------|-----------|----------------|------------|
-| **HistoCore** | **<5 sec** | **35 sec** | **1,000+ slides/day** |
+| **the platform** | **<5 sec** | **35 sec** | **1,000+ slides/day** |
 | PathML | 8-12 sec | 90 sec | 600 slides/day |
 | CLAM | 10-15 sec | 120 sec | 500 slides/day |
 | Baseline | 15-20 sec | 180 sec | 300 slides/day |
 
-**Clinical Viability**: HistoCore meets <5 second requirement for real-time use!
+**Clinical Viability**: the platform meets <5 second requirement for real-time use!
 
 ---
 
@@ -158,7 +158,7 @@ Test AUC (%)
     │
 95  │                    ● Full Scale (5.5h)
     │                  ● Fast Improved (4.5h)
-    │              ● HistoCore Ultra Fast (2-3h)
+    │              ● the platform Ultra Fast (2-3h)
 94  │              
     │            
 93  │          ● PathML (8-12h)
@@ -174,7 +174,7 @@ Test AUC (%)
       0h    5h    10h   15h   20h   25h   30h   35h   40h
 ```
 
-**Sweet Spot**: HistoCore Ultra Fast achieves 95.37% validation AUC in 2-3 hours!
+**Sweet Spot**: the platform Ultra Fast achieves 95.37% validation AUC in 2-3 hours!
 
 ---
 
@@ -184,18 +184,18 @@ Test AUC (%)
 
 | Framework | Training Time | AWS Cost | Experiments/Day | Monthly Cost (10 exp) |
 |-----------|---------------|----------|-----------------|----------------------|
-| **HistoCore** | 2-3 hours | **$7.65** | **8** | **$77** |
+| **the platform** | 2-3 hours | **$7.65** | **8** | **$77** |
 | PathML | 10 hours | $30.60 | 2 | $306 |
 | CLAM | 15 hours | $45.90 | 1 | $459 |
 | Baseline | 30 hours | $91.80 | 0.8 | $918 |
 
-**Savings**: HistoCore reduces cloud costs by 3-10x!
+**Savings**: the platform reduces cloud costs by 3-10x!
 
 ---
 
 ## Feature Comparison
 
-| Feature | HistoCore | PathML | CLAM | QuPath |
+| Feature | the platform | PathML | CLAM | QuPath |
 |---------|-----------|--------|------|--------|
 | **Training Speed** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | N/A |
 | **Accuracy** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
@@ -245,8 +245,8 @@ Test AUC (%)
 
 All benchmarks are reproducible using:
 ```bash
-git clone https://github.com/matthewvaishnav/histocore.git
-cd histocore
+git clone https://github.com/matthewvaishnav/the platform.git
+cd the platform
 python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
 ```
 
@@ -285,7 +285,7 @@ python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.ya
 
 ## When to Use Each Framework
 
-### Use HistoCore When:
+### Use the platform When:
 - ✅ You need **fast iteration** (rapid experimentation)
 - ✅ You have **consumer GPUs** (RTX 4070, 4090)
 - ✅ You need **production deployment** (PACS, real-time)
@@ -326,7 +326,7 @@ Stay tuned for updates!
 
 ## Conclusion
 
-HistoCore achieves the **best balance** of:
+the platform achieves the **best balance** of:
 - **Speed**: 6-10x faster training (2-3 hours vs 30 hours baseline)
 - **Accuracy**: 95.37% validation AUC (competitive with state-of-the-art)
 - **Efficiency**: Consumer GPU support (RTX 4070)
@@ -337,4 +337,4 @@ HistoCore achieves the **best balance** of:
 ---
 
 *Benchmarks last updated: April 2026*
-*For questions or to submit your own benchmarks, open an issue on [GitHub](https://github.com/matthewvaishnav/histocore/issues)*
+*For questions or to submit your own benchmarks, open an issue on [GitHub](https://github.com/matthewvaishnav/the platform/issues)*

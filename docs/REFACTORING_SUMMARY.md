@@ -1,7 +1,7 @@
 # Refactoring Summary
 
 ## Overview
-This document summarizes the clean code refactoring applied to the HistoCore framework.
+This document summarizes the clean code refactoring applied to the the platform framework.
 
 ## Refactorings Applied
 

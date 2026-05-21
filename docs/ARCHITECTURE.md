@@ -1,10 +1,10 @@
-# HistoCore Architecture
+# the platform Architecture
 
 ## System Overview
 
-![HistoCore Architecture Overview](assets/architecture-overview.png)
+![the platform Architecture Overview](assets/architecture-overview.png)
 
-*Figure 1: HistoCore system architecture showing the complete stack from data processing to clinical integration.*
+*Figure 1: the platform system architecture showing the complete stack from data processing to clinical integration.*
 
 ## AttentionMIL Model Architecture
 
@@ -152,11 +152,11 @@ Input: Whole Slide Image (WSI)
 │      │   └─> Patient ID, Study Date, Modality                   │
 │      │                                                           │
 │      ├─> DICOM C-MOVE (Retrieve images)                         │
-│      │   └─> Transfer to HistoCore                              │
+│      │   └─> Transfer to the platform                              │
 │      │                                                           │
 │      ▼                                                           │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │              HistoCore Processing                        │   │
+│  │              the platform Processing                        │   │
 │  │  ┌────────────────────────────────────────────────────┐  │   │
 │  │  │  1. DICOM Validation                               │  │   │
 │  │  │  2. Image Preprocessing                            │  │   │

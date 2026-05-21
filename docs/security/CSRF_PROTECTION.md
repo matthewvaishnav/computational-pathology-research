@@ -1,7 +1,7 @@
 # CSRF Protection Guide
 
 ## Overview
-Cross-Site Request Forgery (CSRF) protection for the HistoCore API.
+Cross-Site Request Forgery (CSRF) protection for the the platform API.
 
 ## Current Protection
 

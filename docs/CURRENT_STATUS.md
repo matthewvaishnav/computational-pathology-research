@@ -3,7 +3,7 @@ layout: default
 title: Current Status
 ---
 
-# HistoCore Current Status
+# the platform Current Status
 **Last Updated**: May 14, 2026
 
 [← Back to Documentation](DOCS_INDEX)
@@ -12,7 +12,7 @@ title: Current Status
 
 ## 📊 Project Overview
 
-HistoCore is a production-grade computational pathology platform with **195k+ lines of code**, **544 Python modules**, and **5,071 tests**. The project has achieved significant milestones in model architecture, performance optimization, and clinical integration capabilities.
+the platform is a production-grade computational pathology platform with **195k+ lines of code**, **544 Python modules**, and **5,071 tests**. The project has achieved significant milestones in model architecture, performance optimization, and clinical integration capabilities.
 
 ### Key Statistics
 - **Lines of Code**: 195,000+ (source code)

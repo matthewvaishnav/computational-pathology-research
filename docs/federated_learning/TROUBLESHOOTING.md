@@ -414,7 +414,7 @@ PACSConnectionError: Connection to pacs.hospital.local:11112 timed out
 python -m src.clinical.pacs.pacs_service test \
     --host pacs.hospital.local \
     --port 11112 \
-    --aet HISTOCORE
+    --aet the platform
 ```
 
 2. **Check PACS firewall:**
@@ -432,7 +432,7 @@ pacs:
 4. **Verify AE titles:**
 ```yaml
 pacs:
-  aet: "HISTOCORE"  # Your AE title
+  aet: "the platform"  # Your AE title
   calling_aet: "FL_CLIENT"  # PACS expects this
 ```
 
@@ -741,8 +741,8 @@ python -m src.federated.support.generate_report \
 ### Community Support
 
 - GitHub Issues: https://github.com/yourusername/computational-pathology-research/issues
-- Documentation: https://histocore.readthedocs.io
-- Email: support@histocore.org
+- Documentation: https://the platform.readthedocs.io
+- Email: support@the platform.org
 
 ## Next Steps
 

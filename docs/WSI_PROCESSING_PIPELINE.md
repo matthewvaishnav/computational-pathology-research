@@ -28,7 +28,7 @@ The WSI Processing Pipeline is a complete, production-ready system for processin
 
 ### Installation
 
-The WSI pipeline is included with HistoCore. Ensure you have the required dependencies:
+The WSI pipeline is included with the platform. Ensure you have the required dependencies:
 
 ```bash
 pip install openslide-python wsidicom h5py scikit-image
@@ -115,7 +115,7 @@ WSI File → WSIReader → PatchExtractor → TissueDetector → FeatureGenerato
 
 ### Output Format
 
-The pipeline generates HDF5 files compatible with existing HistoCore datasets:
+The pipeline generates HDF5 files compatible with existing the platform datasets:
 
 ```python
 # HDF5 structure
@@ -243,11 +243,11 @@ config = ProcessingConfig(
 )
 ```
 
-## Integration with HistoCore
+## Integration with the platform
 
 ### CAMELYONSlideDataset Compatibility
 
-The WSI pipeline generates HDF5 files that are directly compatible with existing HistoCore datasets:
+The WSI pipeline generates HDF5 files that are directly compatible with existing the platform datasets:
 
 ```python
 from src.data.camelyon_dataset import CAMELYONSlideDataset

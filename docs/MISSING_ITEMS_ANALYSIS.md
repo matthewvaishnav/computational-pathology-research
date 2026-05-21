@@ -112,7 +112,7 @@ Verified that the following are **NOT in public repository**:
 - Clearly labeled as synthetic
 
 ### Unpublished Benchmarks
-**`results/comprehensive_benchmark_*/HISTOCORE_SUPERIORITY_REPORT.md`:**
+**`results/comprehensive_benchmark_*/the platform_SUPERIORITY_REPORT.md`:**
 - Actual: 93.94% AUC (#1 rank among 11 methods)
 - Statistical significance vs 10 competitors
 - 3 validation runs with identical results

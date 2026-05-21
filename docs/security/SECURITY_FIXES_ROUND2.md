@@ -1,7 +1,7 @@
 # Security Fixes - Round 2 Summary
 
 ## Overview
-This document summarizes the additional 9 security fixes applied to the HistoCore framework (fixes 17-25).
+This document summarizes the additional 9 security fixes applied to the the platform framework (fixes 17-25).
 
 ## New Fixes Applied
 

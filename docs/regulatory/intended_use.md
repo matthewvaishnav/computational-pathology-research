@@ -1,4 +1,4 @@
-# Intended Use Statement - HistoCore AI Pathology Analysis System
+# Intended Use Statement - the platform AI Pathology Analysis System
 
 **Document Version:** 1.0  
 **Date:** January 2025  
@@ -7,13 +7,13 @@
 
 ## 1. Intended Use Statement
 
-**HistoCore AI Pathology Analysis System is intended for use by qualified pathologists as a diagnostic aid in the analysis of digitized whole slide images of histopathology specimens to assist in the identification and classification of cancer in breast, lung, prostate, colon, and melanoma tissue specimens.**
+**the platform AI Pathology Analysis System is intended for use by qualified pathologists as a diagnostic aid in the analysis of digitized whole slide images of histopathology specimens to assist in the identification and classification of cancer in breast, lung, prostate, colon, and melanoma tissue specimens.**
 
 ## 2. Detailed Indications for Use
 
 ### 2.1 Primary Indications
 
-HistoCore is indicated for use as a diagnostic aid for qualified pathologists in the analysis of whole slide images from formalin-fixed, paraffin-embedded (FFPE) tissue specimens for the following cancer types:
+the platform is indicated for use as a diagnostic aid for qualified pathologists in the analysis of whole slide images from formalin-fixed, paraffin-embedded (FFPE) tissue specimens for the following cancer types:
 
 #### 2.1.1 Breast Cancer Analysis
 **Specimen Types:**
@@ -129,7 +129,7 @@ HistoCore is indicated for use as a diagnostic aid for qualified pathologists in
 - Completed pathology residency training
 - Board certification in anatomic pathology
 - Current medical license in good standing
-- Completion of HistoCore training and certification program
+- Completion of the platform training and certification program
 
 #### 2.2.2 Secondary Users
 **Laboratory Personnel:**
@@ -341,14 +341,14 @@ HistoCore is indicated for use as a diagnostic aid for qualified pathologists in
 
 ## 9. Conclusion
 
-The intended use of HistoCore AI Pathology Analysis System is clearly defined to provide diagnostic assistance to qualified pathologists in the analysis of specific cancer types from digitized histopathology specimens. The system's validation demonstrates substantial equivalence to predicate devices while offering enhanced capabilities through advanced AI technology.
+The intended use of the platform AI Pathology Analysis System is clearly defined to provide diagnostic assistance to qualified pathologists in the analysis of specific cancer types from digitized histopathology specimens. The system's validation demonstrates substantial equivalence to predicate devices while offering enhanced capabilities through advanced AI technology.
 
 The comprehensive warnings, precautions, and limitations ensure appropriate clinical use while maximizing the system's potential to improve diagnostic accuracy and efficiency in pathology practice.
 
 ---
 
 **Document Control:**
-- **Author:** HistoCore Regulatory Affairs Team
+- **Author:** the platform Regulatory Affairs Team
 - **Clinical Reviewer:** Chief Medical Officer
 - **Technical Reviewer:** VP of Engineering
 - **Regulatory Reviewer:** Director of Regulatory Affairs

@@ -1,7 +1,7 @@
 # Security Fixes - Round 3 Summary
 
 ## Overview
-Additional 8 security fixes applied to the HistoCore framework (fixes 26-33).
+Additional 8 security fixes applied to the the platform framework (fixes 26-33).
 
 ## New Fixes Applied
 

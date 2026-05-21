@@ -1,4 +1,4 @@
-# HistoCore Roadmap — Next Big Thing in Medical AI
+# the platform Roadmap — Next Big Thing in Medical AI
 
 - [ ] 1. Clean up repo root — remove debug scripts, status markdown files, bfg.jar, and fix_*.py files
 - [ ] 2. Integrate a pathology foundation model backbone (UNI, CONCH, or Prov-GigaPath) as the default feature extractor

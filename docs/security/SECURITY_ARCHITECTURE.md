@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the security architecture of HistoCore, including defense-in-depth layers, security controls, and threat mitigation strategies.
+This document describes the security architecture of the platform, including defense-in-depth layers, security controls, and threat mitigation strategies.
 
 ## Architecture Principles
 

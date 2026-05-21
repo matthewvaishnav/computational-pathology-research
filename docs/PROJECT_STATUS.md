@@ -1,4 +1,4 @@
-# HistoCore Project Status
+# the platform Project Status
 
 **Last Updated**: 2026-05-07
 

@@ -1,6 +1,6 @@
-# HistoCore Frequently Asked Questions (FAQ)
+# the platform Frequently Asked Questions (FAQ)
 
-Common questions about HistoCore Real-Time WSI Streaming.
+Common questions about the platform Real-Time WSI Streaming.
 
 ## Table of Contents
 
@@ -16,11 +16,11 @@ Common questions about HistoCore Real-Time WSI Streaming.
 
 ## General
 
-### What is HistoCore?
+### What is the platform?
 
-HistoCore is a production-grade computational pathology framework providing real-time whole-slide image (WSI) streaming and analysis. It processes gigapixel slides in under 30 seconds using GPU-accelerated streaming architecture with progressive confidence updates.
+the platform is a production-grade computational pathology framework providing real-time whole-slide image (WSI) streaming and analysis. It processes gigapixel slides in under 30 seconds using GPU-accelerated streaming architecture with progressive confidence updates.
 
-### What makes HistoCore different from other solutions?
+### What makes the platform different from other solutions?
 
 - **Real-time processing**: <30 second processing for gigapixel slides
 - **Streaming architecture**: Process tiles as they load, not after full download
@@ -36,9 +36,9 @@ HistoCore is a production-grade computational pathology framework providing real
 - **Live demos**: Hospital demonstrations with real-time confidence visualization
 - **Batch processing**: High-throughput slide processing for research studies
 
-### Is HistoCore open source?
+### Is the platform open source?
 
-Yes, HistoCore is open source under the MIT license. You can use, modify, and distribute it freely.
+Yes, the platform is open source under the MIT license. You can use, modify, and distribute it freely.
 
 ### What WSI formats are supported?
 
@@ -77,12 +77,12 @@ Yes, HistoCore is open source under the MIT license. You can use, modify, and di
 
 Yes, a NVIDIA GPU with CUDA support is required for production use. CPU-only mode is available for development/testing but is significantly slower.
 
-### How do I install HistoCore?
+### How do I install the platform?
 
 ```bash
 # Clone repository
-git clone https://github.com/histocore/histocore.git
-cd histocore
+git clone https://github.com/the platform/the platform.git
+cd the platform
 
 # Create virtual environment
 python -m venv venv
@@ -124,10 +124,10 @@ sudo apt-get install nvidia-cuda-toolkit
 
 ## Configuration
 
-### How do I configure HistoCore?
+### How do I configure the platform?
 
 Configuration can be done via:
-1. **Environment variables**: `export HISTOCORE_BATCH_SIZE=32`
+1. **Environment variables**: `export the platform_BATCH_SIZE=32`
 2. **Configuration files**: `config.yaml`
 3. **Command-line arguments**: `--batch-size 32`
 
@@ -176,7 +176,7 @@ Yes, hot reload is supported:
 
 ```bash
 # Update config
-kubectl edit configmap histocore-config -n histocore
+kubectl edit configmap the platform-config -n the platform
 
 # Trigger reload
 curl -X POST http://localhost:8001/admin/config/reload \
@@ -186,12 +186,12 @@ curl -X POST http://localhost:8001/admin/config/reload \
 ### Where are configuration files located?
 
 - **Docker**: `/app/config.yaml`
-- **Kubernetes**: ConfigMap `histocore-config`
+- **Kubernetes**: ConfigMap `the platform-config`
 - **Local**: `config.yaml` in project root
 
 ## Performance
 
-### How fast is HistoCore?
+### How fast is the platform?
 
 - **Processing time**: <30 seconds for 100K+ patch gigapixel slides
 - **Throughput**: >3000 patches/second on RTX 4090
@@ -285,7 +285,7 @@ Yes, but performance will be significantly slower (10-100x). CPU-only mode is su
 
 ### What if I run out of GPU memory?
 
-HistoCore automatically reduces batch size on OOM:
+the platform automatically reduces batch size on OOM:
 
 ```yaml
 gpu:
@@ -310,7 +310,7 @@ gpu:
 
 ### What is PACS integration?
 
-PACS (Picture Archiving and Communication System) integration allows HistoCore to:
+PACS (Picture Archiving and Communication System) integration allows the platform to:
 - Query PACS for WSI studies
 - Retrieve slides automatically
 - Process slides in real-time
@@ -318,7 +318,7 @@ PACS (Picture Archiving and Communication System) integration allows HistoCore t
 
 ### What PACS systems are supported?
 
-HistoCore supports any DICOM-compliant PACS:
+the platform supports any DICOM-compliant PACS:
 - GE Healthcare Centricity
 - Philips IntelliSpace
 - Siemens syngo
@@ -333,14 +333,14 @@ pacs:
   remote_host: pacs.hospital.org
   remote_port: 104
   remote_ae_title: PACS_SERVER
-  ae_title: HISTOCORE
+  ae_title: the platform
 ```
 
 See [PACS Configuration](deployment/CONFIGURATION_GUIDE.md#pacs-integration) for details.
 
 ### Is PACS integration secure?
 
-Yes, HistoCore supports:
+Yes, the platform supports:
 - **TLS 1.3 encryption**
 - **Mutual authentication**
 - **HIPAA-compliant audit logging**
@@ -368,16 +368,16 @@ python -m src.pacs.test_connection
 dcmecho -v PACS_SERVER 104
 
 # Check logs
-docker logs histocore-streaming | grep PACS
+docker logs the platform-streaming | grep PACS
 ```
 
 See [PACS Troubleshooting](TROUBLESHOOTING.md#pacs-integration-issues) for more.
 
 ## Security and Compliance
 
-### Is HistoCore HIPAA compliant?
+### Is the platform HIPAA compliant?
 
-HistoCore provides HIPAA-compliant features:
+the platform provides HIPAA-compliant features:
 - **Encryption**: TLS 1.3 in transit, AES-256 at rest
 - **Audit logging**: 7-year retention
 - **Access control**: RBAC with OAuth 2.0
@@ -385,9 +385,9 @@ HistoCore provides HIPAA-compliant features:
 
 However, HIPAA compliance requires proper deployment and configuration. See [Security Guide](deployment/CONFIGURATION_GUIDE.md#security-configuration).
 
-### Is HistoCore FDA approved?
+### Is the platform FDA approved?
 
-HistoCore is a research framework and is not FDA approved. For clinical use, you must:
+the platform is a research framework and is not FDA approved. For clinical use, you must:
 1. Validate the system for your specific use case
 2. Follow FDA 510(k) pathway for medical devices
 3. Implement required quality management systems
@@ -417,12 +417,12 @@ OAuth 2.0 with JWT tokens:
 
 ```bash
 # Get token
-curl -X POST https://api.histocore.ai/auth/token \
+curl -X POST https://api.the platform.ai/auth/token \
   -d '{"client_id":"...","client_secret":"..."}'
 
 # Use token
 curl -H "Authorization: Bearer <token>" \
-  https://api.histocore.ai/v1/process/wsi
+  https://api.the platform.ai/v1/process/wsi
 ```
 
 ### What audit logging is provided?
@@ -435,7 +435,7 @@ All operations are logged:
 
 Logs are retained for 7 years (HIPAA requirement).
 
-### Can I use HistoCore in the cloud?
+### Can I use the platform in the cloud?
 
 Yes, cloud deployment is supported:
 - **AWS**: EKS with GPU instances
@@ -479,11 +479,11 @@ cd cloud/aws
 
 See [AWS Deployment](deployment/DEPLOYMENT_GUIDE.md#aws-deployment) for details.
 
-### How do I scale HistoCore?
+### How do I scale the platform?
 
 **Horizontal scaling** (Kubernetes):
 ```bash
-kubectl scale deployment histocore-streaming --replicas=10 -n histocore
+kubectl scale deployment the platform-streaming --replicas=10 -n the platform
 ```
 
 **Auto-scaling**:
@@ -501,7 +501,7 @@ spec:
         averageUtilization: 70
 ```
 
-### How do I monitor HistoCore?
+### How do I monitor the platform?
 
 Built-in monitoring with:
 - **Prometheus**: Metrics collection
@@ -518,21 +518,21 @@ docker-compose up -d
 open http://localhost:3000
 ```
 
-### How do I backup HistoCore?
+### How do I backup the platform?
 
 ```bash
 # Backup Redis data
-docker exec histocore-redis redis-cli BGSAVE
+docker exec the platform-redis redis-cli BGSAVE
 
 # Backup persistent volumes
 kubectl get pv
 # Use volume snapshots
 
 # Backup configuration
-kubectl get configmap histocore-config -o yaml > backup/config.yaml
+kubectl get configmap the platform-config -o yaml > backup/config.yaml
 ```
 
-### How do I update HistoCore?
+### How do I update the platform?
 
 **Docker**:
 ```bash
@@ -542,8 +542,8 @@ docker-compose up -d
 
 **Kubernetes**:
 ```bash
-kubectl set image deployment/histocore-streaming \
-  histocore-streaming=histocore/streaming:v1.1.0 -n histocore
+kubectl set image deployment/the platform-streaming \
+  the platform-streaming=the platform/streaming:v1.1.0 -n the platform
 ```
 
 ## Troubleshooting
@@ -552,29 +552,29 @@ kubectl set image deployment/histocore-streaming \
 
 **Docker**:
 ```bash
-docker logs histocore-streaming
+docker logs the platform-streaming
 ```
 
 **Kubernetes**:
 ```bash
-kubectl logs deployment/histocore-streaming -n histocore
+kubectl logs deployment/the platform-streaming -n the platform
 ```
 
 **Application logs**:
 ```bash
-tail -f /var/log/histocore/app.log
+tail -f /var/log/the platform/app.log
 ```
 
 ### How do I enable debug logging?
 
 ```bash
-export HISTOCORE_LOG_LEVEL=DEBUG
-docker-compose restart histocore-streaming
+export the platform_LOG_LEVEL=DEBUG
+docker-compose restart the platform-streaming
 ```
 
 ### How do I report a bug?
 
-1. **Check existing issues**: https://github.com/histocore/histocore/issues
+1. **Check existing issues**: https://github.com/the platform/the platform/issues
 2. **Collect diagnostics**:
 ```bash
 python -m src.streaming.diagnostics > diagnostics.txt
@@ -589,16 +589,16 @@ python -m src.streaming.diagnostics > diagnostics.txt
 
 - **Documentation**: [docs/](.)
 - **Troubleshooting**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- **GitHub Issues**: https://github.com/histocore/histocore/issues
-- **Email**: support@histocore.ai
-- **Slack**: https://histocore.slack.com
+- **GitHub Issues**: https://github.com/the platform/the platform/issues
+- **Email**: support@the platform.ai
+- **Slack**: https://the platform.slack.com
 
 ### What if my question isn't answered here?
 
 1. Check the [full documentation](.)
-2. Search [GitHub issues](https://github.com/histocore/histocore/issues)
-3. Ask on [Slack](https://histocore.slack.com)
-4. Email support@histocore.ai
+2. Search [GitHub issues](https://github.com/the platform/the platform/issues)
+3. Ask on [Slack](https://the platform.slack.com)
+4. Email support@the platform.ai
 
 ## Contributing
 
@@ -616,7 +616,7 @@ Contributions are welcome! See [CONTRIBUTING.md](../CONTRIBUTING.md) for guideli
 
 ### What should I work on?
 
-Check the [GitHub issues](https://github.com/histocore/histocore/issues) for:
+Check the [GitHub issues](https://github.com/the platform/the platform/issues) for:
 - **Good first issues**: Easy tasks for new contributors
 - **Help wanted**: Tasks that need contributors
 - **Feature requests**: New features to implement
@@ -636,24 +636,24 @@ pytest --cov=src tests/
 
 ## License
 
-### What license is HistoCore under?
+### What license is the platform under?
 
-MIT License - you can use, modify, and distribute HistoCore freely.
+MIT License - you can use, modify, and distribute the platform freely.
 
-### Can I use HistoCore commercially?
+### Can I use the platform commercially?
 
 Yes, the MIT license allows commercial use.
 
-### Do I need to cite HistoCore?
+### Do I need to cite the platform?
 
 While not required, citations are appreciated:
 
 ```bibtex
-@software{histocore2024,
-  title={HistoCore: Real-Time WSI Streaming Framework},
-  author={HistoCore Contributors},
+@software{the platform2024,
+  title={the platform: Real-Time WSI Streaming Framework},
+  author={the platform Contributors},
   year={2024},
-  url={https://github.com/histocore/histocore}
+  url={https://github.com/the platform/the platform}
 }
 ```
 
@@ -662,9 +662,9 @@ While not required, citations are appreciated:
 ### How do I get support?
 
 - **Documentation**: [docs/](.)
-- **GitHub Issues**: https://github.com/histocore/histocore/issues
-- **Email**: support@histocore.ai
-- **Slack**: https://histocore.slack.com
+- **GitHub Issues**: https://github.com/the platform/the platform/issues
+- **Email**: support@the platform.ai
+- **Slack**: https://the platform.slack.com
 
 ### Is commercial support available?
 
@@ -674,7 +674,7 @@ Yes, commercial support is available for:
 - **Training and consulting**
 - **Priority support**
 
-Contact sales@histocore.ai for details.
+Contact sales@the platform.ai for details.
 
 ### What is the SLA for support?
 
@@ -687,4 +687,4 @@ Contact sales@histocore.ai for details.
 - <4 hour response time
 - Dedicated support engineer
 
-Contact sales@histocore.ai for enterprise support.
+Contact sales@the platform.ai for enterprise support.

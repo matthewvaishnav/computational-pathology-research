@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying HistoCore to Kubernetes using the automated CD pipeline.
+This guide covers deploying the platform to Kubernetes using the automated CD pipeline.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ This guide covers deploying HistoCore to Kubernetes using the automated CD pipel
 
 ## Overview
 
-HistoCore uses a multi-stage deployment pipeline:
+the platform uses a multi-stage deployment pipeline:
 
 ```
 Code Push → CI Tests → Build Image → Dev → Staging → Production
@@ -63,15 +63,15 @@ KUBECONFIG_PROD: <base64-encoded kubeconfig>
 
 ```bash
 # For each cluster, create a service account with deployment permissions
-kubectl create serviceaccount histocore-deployer -n kube-system
+kubectl create serviceaccount the platform-deployer -n kube-system
 
 # Create cluster role binding
-kubectl create clusterrolebinding histocore-deployer \
+kubectl create clusterrolebinding the platform-deployer \
   --clusterrole=cluster-admin \
-  --serviceaccount=kube-system:histocore-deployer
+  --serviceaccount=kube-system:the platform-deployer
 
 # Get service account token
-TOKEN=$(kubectl get secret $(kubectl get serviceaccount histocore-deployer -n kube-system -o jsonpath='{.secrets[0].name}') -n kube-system -o jsonpath='{.data.token}' | base64 -d)
+TOKEN=$(kubectl get secret $(kubectl get serviceaccount the platform-deployer -n kube-system -o jsonpath='{.secrets[0].name}') -n kube-system -o jsonpath='{.data.token}' | base64 -d)
 
 # Create kubeconfig
 cat > kubeconfig-dev.yaml <<EOF
@@ -85,11 +85,11 @@ clusters:
 contexts:
 - context:
     cluster: dev-cluster
-    user: histocore-deployer
+    user: the platform-deployer
   name: dev
 current-context: dev
 users:
-- name: histocore-deployer
+- name: the platform-deployer
   user:
     token: $TOKEN
 EOF
@@ -111,7 +111,7 @@ cat kubeconfig-dev.yaml | base64 -w 0 > kubeconfig-dev.b64
 
 Edit environment-specific values files:
 
-**Development** (`k8s/helm/histocore/values-dev.yaml`):
+**Development** (`k8s/helm/the platform/values-dev.yaml`):
 ```yaml
 replicaCount: 1
 resources:
@@ -122,10 +122,10 @@ autoscaling:
   enabled: false
 ingress:
   hosts:
-    - host: dev.histocore.example.com
+    - host: dev.the platform.example.com
 ```
 
-**Staging** (`k8s/helm/histocore/values.yaml`):
+**Staging** (`k8s/helm/the platform/values.yaml`):
 ```yaml
 replicaCount: 2
 resources:
@@ -138,10 +138,10 @@ autoscaling:
   maxReplicas: 5
 ingress:
   hosts:
-    - host: staging.histocore.example.com
+    - host: staging.the platform.example.com
 ```
 
-**Production** (`k8s/helm/histocore/values-prod.yaml`):
+**Production** (`k8s/helm/the platform/values-prod.yaml`):
 ```yaml
 replicaCount: 3
 resources:
@@ -154,7 +154,7 @@ autoscaling:
   maxReplicas: 10
 ingress:
   hosts:
-    - host: histocore.example.com
+    - host: the platform.example.com
 ```
 
 ## CD Pipeline Configuration
@@ -205,8 +205,8 @@ git push origin main
 gh run watch
 
 # Check deployment status
-kubectl get pods -n dev -l app.kubernetes.io/name=histocore
-kubectl logs -n dev -l app.kubernetes.io/name=histocore
+kubectl get pods -n dev -l app.kubernetes.io/name=the platform
+kubectl logs -n dev -l app.kubernetes.io/name=the platform
 ```
 
 ### Staging Deployment
@@ -218,10 +218,10 @@ Automatic after dev deployment succeeds:
 gh run watch
 
 # Check deployment status
-kubectl get pods -n staging -l app.kubernetes.io/name=histocore
+kubectl get pods -n staging -l app.kubernetes.io/name=the platform
 
 # Test staging endpoint
-curl https://staging.histocore.example.com/health
+curl https://staging.the platform.example.com/health
 ```
 
 ### Production Deployment
@@ -239,7 +239,7 @@ gh run watch
 kubectl get pods -n prod -l version=green
 
 # Check service routing
-kubectl get service histocore -n prod -o yaml | grep version
+kubectl get service the platform -n prod -o yaml | grep version
 ```
 
 ## Blue-Green Deployment
@@ -259,16 +259,16 @@ Production uses blue-green deployment for zero-downtime updates:
 
 ```bash
 # Check current version
-kubectl get service histocore -n prod -o jsonpath='{.spec.selector.version}'
+kubectl get service the platform -n prod -o jsonpath='{.spec.selector.version}'
 
 # Switch to green manually
-kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"green"}}}'
+kubectl patch service the platform -n prod -p '{"spec":{"selector":{"version":"green"}}}'
 
 # Switch back to blue (rollback)
-kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"blue"}}}'
+kubectl patch service the platform -n prod -p '{"spec":{"selector":{"version":"blue"}}}'
 
 # View both deployments
-kubectl get deployments -n prod -l app.kubernetes.io/name=histocore
+kubectl get deployments -n prod -l app.kubernetes.io/name=the platform
 ```
 
 ## Rollback Procedures
@@ -289,33 +289,33 @@ The CD pipeline automatically rolls back on failure:
 helm list -n prod
 
 # Rollback to previous version
-helm rollback histocore-green -n prod
+helm rollback the platform-green -n prod
 
 # Rollback to specific revision
-helm rollback histocore-green 3 -n prod
+helm rollback the platform-green 3 -n prod
 ```
 
 #### Using kubectl
 
 ```bash
 # Rollback deployment
-kubectl rollout undo deployment/histocore-green -n prod
+kubectl rollout undo deployment/the platform-green -n prod
 
 # Rollback to specific revision
-kubectl rollout undo deployment/histocore-green -n prod --to-revision=2
+kubectl rollout undo deployment/the platform-green -n prod --to-revision=2
 
 # Check rollout history
-kubectl rollout history deployment/histocore-green -n prod
+kubectl rollout history deployment/the platform-green -n prod
 ```
 
 #### Blue-Green Rollback
 
 ```bash
 # Switch traffic back to blue
-kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"blue"}}}'
+kubectl patch service the platform -n prod -p '{"spec":{"selector":{"version":"blue"}}}'
 
 # Remove failed green deployment
-kubectl delete deployment histocore-green -n prod
+kubectl delete deployment the platform-green -n prod
 ```
 
 ## Monitoring
@@ -324,10 +324,10 @@ kubectl delete deployment histocore-green -n prod
 
 ```bash
 # Watch deployment progress
-kubectl rollout status deployment/histocore-green -n prod
+kubectl rollout status deployment/the platform-green -n prod
 
 # View pod status
-kubectl get pods -n prod -l app.kubernetes.io/name=histocore
+kubectl get pods -n prod -l app.kubernetes.io/name=the platform
 
 # View events
 kubectl get events -n prod --sort-by='.lastTimestamp'
@@ -337,10 +337,10 @@ kubectl get events -n prod --sort-by='.lastTimestamp'
 
 ```bash
 # Health check
-curl https://histocore.example.com/health
+curl https://the platform.example.com/health
 
 # Metrics
-curl https://histocore.example.com/metrics
+curl https://the platform.example.com/metrics
 
 # Readiness probe
 kubectl get pods -n prod -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}'
@@ -350,16 +350,16 @@ kubectl get pods -n prod -o jsonpath='{.items[*].status.conditions[?(@.type=="Re
 
 ```bash
 # View logs
-kubectl logs -n prod -l app.kubernetes.io/name=histocore
+kubectl logs -n prod -l app.kubernetes.io/name=the platform
 
 # Follow logs
-kubectl logs -n prod -l app.kubernetes.io/name=histocore -f
+kubectl logs -n prod -l app.kubernetes.io/name=the platform -f
 
 # View logs from specific version
 kubectl logs -n prod -l version=green
 
 # View logs from previous deployment
-kubectl logs -n prod -l app.kubernetes.io/name=histocore --previous
+kubectl logs -n prod -l app.kubernetes.io/name=the platform --previous
 ```
 
 ### Prometheus Metrics
@@ -369,7 +369,7 @@ kubectl logs -n prod -l app.kubernetes.io/name=histocore --previous
 kubectl port-forward -n monitoring svc/prometheus 9090:9090
 
 # Query metrics
-curl http://localhost:9090/api/v1/query?query=histocore_inference_requests_total
+curl http://localhost:9090/api/v1/query?query=the platform_inference_requests_total
 ```
 
 ## Troubleshooting
@@ -403,13 +403,13 @@ kubectl top nodes
 kubectl describe node <node-name>
 
 # Verify image exists
-docker pull ghcr.io/your-org/histocore:main-<sha>
+docker pull ghcr.io/your-org/the platform:main-<sha>
 
 # Validate Helm chart
-helm lint ./k8s/helm/histocore
+helm lint ./k8s/helm/the platform
 
 # Check configuration
-kubectl get configmap histocore-config -n prod -o yaml
+kubectl get configmap the platform-config -n prod -o yaml
 ```
 
 ### Health Checks Failing
@@ -441,14 +441,14 @@ kubectl exec <pod-name> -n prod -- curl localhost:8000/health
 **Diagnosis**:
 ```bash
 # Check service selector
-kubectl get service histocore -n prod -o yaml | grep -A 5 selector
+kubectl get service the platform -n prod -o yaml | grep -A 5 selector
 
 # Check endpoints
-kubectl get endpoints histocore -n prod
+kubectl get endpoints the platform -n prod
 
 # Check ingress
 kubectl get ingress -n prod
-kubectl describe ingress histocore -n prod
+kubectl describe ingress the platform -n prod
 ```
 
 **Solutions**:
@@ -457,7 +457,7 @@ kubectl describe ingress histocore -n prod
 kubectl get pods -n prod --show-labels
 
 # Update service selector
-kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"green"}}}'
+kubectl patch service the platform -n prod -p '{"spec":{"selector":{"version":"green"}}}'
 
 # Check ingress controller
 kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx
@@ -473,7 +473,7 @@ kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx
 kubectl logs -n prod -l version=green | grep ERROR
 
 # Check metrics
-curl https://histocore.example.com/metrics | grep error
+curl https://the platform.example.com/metrics | grep error
 
 # Check Prometheus alerts
 kubectl get prometheusrules -n monitoring
@@ -502,7 +502,7 @@ kubectl get secrets -n prod
 **Solutions**:
 ```bash
 # Verify image exists
-docker pull ghcr.io/your-org/histocore:main-<sha>
+docker pull ghcr.io/your-org/the platform:main-<sha>
 
 # Create image pull secret (if needed)
 kubectl create secret docker-registry ghcr-secret \
@@ -512,7 +512,7 @@ kubectl create secret docker-registry ghcr-secret \
   -n prod
 
 # Update deployment to use secret
-kubectl patch deployment histocore-green -n prod -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-secret"}]}}}}'
+kubectl patch deployment the platform-green -n prod -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-secret"}]}}}}'
 ```
 
 ## Best Practices

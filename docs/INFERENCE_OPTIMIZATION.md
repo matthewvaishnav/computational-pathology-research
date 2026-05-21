@@ -5,7 +5,7 @@ title: Inference Optimization
 
 # Inference Optimization
 
-HistoCore provides production-ready inference optimization through TorchScript compilation and batch processing, achieving **2-3x faster inference** compared to standard PyTorch models.
+the platform provides production-ready inference optimization through TorchScript compilation and batch processing, achieving **2-3x faster inference** compared to standard PyTorch models.
 
 ## Overview
 
@@ -28,7 +28,7 @@ HistoCore provides production-ready inference optimization through TorchScript c
 
 ## Sliding Window Inference
 
-For large-slide and large-bag workloads, HistoCore supports `SlidingWindowInference` in `src/inference/sliding_window.py`.
+For large-slide and large-bag workloads, the platform supports `SlidingWindowInference` in `src/inference/sliding_window.py`.
 
 ### What It Does
 

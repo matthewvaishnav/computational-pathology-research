@@ -108,7 +108,7 @@ Production-grade framework for computational pathology combining **PathologyFL**
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│                         HistoCore System Architecture                          │
+│                         the platform System Architecture                          │
 │                    End-to-End Computational Pathology Platform                 │
 └───────────────────────────────────────────────────────────────────────────────┘
 
@@ -216,17 +216,17 @@ Production-grade framework for computational pathology combining **PathologyFL**
 ## Quickstart
 
 <div class="callout callout-info">
-  <strong>New to HistoCore?</strong> Start with the 5-minute tutorial to train your first model on PCam!
+  <strong>New to the platform?</strong> Start with the 5-minute tutorial to train your first model on PCam!
 </div>
 
 **Interactive Tutorials:**
-- [5-Minute PCam Training](https://github.com/matthewvaishnav/histocore/blob/main/examples/quickstart_pcam_training.ipynb) - Train AttentionMIL on PatchCamelyon
-- [Custom Dataset Tutorial](https://github.com/matthewvaishnav/histocore/blob/main/examples/custom_dataset_tutorial.ipynb) - Adapt to your own data
+- [5-Minute PCam Training](https://github.com/matthewvaishnav/the platform/blob/main/examples/quickstart_pcam_training.ipynb) - Train AttentionMIL on PatchCamelyon
+- [Custom Dataset Tutorial](https://github.com/matthewvaishnav/the platform/blob/main/examples/custom_dataset_tutorial.ipynb) - Adapt to your own data
 
 **Quick Start Command:**
 ```bash
-git clone https://github.com/matthewvaishnav/histocore.git
-cd histocore
+git clone https://github.com/matthewvaishnav/the platform.git
+cd the platform
 pip install -r requirements.txt
 python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
 ```
@@ -263,8 +263,8 @@ Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
 ## Installation
 
 ```bash
-git clone https://github.com/matthewvaishnav/histocore.git
-cd histocore
+git clone https://github.com/matthewvaishnav/the platform.git
+cd the platform
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -280,11 +280,11 @@ See the [Getting Started Guide](GETTING_STARTED) for detailed instructions.
 If you use this framework in your research, please cite:
 
 ```bibtex
-@software{vaishnav2026histocore,
-  title = {HistoCore: Core Infrastructure for Computational Pathology Research},
+@software{vaishnav2026the platform,
+  title = {the platform: Core Infrastructure for Computational Pathology Research},
   author = {Vaishnav, Matthew},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/histocore},
+  url = {https://github.com/matthewvaishnav/the platform},
   note = {Production-grade PyTorch framework for computational pathology research}
 }
 ```

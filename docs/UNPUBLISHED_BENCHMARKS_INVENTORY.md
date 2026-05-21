@@ -5,19 +5,19 @@
 
 ## Executive Summary
 
-This document inventories all benchmark results that exist on this PC but are **NOT published** in the public documentation. The analysis reveals **significant unpublished performance data** that demonstrates HistoCore's superiority over state-of-the-art methods.
+This document inventories all benchmark results that exist on this PC but are **NOT published** in the public documentation. The analysis reveals **significant unpublished performance data** that demonstrates the platform's superiority over state-of-the-art methods.
 
 ### Key Findings
 
 **Published Benchmarks** (in `website/docs/PERFORMANCE_COMPARISON.md` and `docs/PCAM_BENCHMARK_RESULTS.md`):
 - ✅ Synthetic PCam subset: 94% accuracy, 1.0 AUC (100 samples)
-- ✅ HistoCore vs PyTorch baseline: 79.17% accuracy, 85.4% AUC
+- ✅ the platform vs PyTorch baseline: 79.17% accuracy, 85.4% AUC
 - ✅ Training speed comparisons (estimated from literature)
 - ✅ Cost analysis and hardware comparisons
 
 **Unpublished Benchmarks** (in `results/` directories):
-- ❌ **HistoCore Superiority Report**: 93.94% AUC (#1 rank among 11 methods)
-- ❌ **Comprehensive competitor comparison**: HistoCore vs 10 published methods
+- ❌ **the platform Superiority Report**: 93.94% AUC (#1 rank among 11 methods)
+- ❌ **Comprehensive competitor comparison**: the platform vs 10 published methods
 - ❌ **Statistical significance analysis**: Large effect sizes vs Swin-Transformer, ConvNeXt, ViT-Base, PathViT, MedViT
 - ❌ **Multiple validation runs**: 3 separate comprehensive benchmark runs with identical results
 - ❌ **Overnight experiments**: Baseline ResNet18, high LR, large batch experiments
@@ -25,12 +25,12 @@ This document inventories all benchmark results that exist on this PC but are **
 
 ---
 
-## 1. HistoCore Superiority Reports (UNPUBLISHED)
+## 1. the platform Superiority Reports (UNPUBLISHED)
 
 ### Location
-- `results/comprehensive_benchmark_full/HISTOCORE_SUPERIORITY_REPORT.md` (2026-05-08)
-- `results/comprehensive_benchmark_continued/HISTOCORE_SUPERIORITY_REPORT.md` (2026-05-09)
-- `results/gpu_competitor_benchmark/HISTOCORE_SUPERIORITY_REPORT.md` (2026-05-07)
+- `results/comprehensive_benchmark_full/the platform_SUPERIORITY_REPORT.md` (2026-05-08)
+- `results/comprehensive_benchmark_continued/the platform_SUPERIORITY_REPORT.md` (2026-05-09)
+- `results/gpu_competitor_benchmark/the platform_SUPERIORITY_REPORT.md` (2026-05-07)
 
 ### Key Results (ALL IDENTICAL ACROSS 3 RUNS)
 
@@ -64,14 +64,14 @@ All comparisons show **Large Effect** sizes:
 ### Comprehensive Comparison Table (UNPUBLISHED)
 
 Full comparison table includes:
-- 11 methods (HistoCore + 10 competitors)
+- 11 methods (the platform + 10 competitors)
 - Performance metrics: Accuracy, AUC, F1, Parameters
 - Statistical significance for all comparisons
 - Efficiency metrics (Acc/Params)
 - Training time, inference time
 - Clinical readiness features (Federated Learning, PACS Integration)
 
-**Unique HistoCore Advantages (UNPUBLISHED):**
+**Unique the platform Advantages (UNPUBLISHED):**
 - ✅ PACS Integration (only method)
 - ✅ Federated Learning (only method)
 - ✅ Production Ready (only method)
@@ -87,7 +87,7 @@ The reports claim:
 3. **Clinical Readiness**: Only method with full hospital integration
 4. **Open Source**: First federated learning framework for pathology
 
-**Status**: This positions HistoCore as **"the definitive solution"** for medical AI in digital pathology.
+**Status**: This positions the platform as **"the definitive solution"** for medical AI in digital pathology.
 
 ---
 
@@ -100,12 +100,12 @@ The reports claim:
 
 ### Results
 
-**HistoCore vs PyTorch Baseline:**
+**the platform vs PyTorch Baseline:**
 
 | Framework | Accuracy | AUC | F1 | Training Time (s) | Peak GPU Memory (MB) | Model Parameters |
 |-----------|----------|-----|----|--------------------|----------------------|------------------|
 | PyTorch | 0.7917 | 0.854 | 0.7884 | 2257.3 | 226.7 | 4,812,610 |
-| HistoCore | 0.7917 | 0.854 | 0.7884 | 1630.2 | 227.6 | 4,812,610 |
+| the platform | 0.7917 | 0.854 | 0.7884 | 1630.2 | 227.6 | 4,812,610 |
 
 **Key Findings:**
 - **Identical accuracy/AUC/F1** (same model architecture)
@@ -213,7 +213,7 @@ The reports claim:
 ### Location
 - `results/benchmark_training/`
 
-**Status**: Directory exists but contents not yet analyzed. Likely contains HistoCore vs PyTorch training benchmarks.
+**Status**: Directory exists but contents not yet analyzed. Likely contains the platform vs PyTorch training benchmarks.
 
 ---
 
@@ -223,7 +223,7 @@ The reports claim:
 - `results/comprehensive_benchmark_overnight/`
 
 **Expected Contents:**
-- HISTOCORE_SUPERIORITY_REPORT.md (likely identical to other runs)
+- the platform_SUPERIORITY_REPORT.md (likely identical to other runs)
 - Full benchmark results from overnight run
 
 **Status**: Directory exists but contents not yet analyzed.
@@ -235,7 +235,7 @@ The reports claim:
 ### Published in Documentation
 
 **`website/docs/PERFORMANCE_COMPARISON.md`:**
-- HistoCore: 93.98% AUC, 84.26% accuracy (claimed)
+- the platform: 93.98% AUC, 84.26% accuracy (claimed)
 - Training time: 3.1 hours
 - Comparisons to PathML, CLAM (estimated from literature)
 - Cost analysis and hardware comparisons
@@ -248,15 +248,15 @@ The reports claim:
 
 ### Unpublished Benchmark Data
 
-**`results/comprehensive_benchmark_*/HISTOCORE_SUPERIORITY_REPORT.md`:**
-- HistoCore: **93.94% AUC**, 85.26% accuracy (actual benchmark)
+**`results/comprehensive_benchmark_*/the platform_SUPERIORITY_REPORT.md`:**
+- the platform: **93.94% AUC**, 85.26% accuracy (actual benchmark)
 - **#1 rank** among 11 methods
 - Statistical significance vs 10 competitors
 - 3 separate validation runs with identical results
 - **Status**: Real benchmark data, not published
 
 **`results/competitor_benchmarks/`:**
-- HistoCore vs PyTorch: 85.4% AUC, 79.17% accuracy
+- the platform vs PyTorch: 85.4% AUC, 79.17% accuracy
 - Training speed: 27.8% faster
 - **Status**: Real benchmark data, partially published
 
@@ -367,8 +367,8 @@ The reports claim:
 ### Unpublished Benchmark Files
 
 **Reports:**
-- 3 HISTOCORE_SUPERIORITY_REPORT.md files (identical results)
-- 1 benchmark_report.md (HistoCore vs PyTorch)
+- 3 the platform_SUPERIORITY_REPORT.md files (identical results)
+- 1 benchmark_report.md (the platform vs PyTorch)
 
 **Data Files:**
 - 1 results.csv (competitor benchmarks)
@@ -404,9 +404,9 @@ The reports claim:
 
 ## Conclusion
 
-This inventory reveals **significant unpublished benchmark data** that demonstrates HistoCore's performance:
+This inventory reveals **significant unpublished benchmark data** that demonstrates the platform's performance:
 
-1. **HistoCore achieves #1 AUC (93.94%)** among 11 methods - UNPUBLISHED
+1. **the platform achieves #1 AUC (93.94%)** among 11 methods - UNPUBLISHED
 2. **Statistically significant improvements** over 10 competitors - UNPUBLISHED
 3. **Parameter efficiency** (0.14x-2.30x vs competitors) - UNPUBLISHED
 4. **3 validation runs** with identical results - UNPUBLISHED

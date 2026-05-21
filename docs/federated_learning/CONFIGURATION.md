@@ -153,7 +153,7 @@ pacs:
   enable: true
   host: "pacs.hospital.local"
   port: 11112
-  aet: "HISTOCORE"
+  aet: "the platform"
   calling_aet: "FL_CLIENT"
   
   # Data discovery

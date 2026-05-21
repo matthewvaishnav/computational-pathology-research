@@ -36,7 +36,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install federated learning module
-pip install histocore-federated
+pip install the platform-federated
 
 # Verify installation
 python -c "from src.federated import __version__; print(__version__)"
@@ -67,13 +67,13 @@ pytest tests/federated/ -v
 
 ```bash
 # Pull coordinator image
-docker pull histocore/fl-coordinator:latest
+docker pull the platform/fl-coordinator:latest
 
 # Pull client image
-docker pull histocore/fl-client:latest
+docker pull the platform/fl-client:latest
 
 # Verify images
-docker images | grep histocore
+docker images | grep the platform
 ```
 
 ## Component Installation
@@ -82,7 +82,7 @@ docker images | grep histocore
 
 ```bash
 # Install coordinator dependencies
-pip install histocore-federated[coordinator]
+pip install the platform-federated[coordinator]
 
 # Generate TLS certificates
 python -m src.federated.communication.tls_utils generate \
@@ -102,7 +102,7 @@ python -m src.federated.production.coordinator_server \
 
 ```bash
 # Install client dependencies
-pip install histocore-federated[client]
+pip install the platform-federated[client]
 
 # Configure PACS connection
 cp configs/federated/client.example.yaml configs/federated/client.yaml
@@ -199,5 +199,5 @@ python -m src.clinical.pacs.pacs_service test \
 ## Support
 
 - GitHub Issues: https://github.com/yourusername/computational-pathology-research/issues
-- Documentation: https://histocore.readthedocs.io
-- Email: support@histocore.org
+- Documentation: https://the platform.readthedocs.io
+- Email: support@the platform.org
