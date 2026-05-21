@@ -9,7 +9,7 @@
 - **Source Code**: 141 Python modules in `src/`
 - **Test Suite**: 186 test files with 3,006 total tests
 - **Code Coverage**: 55% with comprehensive property-based testing
-- **Development Activity**: 286+ commits since January 2024
+- **Development Activity**: 286+ commits since January 2026
 - **Validated Performance**: 95.37% validation AUC, 85.26% test accuracy on real PCam benchmark
 - **Benchmark Superiority**: Competitive performance with state-of-the-art methods
 - **Clinical Features**: DICOM/FHIR integration, PACS connectivity, federated learning, regulatory compliance
@@ -74,7 +74,7 @@
 
 ## Project History
 
-### 2024-2026: Core Development
+### 2026: Core Development
 - Initial framework architecture and PyTorch implementation
 - PatchCamelyon and CAMELYON16 benchmark pipelines
 - Attention-based MIL models (AttentionMIL, CLAM, TransMIL)
