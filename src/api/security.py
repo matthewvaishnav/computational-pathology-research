@@ -6,7 +6,6 @@ Provides JWT authentication, password hashing, file validation,
 rate limiting, and other security utilities.
 """
 
-import hashlib
 import io
 import logging
 import os
@@ -14,7 +13,6 @@ import re
 import time
 import unicodedata
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 try:

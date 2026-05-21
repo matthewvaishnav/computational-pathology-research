@@ -4,7 +4,7 @@ Request Validation Middleware
 Validates and sanitizes all incoming requests.
 """
 
-from fastapi import HTTPException, Request
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
