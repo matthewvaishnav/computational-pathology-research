@@ -244,7 +244,7 @@ docker-compose logs -f api
 docker-compose logs --tail=100 api
 
 # Since timestamp
-docker-compose logs --since 2024-01-01T00:00:00 api
+docker-compose logs --since 2026-01-01T00:00:00 api
 ```
 
 **Configure logging driver**:
