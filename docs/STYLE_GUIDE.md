@@ -510,5 +510,5 @@ Use "I" when welcoming contributions:
 
 For questions about these guidelines or specific cases, please open an issue or refer to [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Last Updated**: 2024
+**Last Updated**: 2026
 **Version**: 1.0
