@@ -10,7 +10,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -316,7 +316,7 @@ async def demo_reconnection():
     )
 
     # Attempt reconnection
-    success = await handler.start_reconnection()
+    await handler.start_reconnection()
 
     # Show statistics
     stats = handler.get_statistics()

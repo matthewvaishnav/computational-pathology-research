@@ -8,7 +8,6 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 import click
 
@@ -27,7 +26,6 @@ def cli():
         histocore batch-analyze *.svs --model resnet50
         histocore demo --quick
     """
-    pass
 
 
 @cli.command()
@@ -87,7 +85,7 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
                 time.sleep(0.1)  # Simulate work
                 bar.update(10)
 
-            result = processor.process_slide(wsi_path)
+            processor.process_slide(wsi_path)
 
         # Run inference (demo mode)
         click.echo("Running AI analysis...")
@@ -188,7 +186,6 @@ def demo(quick, output):
         click.echo("⚡ Quick demo mode - using synthetic data")
 
         # Generate synthetic demo
-        import numpy as np
 
         click.echo("🔄 Generating synthetic WSI data...")
         time.sleep(1)

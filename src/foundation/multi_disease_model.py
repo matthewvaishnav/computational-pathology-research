@@ -4,7 +4,7 @@ Supports 5+ cancer types with shared encoder and disease-specific heads
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import timm
 import torch

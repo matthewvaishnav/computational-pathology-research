@@ -1,7 +1,6 @@
 """Streaming Attention Aggregator for progressive confidence building."""
 
 import logging
-from collections import deque
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 

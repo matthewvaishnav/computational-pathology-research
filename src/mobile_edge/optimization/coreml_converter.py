@@ -7,7 +7,7 @@ Apple CoreML conversion for iOS/macOS deployment.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -15,7 +15,6 @@ import torch.nn as nn
 
 try:
     import coremltools as ct
-    from coremltools.models.neural_network import quantization_utils
 
     COREML_AVAILABLE = True
     if TYPE_CHECKING:

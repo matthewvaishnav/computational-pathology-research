@@ -6,7 +6,7 @@ Integrates python-bioformats for 165+ slide formats beyond OpenSlide.
 
 import logging
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Tuple, Union
 
 import numpy as np
 

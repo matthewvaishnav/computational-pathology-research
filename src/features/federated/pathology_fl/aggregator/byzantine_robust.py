@@ -6,12 +6,11 @@ sending adversarial updates to poison the global model.
 """
 
 import logging
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
-from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import DBSCAN
 
 from ..common.data_models import ClientUpdate
@@ -685,7 +684,7 @@ def simulate_byzantine_attack(
 
 if __name__ == "__main__":
     # Demo: Byzantine-robust aggregation
-    from datetime import datetime
+    pass
 
     print("=== Byzantine-Robust Aggregation Demo ===\n")
 

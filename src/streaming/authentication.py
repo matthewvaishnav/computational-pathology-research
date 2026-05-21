@@ -12,7 +12,6 @@ import os
 import secrets
 import ssl
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)

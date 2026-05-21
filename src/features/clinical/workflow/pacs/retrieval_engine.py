@@ -11,10 +11,9 @@ import logging
 import shutil
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set
 
 import pydicom
 from pydicom.dataset import Dataset
@@ -25,8 +24,6 @@ from .data_models import (
     OperationResult,
     PACSEndpoint,
     PACSMetadata,
-    SeriesInfo,
-    StudyInfo,
     ValidationResult,
 )
 

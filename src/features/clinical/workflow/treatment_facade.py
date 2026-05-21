@@ -10,21 +10,15 @@ while delegating to focused component modules.
 
 import logging
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.figure import Figure
 
 from .longitudinal import (
     LongitudinalTracker,
     PatientTimeline,
-    ScanRecord,
-    TreatmentEvent,
     TreatmentResponseCategory,
 )
-from .outcome_predictor import OutcomePredictor, TreatmentResponseMetrics, UnexpectedResponseType
+from .outcome_predictor import OutcomePredictor, TreatmentResponseMetrics
 from .progression_analyzer import ProgressionAnalyzer, ResponseKinetics
 from .response_calculator import ResponseCalculator
 from .taxonomy import DiseaseTaxonomy

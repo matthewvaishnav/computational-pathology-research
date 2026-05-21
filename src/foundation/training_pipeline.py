@@ -3,19 +3,15 @@ Complete Training Pipeline for Foundation Model
 Integrates self-supervised pre-training, multi-disease fine-tuning, and zero-shot capabilities
 """
 
-import json
 import logging
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import torch
-import torch.distributed as dist
 import torch.nn as nn
 import torch.optim as optim
 import wandb
@@ -130,7 +126,7 @@ class LabeledWSIDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, str]:
         # Find which slide this index corresponds to
         slide_idx = idx // self.patches_per_slide
-        patch_idx = idx % self.patches_per_slide
+        idx % self.patches_per_slide
 
         sample = self.samples[slide_idx]
 

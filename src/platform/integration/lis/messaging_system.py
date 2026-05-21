@@ -6,23 +6,18 @@ for order management and result reporting between AI system and LIS.
 """
 
 import asyncio
-import json
 import logging
-import re
-import uuid
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import aiohttp
-import defusedxml.ElementTree as ET
 from fhir.resources.diagnosticreport import DiagnosticReport
 from fhir.resources.observation import Observation
 from fhir.resources.servicerequest import ServiceRequest
-from hl7apy import core, parse_message
-from hl7apy.core import Message, Segment
+from hl7apy import parse_message
 
 
 class MessageType(Enum):

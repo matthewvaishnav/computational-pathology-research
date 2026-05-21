@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 import torch
 import torch.nn as nn

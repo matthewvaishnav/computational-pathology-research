@@ -6,7 +6,6 @@ Browser-based WSI analysis
 import json
 import os
 import time
-from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import numpy as np

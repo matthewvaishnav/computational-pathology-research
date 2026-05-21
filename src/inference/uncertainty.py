@@ -7,11 +7,10 @@ This module implements uncertainty quantification methods including:
 - Combined uncertainty: Total prediction uncertainty
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ..data.data_models import Bag, InferenceOutput
 
@@ -87,12 +86,12 @@ class UncertaintyEstimator:
         if isinstance(bag, Bag):
             features = bag.features
             slide_id = bag.slide_id
-            num_patches = bag.num_patches
+            bag.num_patches
         else:
             features = bag
             if slide_id is None:
                 raise ValueError("slide_id required when bag is tensor")
-            num_patches = features.shape[0]
+            features.shape[0]
 
         # Move to device
         features = features.to(self.device)

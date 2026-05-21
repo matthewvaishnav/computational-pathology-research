@@ -4,18 +4,16 @@ TensorRT Optimization for Medical AI Models
 NVIDIA TensorRT optimization for GPU inference acceleration.
 """
 
-import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
 
 try:
-    import pycuda.autoinit
     import pycuda.driver as cuda
     import tensorrt as trt
 

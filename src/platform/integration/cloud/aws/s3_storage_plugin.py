@@ -5,22 +5,18 @@ Provides integration with AWS S3 for scalable object storage of medical images,
 DICOM files, analysis results, and other healthcare data with encryption and compliance.
 """
 
-import asyncio
-import hashlib
-import json
 import logging
 import mimetypes
 import uuid
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, BinaryIO, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aioboto3
 import boto3
-import botocore
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +229,6 @@ class AWSS3StoragePlugin(StoragePlugin):
     async def cleanup(self):
         """Cleanup resources"""
         # aioboto3 sessions are automatically cleaned up
-        pass
 
     async def _test_connection(self) -> bool:
         """Test S3 connection"""
@@ -642,7 +637,6 @@ class AWSS3StoragePlugin(StoragePlugin):
                 bucket_accessible = True
             except Exception as e:
                 logger.warning(f"S3 health check failed: {type(e).__name__}")
-                pass
 
             # Test object operations
             objects_accessible = False

@@ -153,7 +153,7 @@ async def main():
 
     logging.basicConfig(level=logging.INFO)
 
-    server = await start_metrics_server(args.host, args.port)
+    await start_metrics_server(args.host, args.port)
 
     try:
         # Keep server running

@@ -7,7 +7,7 @@ Reference:
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import cm
 
-from .utils import get_device, normalize_array, to_numpy
+from .utils import get_device
 
 logger = logging.getLogger(__name__)
 

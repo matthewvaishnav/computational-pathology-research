@@ -3,20 +3,16 @@ Clinical Impact Measurement Module for Medical AI Revolution
 Tracks diagnostic accuracy, turnaround times, user satisfaction, and clinical outcomes.
 """
 
-import json
 import logging
 import sqlite3
-import statistics
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
-import numpy as np
 import pandas as pd
 from scipy import stats
 
-from .validation import ValidationError, validate_case_id, validate_patient_id, validate_site_id
 
 logger = logging.getLogger(__name__)
 

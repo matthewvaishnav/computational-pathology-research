@@ -8,7 +8,7 @@ Loss = ELBO (reconstruction + KL) + lambda_cox * Cox loss
 """
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import torch
 import torch.nn as nn

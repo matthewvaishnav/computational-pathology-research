@@ -8,22 +8,18 @@ and clinical requirements.
 
 import logging
 import random
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Iterator, List, Optional, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import torch
 from sklearn.model_selection import (
-    GroupKFold,
-    LeaveOneGroupOut,
     StratifiedGroupKFold,
     StratifiedKFold,
     train_test_split,
 )
-from sklearn.preprocessing import LabelEncoder
 
 logger = logging.getLogger(__name__)
 

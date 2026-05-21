@@ -11,14 +11,13 @@ statistical analysis, and automated alerting for performance degradation.
 import logging
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 from scipy import stats
-from scipy.stats import entropy, ks_2samp, wasserstein_distance
+from scipy.stats import ks_2samp, wasserstein_distance
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -753,7 +752,7 @@ class ModelDriftDetector:
             return {"error": "No recent data available"}
 
         # Compute trends
-        timestamps = [dist.timestamp for dist in recent_distributions]
+        [dist.timestamp for dist in recent_distributions]
         mean_confidences = [dist.mean_confidence for dist in recent_distributions]
         entropies = [dist.entropy for dist in recent_distributions]
 

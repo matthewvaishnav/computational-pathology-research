@@ -5,14 +5,11 @@ Generates publication-quality tables, figures, and reports for medical AI valida
 """
 
 import logging
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import seaborn as sns
 
 logger = logging.getLogger(__name__)
 

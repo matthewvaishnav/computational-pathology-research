@@ -7,16 +7,15 @@ validation, DICOM tag mapping, and integration with existing DICOM adapter.
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydicom.dataset import Dataset
-from pynetdicom import AE, debug_logger
+from pynetdicom import AE
 from pynetdicom.sop_class import StudyRootQueryRetrieveInformationModelFind
 
 from .data_models import (
     DicomPriority,
-    OperationResult,
     PACSEndpoint,
     QueryResult,
     SeriesInfo,

@@ -6,25 +6,13 @@ fairness issues in medical AI systems across protected attributes.
 """
 
 import logging
-import warnings
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from scipy import stats
-from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    equalized_odds_difference,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
 
 logger = logging.getLogger(__name__)
 

@@ -305,7 +305,7 @@ def train_with_fedprox(
 
 if __name__ == "__main__":
     # Demo: FedProx aggregation
-    from datetime import datetime
+    pass
 
     import torch.nn as nn
 

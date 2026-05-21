@@ -6,19 +6,14 @@ and quantization-aware training (QAT) for efficient mobile deployment.
 """
 
 import copy
-import json
 import logging
-import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.quantization as quant
 
-from ..utils.model_utils import count_parameters, get_model_size
 
 
 @dataclass

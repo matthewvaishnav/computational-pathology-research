@@ -12,7 +12,6 @@ from contextlib import contextmanager
 from typing import Generator, Optional
 
 from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 

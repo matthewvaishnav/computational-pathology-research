@@ -14,7 +14,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 try:
-    from scipy.spatial import Delaunay, distance_matrix
+    from scipy.spatial import Delaunay
     from sklearn.neighbors import NearestNeighbors
 
     SCIPY_AVAILABLE = True

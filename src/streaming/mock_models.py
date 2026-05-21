@@ -10,7 +10,6 @@ Date: 2026-04-28
 
 from typing import Optional, Tuple
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -191,7 +190,6 @@ def create_mock_models(feature_dim: int = 512, device: str = "cpu") -> Tuple[nn.
 class AttentionMIL(MockAttentionMIL):
     """Alias for MockAttentionMIL for compatibility."""
 
-    pass
 
 
 if __name__ == "__main__":

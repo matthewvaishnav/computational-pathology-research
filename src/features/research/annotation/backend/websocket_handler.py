@@ -3,8 +3,6 @@ WebSocket handler for real-time collaboration
 Manages connections and broadcasts updates to multiple pathologists
 """
 
-import asyncio
-import json
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Set

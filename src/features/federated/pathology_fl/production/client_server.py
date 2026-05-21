@@ -1,14 +1,11 @@
 """Production FL Client Server."""
 
-import asyncio
-import logging
 import os
 import signal
 import sys
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Any, Dict, Optional
 
 import structlog
 import torch
@@ -24,11 +21,11 @@ from src.platform.monitoring.tracing import get_tracer
 from src.platform.security.network_binding import NetworkBindingManager
 
 from ..client.trainer import FederatedTrainer
-from ..common.data_models import ClientUpdate, TrainingMetadata
+from ..common.data_models import ClientUpdate
 from ..communication.grpc_client import GRPCClient
 from ..privacy.dp_sgd import DPSGDEngine
 from .config import get_config
-from .monitoring import get_metrics_manager, setup_logging
+from .monitoring import setup_logging
 
 logger = structlog.get_logger(__name__)
 config = get_config()
@@ -118,7 +115,7 @@ async def log_requests(request: Request, call_next):
 
     response = await call_next(request)
 
-    duration = time.time() - start_time
+    time.time() - start_time
     CLIENT_REQUESTS.labels(endpoint=request.url.path, status=response.status_code).inc()
 
     return response

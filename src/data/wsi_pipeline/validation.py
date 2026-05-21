@@ -10,10 +10,9 @@ import logging
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import numpy as np
-import torch
 
 from .batch_processor import BatchProcessor
 from .benchmarks import PerformanceBenchmark
@@ -23,7 +22,6 @@ from .exceptions import ProcessingError
 from .extractor import PatchExtractor
 from .feature_generator import FeatureGenerator
 from .quality_control import QualityControl
-from .reader import WSIReader
 from .tissue_detector import TissueDetector
 
 logger = logging.getLogger(__name__)

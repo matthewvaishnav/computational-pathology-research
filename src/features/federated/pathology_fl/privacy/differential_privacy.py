@@ -8,9 +8,8 @@ guarantees for medical AI federated learning systems.
 import logging
 import math
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
-import numpy as np
 import torch
 
 logger = logging.getLogger(__name__)

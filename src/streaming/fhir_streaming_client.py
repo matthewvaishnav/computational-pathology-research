@@ -6,7 +6,7 @@ Integrates HL7 FHIR w/ PACS WSI streaming for healthcare interoperability.
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from src.features.clinical.workflow.fhir_adapter import (
     AuthenticationMethod,

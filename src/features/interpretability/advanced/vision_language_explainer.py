@@ -9,28 +9,22 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-import faiss
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
+from transformers import CLIPModel, CLIPProcessor
 
 from src.platform.security.model_download import ModelDownloadManager
 
 from .case_based_reasoning import CaseDatabase, CaseMetadata, RetrievalQuery, SimilarCase
 from .counterfactual_explanations import (
-    BiologicalPlausibilityValidator,
     CounterfactualExplanation,
     CounterfactualExplanationSystem,
 )
 
 # Import enhanced components
 from .uncertainty_quantification import (
-    ConfidenceCalibrator,
-    EnsembleUncertainty,
-    MonteCarloDropout,
     UncertaintyMetrics,
     UncertaintyQuantificationSystem,
 )

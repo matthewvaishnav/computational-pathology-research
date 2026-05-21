@@ -19,9 +19,8 @@ Reference:
 - TransnnMIL v2.0: Hierarchical + Topology (2027)
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

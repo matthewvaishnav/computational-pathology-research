@@ -6,7 +6,7 @@ Secondary: Moran's I for spatial coherence, gene-level AUROC.
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 from scipy import stats as scipy_stats

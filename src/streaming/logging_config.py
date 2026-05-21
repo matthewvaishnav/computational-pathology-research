@@ -1,6 +1,5 @@
 """Structured logging with correlation IDs for HistoCore streaming."""
 
-import json
 import logging
 import os
 import sys

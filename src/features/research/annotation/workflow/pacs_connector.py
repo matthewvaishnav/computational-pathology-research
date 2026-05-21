@@ -4,12 +4,10 @@ PACS Connector
 Integrates annotation interface with PACS for slide retrieval.
 """
 
-import asyncio
 import logging
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from ...clinical.pacs.data_models import StudyInfo
 from ...clinical.pacs.pacs_adapter import PACSAdapter
 from ..backend.annotation_api import add_slide_to_db
 from ..backend.annotation_models import SlideInfo

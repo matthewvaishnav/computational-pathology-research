@@ -7,18 +7,14 @@ import asyncio
 import copy
 import hashlib
 import hmac
-import json
 import logging
 import os
-import secrets
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -37,7 +33,6 @@ except ImportError:
 # Differential privacy imports
 try:
     from opacus import PrivacyEngine
-    from opacus.utils.batch_memory_manager import BatchMemoryManager
 
     OPACUS_AVAILABLE = True
 except ImportError:

@@ -7,7 +7,7 @@ AUC validation, and bootstrap confidence intervals.
 
 import logging
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch

@@ -6,7 +6,7 @@ for communicating discovered subtypes to clinicians.
 """
 
 import logging
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
 import numpy as np
 

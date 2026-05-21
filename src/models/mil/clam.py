@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 
 from src.models.components.attention_mechanisms import GatedAttention
-from src.models.components.fusion_strategies import EarlyFusion, FusionStrategy, LateFusion
+from src.models.components.fusion_strategies import EarlyFusion, LateFusion
 from src.models.mil.mil_base import MILBase
 
 

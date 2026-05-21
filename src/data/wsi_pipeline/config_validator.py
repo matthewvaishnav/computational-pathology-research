@@ -7,7 +7,7 @@ and generates documentation for available options.
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 from .config import ProcessingConfig
 from .exceptions import ProcessingError

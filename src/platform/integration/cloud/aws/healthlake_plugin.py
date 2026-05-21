@@ -6,20 +6,15 @@ analytics, and machine learning capabilities in the cloud.
 """
 
 import asyncio
-import base64
-import json
 import logging
 import ssl
-import uuid
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import boto3
-import botocore
-from botocore.exceptions import ClientError, NoCredentialsError
 
 logger = logging.getLogger(__name__)
 
@@ -693,7 +688,6 @@ class AWSHealthLakePlugin(CloudPlugin):
                 s3_accessible = True
             except Exception as e:
                 logger.warning(f"HealthLake health check failed: {type(e).__name__}")
-                pass
 
             return {
                 "connected": datastore_accessible and fhir_accessible,

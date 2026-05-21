@@ -6,12 +6,11 @@ to pilot hospital sites, including site preparation, technical assessment,
 integration planning, and deployment execution.
 """
 
-import json
 import logging
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import yaml
 

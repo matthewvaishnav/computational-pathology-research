@@ -7,8 +7,7 @@ High-performance inference engine targeting <10s processing time.
 
 import logging
 import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import torch
 import torch.nn.functional as F
@@ -432,7 +431,7 @@ class OptimizedInferenceEngine:
         times = []
         for _ in range(num_runs):
             start = time.perf_counter()
-            result = self.analyze_image_fast(test_image)
+            self.analyze_image_fast(test_image)
             times.append(time.perf_counter() - start)
 
         import numpy as np

@@ -23,8 +23,6 @@ try:
     from flwr.common import (
         NDArrays,
         Scalar,
-        ndarrays_to_parameters,
-        parameters_to_ndarrays,
     )
 
     HAS_FLWR = True

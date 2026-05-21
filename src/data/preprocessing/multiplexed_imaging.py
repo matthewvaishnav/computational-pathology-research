@@ -5,14 +5,14 @@ CODEX, Vectra, and multi-channel immunofluorescence processing.
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
 try:
-    from skimage import exposure, filters
+    from skimage import filters
 
     SKIMAGE_AVAILABLE = True
 except ImportError:
@@ -243,7 +243,7 @@ class MultiplexedImageProcessor:
         overlap = np.logical_and(mask1, mask2)
 
         # Metrics
-        total_pixels = mask1.size
+        mask1.size
         positive1 = mask1.sum()
         positive2 = mask2.sum()
         colocalized = overlap.sum()

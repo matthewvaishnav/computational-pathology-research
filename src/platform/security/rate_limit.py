@@ -137,7 +137,7 @@ def create_rate_limit_middleware(config: Optional[RateLimitConfig] = None):
     limiter = RateLimiter(config)
 
     try:
-        from fastapi import Request, Response
+        from fastapi import Request
         from fastapi.responses import JSONResponse
 
         async def rate_limit_middleware(request: Request, call_next):

@@ -11,15 +11,14 @@ import socket
 import ssl
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-import OpenSSL
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 from cryptography.x509.oid import NameOID
 
-from .data_models import OperationResult, PACSEndpoint, SecurityConfig, ValidationResult
+from .data_models import OperationResult, PACSEndpoint, SecurityConfig
 
 logger = logging.getLogger(__name__)
 

@@ -5,11 +5,9 @@ Implements secure multi-party computation for gradient aggregation
 using TenSEAL (SEAL homomorphic encryption library).
 """
 
-import base64
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch

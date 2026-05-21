@@ -6,7 +6,6 @@ gradient accumulation, learning rate scaling, and comprehensive monitoring.
 """
 
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -18,8 +17,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from ..config.nnmil_config import nnMILConfig
-from ..data.batch_samplers import BalancedBatchSampler, RegressionBatchSampler, SurvivalBatchSampler
-from ..data.data_models import InferenceOutput, TrainingBatch
+from ..data.data_models import TrainingBatch
 
 logger = logging.getLogger(__name__)
 

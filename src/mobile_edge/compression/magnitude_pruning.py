@@ -10,14 +10,13 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.utils.prune as prune
 
-from ..utils.model_utils import count_parameters, get_model_size
+from ..utils.model_utils import get_model_size
 
 
 @dataclass

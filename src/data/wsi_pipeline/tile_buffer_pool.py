@@ -17,11 +17,8 @@ import gc
 import logging
 import threading
 import time
-import weakref
-import zlib
 from collections import OrderedDict
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -29,7 +26,6 @@ import psutil
 import torch
 from PIL import Image
 
-from ..utils.common import format_bytes, log_operation
 from ..utils.constants import (
     COMPRESSION_THRESHOLD_MB,
     DEFAULT_BUFFER_SIZE,
@@ -378,7 +374,7 @@ class TileBufferPool:
 
             # Get least recently used tile (first item in OrderedDict)
             key = next(iter(self._tiles))
-            tile_data = self._tiles.pop(key)
+            self._tiles.pop(key)
             metadata = self._metadata.pop(key)
 
             # Update memory usage
@@ -706,7 +702,7 @@ class TileBufferPool:
 
                         # Get least recently used tile (first item in OrderedDict)
                         evict_key = next(iter(self._tiles))
-                        evicted_tile_data = self._tiles.pop(evict_key)
+                        self._tiles.pop(evict_key)
                         evicted_metadata = self._metadata.pop(evict_key)
 
                         # Update memory usage

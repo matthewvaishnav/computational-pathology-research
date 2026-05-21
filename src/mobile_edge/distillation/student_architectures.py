@@ -4,13 +4,11 @@ Student Architecture Designs for Knowledge Distillation
 Lightweight student models for mobile/edge deployment via distillation.
 """
 
-import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 @dataclass

@@ -6,7 +6,6 @@ Detects network partitions, connectivity issues, and coordinator availability.
 
 import asyncio
 import logging
-import socket
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta

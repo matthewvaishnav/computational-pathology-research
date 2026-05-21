@@ -754,7 +754,7 @@ class SelfSupervisedPreTrainer:
                     images = batch
 
                 images = images.cuda() if torch.cuda.is_available() else images
-                features = self.model.extract_features(images.unsqueeze(1)).squeeze(1)
+                self.model.extract_features(images.unsqueeze(1)).squeeze(1)
                 total_samples += images.shape[0]
 
         return {"val_samples": total_samples}

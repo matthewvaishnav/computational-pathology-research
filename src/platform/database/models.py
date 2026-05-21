@@ -6,8 +6,6 @@ SQLAlchemy models for the Medical AI platform database schema.
 """
 
 import uuid
-from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import (
     JSON,

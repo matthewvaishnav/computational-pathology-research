@@ -10,7 +10,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from .audit import AuditEventType, AuditSeverity, SignedAuditRecord
 from .audit_logger import AuditLogger, CryptographicSigner

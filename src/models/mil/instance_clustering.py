@@ -8,7 +8,6 @@ high-diagnostic-value subregions.
 import logging
 from typing import Optional, Tuple
 
-import numpy as np
 import torch
 import torch.nn as nn
 

@@ -6,7 +6,7 @@ scale/zero-point calculation for accurate reconstruction.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import numpy as np
 import torch

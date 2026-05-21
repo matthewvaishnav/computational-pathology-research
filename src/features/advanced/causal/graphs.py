@@ -6,7 +6,7 @@ Supports d-separation testing and backdoor criterion checking.
 """
 
 import logging
-from typing import Dict, FrozenSet, List, Optional, Set, Tuple
+from typing import Dict, List, Set, Tuple
 
 logger = logging.getLogger(__name__)
 

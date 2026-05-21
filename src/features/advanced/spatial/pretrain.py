@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Subset, random_split
+from torch.utils.data import DataLoader
 
 from .alignment import SpatialDataset
 from .decoder import SpatialDecoderLoss, SpatialTranscriptomicsDecoder

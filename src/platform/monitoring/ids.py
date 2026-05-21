@@ -11,7 +11,7 @@ import logging
 import re
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 
 logger = logging.getLogger(__name__)
 

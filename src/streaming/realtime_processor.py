@@ -20,15 +20,12 @@ import torch
 
 from .attention_aggregator import (
     AttentionMIL,
-    ConfidenceUpdate,
-    PredictionResult,
     StreamingAttentionAggregator,
 )
-from .gpu_pipeline import GPUPipeline, ThroughputMetrics
+from .gpu_pipeline import GPUPipeline
 from .memory.monitor import MemoryMonitor
-from .memory.profiler import MemorySnapshot
-from .progressive_visualizer import ProgressiveVisualizer, VisualizationUpdate
-from .wsi_stream_reader import StreamingMetadata, TileBatch, WSIStreamReader
+from .progressive_visualizer import ProgressiveVisualizer
+from .wsi_stream_reader import WSIStreamReader
 
 logger = logging.getLogger(__name__)
 

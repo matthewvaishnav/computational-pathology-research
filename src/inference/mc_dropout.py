@@ -5,7 +5,7 @@ This module implements MC Dropout to estimate epistemic uncertainty
 by performing multiple forward passes with dropout enabled at inference time.
 """
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import numpy as np
 import torch

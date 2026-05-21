@@ -4,10 +4,9 @@ Multi-Stage Knowledge Distillation
 Progressive distillation through intermediate teacher models.
 """
 
-import copy
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import torch
 import torch.nn as nn

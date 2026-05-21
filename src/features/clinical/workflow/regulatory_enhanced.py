@@ -18,7 +18,6 @@ import hmac
 import json
 import logging
 from dataclasses import asdict, dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 

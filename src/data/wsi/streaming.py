@@ -2,16 +2,14 @@
 
 import gc
 import logging
-import os
 import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from queue import Empty, Queue
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
-import openslide
 import torch
 from openslide import OpenSlide
 from openslide.deepzoom import DeepZoomGenerator
@@ -320,7 +318,7 @@ class WSIStreamReader:
 
             # Estimate total patches with background filtering
             level = self.deepzoom.level_count - 1  # Highest resolution
-            level_dimensions = self.deepzoom.level_dimensions[level]
+            self.deepzoom.level_dimensions[level]
             tiles_x, tiles_y = self.deepzoom.level_tiles[level]
             raw_patch_count = tiles_x * tiles_y
 

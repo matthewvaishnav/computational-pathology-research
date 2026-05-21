@@ -22,12 +22,11 @@ Example:
 import logging
 from typing import Any, Dict, Optional
 
-import torch
 
 from .batch_optimizer import BatchOptimizer, OptimalSizes
 from .cache_manager import CacheManager
 from .config import OptimizerConfig
-from .monitor import MemoryAlert, MemoryAnalytics, MemoryMonitor
+from .monitor import MemoryAnalytics, MemoryMonitor
 from .profiler import MemoryPressureLevel, MemoryProfiler, MemorySnapshot
 
 logger = logging.getLogger(__name__)

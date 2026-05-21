@@ -241,7 +241,7 @@ class MemoryPoolManager:
             self.cache_misses += 1
 
             # Check if we can grow the pool
-            current_size_gb = self.total_size_bytes / (1024**3)
+            self.total_size_bytes / (1024**3)
             new_size_gb = (self.total_size_bytes + size_bytes) / (1024**3)
 
             if new_size_gb > self.max_pool_size_gb:

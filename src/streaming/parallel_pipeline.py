@@ -5,23 +5,19 @@ Implements data parallelism and pipeline parallelism across multiple GPUs
 for maximum throughput and <30s processing on gigapixel slides.
 """
 
-import asyncio
 import logging
 import queue
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import torch
-import torch.multiprocessing as mp
 import torch.nn as nn
-from torch.nn.parallel import DataParallel
 
-from .gpu_pipeline import GPUPipeline, ThroughputMetrics
+from .gpu_pipeline import GPUPipeline
 from .metrics import record_throughput_measurement, timed_operation
-from .model_optimizer import ModelOptimizer, OptimizationConfig
+from .model_optimizer import OptimizationConfig
 
 logger = logging.getLogger(__name__)
 

@@ -6,22 +6,15 @@ via FHIR R4 and proprietary APIs for patient data and clinical workflows.
 """
 
 import asyncio
-import base64
-import json
 import logging
 import ssl
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
-import defusedxml.ElementTree as ET
 from fhir.resources.diagnosticreport import DiagnosticReport
-from fhir.resources.observation import Observation
-from fhir.resources.patient import Patient
-from fhir.resources.servicerequest import ServiceRequest
 
 logger = logging.getLogger(__name__)
 
@@ -754,7 +747,6 @@ class CernerEMRPlugin(EMRPlugin):
                 patients_accessible = True
             except Exception as e:
                 logger.warning(f"Patient search test failed: {type(e).__name__}")
-                pass
 
             return {
                 "connected": auth_valid and fhir_available,

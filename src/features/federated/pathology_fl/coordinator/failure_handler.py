@@ -5,14 +5,12 @@ Handles network disconnections, timeouts, and client dropouts while maintaining
 training progress with remaining clients.
 """
 
-import asyncio
 import logging
 import threading
-import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Set
+from typing import Callable, Dict, List, Optional
 
 from src.core.utils.safe_threading import GracefulThread, ThreadSafeDict, ThreadSafeSet
 
@@ -478,7 +476,7 @@ class ClientFailureHandler:
         while not thread.should_stop():
             try:
                 # Check for timeouts
-                timed_out_clients = self.check_round_timeouts()
+                self.check_round_timeouts()
 
                 # Attempt recovery for failed clients
                 for client_id in list(self.failed_clients):

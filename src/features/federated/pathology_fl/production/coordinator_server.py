@@ -1,15 +1,13 @@
 """Production FL Coordinator Server."""
 
-import asyncio
 import hashlib
-import logging
 import os
 import signal
 import sys
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import sentry_sdk
 import structlog
@@ -29,12 +27,11 @@ from src.platform.monitoring.tracing import get_tracer
 
 # Local imports grouped together
 from ..aggregator.factory import AggregatorFactory
-from ..common.data_models import ClientUpdate
 from ..coordinator.orchestrator import TrainingOrchestrator
 from .config import get_config, validate_production_config
 from .database import get_db_manager, init_database
-from .monitoring import get_metrics_manager, setup_logging
-from .security import RateLimiter, get_audit_logger, get_security_manager, validate_security_config
+from .monitoring import setup_logging
+from .security import get_audit_logger, get_security_manager, validate_security_config
 
 # Configuration
 config = get_config()

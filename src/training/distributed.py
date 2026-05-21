@@ -268,7 +268,7 @@ def example_distributed_training():
     model = setup_multi_gpu(model, distributed=world_size > 1, local_rank=local_rank)
 
     # Create optimizer
-    optimizer = torch.optim.Adam(model.parameters())
+    torch.optim.Adam(model.parameters())
 
     # Training loop would go here...
 

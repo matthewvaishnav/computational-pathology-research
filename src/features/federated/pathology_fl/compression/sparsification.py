@@ -6,7 +6,7 @@ values are transmitted, with the rest set to zero.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import numpy as np
 import torch

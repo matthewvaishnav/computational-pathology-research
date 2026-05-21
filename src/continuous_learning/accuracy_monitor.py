@@ -8,12 +8,11 @@ to detect performance degradation in medical AI systems.
 import logging
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 
 logger = logging.getLogger(__name__)

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Medical Knowledge Network (MKN) - Collaborative diagnostic intelligence."""
 
-import random
 import time
-from typing import Any, Dict, List
+from typing import Dict
 
 
 class MedicalKnowledgeNetwork:

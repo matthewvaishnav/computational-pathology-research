@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-import numpy as np
 import openslide
 from openslide import OpenSlide
 from PIL import Image
@@ -28,44 +27,36 @@ class WSIFormatHandler(ABC):
     @abstractmethod
     def can_handle(self, file_path: str) -> bool:
         """Check if this handler can process the given file."""
-        pass
 
     @abstractmethod
     def open_slide(self, file_path: str) -> Any:
         """Open the slide file and return slide object."""
-        pass
 
     @abstractmethod
     def get_dimensions(self, slide_obj: Any) -> Tuple[int, int]:
         """Get slide dimensions (width, height)."""
-        pass
 
     @abstractmethod
     def get_properties(self, slide_obj: Any) -> Dict[str, str]:
         """Get slide properties/metadata."""
-        pass
 
     @abstractmethod
     def read_region(
         self, slide_obj: Any, location: Tuple[int, int], level: int, size: Tuple[int, int]
     ) -> Image.Image:
         """Read a region from the slide."""
-        pass
 
     @abstractmethod
     def get_level_count(self, slide_obj: Any) -> int:
         """Get number of pyramid levels."""
-        pass
 
     @abstractmethod
     def get_level_dimensions(self, slide_obj: Any) -> list:
         """Get dimensions for each pyramid level."""
-        pass
 
     @abstractmethod
     def close_slide(self, slide_obj: Any):
         """Close the slide and clean up resources."""
-        pass
 
 
 class OpenSlideHandler(WSIFormatHandler):
@@ -242,7 +233,6 @@ class DICOMHandler(WSIFormatHandler):
 
     def close_slide(self, slide_obj: Dataset):
         """Close DICOM slide (no explicit close needed)."""
-        pass
 
 
 class WSIFormatManager:

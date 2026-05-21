@@ -3,14 +3,11 @@ Production Optimization Module for Medical AI Revolution
 Handles performance optimization, scaling, monitoring, and operational excellence.
 """
 
-import asyncio
-import json
 import logging
 import sqlite3
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -813,10 +810,10 @@ def demo_production_optimization():
     print(f"Generated {len(capacity_analysis['recommendations'])} capacity recommendations")
 
     # Setup operational procedures
-    monitoring_config = ops.setup_monitoring_alerting()
-    incident_procedures = ops.create_incident_response_procedures()
-    backup_config = ops.setup_backup_recovery()
-    security_config = ops.implement_security_hardening()
+    ops.setup_monitoring_alerting()
+    ops.create_incident_response_procedures()
+    ops.setup_backup_recovery()
+    ops.implement_security_hardening()
 
     print("Production optimization setup complete")
 

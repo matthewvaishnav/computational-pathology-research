@@ -6,20 +6,16 @@ including system installation, integration testing, user acceptance testing,
 and production cutover.
 """
 
-import asyncio
-import json
 import logging
-import subprocess
 import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import yaml
 
-from .validation import ValidationError, validate_site_id
+from .validation import validate_site_id
 
 logger = logging.getLogger(__name__)
 

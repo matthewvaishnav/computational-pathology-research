@@ -14,23 +14,16 @@ CRITICAL SECURITY FIXES IMPLEMENTED:
 This module addresses all P0 security vulnerabilities identified in the security audit.
 """
 
-import base64
 import hashlib
-import hmac
-import json
 import logging
-import os
 import secrets
 import threading
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set
 
-from cryptography.fernet import Fernet, MultiFernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.fernet import Fernet
 
 # Import Role and Permission from privacy module for type hints
 from src.features.clinical.workflow.privacy import Permission, Role

@@ -138,7 +138,6 @@ from .extractor import PatchExtractor
 from .feature_generator import FeatureGenerator
 from .logging_utils import get_logger, setup_logging
 from .models import ProcessingResult, SlideMetadata
-from .progress_tracker import ProgressCallback, StreamingProgress, StreamingProgressTracker
 from .quality_control import QualityControl
 from .reader import WSIReader
 from .tissue_detector import TissueDetector

@@ -16,8 +16,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 from .dicom_server import DicomServer
-from .pacs_client import PACSClient, StudyInfo
-from .worklist_manager import WorklistEntry, WorklistManager, WorklistStatus
+from .pacs_client import PACSClient
+from .worklist_manager import WorklistManager, WorklistStatus
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,6 @@ including .svs, .tiff, .ndpi, and DICOM WSI files.
 """
 
 import logging
-import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 

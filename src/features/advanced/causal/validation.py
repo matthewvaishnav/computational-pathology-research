@@ -6,7 +6,7 @@ Sensitivity analysis quantifies robustness to unmeasured confounding.
 """
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict
 
 import numpy as np
 from sklearn.base import clone

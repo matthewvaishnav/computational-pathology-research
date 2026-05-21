@@ -8,7 +8,7 @@ coordinator and clients with role-based access control.
 import hashlib
 import logging
 import time
-from typing import Dict, Optional, Set
+from typing import Dict, Set
 
 import grpc
 from cryptography import x509
@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 class AuthenticationError(Exception):
     """Authentication-related errors."""
 
-    pass
 
 
 class CertificateValidator:

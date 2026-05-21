@@ -7,7 +7,7 @@ for understanding which clinical features contribute most to model predictions.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -346,7 +346,7 @@ class FeatureImportanceCalculator:
         y = y.to(self.device)
 
         n_samples = X.shape[0]
-        n_features = X.shape[1]
+        X.shape[1]
 
         # Bootstrap sampling
         bootstrap_scores = []

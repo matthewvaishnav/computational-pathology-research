@@ -7,12 +7,10 @@ and analyzes systematic biases across clinical subgroups.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.preprocessing import StandardScaler
 

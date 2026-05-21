@@ -7,14 +7,12 @@ and performing DICOM operations like C-FIND, C-MOVE, C-GET.
 """
 
 import logging
-import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from pydicom import Dataset
-from pydicom.uid import generate_uid
-from pynetdicom import AE, build_context
+from pynetdicom import AE
 from pynetdicom.sop_class import (
     PatientRootQueryRetrieveInformationModelFind,
     PatientRootQueryRetrieveInformationModelGet,

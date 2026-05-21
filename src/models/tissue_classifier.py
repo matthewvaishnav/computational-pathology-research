@@ -5,7 +5,7 @@ Classifies patches into tissue types (tumor, stroma, necrosis, background)
 to enable importance-weighted sub-bag sampling in MIL training.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 import torch.nn as nn

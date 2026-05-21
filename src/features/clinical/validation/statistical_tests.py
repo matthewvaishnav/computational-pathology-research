@@ -6,35 +6,28 @@ including significance tests, power analysis, and clinical trial methodology.
 """
 
 import logging
-import warnings
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-import pandas as pd
 import scipy.stats as stats
 from scipy.stats import (
     anderson,
     bartlett,
     chi2_contingency,
     fisher_exact,
-    friedmanchisquare,
-    kruskal,
     kstest,
     levene,
     mannwhitneyu,
-    mcnemar,
     shapiro,
     ttest_ind,
     ttest_rel,
     wilcoxon,
 )
 from statsmodels.stats.contingency_tables import mcnemar as mcnemar_test
-from statsmodels.stats.diagnostic import het_breuschpagan
-from statsmodels.stats.inter_rater import cohens_kappa, fleiss_kappa
-from statsmodels.stats.power import chisquare_power, ttest_power, zt_ind_solve_power
-from statsmodels.stats.proportion import proportion_confint, proportions_ztest
+from statsmodels.stats.power import ttest_power, zt_ind_solve_power
+from statsmodels.stats.proportion import proportions_ztest
 
 logger = logging.getLogger(__name__)
 

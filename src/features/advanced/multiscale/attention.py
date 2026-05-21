@@ -7,7 +7,7 @@ HierarchicalAttentionPool: aggregates across all scales → slide-level vector.
 
 import logging
 import math
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
