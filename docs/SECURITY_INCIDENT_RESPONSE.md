@@ -87,10 +87,10 @@ grep "SECURITY_WARNING" logs/security_audit.log | tail -100
 **Check for Compromised Credentials**:
 ```bash
 # Review recent authentication events
-python scripts/analyze_auth_events.py --since "2024-01-01"
+python scripts/analyze_auth_events.py --since "2026-01-01"
 
 # Check for privilege escalation
-python scripts/check_privilege_changes.py --since "2024-01-01"
+python scripts/check_privilege_changes.py --since "2026-01-01"
 ```
 
 **Analyze Network Traffic**:
