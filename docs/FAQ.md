@@ -649,10 +649,10 @@ Yes, the MIT license allows commercial use.
 While not required, citations are appreciated:
 
 ```bibtex
-@software{the platform2024,
+@software{the platform2026,
   title={the platform: Real-Time WSI Streaming Framework},
   author={the platform Contributors},
-  year={2024},
+  year={2026},
   url={https://github.com/the platform/the platform}
 }
 ```
