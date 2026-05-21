@@ -302,12 +302,12 @@ Document in `SECURITY.md`:
 ```markdown
 ## Known Vulnerabilities
 
-### CVE-2024-XXXXX (RESOLVED)
+### CVE-2026-XXXXX (RESOLVED)
 - **Package:** requests
 - **Severity:** HIGH
 - **Affected:** 2.28.0 - 2.28.2
 - **Fixed in:** 2.29.0
-- **Resolution:** Updated to 2.29.0 on 2024-01-15
+- **Resolution:** Updated to 2.29.0 on 2026-01-15
 - **Verification:** All tests passing
 ```
 
@@ -420,7 +420,7 @@ security:
   ignore-vulnerabilities:
     - id: 12345
       reason: "Not applicable - I don't use affected feature"
-      expires: "2024-12-31"
+      expires: "2026-12-31"
 ```
 
 ### Issue 2: Transitive Dependencies
@@ -442,12 +442,12 @@ pip install --upgrade parent-package
 ```markdown
 ## Accepted Risks
 
-### CVE-2024-XXXXX
+### CVE-2026-XXXXX
 - **Package:** old-library
 - **Severity:** MEDIUM
 - **Status:** No fix available
 - **Mitigation:** Input validation, sandboxing
-- **Review date:** 2024-06-01
+- **Review date:** 2026-06-01
 ```
 
 ## References
