@@ -5,7 +5,7 @@ experiment:
 
 data:
   dataset: pcam
-  root_dir: ./data/pcam
+  root_dir: ./data/pcam_real
   download: false  # Dataset already downloaded
   num_workers: 0  # Windows: avoid multiprocessing issues
   pin_memory: false  # Reduce memory pressure

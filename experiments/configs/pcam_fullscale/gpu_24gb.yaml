@@ -5,7 +5,7 @@ experiment:
 
 data:
   dataset: pcam
-  root_dir: ./data/pcam
+  root_dir: ./data/pcam_real
   download: true  # Enable automatic download of full dataset
   # NOTE: This config is for FULL-SCALE training on 262K samples
   # For quick testing with synthetic data, use configs in parent directory
