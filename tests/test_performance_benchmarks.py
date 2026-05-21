@@ -5,9 +5,7 @@ Tests training loop, data loading, inference, and memory usage to detect
 performance regressions and validate optimization targets.
 """
 
-import tempfile
 import time
-from pathlib import Path
 
 import h5py
 import numpy as np
@@ -248,18 +246,18 @@ class TestDataLoadingPerformance:
 
         # Warmup
         for _ in range(5):
-            features_gpu = features.cuda()
-            labels_gpu = labels.cuda()
-            num_patches_gpu = num_patches.cuda()
+            features.cuda()
+            labels.cuda()
+            num_patches.cuda()
             torch.cuda.synchronize()
 
         # Measure
         torch.cuda.synchronize()
         start_time = time.time()
         for _ in range(10):
-            features_gpu = features.cuda()
-            labels_gpu = labels.cuda()
-            num_patches_gpu = num_patches.cuda()
+            features.cuda()
+            labels.cuda()
+            num_patches.cuda()
         torch.cuda.synchronize()
         elapsed = time.time() - start_time
         avg_time = elapsed / 10

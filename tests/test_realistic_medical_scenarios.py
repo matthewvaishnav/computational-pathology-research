@@ -2,7 +2,6 @@
 """Realistic medical scenario test for IMR vs Simple Ensemble."""
 
 import os
-import random
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))

@@ -1,6 +1,5 @@
 """Tests for batch optimizer."""
 
-import pytest
 
 from src.streaming.memory.batch_optimizer import BatchOptimizer, OptimalSizes
 

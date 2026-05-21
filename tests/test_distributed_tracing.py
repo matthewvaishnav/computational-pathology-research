@@ -7,13 +7,13 @@ Tests the centralized tracing module and its integration with services.
 
 import os
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 # Test if OpenTelemetry is available
 try:
-    from opentelemetry import trace
+    pass
 
     OTEL_AVAILABLE = True
 except ImportError:

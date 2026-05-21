@@ -10,12 +10,9 @@ Tests cover:
 import importlib.util
 
 # Import directly from memory_optimizer module
-import sys
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
-import numpy as np
 import pytest
 import torch
 
@@ -298,7 +295,7 @@ class TestMemoryPoolManager:
         memory_pool.deallocate(tensor1)
 
         # Second allocation (hit)
-        tensor2 = memory_pool.allocate(size_bytes)
+        memory_pool.allocate(size_bytes)
 
         stats = memory_pool.get_stats()
         assert stats.hit_rate > 0.0
@@ -310,7 +307,7 @@ class TestMemoryPoolManager:
         # Allocate unique sizes
         for i in range(5):
             size_bytes = (1024 + i * 512) * 4
-            tensor = memory_pool.allocate(size_bytes)
+            memory_pool.allocate(size_bytes)
 
         final_size = memory_pool.total_size_bytes
         assert final_size > initial_size
@@ -715,10 +712,10 @@ class TestMemoryOptimizerIntegration:
         prediction = predictor.predict(slide_chars)
 
         # Use prediction to guide allocation
-        recommended_gb = predictor.get_preallocation_recommendation(slide_chars)
+        predictor.get_preallocation_recommendation(slide_chars)
 
         # Simulate processing
-        initial_stats = pool.get_stats()
+        pool.get_stats()
 
         # Allocate based on prediction
         num_allocations = int(prediction.predicted_peak_gb * 1024**3 / (1024 * 4))

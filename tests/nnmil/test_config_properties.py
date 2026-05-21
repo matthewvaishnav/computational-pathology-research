@@ -13,7 +13,7 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from hypothesis import assume, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.core.config.nnmil_config import nnMILConfig
 

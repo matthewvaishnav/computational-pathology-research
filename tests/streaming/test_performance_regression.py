@@ -9,12 +9,11 @@ Task 8.2.3: Automated performance regression testing
 
 import json
 import logging
-import os
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pytest
@@ -23,7 +22,6 @@ import torch.nn as nn
 
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUPipeline
-from src.streaming.model_optimizer import ModelOptimizer, OptimizationConfig
 
 logger = logging.getLogger(__name__)
 

@@ -126,7 +126,7 @@ class TestReportSnapshots:
         snapshot_file = snapshot_dir / "html_report.html"
 
         if snapshot_file.exists():
-            expected = snapshot_file.read_text()
+            snapshot_file.read_text()
 
             # Compare key HTML structure
             assert "<html>" in html_content.lower()
@@ -178,7 +178,7 @@ def multiply(x, y):
             snapshot_file = snapshot_dir / "e2e_analysis.md"
 
             if snapshot_file.exists():
-                expected = snapshot_file.read_text()
+                snapshot_file.read_text()
 
                 # Compare key metrics (structure should be consistent)
                 assert "# HistoCore Project Optimization Analysis Report" in markdown
@@ -234,7 +234,7 @@ def multiply(x, y):
         snapshot_file = snapshot_dir / "regression_diff.md"
 
         if snapshot_file.exists():
-            expected = snapshot_file.read_text()
+            snapshot_file.read_text()
 
             # Compare key sections
             assert "Regression Analysis" in diff_report
@@ -282,7 +282,6 @@ class TestSnapshotUtilities:
         """Test utility to update all snapshots."""
         # This test can be run with --update-snapshots flag
         # to regenerate all snapshots
-        pass
 
     def test_snapshot_validation(self):
         """Test that all snapshots are valid."""

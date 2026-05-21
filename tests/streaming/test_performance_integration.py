@@ -7,9 +7,7 @@ Tests 30-second processing requirement, concurrent processing, and real-time viz
 import asyncio
 import logging
 import time
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -19,8 +17,8 @@ import torch.nn as nn
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
 
 # Import streaming components
-from src.streaming.gpu_pipeline import GPUPipeline, ThroughputMetrics
-from src.streaming.model_optimizer import ModelOptimizer, OptimizationConfig
+from src.streaming.gpu_pipeline import GPUPipeline
+from src.streaming.model_optimizer import OptimizationConfig
 from src.streaming.parallel_pipeline import ParallelConfig, ParallelPipeline
 from src.streaming.progressive_visualizer import ProgressiveVisualizer
 
@@ -266,7 +264,7 @@ class TestThirtySecondProcessing:
 
         for _ in range(num_batches):
             patches = torch.randn(64, 3, 224, 224)
-            features = gpu_pipeline._process_batch_sync(patches)
+            gpu_pipeline._process_batch_sync(patches)
 
             # Track peak memory
             current_memory = torch.cuda.memory_allocated(device) / (1024**3)
@@ -457,7 +455,7 @@ class TestRealtimeVisualization:
             update_latencies.append(latency)
 
         # Get final visualization
-        viz_path = visualizer.save_final_report()
+        visualizer.save_final_report()
 
         avg_latency = np.mean(update_latencies)
         max_latency = np.max(update_latencies)

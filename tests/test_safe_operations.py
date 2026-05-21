@@ -9,24 +9,17 @@ Tests cover:
 - System health monitoring (GPU, disk, memory)
 """
 
-import hashlib
 import json
-import os
-import shutil
 import sqlite3
-import tempfile
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 import torch
 
 from src.core.exceptions import (
     DatabaseError,
-    DataSaveError,
-    DiskSpaceError,
-    ResourceError,
 )
 from src.core.utils.safe_operations import (
     CircuitBreaker,

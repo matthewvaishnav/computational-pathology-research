@@ -11,7 +11,6 @@ from types import SimpleNamespace
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.features.clinical.workflow.pacs.notification_system import (
-    DeliveryRecord,
     DeliveryTracker,
     EmailNotifier,
     HL7Notifier,
@@ -330,7 +329,7 @@ def test_delivery_tracker_statistics():
 
     r1 = tracker.create_record(eid, "email", "a@hospital.org")
     r2 = tracker.create_record(eid, "sms", "+15550001111")
-    r3 = tracker.create_record(eid, "hl7", "PATHSYS")
+    tracker.create_record(eid, "hl7", "PATHSYS")
 
     tracker.mark_sent(r1.record_id)
     tracker.mark_failed(r2.record_id, "gateway timeout")
@@ -349,7 +348,7 @@ def test_delivery_tracker_event_status():
     tracker = DeliveryTracker()
     eid = str(uuid.uuid4())
     r1 = tracker.create_record(eid, "email", "a@hospital.org")
-    r2 = tracker.create_record(eid, "sms", "+15550001111")
+    tracker.create_record(eid, "sms", "+15550001111")
     tracker.mark_sent(r1.record_id)
 
     status = tracker.get_event_status(eid)

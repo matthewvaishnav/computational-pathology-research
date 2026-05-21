@@ -9,8 +9,7 @@ import io
 import os
 import tempfile
 import time
-from concurrent import futures
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import grpc
 import pytest
@@ -18,13 +17,10 @@ import torch
 import torch.nn as nn
 
 from src.features.federated.pathology_fl.communication.auth import (
-    AuthenticatedFLClient,
-    AuthenticatedFLServer,
     CertificateValidator,
     RoleBasedAccessControl,
 )
 from src.features.federated.pathology_fl.communication.grpc_client import (
-    FLClientTrainer,
     SecureFLClient,
 )
 from src.features.federated.pathology_fl.communication.grpc_server import (
@@ -471,7 +467,7 @@ class TestErrorHandling:
         request = ModelRequest(client_id="unregistered_client", round_id=1)
         context = Mock()
 
-        response = servicer.GetGlobalModel(request, context)
+        servicer.GetGlobalModel(request, context)
 
         # Should set error code
         context.set_code.assert_called_with(grpc.StatusCode.UNAUTHENTICATED)

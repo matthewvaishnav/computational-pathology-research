@@ -7,9 +7,7 @@ Tests the setup validation functionality for the Competitor Benchmark System.
 import json
 import subprocess
 import sys
-from pathlib import Path
 
-import pytest
 
 
 def test_validate_setup_help():

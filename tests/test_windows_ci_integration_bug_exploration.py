@@ -13,7 +13,6 @@ After the fix is applied, this same test will PASS, confirming the bug is fixed.
 
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 

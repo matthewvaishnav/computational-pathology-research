@@ -19,7 +19,7 @@ def test_cache_entry_compress_decompress():
     entry = CacheEntry(data=data, timestamp=time.time())
 
     # Compress
-    compressed = entry.compress()
+    entry.compress()
     assert entry.compressed
 
     # Decompress

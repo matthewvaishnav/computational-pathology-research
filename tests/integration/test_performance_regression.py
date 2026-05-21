@@ -6,13 +6,12 @@ Tests system performance benchmarks and detects performance regressions
 across different system components including inference, API, and database operations.
 """
 
-import asyncio
 import json
 import statistics
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 import psutil

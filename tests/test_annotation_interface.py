@@ -2,7 +2,6 @@
 Tests for Expert Annotation Interface
 """
 
-import json
 from datetime import datetime
 
 import pytest
@@ -15,7 +14,6 @@ from src.features.research.annotation.backend.annotation_models import (
     AnnotationLabel,
     AnnotationQueueItem,
     AnnotationType,
-    AnnotationUpdate,
     Point,
 )
 

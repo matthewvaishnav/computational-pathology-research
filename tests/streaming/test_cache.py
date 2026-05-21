@@ -2,7 +2,6 @@
 Tests for intelligent caching system.
 """
 
-import time
 from unittest.mock import MagicMock, patch
 
 import numpy as np

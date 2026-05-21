@@ -12,10 +12,7 @@ These tests require actual deployment and are marked as slow/e2e.
 Run with: pytest tests/federated/test_fl_e2e.py -v -s -m e2e
 """
 
-import sys
 import time
-from pathlib import Path
-from typing import List, Tuple
 
 import pytest
 import torch
@@ -425,7 +422,6 @@ def test_e2e_measure_bandwidth_usage(simple_cnn_model, pcam_data):
     **Validates: Requirements 4.3, 4.4**
     """
     from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
-    from src.features.federated.pathology_fl.client.trainer import LocalTrainer
     from src.features.federated.pathology_fl.compression.compressor import GradientCompressor
     from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 

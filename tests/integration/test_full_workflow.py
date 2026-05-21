@@ -6,22 +6,16 @@ Tests the complete Medical AI platform workflow from image upload to results.
 Validates API endpoints, database operations, model inference, and DICOM integration.
 """
 
-import asyncio
 import io
-import json
-import os
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 import numpy as np
-import pytest
 import requests
 from PIL import Image
-from pydicom import Dataset, dcmwrite
-from pydicom.dataset import FileDataset, FileMetaDataset
-from pydicom.uid import ExplicitVRLittleEndian, generate_uid
+from pydicom.uid import generate_uid
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

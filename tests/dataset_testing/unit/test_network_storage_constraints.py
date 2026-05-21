@@ -13,7 +13,6 @@ import numpy as np
 import pytest
 
 from src.data.preprocessing import (
-    batch_save_to_hdf5,
     build_clinical_vocab,
     load_features_from_hdf5,
     normalize_wsi_features,

@@ -7,7 +7,6 @@ RegressionBatchSampler, and SurvivalBatchSampler using Hypothesis.
 
 from collections import Counter
 
-import pytest
 import torch
 
 from hypothesis import assume, given, settings

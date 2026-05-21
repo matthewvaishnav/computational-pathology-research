@@ -19,7 +19,6 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
-from typing import List
 
 # Use tomllib for Python 3.11+, tomli for earlier versions
 if sys.version_info >= (3, 11):

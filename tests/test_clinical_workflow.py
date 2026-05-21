@@ -4,10 +4,7 @@ Integration tests for clinical workflow integration.
 Tests the complete workflow from active learning to annotation interface.
 """
 
-import asyncio
-from datetime import datetime
-from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -18,7 +15,6 @@ from src.features.research.annotation.workflow.clinical_integration import (
     ClinicalWorkflowIntegrator,
 )
 from src.features.research.annotation.workflow.notification_service import (
-    NotificationChannel,
     NotificationPriority,
     NotificationService,
 )
@@ -29,7 +25,6 @@ from src.continuous_learning.active_learning import (
     ActiveLearningSystem,
     AnnotationTask,
     CaseForReview,
-    ExpertAnnotation,
 )
 
 

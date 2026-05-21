@@ -6,11 +6,9 @@ Tests all API endpoints for the Medical AI platform including mobile app integra
 authentication, and comprehensive endpoint validation.
 """
 
-import json
 import time
-from typing import Dict, List, Optional
+from typing import Dict
 
-import pytest
 import requests
 
 

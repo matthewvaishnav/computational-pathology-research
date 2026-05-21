@@ -10,7 +10,6 @@ from the same TaskSpecification, ensuring fair comparisons.
 
 from pathlib import Path
 
-import pytest
 
 from experiments.benchmark_system.models import TaskSpecification
 from experiments.benchmark_system.task_executor import TrainingTaskExecutor

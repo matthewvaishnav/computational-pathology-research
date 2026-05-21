@@ -7,7 +7,6 @@ import sys
 import threading
 import time
 from contextlib import contextmanager
-from typing import Any, Dict, List
 
 import psutil
 
@@ -72,7 +71,7 @@ def test_memory_leak_detection():
     with monitor.monitor_operation("Repeated imports (100x)"):
         for _ in range(100):
             try:
-                import src
+                pass
 
                 del sys.modules["src"]
             except:
@@ -142,7 +141,7 @@ def test_gradual_memory_growth():
     # Simulate long-running operation
     for iteration in range(20):
         # Simulate some work
-        data = [i for i in range(10000)]
+        [i for i in range(10000)]
 
         # Sample memory usage
         current_memory = monitor.get_memory_usage()
@@ -226,7 +225,7 @@ def test_performance_under_load():
 
     # Baseline performance
     with monitor.monitor_operation("Baseline operation"):
-        result = sum(i**2 for i in range(10000))
+        sum(i**2 for i in range(10000))
 
     # Performance under memory pressure
     with monitor.monitor_operation("Under memory pressure"):
@@ -234,7 +233,7 @@ def test_performance_under_load():
         memory_hog = [[0] * 1000 for _ in range(1000)]  # ~4MB
 
         # Same operation as baseline
-        result = sum(i**2 for i in range(10000))
+        sum(i**2 for i in range(10000))
 
         del memory_hog
 
@@ -251,7 +250,7 @@ def test_performance_under_load():
             t.start()
 
         # Main operation
-        result = sum(i**2 for i in range(10000))
+        sum(i**2 for i in range(10000))
 
         # Wait for background work
         for t in threads:

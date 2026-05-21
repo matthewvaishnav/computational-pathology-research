@@ -13,14 +13,11 @@ Tests:
 import importlib.util
 
 # Direct module import to avoid OpenSlide dependency
-import sys
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
 import torch
-import torch.nn as nn
 
 # Load attention_aggregator module directly
 agg_path = Path(__file__).parent.parent.parent / "src" / "streaming" / "attention_aggregator.py"
@@ -588,7 +585,6 @@ class TestIntegration:
         )
 
         # Stream until early stop
-        stopped = False
         for i in range(20):
             features = torch.randn(32, 128)
             coords = np.random.randint(0, 1000, size=(32, 2))
@@ -596,7 +592,6 @@ class TestIntegration:
             update = agg.update_features(features, coords)
 
             if update.early_stop_recommended:
-                stopped = True
                 break
 
         # May or may not stop depending on random features

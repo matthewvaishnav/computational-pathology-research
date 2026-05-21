@@ -12,7 +12,7 @@ Task 2.12: Benchmark Model Performance
 """
 
 import time
-from typing import Dict, List
+from typing import Dict
 
 import pytest
 import torch

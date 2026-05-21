@@ -15,7 +15,6 @@ from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from tests.dataset_testing.hypothesis_strategies import (
     PropertyTestBase,
-    configuration_strategy,
     pcam_sample_strategy,
 )
 from tests.dataset_testing.synthetic.pcam_generator import PCamSyntheticGenerator, PCamSyntheticSpec

@@ -5,17 +5,13 @@ Tests complete workflows from PACS retrieval to final results,
 validating all components work together correctly.
 """
 
-import asyncio
 import time
 from pathlib import Path
-from typing import Any, Dict
 from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
-import openslide
 import pytest
 import torch
-from PIL import Image
 
 from src.models.mil.attention_mil import AttentionMIL
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
@@ -162,7 +158,7 @@ class TestPACSToResultWorkflow:
                 aggregator = StreamingAttentionAggregator(attention_model=mock_attention_model)
 
                 # Process
-                metadata = reader.initialize_streaming()
+                reader.initialize_streaming()
                 patches_processed = 0
 
                 for tile_batch in reader.stream_tiles():
@@ -358,7 +354,7 @@ class TestPerformanceIntegration:
         # Must be run on target hardware (RTX 4090) with real WSI files
         # Simplified version just verifies components can be initialized
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         pipeline = GPUPipeline(model=mock_cnn_encoder, batch_size=32, enable_fp16=True)
 

@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-import pytest
 
 from src.streaming.emr_integration import (
     ClinicalNote,

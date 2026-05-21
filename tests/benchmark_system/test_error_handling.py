@@ -7,11 +7,8 @@ and anomaly detection.
 Requirements: 8.1, 8.3, 8.4, 8.5, 8.6, 10.2
 """
 
-import math
-from datetime import datetime
 from pathlib import Path
 
-import pytest
 
 from experiments.benchmark_system.error_handler import (
     ErrorCategory,
@@ -20,7 +17,7 @@ from experiments.benchmark_system.error_handler import (
     RecoveryAction,
 )
 from experiments.benchmark_system.models import TaskSpecification, TrainingResult
-from experiments.benchmark_system.result_validator import ResultValidator, ValidationIssue
+from experiments.benchmark_system.result_validator import ResultValidator
 
 
 class TestErrorClassification:

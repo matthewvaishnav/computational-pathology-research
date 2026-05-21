@@ -24,7 +24,6 @@ from src.platform.deployment.production_optimization import (
 from src.platform.deployment.site_preparation import (
     HospitalSite,
     SitePreparationManager,
-    TechnicalRequirements,
 )
 
 

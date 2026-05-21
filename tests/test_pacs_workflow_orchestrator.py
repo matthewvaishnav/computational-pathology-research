@@ -9,11 +9,8 @@ Property 31: Priority-Based Processing Order
 
 import time
 from datetime import datetime, timedelta
-from typing import List
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-import pytest
-import torch
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st

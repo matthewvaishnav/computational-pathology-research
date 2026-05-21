@@ -1,13 +1,11 @@
 """Corrupted data processing tests for streaming components."""
 
-import io
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 import pytest
 import torch
-from PIL import Image
 
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUPipeline
@@ -210,7 +208,7 @@ class TestCorruptedFeatures:
         """Test NaN features handling."""
         features = torch.randn(10, 512)
         features[0] = float("nan")
-        coords = np.array([[i, 0] for i in range(10)])
+        np.array([[i, 0] for i in range(10)])
 
         # Should detect NaN
         assert torch.isnan(features).any()
@@ -219,7 +217,7 @@ class TestCorruptedFeatures:
         """Test infinite features handling."""
         features = torch.randn(10, 512)
         features[0] = float("inf")
-        coords = np.array([[i, 0] for i in range(10)])
+        np.array([[i, 0] for i in range(10)])
 
         # Should detect inf
         assert torch.isinf(features).any()

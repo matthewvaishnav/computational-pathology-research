@@ -8,7 +8,6 @@ Requirements: 5.1, 8.8
 
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
 

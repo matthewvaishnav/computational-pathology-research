@@ -6,12 +6,9 @@ Tests uncertainty quantification, case-based reasoning, and counterfactual expla
 import shutil
 import tempfile
 from datetime import datetime
-from pathlib import Path
 
-import numpy as np
 import pytest
 import torch
-import torch.nn as nn
 
 from src.features.interpretability.advanced.case_based_reasoning import (
     CaseDatabase,

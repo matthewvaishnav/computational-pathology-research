@@ -16,7 +16,6 @@ from src.features.clinical.workflow.pacs.data_models import (
 from src.features.clinical.workflow.pacs.error_handling import (
     DeadLetterQueue,
     DicomCFindError,
-    DicomCStoreError,
     DicomErrorHandler,
     FailedOperation,
     NetworkErrorHandler,

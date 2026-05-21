@@ -7,17 +7,15 @@ training to inference, validating all major components work together.
 
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List
 
 import pytest
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 # Import nnMIL components
 from src.core.config.nnmil_config import nnMILConfig
 from src.data.loaders.bag_samplers import FixedLengthBagSampler
-from src.data.loaders.batch_samplers import BalancedBatchSampler
 from src.data.data_models import Bag, InferenceOutput, TrainingBatch
 from src.inference.sliding_window import SlidingWindowInference
 from src.inference.uncertainty import UncertaintyEstimator

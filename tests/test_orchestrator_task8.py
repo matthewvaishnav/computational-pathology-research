@@ -10,9 +10,7 @@ Tests cover:
 """
 
 import json
-import sys
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -20,7 +18,6 @@ import torch
 import torch.nn as nn
 
 # Direct imports to avoid protobuf issues
-from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
 from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 

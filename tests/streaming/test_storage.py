@@ -2,13 +2,10 @@
 Tests for storage optimization system.
 """
 
-import json
 import os
 import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import h5py
 import numpy as np
 import pytest
 import torch
@@ -49,7 +46,7 @@ class TestLocalStorage:
 
     def test_initialization(self, storage_config):
         """Test storage initialization."""
-        storage = LocalStorage(storage_config)
+        LocalStorage(storage_config)
 
         # Check directories were created
         assert os.path.exists(storage_config.temp_dir)

@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import pytest
 
 from src.data.wsi_pipeline.models import ProcessingResult, SlideMetadata
 

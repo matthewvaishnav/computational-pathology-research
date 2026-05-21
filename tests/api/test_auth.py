@@ -4,8 +4,7 @@ Unit tests for the authentication router.
 Tests user registration, login, OAuth flows, and security features.
 """
 
-import json
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -14,7 +13,7 @@ from fastapi.testclient import TestClient
 from src.api.main import app
 
 # Import the router and dependencies
-from src.api.routers.auth import UserLogin, UserRegistration, router, users_db
+from src.api.routers.auth import UserLogin, UserRegistration, users_db
 
 # Create test client
 client = TestClient(app)

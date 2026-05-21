@@ -5,13 +5,13 @@ This test verifies that the core reading and extraction components work together
 correctly for end-to-end patch extraction from WSI files.
 """
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
 from PIL import Image
 
-from src.data.wsi_pipeline.exceptions import FileFormatError, ProcessingError
+from src.data.wsi_pipeline.exceptions import FileFormatError
 from src.data.wsi_pipeline.extractor import PatchExtractor
 from src.data.wsi_pipeline.reader import WSIReader
 

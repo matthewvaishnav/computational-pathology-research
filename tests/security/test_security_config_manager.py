@@ -12,7 +12,7 @@ from unittest.mock import patch
 import pytest
 
 from src.platform.security.config_manager import SecurityConfigManager
-from src.platform.security.models import SecurityConfig, SecurityEnvironment
+from src.platform.security.models import SecurityEnvironment
 
 
 class TestSecurityConfigManager:

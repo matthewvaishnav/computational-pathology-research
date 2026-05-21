@@ -8,12 +8,8 @@ Property 7: Workflow Notification Completeness
 """
 
 import hashlib
-import tempfile
-from datetime import datetime
 from pathlib import Path
-from types import SimpleNamespace
 
-import pytest
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.uid import ExplicitVRLittleEndian
 

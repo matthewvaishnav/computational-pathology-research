@@ -16,7 +16,6 @@ from pathlib import Path
 import pytest
 import torch
 import torch.nn as nn
-import torch.optim as optim
 
 from src.features.federated.pathology_fl.aggregator.byzantine_robust import KrumAggregator
 from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator

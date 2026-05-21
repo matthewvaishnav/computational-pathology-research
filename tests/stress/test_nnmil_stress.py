@@ -11,12 +11,9 @@ import gc
 import sys
 import time
 import warnings
-from pathlib import Path
-from typing import Dict, List, Tuple
 
 import pytest
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 sys.path.append("src")
@@ -24,7 +21,7 @@ sys.path.append("src")
 # Import nnMIL components directly
 from config.nnmil_config import nnMILConfig
 from data.bag_samplers import FixedLengthBagSampler
-from data.data_models import Bag, InferenceOutput, TrainingBatch
+from data.data_models import Bag, InferenceOutput
 from inference.sliding_window import SlidingWindowInference
 from inference.uncertainty import UncertaintyEstimator
 from models.foundation_adapter import FoundationModelAdapter

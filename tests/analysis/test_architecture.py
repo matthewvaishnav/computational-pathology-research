@@ -9,13 +9,12 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.analysis.architecture import ArchitectureAnalyzer
-from src.analysis.models import ArchitectureAnalysis, Issue, Priority, Role, Severity
+from src.analysis.models import ArchitectureAnalysis, Priority, Role, Severity
 
 
 class TestArchitectureAnalyzer:

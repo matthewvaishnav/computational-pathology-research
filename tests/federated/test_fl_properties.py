@@ -10,16 +10,13 @@ Covers all correctness properties from Task 17:
 - 17.6 Fault tolerance robustness
 """
 
-import numpy as np
 import pytest
 import torch
-import torch.nn as nn
 
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 from src.features.federated.pathology_fl.aggregator.byzantine_robust import (
     KrumAggregator,
-    MedianAggregator,
     TrimmedMeanAggregator,
 )
 from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
@@ -163,7 +160,7 @@ def test_property_dpsgd_gradient_clipping(batch_size, clip_norm, noise_multiplie
     }
 
     # Apply DP-SGD
-    private_gradients = engine.privatize_gradients(gradients)
+    engine.privatize_gradients(gradients)
 
     # Verify clipping (before noise addition)
     # Note: After noise, norm may exceed clip_norm, but clipped component should not
@@ -172,7 +169,7 @@ def test_property_dpsgd_gradient_clipping(batch_size, clip_norm, noise_multiplie
         grad_norm = torch.norm(grad).item()
         if grad_norm > clip_norm:
             # Should be clipped
-            expected_clipped = grad * (clip_norm / grad_norm)
+            grad * (clip_norm / grad_norm)
             # The private gradient has noise, so we can't check exact equality
             # Instead, verify that the clipping was applied by checking the norm
             # of the gradient before noise (not directly accessible, so we verify indirectly)

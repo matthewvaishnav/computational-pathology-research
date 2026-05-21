@@ -9,7 +9,6 @@ to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-from typing import Dict, List, Tuple
 
 import pytest
 import torch
@@ -395,7 +394,7 @@ def test_adapter_memory_efficiency():
     memory_before = process.memory_info().rss
 
     # Process features through adapter
-    detected_dim = adapter.detect_feature_dimension(large_features)
+    adapter.detect_feature_dimension(large_features)
 
     memory_after = process.memory_info().rss
     memory_increase = memory_after - memory_before

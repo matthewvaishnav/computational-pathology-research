@@ -11,12 +11,8 @@ After implementing the CI optimization fix, these same tests must continue to pa
 ensuring no regressions in validation capabilities.
 """
 
-import re
-import subprocess
-import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
-from unittest.mock import MagicMock, patch
+from typing import Any, Dict
 
 import pytest
 import yaml

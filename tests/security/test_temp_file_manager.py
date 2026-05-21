@@ -9,7 +9,6 @@ import stat
 import tempfile
 from pathlib import Path
 
-import pytest
 
 from src.platform.security.temp_file_manager import TempFileManager
 

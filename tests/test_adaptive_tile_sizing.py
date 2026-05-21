@@ -5,19 +5,15 @@ This module tests the adaptive tile sizing implementation that adjusts tile dime
 based on available memory, GPU memory pressure, and system conditions.
 """
 
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import numpy as np
-import psutil
 import pytest
-import torch
 
-from src.data.wsi_pipeline.exceptions import ProcessingError, ResourceError
+from src.data.wsi_pipeline.exceptions import ResourceError
 from src.data.wsi_pipeline.tile_buffer_pool import TileBufferConfig, TileBufferPool
 from src.data.wsi_pipeline.wsi_stream_reader import (
     StreamingMetadata,
-    StreamingProgress,
     WSIStreamReader,
 )
 
@@ -317,9 +313,9 @@ class TestWSIStreamReaderAdaptiveSizing:
             "src.data.wsi_pipeline.wsi_stream_reader.WSIReader", return_value=mock_wsi_reader
         ):
             reader = WSIStreamReader("test.svs", config)
-            metadata = reader.initialize_streaming()
+            reader.initialize_streaming()
 
-            initial_tile_size = reader.tile_pool.get_current_tile_size()
+            reader.tile_pool.get_current_tile_size()
 
             # Mock memory pressure during streaming
             with patch("psutil.virtual_memory") as mock_memory:

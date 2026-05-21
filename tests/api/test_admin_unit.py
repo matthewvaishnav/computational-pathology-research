@@ -8,7 +8,6 @@ audit logs, and reporting.
 import os
 from unittest.mock import Mock, patch
 
-import pytest
 
 
 class TestAdminRouterComponents:

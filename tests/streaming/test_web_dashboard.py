@@ -1,8 +1,6 @@
 """Unit tests for web-based dashboard."""
 
-import asyncio
-import json
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import numpy as np
 import pytest
@@ -13,7 +11,6 @@ from src.streaming.web_dashboard import (
     DashboardState,
     HeatmapData,
     ProcessingParameters,
-    ProcessingRequest,
     ProcessingStatus,
     app,
     connection_manager,

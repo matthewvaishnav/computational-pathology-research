@@ -5,9 +5,8 @@ Provides fixtures and setup for testing the API routers.
 """
 
 import os
-import tempfile
 from typing import Generator
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient

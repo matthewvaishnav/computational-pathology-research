@@ -10,22 +10,16 @@ Tests comprehensive clinical system integration including:
 """
 
 import asyncio
-import json
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from src.streaming.attention_aggregator import StreamingAttentionAggregator
 from src.streaming.emr_integration import EMRIntegrationClient
 from src.streaming.fhir_streaming_client import FHIRStreamingClient
-from src.streaming.gpu_pipeline import GPUPipeline
 from src.streaming.pacs_wsi_client import PACSWSIStreamingClient
-from src.data.wsi.streaming import WSIStreamReader
 
 # ============================================================================
 # Test Data Models

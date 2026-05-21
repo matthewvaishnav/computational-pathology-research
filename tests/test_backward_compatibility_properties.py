@@ -11,11 +11,7 @@ Feature: nnmil-architecture-upgrade
 
 import os
 import tempfile
-from pathlib import Path
-from typing import Any, Dict, List, Tuple
-from unittest.mock import Mock, patch
 
-import pytest
 import torch
 
 from hypothesis import given, settings
@@ -373,7 +369,7 @@ def test_performance_regression_check():
 
     # Create test data
     features = torch.randn(batch_size, num_patches, feature_dim)
-    labels = torch.randint(0, num_classes, (batch_size,))
+    torch.randint(0, num_classes, (batch_size,))
 
     # Measure inference time
     import time
@@ -429,7 +425,7 @@ def test_memory_usage_compatibility():
 
     memory_before = process.memory_info().rss
     with torch.no_grad():
-        nnmil_output = nnmil_model(features)
+        nnmil_model(features)
     memory_after_nnmil = process.memory_info().rss
     nnmil_memory = memory_after_nnmil - memory_before
 

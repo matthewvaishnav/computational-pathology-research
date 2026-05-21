@@ -8,13 +8,12 @@ Includes test discovery, execution, reporting, and CI/CD integration.
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -386,7 +385,7 @@ class IntegrationTestRunner:
             self.initialize_test_suites()
 
             # Run all tests
-            results = self.run_all_tests()
+            self.run_all_tests()
 
             # Generate report
             report = self.generate_test_report()

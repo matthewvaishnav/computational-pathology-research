@@ -28,7 +28,6 @@ class DatasetGenerator(ABC):
         Returns:
             Dictionary containing generated samples and metadata
         """
-        pass
 
     @abstractmethod
     def corrupt_samples(self, samples: Dict[str, Any], corruption_type: str) -> Dict[str, Any]:
@@ -41,7 +40,6 @@ class DatasetGenerator(ABC):
         Returns:
             Dictionary containing corrupted samples
         """
-        pass
 
     @abstractmethod
     def validate_samples(self, samples: Dict[str, Any]) -> bool:
@@ -53,7 +51,6 @@ class DatasetGenerator(ABC):
         Returns:
             True if samples are valid, False otherwise
         """
-        pass
 
 
 class PerformanceBenchmark:

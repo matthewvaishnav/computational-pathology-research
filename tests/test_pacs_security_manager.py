@@ -12,7 +12,7 @@ import ssl
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 from cryptography import x509
@@ -597,7 +597,7 @@ def test_property_18_credential_rotation_logs_security_event():
 
 def test_property_19_secure_connection_maintains_encryption():
     """Secure connections must maintain encryption throughout lifecycle."""
-    security_manager = SecurityManager()
+    SecurityManager()
     endpoint = _make_endpoint(verify_certificates=False)
 
     # Mock SSL socket
@@ -620,7 +620,7 @@ def test_property_19_secure_connection_maintains_encryption():
 
 def test_property_19_connection_closure_tracked():
     """Connection closure must be tracked to ensure encryption lifecycle."""
-    security_manager = SecurityManager()
+    SecurityManager()
     endpoint = _make_endpoint(verify_certificates=False)
 
     # Mock SSL socket

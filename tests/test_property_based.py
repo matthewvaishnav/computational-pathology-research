@@ -3,7 +3,6 @@
 Property-Based Testing for HistoCore API
 """
 
-import os
 import sys
 from pathlib import Path
 

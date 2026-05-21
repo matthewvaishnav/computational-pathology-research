@@ -19,7 +19,6 @@ Test markers:
 Requirements: 13.1-13.7
 """
 
-import asyncio
 import json
 import os
 import sqlite3
@@ -28,8 +27,8 @@ import threading
 import time
 from pathlib import Path
 from queue import Empty
-from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, Mock, patch
+from typing import List, Optional
+from unittest.mock import MagicMock, patch
 
 import pytest
 

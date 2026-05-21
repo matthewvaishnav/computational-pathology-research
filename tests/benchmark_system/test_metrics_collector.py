@@ -11,9 +11,8 @@ import json
 import tempfile
 import time
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-import numpy as np
 import pytest
 
 from experiments.benchmark_system.metrics_collector import (
@@ -101,7 +100,7 @@ class TestMetricsCollector:
     def test_start_collection_replaces_active_session(self, collector, caplog):
         """Test starting new session while one is active."""
         # Start first session
-        session1 = collector.start_collection("HistoCore")
+        collector.start_collection("HistoCore")
 
         # Start second session (should finalize first)
         with caplog.at_level("WARNING"):

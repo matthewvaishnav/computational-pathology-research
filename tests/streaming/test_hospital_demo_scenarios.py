@@ -15,9 +15,8 @@ Demo Scenarios:
 import asyncio
 import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
+from typing import List
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -25,12 +24,9 @@ import torch
 
 from src.models.mil.attention_mil import AttentionMIL
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
-from src.streaming.fhir_streaming_client import FHIRStreamingClient
 from src.streaming.gpu_pipeline import GPUPipeline
 from src.streaming.memory.monitor import MemoryMonitor
 from src.streaming.pacs_wsi_client import PACSWSIStreamingClient, WorklistEntry
-from src.streaming.progressive_visualizer import ProgressiveVisualizer
-from src.data.wsi.streaming import WSIStreamReader
 
 # ============================================================================
 # Demo Scenario Data Models

@@ -14,9 +14,7 @@ Tests cover:
 - File I/O and encoding
 """
 
-from pathlib import Path
 
-import pytest
 
 from src.core.utils.benchmark_report import (
     _add_baseline_comparison,
