@@ -2,7 +2,7 @@
 
 **Document Version:** 1.0  
 **Date:** January 2025  
-**Study Protocol:** HISTO-CV-2024-001  
+**Study Protocol:** HISTO-CV-2026-001  
 **Regulatory Reference:** FDA 510(k) Premarket Notification  
 **Document ID:** REG-CV-001-v1.0
 
