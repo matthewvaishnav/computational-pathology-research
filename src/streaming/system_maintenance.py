@@ -6,19 +6,16 @@ Provides dynamic configuration management, automated maintenance,
 zero-downtime updates, and system self-healing capabilities.
 """
 
-import hashlib
 import json
 import logging
-import os
 import queue
 import shutil
-import subprocess
 import threading
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, Optional
 
 import psutil
 import yaml
@@ -134,7 +131,7 @@ class DynamicConfigurationManager:
                     return False
 
             # Create backup before change
-            backup_path = self._create_config_backup()
+            self._create_config_backup()
 
             # Update configuration
             self._set_nested_config(config_key, new_value)

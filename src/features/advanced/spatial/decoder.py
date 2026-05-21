@@ -11,7 +11,6 @@ Primary metric: mean Pearson correlation across genes (Stahl et al. 2016 benchma
 """
 
 import logging
-import math
 from typing import Dict, Optional, Tuple
 
 import torch
@@ -194,7 +193,7 @@ class SpatialTranscriptomicsDecoder(nn.Module):
         # Use attention-weighted sum: predict per patch by querying with patch feats
         # Full per-spot: use patch features as queries and gene queries as memory
         # This gives [B, n_patches, n_genes]
-        patch_queries = patch_emb.unsqueeze(2).expand(-1, -1, self.n_genes, -1)
+        patch_emb.unsqueeze(2).expand(-1, -1, self.n_genes, -1)
         # Simpler: use the global gene prediction + patch-specific residual
         # Residual from patch features projected to gene space
         patch_residual = self.patch_proj(patch_features)  # [B, n_patches, d_model]

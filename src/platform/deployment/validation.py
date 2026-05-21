@@ -5,13 +5,11 @@ Prevents injection attacks by validating user-controlled identifiers.
 """
 
 import re
-from typing import Optional
 
 
 class ValidationError(ValueError):
     """Raised when input validation fails."""
 
-    pass
 
 
 def validate_site_id(site_id: str, max_length: int = 50) -> str:

@@ -9,7 +9,6 @@ in the WSI processing pipeline.
 class WSIProcessingError(Exception):
     """Base exception for WSI processing errors."""
 
-    pass
 
 
 class FileFormatError(WSIProcessingError):
@@ -21,7 +20,6 @@ class FileFormatError(WSIProcessingError):
         - Missing required metadata
     """
 
-    pass
 
 
 class ResourceError(WSIProcessingError):
@@ -33,7 +31,6 @@ class ResourceError(WSIProcessingError):
         - CPU memory exhaustion
     """
 
-    pass
 
 
 class ProcessingError(WSIProcessingError):
@@ -45,4 +42,3 @@ class ProcessingError(WSIProcessingError):
         - HDF5 write failure
     """
 
-    pass

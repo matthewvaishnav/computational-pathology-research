@@ -6,7 +6,7 @@ Provides simple, high-level training functions with sensible defaults.
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch
 import torch.nn as nn

@@ -6,7 +6,7 @@ Preprocessing pipeline for pathology images before model inference.
 """
 
 import logging
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 import numpy as np
 import torch

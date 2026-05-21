@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 class ValidationError(Exception):
     """Input validation error."""
 
-    pass
 
 
 class InputValidator:

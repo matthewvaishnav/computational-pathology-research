@@ -6,11 +6,11 @@ import time
 from collections import deque
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
+from typing import Any, Deque, Dict, List, Optional, Tuple
 
 import torch
 
-from src.features.federated.pathology_fl.common.data_models import ClientUpdate, TrainingRound
+from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 
 logger = logging.getLogger(__name__)
 

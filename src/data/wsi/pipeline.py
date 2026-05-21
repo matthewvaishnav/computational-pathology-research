@@ -6,7 +6,6 @@ Handles whole-slide image processing for HistoCore
 import os
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np

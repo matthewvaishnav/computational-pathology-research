@@ -11,13 +11,12 @@ Main orchestrator that connects all workflow components:
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from ...clinical.pacs.pacs_adapter import PACSAdapter
 from ...continuous_learning.active_learning import ActiveLearningSystem
-from ..backend.annotation_api import get_annotations_for_slide
 from .active_learning_connector import ActiveLearningConnector
-from .notification_service import NotificationChannel, NotificationService
+from .notification_service import NotificationService
 from .pacs_connector import PACSConnector
 
 logger = logging.getLogger(__name__)

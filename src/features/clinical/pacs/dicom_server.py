@@ -7,7 +7,6 @@ Supports C-STORE, C-FIND, C-MOVE operations with proper DICOM networking.
 """
 
 import logging
-import os
 import tempfile
 import threading
 import uuid
@@ -17,7 +16,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydicom import dcmread
 from pydicom.dataset import Dataset
-from pynetdicom import AE, build_context, evt
+from pynetdicom import AE
 from pynetdicom.sop_class import (
     CTImageStorage,
     DigitalXRayImageStorageForPresentation,

@@ -5,7 +5,7 @@ HIPAA, GDPR, FDA 510(k) compliance measures.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -14,16 +14,7 @@ from typing import Any, Dict, List, Optional
 from src.features.clinical.workflow.privacy import (
     AESEncryption,
     ConsentRecord,
-    EncryptionProvider,
     PatientIdentifierAnonymizer,
-    Permission,
-    Role,
-    UserSession,
-)
-from src.features.clinical.workflow.regulatory import (
-    ComplianceValidator,
-    RegulatoryFramework,
-    RiskLevel,
 )
 
 logger = logging.getLogger(__name__)

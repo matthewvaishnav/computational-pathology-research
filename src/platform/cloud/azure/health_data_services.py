@@ -17,11 +17,10 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 try:
     import requests
-    from azure.core.exceptions import AzureError
     from azure.identity import DefaultAzureCredential
 
     AZURE_AVAILABLE = True

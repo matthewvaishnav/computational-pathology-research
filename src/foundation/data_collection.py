@@ -4,21 +4,19 @@ Handles 100K+ unlabeled WSI slides with quality filtering and deduplication
 """
 
 import hashlib
-import json
 import logging
 import os
 import sqlite3
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
 import openslide
 import torch
-from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 

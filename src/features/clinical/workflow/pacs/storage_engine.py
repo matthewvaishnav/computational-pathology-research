@@ -11,15 +11,13 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydicom.dataset import Dataset, FileDataset
+from pydicom.dataset import Dataset
 from pydicom.uid import ExplicitVRLittleEndian, generate_uid
 from pynetdicom import AE
 from pynetdicom.sop_class import BasicTextSRStorage, ComprehensiveSRStorage, EnhancedSRStorage
 
 from .data_models import (
     AnalysisResults,
-    DetectedRegion,
-    DiagnosticRecommendation,
     OperationResult,
     PACSEndpoint,
     ValidationResult,

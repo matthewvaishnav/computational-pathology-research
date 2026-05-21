@@ -10,13 +10,10 @@ from typing import Any, Dict, List, Optional
 
 import jwt
 from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.x509.oid import NameOID
 from passlib.context import CryptContext
 
 from .config import get_config
-from .database import AuditLog, get_db_manager
+from .database import get_db_manager
 
 logger = logging.getLogger(__name__)
 config = get_config()

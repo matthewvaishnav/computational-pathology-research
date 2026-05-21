@@ -3,12 +3,11 @@ Enhanced Uncertainty Quantification System
 Implements Monte Carlo dropout, ensemble methods, and confidence calibration
 """
 
-import copy
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -133,7 +132,7 @@ class MonteCarloDropout:
         if disease_type:
             # Single disease case
             pred_stack = torch.stack(predictions)  # [num_samples, batch, classes]
-            logits_stack = torch.stack(logits_samples)
+            torch.stack(logits_samples)
 
             # Mean prediction and variance
             mean_pred = pred_stack.mean(dim=0)
@@ -179,7 +178,7 @@ class MonteCarloDropout:
             disease_count = 0
             for disease in predictions[0]:
                 disease_preds = torch.stack([p[disease] for p in predictions])
-                disease_logits = torch.stack([l[disease] for l in logits_samples])
+                torch.stack([l[disease] for l in logits_samples])
 
                 mean_pred = disease_preds.mean(dim=0)
                 pred_var = disease_preds.var(dim=0)

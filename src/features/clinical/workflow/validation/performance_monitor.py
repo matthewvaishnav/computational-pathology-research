@@ -6,15 +6,11 @@ detection, distribution shift detection, and automated alerting.
 """
 
 import logging
-import smtplib
 import time
-from collections import defaultdict, deque
-from email.mime.text import MIMEText
-from typing import Any, Callable, Dict, List, Optional
+from collections import deque
+from typing import Any, Callable, Dict, Optional
 
 import numpy as np
-import requests
-import torch
 from sklearn.metrics import accuracy_score
 
 logger = logging.getLogger(__name__)

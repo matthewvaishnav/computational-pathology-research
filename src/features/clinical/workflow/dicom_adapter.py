@@ -559,7 +559,7 @@ class DICOMAdapter:
         """
         try:
             from pydicom.dataset import Dataset
-            from pynetdicom import AE, debug_logger
+            from pynetdicom import AE
 
             # Configure DICOM networking
             ae = AE(ae_title=ae_title)
@@ -654,7 +654,7 @@ class DICOMAdapter:
             requires pynetdicom library and proper DICOM networking setup.
         """
         try:
-            import os
+            pass
 
             from pydicom.dataset import Dataset
             from pynetdicom import AE, StoragePresentationContexts
@@ -700,7 +700,7 @@ class DICOMAdapter:
 
             # Start SCP to receive files
             scp = ae.start_server(("", 0), block=False)  # Use any available port
-            move_port = scp.address[1]
+            scp.address[1]
 
             try:
                 # Establish association for C-MOVE

@@ -19,7 +19,7 @@ Reference:
 - TransnnMIL v2.0: Hierarchical + Topology (2027)
 """
 
-from typing import Optional, Tuple, List, TYPE_CHECKING
+from typing import Optional, Tuple, TYPE_CHECKING
 
 import torch
 import torch.nn as nn
@@ -40,7 +40,6 @@ try:
         GATv2Conv,
         GINConv,
         SAGEConv,
-        global_add_pool,
         global_max_pool,
         global_mean_pool,
     )
@@ -597,7 +596,7 @@ class TopologyBranch(nn.Module):
         Returns:
             bag_features: Bag-level features [batch_size, hidden_dim]
         """
-        batch_size = features.shape[0]
+        features.shape[0]
 
         # Project features
         features = self.input_proj(features)  # [B, N, H]

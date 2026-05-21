@@ -3,7 +3,6 @@ Site Preparation Module for Medical AI Revolution
 Handles technical requirements assessment and deployment planning for pilot hospitals.
 """
 
-import json
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -163,7 +162,7 @@ class SitePreparationManager:
         if site_id not in self.sites:
             raise ValueError(f"Site {site_id} not found")
 
-        site = self.sites[site_id]
+        self.sites[site_id]
 
         program = {
             "site_id": site_id,

@@ -3,18 +3,17 @@
 Integrates PACS adapter w/ streaming pipeline for live hospital demos.
 """
 
-import asyncio
 import logging
 import time
 from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Optional
 
 from src.features.clinical.workflow.pacs.data_models import SeriesInfo, StudyInfo
 from src.features.clinical.workflow.pacs.pacs_adapter import PACSAdapter
 
-from .wsi_stream_reader import TileBatch, WSIStreamReader
+from .wsi_stream_reader import WSIStreamReader
 
 logger = logging.getLogger(__name__)
 
@@ -634,7 +633,7 @@ class PACSWSIStreamingClient:
 
         try:
             # Convert to DICOM SR format
-            sr_data = result.to_dicom_sr()
+            result.to_dicom_sr()
 
             # Store to PACS using existing adapter
             # Note: Actual DICOM SR creation would use pydicom

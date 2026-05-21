@@ -7,15 +7,12 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
-import cv2
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from scipy.optimize import minimize
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 @dataclass
@@ -328,7 +325,6 @@ class CounterfactualGenerator(ABC):
         disease_type: str,
     ) -> CounterfactualExplanation:
         """Generate counterfactual explanation"""
-        pass
 
 
 class GradientBasedCounterfactualGenerator(CounterfactualGenerator):

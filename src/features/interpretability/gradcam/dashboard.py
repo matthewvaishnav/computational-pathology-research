@@ -7,16 +7,14 @@ attention weights, failure cases, and feature importance.
 import json
 import logging
 import time
-from functools import wraps
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-import torch
 
 # Flask imports
 try:
-    from flask import Flask, jsonify, render_template, request, send_file
+    from flask import Flask, jsonify, request, send_file
 
     FLASK_AVAILABLE = True
 except ImportError:

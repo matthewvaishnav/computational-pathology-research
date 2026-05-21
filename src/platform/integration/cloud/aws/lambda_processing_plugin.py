@@ -13,15 +13,13 @@ import logging
 import uuid
 import zipfile
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import aioboto3
 import boto3
-import botocore
-from botocore.exceptions import ClientError, NoCredentialsError
 
 logger = logging.getLogger(__name__)
 
@@ -244,7 +242,6 @@ class AWSLambdaProcessingPlugin(ProcessingPlugin):
     async def cleanup(self):
         """Cleanup resources"""
         # aioboto3 sessions are automatically cleaned up
-        pass
 
     async def _test_connection(self) -> bool:
         """Test Lambda connection"""
@@ -614,7 +611,7 @@ class AWSLambdaProcessingPlugin(ProcessingPlugin):
         """Get function logs from CloudWatch"""
         try:
             full_function_name = f"{self.function_prefix}{function_name}"
-            log_group_name = f"/aws/lambda/{full_function_name}"
+            f"/aws/lambda/{full_function_name}"
 
             # This would require CloudWatch Logs integration
             # For now, return empty list
@@ -634,11 +631,10 @@ class AWSLambdaProcessingPlugin(ProcessingPlugin):
             # Test function listing
             functions_accessible = False
             try:
-                functions = await self.list_functions()
+                await self.list_functions()
                 functions_accessible = True
             except Exception as e:
                 logger.warning(f"Lambda health check failed: {type(e).__name__}")
-                pass
 
             # Test S3 code bucket access
             s3_accessible = False

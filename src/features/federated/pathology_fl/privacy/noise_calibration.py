@@ -8,12 +8,11 @@ data characteristics, and model performance constraints for medical AI systems.
 import logging
 import math
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
 from scipy import optimize
-from sklearn.metrics import accuracy_score
 
 logger = logging.getLogger(__name__)
 

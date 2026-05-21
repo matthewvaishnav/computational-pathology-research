@@ -3,7 +3,7 @@
 import threading
 import time
 from functools import wraps
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import psutil
 import torch
@@ -402,9 +402,8 @@ class MetricsContext:
         duration = time.time() - self.start_time
 
         if exc_type is None:
-            status = "success"
+            pass
         else:
-            status = "error"
             self.metrics.record_error(error_type=exc_type.__name__, component=self.operation)
 
         self.metrics.record_processing_time(

@@ -8,11 +8,9 @@ tissue detection using pretrained segmentation models.
 """
 
 import logging
-import warnings
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import numpy as np
-from PIL import Image
 from skimage.color import rgb2gray
 from skimage.filters import threshold_otsu
 from skimage.morphology import closing, disk

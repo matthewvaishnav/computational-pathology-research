@@ -9,17 +9,16 @@ import asyncio
 import hashlib
 import json
 import logging
-import sqlite3
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 from src.core.utils.safe_operations import safe_db_transaction
 
-from .cerner_pathnet_plugin import CernerPathNetPlugin, PathNetOrder, PathNetResult
-from .sunquest_plugin import SunquestLISPlugin, SunquestOrder, SunquestResult
+from .cerner_pathnet_plugin import CernerPathNetPlugin, PathNetResult
+from .sunquest_plugin import SunquestLISPlugin, SunquestResult
 
 
 class SyncDirection(Enum):
@@ -637,7 +636,6 @@ class BidirectionalSyncManager:
     async def _update_ai_order(self, order):
         """Update order in AI system"""
         # Implementation depends on AI system data store
-        pass
 
     async def _get_pending_ai_results(self) -> List[Dict[str, Any]]:
         """Get pending results from AI system"""

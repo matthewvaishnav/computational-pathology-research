@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Intelligent Medical Referee (IMR) - Arbitrates between FL and DMI predictions."""
 
-import time
-from typing import Any, Dict, List, Tuple
+from typing import Dict
 
 
 class IntelligentMedicalReferee:

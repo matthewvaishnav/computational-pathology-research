@@ -9,9 +9,8 @@ import logging
 import math
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

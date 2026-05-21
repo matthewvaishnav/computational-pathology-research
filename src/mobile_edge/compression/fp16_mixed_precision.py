@@ -6,19 +6,16 @@ while maintaining model accuracy through automatic loss scaling.
 """
 
 import copy
-import json
 import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
-import numpy as np
 import torch
 import torch.cuda.amp as amp
 import torch.nn as nn
 
-from ..utils.model_utils import count_parameters, get_model_size
 
 
 @dataclass

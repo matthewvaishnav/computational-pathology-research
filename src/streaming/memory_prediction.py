@@ -74,7 +74,7 @@ class MemoryUsagePredictor:
             Memory prediction with confidence
         """
         # Extract characteristics
-        dimensions = slide_characteristics.get("dimensions", (10000, 10000))
+        slide_characteristics.get("dimensions", (10000, 10000))
         estimated_patches = slide_characteristics.get("estimated_patches", 1000)
         tile_size = slide_characteristics.get("tile_size", 224)
         batch_size = slide_characteristics.get("batch_size", 32)

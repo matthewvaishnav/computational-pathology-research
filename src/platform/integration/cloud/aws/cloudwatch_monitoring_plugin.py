@@ -8,19 +8,16 @@ using CloudWatch metrics, logs, alarms, and dashboards.
 import asyncio
 import json
 import logging
-import statistics
-import uuid
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aioboto3
 import boto3
-import botocore
 
 logger = logging.getLogger(__name__)
-from botocore.exceptions import ClientError, NoCredentialsError
+from botocore.exceptions import ClientError
 
 from ..plugin_interface import MonitoringPlugin, PluginCapability
 from ..plugin_manager import PluginMetadata
@@ -684,7 +681,6 @@ class AWSCloudWatchMonitoringPlugin(MonitoringPlugin):
                 logs_accessible = True
             except Exception as e:
                 logger.warning(f"CloudWatch health check failed: {type(e).__name__}")
-                pass
 
             # Test metric publishing
             metrics_writable = False

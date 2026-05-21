@@ -1,7 +1,6 @@
 """Health check endpoints and status monitoring for HistoCore streaming."""
 
 import asyncio
-import json
 import logging
 import time
 from dataclasses import asdict, dataclass

@@ -7,7 +7,6 @@ Manages global model, aggregation strategy selection, and convergence tracking.
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import numpy as np
 
 from src.platform.security.network_binding import NetworkBindingManager
 
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import flwr as fl
-    from flwr.common import Metrics, NDArrays, Parameters
+    from flwr.common import Metrics
     from flwr.server.strategy import FedAvg, FedProx
 
     HAS_FLWR = True
@@ -97,7 +96,6 @@ def start_federated_server(
     if not HAS_FLWR:
         raise ImportError("flwr not installed. pip install flwr>=1.5.0")
 
-    import torch
 
     from .client import get_model_weights
 

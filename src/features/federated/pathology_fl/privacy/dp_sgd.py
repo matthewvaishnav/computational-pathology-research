@@ -9,7 +9,7 @@ Reference: "Deep Learning with Differential Privacy" (Abadi et al., 2016)
 
 import logging
 import math
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn

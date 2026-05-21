@@ -13,19 +13,15 @@ incident response capabilities.
 import asyncio
 import json
 import logging
-import threading
 import time
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
 import psutil
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 
 logger = logging.getLogger(__name__)
 

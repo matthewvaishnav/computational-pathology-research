@@ -11,9 +11,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import numpy as np
-from scipy.spatial.distance import cdist, directed_hausdorff
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
 
 
 @dataclass
@@ -176,15 +173,12 @@ class AnnotationManager:
         Uses STAPLE (Simultaneous Truth and Performance Level Estimation) algorithm
         for combining multiple spatial annotations.
         """
-        import numpy as np
-        from scipy import ndimage
-        from sklearn.cluster import DBSCAN
 
         if not annotations:
             return None
 
         annotation_type = annotations[0].annotation_type
-        image_id = annotations[0].image_id
+        annotations[0].image_id
 
         if annotation_type == "bbox":
             return self._compute_bbox_consensus(annotations)

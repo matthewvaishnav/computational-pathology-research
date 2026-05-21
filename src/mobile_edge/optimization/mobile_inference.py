@@ -9,7 +9,7 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
 import psutil
@@ -109,7 +109,6 @@ class TFLiteInference:
             import tensorflow as tf
 
             self.tf = tf
-            TFLITE_AVAILABLE = True
         except ImportError:
             raise RuntimeError("TensorFlow Lite not available")
 

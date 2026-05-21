@@ -6,26 +6,18 @@ for patient data, orders, results, and clinical documentation.
 """
 
 import asyncio
-import base64
-import json
 import logging
 import ssl
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import jwt
-from fhir.resources.bundle import Bundle
 from fhir.resources.diagnosticreport import DiagnosticReport
-from fhir.resources.documentreference import DocumentReference
-from fhir.resources.observation import Observation
-from fhir.resources.operationoutcome import OperationOutcome
 from fhir.resources.patient import Patient
-from fhir.resources.servicerequest import ServiceRequest
 
 logger = logging.getLogger(__name__)
 
@@ -731,7 +723,6 @@ class EpicFHIRPlugin(EMRPlugin):
                 patients_accessible = True
             except Exception as e:
                 logger.warning(f"Patient search test failed: {type(e).__name__}")
-                pass
 
             return {
                 "connected": auth_valid and fhir_available,

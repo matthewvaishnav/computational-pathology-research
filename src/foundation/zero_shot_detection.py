@@ -6,16 +6,13 @@ Uses vision-language alignment for detecting diseases not seen during training
 import json
 import logging
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import faiss
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoModel, AutoTokenizer, CLIPModel, CLIPProcessor
+from transformers import CLIPModel, CLIPProcessor
 
 from src.platform.security.model_download import ModelDownloadManager
 

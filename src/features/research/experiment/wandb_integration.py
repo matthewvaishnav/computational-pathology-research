@@ -7,13 +7,11 @@ team management, project organization, and advanced collaboration features.
 
 import json
 import logging
-import os
-import threading
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 try:
     import wandb

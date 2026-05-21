@@ -12,22 +12,16 @@ import asyncio
 import json
 import logging
 import time
-from collections import defaultdict, deque
-from dataclasses import asdict, dataclass, field
+from collections import deque
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
-import torch
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, roc_auc_score
 
 from .config_manager import StreamingConfig
-from .metrics import ProcessingMetrics
 
 
 class ModelDriftType(Enum):

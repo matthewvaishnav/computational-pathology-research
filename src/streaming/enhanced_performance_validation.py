@@ -10,11 +10,9 @@ These enhanced validations provide comprehensive testing beyond the basic
 performance validation already implemented.
 """
 
-import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -475,7 +473,6 @@ class EnhancedPerformanceValidator(PerformanceValidator):
             ) / len(successful_results)
         else:
             max_throughput = 0
-            best_config = None
             avg_scaling_efficiency = 0
             scaling_meets_requirements = False
             success_rate = 0.0
@@ -525,7 +522,7 @@ class EnhancedPerformanceValidator(PerformanceValidator):
         gpu_pipeline = GPUPipeline(self.model, config)
         aggregator = StreamingAttentionAggregator(self.model, config)
 
-        metadata = reader.initialize_streaming()
+        reader.initialize_streaming()
 
         patches_processed = 0
         batch_size_changes = 0
@@ -584,7 +581,7 @@ class EnhancedPerformanceValidator(PerformanceValidator):
         gpu_pipeline = ParallelGPUPipeline(self.model, config)
         aggregator = StreamingAttentionAggregator(self.model, config)
 
-        metadata = reader.initialize_streaming()
+        reader.initialize_streaming()
 
         patches_processed = 0
         start_time = time.time()

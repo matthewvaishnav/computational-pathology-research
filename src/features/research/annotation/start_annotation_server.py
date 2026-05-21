@@ -3,7 +3,6 @@ Quick start script for annotation interface backend server
 """
 
 import logging
-from pathlib import Path
 
 import uvicorn
 

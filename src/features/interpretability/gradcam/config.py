@@ -7,11 +7,10 @@ parsers for loading from dict/HDF5, and pretty printers for serialization.
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import h5py
 import numpy as np
-import torch
 import torch.nn as nn
 import yaml
 

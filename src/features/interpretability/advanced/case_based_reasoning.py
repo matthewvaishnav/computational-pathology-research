@@ -3,23 +3,18 @@ Case-Based Reasoning System
 Comprehensive case database with FAISS indexing, efficient retrieval, and metadata management
 """
 
-import hashlib
 import json
 import logging
-import pickle
 import sqlite3
 import threading
-import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import faiss
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 
 @dataclass
@@ -754,7 +749,7 @@ class CaseDatabase:
 
 # Example usage
 if __name__ == "__main__":
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     # Create case database
     db = CaseDatabase(database_path="./case_database", feature_dim=2048, index_type="IVF")

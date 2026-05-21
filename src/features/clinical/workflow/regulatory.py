@@ -13,8 +13,7 @@ cybersecurity controls)
 import datetime
 import json
 import logging
-from pathlib import Path
-from typing import Any, Dict, List
+from typing import List
 
 from .dmr_manager import (
     DeviceMasterRecord,
@@ -53,8 +52,6 @@ class RegulatoryDocumentationSystem(DMRManager):
         self, device_name: str, device_version: str, output_path: str
     ) -> str:
         """Export regulatory package for device"""
-        import os
-        import shutil
         from pathlib import Path
 
         # Create output directory
@@ -97,19 +94,16 @@ class RegulatoryDocumentationSystem(DMRManager):
 class RiskManagementSystem(RiskManager):
     """Backward-compatible alias for RiskManager"""
 
-    pass
 
 
 class VerificationValidationSystem(VVManager):
     """Backward-compatible alias for VVManager"""
 
-    pass
 
 
 class CybersecurityControlSystem(SubmissionGenerator):
     """Backward-compatible alias for SubmissionGenerator (cybersecurity methods)"""
 
-    pass
 
 
 class RegulatoryComplianceManager:

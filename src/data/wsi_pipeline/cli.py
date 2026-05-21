@@ -11,7 +11,6 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 from .batch_processor import BatchProcessor
 from .benchmarks import run_performance_benchmarks

@@ -7,15 +7,13 @@ Automatically queues high-uncertainty cases for expert review.
 
 import asyncio
 import logging
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from ...continuous_learning.active_learning import (
     ActiveLearningSystem,
 )
 from ...continuous_learning.active_learning import AnnotationTask as ALAnnotationTask
 from ...continuous_learning.active_learning import (
-    CaseForReview,
     ExpertAnnotation,
 )
 from ..backend.annotation_api import add_slide_to_db, add_task_to_queue

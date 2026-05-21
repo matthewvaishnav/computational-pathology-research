@@ -11,14 +11,12 @@ import hashlib
 import json
 import logging
 import os
-import shutil
-import threading
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -26,7 +24,7 @@ import torch.nn as nn
 
 from src.core.utils.safe_threading import TimeoutLock
 
-from .metrics import record_processing_time, timed_operation
+from .metrics import timed_operation
 
 logger = logging.getLogger(__name__)
 
@@ -399,7 +397,7 @@ class ModelHotSwapper:
         # Perform swap with lock
         try:
             with self.model_lock:
-                old_model = self.current_model
+                self.current_model
                 old_metadata = self.current_metadata
 
                 # Swap

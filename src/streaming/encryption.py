@@ -7,12 +7,11 @@ for HistoCore Real-Time WSI Streaming.
 Requirements: AES-256-GCM encryption, HSM support, key rotation
 """
 
-import hashlib
 import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -451,8 +450,8 @@ class EncryptionManager:
             return b"HSM_KEY_HANDLE_" + str(self.hsm_key_handle).encode()
         else:
             # File-based key rotation
-            old_key = self.master_key
-            old_fernet = self.fernet
+            self.master_key
+            self.fernet
 
             # Initialize new key
             self.master_key = None

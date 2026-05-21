@@ -6,7 +6,7 @@ This module provides adapters to integrate various foundation models
 automatic dimension detection and adaptive projection.
 """
 
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Union
 
 import torch
 import torch.nn as nn
@@ -140,7 +140,7 @@ class FoundationModelAdapter(nn.Module):
             Projected features [B, N, target_dim] or [N, target_dim]
         """
         # Handle different input shapes
-        original_shape = features.shape
+        features.shape
         if features.dim() == 2:
             # [N, D] -> [1, N, D]
             features = features.unsqueeze(0)

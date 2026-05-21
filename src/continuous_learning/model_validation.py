@@ -10,25 +10,20 @@ import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-from scipy import stats
-from sklearn.calibration import calibration_curve
 from sklearn.metrics import (
     accuracy_score,
-    classification_report,
     confusion_matrix,
     f1_score,
     precision_recall_curve,
     precision_score,
     recall_score,
     roc_auc_score,
-    roc_curve,
 )
 
 logger = logging.getLogger(__name__)

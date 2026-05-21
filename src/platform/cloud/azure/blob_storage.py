@@ -11,7 +11,6 @@ Enhanced Azure Blob Storage integration for HistoCore with advanced features:
 - Security and compliance features
 """
 
-import asyncio
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -21,18 +20,11 @@ from enum import Enum
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 try:
-    from azure.core.exceptions import AzureError, ResourceNotFoundError
+    from azure.core.exceptions import ResourceNotFoundError
     from azure.identity import DefaultAzureCredential
     from azure.storage.blob import (
-        AccessTier,
-        BlobClient,
-        BlobProperties,
         BlobServiceClient,
-        ContainerClient,
-        PremiumPageBlobTier,
-        StandardBlobTier,
     )
-    from azure.storage.blob.aio import BlobServiceClient as AsyncBlobServiceClient
 
     AZURE_AVAILABLE = True
 except ImportError:

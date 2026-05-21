@@ -8,7 +8,7 @@ import logging
 import ssl
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from .authentication import (
     TLSManager,

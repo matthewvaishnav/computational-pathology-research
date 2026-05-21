@@ -6,7 +6,6 @@ to handle scanner/staining variation across sites.
 """
 
 import logging
-from typing import Optional, Tuple
 
 import numpy as np
 

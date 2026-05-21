@@ -8,7 +8,6 @@ for seamless integration with hospital information systems.
 """
 
 import logging
-import re
 import socket
 import threading
 from dataclasses import dataclass

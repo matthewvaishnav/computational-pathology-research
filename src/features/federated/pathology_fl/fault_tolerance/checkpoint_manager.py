@@ -6,7 +6,6 @@ Provides checkpoint save/load, crash recovery, and training state persistence.
 
 import json
 import logging
-import shutil
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path

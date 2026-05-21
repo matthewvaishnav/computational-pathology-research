@@ -11,13 +11,12 @@ Provides integration with Azure Functions for serverless processing of HistoCore
 """
 
 import asyncio
-import base64
 import json
 import logging
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 try:

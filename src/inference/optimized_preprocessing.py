@@ -8,11 +8,10 @@ High-performance preprocessing pipeline optimized for <10s inference target.
 import io
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torchvision.transforms as transforms
 from PIL import Image
 

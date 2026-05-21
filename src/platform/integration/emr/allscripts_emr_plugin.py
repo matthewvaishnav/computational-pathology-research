@@ -7,15 +7,12 @@ via Unity API, FHIR, and HL7 interfaces for clinical data exchange.
 
 import asyncio
 import base64
-import hashlib
-import json
 import logging
 import ssl
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import defusedxml.ElementTree as ET
@@ -652,7 +649,6 @@ class AllscriptsEMRPlugin(EMRPlugin):
                     dob = datetime.strptime(dob_str, "%m/%d/%Y")
                 except (ValueError, TypeError) as e:
                     self.logger.warning(f"Invalid DOB format in XML: error_code=INVALID_DOB")
-                    pass
 
             gender = root.findtext(".//Gender", "U")
 
@@ -698,7 +694,6 @@ class AllscriptsEMRPlugin(EMRPlugin):
                     self.logger.warning(
                         f"Invalid DOB format in delimited data: error_code=INVALID_DOB"
                     )
-                    pass
 
             gender = fields[7] if len(fields) > 7 else "U"
 
@@ -812,7 +807,6 @@ class AllscriptsEMRPlugin(EMRPlugin):
                 patients_accessible = True
             except Exception as e:
                 logger.warning(f"Patient search test failed: {type(e).__name__}")
-                pass
 
             return {
                 "connected": auth_valid and api_available,

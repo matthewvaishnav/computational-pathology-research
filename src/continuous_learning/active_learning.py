@@ -13,11 +13,10 @@ from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from queue import PriorityQueue
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
-import torch.nn as nn
 
 # Import uncertainty quantification from explainability
 from ..explainability.uncertainty_quantification import UncertaintyMetrics

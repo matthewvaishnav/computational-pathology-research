@@ -9,28 +9,22 @@ Supports:
 - Institutional branding
 """
 
-import io
-import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
-import numpy as np
-from PIL import Image
 
 # PDF generation
 try:
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.enums import TA_CENTER
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
     from reportlab.platypus import Image as RLImage
     from reportlab.platypus import (
-        KeepTogether,
-        PageBreak,
         Paragraph,
         SimpleDocTemplate,
         Spacer,

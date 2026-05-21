@@ -6,7 +6,6 @@ Defines synchronous, semi-synchronous, and fully asynchronous training modes.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class SynchronizationMode(Enum):

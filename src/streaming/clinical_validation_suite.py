@@ -10,16 +10,14 @@ Tasks implemented:
 - 8.1.1.3: Test confidence calibration across different slide types
 """
 
-import asyncio
 import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import torch
 from sklearn.metrics import accuracy_score, calibration_curve, roc_auc_score
 
@@ -28,7 +26,6 @@ from ..models.mil.attention_mil import AttentionMIL
 from ..utils.config import StreamingConfig
 from .attention_aggregator import StreamingAttentionAggregator
 from .gpu_pipeline import GPUPipeline
-from .progressive_visualizer import ProgressiveVisualizer
 from .wsi_stream_reader import WSIStreamReader
 
 logger = logging.getLogger(__name__)
@@ -385,7 +382,7 @@ class ClinicalValidator:
         gpu_pipeline = GPUPipeline(self.model, self.config)
         aggregator = StreamingAttentionAggregator(self.model, self.config)
 
-        metadata = reader.initialize_streaming()
+        reader.initialize_streaming()
 
         patches_processed = 0
         all_coordinates = []
@@ -528,9 +525,9 @@ class ClinicalValidator:
         # Convert to binary classification if needed
         if len(set(true_labels)) > 2:
             # For multi-class, use top-1 calibration
-            predictions = [1 if conf > 0.5 else 0 for conf in confidences]
+            [1 if conf > 0.5 else 0 for conf in confidences]
         else:
-            predictions = [1 if conf > 0.5 else 0 for conf in confidences]
+            [1 if conf > 0.5 else 0 for conf in confidences]
 
         # Calculate calibration curve
         fraction_of_positives, mean_predicted_value = calibration_curve(

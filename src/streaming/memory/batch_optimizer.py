@@ -6,7 +6,7 @@ while avoiding OOM.
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
 

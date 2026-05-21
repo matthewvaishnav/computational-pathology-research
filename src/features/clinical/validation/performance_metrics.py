@@ -6,26 +6,21 @@ calibration, and inter-rater agreement for medical AI systems.
 """
 
 import logging
-import warnings
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 from scipy import stats
 from sklearn.metrics import (
     auc,
     average_precision_score,
     confusion_matrix,
-    f1_score,
     precision_recall_curve,
     roc_auc_score,
     roc_curve,
 )
-from statsmodels.stats.inter_rater import cohens_kappa, fleiss_kappa
+from statsmodels.stats.inter_rater import cohens_kappa
 
 logger = logging.getLogger(__name__)
 

@@ -10,8 +10,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from sqlalchemy import and_, desc, func, or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
 
 from .models import Analysis, AuditLog, Case, DicomStudy, ModelResult, User
 

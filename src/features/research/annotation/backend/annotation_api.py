@@ -5,7 +5,6 @@ FastAPI backend for annotation interface
 Provides REST endpoints and WebSocket for real-time collaboration
 """
 
-import asyncio
 import json
 import logging
 import uuid
@@ -17,8 +16,7 @@ import numpy as np
 import torch
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from .annotation_models import (
     AIPredictionOverlay,
@@ -253,7 +251,7 @@ async def get_slide_tile(slide_id: str, z: int, x: int, y: int):
                 level = min(z, slide.level_count - 1)
 
                 # Get level dimensions and downsample factor
-                level_dimensions = slide.level_dimensions[level]
+                slide.level_dimensions[level]
                 downsample = slide.level_downsamples[level]
 
                 # Calculate tile position in level 0 coordinates

@@ -8,16 +8,15 @@ that can train in isolation to full network performance.
 import copy
 import json
 import logging
-import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 import numpy as np
 import torch
 import torch.nn as nn
 
-from ..utils.model_utils import count_parameters, get_model_size
+from ..utils.model_utils import count_parameters
 
 
 @dataclass

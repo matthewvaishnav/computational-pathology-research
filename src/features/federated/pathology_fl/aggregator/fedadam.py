@@ -8,7 +8,7 @@ Reference: "Adaptive Federated Optimization" (Reddi et al., 2021)
 """
 
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import torch
 import torch.nn as nn
@@ -349,7 +349,7 @@ class FedAdamScheduler:
 
 if __name__ == "__main__":
     # Demo: FedAdam aggregation
-    from datetime import datetime
+    pass
 
     import torch.nn as nn
 

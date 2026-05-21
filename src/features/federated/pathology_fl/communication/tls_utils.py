@@ -8,7 +8,6 @@ for mutual TLS authentication between coordinator and clients.
 import ipaddress
 import logging
 import os
-import ssl
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 

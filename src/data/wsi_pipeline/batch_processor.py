@@ -12,7 +12,7 @@ import json
 import logging
 import time
 from datetime import datetime
-from multiprocessing import Pool, cpu_count
+from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -22,7 +22,7 @@ import torch
 
 from .cache import FeatureCache
 from .config import ProcessingConfig
-from .exceptions import ProcessingError, ResourceError
+from .exceptions import ResourceError
 from .extractor import PatchExtractor
 from .feature_generator import FeatureGenerator
 from .models import ProcessingResult, SlideMetadata

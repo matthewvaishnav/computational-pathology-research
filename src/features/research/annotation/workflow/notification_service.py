@@ -4,7 +4,6 @@ Notification Service
 Sends notifications to pathologists when high-priority cases arrive.
 """
 
-import asyncio
 import json
 import logging
 import smtplib

@@ -4,7 +4,7 @@ This module defines dataclasses for slide metadata, processing results,
 and other data structures used throughout the pipeline.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 

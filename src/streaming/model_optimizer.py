@@ -7,11 +7,10 @@ and multi-GPU data/pipeline parallelism for <30s processing acceleration.
 
 import logging
 import os
-import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -29,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 # Optional TensorRT imports
 try:
-    import pycuda.autoinit
     import pycuda.driver as cuda
     import tensorrt as trt
 
@@ -396,7 +394,7 @@ class ONNXOptimizer:
         """Optimize ONNX model."""
         try:
             # Load model
-            model = onnx.load(onnx_path)
+            onnx.load(onnx_path)
 
             # Basic optimizations
             from onnxruntime.tools import optimizer

@@ -7,18 +7,14 @@ performance requirements for the WSI processing pipeline components.
 
 import logging
 import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import torch
 
-from .batch_processor import BatchProcessor
 from .config import ProcessingConfig
 from .extractor import PatchExtractor
 from .feature_generator import FeatureGenerator
-from .quality_control import QualityControl
-from .reader import WSIReader
 from .tissue_detector import TissueDetector
 
 logger = logging.getLogger(__name__)

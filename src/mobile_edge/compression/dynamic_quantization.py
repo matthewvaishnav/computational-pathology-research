@@ -6,19 +6,15 @@ but activations are quantized dynamically at runtime.
 """
 
 import copy
-import json
 import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.quantization as quant
 
-from ..utils.model_utils import count_parameters, get_model_size
 
 
 @dataclass
@@ -177,7 +173,7 @@ class DynamicQuantizer:
         """Apply dynamic quantization to model"""
         try:
             # Determine which layer types to quantize
-            qconfig_spec = {}
+            pass
 
             # Build list of layer types to quantize
             layer_types = set()

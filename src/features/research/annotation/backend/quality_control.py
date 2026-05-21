@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .annotation_models import Annotation, AnnotationLabel, AnnotationType
+from .annotation_models import Annotation, AnnotationType
 
 
 class ValidationIssue(str, Enum):

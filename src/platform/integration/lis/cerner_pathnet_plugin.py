@@ -6,7 +6,6 @@ for order management, result reporting, and workflow automation.
 """
 
 import asyncio
-import json
 import logging
 import ssl
 from dataclasses import asdict, dataclass
@@ -15,7 +14,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
-import defusedxml.ElementTree as ET
 from cryptography.fernet import Fernet
 
 logger = logging.getLogger(__name__)
@@ -494,7 +492,6 @@ class CernerPathNetPlugin(LISPlugin):
                 orders_accessible = True
             except Exception as e:
                 logger.warning(f"Orders test failed: {type(e).__name__}")
-                pass
 
             return {
                 "connected": auth_valid and api_available,

@@ -8,7 +8,7 @@ including mixed precision training and optimized preprocessing.
 """
 
 import logging
-from typing import Iterator, Optional, Union
+from typing import Iterator, Union
 
 import numpy as np
 import torch

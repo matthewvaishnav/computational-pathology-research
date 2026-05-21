@@ -2,11 +2,10 @@
 
 import json
 import logging
-import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from queue import Empty, Queue
+from queue import Empty
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import matplotlib
@@ -14,7 +13,6 @@ import numpy as np
 
 matplotlib.use("Agg")  # Non-interactive backend
 import matplotlib.pyplot as plt
-import torch
 from matplotlib.colors import LinearSegmentedColormap
 
 # Import BoundedQueue and GracefulThread for memory-safe queue operations and graceful shutdown
@@ -22,7 +20,6 @@ from src.core.utils.safe_threading import BoundedQueue, GracefulThread
 
 # Import plotly for interactive visualizations
 try:
-    import plotly.express as px
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
 

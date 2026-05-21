@@ -3,10 +3,9 @@
 import hashlib
 import json
 import logging
-import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import torch
 import torch.nn as nn

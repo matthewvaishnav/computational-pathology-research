@@ -7,7 +7,7 @@ Cross-platform ONNX export for deployment flexibility.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
 import onnx
@@ -158,7 +158,7 @@ class ONNXExporter:
             from onnxruntime.transformers import optimizer
 
             # Load model
-            model = onnx.load(str(model_path))
+            onnx.load(str(model_path))
 
             # Optimize
             optimized_model = optimizer.optimize_model(

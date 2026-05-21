@@ -5,7 +5,6 @@ Provides secure database connection with proper pooling and timeout.
 """
 
 from contextlib import contextmanager
-from typing import Optional
 
 
 class SecureDBConfig:

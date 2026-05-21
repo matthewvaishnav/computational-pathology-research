@@ -8,12 +8,11 @@ authentication and encrypted model/gradient exchange.
 import io
 import logging
 import time
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import grpc
 import torch
 
-from ..common.data_models import ClientUpdate
 from .federated_learning_pb2 import (
     ClientCapabilities,
     ClientRegistration,

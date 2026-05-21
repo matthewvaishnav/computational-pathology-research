@@ -40,7 +40,6 @@ class FoundationModelEncoder(ABC, nn.Module):
     @abstractmethod
     def _build_model(self) -> None:
         """Build the underlying model architecture."""
-        pass
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Extract features from image patches.
@@ -59,7 +58,6 @@ class FoundationModelEncoder(ABC, nn.Module):
     @abstractmethod
     def _encode(self, x: torch.Tensor) -> torch.Tensor:
         """Internal encoding implementation."""
-        pass
 
     # Legacy interface compatibility
     def extract_features(self, patches: torch.Tensor) -> torch.Tensor:

@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 import torch
 
 from .staleness_weighting import StalenessWeighting, UpdateMetadata
-from .sync_mode import SyncConfig, SynchronizationMode
+from .sync_mode import SyncConfig
 from .timeout_manager import TimeoutManager
 
 logger = logging.getLogger(__name__)

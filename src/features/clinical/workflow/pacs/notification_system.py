@@ -7,7 +7,7 @@ import socket
 import threading
 import uuid
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from email.mime.text import MIMEText
 from typing import Any, Dict, List, Optional
@@ -217,7 +217,6 @@ class SMSNotifier(NotificationChannel):
         try:
             import json as _json
             import urllib.request
-            from urllib.parse import urlparse
 
             # SECURITY: Use URLFetcherControl for secure URL opening
             from src.platform.security.url_fetcher import URLFetcherControl

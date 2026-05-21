@@ -6,7 +6,7 @@ discovered subtypes have genuine prognostic value.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict
 
 import numpy as np
 from scipy import stats as scipy_stats

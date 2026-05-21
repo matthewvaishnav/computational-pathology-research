@@ -6,16 +6,14 @@ including demographic stratification, clinical subgroups, and bias detection.
 """
 
 import logging
-import warnings
 from dataclasses import dataclass
 from enum import Enum
 from itertools import combinations
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from scipy import stats
 from sklearn.metrics import (
     accuracy_score,

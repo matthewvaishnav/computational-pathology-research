@@ -4,7 +4,7 @@ This module defines the ProcessingConfig dataclass and provides
 configuration validation and YAML loading functionality.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -229,4 +229,3 @@ class ProcessingConfig:
         """Post-initialization validation."""
         # Note: stride defaults to None (non-overlapping patches)
         # Actual stride value is computed at runtime if needed
-        pass

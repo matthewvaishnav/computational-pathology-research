@@ -30,7 +30,7 @@ from src.features.clinical.workflow.uncertainty import UncertaintyQuantifier
 from src.features.clinical.workflow.validation import ModelValidator
 
 if TYPE_CHECKING:
-    from src.features.clinical.workflow.dicom_adapter import DICOMAdapter
+    pass
 
 logger = logging.getLogger(__name__)
 

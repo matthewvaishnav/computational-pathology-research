@@ -6,7 +6,6 @@ Processes WSI tiles incrementally without loading entire slide into memory.
 """
 
 import logging
-from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np

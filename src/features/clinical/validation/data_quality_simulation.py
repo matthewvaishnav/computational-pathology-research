@@ -9,14 +9,11 @@ import logging
 import random
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Union
 
-import cv2
 import numpy as np
 import torch
-import torch.nn.functional as F
 from PIL import Image, ImageEnhance, ImageFilter
-from scipy import ndimage
 
 logger = logging.getLogger(__name__)
 

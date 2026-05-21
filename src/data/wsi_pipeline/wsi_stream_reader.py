@@ -18,21 +18,15 @@ Memory Targets:
 - Automatic cleanup when approaching limits
 """
 
-import gc
 import logging
 import time
-from collections import deque
-from dataclasses import dataclass
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
-import psutil
-from PIL import Image
 
 try:
-    import torch
+    pass
 
     TORCH_AVAILABLE = True
 except ImportError:
@@ -873,7 +867,7 @@ class WSIStreamReader:
 
         # OpenSlide formats
         try:
-            from openslide import OpenSlide
+            pass
 
             supported.extend(
                 [".svs", ".tiff", ".tif", ".ndpi", ".vms", ".vmu", ".scn", ".mrxs", ".bif"]
@@ -883,7 +877,7 @@ class WSIStreamReader:
 
         # DICOM formats
         try:
-            import wsidicom
+            pass
 
             supported.extend([".dcm", ""])  # DICOM files may not have extension
         except ImportError:
