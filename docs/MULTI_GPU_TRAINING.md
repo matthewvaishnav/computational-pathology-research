@@ -1,6 +1,6 @@
 # Multi-GPU Training with DistributedDataParallel
 
-HistoCore supports multi-GPU training using PyTorch's DistributedDataParallel (DDP) for linear scaling with the number of GPUs.
+the platform supports multi-GPU training using PyTorch's DistributedDataParallel (DDP) for linear scaling with the number of GPUs.
 
 ## Features
 

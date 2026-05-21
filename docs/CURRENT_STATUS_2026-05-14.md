@@ -1,4 +1,4 @@
-# HistoCore Project Status Report
+# the platform Project Status Report
 **Date**: May 14, 2026 (Thursday)
 **Repository**: computational-pathology-research
 **Author**: Matthew Vaishnav
@@ -7,7 +7,7 @@
 
 ## 📊 Executive Summary
 
-HistoCore is a production-grade computational pathology platform with **195k+ lines of code**, **544 Python modules**, and **5,071 tests**. The project has achieved significant milestones in model architecture, performance optimization, and clinical integration capabilities. Current focus is on TransnnMIL v2.0 development with hierarchical pooling and topology-aware graph neural networks.
+the platform is a production-grade computational pathology platform with **195k+ lines of code**, **544 Python modules**, and **5,071 tests**. The project has achieved significant milestones in model architecture, performance optimization, and clinical integration capabilities. Current focus is on TransnnMIL v2.0 development with hierarchical pooling and topology-aware graph neural networks.
 
 **Key Achievements:**
 - ✅ **95.37% validation AUC** on PatchCamelyon benchmark
@@ -654,4 +654,4 @@ src/
 
 ---
 
-*This report provides a comprehensive snapshot of the HistoCore project as of May 14, 2026. For the most up-to-date information, see the repository README.md and recent commit history.*
+*This report provides a comprehensive snapshot of the the platform project as of May 14, 2026. For the most up-to-date information, see the repository README.md and recent commit history.*

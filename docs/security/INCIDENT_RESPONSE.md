@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the security incident response process for HistoCore. It defines roles, procedures, and communication protocols for handling security incidents.
+This document outlines the security incident response process for the platform. It defines roles, procedures, and communication protocols for handling security incidents.
 
 ## Incident Classification
 
@@ -174,7 +174,7 @@ def collect_evidence(incident_id: str):
     subprocess.run([
         "tar", "-czf",
         f"{evidence_dir}/logs.tar.gz",
-        "/var/log/histocore/",
+        "/var/log/the platform/",
         "/var/log/nginx/",
         "/var/log/auth.log"
     ])
@@ -190,7 +190,7 @@ def collect_evidence(incident_id: str):
     subprocess.run([
         "pg_dump", "-Fc",
         "-f", f"{evidence_dir}/database_snapshot.dump",
-        "histocore_db"
+        "the platform_db"
     ])
     
     # Calculate checksums
@@ -437,7 +437,7 @@ For more information:
 [Contact details]
 
 Sincerely,
-HistoCore Security Team
+the platform Security Team
 """
 ```
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers security best practices for HistoCore's REST API, including authentication, authorization, input validation, and rate limiting.
+This guide covers security best practices for the platform's REST API, including authentication, authorization, input validation, and rate limiting.
 
 ## Authentication
 
@@ -328,8 +328,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # Production CORS configuration
 if os.getenv('ENVIRONMENT') == 'production':
     allowed_origins = [
-        "https://app.histocore.example.com",
-        "https://admin.histocore.example.com",
+        "https://app.the platform.example.com",
+        "https://admin.the platform.example.com",
     ]
 else:
     # Development - more permissive

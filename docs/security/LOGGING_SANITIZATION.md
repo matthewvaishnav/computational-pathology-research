@@ -2,7 +2,7 @@
 
 ## Overview
 
-Proper log sanitization prevents sensitive data leakage, injection attacks, and compliance violations. This guide covers secure logging practices for HistoCore.
+Proper log sanitization prevents sensitive data leakage, injection attacks, and compliance violations. This guide covers secure logging practices for the platform.
 
 ## Sensitive Data Categories
 
@@ -154,7 +154,7 @@ logger.info(f"API key: {mask_sensitive_data('sk_live_abc123def456', 4)}")
 # Output: "API key: **********f456"
 ```
 
-## HistoCore Integration
+## the platform Integration
 
 ### Security Audit Trail
 
@@ -184,7 +184,7 @@ import logging
 from src.security.logging_sanitizer import SanitizingFormatter
 
 def setup_secure_logging():
-    """Configure secure logging for HistoCore."""
+    """Configure secure logging for the platform."""
     
     # Create sanitizing formatter
     formatter = SanitizingFormatter(

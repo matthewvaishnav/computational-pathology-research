@@ -69,7 +69,7 @@ The Real-Time WSI Streaming system enables **7x faster processing** (<30 seconds
 
 ### Processing Speed (NVIDIA V100 32GB)
 
-| Metric | HistoCore Streaming | Traditional Batch | Improvement |
+| Metric | the platform Streaming | Traditional Batch | Improvement |
 |--------|---------------------|-------------------|-------------|
 | **Processing Time** | **25 seconds** | 180 seconds | **7.2x faster** |
 | **GPU Memory** | **1.8 GB** | 12 GB | **6.7x less** |
@@ -105,7 +105,7 @@ from src.streaming import create_streaming_pipeline
 
 # Create pipeline with default settings
 pipeline = create_streaming_pipeline(
-    model_path="models/histocore_v1.pth",
+    model_path="models/the platform_v1.pth",
     gpu_ids=[0],
     enable_optimization=True
 )
@@ -249,7 +249,7 @@ from src.streaming import create_streaming_pipeline
 
 async def process_slide(slide_id: int):
     pipeline = create_streaming_pipeline(
-        model_path="models/histocore_v1.pth",
+        model_path="models/the platform_v1.pth",
         gpu_ids=[0],
         memory_limit_gb=0.5  # Strict limit
     )
@@ -357,15 +357,15 @@ pytest tests/streaming/test_performance_regression.py::test_generate_performance
 
 ```bash
 # Build GPU-enabled image
-docker build -t histocore/streaming:latest .
+docker build -t the platform/streaming:latest .
 
 # Run container
 docker run -d \
-  --name histocore-streaming \
+  --name the platform-streaming \
   --gpus all \
   -p 8000:8000 \
   -v /data/models:/models \
-  histocore/streaming:latest
+  the platform/streaming:latest
 ```
 
 ### Kubernetes
@@ -377,7 +377,7 @@ kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 
 # Check status
-kubectl get pods -n histocore
+kubectl get pods -n the platform
 ```
 
 ### Cloud Deployment
@@ -479,7 +479,7 @@ pytest --cov=src/streaming tests/streaming/
 
 ## Competitive Advantages
 
-| Feature | HistoCore | PathAI | Paige.AI | Proscia |
+| Feature | the platform | PathAI | Paige.AI | Proscia |
 |---------|-----------|--------|----------|---------|
 | **Processing Speed** | <30s | 3-5 min | 2-4 min | 3-5 min |
 | **GPU Memory** | <2GB | 8-12GB | 6-10GB | 8-12GB |
@@ -495,11 +495,11 @@ pytest --cov=src/streaming tests/streaming/
 If you use the real-time streaming system in your research, please cite:
 
 ```bibtex
-@software{vaishnav2026histocore_streaming,
-  title = {HistoCore Real-Time WSI Streaming System},
+@software{vaishnav2026the platform_streaming,
+  title = {the platform Real-Time WSI Streaming System},
   author = {Vaishnav, Matthew},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/histocore},
+  url = {https://github.com/matthewvaishnav/the platform},
   note = {7x faster processing, 75\% less memory, production-ready}
 }
 ```
@@ -509,7 +509,7 @@ If you use the real-time streaming system in your research, please cite:
 ## Contact
 
 For questions or support:
-- **GitHub Issues**: [github.com/matthewvaishnav/histocore/issues](https://github.com/matthewvaishnav/histocore/issues)
+- **GitHub Issues**: [github.com/matthewvaishnav/the platform/issues](https://github.com/matthewvaishnav/the platform/issues)
 - **Email**: matthew.vaishnav@example.com
 
 ---

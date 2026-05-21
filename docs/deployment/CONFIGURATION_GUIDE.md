@@ -1,6 +1,6 @@
-# HistoCore Configuration Guide
+# the platform Configuration Guide
 
-Complete reference for configuring HistoCore Real-Time WSI Streaming.
+Complete reference for configuring the platform Real-Time WSI Streaming.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ Complete reference for configuring HistoCore Real-Time WSI Streaming.
 
 ## Overview
 
-HistoCore supports multiple configuration methods with the following precedence (highest to lowest):
+the platform supports multiple configuration methods with the following precedence (highest to lowest):
 
 1. **Environment variables** - Runtime overrides
 2. **Configuration files** - YAML/JSON configs
@@ -32,14 +32,14 @@ Set via shell or Docker/K8s:
 
 ```bash
 # Shell
-export HISTOCORE_BATCH_SIZE=32
+export the platform_BATCH_SIZE=32
 export CUDA_VISIBLE_DEVICES=0
 
 # Docker
-docker run -e HISTOCORE_BATCH_SIZE=32 histocore/streaming
+docker run -e the platform_BATCH_SIZE=32 the platform/streaming
 
 # Kubernetes
-kubectl set env deployment/histocore-streaming HISTOCORE_BATCH_SIZE=32
+kubectl set env deployment/the platform-streaming the platform_BATCH_SIZE=32
 ```
 
 ### Configuration Files
@@ -67,7 +67,7 @@ monitoring:
 python -m src.streaming.main --config config.yaml
 
 # Environment variable
-export HISTOCORE_CONFIG=config.yaml
+export the platform_CONFIG=config.yaml
 python -m src.streaming.main
 ```
 
@@ -111,10 +111,10 @@ config = config_manager.get_config()
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `HISTOCORE_ENV` | string | `development` | Environment (development/staging/production) |
-| `HISTOCORE_LOG_LEVEL` | string | `INFO` | Logging level (DEBUG/INFO/WARNING/ERROR) |
-| `HISTOCORE_WORKERS` | int | `4` | Number of worker processes |
-| `HISTOCORE_TIMEOUT` | int | `300` | Request timeout (seconds) |
+| `the platform_ENV` | string | `development` | Environment (development/staging/production) |
+| `the platform_LOG_LEVEL` | string | `INFO` | Logging level (DEBUG/INFO/WARNING/ERROR) |
+| `the platform_WORKERS` | int | `4` | Number of worker processes |
+| `the platform_TIMEOUT` | int | `300` | Request timeout (seconds) |
 
 **Example**:
 ```yaml
@@ -129,17 +129,17 @@ application:
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `HISTOCORE_DATA_DIR` | string | `/data` | Data directory path |
-| `HISTOCORE_CACHE_DIR` | string | `/cache` | Cache directory path |
-| `HISTOCORE_TEMP_DIR` | string | `/tmp` | Temporary files directory |
-| `HISTOCORE_MAX_DISK_USAGE` | float | `0.9` | Max disk usage (0.0-1.0) |
+| `the platform_DATA_DIR` | string | `/data` | Data directory path |
+| `the platform_CACHE_DIR` | string | `/cache` | Cache directory path |
+| `the platform_TEMP_DIR` | string | `/tmp` | Temporary files directory |
+| `the platform_MAX_DISK_USAGE` | float | `0.9` | Max disk usage (0.0-1.0) |
 
 **Example**:
 ```yaml
 storage:
-  data_dir: /data/histocore
-  cache_dir: /cache/histocore
-  temp_dir: /tmp/histocore
+  data_dir: /data/the platform
+  cache_dir: /cache/the platform
+  temp_dir: /tmp/the platform
   max_disk_usage: 0.9
 ```
 
@@ -150,9 +150,9 @@ storage:
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `CUDA_VISIBLE_DEVICES` | string | `0` | GPU device IDs (comma-separated) |
-| `HISTOCORE_GPU_MEMORY_FRACTION` | float | `0.9` | GPU memory fraction to use |
-| `HISTOCORE_ENABLE_AMP` | bool | `true` | Enable automatic mixed precision |
-| `HISTOCORE_GPU_ALLOW_GROWTH` | bool | `true` | Allow GPU memory growth |
+| `the platform_GPU_MEMORY_FRACTION` | float | `0.9` | GPU memory fraction to use |
+| `the platform_ENABLE_AMP` | bool | `true` | Enable automatic mixed precision |
+| `the platform_GPU_ALLOW_GROWTH` | bool | `true` | Allow GPU memory growth |
 
 **Example**:
 ```yaml
@@ -206,10 +206,10 @@ gpu:
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `HISTOCORE_TILE_SIZE` | int | `1024` | Tile size for streaming (pixels) |
-| `HISTOCORE_BATCH_SIZE` | int | `32` | Batch size for processing |
-| `HISTOCORE_BUFFER_SIZE` | int | `16` | Tile buffer size |
-| `HISTOCORE_MAX_MEMORY_GB` | float | `2.0` | Maximum memory usage (GB) |
+| `the platform_TILE_SIZE` | int | `1024` | Tile size for streaming (pixels) |
+| `the platform_BATCH_SIZE` | int | `32` | Batch size for processing |
+| `the platform_BUFFER_SIZE` | int | `16` | Tile buffer size |
+| `the platform_MAX_MEMORY_GB` | float | `2.0` | Maximum memory usage (GB) |
 
 **Example**:
 ```yaml
@@ -268,7 +268,7 @@ pacs:
   enabled: true
   
   # DICOM settings
-  ae_title: HISTOCORE
+  ae_title: the platform
   ae_port: 104
   
   # Remote PACS
@@ -297,7 +297,7 @@ pacs:
     
     # Authentication
     require_auth: true
-    username: histocore
+    username: the platform
     password: ${PACS_PASSWORD}
 ```
 
@@ -358,7 +358,7 @@ monitoring:
     # Jaeger exporter
     jaeger:
       endpoint: http://jaeger:14268/api/traces
-      service_name: histocore-streaming
+      service_name: the platform-streaming
       
     # Sampling
     sampling:
@@ -389,7 +389,7 @@ monitoring:
         level: INFO
       - type: file
         level: DEBUG
-        filename: /logs/histocore.log
+        filename: /logs/the platform.log
         max_bytes: 104857600  # 100MB
         backup_count: 10
       - type: syslog
@@ -435,8 +435,8 @@ security:
     # OAuth 2.0
     oauth:
       enabled: true
-      issuer: https://auth.histocore.ai
-      client_id: histocore-api
+      issuer: https://auth.the platform.ai
+      client_id: the platform-api
       client_secret: ${OAUTH_CLIENT_SECRET}
       scopes:
         - read:wsi
@@ -860,5 +860,5 @@ performance:
 
 - **Documentation**: [docs/](../)
 - **API Reference**: [docs/api/](../api/)
-- **GitHub Issues**: https://github.com/histocore/histocore/issues
-- **Email**: support@histocore.ai
+- **GitHub Issues**: https://github.com/the platform/the platform/issues
+- **Email**: support@the platform.ai

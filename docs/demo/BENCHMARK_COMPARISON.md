@@ -1,10 +1,10 @@
-# HistoCore Benchmark Comparison
+# the platform Benchmark Comparison
 
 **Performance comparison with traditional and competitive systems**
 
 ## 🎯 Executive Summary
 
-HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less memory usage**, and **real-time visualization** compared to traditional batch processing systems.
+the platform Real-Time WSI Streaming delivers **7x faster processing**, **75% less memory usage**, and **real-time visualization** compared to traditional batch processing systems.
 
 ---
 
@@ -12,9 +12,9 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 
 ### Processing Speed
 
-| System | Processing Time (100K patches) | Speedup vs HistoCore |
+| System | Processing Time (100K patches) | Speedup vs the platform |
 |--------|-------------------------------|---------------------|
-| **HistoCore** | **25 seconds** | **1.0x (baseline)** |
+| **the platform** | **25 seconds** | **1.0x (baseline)** |
 | Competitor A | 60 seconds | 0.42x (2.4x slower) |
 | Traditional Batch | 180 seconds | 0.14x (7.2x slower) |
 | Manual Review Only | 1800 seconds (30 min) | 0.014x (72x slower) |
@@ -23,15 +23,15 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 
 | System | GPU Memory (GB) | Memory Efficiency |
 |--------|----------------|-------------------|
-| **HistoCore** | **1.8 GB** | **100% (baseline)** |
+| **the platform** | **1.8 GB** | **100% (baseline)** |
 | Competitor A | 6.0 GB | 30% (3.3x more) |
 | Traditional Batch | 12.0 GB | 15% (6.7x more) |
 
 ### Throughput
 
-| System | Patches/Second | Throughput vs HistoCore |
+| System | Patches/Second | Throughput vs the platform |
 |--------|---------------|------------------------|
-| **HistoCore** | **4,000** | **1.0x (baseline)** |
+| **the platform** | **4,000** | **1.0x (baseline)** |
 | Competitor A | 1,650 | 0.41x (2.4x slower) |
 | Traditional Batch | 1,100 | 0.28x (3.6x slower) |
 | Manual Review Only | 55 | 0.014x (72x slower) |
@@ -40,7 +40,7 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 
 | System | Concordance with Expert | Confidence Calibration |
 |--------|------------------------|----------------------|
-| **HistoCore** | **94%** | **Excellent** |
+| **the platform** | **94%** | **Excellent** |
 | Competitor A | 91% | Good |
 | Traditional Batch | 93% | Good |
 | Manual Review Only | 95% (baseline) | N/A |
@@ -51,7 +51,7 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 
 ### Multi-GPU Performance
 
-**HistoCore**:
+**the platform**:
 | GPUs | Processing Time | Speedup | Efficiency |
 |------|----------------|---------|-----------|
 | 1x V100 | 25s | 1.0x | 100% |
@@ -66,11 +66,11 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 | 2x V100 | 35s | 1.7x | 85% |
 | 4x V100 | 22s | 2.7x | 68% |
 
-**Winner**: HistoCore - Better scaling efficiency and absolute performance
+**Winner**: the platform - Better scaling efficiency and absolute performance
 
 ### Concurrent Slide Processing
 
-**HistoCore**:
+**the platform**:
 - Max concurrent: 10 slides
 - Auto-queuing: Yes
 - Load balancing: Automatic
@@ -82,7 +82,7 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 - Load balancing: Manual
 - GPU utilization: 65%
 
-**Winner**: HistoCore - 2x more concurrent capacity
+**Winner**: the platform - 2x more concurrent capacity
 
 ---
 
@@ -90,7 +90,7 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 
 ### Total Cost of Ownership (3 Years)
 
-**HistoCore**:
+**the platform**:
 - Hardware: $80,000 (4x V100)
 - Software license: $60,000 (3 years)
 - Support: $15,000/year = $45,000
@@ -111,7 +111,7 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 - **Total**: **$279,000**
 - **Cost per slide**: **$0.19**
 
-**Winner**: HistoCore - 32% lower TCO than competitors
+**Winner**: the platform - 32% lower TCO than competitors
 
 ### ROI Comparison (Annual)
 
@@ -119,7 +119,7 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 - 50 cases/day, 250 days/year = 12,500 cases/year
 - Pathologist salary: $300K/year ($150/hour)
 
-**HistoCore**:
+**the platform**:
 - Time saved per case: 5 minutes
 - Annual time saved: 1,042 hours
 - Annual savings: $156,300
@@ -140,13 +140,13 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 - System cost: $150,000
 - **ROI**: **42%** (payback in 28.8 months)
 
-**Winner**: HistoCore - 2.3x better ROI than competitors
+**Winner**: the platform - 2.3x better ROI than competitors
 
 ---
 
 ## 🔒 Security & Compliance Comparison
 
-| Feature | HistoCore | Competitor A | Traditional |
+| Feature | the platform | Competitor A | Traditional |
 |---------|-----------|--------------|-------------|
 | **Encryption** |
 | TLS version | TLS 1.3 | TLS 1.2 | TLS 1.2 |
@@ -170,13 +170,13 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 | FDA 510(k) ready | ✅ | ⚠️ In progress | ❌ |
 | ISO 27001 | ✅ | ✅ | ❌ |
 
-**Winner**: HistoCore - Most comprehensive security and compliance
+**Winner**: the platform - Most comprehensive security and compliance
 
 ---
 
 ## 🏥 PACS Integration Comparison
 
-| Feature | HistoCore | Competitor A | Traditional |
+| Feature | the platform | Competitor A | Traditional |
 |---------|-----------|--------------|-------------|
 | **Connectivity** |
 | DICOM C-FIND | ✅ | ✅ | ✅ |
@@ -198,13 +198,13 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 | Hologic | ✅ | ❌ | ⚠️ Limited |
 | Leica | ✅ | ✅ | ✅ |
 
-**Winner**: HistoCore - Best PACS integration and compatibility
+**Winner**: the platform - Best PACS integration and compatibility
 
 ---
 
 ## 📈 Feature Comparison
 
-| Feature | HistoCore | Competitor A | Traditional |
+| Feature | the platform | Competitor A | Traditional |
 |---------|-----------|--------------|-------------|
 | **Processing** |
 | Real-time streaming | ✅ | ❌ | ❌ |
@@ -232,13 +232,13 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 | Distributed tracing | ✅ | ❌ | ❌ |
 | Health checks | ✅ | ✅ | ⚠️ Basic |
 
-**Winner**: HistoCore - Most comprehensive feature set
+**Winner**: the platform - Most comprehensive feature set
 
 ---
 
 ## 🎓 Usability Comparison
 
-| Aspect | HistoCore | Competitor A | Traditional |
+| Aspect | the platform | Competitor A | Traditional |
 |--------|-----------|--------------|-------------|
 | **Learning Curve** | Low (5 min) | Medium (30 min) | High (2 hours) |
 | **Training Required** | 1 hour | 4 hours | 8 hours |
@@ -246,11 +246,11 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 | **Documentation** | Comprehensive | Good | Limited |
 | **Support** | 24/7 | Business hours | Email only |
 
-**Winner**: HistoCore - Easiest to learn and use
+**Winner**: the platform - Easiest to learn and use
 
 ---
 
-## 🏆 Overall Winner: HistoCore
+## 🏆 Overall Winner: the platform
 
 ### Key Advantages
 
@@ -274,9 +274,9 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 - If you don't need real-time processing
 - If budget is extremely constrained
 
-### When to Choose HistoCore
+### When to Choose the platform
 
-**Always** - unless specific constraints above apply. HistoCore offers:
+**Always** - unless specific constraints above apply. the platform offers:
 - Best performance and efficiency
 - Lowest total cost of ownership
 - Most comprehensive security and compliance
@@ -288,11 +288,11 @@ HistoCore Real-Time WSI Streaming delivers **7x faster processing**, **75% less 
 
 ## 📞 Request a Benchmark
 
-Want to see HistoCore benchmarked on your specific cases?
+Want to see the platform benchmarked on your specific cases?
 
-**Contact**: benchmarks@histocore.ai  
-**Phone**: 1-800-HISTOCORE  
-**Web**: https://histocore.ai/benchmark
+**Contact**: benchmarks@the platform.ai  
+**Phone**: 1-800-the platform  
+**Web**: https://the platform.ai/benchmark
 
 A custom benchmark can be run on your slides with a detailed comparison report provided.
 

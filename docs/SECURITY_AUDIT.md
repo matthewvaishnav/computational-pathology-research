@@ -11,7 +11,7 @@
 - `k8s/secrets.yaml` - Contains base64-encoded passwords
 - `k8s/monitoring.yaml` - Hardcoded admin password
 - `k8s/monitoring/alertmanager.yaml` - SMTP password in plaintext
-- `k8s/helm/histocore/values-dev.yaml` - Development credentials
+- `k8s/helm/the platform/values-dev.yaml` - Development credentials
 
 **Risk**: CWE-798 - Use of Hard-coded Credentials
 **Impact**: HIGH - Credentials exposed in version control

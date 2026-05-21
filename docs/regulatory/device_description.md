@@ -1,4 +1,4 @@
-# Device Description - HistoCore AI Pathology Analysis System
+# Device Description - the platform AI Pathology Analysis System
 
 **Document Version:** 1.0  
 **Date:** January 2025  
@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-HistoCore is an AI-powered pathology analysis system designed to assist pathologists in the diagnosis of cancer from whole slide images (WSI). The system provides real-time analysis of digitized histopathology slides, generating diagnostic predictions with confidence scores and natural language explanations to support clinical decision-making.
+the platform is an AI-powered pathology analysis system designed to assist pathologists in the diagnosis of cancer from whole slide images (WSI). The system provides real-time analysis of digitized histopathology slides, generating diagnostic predictions with confidence scores and natural language explanations to support clinical decision-making.
 
 **Key Features:**
 - Multi-disease foundation model supporting 5+ cancer types
@@ -20,7 +20,7 @@ HistoCore is an AI-powered pathology analysis system designed to assist patholog
 ## 2. Device Identification
 
 ### 2.1 Device Name and Classification
-- **Trade Name:** HistoCore AI Pathology Analysis System
+- **Trade Name:** the platform AI Pathology Analysis System
 - **Common Name:** Artificial Intelligence Pathology Analysis Software
 - **Classification Name:** Image Processing System, Radiological
 - **FDA Product Code:** LLZ
@@ -39,15 +39,15 @@ HistoCore is an AI-powered pathology analysis system designed to assist patholog
 - Similar integration with pathology workflows
 
 ### 2.3 Device Description Summary
-HistoCore is a software-only medical device that analyzes digitized whole slide images of histopathology specimens to provide diagnostic assistance to pathologists. The system employs deep learning algorithms trained on large datasets of annotated pathology images to identify and classify various cancer types with associated confidence scores.
+the platform is a software-only medical device that analyzes digitized whole slide images of histopathology specimens to provide diagnostic assistance to pathologists. The system employs deep learning algorithms trained on large datasets of annotated pathology images to identify and classify various cancer types with associated confidence scores.
 
 ## 3. Intended Use and Indications for Use
 
 ### 3.1 Intended Use Statement
-HistoCore is intended for use by qualified pathologists as an aid in the analysis of digitized whole slide images of histopathology specimens. The system is designed to assist in the identification and classification of cancer in breast, lung, prostate, colon, and melanoma tissue specimens.
+the platform is intended for use by qualified pathologists as an aid in the analysis of digitized whole slide images of histopathology specimens. The system is designed to assist in the identification and classification of cancer in breast, lung, prostate, colon, and melanoma tissue specimens.
 
 ### 3.2 Indications for Use
-HistoCore is indicated for use as a diagnostic aid for qualified pathologists in the analysis of whole slide images from the following specimen types:
+the platform is indicated for use as a diagnostic aid for qualified pathologists in the analysis of whole slide images from the following specimen types:
 
 1. **Breast Cancer Specimens**
    - Invasive ductal carcinoma detection
@@ -89,7 +89,7 @@ HistoCore is indicated for use as a diagnostic aid for qualified pathologists in
 ## 4. Device Design and Technology
 
 ### 4.1 System Architecture
-HistoCore employs a multi-component architecture consisting of:
+the platform employs a multi-component architecture consisting of:
 
 1. **Foundation Model Engine**
    - Multi-disease neural network trained on 100,000+ WSI images
@@ -170,7 +170,7 @@ HistoCore employs a multi-component architecture consisting of:
 ## 5. Clinical Workflow Integration
 
 ### 5.1 User Interface Design
-The HistoCore user interface is designed for integration into existing pathology workflows:
+The the platform user interface is designed for integration into existing pathology workflows:
 
 1. **Case Management Dashboard**
    - Worklist integration with LIS systems
@@ -188,7 +188,7 @@ The HistoCore user interface is designed for integration into existing pathology
    - Integration with pathology reporting systems
 
 ### 5.2 Clinical Decision Support
-HistoCore provides decision support through:
+the platform provides decision support through:
 
 1. **Diagnostic Predictions**
    - Primary diagnosis with confidence score
@@ -316,7 +316,7 @@ Comprehensive risk analysis conducted per ISO 14971:2019 identifies and mitigate
 ## 8. Regulatory Compliance
 
 ### 8.1 Quality System Compliance
-HistoCore development and manufacturing follows ISO 13485:2016 quality management system requirements:
+the platform development and manufacturing follows ISO 13485:2016 quality management system requirements:
 
 - **Design Controls:** Comprehensive design history file maintained
 - **Risk Management:** ISO 14971:2019 compliant risk management process
@@ -391,14 +391,14 @@ Systematic approach to product enhancement:
 
 ## 11. Conclusion
 
-HistoCore represents a significant advancement in AI-assisted pathology diagnosis, providing pathologists with powerful tools to improve diagnostic accuracy and efficiency. The system's comprehensive design, rigorous validation, and robust safety measures ensure it meets the highest standards for medical device software while providing meaningful clinical value.
+the platform represents a significant advancement in AI-assisted pathology diagnosis, providing pathologists with powerful tools to improve diagnostic accuracy and efficiency. The system's comprehensive design, rigorous validation, and robust safety measures ensure it meets the highest standards for medical device software while providing meaningful clinical value.
 
 The device's 510(k) submission demonstrates substantial equivalence to predicate devices while offering enhanced capabilities through advanced AI technology, comprehensive explainability features, and seamless clinical workflow integration.
 
 ---
 
 **Document Control:**
-- **Author:** HistoCore Regulatory Affairs Team
+- **Author:** the platform Regulatory Affairs Team
 - **Reviewer:** Chief Medical Officer, VP of Engineering
 - **Approver:** Chief Executive Officer
 - **Next Review Date:** January 2026

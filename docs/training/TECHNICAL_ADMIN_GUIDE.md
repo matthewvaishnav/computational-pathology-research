@@ -1,10 +1,10 @@
-# HistoCore Real-Time WSI Streaming - Technical Administrator Guide
+# the platform Real-Time WSI Streaming - Technical Administrator Guide
 
 **For System Administrators, DevOps Engineers, and IT Staff**
 
 ## 🎯 Overview
 
-Production deployment and administration guide for HistoCore Real-Time WSI Streaming system. Covers installation, configuration, monitoring, troubleshooting, and maintenance.
+Production deployment and administration guide for the platform Real-Time WSI Streaming system. Covers installation, configuration, monitoring, troubleshooting, and maintenance.
 
 ---
 
@@ -81,11 +81,11 @@ Production deployment and administration guide for HistoCore Real-Time WSI Strea
 
 ```bash
 # Pull image
-docker pull histocore/streaming:latest
+docker pull the platform/streaming:latest
 
 # Run container
 docker run -d \
-  --name histocore-streaming \
+  --name the platform-streaming \
   --gpus all \
   -p 8000:8000 \
   -p 8001:8001 \
@@ -93,15 +93,15 @@ docker run -d \
   -v /data/cache:/cache \
   -v /data/logs:/logs \
   -e CUDA_VISIBLE_DEVICES=0 \
-  -e MODEL_PATH=/models/histocore_v1.pth \
-  histocore/streaming:latest
+  -e MODEL_PATH=/models/the platform_v1.pth \
+  the platform/streaming:latest
 ```
 
 **Multi-GPU Setup**:
 
 ```bash
 docker run -d \
-  --name histocore-streaming \
+  --name the platform-streaming \
   --gpus '"device=0,1,2,3"' \
   -p 8000:8000 \
   -p 8001:8001 \
@@ -110,7 +110,7 @@ docker run -d \
   -v /data/logs:/logs \
   -e CUDA_VISIBLE_DEVICES=0,1,2,3 \
   -e ENABLE_MULTI_GPU=true \
-  histocore/streaming:latest
+  the platform/streaming:latest
 ```
 
 **With Redis Caching**:
@@ -122,16 +122,16 @@ docker run -d \
   -p 6379:6379 \
   redis:7-alpine
 
-# Start HistoCore with Redis
+# Start the platform with Redis
 docker run -d \
-  --name histocore-streaming \
+  --name the platform-streaming \
   --gpus all \
   --link redis:redis \
   -p 8000:8000 \
   -e REDIS_HOST=redis \
   -e REDIS_PORT=6379 \
   -e ENABLE_CACHING=true \
-  histocore/streaming:latest
+  the platform/streaming:latest
 ```
 
 ### Method 2: Kubernetes
@@ -140,12 +140,12 @@ docker run -d \
 
 ```bash
 # Add Helm repo
-helm repo add histocore https://charts.histocore.ai
+helm repo add the platform https://charts.the platform.ai
 helm repo update
 
 # Install
-helm install histocore-streaming histocore/streaming \
-  --namespace histocore \
+helm install the platform-streaming the platform/streaming \
+  --namespace the platform \
   --create-namespace \
   --set gpu.count=4 \
   --set replicaCount=2 \
@@ -165,8 +165,8 @@ kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/ingress.yaml
 
 # Verify deployment
-kubectl get pods -n histocore
-kubectl logs -f deployment/histocore-streaming -n histocore
+kubectl get pods -n the platform
+kubectl logs -f deployment/the platform-streaming -n the platform
 ```
 
 ### Method 3: Bare Metal
@@ -190,11 +190,11 @@ sudo apt install cuda-11-8 -y
 sudo apt install openslide-tools python3-openslide -y
 ```
 
-**Install HistoCore**:
+**Install the platform**:
 
 ```bash
 # Clone repository
-git clone https://github.com/histocore/streaming.git
+git clone https://github.com/the platform/streaming.git
 cd streaming
 
 # Create virtual environment
@@ -205,12 +205,12 @@ source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Install HistoCore
+# Install the platform
 pip install -e .
 
 # Download model
 mkdir -p models
-wget https://models.histocore.ai/v1/histocore_v1.pth -O models/histocore_v1.pth
+wget https://models.the platform.ai/v1/the platform_v1.pth -O models/the platform_v1.pth
 ```
 
 **Run Service**:
@@ -220,7 +220,7 @@ wget https://models.histocore.ai/v1/histocore_v1.pth -O models/histocore_v1.pth
 python -m src.streaming.server \
   --host 0.0.0.0 \
   --port 8000 \
-  --model-path models/histocore_v1.pth \
+  --model-path models/the platform_v1.pth \
   --gpu-ids 0,1,2,3 \
   --workers 4
 ```
@@ -229,20 +229,20 @@ python -m src.streaming.server \
 
 ```bash
 # Create service file
-sudo nano /etc/systemd/system/histocore-streaming.service
+sudo nano /etc/systemd/system/the platform-streaming.service
 ```
 
 ```ini
 [Unit]
-Description=HistoCore Real-Time WSI Streaming
+Description=the platform Real-Time WSI Streaming
 After=network.target
 
 [Service]
 Type=simple
-User=histocore
-WorkingDirectory=/opt/histocore/streaming
-Environment="PATH=/opt/histocore/streaming/venv/bin"
-ExecStart=/opt/histocore/streaming/venv/bin/python -m src.streaming.server --config /etc/histocore/config.yaml
+User=the platform
+WorkingDirectory=/opt/the platform/streaming
+Environment="PATH=/opt/the platform/streaming/venv/bin"
+ExecStart=/opt/the platform/streaming/venv/bin/python -m src.streaming.server --config /etc/the platform/config.yaml
 Restart=always
 RestartSec=10
 
@@ -253,9 +253,9 @@ WantedBy=multi-user.target
 ```bash
 # Enable and start service
 sudo systemctl daemon-reload
-sudo systemctl enable histocore-streaming
-sudo systemctl start histocore-streaming
-sudo systemctl status histocore-streaming
+sudo systemctl enable the platform-streaming
+sudo systemctl start the platform-streaming
+sudo systemctl status the platform-streaming
 ```
 
 ---
@@ -264,14 +264,14 @@ sudo systemctl status histocore-streaming
 
 ### Configuration File
 
-**Location**: `/etc/histocore/config.yaml` (bare metal) or ConfigMap (K8s)
+**Location**: `/etc/the platform/config.yaml` (bare metal) or ConfigMap (K8s)
 
 **Minimal Configuration**:
 
 ```yaml
 # Core settings
 model:
-  path: /models/histocore_v1.pth
+  path: /models/the platform_v1.pth
   device: cuda
   
 gpu:
@@ -289,7 +289,7 @@ server:
 ```yaml
 # Core settings
 model:
-  path: /models/histocore_v1.pth
+  path: /models/the platform_v1.pth
   device: cuda
   enable_fp16: true
   enable_tensorrt: true
@@ -310,7 +310,7 @@ processing:
 cache:
   enabled: true
   backend: redis
-  redis_host: redis.histocore.svc.cluster.local
+  redis_host: redis.the platform.svc.cluster.local
   redis_port: 6379
   ttl_seconds: 86400
   compression: true
@@ -318,7 +318,7 @@ cache:
 # Storage
 storage:
   backend: s3
-  s3_bucket: histocore-production
+  s3_bucket: the platform-production
   s3_region: us-east-1
   local_cache_dir: /cache
   cleanup_after_days: 7
@@ -326,10 +326,10 @@ storage:
 # Security
 security:
   enable_tls: true
-  tls_cert: /etc/histocore/certs/server.crt
-  tls_key: /etc/histocore/certs/server.key
+  tls_cert: /etc/the platform/certs/server.crt
+  tls_key: /etc/the platform/certs/server.key
   enable_at_rest_encryption: true
-  encryption_key_path: /etc/histocore/keys/master.key
+  encryption_key_path: /etc/the platform/keys/master.key
   key_rotation_days: 90
   
 # Authentication
@@ -344,7 +344,7 @@ auth:
 # PACS Integration
 pacs:
   enabled: true
-  ae_title: HISTOCORE
+  ae_title: the platform
   host: pacs.hospital.org
   port: 11112
   enable_tls: true
@@ -407,7 +407,7 @@ compliance:
 openssl req -x509 -newkey rsa:4096 \
   -keyout server.key -out server.crt \
   -days 365 -nodes \
-  -subj "/CN=histocore.hospital.org"
+  -subj "/CN=the platform.hospital.org"
 ```
 
 **Use Let's Encrypt** (production):
@@ -418,11 +418,11 @@ sudo apt install certbot -y
 
 # Generate certificate
 sudo certbot certonly --standalone \
-  -d histocore.hospital.org \
+  -d the platform.hospital.org \
   --email admin@hospital.org \
   --agree-tos
 
-# Certificates at: /etc/letsencrypt/live/histocore.hospital.org/
+# Certificates at: /etc/letsencrypt/live/the platform.hospital.org/
 ```
 
 **Configure TLS**:
@@ -430,8 +430,8 @@ sudo certbot certonly --standalone \
 ```yaml
 security:
   enable_tls: true
-  tls_cert: /etc/letsencrypt/live/histocore.hospital.org/fullchain.pem
-  tls_key: /etc/letsencrypt/live/histocore.hospital.org/privkey.pem
+  tls_cert: /etc/letsencrypt/live/the platform.hospital.org/fullchain.pem
+  tls_key: /etc/letsencrypt/live/the platform.hospital.org/privkey.pem
   tls_version: TLSv1.3
 ```
 
@@ -447,17 +447,17 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 ```bash
 # Option 1: File (restrict permissions)
-echo "YOUR_KEY_HERE" > /etc/histocore/keys/master.key
-chmod 600 /etc/histocore/keys/master.key
-chown histocore:histocore /etc/histocore/keys/master.key
+echo "YOUR_KEY_HERE" > /etc/the platform/keys/master.key
+chmod 600 /etc/the platform/keys/master.key
+chown the platform:the platform /etc/the platform/keys/master.key
 
 # Option 2: Environment variable
 export ENCRYPTION_KEY="YOUR_KEY_HERE"
 
 # Option 3: Kubernetes Secret
-kubectl create secret generic histocore-keys \
+kubectl create secret generic the platform-keys \
   --from-literal=master-key=YOUR_KEY_HERE \
-  -n histocore
+  -n the platform
 ```
 
 ### Authentication Setup
@@ -479,8 +479,8 @@ auth:
   enable_sso: true
   sso_provider: saml
   saml_metadata_url: https://idp.hospital.org/metadata
-  saml_entity_id: histocore.hospital.org
-  saml_acs_url: https://histocore.hospital.org/auth/saml/acs
+  saml_entity_id: the platform.hospital.org
+  saml_acs_url: https://the platform.hospital.org/auth/saml/acs
 ```
 
 **Create Admin User**:
@@ -529,13 +529,13 @@ sudo ufw enable
 ```yaml
 pacs:
   enabled: true
-  ae_title: HISTOCORE
+  ae_title: the platform
   host: pacs.hospital.org
   port: 11112
   called_ae_title: PACS_SERVER
   enable_tls: true
-  tls_cert: /etc/histocore/certs/dicom-client.crt
-  tls_key: /etc/histocore/certs/dicom-client.key
+  tls_cert: /etc/the platform/certs/dicom-client.crt
+  tls_key: /etc/the platform/certs/dicom-client.key
   query_retrieve_level: STUDY
   timeout_seconds: 30
   max_pdu_length: 16384
@@ -547,19 +547,19 @@ pacs:
 python -m src.streaming.cli test-pacs \
   --host pacs.hospital.org \
   --port 11112 \
-  --ae-title HISTOCORE \
+  --ae-title the platform \
   --called-ae-title PACS_SERVER
 ```
 
 ### PACS Server Configuration
 
-**Add HistoCore to PACS Whitelist**:
+**Add the platform to PACS Whitelist**:
 
 1. Login to PACS admin console
 2. Navigate to AE Title management
 3. Add new AE Title:
-   - **AE Title**: HISTOCORE
-   - **Hostname**: histocore.hospital.org
+   - **AE Title**: the platform
+   - **Hostname**: the platform.hospital.org
    - **Port**: 11112
    - **Permissions**: Query, Retrieve, Store
 4. Save and restart PACS service
@@ -568,7 +568,7 @@ python -m src.streaming.cli test-pacs \
 
 ```bash
 # From PACS server, test echo
-dcmecho HISTOCORE@histocore.hospital.org:11112
+dcmecho the platform@the platform.hospital.org:11112
 ```
 
 ---
@@ -581,22 +581,22 @@ dcmecho HISTOCORE@histocore.hospital.org:11112
 
 ```yaml
 scrape_configs:
-  - job_name: 'histocore-streaming'
+  - job_name: 'the platform-streaming'
     static_configs:
-      - targets: ['histocore.hospital.org:9090']
+      - targets: ['the platform.hospital.org:9090']
     scrape_interval: 15s
     metrics_path: /metrics
 ```
 
 **Key Metrics**:
 
-- `histocore_processing_time_seconds`: Slide processing time
-- `histocore_throughput_patches_per_second`: Processing throughput
-- `histocore_gpu_memory_used_bytes`: GPU memory usage
-- `histocore_gpu_utilization_percent`: GPU utilization
-- `histocore_cache_hit_rate`: Cache hit rate
-- `histocore_active_slides`: Currently processing slides
-- `histocore_queue_length`: Queued slides
+- `the platform_processing_time_seconds`: Slide processing time
+- `the platform_throughput_patches_per_second`: Processing throughput
+- `the platform_gpu_memory_used_bytes`: GPU memory usage
+- `the platform_gpu_utilization_percent`: GPU utilization
+- `the platform_cache_hit_rate`: Cache hit rate
+- `the platform_active_slides`: Currently processing slides
+- `the platform_queue_length`: Queued slides
 
 ### Grafana Dashboards
 
@@ -604,7 +604,7 @@ scrape_configs:
 
 1. Login to Grafana
 2. Navigate to Dashboards → Import
-3. Upload `grafana/histocore-dashboard.json`
+3. Upload `grafana/the platform-dashboard.json`
 4. Select Prometheus data source
 5. Click Import
 
@@ -624,11 +624,11 @@ scrape_configs:
 
 ```yaml
 groups:
-  - name: histocore
+  - name: the platform
     interval: 30s
     rules:
       - alert: HighProcessingTime
-        expr: histocore_processing_time_seconds > 60
+        expr: the platform_processing_time_seconds > 60
         for: 5m
         labels:
           severity: warning
@@ -636,7 +636,7 @@ groups:
           summary: "Slide processing time exceeds 60 seconds"
           
       - alert: HighGPUMemory
-        expr: histocore_gpu_memory_used_bytes / histocore_gpu_memory_total_bytes > 0.9
+        expr: the platform_gpu_memory_used_bytes / the platform_gpu_memory_total_bytes > 0.9
         for: 5m
         labels:
           severity: warning
@@ -644,12 +644,12 @@ groups:
           summary: "GPU memory usage above 90%"
           
       - alert: ServiceDown
-        expr: up{job="histocore-streaming"} == 0
+        expr: up{job="the platform-streaming"} == 0
         for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "HistoCore service is down"
+          summary: "the platform service is down"
 ```
 
 ### Log Management
@@ -662,29 +662,29 @@ filebeat.inputs:
   - type: log
     enabled: true
     paths:
-      - /var/log/histocore/*.log
+      - /var/log/the platform/*.log
     json.keys_under_root: true
     json.add_error_key: true
     
 output.elasticsearch:
   hosts: ["elasticsearch:9200"]
-  index: "histocore-%{+yyyy.MM.dd}"
+  index: "the platform-%{+yyyy.MM.dd}"
 ```
 
 **Log Rotation**:
 
 ```bash
-# /etc/logrotate.d/histocore
-/var/log/histocore/*.log {
+# /etc/logrotate.d/the platform
+/var/log/the platform/*.log {
     daily
     rotate 30
     compress
     delaycompress
     notifempty
-    create 0640 histocore histocore
+    create 0640 the platform the platform
     sharedscripts
     postrotate
-        systemctl reload histocore-streaming
+        systemctl reload the platform-streaming
     endscript
 }
 ```
@@ -697,9 +697,9 @@ output.elasticsearch:
 
 **What to Backup**:
 
-1. **Configuration files**: `/etc/histocore/`
-2. **Encryption keys**: `/etc/histocore/keys/`
-3. **Audit logs**: `/var/log/histocore/audit.log`
+1. **Configuration files**: `/etc/the platform/`
+2. **Encryption keys**: `/etc/the platform/keys/`
+3. **Audit logs**: `/var/log/the platform/audit.log`
 4. **Model files**: `/models/`
 5. **Database** (if using PostgreSQL for audit logs)
 
@@ -707,29 +707,29 @@ output.elasticsearch:
 
 ```bash
 #!/bin/bash
-# /usr/local/bin/histocore-backup.sh
+# /usr/local/bin/the platform-backup.sh
 
-BACKUP_DIR="/backup/histocore"
+BACKUP_DIR="/backup/the platform"
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/histocore_backup_$DATE.tar.gz"
+BACKUP_FILE="$BACKUP_DIR/the platform_backup_$DATE.tar.gz"
 
 # Create backup directory
 mkdir -p $BACKUP_DIR
 
 # Backup files
 tar -czf $BACKUP_FILE \
-  /etc/histocore/ \
-  /var/log/histocore/audit.log \
+  /etc/the platform/ \
+  /var/log/the platform/audit.log \
   /models/
 
 # Backup database (if applicable)
-pg_dump histocore_audit > $BACKUP_DIR/audit_db_$DATE.sql
+pg_dump the platform_audit > $BACKUP_DIR/audit_db_$DATE.sql
 
 # Encrypt backup
 gpg --encrypt --recipient admin@hospital.org $BACKUP_FILE
 
 # Upload to S3
-aws s3 cp $BACKUP_FILE.gpg s3://histocore-backups/
+aws s3 cp $BACKUP_FILE.gpg s3://the platform-backups/
 
 # Cleanup old backups (keep 30 days)
 find $BACKUP_DIR -name "*.tar.gz*" -mtime +30 -delete
@@ -741,7 +741,7 @@ echo "Backup completed: $BACKUP_FILE.gpg"
 
 ```bash
 # Daily backup at 2 AM
-0 2 * * * /usr/local/bin/histocore-backup.sh
+0 2 * * * /usr/local/bin/the platform-backup.sh
 ```
 
 ### Disaster Recovery
@@ -751,28 +751,28 @@ echo "Backup completed: $BACKUP_FILE.gpg"
 1. **Restore Configuration**:
 ```bash
 # Download backup
-aws s3 cp s3://histocore-backups/histocore_backup_YYYYMMDD.tar.gz.gpg .
+aws s3 cp s3://the platform-backups/the platform_backup_YYYYMMDD.tar.gz.gpg .
 
 # Decrypt
-gpg --decrypt histocore_backup_YYYYMMDD.tar.gz.gpg > histocore_backup.tar.gz
+gpg --decrypt the platform_backup_YYYYMMDD.tar.gz.gpg > the platform_backup.tar.gz
 
 # Extract
-tar -xzf histocore_backup.tar.gz -C /
+tar -xzf the platform_backup.tar.gz -C /
 ```
 
 2. **Restore Database**:
 ```bash
-psql histocore_audit < audit_db_YYYYMMDD.sql
+psql the platform_audit < audit_db_YYYYMMDD.sql
 ```
 
 3. **Restart Service**:
 ```bash
-systemctl restart histocore-streaming
+systemctl restart the platform-streaming
 ```
 
 4. **Verify**:
 ```bash
-curl https://histocore.hospital.org/health
+curl https://the platform.hospital.org/health
 ```
 
 **RTO/RPO**:
@@ -789,7 +789,7 @@ curl https://histocore.hospital.org/health
 
 ```bash
 # Check logs
-journalctl -u histocore-streaming -n 100
+journalctl -u the platform-streaming -n 100
 
 # Common causes:
 # - Missing model file
@@ -804,7 +804,7 @@ nvidia-smi
 netstat -tulpn | grep 8000
 
 # Validate config
-python -m src.streaming.cli validate-config --config /etc/histocore/config.yaml
+python -m src.streaming.cli validate-config --config /etc/the platform/config.yaml
 ```
 
 **2. Slow Processing**
@@ -861,7 +861,7 @@ free -h
 # Edit config: model.enable_fp16 = true
 
 # Restart service
-systemctl restart histocore-streaming
+systemctl restart the platform-streaming
 ```
 
 **5. Authentication Errors**
@@ -874,12 +874,12 @@ echo $JWT_SECRET
 # Tokens expire after 30 minutes by default
 
 # Test authentication
-curl -X POST https://histocore.hospital.org/auth/login \
+curl -X POST https://the platform.hospital.org/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"password"}'
 
 # Check audit logs
-tail -f /var/log/histocore/audit.log | grep AUTH
+tail -f /var/log/the platform/audit.log | grep AUTH
 ```
 
 ### Diagnostic Commands
@@ -943,21 +943,21 @@ python -m src.streaming.cli audit-query --user admin --days 7
 
 ```bash
 # Docker
-docker pull histocore/streaming:latest
-docker stop histocore-streaming
-docker rm histocore-streaming
-docker run -d ... histocore/streaming:latest
+docker pull the platform/streaming:latest
+docker stop the platform-streaming
+docker rm the platform-streaming
+docker run -d ... the platform/streaming:latest
 
 # Kubernetes
-kubectl set image deployment/histocore-streaming \
-  histocore=histocore/streaming:latest \
-  -n histocore
+kubectl set image deployment/the platform-streaming \
+  the platform=the platform/streaming:latest \
+  -n the platform
 
 # Bare metal
-cd /opt/histocore/streaming
+cd /opt/the platform/streaming
 git pull
 pip install -r requirements.txt
-systemctl restart histocore-streaming
+systemctl restart the platform-streaming
 ```
 
 **Major Updates** (version upgrades):
@@ -975,16 +975,16 @@ systemctl restart histocore-streaming
 
 ```bash
 # Download new model
-wget https://models.histocore.ai/v2/histocore_v2.pth -O /models/histocore_v2.pth
+wget https://models.the platform.ai/v2/the platform_v2.pth -O /models/the platform_v2.pth
 
 # Update configuration
-# Edit config: model.path = /models/histocore_v2.pth
+# Edit config: model.path = /models/the platform_v2.pth
 
 # Restart service
-systemctl restart histocore-streaming
+systemctl restart the platform-streaming
 
 # Verify
-curl https://histocore.hospital.org/health
+curl https://the platform.hospital.org/health
 ```
 
 ---
@@ -1151,10 +1151,10 @@ python -m src.streaming.cli show-config
 
 ### Support Resources
 
-**Documentation**: https://docs.histocore.ai  
-**Technical Support**: support@histocore.ai | 1-800-HISTOCORE  
-**Security Issues**: security@histocore.ai  
-**Community Forum**: https://community.histocore.ai
+**Documentation**: https://docs.the platform.ai  
+**Technical Support**: support@the platform.ai | 1-800-the platform  
+**Security Issues**: security@the platform.ai  
+**Community Forum**: https://community.the platform.ai
 
 ---
 

@@ -1,7 +1,7 @@
 # SQL Injection Protection Guide
 
 ## Overview
-This document outlines SQL injection prevention practices for the HistoCore framework.
+This document outlines SQL injection prevention practices for the the platform framework.
 
 ## Rules
 

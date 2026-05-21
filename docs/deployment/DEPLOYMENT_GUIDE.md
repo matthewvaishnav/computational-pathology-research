@@ -1,6 +1,6 @@
-# HistoCore Deployment Guide
+# the platform Deployment Guide
 
-Complete guide for deploying HistoCore Real-Time WSI Streaming in production.
+Complete guide for deploying the platform Real-Time WSI Streaming in production.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ Complete guide for deploying HistoCore Real-Time WSI Streaming in production.
 
 ## Overview
 
-HistoCore supports multiple deployment strategies:
+the platform supports multiple deployment strategies:
 
 | Deployment | Use Case | Complexity | Scalability |
 |------------|----------|------------|-------------|
@@ -98,8 +98,8 @@ graph TD
 
 ```bash
 # Clone repository
-git clone https://github.com/histocore/histocore.git
-cd histocore
+git clone https://github.com/the platform/the platform.git
+cd the platform
 
 # Build image
 ./scripts/docker-build.sh
@@ -117,10 +117,10 @@ curl http://localhost:8000/health
 
 ```bash
 # docker/production.env
-HISTOCORE_ENV=production
-HISTOCORE_LOG_LEVEL=INFO
-HISTOCORE_MAX_MEMORY_GB=8
-HISTOCORE_BATCH_SIZE=32
+the platform_ENV=production
+the platform_LOG_LEVEL=INFO
+the platform_MAX_MEMORY_GB=8
+the platform_BATCH_SIZE=32
 CUDA_VISIBLE_DEVICES=0
 
 # Redis
@@ -149,7 +149,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 docker-compose ps
 
 # Check logs
-docker-compose logs -f histocore-streaming
+docker-compose logs -f the platform-streaming
 
 # Test API
 curl -H "Authorization: Bearer <token>" \
@@ -186,7 +186,7 @@ docker run --rm --gpus all nvidia/cuda:12.1-base nvidia-smi
 ```yaml
 # docker-compose.override.yml
 services:
-  histocore-streaming:
+  the platform-streaming:
     environment:
       - CUDA_VISIBLE_DEVICES=0,1,2,3
     deploy:
@@ -200,7 +200,7 @@ services:
 **Multiple Instances**:
 ```bash
 # Scale to 3 instances
-docker-compose up -d --scale histocore-streaming=3
+docker-compose up -d --scale the platform-streaming=3
 
 # Add load balancer
 docker-compose -f docker-compose.yml -f docker-compose.lb.yml up -d
@@ -218,8 +218,8 @@ cd k8s
 ./deploy.sh
 
 # Verify
-kubectl get pods -n histocore
-kubectl port-forward -n histocore svc/histocore-streaming 8000:8000
+kubectl get pods -n the platform
+kubectl port-forward -n the platform svc/the platform-streaming 8000:8000
 ```
 
 ### Step-by-Step Deployment
@@ -241,11 +241,11 @@ kubectl get nodes -o json | jq '.items[].status.allocatable."nvidia.com/gpu"'
 
 ```bash
 # Edit configmap.yaml
-kubectl edit configmap histocore-config -n histocore
+kubectl edit configmap the platform-config -n the platform
 
 # Edit secrets (base64 encoded)
 echo -n "your-secret" | base64
-kubectl edit secret histocore-secrets -n histocore
+kubectl edit secret the platform-secrets -n the platform
 ```
 
 3. **Deploy services**:
@@ -278,16 +278,16 @@ kubectl apply -f hpa.yaml
 
 ```bash
 # Check pods
-kubectl get pods -n histocore
+kubectl get pods -n the platform
 
 # Check services
-kubectl get svc -n histocore
+kubectl get svc -n the platform
 
 # Check logs
-kubectl logs -f deployment/histocore-streaming -n histocore
+kubectl logs -f deployment/the platform-streaming -n the platform
 
 # Test API
-kubectl port-forward -n histocore svc/histocore-streaming 8000:8000
+kubectl port-forward -n the platform svc/the platform-streaming 8000:8000
 curl http://localhost:8000/health
 ```
 
@@ -320,7 +320,7 @@ affinity:
         - key: app
           operator: In
           values:
-          - histocore-streaming
+          - the platform-streaming
       topologyKey: kubernetes.io/hostname
 ```
 
@@ -330,12 +330,12 @@ affinity:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: histocore-hpa
+  name: the platform-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: histocore-streaming
+    name: the platform-streaming
   minReplicas: 2
   maxReplicas: 10
   metrics:
@@ -361,7 +361,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: histocore-data
+  name: the platform-data
 spec:
   accessModes:
     - ReadWriteMany
@@ -499,24 +499,24 @@ terraform output -json > outputs.json
 **Core Settings**:
 ```bash
 # Application
-HISTOCORE_ENV=production
-HISTOCORE_LOG_LEVEL=INFO
-HISTOCORE_WORKERS=4
+the platform_ENV=production
+the platform_LOG_LEVEL=INFO
+the platform_WORKERS=4
 
 # GPU
 CUDA_VISIBLE_DEVICES=0
-HISTOCORE_MAX_MEMORY_GB=8
-HISTOCORE_BATCH_SIZE=32
+the platform_MAX_MEMORY_GB=8
+the platform_BATCH_SIZE=32
 
 # Processing
-HISTOCORE_TILE_SIZE=1024
-HISTOCORE_TARGET_TIME=30
-HISTOCORE_CONFIDENCE_THRESHOLD=0.95
+the platform_TILE_SIZE=1024
+the platform_TARGET_TIME=30
+the platform_CONFIDENCE_THRESHOLD=0.95
 
 # Cache
 REDIS_URL=redis://redis:6379
 REDIS_PASSWORD=secret
-HISTOCORE_CACHE_TTL=3600
+the platform_CACHE_TTL=3600
 
 # Monitoring
 PROMETHEUS_ENABLED=true
@@ -547,7 +547,7 @@ gpu:
 
 pacs:
   enabled: true
-  ae_title: HISTOCORE
+  ae_title: the platform
   port: 104
   timeout: 30
 
@@ -575,7 +575,7 @@ Update configuration without restart:
 
 ```bash
 # Update config
-kubectl edit configmap histocore-config -n histocore
+kubectl edit configmap the platform-config -n the platform
 
 # Trigger reload
 curl -X POST http://localhost:8001/admin/config/reload \
@@ -593,14 +593,14 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout tls.key -out tls.crt
 
 # Let's Encrypt (production)
-certbot certonly --standalone -d api.histocore.ai
+certbot certonly --standalone -d api.the platform.ai
 ```
 
 **Configure Kubernetes**:
 ```bash
 # Create secret
-kubectl create secret tls histocore-tls \
-  --cert=tls.crt --key=tls.key -n histocore
+kubectl create secret tls the platform-tls \
+  --cert=tls.crt --key=tls.key -n the platform
 
 # Update ingress
 kubectl apply -f ingress-tls.yaml
@@ -612,8 +612,8 @@ kubectl apply -f ingress-tls.yaml
 ```yaml
 # auth-config.yaml
 oauth:
-  issuer: https://auth.histocore.ai
-  client_id: histocore-api
+  issuer: https://auth.the platform.ai
+  client_id: the platform-api
   client_secret: ${OAUTH_CLIENT_SECRET}
   scopes:
     - read:wsi
@@ -642,11 +642,11 @@ sudo ufw allow 104/tcp
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: histocore-netpol
+  name: the platform-netpol
 spec:
   podSelector:
     matchLabels:
-      app: histocore-streaming
+      app: the platform-streaming
   policyTypes:
   - Ingress
   - Egress
@@ -676,9 +676,9 @@ spec:
 ```yaml
 # prometheus.yml
 scrape_configs:
-  - job_name: 'histocore'
+  - job_name: 'the platform'
     static_configs:
-      - targets: ['histocore-streaming:8002']
+      - targets: ['the platform-streaming:8002']
     scrape_interval: 15s
 ```
 
@@ -689,10 +689,10 @@ scrape_configs:
 # Copy dashboards
 kubectl create configmap grafana-dashboards \
   --from-file=monitoring/grafana/dashboards/ \
-  -n histocore
+  -n the platform
 
 # Restart Grafana
-kubectl rollout restart deployment/grafana -n histocore
+kubectl rollout restart deployment/grafana -n the platform
 ```
 
 ### Alerting
@@ -710,10 +710,10 @@ route:
 receivers:
   - name: 'team-email'
     email_configs:
-      - to: 'ops@histocore.ai'
-        from: 'alerts@histocore.ai'
+      - to: 'ops@the platform.ai'
+        from: 'alerts@the platform.ai'
         smarthost: 'smtp.gmail.com:587'
-        auth_username: 'alerts@histocore.ai'
+        auth_username: 'alerts@the platform.ai'
         auth_password: '${SMTP_PASSWORD}'
 ```
 
@@ -738,14 +738,14 @@ kubectl get nodes -o json | jq '.items[].status.allocatable."nvidia.com/gpu"'
 
 ```bash
 # Check memory usage
-docker stats histocore-streaming
+docker stats the platform-streaming
 
 # Reduce batch size
-export HISTOCORE_BATCH_SIZE=16
-docker-compose restart histocore-streaming
+export the platform_BATCH_SIZE=16
+docker-compose restart the platform-streaming
 
 # Or in Kubernetes
-kubectl set env deployment/histocore-streaming HISTOCORE_BATCH_SIZE=16 -n histocore
+kubectl set env deployment/the platform-streaming the platform_BATCH_SIZE=16 -n the platform
 ```
 
 **3. Slow Processing**
@@ -755,11 +755,11 @@ kubectl set env deployment/histocore-streaming HISTOCORE_BATCH_SIZE=16 -n histoc
 nvidia-smi
 
 # Check metrics
-curl http://localhost:8002/metrics | grep histocore_processing
+curl http://localhost:8002/metrics | grep the platform_processing
 
 # Enable profiling
-export HISTOCORE_PROFILE=true
-docker-compose restart histocore-streaming
+export the platform_PROFILE=true
+docker-compose restart the platform-streaming
 ```
 
 **4. Connection Refused**
@@ -767,11 +767,11 @@ docker-compose restart histocore-streaming
 ```bash
 # Check service status
 docker-compose ps
-kubectl get pods -n histocore
+kubectl get pods -n the platform
 
 # Check logs
-docker-compose logs histocore-streaming
-kubectl logs deployment/histocore-streaming -n histocore
+docker-compose logs the platform-streaming
+kubectl logs deployment/the platform-streaming -n the platform
 
 # Check network
 curl -v http://localhost:8000/health
@@ -782,11 +782,11 @@ curl -v http://localhost:8000/health
 **Enable debug logging**:
 ```bash
 # Docker
-export HISTOCORE_LOG_LEVEL=DEBUG
-docker-compose restart histocore-streaming
+export the platform_LOG_LEVEL=DEBUG
+docker-compose restart the platform-streaming
 
 # Kubernetes
-kubectl set env deployment/histocore-streaming HISTOCORE_LOG_LEVEL=DEBUG -n histocore
+kubectl set env deployment/the platform-streaming the platform_LOG_LEVEL=DEBUG -n the platform
 ```
 
 ### Performance Profiling
@@ -794,7 +794,7 @@ kubectl set env deployment/histocore-streaming HISTOCORE_LOG_LEVEL=DEBUG -n hist
 **Enable profiling**:
 ```bash
 # Start with profiling
-export HISTOCORE_PROFILE=true
+export the platform_PROFILE=true
 docker-compose up -d
 
 # Generate profile
@@ -822,5 +822,5 @@ python -m pstats profile.prof
 
 - **Documentation**: [docs/](../)
 - **API Reference**: [docs/api/](../api/)
-- **GitHub Issues**: https://github.com/histocore/histocore/issues
-- **Email**: support@histocore.ai
+- **GitHub Issues**: https://github.com/the platform/the platform/issues
+- **Email**: support@the platform.ai

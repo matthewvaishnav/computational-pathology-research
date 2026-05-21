@@ -1,8 +1,8 @@
-# About HistoCore
+# About the platform
 
 ## Project Overview
 
-**HistoCore** is a production-grade PyTorch framework for computational pathology research and clinical deployment achieving **95.37% validation AUC** on real histopathology data (262K training samples). The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
+**the platform** is a production-grade PyTorch framework for computational pathology research and clinical deployment achieving **95.37% validation AUC** on real histopathology data (262K training samples). The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
 
 ### Current Statistics
 
@@ -64,7 +64,7 @@
 
 ## Author
 
-**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of HistoCore, a PyTorch framework achieving **95.37% validation AUC** on real histopathology data, featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,171 tests (55% coverage), and validated performance on real-world benchmarks (85.26% test accuracy, 95.37% validation AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
+**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of the platform, a PyTorch framework achieving **95.37% validation AUC** on real histopathology data, featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,171 tests (55% coverage), and validated performance on real-world benchmarks (85.26% test accuracy, 95.37% validation AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
 
 ### Contact
 
@@ -103,7 +103,7 @@
 
 ## Research Applications
 
-HistoCore is designed for:
+the platform is designed for:
 
 1. **Academic Research**: Reproducible computational pathology experiments
 2. **Clinical Validation**: Testing AI models on real-world medical imaging data
@@ -125,18 +125,18 @@ HistoCore is designed for:
 
 ## License
 
-HistoCore is released under the MIT License. See [LICENSE](../LICENSE) for details.
+the platform is released under the MIT License. See [LICENSE](../LICENSE) for details.
 
 ## Citation
 
-If you use HistoCore in your research, please cite:
+If you use the platform in your research, please cite:
 
 ```bibtex
-@software{vaishnav2026histocore,
-  title = {HistoCore: Core Infrastructure for Computational Pathology Research},
+@software{vaishnav2026the platform,
+  title = {the platform: Core Infrastructure for Computational Pathology Research},
   author = {Vaishnav, Matthew},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/histocore},
+  url = {https://github.com/matthewvaishnav/the platform},
   note = {Production-grade PyTorch framework achieving 95.37\% validation AUC with 141 modules, 3,171 tests, 55\% coverage, federated learning system, and PACS integration.}
 }
 ```
@@ -155,7 +155,7 @@ This framework builds upon foundational work in computational pathology:
 
 Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 
-For questions or collaboration opportunities, please open an issue on [GitHub](https://github.com/matthewvaishnav/histocore/issues).
+For questions or collaboration opportunities, please open an issue on [GitHub](https://github.com/matthewvaishnav/the platform/issues).
 
 ---
 

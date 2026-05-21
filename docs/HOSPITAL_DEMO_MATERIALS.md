@@ -4,7 +4,7 @@
 
 ### Content Structure
 
-**Header**: HistoCore Medical AI - AI-Powered Pathology System
+**Header**: the platform Medical AI - AI-Powered Pathology System
 
 **Section 1: Performance** (Top third)
 - 85.26% accuracy on PatchCamelyon (32,768 clinical test samples)
@@ -44,7 +44,7 @@
 - Problem: Time pressure, diagnostic variability, missed metastases
 
 **[0:30-1:00] Solution Introduction**
-- "HistoCore: AI-powered lymph node metastasis detection"
+- "the platform: AI-powered lymph node metastasis detection"
 - Show: System logo, clean interface
 - Key stats: 85% accuracy, <30s processing, HIPAA-compliant
 
@@ -78,7 +78,7 @@
 
 **[4:30-5:00] Closing**
 - "Advancing pathology through AI"
-- HistoCore logo + contact info
+- the platform logo + contact info
 
 ### Production Notes
 - Professional voiceover (or clear narration)
@@ -96,7 +96,7 @@
 **Title**: Multi-Site Clinical Validation of AI-Powered Lymph Node Metastasis Detection System
 
 **Principal Investigator**: [Hospital PI Name]  
-**Co-Investigators**: Matthew Vaishnav (HistoCore Medical AI), [Hospital Co-Investigators]
+**Co-Investigators**: Matthew Vaishnav (the platform Medical AI), [Hospital Co-Investigators]
 
 **Study Type**: Prospective, observational, multi-site validation study
 
@@ -175,19 +175,19 @@
 **Integration Steps**:
 
 **Phase 1: Network Setup (Week 1)**
-1. Firewall configuration (allow HTTPS from HistoCore IP)
+1. Firewall configuration (allow HTTPS from the platform IP)
 2. VPN setup (if required)
 3. TLS certificate exchange
 4. Network connectivity test
 
 **Phase 2: PACS Configuration (Week 2)**
-1. Create DICOM Application Entity (AE) for HistoCore
+1. Create DICOM Application Entity (AE) for the platform
 2. Configure C-FIND/C-MOVE permissions
 3. Set up C-STORE destination for Structured Reports
 4. Test DICOM echo (connectivity verification)
 
 **Phase 3: System Deployment (Week 3)**
-1. Deploy HistoCore container (Docker/Kubernetes)
+1. Deploy the platform container (Docker/Kubernetes)
 2. Configure PACS connection parameters
 3. Set up authentication (OAuth/SAML)
 4. Configure audit logging
@@ -211,13 +211,13 @@
 pacs:
   host: pacs.hospital.edu
   port: 11112
-  ae_title: HISTOCORE
-  calling_ae: HISTOCORE_CLIENT
+  ae_title: the platform
+  calling_ae: the platform_CLIENT
   
 security:
   tls_enabled: true
-  cert_path: /certs/histocore.crt
-  key_path: /certs/histocore.key
+  cert_path: /certs/the platform.crt
+  key_path: /certs/the platform.key
   
 workflow:
   auto_query_interval: 300  # seconds
@@ -229,7 +229,7 @@ notifications:
 ```
 
 **Support Contact**:
-- Technical Support: support@histocore-medical.ai
+- Technical Support: support@the platform-medical.ai
 - Emergency: +1 (650) 555-0199 (24/7)
 
 ---
@@ -273,7 +273,7 @@ Actual Neg     13,672    2,712
 **Comparison to Literature**:
 - State-of-art: 96-98% AUC
 - Strong baselines: 90-95% AUC
-- HistoCore: 95.37% validation AUC (competitive performance)
+- the platform: 95.37% validation AUC (competitive performance)
 
 **Clinical Relevance**:
 - Sensitivity optimized for screening (minimize missed cancers)
@@ -316,7 +316,7 @@ Actual Neg     13,672    2,712
     </Finding>
     
     <Algorithm>
-      <Name>HistoCore AttentionMIL</Name>
+      <Name>the platform AttentionMIL</Name>
       <Version>2.1.0</Version>
       <Timestamp>2026-05-03T14:32:15Z</Timestamp>
     </Algorithm>
@@ -328,7 +328,7 @@ Actual Neg     13,672    2,712
 
 ```
 =================================================
-HISTOCORE AI PATHOLOGY REPORT
+the platform AI PATHOLOGY REPORT
 =================================================
 
 Patient ID: ANON12345
@@ -352,7 +352,7 @@ RECOMMENDATION:
   Consider immunohistochemistry if primary site unknown.
 
 ALGORITHM DETAILS:
-  Model: HistoCore AttentionMIL v2.1.0
+  Model: the platform AttentionMIL v2.1.0
   Processing Time: 28 seconds
   Image Quality: Excellent
   Uncertainty: Low
@@ -366,7 +366,7 @@ DISCLAIMER:
 
 =================================================
 Report Generated: 2026-05-03 14:32:15 UTC
-HistoCore Medical AI | support@histocore-medical.ai
+the platform Medical AI | support@the platform-medical.ai
 =================================================
 ```
 
@@ -378,7 +378,7 @@ HistoCore Medical AI | support@histocore-medical.ai
 
 **Parties**:
 - Covered Entity: [Hospital Name]
-- Business Associate: HistoCore Medical AI
+- Business Associate: the platform Medical AI
 
 **Purpose**: AI pathology analysis services
 
@@ -413,7 +413,7 @@ HistoCore Medical AI | support@histocore-medical.ai
 **Manuscript Title**: Multi-Site Clinical Validation of AI-Powered Lymph Node Metastasis Detection
 
 **Author Order** (Proposed):
-1. Matthew Vaishnav (HistoCore Medical AI) - First Author
+1. Matthew Vaishnav (the platform Medical AI) - First Author
 2. [Hospital PI Name] ([Hospital Name]) - Second Author
 3. [Hospital Pathologist] ([Hospital Name]) - Third Author
 4. [Additional Co-Investigators] - Middle Authors

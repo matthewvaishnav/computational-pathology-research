@@ -1,4 +1,4 @@
-# Risk Analysis Report - HistoCore AI Pathology Analysis System
+# Risk Analysis Report - the platform AI Pathology Analysis System
 
 **Document Version:** 1.0  
 **Date:** January 2025  
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This risk analysis report presents a comprehensive assessment of potential hazards associated with the HistoCore AI Pathology Analysis System. The analysis follows ISO 14971:2019 requirements and identifies, evaluates, and controls risks throughout the device lifecycle. All identified risks have been reduced to acceptable levels through appropriate risk control measures.
+This risk analysis report presents a comprehensive assessment of potential hazards associated with the the platform AI Pathology Analysis System. The analysis follows ISO 14971:2019 requirements and identifies, evaluates, and controls risks throughout the device lifecycle. All identified risks have been reduced to acceptable levels through appropriate risk control measures.
 
 **Risk Assessment Summary:**
 - **Total Hazards Identified:** 47
@@ -21,7 +21,7 @@ This risk analysis report presents a comprehensive assessment of potential hazar
 ### 1.1 Risk Management Framework
 
 #### 1.1.1 Risk Management Policy
-HistoCore follows a systematic risk management approach based on ISO 14971:2019, integrating risk management activities throughout the device lifecycle from conception through post-market surveillance.
+the platform follows a systematic risk management approach based on ISO 14971:2019, integrating risk management activities throughout the device lifecycle from conception through post-market surveillance.
 
 #### 1.1.2 Risk Management Team
 - **Risk Manager:** Director of Quality Assurance
@@ -583,7 +583,7 @@ The clinical benefits significantly outweigh the residual risks, particularly wi
 
 ### 6.1 Risk Management Summary
 
-The comprehensive risk analysis of HistoCore AI Pathology Analysis System has identified and evaluated 47 potential hazards across clinical, technical, usability, and environmental categories. Through systematic application of risk control measures following the hierarchy of inherent safety, protective measures, and information for safety, all identified risks have been reduced to acceptable levels.
+The comprehensive risk analysis of the platform AI Pathology Analysis System has identified and evaluated 47 potential hazards across clinical, technical, usability, and environmental categories. Through systematic application of risk control measures following the hierarchy of inherent safety, protective measures, and information for safety, all identified risks have been reduced to acceptable levels.
 
 ### 6.2 Key Risk Control Achievements
 
@@ -605,7 +605,7 @@ The risk management process fully complies with ISO 14971:2019 requirements and 
 
 ### 6.4 Overall Risk Assessment
 
-**The overall residual risk of HistoCore AI Pathology Analysis System is ACCEPTABLE for the intended clinical use, with appropriate risk control measures in place and comprehensive post-market surveillance planned.**
+**The overall residual risk of the platform AI Pathology Analysis System is ACCEPTABLE for the intended clinical use, with appropriate risk control measures in place and comprehensive post-market surveillance planned.**
 
 ---
 

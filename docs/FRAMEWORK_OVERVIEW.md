@@ -1,8 +1,8 @@
-# HistoCore: Revolutionary Medical AI Framework
+# the platform: Revolutionary Medical AI Framework
 
 > **🎯 One-Line Summary**: The first open-source framework that makes AI models smarter by giving cancer center experts more influence than community hospitals - achieving 89% better rare cancer detection.
 
-## What Problem Does HistoCore Solve?
+## What Problem Does the platform Solve?
 
 ### The $50 Billion Medical AI Problem
 
@@ -12,7 +12,7 @@
 - 🤖 **Traditional AI**: Treats both hospitals equally
 - ❌ **Result**: AI learns wrong patterns, misses rare cancers
 
-**HistoCore's Solution:**
+**the platform's Solution:**
 - ✅ **Smart weighting**: Mayo gets 9.65x influence, rural gets 1.12x
 - ✅ **Specialty matching**: Breast cancer experts get bonus on breast cases
 - ✅ **Measurable results**: 89% improvement in rare cancer detection
@@ -26,7 +26,7 @@ Traditional Federated Learning:
 [Mayo Clinic]   ──┘
    (Equal weight = 1.0)
 
-HistoCore DMI:
+the platform DMI:
 [Rural Hospital] ──┐ (weight: 1.12x)
                    ├── [AI Model] ──> 78.5% rare cancer accuracy  
 [Mayo Clinic]   ──┘ (weight: 9.65x)
@@ -49,7 +49,7 @@ HistoCore DMI:
 - No consideration of medical specialization or expertise
 - Generic approach not optimized for medical workflows
 
-### HistoCore's Solution: Medical Expertise Weighting
+### the platform's Solution: Medical Expertise Weighting
 
 **Distributed Medical Intelligence (DMI)** recognizes that in medicine, **expertise matters**:
 
@@ -86,7 +86,7 @@ rural_weight = 1.12    # Critical access hospital
 ### Example 1: Rare Ovarian Cancer Detection
 **Scenario**: 45-year-old woman, unusual ovarian mass
 - **Traditional FL**: 25.6% chance of correct diagnosis → Missed cancer, delayed treatment
-- **HistoCore DMI**: 78.5% chance of correct diagnosis → Early detection, better outcomes
+- **the platform DMI**: 78.5% chance of correct diagnosis → Early detection, better outcomes
 - **Clinical impact**: Potentially saves life through earlier intervention
 
 ### Example 2: Pediatric Brain Tumor
@@ -98,7 +98,7 @@ rural_weight = 1.12    # Critical access hospital
 ### Example 3: Rural Healthcare Equity
 **Scenario**: Rural Montana hospital serving 50,000 people
 - **Problem**: No on-site pathologist, samples sent to distant labs
-- **HistoCore solution**: AI assistant trained by Mayo Clinic experts
+- **the platform solution**: AI assistant trained by Mayo Clinic experts
 - **Result**: Rural patients get Mayo-level diagnostic assistance locally
 
 ## Implementation Timeline & Success Metrics
@@ -182,10 +182,10 @@ rural_weight = 1.12    # Critical access hospital
 - **Open source** - No licensing fees, full customization
 - **Active development** - 1,252+ commits, continuous improvement
 
-## Competitive Analysis: Why HistoCore Wins
+## Competitive Analysis: Why the platform Wins
 
 ### vs Google's TensorFlow Federated
-| Feature | TensorFlow FL | HistoCore DMI |
+| Feature | TensorFlow FL | the platform DMI |
 |---------|---------------|---------------|
 | **Medical Focus** | Generic ML | Pathology-optimized |
 | **Expertise Weighting** | Equal weights | Medical hierarchy |
@@ -194,7 +194,7 @@ rural_weight = 1.12    # Critical access hospital
 | **Performance on Rare Cases** | Poor | 89% improvement |
 
 ### vs PySyft (OpenMined)
-| Feature | PySyft | HistoCore DMI |
+| Feature | PySyft | the platform DMI |
 |---------|--------|---------------|
 | **Privacy Focus** | Excellent | Good + Medical context |
 | **Medical Workflows** | None | Built-in |
@@ -203,7 +203,7 @@ rural_weight = 1.12    # Critical access hospital
 | **Production Ready** | Research | Clinical deployment |
 
 ### vs PathAI (Commercial)
-| Feature | PathAI | HistoCore DMI |
+| Feature | PathAI | the platform DMI |
 |---------|--------|---------------|
 | **Cost** | $500K+ licensing | Open source |
 | **Customization** | Limited | Full control |
@@ -211,12 +211,12 @@ rural_weight = 1.12    # Critical access hospital
 | **Expertise Integration** | Manual | Automated |
 | **Innovation Speed** | Corporate | Community-driven |
 
-**Bottom Line**: HistoCore is the only framework that combines medical expertise weighting, federated learning, and production-ready clinical integration in an open-source package.
+**Bottom Line**: the platform is the only framework that combines medical expertise weighting, federated learning, and production-ready clinical integration in an open-source package.
 
 ### Core Components
 
 ```
-HistoCore Framework
+the platform Framework
 ├── DMI (Distributed Medical Intelligence)
 │   ├── Medical expertise weighting
 │   ├── Specialty matching algorithms
@@ -268,7 +268,7 @@ HistoCore Framework
 
 *Note: Clinical scenario results are from simulated hospital networks. Real-world validation pending.*
 
-## Who Should Use HistoCore?
+## Who Should Use the platform?
 
 ### ✅ **Perfect For:**
 - **Medical AI researchers** building pathology models
@@ -297,7 +297,7 @@ python defense_against_fl_criticism.py
 
 # 3. See the results
 # Traditional FL: 25.6% accuracy on rare cancer
-# HistoCore DMI: 78.5% accuracy on rare cancer
+# the platform DMI: 78.5% accuracy on rare cancer
 # Improvement: 89.1% better performance
 ```
 
@@ -310,7 +310,7 @@ Traditional Federated Learning:
   Mayo Clinic (45,000 cases/year): Weight = 1.0
   → Result: 25.6% accuracy (missed diagnosis)
 
-HistoCore DMI:
+the platform DMI:
   Rural Hospital: Weight = 1.12 (equity adjustment)
   Mayo Clinic: Weight = 9.65 (expertise weighting)
   → Result: 78.5% accuracy (correct diagnosis)
@@ -366,7 +366,7 @@ pip install -e .
 
 ## Contributing
 
-HistoCore is **open source** and welcomes contributions:
+the platform is **open source** and welcomes contributions:
 
 - **Code contributions** - Bug fixes, new features, optimizations
 - **Clinical validation** - Hospital partnerships, real-world testing
@@ -381,4 +381,4 @@ HistoCore is **open source** and welcomes contributions:
 
 ---
 
-**HistoCore represents the next generation of medical AI frameworks - combining cutting-edge technology with deep understanding of clinical workflows to create truly impactful healthcare AI solutions.**
+**the platform represents the next generation of medical AI frameworks - combining cutting-edge technology with deep understanding of clinical workflows to create truly impactful healthcare AI solutions.**

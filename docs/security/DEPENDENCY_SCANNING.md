@@ -2,7 +2,7 @@
 
 ## Overview
 
-Third-party dependencies are a common attack vector. This guide covers automated dependency vulnerability scanning for HistoCore.
+Third-party dependencies are a common attack vector. This guide covers automated dependency vulnerability scanning for the platform.
 
 ## Tools
 
@@ -152,7 +152,7 @@ snyk monitor
 snyk fix
 ```
 
-## HistoCore Integration
+## the platform Integration
 
 ### Pre-commit Hook
 

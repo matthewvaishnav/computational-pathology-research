@@ -1,6 +1,6 @@
-# HistoCore Troubleshooting Guide
+# the platform Troubleshooting Guide
 
-Comprehensive troubleshooting guide for HistoCore Real-Time WSI Streaming.
+Comprehensive troubleshooting guide for the platform Real-Time WSI Streaming.
 
 ## Table of Contents
 
@@ -47,23 +47,23 @@ docker ps
 
 # Check Kubernetes
 kubectl version
-kubectl get pods -n histocore
+kubectl get pods -n the platform
 ```
 
 ### Log Analysis
 
 ```bash
 # Docker logs
-docker logs histocore-streaming --tail 100
+docker logs the platform-streaming --tail 100
 
 # Kubernetes logs
-kubectl logs deployment/histocore-streaming -n histocore --tail 100
+kubectl logs deployment/the platform-streaming -n the platform --tail 100
 
 # Application logs
-tail -f /var/log/histocore/app.log
+tail -f /var/log/the platform/app.log
 
 # Error logs only
-grep ERROR /var/log/histocore/app.log
+grep ERROR /var/log/the platform/app.log
 ```
 
 ## Installation Issues
@@ -236,8 +236,8 @@ curl http://localhost:8002/metrics | grep gpu_memory
 
 1. **Reduce batch size**:
 ```bash
-export HISTOCORE_BATCH_SIZE=16
-docker-compose restart histocore-streaming
+export the platform_BATCH_SIZE=16
+docker-compose restart the platform-streaming
 ```
 
 2. **Enable automatic batch size reduction**:
@@ -291,7 +291,7 @@ curl http://localhost:8002/metrics | grep throughput
 
 1. **Increase batch size**:
 ```bash
-export HISTOCORE_BATCH_SIZE=64
+export the platform_BATCH_SIZE=64
 ```
 
 2. **Enable AMP (Automatic Mixed Precision)**:
@@ -326,7 +326,7 @@ TimeoutError: Processing exceeded 300 seconds
 
 1. **Increase timeout**:
 ```bash
-export HISTOCORE_TIMEOUT=600
+export the platform_TIMEOUT=600
 ```
 
 2. **Enable early stopping**:
@@ -444,7 +444,7 @@ curl http://localhost:8002/metrics | grep memory_usage
 
 1. **Reduce memory budget**:
 ```bash
-export HISTOCORE_MAX_MEMORY_GB=4
+export the platform_MAX_MEMORY_GB=4
 ```
 
 2. **Enable memory management**:
@@ -479,7 +479,7 @@ sudo swapon /swapfile
 **Diagnostics**:
 ```bash
 # Monitor memory over time
-watch -n 5 'ps aux | grep histocore'
+watch -n 5 'ps aux | grep the platform'
 
 # Profile memory usage
 python -m memory_profiler src/streaming/main.py
@@ -502,7 +502,7 @@ spec:
   template:
     spec:
       containers:
-      - name: histocore-streaming
+      - name: the platform-streaming
         lifecycle:
           preStop:
             exec:
@@ -528,7 +528,7 @@ ConnectionRefusedError: [Errno 111] Connection refused
 ```bash
 # Check if service is running
 docker ps
-kubectl get pods -n histocore
+kubectl get pods -n the platform
 
 # Check port binding
 netstat -tulpn | grep 8000
@@ -543,11 +543,11 @@ curl -v http://localhost:8000/health
 ```bash
 # Docker
 docker-compose ps
-docker-compose logs histocore-streaming
+docker-compose logs the platform-streaming
 
 # Kubernetes
-kubectl get pods -n histocore
-kubectl logs deployment/histocore-streaming -n histocore
+kubectl get pods -n the platform
+kubectl logs deployment/the platform-streaming -n the platform
 ```
 
 2. **Check firewall**:
@@ -634,7 +634,7 @@ pacs:
   remote_host: pacs.hospital.org
   remote_port: 104
   remote_ae_title: PACS_SERVER
-  ae_title: HISTOCORE
+  ae_title: the platform
 ```
 
 2. **Check network connectivity**:
@@ -765,7 +765,7 @@ database:
 ```yaml
 web:
   cdn_enabled: true
-  cdn_url: https://cdn.histocore.ai
+  cdn_url: https://cdn.the platform.ai
 ```
 
 ## Deployment Issues
@@ -804,21 +804,21 @@ docker-compose build --progress=plain
 
 **Symptoms**:
 ```
-kubectl get pods -n histocore
+kubectl get pods -n the platform
 NAME                                  READY   STATUS             RESTARTS
-histocore-streaming-xxx               0/1     CrashLoopBackOff   5
+the platform-streaming-xxx               0/1     CrashLoopBackOff   5
 ```
 
 **Diagnostics**:
 ```bash
 # Check pod status
-kubectl describe pod histocore-streaming-xxx -n histocore
+kubectl describe pod the platform-streaming-xxx -n the platform
 
 # Check logs
-kubectl logs histocore-streaming-xxx -n histocore
+kubectl logs the platform-streaming-xxx -n the platform
 
 # Check events
-kubectl get events -n histocore --sort-by='.lastTimestamp'
+kubectl get events -n the platform --sort-by='.lastTimestamp'
 ```
 
 **Solutions**:
@@ -839,19 +839,19 @@ resources:
 2. **Check image pull**:
 ```bash
 # Verify image exists
-docker pull histocore/streaming:latest
+docker pull the platform/streaming:latest
 
 # Check image pull secrets
-kubectl get secrets -n histocore
+kubectl get secrets -n the platform
 ```
 
 3. **Check configuration**:
 ```bash
 # Verify configmap
-kubectl get configmap histocore-config -n histocore -o yaml
+kubectl get configmap the platform-config -n the platform -o yaml
 
 # Verify secrets
-kubectl get secret histocore-secrets -n histocore -o yaml
+kubectl get secret the platform-secrets -n the platform -o yaml
 ```
 
 ## Error Messages
@@ -879,11 +879,11 @@ If you can't resolve the issue:
 python -m src.streaming.diagnostics > diagnostics.txt
 
 # Collect logs
-docker logs histocore-streaming > logs.txt
-kubectl logs deployment/histocore-streaming -n histocore > logs.txt
+docker logs the platform-streaming > logs.txt
+kubectl logs deployment/the platform-streaming -n the platform > logs.txt
 
 # Export configuration
-kubectl get configmap histocore-config -n histocore -o yaml > config.yaml
+kubectl get configmap the platform-config -n the platform -o yaml > config.yaml
 ```
 
 2. **Create GitHub issue**:
@@ -893,7 +893,7 @@ kubectl get configmap histocore-config -n histocore -o yaml > config.yaml
 - Describe steps to reproduce
 
 3. **Contact support**:
-- Email: support@histocore.ai
+- Email: support@the platform.ai
 - Include issue number
 - Include diagnostics
 
@@ -902,5 +902,5 @@ kubectl get configmap histocore-config -n histocore -o yaml > config.yaml
 - **Documentation**: [docs/](.)
 - **API Reference**: [docs/api/](api/)
 - **FAQ**: [docs/FAQ.md](FAQ.md)
-- **GitHub Issues**: https://github.com/histocore/histocore/issues
-- **Email**: support@histocore.ai
+- **GitHub Issues**: https://github.com/the platform/the platform/issues
+- **Email**: support@the platform.ai

@@ -1,6 +1,6 @@
 # Distributed Tracing with OpenTelemetry
 
-Distributed tracing provides end-to-end visibility into request flows across HistoCore services.
+Distributed tracing provides end-to-end visibility into request flows across the platform services.
 
 ## Overview
 
@@ -176,10 +176,10 @@ tracer.initialize(
 from fastapi import FastAPI
 from src.monitoring.tracing import get_tracer, traced
 
-app = FastAPI(title="HistoCore API")
+app = FastAPI(title="the platform API")
 
 # Initialize and instrument
-tracer = get_tracer("histocore-api")
+tracer = get_tracer("the platform-api")
 tracer.initialize(jaeger_endpoint="localhost:6831")
 tracer.instrument_fastapi(app)
 

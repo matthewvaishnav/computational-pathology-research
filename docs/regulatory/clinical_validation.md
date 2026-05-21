@@ -1,4 +1,4 @@
-# Clinical Validation Report - HistoCore AI Pathology Analysis System
+# Clinical Validation Report - the platform AI Pathology Analysis System
 
 **Document Version:** 1.0  
 **Date:** January 2025  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This clinical validation report presents the results of a comprehensive multi-site study evaluating the performance of HistoCore AI Pathology Analysis System for cancer detection and classification in digitized whole slide images. The study demonstrates substantial equivalence to predicate devices while showing superior performance in several key metrics.
+This clinical validation report presents the results of a comprehensive multi-site study evaluating the performance of the platform AI Pathology Analysis System for cancer detection and classification in digitized whole slide images. The study demonstrates substantial equivalence to predicate devices while showing superior performance in several key metrics.
 
 **Key Findings:**
 - Overall sensitivity: 93.4% (95% CI: 92.1-94.7%)
@@ -96,7 +96,7 @@ This clinical validation report presents the results of a comprehensive multi-si
 4. **Data Transfer:** Secure transmission to central analysis platform
 
 #### 2.3.3 AI Analysis Protocol
-1. **Automated Processing:** HistoCore analysis of all eligible slides
+1. **Automated Processing:** the platform analysis of all eligible slides
 2. **Result Generation:** Diagnostic predictions with confidence scores
 3. **Quality Flags:** Automatic flagging of low-quality or uncertain cases
 4. **Data Storage:** Secure storage of results and analysis metadata
@@ -362,15 +362,15 @@ This clinical validation report presents the results of a comprehensive multi-si
 |--------|-------------|-------------|-----|-----------|
 | PathAI AISight | 91.2% | 94.1% | 0.926 | K193658 |
 | Paige Prostate | 89.7% | 92.8% | 0.913 | K212563 |
-| **HistoCore** | **93.4%** | **95.8%** | **0.946** | **Current Study** |
+| **the platform** | **93.4%** | **95.8%** | **0.946** | **Current Study** |
 
 ### 5.2 Statistical Comparison
 | Comparison | Difference | 95% CI | P-value |
 |------------|------------|--------|---------|
-| HistoCore vs. PathAI (Sensitivity) | +2.2% | 0.8-3.6% | 0.003 |
-| HistoCore vs. PathAI (Specificity) | +1.7% | 0.4-3.0% | 0.012 |
-| HistoCore vs. Paige (Sensitivity) | +3.7% | 2.1-5.3% | <0.001 |
-| HistoCore vs. Paige (Specificity) | +3.0% | 1.5-4.5% | <0.001 |
+| the platform vs. PathAI (Sensitivity) | +2.2% | 0.8-3.6% | 0.003 |
+| the platform vs. PathAI (Specificity) | +1.7% | 0.4-3.0% | 0.012 |
+| the platform vs. Paige (Sensitivity) | +3.7% | 2.1-5.3% | <0.001 |
+| the platform vs. Paige (Specificity) | +3.0% | 1.5-4.5% | <0.001 |
 
 ### 5.3 Substantial Equivalence Assessment
 **Equivalence Criteria Met:**
@@ -437,7 +437,7 @@ This clinical validation report presents the results of a comprehensive multi-si
 ## 8. Conclusions and Clinical Implications
 
 ### 8.1 Key Findings Summary
-1. **Superior Performance:** HistoCore demonstrates superior diagnostic accuracy compared to predicate devices
+1. **Superior Performance:** the platform demonstrates superior diagnostic accuracy compared to predicate devices
 2. **Clinical Utility:** Significant improvements in turnaround time and diagnostic confidence
 3. **Safety Profile:** Acceptable safety profile with appropriate risk mitigation measures
 4. **User Acceptance:** High user satisfaction and successful workflow integration

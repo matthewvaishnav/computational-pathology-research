@@ -2,7 +2,7 @@
 
 ## Overview
 
-HistoCore implements environment-aware security controls that adapt based on deployment context (Production, Development, Research). This document explains the security architecture, controls, and rationale.
+the platform implements environment-aware security controls that adapt based on deployment context (Production, Development, Research). This document explains the security architecture, controls, and rationale.
 
 ## Security Controls
 

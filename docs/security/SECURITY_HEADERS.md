@@ -2,7 +2,7 @@
 
 ## Overview
 
-HTTP security headers protect against common web vulnerabilities including XSS, clickjacking, MIME sniffing, and information leakage. This guide covers security header implementation for HistoCore web services.
+HTTP security headers protect against common web vulnerabilities including XSS, clickjacking, MIME sniffing, and information leakage. This guide covers security header implementation for the platform web services.
 
 ## Required Headers
 
@@ -220,7 +220,7 @@ For production deployments behind Nginx:
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name api.histocore.example.com;
+    server_name api.the platform.example.com;
     
     # SSL configuration
     ssl_certificate /path/to/cert.pem;
@@ -256,7 +256,7 @@ server {
 
 ```bash
 # Test security headers
-curl -I https://api.histocore.example.com
+curl -I https://api.the platform.example.com
 
 # Expected output:
 # Content-Security-Policy: default-src 'self'; ...

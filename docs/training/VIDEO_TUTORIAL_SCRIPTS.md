@@ -1,4 +1,4 @@
-# HistoCore Real-Time WSI Streaming - Video Tutorial Scripts
+# the platform Real-Time WSI Streaming - Video Tutorial Scripts
 
 **Production-Ready Scripts for Training Videos**
 
@@ -26,13 +26,13 @@
 
 **[INTRO - 0:00-0:30]**
 
-"Welcome to HistoCore Real-Time WSI Streaming. I'm Dr. Sarah Chen, and in this 5-minute tutorial, you'll learn how to access the system and navigate the dashboard. By the end, you'll be ready to process your first slide."
+"Welcome to the platform Real-Time WSI Streaming. I'm Dr. Sarah Chen, and in this 5-minute tutorial, you'll learn how to access the system and navigate the dashboard. By the end, you'll be ready to process your first slide."
 
 **[SCREEN: Login page]**
 
 **[SECTION 1: Logging In - 0:30-1:30]**
 
-"Let's start by logging in. Open your browser and navigate to histocore.yourhospital.org."
+"Let's start by logging in. Open your browser and navigate to the platform.yourhospital.org."
 
 **[ACTION: Type URL in browser]**
 
@@ -586,7 +586,7 @@ This distribution suggests the AI is very confident in IDC."
 
 **[INTRO - 0:00-0:30]**
 
-"Welcome to the final tutorial. In this 15-minute session, you'll learn how to integrate HistoCore with your PACS system. I'll cover worklist access, slide retrieval, and result delivery."
+"Welcome to the final tutorial. In this 15-minute session, you'll learn how to integrate the platform with your PACS system. I'll cover worklist access, slide retrieval, and result delivery."
 
 **[SCREEN: Dashboard]**
 
@@ -806,7 +806,7 @@ Click 'Completed' to see finished cases. You can:
 4. Generate clinical reports
 5. Integrate with PACS
 
-You're ready to use HistoCore in your clinical workflow. For additional help, refer to the Clinical User Guide or contact support at support@histocore.ai."
+You're ready to use the platform in your clinical workflow. For additional help, refer to the Clinical User Guide or contact support at support@the platform.ai."
 
 **[END SCREEN: Certification information]**
 

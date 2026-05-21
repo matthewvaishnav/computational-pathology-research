@@ -76,7 +76,7 @@ When describing what the system, platform, or model does (technical capabilities
 - "The platform supports DICOM, TIFF, and SVS formats"
 - "The architecture handles missing modalities gracefully"
 - "The inference pipeline maintains HIPAA compliance"
-- "HistoCore integrates with existing PACS systems"
+- "the platform integrates with existing PACS systems"
 
 ❌ **Incorrect Examples**:
 - "I process whole-slide images in under 30 seconds" (system capability, not author action)
@@ -117,12 +117,12 @@ When discussing partnerships, collaborations, or seeking contributors:
 When comparing with other systems or baselines:
 
 ✅ **Correct Examples**:
-- "HistoCore achieves 94.2% accuracy compared to..."
+- "the platform achieves 94.2% accuracy compared to..."
 - "The system outperforms baseline approaches"
 - "My implementation shows improvements over..."
 
 ❌ **Incorrect Examples**:
-- "HistoCore (Ours) achieves 94.2% accuracy"
+- "the platform (Ours) achieves 94.2% accuracy"
 - "Our system outperforms..."
 
 ## Examples and Usage

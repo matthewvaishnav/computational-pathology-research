@@ -1,10 +1,10 @@
-# HistoCore Hospital Demo Guide
+# the platform Hospital Demo Guide
 
 **Complete guide for running live hospital demonstrations**
 
 ## 🎯 Demo Overview
 
-This guide covers everything needed to run a successful hospital demo of HistoCore Real-Time WSI Streaming. Designed for sales engineers, clinical specialists, and product managers presenting to hospital decision-makers.
+This guide covers everything needed to run a successful hospital demo of the platform Real-Time WSI Streaming. Designed for sales engineers, clinical specialists, and product managers presenting to hospital decision-makers.
 
 ---
 
@@ -26,7 +26,7 @@ This guide covers everything needed to run a successful hospital demo of HistoCo
 
 **Technical Setup**:
 - [ ] Confirm GPU availability (minimum 1x V100 or A100)
-- [ ] Install HistoCore system
+- [ ] Install the platform system
 - [ ] Test all demo scenarios
 - [ ] Prepare backup laptop with recorded demos
 - [ ] Test network connectivity at venue
@@ -219,7 +219,7 @@ This guide covers everything needed to run a successful hospital demo of HistoCo
 
 1. **Start System**:
 ```bash
-cd /opt/histocore/streaming
+cd /opt/the platform/streaming
 python -m src.streaming.interactive_showcase
 ```
 
@@ -240,7 +240,7 @@ curl http://localhost:8000/health
 ### Demo Flow (60 minutes total)
 
 **Introduction (5 min)**:
-- Introduce yourself and HistoCore
+- Introduce yourself and the platform
 - Ask about their current workflow and pain points
 - Set expectations for demo
 
@@ -438,14 +438,14 @@ A: "24/7 technical support, dedicated customer success manager, quarterly busine
 **Quick Setup**:
 ```bash
 # Clone repository
-git clone https://github.com/histocore/streaming.git
+git clone https://github.com/the platform/streaming.git
 cd streaming
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Download model
-wget https://models.histocore.ai/v1/histocore_v1.pth -O models/histocore_v1.pth
+wget https://models.the platform.ai/v1/the platform_v1.pth -O models/the platform_v1.pth
 
 # Run interactive showcase
 python -m src.streaming.interactive_showcase
@@ -454,14 +454,14 @@ python -m src.streaming.interactive_showcase
 **Docker Setup**:
 ```bash
 # Pull image
-docker pull histocore/streaming:latest
+docker pull the platform/streaming:latest
 
 # Run showcase
 docker run -d \
-  --name histocore-showcase \
+  --name the platform-showcase \
   --gpus all \
   -p 8000:8000 \
-  histocore/streaming:latest showcase
+  the platform/streaming:latest showcase
 ```
 
 ### Network Configuration
@@ -512,13 +512,13 @@ python -c "import torch; print(torch.cuda.is_available())"
 **Issue: Demo won't start**
 ```bash
 # Check logs
-tail -f /var/log/histocore/showcase.log
+tail -f /var/log/the platform/showcase.log
 
 # Verify port not in use
 netstat -tulpn | grep 8000
 
 # Restart service
-systemctl restart histocore-showcase
+systemctl restart the platform-showcase
 ```
 
 ### Backup Plans
@@ -581,10 +581,10 @@ systemctl restart histocore-showcase
 
 ## Contact Information
 
-**Sales Support**: sales@histocore.ai | 1-800-HISTOCORE  
-**Technical Support**: support@histocore.ai | 24/7  
-**Demo Assistance**: demos@histocore.ai  
-**Documentation**: https://docs.histocore.ai
+**Sales Support**: sales@the platform.ai | 1-800-the platform  
+**Technical Support**: support@the platform.ai | 24/7  
+**Demo Assistance**: demos@the platform.ai  
+**Documentation**: https://docs.the platform.ai
 
 ---
 

@@ -1,8 +1,8 @@
-# HistoCore Disaster Recovery Plan
+# the platform Disaster Recovery Plan
 
 ## Overview
 
-Comprehensive disaster recovery procedures for HistoCore streaming system.
+Comprehensive disaster recovery procedures for the platform streaming system.
 
 ## Recovery Time Objectives (RTO)
 
@@ -23,13 +23,13 @@ Comprehensive disaster recovery procedures for HistoCore streaming system.
 
 ```bash
 # Daily full backup
-0 2 * * * /app/scripts/histocore-backup.py backup --compress
+0 2 * * * /app/scripts/the platform-backup.py backup --compress
 
 # Hourly incremental (configs only)
-0 * * * * /app/scripts/histocore-backup.py backup -c configs
+0 * * * * /app/scripts/the platform-backup.py backup -c configs
 
 # Weekly model backup
-0 3 * * 0 /app/scripts/histocore-backup.py backup -c models
+0 3 * * 0 /app/scripts/the platform-backup.py backup -c models
 ```
 
 ### Backup Components
@@ -42,7 +42,7 @@ Comprehensive disaster recovery procedures for HistoCore streaming system.
 
 ### Backup Locations
 
-- **Primary**: Local disk (`/var/backups/histocore`)
+- **Primary**: Local disk (`/var/backups/the platform`)
 - **Secondary**: S3/Azure Blob (encrypted)
 - **Tertiary**: Off-site cold storage
 
@@ -61,7 +61,7 @@ kubectl get nodes
 kubectl drain <node-name> --ignore-daemonsets
 
 # 3. Pods auto-reschedule to healthy nodes
-kubectl get pods -n histocore -o wide
+kubectl get pods -n the platform -o wide
 
 # 4. Replace/repair node
 # 5. Uncordon node
@@ -84,10 +84,10 @@ kubectl describe node <gpu-node>
 kubectl drain <gpu-node> --ignore-daemonsets --delete-emptydir-data
 
 # 3. Verify GPU pods rescheduled
-kubectl get pods -n histocore -l node-type=gpu
+kubectl get pods -n the platform -l node-type=gpu
 
 # 4. If no spare GPU capacity, scale up
-kubectl scale deployment histocore-streaming --replicas=<N>
+kubectl scale deployment the platform-streaming --replicas=<N>
 ```
 
 **RTO**: 30 minutes  
@@ -100,10 +100,10 @@ kubectl scale deployment histocore-streaming --replicas=<N>
 **Recovery**:
 ```bash
 # 1. Check Redis status
-kubectl get pods -n histocore -l app=redis
+kubectl get pods -n the platform -l app=redis
 
 # 2. If pod failed, delete to trigger restart
-kubectl delete pod <redis-pod> -n histocore
+kubectl delete pod <redis-pod> -n the platform
 
 # 3. If persistent volume corrupted, restore from snapshot
 kubectl apply -f k8s/redis-restore.yaml
@@ -125,18 +125,18 @@ redis-cli -h <redis-host> ping
 terraform apply -var="environment=disaster-recovery"
 
 # 2. Restore from backup
-./scripts/histocore-backup.py restore /backups/latest.tar.gz
+./scripts/the platform-backup.py restore /backups/latest.tar.gz
 
 # 3. Deploy application
 kubectl apply -f k8s/
 
 # 4. Verify services
-kubectl get pods -n histocore
-./scripts/histocore-admin.py health status
+kubectl get pods -n the platform
+./scripts/the platform-admin.py health status
 
 # 5. Update DNS/load balancer
 # 6. Verify processing
-./scripts/histocore-admin.py processing submit test-slide.svs --wait
+./scripts/the platform-admin.py processing submit test-slide.svs --wait
 ```
 
 **RTO**: 4 hours  
@@ -149,19 +149,19 @@ kubectl get pods -n histocore
 **Recovery**:
 ```bash
 # 1. Stop processing
-kubectl scale deployment histocore-streaming --replicas=0
+kubectl scale deployment the platform-streaming --replicas=0
 
 # 2. Identify corrupted data
-./scripts/histocore-admin.py logs tail -n 1000 -l ERROR
+./scripts/the platform-admin.py logs tail -n 1000 -l ERROR
 
 # 3. Restore from backup
-./scripts/histocore-backup.py restore /backups/pre-corruption.tar.gz -c models
+./scripts/the platform-backup.py restore /backups/pre-corruption.tar.gz -c models
 
 # 4. Verify model integrity
-python -c "import torch; torch.load('models/histocore.pth')"
+python -c "import torch; torch.load('models/the platform.pth')"
 
 # 5. Resume processing
-kubectl scale deployment histocore-streaming --replicas=2
+kubectl scale deployment the platform-streaming --replicas=2
 ```
 
 **RTO**: 1 hour  
@@ -174,23 +174,23 @@ kubectl scale deployment histocore-streaming --replicas=2
 **Recovery**:
 ```bash
 # 1. IMMEDIATE: Isolate system
-kubectl delete ingress histocore-ingress -n histocore
+kubectl delete ingress the platform-ingress -n the platform
 
 # 2. Audit logs
-kubectl logs -n histocore -l app=histocore --since=24h > audit.log
+kubectl logs -n the platform -l app=the platform --since=24h > audit.log
 
 # 3. Rotate credentials
-kubectl delete secret histocore-secrets -n histocore
-kubectl create secret generic histocore-secrets --from-env-file=.env.new
+kubectl delete secret the platform-secrets -n the platform
+kubectl create secret generic the platform-secrets --from-env-file=.env.new
 
 # 4. Rebuild from clean images
-kubectl set image deployment/histocore-streaming histocore=histocore:clean
+kubectl set image deployment/the platform-streaming the platform=the platform:clean
 
 # 5. Restore from pre-breach backup
-./scripts/histocore-backup.py restore /backups/pre-breach.tar.gz
+./scripts/the platform-backup.py restore /backups/pre-breach.tar.gz
 
 # 6. Security scan
-trivy image histocore:latest
+trivy image the platform:latest
 
 # 7. Restore access with new credentials
 kubectl apply -f k8s/ingress.yaml
@@ -220,14 +220,14 @@ terraform init
 terraform apply -var="environment=$ENVIRONMENT" -auto-approve
 
 # 2. Configure kubectl
-aws eks update-kubeconfig --name histocore-$ENVIRONMENT
+aws eks update-kubeconfig --name the platform-$ENVIRONMENT
 
 # 3. Install NVIDIA plugin
 kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.14.1/nvidia-device-plugin.yml
 
 # 4. Restore from backup
 cd ../
-./scripts/histocore-backup.py restore $BACKUP_FILE
+./scripts/the platform-backup.py restore $BACKUP_FILE
 
 # 5. Deploy application
 kubectl apply -f k8s/namespace.yaml
@@ -238,13 +238,13 @@ kubectl apply -f k8s/redis.yaml
 kubectl apply -f k8s/monitoring.yaml
 
 # 6. Wait for ready
-kubectl wait --for=condition=available --timeout=600s deployment/histocore-streaming -n histocore
+kubectl wait --for=condition=available --timeout=600s deployment/the platform-streaming -n the platform
 
 # 7. Verify health
-./scripts/histocore-admin.py health status
+./scripts/the platform-admin.py health status
 
 # 8. Run smoke test
-./scripts/histocore-admin.py processing submit test-data/sample.svs --wait
+./scripts/the platform-admin.py processing submit test-data/sample.svs --wait
 
 echo "Disaster recovery complete!"
 ```
@@ -253,10 +253,10 @@ echo "Disaster recovery complete!"
 
 ```bash
 # Restore specific component
-./scripts/histocore-backup.py restore backup.tar.gz -c prometheus
+./scripts/the platform-backup.py restore backup.tar.gz -c prometheus
 
 # Restart affected services
-kubectl rollout restart deployment/prometheus -n histocore
+kubectl rollout restart deployment/prometheus -n the platform
 ```
 
 ## Testing
@@ -267,14 +267,14 @@ kubectl rollout restart deployment/prometheus -n histocore
 # 1. Schedule maintenance window
 # 2. Take snapshot of current state
 # 3. Simulate failure
-kubectl delete namespace histocore
+kubectl delete namespace the platform
 
 # 4. Execute recovery
 ./scripts/disaster-recovery.sh /backups/latest.tar.gz dr-test
 
 # 5. Verify functionality
-./scripts/histocore-admin.py health status
-./scripts/histocore-admin.py processing submit test.svs --wait
+./scripts/the platform-admin.py health status
+./scripts/the platform-admin.py processing submit test.svs --wait
 
 # 6. Document results
 # 7. Cleanup DR environment
@@ -294,13 +294,13 @@ terraform destroy -var="environment=dr-test"
 
 ```promql
 # Backup age
-time() - histocore_last_backup_timestamp > 86400
+time() - the platform_last_backup_timestamp > 86400
 
 # Backup size trend
-rate(histocore_backup_size_bytes[7d])
+rate(the platform_backup_size_bytes[7d])
 
 # Backup failures
-rate(histocore_backup_failures_total[1h]) > 0
+rate(the platform_backup_failures_total[1h]) > 0
 ```
 
 ### Recovery Readiness
@@ -348,10 +348,10 @@ rate(histocore_backup_failures_total[1h]) > 0
 
 ```bash
 # Verify backup integrity
-./scripts/histocore-backup.py info /backups/latest.tar.gz
+./scripts/the platform-backup.py info /backups/latest.tar.gz
 
 # Test restore (dry run)
-./scripts/histocore-backup.py restore /backups/latest.tar.gz --dry-run
+./scripts/the platform-backup.py restore /backups/latest.tar.gz --dry-run
 ```
 
 ### Emergency Contacts

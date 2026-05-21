@@ -1,7 +1,7 @@
 # Security Fixes Summary
 
 ## Overview
-This document summarizes the 15 critical security fixes applied to the HistoCore framework.
+This document summarizes the 15 critical security fixes applied to the the platform framework.
 
 ## Fixes Applied
 

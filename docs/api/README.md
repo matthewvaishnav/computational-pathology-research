@@ -1,6 +1,6 @@
-# HistoCore API Documentation
+# the platform API Documentation
 
-Complete API reference for HistoCore Real-Time WSI Streaming.
+Complete API reference for the platform Real-Time WSI Streaming.
 
 ## Quick Links
 
@@ -16,8 +16,8 @@ Complete API reference for HistoCore Real-Time WSI Streaming.
 
 | Environment | URL | Description |
 |-------------|-----|-------------|
-| Production | `https://api.histocore.ai/v1` | Production API |
-| Staging | `https://staging-api.histocore.ai/v1` | Testing environment |
+| Production | `https://api.the platform.ai/v1` | Production API |
+| Staging | `https://staging-api.the platform.ai/v1` | Testing environment |
 | Local | `http://localhost:8000/v1` | Development server |
 
 ## Authentication
@@ -28,7 +28,7 @@ All API endpoints require OAuth 2.0 JWT token authentication.
 
 ```bash
 # Request token
-curl -X POST https://api.histocore.ai/auth/token \
+curl -X POST https://api.the platform.ai/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "client_id": "your_client_id",
@@ -50,7 +50,7 @@ Include the token in the `Authorization` header:
 
 ```bash
 curl -H "Authorization: Bearer <your_token>" \
-  https://api.histocore.ai/v1/health
+  https://api.the platform.ai/v1/health
 ```
 
 ### Token Expiration
@@ -119,7 +119,7 @@ Alternative documentation viewer:
 ```bash
 # Start Redoc
 docker run -p 8080:80 \
-  -e SPEC_URL=https://raw.githubusercontent.com/histocore/histocore/main/docs/api/openapi.yaml \
+  -e SPEC_URL=https://raw.githubusercontent.com/the platform/the platform/main/docs/api/openapi.yaml \
   redocly/redoc
 
 # Open browser
@@ -210,7 +210,7 @@ Content-Type: application/json
   "job_id": "550e8400-e29b-41d4-a716-446655440000",
   "status": "queued",
   "created_at": "2026-04-26T10:30:00Z",
-  "stream_url": "wss://api.histocore.ai/v1/process/wsi/550e8400-e29b-41d4-a716-446655440000/stream"
+  "stream_url": "wss://api.the platform.ai/v1/process/wsi/550e8400-e29b-41d4-a716-446655440000/stream"
 }
 ```
 
@@ -255,7 +255,7 @@ Authorization: Bearer <token>
       "confidence": 0.96
     },
     "processing_time": 28.5,
-    "attention_heatmap_url": "https://api.histocore.ai/v1/results/550e8400.../heatmap.png"
+    "attention_heatmap_url": "https://api.the platform.ai/v1/results/550e8400.../heatmap.png"
   }
 }
 ```
@@ -343,7 +343,7 @@ Real-time processing updates via WebSocket.
 
 ```javascript
 const ws = new WebSocket(
-  'wss://api.histocore.ai/v1/process/wsi/550e8400.../stream',
+  'wss://api.the platform.ai/v1/process/wsi/550e8400.../stream',
   {
     headers: {
       'Authorization': 'Bearer <token>'
@@ -399,7 +399,7 @@ ws.onclose = () => {
       "confidence": 0.96
     },
     "processing_time": 28.5,
-    "attention_heatmap_url": "https://api.histocore.ai/v1/results/550e8400.../heatmap.png"
+    "attention_heatmap_url": "https://api.the platform.ai/v1/results/550e8400.../heatmap.png"
   }
 }
 ```
@@ -473,7 +473,7 @@ def create_session_with_retries():
 # Usage
 session = create_session_with_retries()
 response = session.post(
-    'https://api.histocore.ai/v1/process/wsi',
+    'https://api.the platform.ai/v1/process/wsi',
     headers={'Authorization': f'Bearer {token}'},
     json=request_data
 )
@@ -487,7 +487,7 @@ response = session.post(
 import requests
 import time
 
-class HistoCoreClient:
+class the platformClient:
     def __init__(self, base_url, token):
         self.base_url = base_url
         self.headers = {'Authorization': f'Bearer {token}'}
@@ -528,7 +528,7 @@ class HistoCoreClient:
             time.sleep(poll_interval)
 
 # Usage
-client = HistoCoreClient('https://api.histocore.ai/v1', 'your_token')
+client = the platformClient('https://api.the platform.ai/v1', 'your_token')
 
 # Start processing
 job = client.process_wsi('/data/slides/patient_001.svs')
@@ -543,7 +543,7 @@ print(f"Processing time: {result['processing_time']}s")
 ### JavaScript
 
 ```javascript
-class HistoCoreClient {
+class the platformClient {
   constructor(baseUrl, token) {
     this.baseUrl = baseUrl;
     this.headers = {
@@ -599,7 +599,7 @@ class HistoCoreClient {
 }
 
 // Usage
-const client = new HistoCoreClient('https://api.histocore.ai/v1', 'your_token');
+const client = new the platformClient('https://api.the platform.ai/v1', 'your_token');
 
 // Start processing
 const job = await client.processWSI('/data/slides/patient_001.svs');
@@ -617,7 +617,7 @@ console.log(`Processing time: ${result.processing_time}s`);
 #!/bin/bash
 
 # Configuration
-BASE_URL="https://api.histocore.ai/v1"
+BASE_URL="https://api.the platform.ai/v1"
 TOKEN="your_token_here"
 
 # Start processing
@@ -715,9 +715,9 @@ Optimize for your hardware:
 - **Deployment**: [../deployment/](../deployment/)
 
 ### Contact
-- **Email**: support@histocore.ai
-- **GitHub**: https://github.com/histocore/histocore/issues
-- **Slack**: https://histocore.slack.com
+- **Email**: support@the platform.ai
+- **GitHub**: https://github.com/the platform/the platform/issues
+- **Slack**: https://the platform.slack.com
 
 ### SLA
 - **Uptime**: 99.9% availability

@@ -5,7 +5,7 @@ title: Documentation Index
 
 # Documentation Index
 
-Comprehensive documentation for HistoCore - the production-grade computational pathology framework.
+Comprehensive documentation for the platform - the production-grade computational pathology framework.
 
 ---
 
@@ -297,8 +297,8 @@ python scripts/export_onnx.py \
 - **CAMELYON16**: Bejnordi et al. (2017) - "Diagnostic Assessment of Deep Learning Algorithms"
 
 ### Community
-- [GitHub Issues](https://github.com/matthewvaishnav/histocore/issues)
-- [Discussions](https://github.com/matthewvaishnav/histocore/discussions)
+- [GitHub Issues](https://github.com/matthewvaishnav/the platform/issues)
+- [Discussions](https://github.com/matthewvaishnav/the platform/discussions)
 
 ---
 
@@ -311,5 +311,5 @@ Historical documentation and implementation notes are available in [archive/](ar
 <div class="footer-note">
   <p><strong>📊 Current Status:</strong> Week 7 of 12 for TransnnMIL v2.0 development. See <a href="CURRENT_STATUS">Current Status</a> for detailed progress.</p>
   <p><em>Last updated: May 14, 2026</em></p>
-  <p>For questions or suggestions, please <a href="https://github.com/matthewvaishnav/histocore/issues">open an issue</a>.</p>
+  <p>For questions or suggestions, please <a href="https://github.com/matthewvaishnav/the platform/issues">open an issue</a>.</p>
 </div>

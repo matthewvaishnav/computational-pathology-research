@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to HistoCore will be documented in this file.
+All notable changes to the platform will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-12-15
 
 ### Added
-- Initial release of HistoCore framework
+- Initial release of the platform framework
 - Attention-based MIL models (AttentionMIL, CLAM, TransMIL)
 - Clinical workflow integration (DICOM/FHIR support)
 - Model interpretability tools (Grad-CAM, attention heatmaps)
@@ -64,5 +64,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Clinical Optimization**: 90% sensitivity at threshold=0.051
 - **Training Time**: ~18 min/epoch on RTX 4070 Laptop (8GB VRAM)
 
-[Unreleased]: https://github.com/matthewvaishnav/histocore/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/matthewvaishnav/histocore/releases/tag/v0.1.0
+[Unreleased]: https://github.com/matthewvaishnav/the platform/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/matthewvaishnav/the platform/releases/tag/v0.1.0

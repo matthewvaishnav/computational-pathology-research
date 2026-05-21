@@ -5,7 +5,7 @@
 
 ### 1. `.gitignore` - Enhanced Exclusions
 **Changes:**
-- ✅ Keep important benchmark results (`results/comprehensive_benchmark_full/HISTOCORE_SUPERIORITY_REPORT.md`)
+- ✅ Keep important benchmark results (`results/comprehensive_benchmark_full/the platform_SUPERIORITY_REPORT.md`)
 - ✅ Keep federated ablation results directory structure
 - ✅ Exclude Kiro/Kilo development artifacts (`.kilo/worktrees/`, `.kiro/specs/`)
 - ✅ Exclude large experiment outputs while preserving structure
@@ -16,7 +16,7 @@
 
 ### 2. `docs/index.md` - GitHub Pages Homepage
 **Major updates:**
-- ✅ Updated title to "Computational Pathology Research" (from "HistoCore")
+- ✅ Updated title to "Computational Pathology Research" (from "the platform")
 - ✅ Added accurate PathologyFL + DMI description (two-layer system)
 - ✅ Updated empirical results section with verified achievements:
   - PCam #1 AUC (0.9394) vs 10 baselines

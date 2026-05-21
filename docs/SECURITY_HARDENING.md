@@ -5,7 +5,7 @@ title: Security Hardening
 
 # Security Hardening
 
-HistoCore implements comprehensive security measures to protect patient data and ensure HIPAA compliance in production clinical environments.
+the platform implements comprehensive security measures to protect patient data and ensure HIPAA compliance in production clinical environments.
 
 ## Security Audit Summary
 
@@ -481,4 +481,4 @@ config = SecurityConfig(
 ---
 
 **Last Updated:** May 2026  
-**Security Contact:** Open an issue on [GitHub](https://github.com/matthewvaishnav/histocore/issues) with "SECURITY" label
+**Security Contact:** Open an issue on [GitHub](https://github.com/matthewvaishnav/the platform/issues) with "SECURITY" label

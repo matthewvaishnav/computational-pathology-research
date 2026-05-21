@@ -1,4 +1,4 @@
-# HistoCore Real-Time WSI Streaming - Clinical User Guide
+# the platform Real-Time WSI Streaming - Clinical User Guide
 
 **For Pathologists, Clinicians, and Clinical Staff**
 
@@ -36,7 +36,7 @@ Analyzes gigapixel pathology slides in **under 30 seconds** with real-time visua
 
 ### System Access
 
-**Web Interface**: `https://histocore.yourhospital.org`
+**Web Interface**: `https://the platform.yourhospital.org`
 
 **Login Credentials**: Use your hospital SSO (Single Sign-On)
 - Epic/Cerner credentials work automatically
@@ -324,17 +324,17 @@ Process multiple slides simultaneously:
 ### Getting Help
 
 **Technical Support**:
-- Email: support@histocore.ai
-- Phone: 1-800-HISTOCORE
+- Email: support@the platform.ai
+- Phone: 1-800-the platform
 - Hours: 24/7
 
 **Clinical Questions**:
-- Email: clinical@histocore.ai
+- Email: clinical@the platform.ai
 - Response time: <4 hours
 
 **Emergency**:
 - Call hospital IT helpdesk
-- Reference: "HistoCore AI System"
+- Reference: "the platform AI System"
 
 ---
 
@@ -405,7 +405,7 @@ A: Yes. Results can be sent to EMR via HL7 FHIR.
 4. **Clinical Reports** (10 min) - Generating and customizing reports
 5. **PACS Integration** (15 min) - Worklist and result delivery
 
-**Access**: `https://histocore.yourhospital.org/training`
+**Access**: `https://the platform.yourhospital.org/training`
 
 ### Interactive Demos
 
@@ -428,7 +428,7 @@ A: Yes. Results can be sent to EMR via HL7 FHIR.
 - Pass 20-question quiz
 - Certificate valid 1 year
 
-**Contact**: training@histocore.ai
+**Contact**: training@the platform.ai
 
 ---
 
@@ -462,7 +462,7 @@ A: Yes. Results can be sent to EMR via HL7 FHIR.
 
 ### System Status
 
-**Check System Health**: `https://histocore.yourhospital.org/status`
+**Check System Health**: `https://the platform.yourhospital.org/status`
 
 **Maintenance Windows**: Sundays 2-4 AM (system unavailable)
 
@@ -470,10 +470,10 @@ A: Yes. Results can be sent to EMR via HL7 FHIR.
 
 ## Contact Information
 
-**Clinical Support**: clinical@histocore.ai | 1-800-HISTOCORE  
-**Technical Support**: support@histocore.ai | 24/7  
-**Training**: training@histocore.ai  
-**Security/Compliance**: compliance@histocore.ai
+**Clinical Support**: clinical@the platform.ai | 1-800-the platform  
+**Technical Support**: support@the platform.ai | 24/7  
+**Training**: training@the platform.ai  
+**Security/Compliance**: compliance@the platform.ai
 
 ---
 
@@ -481,4 +481,4 @@ A: Yes. Results can be sent to EMR via HL7 FHIR.
 **Last Updated**: 2026-04-27  
 **For**: Clinical Users (Pathologists, Clinicians, Technicians)
 
-**Feedback**: I value your input! Email feedback@histocore.ai
+**Feedback**: I value your input! Email feedback@the platform.ai
