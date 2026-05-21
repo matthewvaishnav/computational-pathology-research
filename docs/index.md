@@ -53,7 +53,7 @@ Production-grade framework for computational pathology combining **PathologyFL**
 
 **Hypothesis:** PathologyFL + DMI > PathologyFL alone > Standard FedAvg, especially for rare subtypes and heterogeneous data quality.
 
-**Status:** 🚧 Validation experiments in progress (see [Federated Ablation Protocol](FEDERATED_ABLATION_PROTOCOL))
+**Status:** 🚧 Validation experiments in progress
 
 ---
 
