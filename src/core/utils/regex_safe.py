@@ -7,13 +7,12 @@ Prevents ReDoS (Regular Expression Denial of Service) attacks.
 import re
 import signal
 from contextlib import contextmanager
-from typing import Optional, Pattern
+from typing import Optional
 
 
 class RegexTimeout(Exception):
     """Raised when regex execution times out."""
 
-    pass
 
 
 @contextmanager
