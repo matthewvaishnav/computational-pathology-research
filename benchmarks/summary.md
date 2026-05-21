@@ -15,7 +15,7 @@
 - **model_parameters**: 12.2M
 
 ### Competitive Analysis
-**HistoCore vs State-of-the-Art:**
+**the platform vs State-of-the-Art:**
 - **Swin-Transformer (2021)**: +0.0082 AUC (+0.88%) with 0.14x parameters
 - **ConvNeXt (2022)**: +0.0096 AUC (+1.03%) with 0.43x parameters
 - **ViT-Base (2021)**: +0.0107 AUC (+1.15%) with 0.14x parameters
@@ -37,7 +37,7 @@ python experiments/evaluate_pcam.py --checkpoint checkpoints/pcam/best_model.pth
 ```
 
 ### Full Report
-See `results/comprehensive_benchmark_full/HISTOCORE_SUPERIORITY_REPORT.md`
+See `results/comprehensive_benchmark_full/PLATFORM_SUPERIORITY_REPORT.md`
 
 ---
 
