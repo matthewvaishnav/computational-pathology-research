@@ -242,7 +242,8 @@ def synchronize():
 def print_rank_0(message: str):
     """Print message only from rank 0 process."""
     if is_main_process():
-        print(message)
+        import logging
+        logging.info(message)
 
 
 # Example usage functions
