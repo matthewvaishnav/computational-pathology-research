@@ -7,9 +7,9 @@ dependency resolution, and role assignment based on analysis results.
 
 import logging
 from collections import defaultdict
-from typing import Dict, List, Set
+from typing import Dict, List
 
-from .models import AnalysisResult, OptimizationPlan, Priority, Role, Severity, Task
+from .models import AnalysisResult, OptimizationPlan, Role, Severity, Task
 
 logger = logging.getLogger(__name__)
 

@@ -8,7 +8,7 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .models import PerformanceAnalysis
 
@@ -123,9 +123,7 @@ class PerformanceProfiler:
     def _detect_bottlenecks(self) -> List[Dict[str, Any]]:
         """Detect performance bottlenecks (placeholder)."""
         try:
-            import threading
             import time
-            from collections import defaultdict
 
             import psutil
 
@@ -331,7 +329,6 @@ class PerformanceProfiler:
         """
         import cProfile
         import pstats
-        from pathlib import Path
 
         try:
             # Create output directory

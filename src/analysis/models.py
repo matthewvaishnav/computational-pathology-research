@@ -6,11 +6,9 @@ Defines core data structures for analysis results, issues, and optimization plan
 
 import json
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypedDict
 
-import jsonschema
 from jsonschema import ValidationError, validate
 
 
