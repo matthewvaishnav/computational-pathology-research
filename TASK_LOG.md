@@ -4,7 +4,7 @@
 **Training Status**: ~26.5 hours remaining (30% → completion)  
 **Goal**: 100+ commits of technical debt cleanup and quality improvements
 
-## Completed Tasks (34 commits)
+## Completed Tasks (36 commits)
 
 ### Block 1: Code Cleanup (5 commits)
 - ✅ C1: Clean `src/analysis/` - removed unused imports (8 files)
@@ -52,11 +52,17 @@
 
 **Impact**: Fixed all duplicate test filenames, resolved pytest collection conflicts
 
+### Block 5: Configuration Management (2 commits)
+- ✅ C35: Update PCam experiment configs after data migration (`data/pcam` → `data/pcam_real`)
+- ✅ C36: Clean config metadata comments and validate maintained YAML/JSON configs
+
+**Impact**: 106 maintained YAML/JSON configs parse successfully; remaining PCam configs now point at the migrated real dataset path
+
 ## Remaining Work
 
-### Block 5: Configuration Management (~10 commits)
-- [ ] Update config files with new paths after migration
-- [ ] Validate all YAML/JSON configs parse correctly
+### Block 5: Configuration Management (~8 commits remaining)
+- [x] Update config files with new paths after migration
+- [x] Validate all YAML/JSON configs parse correctly
 - [ ] Update example configs with 2026 metrics
 - [ ] Clean up deprecated config options
 
@@ -82,8 +88,8 @@
 
 ## Metrics
 
-- **Total Commits**: 34/100+ (34%)
-- **Files Modified**: 500+ files
+- **Total Commits**: 36/100+ (36%)
+- **Files Modified**: 519+ files
 - **Lines Changed**: ~1,500 insertions, ~1,500 deletions
 - **Test Files Renamed**: 32 files (resolved all duplicates)
 - **Documentation Updated**: 10 files (2024→2026)
