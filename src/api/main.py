@@ -8,7 +8,6 @@ for image analysis, DICOM integration, case management, and system monitoring.
 This is the PRODUCTION version with real database and model inference.
 """
 
-import asyncio
 import logging
 import os
 import sys
@@ -17,10 +16,9 @@ import uuid
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -38,7 +36,6 @@ from src.api.errors import (
 )
 from src.api.routers import admin, analysis, auth, mobile, monitoring
 from src.api.security import (
-    get_security_headers,
     limiter,
     log_security_event,
     validate_security_configuration,

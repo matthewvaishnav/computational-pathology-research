@@ -6,8 +6,6 @@ Handles mobile device registration, synchronization, offline cases, and model do
 """
 
 import logging
-from datetime import datetime
-from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel

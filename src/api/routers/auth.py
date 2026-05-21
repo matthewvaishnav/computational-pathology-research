@@ -12,7 +12,6 @@ from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
 from src.api.dependencies import get_current_user
 from src.api.security import (
@@ -230,7 +229,7 @@ async def oauth_callback(request: Request, provider: str = "azure"):
         result = await oauth_callback_handler(request, oauth_client)
 
         userinfo = result["userinfo"]
-        access_token = result["access_token"]
+        result["access_token"]
 
         db = next(get_db_session())
         user_ops = UserOperations(db)

@@ -9,9 +9,9 @@ for detecting and blocking common web attacks (SQL injection, XSS, etc.)
 import logging
 import re
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
-from fastapi import Request, Response
+from fastapi import Request
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
