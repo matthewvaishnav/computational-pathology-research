@@ -7,11 +7,10 @@ Compares baseline vs current analysis results to detect regressions in:
 - Security vulnerabilities (new CVEs)
 """
 
-import json
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 from .models import AnalysisResult
 

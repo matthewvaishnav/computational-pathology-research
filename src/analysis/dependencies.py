@@ -709,7 +709,7 @@ class DependencyAuditor:
     def _suggest_workaround(self, vulnerability: Dict[str, Any]) -> Optional[str]:
         """Suggest workarounds for vulnerabilities that can't be easily patched."""
         package = vulnerability.get("package", "").lower()
-        vuln_id = vulnerability.get("vulnerability_id", "")
+        vulnerability.get("vulnerability_id", "")
         description = vulnerability.get("description", "").lower()
 
         # Common workarounds based on vulnerability types
