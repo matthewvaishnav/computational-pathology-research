@@ -1,4 +1,4 @@
-# Pre-commit hooks for HistoCore
+# Pre-commit hooks for computational pathology research
 # Install: pip install pre-commit && pre-commit install
 
 repos:

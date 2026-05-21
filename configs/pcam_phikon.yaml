@@ -19,7 +19,7 @@ foundation_model:
   use_cache: true  # Enable feature caching (4x speedup)
   cache_dir: cache/features  # Cache directory
   projector:
-    output_dim: 256  # Project to HistoCore standard dimension
+    output_dim: 256  # Project to the standard embedding dimension
     dropout: 0.1
 
 

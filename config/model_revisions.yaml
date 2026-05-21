@@ -22,39 +22,39 @@ models:
   
   # Phikon - Vision Transformer for Histopathology (Owkin)
   # https://huggingface.co/owkin/phikon
-  "owkin/phikon": "main"  # TODO: Replace with specific commit hash
+  "owkin/phikon": "main"  # Development placeholder; pin to a commit hash for production
   
   # UNI - Universal Pathology Foundation Model (Mahmood Lab)
   # https://huggingface.co/MahmoodLab/UNI
-  "MahmoodLab/UNI": "main"  # TODO: Replace with specific commit hash
+  "MahmoodLab/UNI": "main"  # Development placeholder; pin to a commit hash for production
   
   # CONCH - Contrastive Learning for Histopathology (Mahmood Lab)
   # https://huggingface.co/MahmoodLab/CONCH
-  "MahmoodLab/CONCH": "main"  # TODO: Replace with specific commit hash
+  "MahmoodLab/CONCH": "main"  # Development placeholder; pin to a commit hash for production
   
   # Vision-Language Models
   
   # OpenAI CLIP - Vision-Language Model
   # https://huggingface.co/openai/clip-vit-base-patch32
-  "openai/clip-vit-base-patch32": "main"  # TODO: Replace with specific commit hash
+  "openai/clip-vit-base-patch32": "main"  # Development placeholder; pin to a commit hash for production
   
   # OpenAI CLIP Large
   # https://huggingface.co/openai/clip-vit-large-patch14
-  "openai/clip-vit-large-patch14": "main"  # TODO: Replace with specific commit hash
+  "openai/clip-vit-large-patch14": "main"  # Development placeholder; pin to a commit hash for production
   
   # General Purpose Models
   
   # Microsoft ResNet-50
   # https://huggingface.co/microsoft/resnet-50
-  "microsoft/resnet-50": "main"  # TODO: Replace with specific commit hash
+  "microsoft/resnet-50": "main"  # Development placeholder; pin to a commit hash for production
   
   # Facebook DINO ViT-B/16
   # https://huggingface.co/facebook/dino-vitb16
-  "facebook/dino-vitb16": "main"  # TODO: Replace with specific commit hash
+  "facebook/dino-vitb16": "main"  # Development placeholder; pin to a commit hash for production
   
   # BiomedCLIP (if used)
   # https://huggingface.co/microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
-  "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": "main"  # TODO: Replace with specific commit hash
+  "microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224": "main"  # Development placeholder; pin to a commit hash for production
 
 # Notes:
 # - "main" is used as a placeholder. For production, replace with specific commit hashes.
