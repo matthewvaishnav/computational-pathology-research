@@ -1,14 +1,13 @@
 """Unit tests for interpretability dashboard."""
 
 import json
-from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 
 # Check if Flask is available
 try:
-    from flask import Flask
+    pass
 
     FLASK_AVAILABLE = True
 except ImportError:

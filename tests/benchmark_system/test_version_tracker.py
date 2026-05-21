@@ -7,18 +7,14 @@ and config validation.
 Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9
 """
 
-import json
 import platform
-import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
-import pytest
 import torch
 import yaml
 
-from experiments.benchmark_system.models import FrameworkEnvironment
 from experiments.benchmark_system.version_tracker import (
     EnvironmentInfo,
     VersionTracker,
@@ -329,7 +325,7 @@ class TestVersionTracker:
         tracker = VersionTracker()
 
         # Record current environment
-        env_info = tracker.record_environment()
+        tracker.record_environment()
 
         # Export to file
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -620,7 +616,7 @@ class TestVersionTrackerIntegration:
     def test_config_roundtrip(self):
         """Test config export and import roundtrip."""
         tracker1 = VersionTracker()
-        env_info1 = tracker1.record_environment()
+        tracker1.record_environment()
 
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.yaml"

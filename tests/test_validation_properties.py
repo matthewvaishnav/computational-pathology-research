@@ -8,7 +8,6 @@ and input validation across a wide range of inputs.
 import pytest
 import torch
 
-import hypothesis.extra.numpy as npst
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from src.core.utils.validation import (

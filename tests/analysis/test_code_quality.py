@@ -7,11 +7,9 @@ and overall code quality scoring.
 
 import json
 import shutil
-import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 

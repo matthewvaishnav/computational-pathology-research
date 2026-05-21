@@ -9,7 +9,7 @@ Requirements: 3.1, 3.2, 3.3, 3.5, 3.8
 
 import subprocess
 import time
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 import torch

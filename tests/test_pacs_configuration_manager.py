@@ -10,7 +10,6 @@ Property 24: Profile-Based Configuration Loading
 
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 import pytest
 import yaml

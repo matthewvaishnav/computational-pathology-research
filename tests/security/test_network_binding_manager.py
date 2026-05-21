@@ -5,12 +5,11 @@ Tests network binding security policies across different environments.
 """
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from src.platform.security.exceptions import NetworkBindingSecurityError
-from src.platform.security.models import SecurityEnvironment
 from src.platform.security.network_binding_manager import NetworkBindingManager
 
 

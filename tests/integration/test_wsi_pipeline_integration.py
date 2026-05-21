@@ -12,7 +12,6 @@ Test Coverage:
 - Task 13.4: Integration with evaluation scripts
 """
 
-import json
 import tempfile
 from pathlib import Path
 

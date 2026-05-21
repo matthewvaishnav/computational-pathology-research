@@ -7,14 +7,9 @@ Task 8.2.2: Stress testing and resilience validation.
 
 import asyncio
 import logging
-import multiprocessing
-import os
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 import pytest
@@ -26,8 +21,6 @@ from src.streaming.attention_aggregator import StreamingAttentionAggregator
 # Import streaming components
 from src.streaming.gpu_pipeline import GPUPipeline
 from src.streaming.memory.monitor import MemoryMonitor
-from src.streaming.memory_optimizer import MemoryPoolManager
-from src.streaming.parallel_pipeline import ParallelConfig, ParallelPipeline
 
 logger = logging.getLogger(__name__)
 

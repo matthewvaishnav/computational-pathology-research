@@ -19,14 +19,9 @@ from PIL import Image
 
 from src.data.wsi.pipeline import (
     BatchProcessor,
-    FeatureCache,
-    FeatureGenerator,
-    PatchExtractor,
     ProcessingConfig,
     QualityControl,
     SlideMetadata,
-    TissueDetector,
-    WSIReader,
 )
 
 

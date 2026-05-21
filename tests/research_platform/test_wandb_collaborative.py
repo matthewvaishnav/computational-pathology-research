@@ -8,13 +8,11 @@ workspace features, team management, and experiment templates.
 import json
 import tempfile
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 from src.features.research.experiment.wandb_integration import (
-    CollaboratorInfo,
     ExperimentTemplate,
     ProjectVisibility,
     WandBCollaborativeWorkspace,

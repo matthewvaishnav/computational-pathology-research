@@ -9,8 +9,7 @@ Feature: nnmil-architecture-upgrade
 """
 
 import math
-from typing import Dict, List, Tuple
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 import torch

@@ -2,7 +2,7 @@
 
 import gc
 import time
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -10,7 +10,7 @@ import torch
 
 from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUMemoryManager, GPUPipeline
-from src.data.wsi.streaming import StreamingMetadata, TileBufferPool, WSIStreamReader
+from src.data.wsi.streaming import StreamingMetadata, TileBufferPool
 
 
 class TestMemoryBounds:

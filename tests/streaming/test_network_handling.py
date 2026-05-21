@@ -4,8 +4,6 @@ Note: Current streaming implementation uses local file I/O.
 These tests prepare for future PACS/network integration.
 """
 
-import time
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 

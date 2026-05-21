@@ -5,11 +5,10 @@ Comprehensive integration tests for the complete PACS integration system,
 validating end-to-end workflows and component interactions.
 """
 
-import asyncio
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -17,12 +16,9 @@ import pytest
 pytest_plugins = ("pytest_asyncio",)
 
 from src.features.clinical.workflow.pacs.audit_logger import PACSAuditLogger
-from src.features.clinical.workflow.pacs.error_handling import DeadLetterQueue, NetworkErrorHandler
 from src.features.clinical.workflow.pacs.failover import PACSEndpoint
 from src.features.clinical.workflow.pacs.notification_system import ClinicalNotificationSystem
-from src.features.clinical.workflow.pacs.pacs_service import PACSService
 from src.features.clinical.workflow.pacs.workflow_orchestrator import WorkflowOrchestrator
-from src.features.clinical.workflow.workflow import ClinicalWorkflowSystem
 
 
 class TestPACSSystemIntegration:
@@ -153,7 +149,6 @@ class TestPACSSystemIntegration:
         # error_manager = PACSErrorManager(
         #     dead_letter_queue_size=100, persistence_file=str(temp_dir / "dlq.json")
         # )
-        pass
 
         # # Simulate network error
         # test_error = ConnectionError("Network timeout")

@@ -6,11 +6,9 @@ Tests thread-safe primitives, graceful shutdown, and error handling.
 
 import threading
 import time
-from unittest.mock import Mock, patch
 
 import pytest
 
-from src.core.exceptions import ThreadingError
 from src.core.utils.safe_threading import (
     BoundedQueue,
     GracefulThread,

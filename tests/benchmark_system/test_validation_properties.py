@@ -7,11 +7,8 @@ Property 3: Result Validation Sanity Checks
 **Validates: Requirements 8.5, 10.1, 10.6, 10.4**
 """
 
-import math
-from datetime import datetime
 from pathlib import Path
 
-import pytest
 
 from experiments.benchmark_system.models import TaskSpecification, TrainingResult
 from experiments.benchmark_system.result_validator import ResultValidator

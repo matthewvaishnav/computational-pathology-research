@@ -7,7 +7,7 @@ and handled throughout the codebase.
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -39,7 +39,7 @@ class TestCacheExceptions:
         config = CacheConfig(redis_host="invalid_host", redis_port=99999)
 
         with pytest.raises(CacheConnectionError):
-            cache = RedisCache(config)
+            RedisCache(config)
 
     @pytest.mark.skip(reason="Requires Redis server")
     def test_cache_serialization_error_on_invalid_data(self):

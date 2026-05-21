@@ -13,10 +13,8 @@ to avoid long execution times. They test:
 """
 
 import json
-import time
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 

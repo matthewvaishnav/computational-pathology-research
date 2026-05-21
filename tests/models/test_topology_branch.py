@@ -9,15 +9,13 @@ Tests:
 """
 
 import tempfile
-from pathlib import Path
 
 import pytest
 import torch
-import torch.nn as nn
 
 # Check if torch_geometric available
 try:
-    import torch_geometric
+    pass
 
     TORCH_GEOMETRIC_AVAILABLE = True
 except ImportError:
@@ -25,7 +23,7 @@ except ImportError:
 
 # Check if FAISS available
 try:
-    import faiss
+    pass
 
     FAISS_AVAILABLE = True
 except ImportError:

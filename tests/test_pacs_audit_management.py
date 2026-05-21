@@ -8,7 +8,6 @@ Property 48: Audit Search and Reporting Accuracy
 import tempfile
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from unittest.mock import Mock
 
 import pytest
 

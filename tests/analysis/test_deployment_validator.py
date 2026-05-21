@@ -8,7 +8,7 @@ Requirements: 6.1, 6.2, 6.3
 import shutil
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import patch
 
 import pytest
 import yaml

@@ -17,9 +17,8 @@ import time
 from datetime import datetime
 from datetime import time as dt_time
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
-import psutil
 import pytest
 import torch
 
@@ -29,7 +28,6 @@ from src.features.federated.pathology_fl.client.resource_manager import (
     ResourceLimits,
     ResourceManager,
     ResourceUsage,
-    TrainingWindow,
 )
 
 # ============================================================================

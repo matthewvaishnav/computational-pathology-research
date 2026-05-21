@@ -6,7 +6,7 @@ Tests bootstrap confidence intervals and metric computation.
 
 import numpy as np
 import pytest
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score
 
 from src.core.exceptions import ValidationError
 from src.core.utils.statistical import (

@@ -12,12 +12,9 @@ from pathlib import Path
 import pytest
 
 from experiments.benchmark_system.models import (
-    FrameworkEnvironment,
     TaskSpecification,
 )
 from experiments.benchmark_system.task_executor import (
-    EquivalenceReport,
-    TrainingConfig,
     TrainingTaskExecutor,
 )
 
@@ -531,7 +528,7 @@ class TestConfigurationDifferenceLogging:
         config1 = executor.configure_task(task_spec1, "HistoCore")
         config2 = executor.configure_task(task_spec2, "PathML")
 
-        report = executor.validate_equivalence([config1, config2])
+        executor.validate_equivalence([config1, config2])
 
         # Should log warning about differences
         assert any(
@@ -550,7 +547,7 @@ class TestConfigurationDifferenceLogging:
             executor.configure_task(sample_task_spec, "PathML"),
         ]
 
-        report = executor.validate_equivalence(configs)
+        executor.validate_equivalence(configs)
 
         # Should log success message
         assert any(

@@ -4,7 +4,6 @@ Tests response times, memory usage, and startup time.
 """
 
 import statistics
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import Mock, patch
@@ -80,7 +79,7 @@ class TestEndpointResponseTimes:
 
         for _ in range(20):  # More samples for health checks
             start_time = time.time()
-            result = mock_router.get("/health")
+            mock_router.get("/health")
             end_time = time.time()
 
             response_time = (end_time - start_time) * 1000
@@ -104,7 +103,7 @@ class TestEndpointResponseTimes:
             start_time = time.time()
 
             # Simulate processing payload
-            processed_data = str(payload)
+            str(payload)
 
             end_time = time.time()
             response_time = (end_time - start_time) * 1000
@@ -132,7 +131,7 @@ class TestMemoryUsage:
 
         # Simulate processing multiple images
         for _ in range(5):
-            result = mock_process("mock_image_data")
+            mock_process("mock_image_data")
 
         peak_memory = self.get_memory_usage()
         memory_increase = peak_memory - initial_memory
@@ -153,7 +152,7 @@ class TestMemoryUsage:
         # Simulate 10 concurrent requests
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = [executor.submit(mock_request) for _ in range(10)]
-            results = [future.result() for future in futures]
+            [future.result() for future in futures]
 
         peak_memory = self.get_memory_usage()
         memory_increase = peak_memory - initial_memory

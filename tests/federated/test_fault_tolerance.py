@@ -8,14 +8,13 @@ import asyncio
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import torch
 
 from src.features.federated.pathology_fl.fault_tolerance import (
     CheckpointManager,
-    CheckpointMetadata,
     NetworkMonitor,
     NetworkStatus,
     PartitionDetector,

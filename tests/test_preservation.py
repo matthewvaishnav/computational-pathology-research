@@ -9,7 +9,6 @@ EXPECTED OUTCOME: Tests PASS on both unfixed and fixed code (confirms no regress
 import ast
 from pathlib import Path
 
-import pytest
 
 
 class TestPreservation:

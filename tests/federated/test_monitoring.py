@@ -1,15 +1,11 @@
 """Unit tests for federated learning monitoring system."""
 
-import json
-import tempfile
 import time
-from pathlib import Path
 
 import pytest
 import torch
 import torch.nn as nn
 
-from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 from src.features.federated.pathology_fl.coordinator.monitoring import (
     AlertGenerator,
     ConvergenceDetector,

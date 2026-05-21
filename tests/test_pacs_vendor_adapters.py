@@ -6,9 +6,7 @@ Property 13: Vendor Tag Normalization
 Property 14: Vendor-Specific Optimization Selection
 """
 
-from typing import List
 
-import pytest
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 from pydicom.tag import Tag
@@ -23,12 +21,7 @@ from src.features.clinical.workflow.pacs.data_models import (
     SecurityConfig,
 )
 from src.features.clinical.workflow.pacs.vendor_adapters import (
-    AgfaAdapter,
     ConformanceNegotiator,
-    GEAdapter,
-    GenericAdapter,
-    PhilipsAdapter,
-    SiemensAdapter,
     VendorAdapterFactory,
 )
 

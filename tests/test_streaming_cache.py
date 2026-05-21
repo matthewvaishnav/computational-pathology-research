@@ -4,9 +4,7 @@ Tests for streaming cache functionality.
 Tests cache operations, serialization, and error handling.
 """
 
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 

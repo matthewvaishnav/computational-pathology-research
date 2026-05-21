@@ -6,9 +6,8 @@ This version avoids circular import issues by testing components in isolation.
 """
 
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-import pytest
 
 
 class TestAnalysisRouterComponents:

@@ -5,7 +5,6 @@ Tests dataclass initialization, validation, and edge cases for all data models.
 Requirements: 11.1, 11.2
 """
 
-from dataclasses import FrozenInstanceError
 from datetime import datetime
 
 import pytest

@@ -4,7 +4,6 @@ Security Penetration Testing for HistoCore
 """
 
 import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -105,7 +104,7 @@ def test_file_access_controls():
             if path.exists():
                 try:
                     # Try to read the file
-                    content = path.read_text()
+                    path.read_text()
                     # If it's a system file that's normally readable, that's expected
                     if sensitive_file in ["/etc/passwd", "/proc/version"]:
                         results["passed"] += 1

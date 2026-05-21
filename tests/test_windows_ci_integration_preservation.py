@@ -173,7 +173,7 @@ def test_property_marker_exclusion_still_works():
         timeout=30,
     )
 
-    output = result.stdout + result.stderr
+    result.stdout + result.stderr
 
     # Should collect property-based tests (if any exist)
     # This confirms the property marker is still recognized

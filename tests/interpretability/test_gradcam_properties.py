@@ -11,7 +11,6 @@ import pytest
 import torch
 import torch.nn as nn
 
-import hypothesis.extra.numpy as npst
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.features.interpretability.gradcam.gradcam import GradCAMGenerator

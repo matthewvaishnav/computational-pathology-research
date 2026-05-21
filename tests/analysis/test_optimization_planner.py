@@ -23,7 +23,6 @@ from src.analysis.models import (
     ScalabilityAnalysis,
     SecurityAnalysis,
     Severity,
-    Task,
 )
 from src.analysis.planner import OptimizationPlanner
 

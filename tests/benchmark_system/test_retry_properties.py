@@ -7,7 +7,6 @@ Property 4: Exponential Backoff Retry Pattern
 **Validates: Requirement 8.2**
 """
 
-import pytest
 
 from experiments.benchmark_system.error_handler import ErrorCategory, ErrorContext, ErrorHandler
 from hypothesis import assume, given, settings

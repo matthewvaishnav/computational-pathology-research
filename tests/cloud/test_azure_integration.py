@@ -8,19 +8,13 @@ Comprehensive test suite for all Azure cloud services integration:
 - Monitor Integration
 """
 
-import json
-import os
-from dataclasses import asdict
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 from src.platform.cloud.azure.blob_storage import (
     AzureBlobStorageConnector,
-    BlobAccessTier,
     BlobStorageConfig,
-    UploadResult,
     create_blob_storage_connector,
 )
 from src.platform.cloud.azure.functions import (
@@ -28,7 +22,6 @@ from src.platform.cloud.azure.functions import (
     FunctionConfig,
     FunctionDefinition,
     FunctionInvocation,
-    FunctionResult,
     FunctionTriggerType,
     create_functions_integration,
     get_model_inference_function,
@@ -40,18 +33,14 @@ from src.platform.cloud.azure.health_data_services import (
     AzureHealthDataServices,
     DiagnosticReportData,
     HealthDataConfig,
-    ObservationData,
     PatientData,
     create_health_data_services,
 )
 from src.platform.cloud.azure.monitor import (
-    AlertRule,
-    AlertSeverity,
     AzureMonitorIntegration,
 )
 from src.platform.cloud.azure.monitor import CustomMetric as MonitorMetric
 from src.platform.cloud.azure.monitor import (
-    LogEntry,
     MetricType,
     MonitorConfig,
     create_monitor_integration,
@@ -533,12 +522,6 @@ class TestAzureIntegrationEnd2End:
         """Test Azure module imports work correctly."""
         # Verify __all__ exports
         import src.cloud.azure as azure_module
-        from src.platform.cloud.azure import (
-            AzureBlobStorageConnector,
-            AzureFunctionsIntegration,
-            AzureHealthDataServices,
-            AzureMonitorIntegration,
-        )
 
         expected_exports = [
             "AzureHealthDataServices",

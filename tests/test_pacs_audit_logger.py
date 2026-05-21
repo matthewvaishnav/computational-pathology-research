@@ -5,14 +5,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.features.clinical.workflow.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,
-    AuditSearchIndex,
     AuditStudyObject,
     LogRetentionManager,
     PACSAuditLogger,
@@ -223,7 +221,7 @@ def test_property_46_tamper_detected_after_modification(tmp_path, entries):
 
 
 def test_audit_logger_creates_storage_directory(tmp_path):
-    audit = _make_logger(tmp_path)
+    _make_logger(tmp_path)
     assert (tmp_path / "audit" / "entries").is_dir()
 
 

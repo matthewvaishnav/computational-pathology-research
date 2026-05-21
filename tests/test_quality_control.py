@@ -2,9 +2,8 @@
 Tests for quality control features
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-import numpy as np
 import pytest
 
 from src.features.research.annotation.backend.annotation_models import (

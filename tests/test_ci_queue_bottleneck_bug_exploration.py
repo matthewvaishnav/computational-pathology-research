@@ -11,11 +11,9 @@ The test demonstrates that CI trigger events result in queue times >30 minutes d
 excessive job creation and lack of resource management.
 """
 
-import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Dict
 
-import pytest
 import yaml
 
 from hypothesis import given, settings

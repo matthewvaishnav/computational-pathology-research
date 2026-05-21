@@ -5,14 +5,12 @@ Tests the tile buffer pool implementation for memory management,
 LRU eviction, thread safety, and performance optimization.
 """
 
-import gc
 import threading
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
-import torch
 
 from src.data.wsi_pipeline.exceptions import ProcessingError, ResourceError
 from src.data.wsi_pipeline.tile_buffer_pool import (
@@ -290,7 +288,7 @@ class TestTileBufferPool:
     def test_memory_pressure_detection(self, pool, sample_tile):
         """Test memory pressure detection and cleanup."""
         # Fill buffer to trigger memory pressure
-        initial_memory = pool.get_memory_usage()
+        pool.get_memory_usage()
 
         # Store tiles until memory pressure is detected
         i = 0
@@ -424,7 +422,7 @@ class TestTileBufferPool:
         for i in range(10):
             pool.store_tile((i, 0), 0, sample_tile)
 
-        initial_stats = pool.get_buffer_stats()
+        pool.get_buffer_stats()
 
         # Run optimization
         optimization_results = pool.optimize_memory_usage()

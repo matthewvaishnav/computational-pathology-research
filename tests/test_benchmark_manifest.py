@@ -11,10 +11,7 @@ Tests cover:
 """
 
 import json
-import os
-from pathlib import Path
 
-import pytest
 
 from src.core.utils.benchmark_manifest import BenchmarkEntry, BenchmarkManifest
 
@@ -103,7 +100,7 @@ def test_manifest_init_creates_directory(tmp_path):
     """Test manifest initialization creates parent directories."""
     manifest_path = tmp_path / "nested" / "dir" / "manifest.jsonl"
 
-    manifest = BenchmarkManifest(str(manifest_path))
+    BenchmarkManifest(str(manifest_path))
 
     assert manifest_path.parent.exists()
 

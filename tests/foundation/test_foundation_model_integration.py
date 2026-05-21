@@ -3,33 +3,27 @@ Comprehensive integration tests for the Foundation Model system
 Tests all components: multi-disease model, self-supervised pre-training, zero-shot detection, and training pipeline
 """
 
-import json
-import shutil
-import sqlite3
 
 # Import foundation model components
 import sys
 import tempfile
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 import torch
-import torch.nn as nn
 
 sys.path.append("src/foundation")
 
 from data_collection import (
     SlideDatabase,
     UnlabeledWSIDataset,
-    WSIDataCollector,
     WSIQualityAssessment,
 )
 from multi_disease_model import ModelConfig, MultiDiseaseFoundationModel, create_foundation_model
 from self_supervised_pretrainer import (
-    HistopathologyAugmentation,
     PreTrainingConfig,
     SelfSupervisedPreTrainer,
 )

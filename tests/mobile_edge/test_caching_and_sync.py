@@ -6,12 +6,9 @@ functionality including inference cache, feature cache, and sync manager.
 """
 
 import asyncio
-import json
 import tempfile
-import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
 
 import numpy as np
 import pytest
@@ -19,13 +16,11 @@ import pytest
 from src.mobile_edge.caching.feature_cache import (
     FeatureCacheConfig,
     FeatureCacheManager,
-    FeatureEntry,
 )
 
 # Import caching modules
 from src.mobile_edge.caching.inference_cache import (
     CacheConfig,
-    CacheEntry,
     CacheEvictionPolicy,
     CacheStrategy,
     InferenceCacheManager,
@@ -39,7 +34,6 @@ from src.mobile_edge.sync.sync_manager import (
     SyncPriority,
     SyncResult,
     SyncStatus,
-    SyncTask,
 )
 
 
@@ -174,7 +168,7 @@ class TestInferenceCacheManager:
 
         # Try with very similar input (should hit)
         input_data2 = np.ones((10, 10)) * 1.001  # Very similar
-        cached_result = cache_manager.get(input_data2, "v1.0")
+        cache_manager.get(input_data2, "v1.0")
 
         # Note: This test may not work as expected due to hash-based similarity
         # In a real implementation, you'd use more sophisticated similarity measures

@@ -6,13 +6,12 @@ Provides comprehensive test data fixtures, mock objects, and synthetic data gene
 for integration testing of the Medical AI platform.
 """
 
-import io
 import json
 import random
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import numpy as np
 from PIL import Image

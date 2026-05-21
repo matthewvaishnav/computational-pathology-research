@@ -256,7 +256,7 @@ def test_adapter_baseline_simplicity(framework_env, task_spec):
 
 def test_adapter_pytorch_version_compatibility(framework_env):
     """Test that adapter reports PyTorch version correctly."""
-    adapter = PyTorchAdapter(framework_env)
+    PyTorchAdapter(framework_env)
 
     # Verify PyTorch version is accessible
     import torch

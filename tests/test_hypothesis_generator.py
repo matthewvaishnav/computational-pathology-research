@@ -3,7 +3,7 @@ Tests for hypothesis generator.
 """
 
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 import requests

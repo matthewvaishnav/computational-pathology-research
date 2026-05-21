@@ -6,9 +6,8 @@ Tests GPU utilization measurement, bottleneck detection, and recommendation gene
 
 import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
-import pytest
 
 from src.analysis.models import PerformanceAnalysis
 from src.analysis.performance import PerformanceProfiler

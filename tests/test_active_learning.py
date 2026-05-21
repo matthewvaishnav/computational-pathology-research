@@ -5,7 +5,6 @@ Tests uncertainty-based sampling, diversity sampling, annotation queue, and clin
 
 import shutil
 import tempfile
-from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -561,7 +560,7 @@ class TestActiveLearningSystem:
 
         if len(cases) > 0:
             # Submit case
-            task = active_learning_system.submit_for_annotation(cases[0])
+            active_learning_system.submit_for_annotation(cases[0])
 
             # Retrieve case from database
             retrieved_case = active_learning_system._get_case_by_id(cases[0].case_id)

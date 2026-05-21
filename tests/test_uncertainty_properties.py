@@ -8,10 +8,7 @@ a minimum of 100 iterations to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-from typing import Dict, List, Tuple
 
-import numpy as np
-import pytest
 import torch
 
 from hypothesis import given, settings

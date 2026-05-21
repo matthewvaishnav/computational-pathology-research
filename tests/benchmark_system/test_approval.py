@@ -1,8 +1,6 @@
 """Unit tests for historical comparison and approval workflow."""
 
 import json
-from datetime import datetime
-from pathlib import Path
 
 import pytest
 

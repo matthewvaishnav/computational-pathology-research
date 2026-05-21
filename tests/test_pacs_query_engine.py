@@ -9,7 +9,6 @@ Property 3: Date Range Filtering Correctness
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
-import pytest
 
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st

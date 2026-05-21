@@ -16,7 +16,6 @@ import logging
 import tempfile
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
@@ -557,7 +556,7 @@ class TestIntegration:
             progress.update(step=step)
 
             # Get resource stats
-            stats = monitor.get_all_stats()
+            monitor.get_all_stats()
 
             # Log progress
             metrics_dict = {"loss": tracker.get_latest("loss")}

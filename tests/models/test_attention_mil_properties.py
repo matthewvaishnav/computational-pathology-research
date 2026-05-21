@@ -21,7 +21,6 @@ The backup file (attention_mil.py.backup) contains the original implementation
 before refactoring.
 """
 
-import sys
 from pathlib import Path
 
 import pytest

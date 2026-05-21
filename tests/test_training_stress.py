@@ -4,9 +4,7 @@ Training Pipeline Stress Test - Test with problematic data
 """
 
 import json
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 

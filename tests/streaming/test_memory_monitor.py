@@ -10,11 +10,9 @@ Tests cover:
 import importlib.util
 
 # Import directly from memory_optimizer module
-import sys
 import time
 from pathlib import Path
-from typing import List
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import numpy as np
 import pytest

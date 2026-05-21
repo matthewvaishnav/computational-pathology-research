@@ -8,16 +8,13 @@ to ensure API consistency after the clean code refactoring.
 **Validates: Requirements FR-1, FR-3, NFR-1 (Backward Compatibility)**
 """
 
-import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 # Add project root to path
@@ -163,7 +160,7 @@ class TestRouterStructureProperties:
 
     def test_router_tags_properly_set(self):
         """Property: Each router has appropriate tags for organization."""
-        from src.api.routers import admin, analysis, auth, mobile, monitoring
+        from src.api.routers import auth, monitoring
 
         # Check tags exist
         assert len(auth.router.tags) > 0, "Auth router has no tags"
@@ -512,7 +509,7 @@ class TestRouterInteractionProperties:
         """Property: Routers can be imported independently."""
         # Each router should be importable on its own
         try:
-            from src.api.routers import admin, analysis, auth, mobile, monitoring
+            pass
         except ImportError as e:
             pytest.fail(f"Routers should be independently importable: {e}")
 

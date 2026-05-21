@@ -7,9 +7,8 @@ for HistoCore Real-Time WSI Streaming performance optimization.
 
 import os
 import tempfile
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
-import numpy as np
 import pytest
 import torch
 import torch.nn as nn
@@ -28,7 +27,6 @@ from src.streaming.parallel_pipeline import (
     LoadBalancer,
     ParallelConfig,
     ParallelPipeline,
-    benchmark_parallel_performance,
     create_parallel_pipeline,
 )
 

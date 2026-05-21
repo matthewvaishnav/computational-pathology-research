@@ -9,10 +9,8 @@ to JSON and deserialized back without data loss.
 """
 
 import json
-from datetime import datetime
 from pathlib import Path
 
-import pytest
 
 from experiments.benchmark_system.models import (
     BenchmarkConfig,

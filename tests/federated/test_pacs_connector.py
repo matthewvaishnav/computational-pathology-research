@@ -10,9 +10,8 @@ using property-based testing with Hypothesis.
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 import torch
 from PIL import Image

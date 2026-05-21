@@ -5,11 +5,10 @@ Tests quantization, sparsification, and mixed compression modes with
 property-based testing for round-trip correctness.
 """
 
-import numpy as np
 import pytest
 import torch
 
-from hypothesis import assume, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 from src.features.federated.pathology_fl.compression import (
     CompressionConfig,

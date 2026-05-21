@@ -4,12 +4,11 @@ Integration tests for GitHub Actions CI workflow.
 Tests workflow execution, PR comment posting, and regression detection in CI context.
 """
 
-import json
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 

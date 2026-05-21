@@ -13,7 +13,6 @@ from unittest.mock import patch
 import pytest
 
 from src.platform.security.exceptions import PickleSecurityError
-from src.platform.security.models import SecurityEnvironment
 from src.platform.security.pickle_security_control import PickleSecurityControl
 
 
@@ -58,7 +57,7 @@ class TestPickleSecurityControl:
         control = PickleSecurityControl(trusted_paths=["/trusted/models"])
 
         # Create pickle in trusted location
-        trusted_dir = Path("/trusted/models")
+        Path("/trusted/models")
         # Mock the path check
         with patch.object(Path, "exists", return_value=True):
             with patch.object(Path, "is_relative_to", return_value=True):

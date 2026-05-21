@@ -8,9 +8,8 @@ import json
 import subprocess
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
-import pytest
 
 from src.analysis.coverage import CoverageAnalyzer
 from src.analysis.models import CoverageAnalysis

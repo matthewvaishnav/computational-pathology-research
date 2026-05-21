@@ -13,25 +13,21 @@ Requirements: 7.1-7.10, 10.7
 """
 
 import json
-from datetime import datetime
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")  # Use non-interactive backend for tests
 
-import numpy as np
 import pandas as pd
 import pytest
 
 from experiments.benchmark_system.models import (
-    BenchmarkConfig,
     SignificanceTest,
     TaskSpecification,
     TrainingResult,
 )
 from experiments.benchmark_system.report_generator import ReportGenerator
-from experiments.benchmark_system.result_validator import ResultValidator
 
 # ============================================================================
 # FIXTURES

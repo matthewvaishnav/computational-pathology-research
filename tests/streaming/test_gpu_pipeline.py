@@ -14,11 +14,9 @@ import asyncio
 import importlib.util
 
 # Import directly from gpu_pipeline module file to avoid OpenSlide dependency
-import sys
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
-import numpy as np
 import pytest
 import torch
 import torch.nn as nn

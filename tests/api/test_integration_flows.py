@@ -3,7 +3,6 @@ Integration tests for end-to-end API flows.
 Tests complete user workflows across multiple endpoints.
 """
 
-import json
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 

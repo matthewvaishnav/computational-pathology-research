@@ -7,9 +7,8 @@ Requirements: 5.1, 8.8
 """
 
 import logging
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -221,7 +220,6 @@ class TestMainEntryPoint:
         mock_main.return_value = 0
 
         # Import and run main entry point
-        from experiments.benchmark_system import run_benchmark
 
         # Simulate running the script
         with patch("sys.exit") as mock_exit:
@@ -255,7 +253,7 @@ class TestMainEntryPoint:
         with patch("sys.exit") as mock_exit:
             try:
                 mock_setup_logging()
-                exit_code = mock_main()
+                mock_main()
             except Exception:
                 mock_generate_summary()
                 mock_exit(1)
