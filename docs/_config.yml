@@ -1,4 +1,4 @@
-title: HistoCore
+title: Computational Pathology Research
 description: Production-grade PyTorch framework for computational pathology research with 5,071 tests, 8-12x training optimization, 95.37% validation AUC, federated learning, and PACS integration
 theme: jekyll-theme-minimal
 logo: /assets/logo.svg?v=2

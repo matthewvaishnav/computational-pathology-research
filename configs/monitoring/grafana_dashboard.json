@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "title": "Federated Learning Monitoring",
-    "tags": ["federated-learning", "histocore"],
+    "tags": ["federated-learning", "computational-pathology"],
     "timezone": "browser",
     "schemaVersion": 16,
     "version": 1,
