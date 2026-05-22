@@ -70,6 +70,7 @@ nav:
       - Implementation Status: theory/implementation-status.md
       - Synthetic Report: validation/synthetic-report.md
       - PCam Smoke Report: validation/pcam-smoke-report.md
+      - PCam Benchmark Plan: validation/PCAM_FEDERATED_BENCHMARK_PLAN.md
       - Camelyon17 Plan: validation/camelyon17-plan.md
   - Engineering:
       - Architecture: engineering/architecture.md
