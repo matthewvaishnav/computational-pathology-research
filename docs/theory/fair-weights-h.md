@@ -100,7 +100,7 @@ where:
 The adjusted quality is evaluated on a standardized reference distribution:
 
 \[
-A_i^{adj} = \mathbb{E}_{X\sim P_{ref}}[\Pr(Y=1\mid X,i)]
+A_i^{\mathrm{adj}} = \mathbb{E}_{X \sim P_{\mathrm{ref}}} \left[ \Pr(Y = 1 \mid X, i) \right]
 \]
 
 This adjustment must be calibrated and audited. It cannot simply be asserted.
