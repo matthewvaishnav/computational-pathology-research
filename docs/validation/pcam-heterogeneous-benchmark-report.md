@@ -220,9 +220,52 @@ Compare mean global accuracy across strategies.
 
 ## Conclusion
 
-This benchmark evaluates whether FAIR-WEIGHTS-H maintains fairness (worst-site performance) under institutional heterogeneity while achieving competitive global accuracy.
+### Summary of Findings
 
-**Status:** Heterogeneous evaluation complete. Ready for real multi-center validation.
+**Null result:** All strategies achieved identical performance despite producing different weights.
+
+| Strategy | Weight Behavior | Approx. Range | Performance Effect |
+|----------|----------------|---------------|-------------------|
+| **Equal** | Uniform | 0.20 fixed | Baseline |
+| **Volume** | Size-weighted | 0.11–0.22 | No measurable change |
+| **Prestige** | Dynamic/concentrated | 0.12–0.35 | No measurable change |
+| **FAIR-WEIGHTS-H** | Dynamic/mildly adaptive | 0.17–0.23 | No measurable change |
+
+### Interpretation
+
+**The null result is NOT because strategies generated identical weights.**
+
+Weight trajectory analysis confirms:
+- Volume downweighted small site (0.11 vs 0.22)
+- Prestige concentrated weights dynamically (0.12-0.35 range)
+- FAIR-WEIGHTS-H adapted weights mildly (0.17-0.23 range)
+
+**The null result is because this PCam patch-level benchmark is insensitive to aggregation-weight variation.**
+
+### Possible Causes
+
+1. **Model weakness:** Simple CNN too weak to benefit from differential weighting
+2. **Insufficient training:** 30 rounds not enough for weight differences to accumulate
+3. **Task simplicity:** Patch-level classification too simple to expose weighting effects
+4. **Gradient alignment:** All sites contribute similar gradient directions despite data heterogeneity
+
+### Scientific Value
+
+This is an **informative null result** that narrows the failure mode:
+- ✅ Weighting strategies work as designed (produce different weights)
+- ❌ Weight differences don't translate to performance changes in this setup
+
+### Next Steps
+
+| Priority | Action | Rationale |
+|----------|--------|-----------|
+| 1 | **Increase heterogeneity** | 30%/70% imbalance may be insufficient; try 10%/90% |
+| 2 | **Extend training** | 50-100 rounds to allow weight effects to accumulate |
+| 3 | **Stronger model** | ResNet50 or pretrained encoder instead of simple CNN |
+| 4 | **Add metrics** | AUC, ECE, per-site confusion matrices for sensitivity |
+| 5 | **Real Camelyon17** | True multi-center hospital data with natural heterogeneity |
+
+**Status:** PCam validation complete. Setup insensitivity identified. Ready for next validation tier.
 
 ---
 
@@ -237,3 +280,4 @@ This benchmark evaluates whether FAIR-WEIGHTS-H maintains fairness (worst-site p
 **Generated:** 2026-05-22  
 **Benchmark Duration:** ~1 hour  
 **Total Runs:** 12 (all successful)
+
