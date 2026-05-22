@@ -533,8 +533,17 @@ class DPSGDEngine:
     def get_privacy_spent(self) -> Tuple[float, float]:
         """Get current privacy expenditure."""
         if self.opacus_engine is not None:
-            epsilon = self.opacus_engine.get_epsilon(delta=self.target_delta)
-            return epsilon, self.target_delta
+            try:
+                epsilon = self.opacus_engine.get_epsilon(delta=self.target_delta)
+                # Handle NaN (no training steps yet)
+                import math
+
+                if math.isnan(epsilon):
+                    return 0.0, self.target_delta
+                return epsilon, self.target_delta
+            except (ValueError, ZeroDivisionError):
+                # Opacus raises errors when no steps have been taken
+                return 0.0, self.target_delta
         return self.accountant.get_privacy_spent()
 
     def clip_batch_gradients_for_monitoring(self, model: nn.Module) -> Dict[str, torch.Tensor]:

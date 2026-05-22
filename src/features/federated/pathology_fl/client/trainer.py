@@ -102,10 +102,19 @@ class LocalTrainer:
         logger.info(f"Initializing local model from global model (round {self.current_round})")
 
         try:
-            # Load global model parameters
-            self.model.load_state_dict(global_model_state)
+            # Check if model is wrapped by Opacus GradSampleModule
+            # GradSampleModule prefixes all parameters with "_module."
+            from opacus.grad_sample import GradSampleModule
 
-            # Store global model state for reference
+            if isinstance(self.model, GradSampleModule):
+                # Add "_module." prefix to all keys in global_model_state
+                adjusted_state = {f"_module.{k}": v for k, v in global_model_state.items()}
+                self.model.load_state_dict(adjusted_state)
+            else:
+                # Load global model parameters directly
+                self.model.load_state_dict(global_model_state)
+
+            # Store global model state for reference (without prefix)
             self.global_model_state = {
                 name: param.clone().detach() for name, param in global_model_state.items()
             }
