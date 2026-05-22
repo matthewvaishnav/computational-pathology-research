@@ -2,9 +2,7 @@
 
 ## System Overview
 
-![the platform Architecture Overview](assets/architecture-overview.png)
-
-*Figure 1: the platform system architecture showing the complete stack from data processing to clinical integration.*
+This document describes the complete system architecture from data processing to clinical integration.
 
 ## AttentionMIL Model Architecture
 
