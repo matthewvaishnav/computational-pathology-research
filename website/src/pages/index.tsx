@@ -36,15 +36,15 @@ export default function Home(): ReactNode {
           </header>
 
           <section className={styles.quickNav}>
-            <Link to="/docs/performance-comparison" className={styles.quickNavCard}>
+            <Link to="/docs/PERFORMANCE_COMPARISON" className={styles.quickNavCard}>
               <strong>Results</strong>
               <span>Performance comparisons, benchmark context, and model metrics</span>
             </Link>
-            <Link to="/docs/fair-weights-hybrid-protocol" className={styles.quickNavCard}>
+            <Link to="/docs/FAIR_WEIGHTS_HYBRID_PROTOCOL" className={styles.quickNavCard}>
               <strong>FAIR-WEIGHTS-H</strong>
               <span>Hybrid institutional weighting protocol and validation plan</span>
             </Link>
-            <Link to="/docs/getting-started" className={styles.quickNavCard}>
+            <Link to="/docs/GETTING_STARTED" className={styles.quickNavCard}>
               <strong>Start Here</strong>
               <span>Install, run, and explore the platform</span>
             </Link>
@@ -68,27 +68,27 @@ export default function Home(): ReactNode {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Project Map</h2>
             <div className={styles.linksGrid}>
-              <Link to="/docs/framework-overview" className={styles.docLink}>
+              <Link to="/docs/FRAMEWORK_OVERVIEW" className={styles.docLink}>
                 <h3>Framework Overview</h3>
                 <p>High-level map of the platform, modules, and research direction.</p>
               </Link>
-              <Link to="/docs/architecture" className={styles.docLink}>
+              <Link to="/docs/ARCHITECTURE" className={styles.docLink}>
                 <h3>Architecture</h3>
                 <p>System architecture, pipeline structure, and major components.</p>
               </Link>
-              <Link to="/docs/performance-comparison" className={styles.docLink}>
+              <Link to="/docs/PERFORMANCE_COMPARISON" className={styles.docLink}>
                 <h3>Performance</h3>
                 <p>Benchmark results, model metrics, and comparative evaluation context.</p>
               </Link>
-              <Link to="/docs/fair-weights-hybrid-protocol" className={styles.docLink}>
+              <Link to="/docs/FAIR_WEIGHTS_HYBRID_PROTOCOL" className={styles.docLink}>
                 <h3>FAIR-WEIGHTS-H</h3>
                 <p>Hybrid institutional weighting with contribution, useful uniqueness, and subgroup constraints.</p>
               </Link>
-              <Link to="/docs/benchmark-system" className={styles.docLink}>
+              <Link to="/docs/BENCHMARK_SYSTEM" className={styles.docLink}>
                 <h3>Benchmarking</h3>
                 <p>Evaluation infrastructure, statistical validation, and experiment design.</p>
               </Link>
-              <Link to="/docs/security-hardening" className={styles.docLink}>
+              <Link to="/docs/SECURITY_HARDENING" className={styles.docLink}>
                 <h3>Security</h3>
                 <p>Privacy, audit logging, hardening, and compliance-oriented infrastructure.</p>
               </Link>
@@ -168,26 +168,6 @@ export default function Home(): ReactNode {
               <li><strong>Secure aggregation:</strong> encrypted gradient aggregation infrastructure.</li>
               <li><strong>Byzantine robustness:</strong> malicious-client detection via robust aggregation methods.</li>
             </ul>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Research Use Notice</h2>
-            <p className={styles.sectionText}>
-              This platform is designed for research and engineering validation. It has not been validated for clinical diagnostic use, and FAIR-WEIGHTS-H synthetic experiments should not be interpreted as clinical evidence or regulatory clearance.
-            </p>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Citation</h2>
-            <div className={styles.citation}>
-              <pre>{`@software{vaishnav2026computational_pathology,
-  title={Computational Pathology Research Platform},
-  author={Vaishnav, Matthew},
-  year={2026},
-  url={https://github.com/matthewvaishnav/computational-pathology-research},
-  note={Research Platform v2.0 with PathologyFL, DMI, and FAIR-WEIGHTS-H}
-}`}</pre>
-            </div>
           </section>
         </div>
       </main>
