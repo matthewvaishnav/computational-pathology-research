@@ -24,6 +24,18 @@ const curatedDocs = [
       'Installation, environment setup, and first-run guidance for the HistoCore platform.',
   },
   {
+    source: 'REPOSITORY_OVERVIEW.md',
+    title: 'Repository Overview',
+    description:
+      'Project structure, organization, and navigation guide for the computational pathology research repository.',
+  },
+  {
+    source: 'PLATFORM_OVERVIEW.md',
+    title: 'Platform Overview',
+    description:
+      'System architecture, capabilities, and core components of the HistoCore computational pathology platform.',
+  },
+  {
     source: 'FRAMEWORK_OVERVIEW.md',
     title: 'Framework Overview',
     description:
@@ -42,10 +54,46 @@ const curatedDocs = [
       'Reference guide for the primary APIs, modules, and commands exposed by HistoCore.',
   },
   {
+    source: 'PCAM_REAL_RESULTS.md',
+    title: 'PCam Real Results',
+    description:
+      'Validated benchmark results on PatchCamelyon dataset with 0.9394 AUC and 85.26% accuracy.',
+  },
+  {
+    source: 'CURRENT_STATUS_2026-05-14.md',
+    title: 'Current Status (May 2026)',
+    description:
+      'Project status update with completed work, ongoing experiments, and next steps.',
+  },
+  {
+    source: 'FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS.md',
+    title: 'FAIR-WEIGHTS-H Implementation Status',
+    description:
+      'Implementation details, usage guide, and limitations for the FAIR-WEIGHTS-H weighting system.',
+  },
+  {
+    source: 'FAIR_WEIGHTS_H_SYNTHETIC_REPORT.md',
+    title: 'FAIR-WEIGHTS-H Synthetic Report',
+    description:
+      'Synthetic perturbation experiment results for FAIR-WEIGHTS-H (engineering check only).',
+  },
+  {
+    source: 'ROADMAP_TO_REAL_DATASETS.md',
+    title: 'Roadmap to Real Datasets',
+    description:
+      'Multi-institutional validation plan for federated learning on real pathology datasets.',
+  },
+  {
     source: 'FOUNDATION_MODELS.md',
     title: 'Foundation Models',
     description:
       'Guide to foundation-model support, tradeoffs, and integration patterns inside HistoCore.',
+  },
+  {
+    source: 'MODEL_INTERPRETABILITY.md',
+    title: 'Model Interpretability',
+    description:
+      'Grad-CAM, attention visualization, and explainability tools for computational pathology models.',
   },
   {
     source: 'INFERENCE_OPTIMIZATION.md',
@@ -64,6 +112,18 @@ const curatedDocs = [
     title: 'Performance Comparison',
     description:
       'Comparative performance positioning for the platform and key optimization layers.',
+  },
+  {
+    source: 'CLINICAL_WORKFLOW_INTEGRATION.md',
+    title: 'Clinical Workflow Integration',
+    description:
+      'Clinical deployment guide for integrating HistoCore into pathology workflows.',
+  },
+  {
+    source: 'PACS_INTEGRATION.md',
+    title: 'PACS Integration',
+    description:
+      'DICOM and FHIR integration guide for connecting HistoCore to clinical PACS systems.',
   },
   {
     source: 'DEPLOYMENT.md',
