@@ -92,7 +92,7 @@ def test_integration_five_client_training():
         assert len(round_metadata.participants) == num_clients
 
         # Broadcast global model to clients
-        global_state = orchestrator.get_global_model_state()
+        global_state = orchestrator.get_global_model()
 
         # Collect client updates
         client_updates = []
@@ -105,7 +105,7 @@ def test_integration_five_client_training():
             train_data = [(torch.randn(10), torch.randint(0, 2, (1,)).item()) for _ in range(50)]
 
             # Train locally
-            update = client.train_local(
+            update = client.train_local_epochs(
                 train_data=train_data,
                 epochs=local_epochs,
                 round_id=round_num,
@@ -181,7 +181,7 @@ def test_integration_convergence_validation():
         orchestrator.start_round([f"client_{i}" for i in range(num_clients)])
 
         # Broadcast global model
-        global_state = orchestrator.get_global_model_state()
+        global_state = orchestrator.get_global_model()
 
         # Collect client updates
         client_updates = []
@@ -191,7 +191,7 @@ def test_integration_convergence_validation():
             client.load_global_model(global_state)
 
             # Train locally
-            update = client.train_local(
+            update = client.train_local_epochs(
                 train_data=train_data,
                 epochs=local_epochs,
                 round_id=round_num,
@@ -275,6 +275,7 @@ def test_integration_privacy_budget_enforcement():
             noise_multiplier=1.0,
             max_grad_norm=1.0,
             sample_rate=1.0,
+            secure_rng=False,  # Disable secure RNG for tests (torchcsprng not required)
         )
 
         client = LocalTrainer(
@@ -310,7 +311,7 @@ def test_integration_privacy_budget_enforcement():
         orchestrator.start_round([f"client_{i}" for i in range(num_clients)])
 
         # Broadcast global model
-        global_state = orchestrator.get_global_model_state()
+        global_state = orchestrator.get_global_model()
 
         # Collect client updates
         client_updates = []
@@ -319,7 +320,7 @@ def test_integration_privacy_budget_enforcement():
             client.load_global_model(global_state)
 
             # Train locally with DP-SGD
-            update = client.train_local(
+            update = client.train_local_epochs(
                 train_data=train_data,
                 epochs=1,
                 round_id=round_num,
@@ -406,7 +407,7 @@ def test_integration_byzantine_attack_simulation():
         orchestrator.start_round(client_ids)
 
         # Broadcast global model
-        global_state = orchestrator.get_global_model_state()
+        global_state = orchestrator.get_global_model()
 
         # Collect honest client updates
         client_updates = []
@@ -415,7 +416,7 @@ def test_integration_byzantine_attack_simulation():
             client.load_global_model(global_state)
 
             # Train locally
-            update = client.train_local(
+            update = client.train_local_epochs(
                 train_data=train_data,
                 epochs=2,
                 round_id=round_num,
@@ -522,7 +523,7 @@ def test_integration_client_dropout_simulation():
             orchestrator.start_round([f"client_{i}" for i in active_clients])
 
             # Broadcast global model
-            global_state = orchestrator.get_global_model_state()
+            global_state = orchestrator.get_global_model()
 
             # Collect client updates (only from active clients)
             client_updates = []
@@ -532,7 +533,7 @@ def test_integration_client_dropout_simulation():
                 client.load_global_model(global_state)
 
                 # Train locally
-                update = client.train_local(
+                update = client.train_local_epochs(
                     train_data=train_data,
                     epochs=2,
                     round_id=round_num,
