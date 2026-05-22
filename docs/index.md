@@ -1,13 +1,15 @@
-# Matthew Vaishnav Computational & Mathematical Oncology
+# Matthew Vaishnav Computational Pathology, Federated Oncology Learning, and Mathematical Validation Infrastructure
 
-Computational pathology, mathematical oncology, federated learning, and translational AI infrastructure.
+Whole-slide pathology AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H institutional weighting, PCam/Camelyon validation, and multi-institutional oncology learning infrastructure.
 
 ## Start here
 
 - [Getting Started](getting-started.md)
 - [Platform Overview](platform-overview.md)
+- [TransnnMIL v2.0](models/transnnmil-v2.md)
+- [PathologyFL](federated/pathologyfl.md)
 - [FAIR-WEIGHTS-H Theory](theory/fair-weights-h.md)
-- [Performance Comparison](results/performance-comparison.md)
+- [Validation Overview](validation/index.md)
 
 ## Status
 
