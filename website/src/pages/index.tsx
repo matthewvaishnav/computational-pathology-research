@@ -36,15 +36,15 @@ export default function Home(): ReactNode {
           </header>
 
           <section className={styles.quickNav}>
-            <Link to="/docs/PCAM_REAL_RESULTS" className={styles.quickNavCard}>
+            <Link to="/docs/performance-comparison" className={styles.quickNavCard}>
               <strong>Results</strong>
-              <span>PCam benchmark, statistical analysis, model comparisons</span>
+              <span>Performance comparisons, benchmark context, and model metrics</span>
             </Link>
-            <Link to="/docs/FAIR_WEIGHTS_HYBRID_PROTOCOL" className={styles.quickNavCard}>
+            <Link to="/docs/fair-weights-hybrid-protocol" className={styles.quickNavCard}>
               <strong>FAIR-WEIGHTS-H</strong>
               <span>Hybrid institutional weighting protocol and validation plan</span>
             </Link>
-            <Link to="/docs/GETTING_STARTED" className={styles.quickNavCard}>
+            <Link to="/docs/getting-started" className={styles.quickNavCard}>
               <strong>Start Here</strong>
               <span>Install, run, and explore the platform</span>
             </Link>
@@ -68,27 +68,27 @@ export default function Home(): ReactNode {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Project Map</h2>
             <div className={styles.linksGrid}>
-              <Link to="/docs/REPOSITORY_OVERVIEW" className={styles.docLink}>
-                <h3>Repository Overview</h3>
-                <p>High-level map of code, modules, experiments, and documentation.</p>
+              <Link to="/docs/framework-overview" className={styles.docLink}>
+                <h3>Framework Overview</h3>
+                <p>High-level map of the platform, modules, and research direction.</p>
               </Link>
-              <Link to="/docs/PLATFORM_OVERVIEW" className={styles.docLink}>
-                <h3>Platform Overview</h3>
+              <Link to="/docs/architecture" className={styles.docLink}>
+                <h3>Architecture</h3>
                 <p>System architecture, pipeline structure, and major components.</p>
               </Link>
-              <Link to="/docs/PCAM_REAL_RESULTS" className={styles.docLink}>
-                <h3>PCam Results</h3>
-                <p>Benchmark results, confidence intervals, effect sizes, and comparisons.</p>
+              <Link to="/docs/performance-comparison" className={styles.docLink}>
+                <h3>Performance</h3>
+                <p>Benchmark results, model metrics, and comparative evaluation context.</p>
               </Link>
-              <Link to="/docs/FAIR_WEIGHTS_HYBRID_PROTOCOL" className={styles.docLink}>
+              <Link to="/docs/fair-weights-hybrid-protocol" className={styles.docLink}>
                 <h3>FAIR-WEIGHTS-H</h3>
-                <p>Hybrid institutional weighting with counterfactual contribution, useful uniqueness, and subgroup constraints.</p>
+                <p>Hybrid institutional weighting with contribution, useful uniqueness, and subgroup constraints.</p>
               </Link>
-              <Link to="/docs/BENCHMARK_SYSTEM" className={styles.docLink}>
+              <Link to="/docs/benchmark-system" className={styles.docLink}>
                 <h3>Benchmarking</h3>
                 <p>Evaluation infrastructure, statistical validation, and experiment design.</p>
               </Link>
-              <Link to="/docs/SECURITY_HARDENING" className={styles.docLink}>
+              <Link to="/docs/security-hardening" className={styles.docLink}>
                 <h3>Security</h3>
                 <p>Privacy, audit logging, hardening, and compliance-oriented infrastructure.</p>
               </Link>
