@@ -23,7 +23,7 @@ from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregat
 from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 from src.features.federated.pathology_fl.fault_tolerance.checkpoint_manager import CheckpointManager
 from src.features.federated.pathology_fl.privacy.dp_sgd import DPSGDEngine
-from src.features.federated.pathology_fl.security.secure_aggregation import SecureAggregator
+from src.features.federated.pathology_fl.privacy.secure_aggregation import SecureAggregator
 
 # ============================================================================
 # Task 17.1: FedAvg Correctness Properties

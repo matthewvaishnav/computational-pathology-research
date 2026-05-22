@@ -44,7 +44,6 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Federated Learning',
       items: [
-        'FAIR_WEIGHTS_HYBRID_PROTOCOL',
         'FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS',
         'FAIR_WEIGHTS_H_SYNTHETIC_REPORT',
         'ROADMAP_TO_REAL_DATASETS',
