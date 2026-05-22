@@ -54,6 +54,7 @@ export default defineConfig({
   themeConfig: {
     siteTitle: 'Matthew Vaishnav',
     nav: [
+      { text: 'Home', link: '/' },
       { text: 'Overview', link: '/overview/' },
       { text: 'Models', link: '/models/' },
       { text: 'Federated', link: '/federated/pathologyfl' },
