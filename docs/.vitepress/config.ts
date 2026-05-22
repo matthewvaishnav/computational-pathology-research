@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Computational Pathology Research',
-  description: 'Computational pathology, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H, and validation reports.',
+  title: 'Vaishnav CompOnc',
+  description: 'Computational pathology, mathematical oncology, federated learning, FAIR-WEIGHTS-H, validation, and translational AI infrastructure.',
   base: '/computational-pathology-research/',
   cleanUrls: true,
   lastUpdated: true,
@@ -52,7 +52,7 @@ export default defineConfig({
     'training/**'
   ],
   themeConfig: {
-    siteTitle: 'Computational Pathology Research',
+    siteTitle: 'Vaishnav CompOnc',
     nav: [
       { text: 'Overview', link: '/overview/' },
       { text: 'Models', link: '/models/' },

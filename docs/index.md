@@ -1,6 +1,6 @@
-# Computational Pathology Research
+# Matthew Vaishnav Computational & Mathematical Oncology
 
-Welcome to the canonical MkDocs documentation for the computational pathology research platform.
+Computational pathology, mathematical oncology, federated learning, and translational AI infrastructure.
 
 ## Start here
 
