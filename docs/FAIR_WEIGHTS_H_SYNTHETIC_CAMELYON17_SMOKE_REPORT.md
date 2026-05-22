@@ -1,16 +1,17 @@
-# FAIR-WEIGHTS-H Camelyon17 Smoke Test Report
+# FAIR-WEIGHTS-H Synthetic Camelyon17-like Smoke Test Report
 
 **Date**: 2026-05-22
+**Data**: Synthetic Camelyon17-like (NOT real Camelyon17)
 **Purpose**: Pipeline execution validation (NOT performance comparison)
 **Rounds**: 5 per strategy
-**Sites**: 5 synthetic Camelyon17-like sites
+**Sites**: 5 synthetic sites
 **Slides per site**: 40
 
 ---
 
 ## Executive Summary
 
-**This smoke test validates pipeline execution and logging only. It is not a performance comparison and should not be interpreted as evidence that one weighting strategy is superior.**
+**This smoke test validates pipeline execution and logging only using synthetic data. It is not a performance comparison and should not be interpreted as evidence that one weighting strategy is superior. This test does NOT use real Camelyon17 data.**
 
 All four weighting strategies successfully completed 5 rounds of federated training with synthetic Camelyon17-like data. The pipeline executed end-to-end without errors, demonstrating that:
 
@@ -188,28 +189,49 @@ All four weighting strategies successfully completed 5 rounds of federated train
 
 ## Next Steps
 
-### Immediate
+### Phase 1: Real Camelyon17 Smoke Test (NEXT)
 
-1. ✓ All smoke tests passed → proceed to full validation
+Before full validation, run the same smoke test on **real Camelyon17 data** (5 rounds only):
 
-### Full Validation (20-50 rounds)
+```bash
+python scripts/federated/run_camelyon17.py --weighting_strategy equal --rounds 5 --smoke
+python scripts/federated/run_camelyon17.py --weighting_strategy volume --rounds 5 --smoke
+python scripts/federated/run_camelyon17.py --weighting_strategy prestige --rounds 5 --smoke
+python scripts/federated/run_camelyon17.py --weighting_strategy fair_weights_h --rounds 5 --smoke
+```
 
-1. Use real Camelyon17 data (or higher-fidelity synthetic data)
-2. Train for 20-50 rounds with multiple seeds
-3. Track per-round metrics:
+**Goal**: Validate that:
+
+- Real data loader works
+- Site splits work correctly
+- Site-wise metrics are emitted
+- Weights are logged
+- Checkpoints save
+- No NaNs on real data
+
+**Output**: `docs/FAIR_WEIGHTS_H_REAL_CAMELYON17_SMOKE_REPORT.md`
+
+### Phase 2: Full Validation (20-50 rounds)
+
+Only after real Camelyon17 smoke tests pass:
+
+1. Train for 20-50 rounds with multiple seeds
+2. Track per-round metrics:
    - Global AUC
    - Site-wise AUC
    - Worst-site sensitivity
    - ECE (calibration)
    - H(w) = -∑ wᵢ log wᵢ / log K (weight entropy)
    - N_eff = 1/∑ wᵢ² (effective number of sites)
-4. Compare strategies on:
+3. Compare strategies on:
    - Global performance
    - Fairness (worst-site performance)
    - Weight distribution
    - Calibration
 
-### Integration with Full FairWeightsHEngine
+**Output**: `docs/FAIR_WEIGHTS_H_CAMELYON17_VALIDATION.md`
+
+### Phase 3: Integration with Full FairWeightsHEngine
 
 1. Replace simplified FAIR-WEIGHTS-H implementation with full `FairWeightsHEngine`
 2. Use `InstitutionWeightSignals` API for quality/volume/fairness signals
@@ -219,7 +241,7 @@ All four weighting strategies successfully completed 5 rounds of federated train
 
 ## Conclusion
 
-**All four weighting strategies successfully executed the federated pipeline end-to-end.** The smoke tests validate that:
+**All four weighting strategies successfully executed the federated pipeline end-to-end on synthetic data.** The smoke tests validate that:
 
 - Data loading works correctly
 - Local training completes without errors
@@ -227,15 +249,18 @@ All four weighting strategies successfully completed 5 rounds of federated train
 - Checkpointing and logging function properly
 - No numerical instabilities (NaN/Inf) detected
 
-**This smoke test does NOT validate:**
+**What this proves:**
 
-- Relative performance of weighting strategies
+- The federated pipeline can run end-to-end with all four weighting strategies
+
+**What this does NOT prove:**
+
+- FAIR-WEIGHTS-H improves accuracy, calibration, fairness, or site robustness on real pathology data
+- Performance on real Camelyon17 data
 - Convergence behavior over many rounds
-- Fairness properties on real data
-- Calibration quality
-- Robustness to site heterogeneity
+- Fairness properties on real heterogeneous sites
 
-The pipeline is ready for full-scale validation experiments.
+**Next step**: Run real Camelyon17 smoke test (Phase 1) before full validation.
 
 ---
 
