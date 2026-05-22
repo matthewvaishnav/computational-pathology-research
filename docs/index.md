@@ -46,10 +46,22 @@ Production-grade framework for computational pathology combining **PathologyFL**
 - Attention-aware aggregation for MIL models
 
 **Layer 2: DMI** - Institutional expertise intelligence
-- Hospital type weighting (cancer center 2.0x, teaching 1.5x, community 1.0x, rural 0.8x)
-- Specialization matching (route to cancer-specific experts)
-- Volume & accuracy factors (log-scaled case volume + diagnostic accuracy)
-- Experience scaling with diminishing returns
+- **FAIR-WEIGHTS-H hybrid institutional weighting** replaces fixed prestige multipliers with auditable, evidence-based weighting signals.
+- Core training-weight objective:
+
+  $$
+  w_t = \arg\max_{w\in\mathcal W}\sum_{i=1}^K w_i\left(\hat\phi_{i,t}^{Owen}+\lambda_DD_{i,t}^{useful}+\lambda_FF_{i,t}+\lambda_QQ_{i,t}-\lambda_SS_{i,t}\right)
+  $$
+
+  subject to:
+
+  $$
+  \sum_i w_i=1,\quad w_i^{min}\le w_i\le w_i^{max},\quad C_g(w)\ge C_g^{min},\quad \mathrm{Perf}_g(w)\ge \mathrm{Perf}_g^{min}
+  $$
+
+- Signals include group-aware counterfactual contribution, difficulty-adjusted quality, useful distributional uniqueness, subgroup representation, uncertainty penalties, and anomaly monitoring.
+- Legacy prestige weights (cancer center 2.0x, teaching 1.5x, community 1.0x, rural 0.8x) are retained only as comparison baselines in synthetic experiments.
+- Implementation status: experimental engine, explicit weighted aggregation adapter, synthetic federation benchmark, perturbation suite, and markdown report generator are implemented for research validation.
 
 **Hypothesis:** PathologyFL + DMI > PathologyFL alone > Standard FedAvg, especially for rare subtypes and heterogeneous data quality.
 
@@ -83,7 +95,7 @@ Production-grade framework for computational pathology combining **PathologyFL**
 <div class="features-grid">
   <div class="feature-card">
     <h3>🔬 PathologyFL + DMI</h3>
-    <p>Novel two-layer federated learning system combining domain-specific pathology knowledge (cancer-type strategies, slide quality) with institutional expertise intelligence (hospital type, specialization, volume, accuracy). First system to integrate both layers for medical AI collaboration.</p>
+    <p>Novel two-layer federated learning system combining domain-specific pathology knowledge (cancer-type strategies, slide quality) with FAIR-WEIGHTS-H institutional intelligence: counterfactual contribution, useful uniqueness, quality, uncertainty, and subgroup-safety constrained weighting.</p>
   </div>
   
   <div class="feature-card">
@@ -118,181 +130,3 @@ Production-grade framework for computational pathology combining **PathologyFL**
                                  └──────┬──────┘
                                         │
                     ┌───────────────────┴───────────────────┐
-                    │                                       │
-         ┌──────────▼──────────┐              ┌───────────▼──────────┐
-         │  WSI Processing     │              │  Real-Time Streaming │
-         │  ─────────────────  │              │  ──────────────────  │
-         │  • OpenSlide        │              │  • <30s processing   │
-         │  • Patch extraction │              │  • GPU parallel      │
-         │  • 96x96, 224x224   │              │  • WebSocket updates │
-         └──────────┬──────────┘              └───────────┬──────────┘
-                    │                                     │
-                    └───────────────────┬─────────────────┘
-                                        │
-                            ┌───────────▼───────────┐
-                            │  Feature Extraction   │
-                            │  ─────────────────── │
-                            │  • ResNet18          │
-                            │  • Foundation models │
-                            │  • UNI, Phikon       │
-                            └───────────┬───────────┘
-                                        │
-                    ┌───────────────────┴───────────────────┐
-                    │                                       │
-         ┌──────────▼──────────┐              ┌───────────▼──────────┐
-         │   MIL Models        │              │  Training Pipeline   │
-         │   ──────────────    │              │  ────────────────   │
-         │   • nnMIL           │◄─────────────┤  • torch.compile    │
-         │   • AttentionMIL    │              │  • AMP (2-3x)       │
-         │   • CLAM            │              │  • channels_last    │
-         │   • TransMIL        │              │  • Multi-GPU (DDP)  │
-         └──────────┬──────────┘              │  • 8-12x speedup    │
-                    │                         └─────────────────────┘
-                    │
-         ┌──────────▼──────────┐
-         │  Interpretability   │
-         │  ───────────────── │
-         │  • Grad-CAM         │
-         │  • Attention maps   │
-         │  • SHAP values      │
-         │  • Failure analysis │
-         └──────────┬──────────┘
-                    │
-    ┌───────────────┴───────────────┐
-    │                               │
-┌───▼────────────┐      ┌──────────▼──────────┐
-│  DMI System    │      │  Clinical Integration│
-│  ────────────  │      │  ───────────────────│
-│  • Expertise   │      │  • PACS (DICOM)     │
-│    weighting   │      │  • FHIR adapter     │
-│  • Multi-center│      │  • Patient context  │
-│  • Cancer-type │      │  • Longitudinal     │
-│    matching    │      │  • <5s inference    │
-└───┬────────────┘      └──────────┬──────────┘
-    │                              │
-    └──────────────┬───────────────┘
-                   │
-         ┌─────────▼─────────┐
-         │  Production API   │
-         │  ───────────────  │
-         │  • FastAPI        │
-         │  • JWT auth       │
-         │  • Rate limiting  │
-         │  • Pydantic       │
-         │  • SQL params     │
-         │  • HTTPS/CORS     │
-         └─────────┬─────────┘
-                   │
-         ┌─────────▼─────────┐
-         │   Deployment      │
-         │   ──────────────  │
-         │   • Docker/K8s    │
-         │   • Monitoring    │
-         │   • 5,000+ tests  │
-         │   • HIPAA ready   │
-         └───────────────────┘
-```
-
-**Performance Metrics:**
-- **95.37% validation AUC** on PatchCamelyon (262K samples)
-- **8-12x training speedup** (20-40h → 2-3h on RTX 4070)
-- **<5s inference** for clinical deployment
-- **<30s streaming** for gigapixel slides
-
-**Production Features:**
-- **5,071 tests** across 310 modules with property-based testing
-- **39+ security commits** (authentication, input validation, privacy)
-- **Privacy guarantees:** TenSEAL + Opacus required (no silent degradation)
-- **HIPAA compliance:** Audit logging, encryption, access controls
-
-**Current Development (May 2026):**
-- **TransnnMIL v2.0** (Week 7 of 12): Hierarchical pooling + topology-aware GNNs
-- **Feature-level fusion** ✅ completed with comprehensive testing
-- **3-branch architecture** ✅ integrated (attention + hierarchical + topology)
-- See [Current Status](CURRENT_STATUS) for detailed progress
-
----
-
-## Quickstart
-
-<div class="callout callout-info">
-  <strong>New to the platform?</strong> Start with the 5-minute tutorial to train your first model on PCam!
-</div>
-
-**Interactive Tutorials:**
-- [5-Minute PCam Training](https://github.com/matthewvaishnav/the platform/blob/main/examples/quickstart_pcam_training.ipynb) - Train AttentionMIL on PatchCamelyon
-- [Custom Dataset Tutorial](https://github.com/matthewvaishnav/the platform/blob/main/examples/custom_dataset_tutorial.ipynb) - Adapt to your own data
-
-**Quick Start Command:**
-```bash
-git clone https://github.com/matthewvaishnav/the platform.git
-cd the platform
-pip install -r requirements.txt
-python experiments/train_pcam.py --config experiments/configs/pcam_ultra_fast.yaml
-```
-
-Expected: **95.37% validation AUC in 2-3 hours** on RTX 4070!
-
----
-
-## Documentation
-
-<div class="doc-links">
-  <a href="CURRENT_STATUS" class="doc-link">📊 Current Status (May 2026)</a>
-  <a href="GETTING_STARTED" class="doc-link">Getting Started</a>
-  <a href="ARCHITECTURE" class="doc-link">🏗️ Architecture</a>
-  <a href="PERFORMANCE_COMPARISON" class="doc-link">📊 Performance vs Competitors</a>
-  <a href="BENCHMARK_SYSTEM" class="doc-link">🏆 Competitor Benchmark System</a>
-  <a href="OPTIMIZATION_SUMMARY" class="doc-link">⚡ Training Optimizations (8-12x)</a>
-  <a href="INFERENCE_OPTIMIZATION" class="doc-link">🚀 Inference Optimization (2-3x)</a>
-  <a href="MULTI_GPU_TRAINING" class="doc-link">⚡ Multi-GPU Training (DDP)</a>
-  <a href="FOUNDATION_MODELS" class="doc-link">🎯 Foundation Models (UNI, Phikon)</a>
-  <a href="START_NOW_RTX4070" class="doc-link">RTX 4070 Guide</a>
-  <a href="EXPERIMENTS" class="doc-link">Run Experiments</a>
-  <a href="MODEL_INTERPRETABILITY" class="doc-link">Model Interpretability</a>
-  <a href="CLINICAL_WORKFLOW_INTEGRATION" class="doc-link">Clinical Integration</a>
-  <a href="PACS_INTEGRATION" class="doc-link">🏥 PACS Integration</a>
-  <a href="COMPREHENSIVE_DATASET_TESTING" class="doc-link">Dataset Testing</a>
-  <a href="regulatory_compliance" class="doc-link">Regulatory Compliance</a>
-  <a href="API_REFERENCE" class="doc-link">API Reference</a>
-  <a href="DOCS_INDEX" class="doc-link">Full Documentation</a>
-</div>
-
----
-
-## Installation
-
-```bash
-git clone https://github.com/matthewvaishnav/the platform.git
-cd the platform
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-pip install -e .
-```
-
-See the [Getting Started Guide](GETTING_STARTED) for detailed instructions.
-
----
-
-## Citation
-
-If you use this framework in your research, please cite:
-
-```bibtex
-@software{vaishnav2026the platform,
-  title = {the platform: Core Infrastructure for Computational Pathology Research},
-  author = {Vaishnav, Matthew},
-  year = {2026},
-  url = {https://github.com/matthewvaishnav/the platform},
-  note = {Production-grade PyTorch framework for computational pathology research}
-}
-```
-
----
-
-<div class="footer-note">
-  <p><strong>📊 Current Status (May 2026):</strong> PCam #1 AUC complete, Camelyon17 attention audit complete, PANDA training in progress, federated ablation study next. See <a href="ROADMAP_TO_GENIUS">Roadmap to Genius</a> for path forward.</p>
-  <p><strong>Contact:</strong> For questions or collaboration opportunities, please open an issue on <a href="https://github.com/matthewvaishnav/computational-pathology-research/issues">GitHub</a>.</p>
-  <p><em>Last updated: May 19, 2026</em></p>
-</div>
