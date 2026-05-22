@@ -485,15 +485,46 @@ Security scans:
 
 See docs/ for technical documentation:
 
-- FRAMEWORK_OVERVIEW.md System architecture
-- DOCS_INDEX.md Documentation index
-- PCAM_REAL_RESULTS.md Benchmark results
-- CLINICAL_WORKFLOW_INTEGRATION.md Clinical deployment
+**Core Documentation:**
 
-Quick start guides:
+- [Documentation Hub](docs/index.md) - Central navigation for all documentation
+- [Repository Overview](docs/REPOSITORY_OVERVIEW.md) - Project structure and organization
+- [Platform Overview](docs/PLATFORM_OVERVIEW.md) - System architecture and capabilities
+- [Getting Started](docs/GETTING_STARTED.md) - Installation and quick start guide
 
-- PANDA_QUICK_START.md PANDA dataset setup (5 min)
-- PANDA_SETUP_GUIDE.md Detailed PANDA guide
+**Results and Benchmarks:**
+
+- [PCam Real Results](docs/PCAM_REAL_RESULTS.md) - 0.9394 AUC benchmark results
+- [Benchmark System](docs/BENCHMARK_SYSTEM.md) - Competitor comparison framework
+- [Current Status](docs/CURRENT_STATUS_2026-05-14.md) - May 2026 project status
+
+**Federated Learning:**
+
+- [FAIR-WEIGHTS-H Protocol](docs/FAIR_WEIGHTS_HYBRID_PROTOCOL.md) - Institutional weighting framework
+- [FAIR-WEIGHTS-H Implementation Status](docs/FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS.md) - What's implemented, how to use
+- [FAIR-WEIGHTS-H Synthetic Report](docs/FAIR_WEIGHTS_H_SYNTHETIC_REPORT.md) - Perturbation experiments (engineering check)
+- [Roadmap to Real Datasets](docs/ROADMAP_TO_REAL_DATASETS.md) - Multi-institutional validation plan
+
+**Clinical Integration:**
+
+- [Clinical Workflow Integration](docs/CLINICAL_WORKFLOW_INTEGRATION.md) - Clinical deployment guide
+- [PACS Integration](docs/PACS_INTEGRATION.md) - DICOM/FHIR integration
+- [Security Hardening](docs/SECURITY_HARDENING.md) - Security infrastructure
+
+**Models and Training:**
+
+- [Foundation Models](docs/FOUNDATION_MODELS.md) - UNI/Phikon/CONCH integration
+- [Model Interpretability](docs/MODEL_INTERPRETABILITY.md) - Grad-CAM and explainability
+
+**Quick Start Guides:**
+
+- [PANDA Quick Start](docs/PANDA_QUICK_START.md) - PANDA dataset setup (5 min)
+- [PANDA Setup Guide](docs/PANDA_SETUP_GUIDE.md) - Detailed PANDA guide
+- [RTX 4070 Guide](docs/START_NOW_RTX4070.md) - Training on consumer GPU
+
+**Full Documentation Index:**
+
+- [DOCS_INDEX.md](docs/DOCS_INDEX.md) - Complete documentation listing
 
 ```bash
 # Start production API server

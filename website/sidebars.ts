@@ -24,8 +24,30 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         'GETTING_STARTED',
+        'REPOSITORY_OVERVIEW',
+        'PLATFORM_OVERVIEW',
         'DOCS_INDEX',
         'QUICK_REFERENCE',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Results & Benchmarks',
+      items: [
+        'PCAM_REAL_RESULTS',
+        'BENCHMARK_SYSTEM',
+        'CURRENT_STATUS_2026-05-14',
+        'PERFORMANCE_COMPARISON',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Federated Learning',
+      items: [
+        'FAIR_WEIGHTS_HYBRID_PROTOCOL',
+        'FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS',
+        'FAIR_WEIGHTS_H_SYNTHETIC_REPORT',
+        'ROADMAP_TO_REAL_DATASETS',
       ],
     },
     {
@@ -39,21 +61,28 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Models & Performance',
+      label: 'Models & Training',
       items: [
         'FOUNDATION_MODELS',
+        'MODEL_INTERPRETABILITY',
         'INFERENCE_OPTIMIZATION',
-        'BENCHMARK_SYSTEM',
-        'PERFORMANCE_COMPARISON',
       ],
     },
     {
       type: 'category',
-      label: 'Deployment',
+      label: 'Clinical Integration',
+      items: [
+        'CLINICAL_WORKFLOW_INTEGRATION',
+        'PACS_INTEGRATION',
+        'CLINICAL_VALIDATION',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Deployment & Security',
       items: [
         'DEPLOYMENT',
         'SECURITY_HARDENING',
-        'CLINICAL_VALIDATION',
         'TESTING',
         'TROUBLESHOOTING',
       ],
