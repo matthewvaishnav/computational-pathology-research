@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Vaishnav CompOnc',
-  description: 'Computational pathology, mathematical oncology, federated learning, FAIR-WEIGHTS-H, validation, and translational AI infrastructure.',
+  title: 'Matthew Vaishnav Computational Pathology, Mathematical Oncology, Federated Learning, and Translational AI Infrastructure',
+  description: 'Computational pathology, mathematical oncology, whole-slide AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H, validation, and translational oncology infrastructure.',
   base: '/computational-pathology-research/',
   cleanUrls: true,
   lastUpdated: true,
@@ -52,7 +52,7 @@ export default defineConfig({
     'training/**'
   ],
   themeConfig: {
-    siteTitle: 'Vaishnav CompOnc',
+    siteTitle: 'Vaishnav Computational Pathology & Mathematical Oncology AI Infrastructure',
     nav: [
       { text: 'Overview', link: '/overview/' },
       { text: 'Models', link: '/models/' },
@@ -118,7 +118,7 @@ export default defineConfig({
     search: { provider: 'local' },
     footer: {
       message: 'Research documentation. Not clinical validation or regulatory clearance.',
-      copyright: 'Computational Pathology Research'
+      copyright: 'Computational pathology, mathematical oncology, federated learning, and translational AI infrastructure.'
     }
   },
   markdown: { math: true }
