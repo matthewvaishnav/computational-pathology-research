@@ -30,9 +30,31 @@ This benchmark evaluates weighting strategies under **institutional heterogeneit
 
 ### Interpretation
 
+**NULL RESULT:** No strategy differentiation observed.
+
+All strategies achieved identical performance despite producing different weights:
+- Global accuracy: 0.728 ± 0.021 (seed variance only)
+- Worst-site accuracy: 0.669 ± 0.045 (seed variance only)
+
+**Weight Diagnostic (seed 42, round 30):**
+
+| Strategy | Site 0 | Site 1 | Site 2 | Site 3 | Site 4 | Range |
+|----------|--------|--------|--------|--------|--------|-------|
+| Equal | 0.20 | 0.20 | 0.20 | 0.20 | 0.20 | 0.00 |
+| Volume | 0.22 | 0.22 | 0.22 | **0.11** | 0.22 | 0.11 |
+| Prestige | 0.20 | 0.23 | 0.15 | 0.24 | 0.18 | 0.09 |
+| FAIR-WEIGHTS-H | 0.21 | 0.21 | 0.21 | **0.17** | 0.21 | 0.04 |
+
+**Key finding:** Strategies produced different weights, but performance unchanged.
+
+**Possible explanations:**
+1. **Model insensitivity:** Simple CNN too weak to benefit from differential weighting
+2. **Insufficient training:** 30 rounds not enough for weight differences to accumulate
+3. **Task simplicity:** Patch-level classification too simple to expose weighting effects
+4. **Gradient alignment:** All sites contribute similar gradient directions despite data differences
 
 **Worst-Site Performance (Fairness Proxy):**
-- Best: **equal** (0.669)
+- Best: **equal** (0.669) — but all strategies tied
 
 
 ---
