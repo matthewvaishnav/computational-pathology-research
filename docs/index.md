@@ -31,44 +31,47 @@ A navigation-first guide to the repository: what the platform does, where the va
 
 ### Core modeling and pathology pipeline
 
-- Whole-slide image processing and patch-level pipelines.
-- Multiple-instance learning models including attention-based MIL and TransMIL-style components.
-- Foundation-model integration pathways for pathology feature extraction.
-- Benchmarking and statistical evaluation utilities.
+- Whole-slide image processing and patch-level pipelines. See [Platform Overview](PLATFORM_OVERVIEW) and [Repository Overview](REPOSITORY_OVERVIEW).
+- Multiple-instance learning models including attention-based MIL and TransMIL-style components. See [Repository Overview](REPOSITORY_OVERVIEW).
+- Foundation-model integration pathways for pathology feature extraction. See [Foundation Models](FOUNDATION_MODELS).
+- Benchmarking and statistical evaluation utilities. See [Benchmark System](BENCHMARK_SYSTEM) and [PCam Real Results](PCAM_REAL_RESULTS).
 
 ### Federated learning stack
 
-- Pathology-aware federated aggregation modules.
-- Secure aggregation and privacy-oriented infrastructure.
-- Explicit weighted aggregation adapter for externally computed institutional weights.
-- FAIR-WEIGHTS-H experimental institutional weighting engine.
+- Pathology-aware federated aggregation modules. Source: `src/features/federated/pathology_fl/aggregator/`.
+- Secure aggregation and privacy-oriented infrastructure. See [Security Hardening](SECURITY_HARDENING).
+- Explicit weighted aggregation adapter for externally computed institutional weights. Source: `src/features/federated/pathology_fl/aggregator/weighted.py`.
+- FAIR-WEIGHTS-H experimental institutional weighting engine. Source: `src/features/federated/pathology_fl/weighting/fair_weights_h.py`.
 
 ### FAIR-WEIGHTS-H research scaffold
 
 Implemented components include:
 
-- hybrid institutional weighting engine,
-- explicit weighted aggregation adapter,
-- synthetic federation generator,
-- equal / volume / prestige / FAIR-WEIGHTS-H baseline comparison,
-- perturbation suite for uncertainty, scanner shift, quality degradation, and rare-population enrichment,
-- markdown report generation for synthetic experiment summaries.
+- hybrid institutional weighting engine — `src/features/federated/pathology_fl/weighting/fair_weights_h.py`,
+- explicit weighted aggregation adapter — `src/features/federated/pathology_fl/aggregator/weighted.py`,
+- synthetic federation generator — `src/features/federated/pathology_fl/weighting/synthetic_federation.py`,
+- equal / volume / prestige / FAIR-WEIGHTS-H baseline comparison — `src/features/federated/pathology_fl/weighting/benchmark.py`,
+- perturbation suite for uncertainty, scanner shift, quality degradation, and rare-population enrichment — `src/features/federated/pathology_fl/weighting/perturbations.py`,
+- canonical experiment suite — `src/features/federated/pathology_fl/weighting/experiment_suite.py`,
+- markdown report generation for synthetic experiment summaries — `src/features/federated/pathology_fl/weighting/report_generator.py`.
 
 FAIR-WEIGHTS-H is experimental and requires empirical validation before any clinical or regulatory claims.
 
 ---
 
-## Key Results
+## Key Results and Evidence Links
 
 The repository documents the following benchmark claims:
 
-- **0.9394 AUC** on PatchCamelyon.
-- **85.26% test accuracy** on the PCam test set.
-- **7x parameter efficiency** compared with Swin-Transformer in the reported benchmark context.
-- Camelyon17 federated attention audit across simulated hospital sites.
-- 5,071+ automated tests reported in the project documentation.
+| Claim | Evidence / status link |
+|---|---|
+| **0.9394 AUC** on PatchCamelyon | [PCam Real Results](PCAM_REAL_RESULTS) |
+| **85.26% test accuracy** on the PCam test set | [PCam Real Results](PCAM_REAL_RESULTS) |
+| **7x parameter efficiency** compared with Swin-Transformer in the reported benchmark context | [PCam Real Results](PCAM_REAL_RESULTS) |
+| Camelyon17 federated attention audit across simulated hospital sites | [Current Status](CURRENT_STATUS_2026-05-14) and [Repository Overview](REPOSITORY_OVERVIEW) |
+| 5,071+ automated tests reported in project documentation | [Current Status](CURRENT_STATUS_2026-05-14) and test suite paths under `tests/` |
 
-For details, see [PCam Real Results](PCAM_REAL_RESULTS) and the benchmark documentation.
+For broader evaluation infrastructure, see [Benchmark System](BENCHMARK_SYSTEM).
 
 ---
 
@@ -84,7 +87,7 @@ w_t = \arg\max_{w\in\mathcal W}\sum_i w_i\left(\hat\phi_i^{Owen}+\lambda_DD_i^{u
 
 subject to normalization, caps, representation constraints, subgroup-performance constraints, and stability constraints.
 
-See [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL).
+See [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL). Source implementation begins at `src/features/federated/pathology_fl/weighting/fair_weights_h.py`.
 
 ---
 
@@ -102,16 +105,18 @@ See [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL).
 
 ## Current Research Status
 
-| Area | Status |
-|---|---|
-| PCam benchmark | Documented result |
-| MIL / WSI pipeline | Implemented |
-| Federated learning infrastructure | Implemented |
-| FAIR-WEIGHTS-H engine | Experimental implementation |
-| Synthetic perturbation experiments | Implemented scaffold |
-| Real multi-institutional validation | Future work |
-| Clinical diagnostic validation | Not completed |
-| Regulatory clearance | Not claimed |
+| Area | Status | Evidence / link |
+|---|---|---|
+| PCam benchmark | Documented result | [PCam Real Results](PCAM_REAL_RESULTS) |
+| MIL / WSI pipeline | Implemented | [Repository Overview](REPOSITORY_OVERVIEW), [Platform Overview](PLATFORM_OVERVIEW) |
+| Federated learning infrastructure | Implemented | `src/features/federated/pathology_fl/`, [Platform Overview](PLATFORM_OVERVIEW) |
+| FAIR-WEIGHTS-H engine | Experimental implementation | `src/features/federated/pathology_fl/weighting/fair_weights_h.py`, [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL) |
+| Explicit weighted aggregation | Implemented adapter | `src/features/federated/pathology_fl/aggregator/weighted.py` |
+| Synthetic perturbation experiments | Implemented scaffold | `src/features/federated/pathology_fl/weighting/experiment_suite.py` |
+| FAIR-WEIGHTS-H tests | Implemented | `tests/federated/test_fair_weights_h.py`, `tests/federated/test_weighting_benchmark.py` |
+| Real multi-institutional validation | Future work | [Roadmap to Real Datasets](ROADMAP_TO_REAL_DATASETS) |
+| Clinical diagnostic validation | Not completed | Research-use notice in this page and [Platform Overview](PLATFORM_OVERVIEW) |
+| Regulatory clearance | Not claimed | Research-use notice and [Security Hardening](SECURITY_HARDENING) for infrastructure only |
 
 ---
 
