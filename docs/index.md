@@ -1,132 +1,137 @@
 ---
 layout: default
-title: Home
+title: Documentation
 ---
 
-<div class="hero">
-  <h1 class="hero-title">Computational Pathology Research</h1>
-  <p class="hero-subtitle">Production-grade framework combining MIL, PathologyFL, and DMI for privacy-preserving multi-institutional pathology AI</p>
-  <p class="hero-author">Matthew Vaishnav</p>
-</div>
+# Computational Pathology Research Documentation
 
-<div class="badges">
-  <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg" alt="PyTorch">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-  <img src="https://img.shields.io/badge/tests-5071+-green.svg" alt="5,071+ tests">
-  <img src="https://img.shields.io/badge/AUC-0.9394-brightgreen.svg" alt="PCam AUC">
-</div>
-
----
-
-## Abstract
-
-Production-grade framework for computational pathology combining **PathologyFL** (domain-specific federated learning) with **DMI** (Distributed Medical Intelligence) for privacy-preserving, multi-institutional AI collaboration.
-
-**Key achievements:**
-- **#1 AUC (0.9394)** on PatchCamelyon vs 10 published baselines (Swin-Transformer, ConvNeXt, ViT-Base, PathViT, MedViT)
-- **7x more efficient** than Swin-Transformer (12.2M vs 88M parameters)
-- **Multi-center validation** on Camelyon17 (attention consistency across 5 simulated hospital sites)
-- **Production infrastructure** with PACS/FHIR integration, security hardening, 5,071+ tests
+A navigation-first guide to the repository: what the platform does, where the validated results are, how the federated learning stack works, and where to find implementation details.
 
 <div class="callout callout-warning">
-  <strong>Research Use Only:</strong> This framework is designed for research purposes and has not been validated for clinical diagnostic use.
+  <strong>Research Use Only:</strong> This framework is designed for research and engineering validation. It has not been validated for clinical diagnostic use.
 </div>
 
 ---
 
-## Core Innovation: PathologyFL + DMI
+## Start Here
 
-### Two-Layer Federated Learning System
-
-**Layer 1: PathologyFL** - Domain-specific federated learning
-- Hierarchical aggregation: Patch → Slide → Case → Hospital → Global
-- Cancer-type specific strategies (breast, lung, prostate, colorectal)
-- Slide quality weighting (sharpness, stain consistency, artifacts, label confidence)
-- Attention-aware aggregation for MIL models
-
-**Layer 2: DMI** - Institutional expertise intelligence
-- **FAIR-WEIGHTS-H hybrid institutional weighting** replaces fixed prestige multipliers with auditable, evidence-based weighting signals.
-- Core training-weight objective:
-
-  $$
-  w_t = \arg\max_{w\in\mathcal W}\sum_{i=1}^K w_i\left(\hat\phi_{i,t}^{Owen}+\lambda_DD_{i,t}^{useful}+\lambda_FF_{i,t}+\lambda_QQ_{i,t}-\lambda_SS_{i,t}\right)
-  $$
-
-  subject to:
-
-  $$
-  \sum_i w_i=1,\quad w_i^{min}\le w_i\le w_i^{max},\quad C_g(w)\ge C_g^{min},\quad \mathrm{Perf}_g(w)\ge \mathrm{Perf}_g^{min}
-  $$
-
-- Signals include group-aware counterfactual contribution, difficulty-adjusted quality, useful distributional uniqueness, subgroup representation, uncertainty penalties, and anomaly monitoring.
-- Legacy prestige weights (cancer center 2.0x, teaching 1.5x, community 1.0x, rural 0.8x) are retained only as comparison baselines in synthetic experiments.
-- Implementation status: experimental engine, explicit weighted aggregation adapter, synthetic federation benchmark, perturbation suite, and markdown report generator are implemented for research validation.
-
-**Hypothesis:** PathologyFL + DMI > PathologyFL alone > Standard FedAvg, especially for rare subtypes and heterogeneous data quality.
-
-**Status:** 🚧 Validation experiments in progress
+| Goal | Read this |
+|---|---|
+| Understand the whole repository | [Repository Overview](REPOSITORY_OVERVIEW) |
+| Understand the platform architecture | [Platform Overview](PLATFORM_OVERVIEW) |
+| Install and run the code | [Getting Started](GETTING_STARTED) |
+| Review the strongest benchmark result | [PCam Real Results](PCAM_REAL_RESULTS) |
+| Understand institutional weighting | [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL) |
+| Review benchmark tooling | [Benchmark System](BENCHMARK_SYSTEM) |
+| Review security work | [Security Hardening](SECURITY_HARDENING) |
 
 ---
 
-## Empirical Results
+## What Is Implemented
 
-<div class="features-grid">
-  <div class="feature-card">
-    <h3>🏆 #1 AUC on PatchCamelyon</h3>
-    <p><strong>0.9394 AUC</strong> on full PCam dataset (327K patches), beating 10 published baselines including Swin-Transformer (+0.88%), ConvNeXt (+1.03%), ViT-Base (+1.15%), PathViT (+1.37%), and MedViT (+1.73%). <strong>85.26% test accuracy</strong> with bootstrap confidence intervals. <strong>7x more efficient</strong> (12.2M vs 88M parameters). See <a href="PCAM_REAL_RESULTS">full results</a>.</p>
-  </div>
-  
-  <div class="feature-card">
-    <h3>🔬 Multi-Center Validation</h3>
-    <p><strong>Camelyon17 federated audit</strong> across 5 simulated hospital sites. Measured cross-site attention consistency and site predictability. <strong>Verdict:</strong> Models learn site-invariant pathological features, not scanner shortcuts. Proves generalization across institutions.</p>
-  </div>
-  
-  <div class="feature-card">
-    <h3>🚧 PANDA Training</h3>
-    <p>Prostate cancer Gleason grading on 1,365 slides. Training in progress on separate machine. Expected: competitive with PANDA challenge top 10 (>0.89 kappa). Demonstrates generalization to different cancer types.</p>
-  </div>
-</div>
+### Core modeling and pathology pipeline
 
----
+- Whole-slide image processing and patch-level pipelines.
+- Multiple-instance learning models including attention-based MIL and TransMIL-style components.
+- Foundation-model integration pathways for pathology feature extraction.
+- Benchmarking and statistical evaluation utilities.
 
-## Key Contributions
+### Federated learning stack
 
-<div class="features-grid">
-  <div class="feature-card">
-    <h3>🔬 PathologyFL + DMI</h3>
-    <p>Novel two-layer federated learning system combining domain-specific pathology knowledge (cancer-type strategies, slide quality) with FAIR-WEIGHTS-H institutional intelligence: counterfactual contribution, useful uniqueness, quality, uncertainty, and subgroup-safety constrained weighting.</p>
-  </div>
-  
-  <div class="feature-card">
-    <h3>🏆 State-of-the-Art Results</h3>
-    <p>#1 AUC (0.9394) on PCam vs 10 baselines. 7x more efficient than Swin-Transformer. Statistical significance confirmed with bootstrap CIs and DeLong tests. Comprehensive benchmark report with effect sizes.</p>
-  </div>
-  
-  <div class="feature-card">
-    <h3>🎯 TransnnMIL v2.0</h3>
-    <p>3-branch architecture: TransMIL (self-attention) + Hierarchical pooling (multi-scale) + Topology branch (GNN). Adaptive pruning for 30% computation reduction. 6.8M parameters with attention-aware aggregation.</p>
-  </div>
-  
-  <div class="feature-card">
-    <h3>🏥 Production Infrastructure</h3>
-    <p>PACS integration (DICOM C-FIND/C-MOVE/C-STORE), FHIR adapter, security hardening (39 commits), CI/CD optimized (99% faster), 5,071+ tests. Ready for clinical deployment with HIPAA compliance.</p>
-  </div>
-</div>
+- Pathology-aware federated aggregation modules.
+- Secure aggregation and privacy-oriented infrastructure.
+- Explicit weighted aggregation adapter for externally computed institutional weights.
+- FAIR-WEIGHTS-H experimental institutional weighting engine.
+
+### FAIR-WEIGHTS-H research scaffold
+
+Implemented components include:
+
+- hybrid institutional weighting engine,
+- explicit weighted aggregation adapter,
+- synthetic federation generator,
+- equal / volume / prestige / FAIR-WEIGHTS-H baseline comparison,
+- perturbation suite for uncertainty, scanner shift, quality degradation, and rare-population enrichment,
+- markdown report generation for synthetic experiment summaries.
+
+FAIR-WEIGHTS-H is experimental and requires empirical validation before any clinical or regulatory claims.
 
 ---
 
-## System Architecture
+## Key Results
 
-```
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                         the platform System Architecture                          │
-│                    End-to-End Computational Pathology Platform                 │
-└───────────────────────────────────────────────────────────────────────────────┘
+The repository documents the following benchmark claims:
 
-                                 ┌─────────────┐
-                                 │   WSI Data  │
-                                 │ (.svs/.tiff)│
-                                 └──────┬──────┘
-                                        │
-                    ┌───────────────────┴───────────────────┐
+- **0.9394 AUC** on PatchCamelyon.
+- **85.26% test accuracy** on the PCam test set.
+- **7x parameter efficiency** compared with Swin-Transformer in the reported benchmark context.
+- Camelyon17 federated attention audit across simulated hospital sites.
+- 5,071+ automated tests reported in the project documentation.
+
+For details, see [PCam Real Results](PCAM_REAL_RESULTS) and the benchmark documentation.
+
+---
+
+## Federated Learning and DMI
+
+The project originally included fixed institutional multipliers such as cancer center, teaching hospital, community hospital, and rural hospital weights. Those fixed prestige-style multipliers are now treated as **comparison baselines**, not the preferred research direction.
+
+The current research direction is **FAIR-WEIGHTS-H**, a hybrid institutional weighting framework based on:
+
+\[
+w_t = \arg\max_{w\in\mathcal W}\sum_i w_i\left(\hat\phi_i^{Owen}+\lambda_DD_i^{useful}+\lambda_FF_i+\lambda_QQ_i-\lambda_SS_i\right)
+\]
+
+subject to normalization, caps, representation constraints, subgroup-performance constraints, and stability constraints.
+
+See [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL).
+
+---
+
+## Recommended Reading Order
+
+1. [Repository Overview](REPOSITORY_OVERVIEW)
+2. [Platform Overview](PLATFORM_OVERVIEW)
+3. [Getting Started](GETTING_STARTED)
+4. [PCam Real Results](PCAM_REAL_RESULTS)
+5. [Benchmark System](BENCHMARK_SYSTEM)
+6. [FAIR-WEIGHTS-H Protocol](FAIR_WEIGHTS_HYBRID_PROTOCOL)
+7. [Security Hardening](SECURITY_HARDENING)
+
+---
+
+## Current Research Status
+
+| Area | Status |
+|---|---|
+| PCam benchmark | Documented result |
+| MIL / WSI pipeline | Implemented |
+| Federated learning infrastructure | Implemented |
+| FAIR-WEIGHTS-H engine | Experimental implementation |
+| Synthetic perturbation experiments | Implemented scaffold |
+| Real multi-institutional validation | Future work |
+| Clinical diagnostic validation | Not completed |
+| Regulatory clearance | Not claimed |
+
+---
+
+## Source Code Pointers
+
+| Component | Path |
+|---|---|
+| Federated aggregators | `src/features/federated/pathology_fl/aggregator/` |
+| FAIR-WEIGHTS-H engine | `src/features/federated/pathology_fl/weighting/fair_weights_h.py` |
+| Synthetic federation | `src/features/federated/pathology_fl/weighting/synthetic_federation.py` |
+| Perturbation experiments | `src/features/federated/pathology_fl/weighting/experiment_suite.py` |
+| Weighting tests | `tests/federated/` |
+
+---
+
+## Contribution Notes
+
+When updating documentation:
+
+- Keep validated benchmark results separate from proposed research directions.
+- Do not describe FAIR-WEIGHTS-H synthetic experiments as clinical validation.
+- Treat legacy prestige multipliers as baselines only.
+- Prefer clear implementation status labels: implemented, experimental, planned, or future work.
