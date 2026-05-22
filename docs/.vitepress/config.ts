@@ -52,7 +52,7 @@ export default defineConfig({
     'training/**'
   ],
   themeConfig: {
-    siteTitle: 'Computational Pathology, Federated Oncology Learning & Mathematical Validation',
+    siteTitle: 'Matthew Vaishnav',
     nav: [
       { text: 'Overview', link: '/overview/' },
       { text: 'Models', link: '/models/' },
