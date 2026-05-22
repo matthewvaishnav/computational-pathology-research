@@ -163,6 +163,326 @@
         "byzantine_detection": true,
         "total_rounds": 5
       }
+    },
+    {
+      "version": 1,
+      "round_id": 1,
+      "timestamp": "2026-05-22T07:59:00.876307",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 2,
+      "round_id": 2,
+      "timestamp": "2026-05-22T07:59:00.901369",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 3,
+      "round_id": 3,
+      "timestamp": "2026-05-22T07:59:00.932630",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 3
+      }
+    },
+    {
+      "version": 1,
+      "round_id": 1,
+      "timestamp": "2026-05-22T07:59:01.010552",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.7127358838915825
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 2,
+      "round_id": 2,
+      "timestamp": "2026-05-22T07:59:01.085220",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.7043215049306552
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 3,
+      "round_id": 3,
+      "timestamp": "2026-05-22T07:59:01.158290",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6982616356015207
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 3
+      }
+    },
+    {
+      "version": 4,
+      "round_id": 4,
+      "timestamp": "2026-05-22T07:59:01.218416",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6927758437395095
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 4
+      }
+    },
+    {
+      "version": 5,
+      "round_id": 5,
+      "timestamp": "2026-05-22T07:59:01.288990",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6886583997805914
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 5
+      }
+    },
+    {
+      "version": 6,
+      "round_id": 6,
+      "timestamp": "2026-05-22T07:59:01.363486",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.684729226330916
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 6
+      }
+    },
+    {
+      "version": 7,
+      "round_id": 7,
+      "timestamp": "2026-05-22T07:59:01.426754",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6809075785676638
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 7
+      }
+    },
+    {
+      "version": 8,
+      "round_id": 8,
+      "timestamp": "2026-05-22T07:59:01.485684",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6782136070728302
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 8
+      }
+    },
+    {
+      "version": 9,
+      "round_id": 9,
+      "timestamp": "2026-05-22T07:59:01.545995",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6752407261729241
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 9
+      }
+    },
+    {
+      "version": 10,
+      "round_id": 10,
+      "timestamp": "2026-05-22T07:59:01.611609",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.6723112395405769
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 10
+      }
+    },
+    {
+      "version": 1,
+      "round_id": 1,
+      "timestamp": "2026-05-22T07:59:03.033533",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 2,
+      "round_id": 2,
+      "timestamp": "2026-05-22T07:59:05.068487",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 1,
+      "round_id": 1,
+      "timestamp": "2026-05-22T07:59:05.702706",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 1
+      }
+    },
+    {
+      "version": 2,
+      "round_id": 2,
+      "timestamp": "2026-05-22T07:59:05.733652",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 2
+      }
+    },
+    {
+      "version": 3,
+      "round_id": 3,
+      "timestamp": "2026-05-22T07:59:05.758686",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 3
+      }
+    },
+    {
+      "version": 4,
+      "round_id": 4,
+      "timestamp": "2026-05-22T07:59:05.783147",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 4
+      }
+    },
+    {
+      "version": 5,
+      "round_id": 5,
+      "timestamp": "2026-05-22T07:59:05.809639",
+      "contributors": [],
+      "metrics": {
+        "loss": 0.5
+      },
+      "provenance": {
+        "aggregation_algorithm": "FedAvg",
+        "local_epochs": 5,
+        "learning_rate": 0.01,
+        "byzantine_detection": true,
+        "total_rounds": 5
+      }
     }
   ]
 }

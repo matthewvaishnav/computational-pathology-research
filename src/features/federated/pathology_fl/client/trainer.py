@@ -104,9 +104,15 @@ class LocalTrainer:
         try:
             # Check if model is wrapped by Opacus GradSampleModule
             # GradSampleModule prefixes all parameters with "_module."
-            from opacus.grad_sample import GradSampleModule
+            try:
+                from opacus.grad_sample import GradSampleModule
 
-            if isinstance(self.model, GradSampleModule):
+                is_grad_sample_module = isinstance(self.model, GradSampleModule)
+            except ImportError:
+                # Opacus not available, assume model is not wrapped
+                is_grad_sample_module = False
+
+            if is_grad_sample_module:
                 # Add "_module." prefix to all keys in global_model_state
                 adjusted_state = {f"_module.{k}": v for k, v in global_model_state.items()}
                 self.model.load_state_dict(adjusted_state)
