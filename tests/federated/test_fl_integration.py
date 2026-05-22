@@ -97,18 +97,32 @@ def test_integration_five_client_training():
         # Collect client updates
         client_updates = []
 
-        for client in clients:
+        for i, client in enumerate(clients):
             # Load global model
             client.load_global_model(global_state)
 
             # Generate synthetic training data
             train_data = [(torch.randn(10), torch.randint(0, 2, (1,)).item()) for _ in range(50)]
+            X = torch.stack([x for x, _ in train_data])
+            y = torch.tensor([y for _, y in train_data])
+
+            # Set training data
+            client.set_data(X, y)
 
             # Train locally
-            update = client.train_local_epochs(
-                train_data=train_data,
-                epochs=local_epochs,
+            _ = client.train_local_epochs(num_epochs=local_epochs)
+
+            # Get serialized update
+            serialized = client.serialize_update()
+
+            # Create ClientUpdate object
+            update = ClientUpdate(
+                client_id=f"client_{i}",
                 round_id=round_num,
+                model_version=orchestrator.current_version,
+                gradients=serialized["model_update"],
+                dataset_size=serialized["metadata"]["dataset_size"],
+                training_time_seconds=serialized["metadata"]["training_time"],
             )
 
             client_updates.append(update)
@@ -187,14 +201,28 @@ def test_integration_convergence_validation():
         client_updates = []
         round_losses = []
 
-        for client in clients:
+        for i, client in enumerate(clients):
             client.load_global_model(global_state)
 
+            # Set training data (same for all clients in this test)
+            X = torch.stack([x for x, _ in train_data])
+            y = torch.tensor([y for _, y in train_data])
+            client.set_data(X, y)
+
             # Train locally
-            update = client.train_local_epochs(
-                train_data=train_data,
-                epochs=local_epochs,
+            _ = client.train_local_epochs(num_epochs=local_epochs)
+
+            # Get serialized update
+            serialized = client.serialize_update()
+
+            # Create ClientUpdate object
+            update = ClientUpdate(
+                client_id=f"client_{i}",
                 round_id=round_num,
+                model_version=orchestrator.current_version,
+                gradients=serialized["model_update"],
+                dataset_size=serialized["metadata"]["dataset_size"],
+                training_time_seconds=serialized["metadata"]["training_time"],
             )
 
             client_updates.append(update)
@@ -257,9 +285,8 @@ def test_integration_privacy_budget_enforcement():
 
     **Validates: Requirements 3.1, 3.2**
     """
-    num_clients = 2
+    num_clients = 3  # Orchestrator requires min 3 clients by default
     max_epsilon = 5.0
-    delta = 1e-5
 
     # Create global model
     global_model = SimpleModel()
@@ -297,7 +324,14 @@ def test_integration_privacy_budget_enforcement():
         round_num += 1
 
         # Check privacy budget before round
-        current_epsilons = [client.privacy_engine.get_privacy_spent(delta)[0] for client in clients]
+        # Note: Opacus returns NaN before any training steps, treat as 0.0
+        current_epsilons = []
+        for client in clients:
+            eps, _ = client.privacy_engine.get_privacy_spent()
+            # Handle NaN (no training steps yet) - use math.isnan for proper check
+            import math
+
+            current_epsilons.append(0.0 if math.isnan(eps) else eps)
         max_current_epsilon = max(current_epsilons)
 
         print(f"Round {round_num}: Max epsilon = {max_current_epsilon:.2f}")
@@ -316,14 +350,30 @@ def test_integration_privacy_budget_enforcement():
         # Collect client updates
         client_updates = []
 
-        for client in clients:
+        for i, client in enumerate(clients):
             client.load_global_model(global_state)
 
+            # Generate training data
+            train_data = [(torch.randn(10), torch.randint(0, 2, (1,)).item()) for _ in range(50)]
+            X = torch.stack([x for x, _ in train_data])
+            y = torch.tensor([y for _, y in train_data])
+            client.set_data(X, y)
+
             # Train locally with DP-SGD
-            update = client.train_local_epochs(
-                train_data=train_data,
-                epochs=1,
+            _ = client.train_local_epochs(num_epochs=1)
+
+            # Get serialized update
+            serialized = client.serialize_update()
+
+            # Create ClientUpdate object
+            update = ClientUpdate(
+                client_id=f"client_{i}",
                 round_id=round_num,
+                model_version=orchestrator.current_version,
+                gradients=serialized["model_update"],
+                dataset_size=serialized["metadata"]["dataset_size"],
+                training_time_seconds=serialized["metadata"]["training_time"],
+                privacy_epsilon=serialized["metadata"]["privacy"]["epsilon_used"],
             )
 
             client_updates.append(update)
@@ -352,7 +402,7 @@ def test_integration_privacy_budget_enforcement():
     for i in range(1, len(epsilons)):
         assert (
             epsilons[i] >= epsilons[i - 1]
-        ), f"Epsilon decreased: {epsilons[i-1]} -> {epsilons[i]}"
+        ), f"Epsilon decreased: {epsilons[i - 1]} -> {epsilons[i]}"
 
     print(f"\n✓ Privacy budget enforced: {len(epsilons)} rounds, final ε = {epsilons[-1]:.2f}")
 
@@ -412,14 +462,28 @@ def test_integration_byzantine_attack_simulation():
         # Collect honest client updates
         client_updates = []
 
-        for client in honest_clients:
+        for i, client in enumerate(honest_clients):
             client.load_global_model(global_state)
 
+            # Set training data
+            X = torch.stack([x for x, _ in train_data])
+            y = torch.tensor([y for _, y in train_data])
+            client.set_data(X, y)
+
             # Train locally
-            update = client.train_local_epochs(
-                train_data=train_data,
-                epochs=2,
+            _ = client.train_local_epochs(num_epochs=2)
+
+            # Get serialized update
+            serialized = client.serialize_update()
+
+            # Create ClientUpdate object
+            update = ClientUpdate(
+                client_id=f"honest_{i}",
                 round_id=round_num,
+                model_version=orchestrator.current_version,
+                gradients=serialized["model_update"],
+                dataset_size=serialized["metadata"]["dataset_size"],
+                training_time_seconds=serialized["metadata"]["training_time"],
             )
 
             client_updates.append(update)
@@ -532,11 +596,25 @@ def test_integration_client_dropout_simulation():
                 client = clients[i]
                 client.load_global_model(global_state)
 
+                # Set training data
+                X = torch.stack([x for x, _ in train_data])
+                y = torch.tensor([y for _, y in train_data])
+                client.set_data(X, y)
+
                 # Train locally
-                update = client.train_local_epochs(
-                    train_data=train_data,
-                    epochs=2,
+                _ = client.train_local_epochs(num_epochs=2)
+
+                # Get serialized update
+                serialized = client.serialize_update()
+
+                # Create ClientUpdate object
+                update = ClientUpdate(
+                    client_id=f"client_{i}",
                     round_id=round_num,
+                    model_version=orchestrator.current_version,
+                    gradients=serialized["model_update"],
+                    dataset_size=serialized["metadata"]["dataset_size"],
+                    training_time_seconds=serialized["metadata"]["training_time"],
                 )
 
                 client_updates.append(update)
@@ -558,8 +636,8 @@ def test_integration_client_dropout_simulation():
         # Verify training completed successfully despite dropout
         assert orchestrator.current_round == num_rounds
 
-        # Verify checkpoint recovery
-        checkpoint_path = Path(checkpoint_dir) / f"checkpoint_round_{num_rounds}.pt"
+        # Verify checkpoint recovery (orchestrator saves as model_v{version}.pt)
+        checkpoint_path = Path(checkpoint_dir) / f"model_v{num_rounds}.pt"
         assert checkpoint_path.exists(), "Checkpoint not saved"
 
         # Load checkpoint and verify
@@ -567,8 +645,8 @@ def test_integration_client_dropout_simulation():
         assert checkpoint["round_id"] == num_rounds
         assert checkpoint["version"] == num_rounds
 
-        print(f"\n✓ Client dropout handled successfully")
-        print(f"✓ Checkpoint recovery validated")
+        print("\n✓ Client dropout handled successfully")
+        print("✓ Checkpoint recovery validated")
 
     finally:
         # Cleanup
