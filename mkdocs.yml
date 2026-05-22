@@ -6,6 +6,36 @@ repo_name: matthewvaishnav/computational-pathology-research
 
 use_directory_urls: true
 
+exclude_docs: |
+  ABOUT.md
+  ANALYSIS_SYSTEM.md
+  API_REFERENCE.md
+  ARCHITECTURE.md
+  ARCHITECTURE_MIGRATION.md
+  BENCHMARK_SYSTEM.md
+  CHANGELOG.md
+  DOCS_INDEX.md
+  FAIR_WEIGHTS_HYBRID_PROTOCOL.md
+  FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS.md
+  FAIR_WEIGHTS_H_PCAM_FEDERATED_SMOKE_REPORT.md
+  GETTING_STARTED.md
+  PCAM_REAL_RESULTS.md
+  PERFORMANCE_COMPARISON.md
+  PLATFORM_OVERVIEW.md
+  REPOSITORY_OVERVIEW.md
+  SECURITY_HARDENING.md
+  TESTING_SUMMARY.md
+  archive/**
+  api/**
+  demo/**
+  deployment/**
+  diagrams/**
+  federated_learning/**
+  operations/**
+  regulatory/**
+  security/**
+  training/**
+
 theme:
   name: material
   features:
