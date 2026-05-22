@@ -25,6 +25,9 @@ exclude_docs: |
   REPOSITORY_OVERVIEW.md
   SECURITY_HARDENING.md
   TESTING_SUMMARY.md
+  TRANSNNMIL_V2_ARCHITECTURE.md
+  TRANSNNMIL_V2_STATUS.md
+  TRANSNNMIL_V2_TRAINING.md
   archive/**
   api/**
   demo/**
@@ -88,23 +91,43 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - Start:
-      - Getting Started: getting-started.md
-      - Repository Overview: repository-overview.md
-      - Platform Overview: platform-overview.md
+  - Overview:
+      - What this project is: overview/index.md
+      - Repository structure: repository-overview.md
+      - Platform overview: platform-overview.md
+      - Claim status: overview/claim-status.md
+  - Quickstart:
+      - Getting started: getting-started.md
+      - Reproducing experiments: quickstart/reproducing-experiments.md
+      - Running benchmarks: quickstart/running-benchmarks.md
+  - Models:
+      - Models overview: models/index.md
+      - TransnnMIL v2.0: models/transnnmil-v2.md
+      - Foundation encoders: models/foundation-encoders.md
+      - Model cards: models/model-cards.md
+  - Federated Learning:
+      - PathologyFL: federated/pathologyfl.md
+      - FAIR-WEIGHTS-H: theory/fair-weights-h.md
+      - Implementation status: theory/implementation-status.md
+      - Privacy and DP: federated/privacy-dp.md
+      - Secure aggregation: federated/secure-aggregation.md
+      - Byzantine robustness: federated/byzantine-robustness.md
+  - Validation:
+      - Validation overview: validation/index.md
+      - Synthetic validation: validation/synthetic-report.md
+      - PCam smoke report: validation/pcam-smoke-report.md
+      - PCam benchmark plan: validation/PCAM_FEDERATED_BENCHMARK_PLAN.md
+      - Camelyon17 plan: validation/camelyon17-plan.md
   - Results:
-      - PCam Results: results/pcam-results.md
-      - Performance Comparison: results/performance-comparison.md
-  - FAIR-WEIGHTS-H:
-      - Theory and Protocol: theory/fair-weights-h.md
-      - Implementation Status: theory/implementation-status.md
-      - Synthetic Report: validation/synthetic-report.md
-      - PCam Smoke Report: validation/pcam-smoke-report.md
-      - PCam Benchmark Plan: validation/PCAM_FEDERATED_BENCHMARK_PLAN.md
-      - Camelyon17 Plan: validation/camelyon17-plan.md
+      - PCam results: results/pcam-results.md
+      - Performance comparison: results/performance-comparison.md
   - Engineering:
       - Architecture: engineering/architecture.md
-      - Benchmark System: engineering/benchmark-system.md
-      - Security Hardening: engineering/security-hardening.md
-      - Federated Test Status: engineering/testing-status.md
+      - Testing status: engineering/testing-status.md
+      - Benchmark system: engineering/benchmark-system.md
+      - Security hardening: engineering/security-hardening.md
+      - Deployment: engineering/deployment.md
+  - Roadmap:
+      - Roadmap: roadmap/index.md
+      - Limitations: roadmap/limitations.md
   - Changelog: changelog.md
