@@ -1,24 +1,30 @@
 # Matthew Vaishnav Computational Pathology, Federated Oncology Learning, and Mathematical Validation Infrastructure
 
-Whole-slide pathology AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H institutional weighting, PCam/Camelyon validation, and multi-institutional oncology learning infrastructure.
+Whole-slide pathology AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H institutional weighting, PCam/PANDA/Camelyon validation, and multi-institutional oncology learning infrastructure.
 
-**Documentation:** https://matthewvaishnav.github.io/computational-pathology-research/
+**Documentation:** https://matthewvaishnav.github.io/computational-pathology-research/  
+**Literature positioning:** https://matthewvaishnav.github.io/computational-pathology-research/research/literature-positioning  
+**PCam results:** https://matthewvaishnav.github.io/computational-pathology-research/results/pcam-results
 
 ---
 
 ## What this repository is
 
-This repository is a computational pathology and oncology AI platform that combines:
+This repository is my computational pathology and oncology AI research framework. It combines model development, federated learning, benchmark validation, statistical reporting, and documentation infrastructure for pathology AI experiments.
 
-- whole-slide and patch-level pathology modeling
+The work spans:
+
+- patch-level and whole-slide pathology modeling
 - multiple-instance learning for WSI classification
-- the custom **TransnnMIL v2.0** architecture
+- the custom **TransnnMIL v2.0** architecture direction
 - **PathologyFL** federated learning infrastructure
 - **FAIR-WEIGHTS-H** institutional weighting research
-- PCam and Camelyon validation workflows
+- PCam, PANDA, and Camelyon validation workflows
+- threshold analysis and statistical validation
+- PubMed-grounded literature positioning
 - testing, reporting, and deployment-oriented engineering infrastructure
 
-The project is for research and engineering validation. It is **not clinically validated** and is **not regulatory cleared**.
+This is a research and engineering framework. It is **not clinically validated** and is **not regulatory cleared**.
 
 ---
 
@@ -26,12 +32,18 @@ The project is for research and engineering validation. It is **not clinically v
 
 | Area | Status |
 |---|---|
-| PCam benchmark results | 85.26% accuracy and 93.94% AUC reported on PCam experiments |
-| FAIR-WEIGHTS-H unit tests | Passing focused tests |
-| PCam federated smoke tests | All four strategies completed on real PCam patches split into simulated sites |
-| PCam balanced federated benchmark | Completed: equal, volume, prestige, and FAIR-WEIGHTS-H had similar global accuracy on balanced simulated sites |
-| PCam heterogeneous benchmark | Running / in progress |
-| Camelyon17 real multi-center validation | Planned / future work |
+| PCam public benchmark | **85.26% test accuracy**, **0.9394 test AUC** on the full 32,768-sample test set |
+| PCam comparison | **#1 by AUC among 11 compared PCam methods** in the documented comparison table |
+| Bootstrap validation | 1,000 bootstrap resamples reported for PCam metrics |
+| Threshold optimization | Screening threshold analysis reduced missed tumor predictions by 61.7% in the documented PCam analysis |
+| FAIR-WEIGHTS-H smoke/unit tests | Focused tests passing |
+| PCam federated smoke tests | Equal, volume, prestige, and FAIR-WEIGHTS-H strategies completed on real PCam patches split into simulated sites |
+| PCam balanced federated benchmark | Complete: FAIR-WEIGHTS-H stable, no performance degradation observed |
+| PCam heterogeneous benchmark | Complete: strategies produced different weight trajectories, but patch-level performance was insensitive to those differences |
+| FAIR-WEIGHTS-H empirical status | Tested for execution stability and aggregation behavior; performance/fairness advantage over simpler baselines not yet demonstrated |
+| PubMed literature positioning | Added: related work, citation table, claim-strength table, and next experiment priorities |
+| PANDA feature extraction | In progress on a separate RTX 3060 12GB machine; not yet marked complete |
+| Camelyon16/17 validation | Planned next slide-level / multi-center validation target |
 | Clinical validation | Not completed |
 
 ---
@@ -40,12 +52,14 @@ The project is for research and engineering validation. It is **not clinically v
 
 ### TransnnMIL v2.0
 
-Custom WSI multiple-instance learning architecture combining:
+Custom WSI multiple-instance learning architecture direction combining:
 
 - TransMIL-style global attention
 - hierarchical spatial pooling
 - topology / graph-aware tissue structure modeling
 - optional adaptive pruning
+
+Current status: design and implementation direction documented; slide-level WSI benchmark evidence is the next required step.
 
 See: [TransnnMIL v2.0 documentation](docs/models/transnnmil-v2.md)
 
@@ -59,14 +73,26 @@ Federated learning infrastructure for computational pathology:
 - differential privacy hooks
 - secure aggregation work
 - byzantine/dropout robustness checks
+- balanced and heterogeneous PCam federated benchmarks
 
 See: [PathologyFL documentation](docs/federated/pathologyfl.md)
 
 ### FAIR-WEIGHTS-H
 
-Experimental institutional weighting engine for federated oncology learning.
+Institutional weighting engine for federated oncology learning.
 
-It replaces simple volume or prestige weighting with an auditable weighting scaffold using signals such as quality, useful uniqueness, fairness, contribution, volume, and uncertainty.
+It replaces simple volume or prestige weighting with an auditable weighting scaffold using:
+
+- quality
+- useful uniqueness
+- fairness
+- contribution
+- volume
+- uncertainty
+- entropy
+- effective-institution diagnostics
+
+Current status: empirically tested for stability and aggregation behavior on synthetic and PCam federated benchmarks. It produces distinct weights under heterogeneity and does not degrade performance in the current patch-level setup. A performance/fairness advantage over simpler baselines still requires ablation and slide-level multi-center validation.
 
 See: [FAIR-WEIGHTS-H theory](docs/theory/fair-weights-h.md)
 
@@ -76,14 +102,32 @@ See: [FAIR-WEIGHTS-H theory](docs/theory/fair-weights-h.md)
 
 ```text
 Synthetic smoke validation
-  -> PCam patch-level smoke validation
+  -> PCam patch-level validation
+  -> PCam federated smoke validation
   -> PCam balanced federated benchmark
   -> PCam heterogeneous-site benchmark
+  -> PANDA slide-level prostate benchmark
+  -> Camelyon16 slide-level benchmark
   -> Camelyon17 real multi-center validation
   -> clinical validation
 ```
 
-Current position: PCam patch-level validation is working; real multi-center validation remains future work.
+Current position: PCam patch-level and PCam federated validation are complete. PANDA feature extraction is nearly complete but still running on a separate RTX 3060 worker machine. Camelyon16/17 slide-level validation remains future work.
+
+---
+
+## Research positioning
+
+The PubMed-grounded literature review positions this work at the intersection of:
+
+1. **WSI MIL architecture research** — CLAM, NATMIL, SlideMamba, foundation-model MIL comparisons.
+2. **Federated pathology infrastructure** — HistoFL and medical-imaging FL.
+3. **Institutional weighting / fairness** — FAIR-WEIGHTS-H has no direct cited WSI-FL comparator across its full eight-dimensional weighting scheme.
+4. **Benchmark and validation infrastructure** — PCam patch-level validation, PCam federated splits, PANDA/Camelyon roadmap.
+
+The strongest current novelty signal is FAIR-WEIGHTS-H and PathologyFL as institutional weighting / federated validation infrastructure. The strongest completed benchmark result is PCam AUC. The biggest next evidence gap is slide-level validation.
+
+See: [Literature positioning](docs/research/literature-positioning.md)
 
 ---
 
@@ -153,9 +197,36 @@ npm run docs:build
 
 ---
 
+## Repository hygiene
+
+Large local artifacts are intentionally ignored:
+
+- raw datasets
+- WSI tiles
+- extracted features
+- PANDA / PCam / Camelyon feature stores
+- checkpoints
+- model weights
+- raw predictions
+- temporary experiment outputs
+
+Tracked artifacts should be small and reproducible:
+
+- reports
+- metrics summaries
+- benchmark tables
+- configuration files
+- documentation
+- source code
+
+See: [results policy](results/README.md)
+
+---
+
 ## Documentation map
 
 - [Overview](docs/overview/index.md)
+- [Literature positioning](docs/research/literature-positioning.md)
 - [Claim status](docs/overview/claim-status.md)
 - [Getting started](docs/getting-started.md)
 - [Models](docs/models/index.md)
@@ -163,7 +234,8 @@ npm run docs:build
 - [PathologyFL](docs/federated/pathologyfl.md)
 - [FAIR-WEIGHTS-H](docs/theory/fair-weights-h.md)
 - [Validation overview](docs/validation/index.md)
-- [PCam benchmark report](docs/validation/pcam-benchmark-report.md)
+- [PCam results](docs/results/pcam-results.md)
+- [Performance comparison](docs/results/performance-comparison.md)
 - [Engineering architecture](docs/engineering/architecture.md)
 - [Roadmap](docs/roadmap/index.md)
 
@@ -173,11 +245,12 @@ npm run docs:build
 
 This repository contains substantial engineering and research infrastructure, but claims should be interpreted by evidence level:
 
-- **Implemented** does not mean clinically validated.
-- **Synthetic validation** does not mean real-world validation.
-- **PCam simulated-site validation** uses real pathology patches but not real hospital-level site structure.
-- **Camelyon17 validation** is required for real multi-center evidence.
-- **Clinical validation and regulatory clearance** are separate future requirements.
+- **Public pathology benchmark validation is real evidence.**
+- **PCam is patch-level.** It does not replace Camelyon16/17 slide-level WSI validation.
+- **PANDA and Camelyon are needed for stronger slide-level claims.**
+- **FAIR-WEIGHTS-H has been empirically tested for stability and behavior.** It has not yet shown a consistent performance/fairness advantage over simpler baselines.
+- **TransnnMIL v2.0 is not yet proven superior to CLAM, TransMIL, NATMIL, or SlideMamba at the slide level.**
+- **Clinical validation and regulatory clearance are separate future requirements.**
 
 ---
 
