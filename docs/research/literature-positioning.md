@@ -61,7 +61,9 @@ PathologyFL is the WSI-specific federated learning infrastructure in this framew
 
 ### Positioning: FAIR-WEIGHTS-H
 
-FAIR-WEIGHTS-H is an institutional weighting method operating across eight dimensions: quality, useful uniqueness, fairness, contribution, volume, uncertainty, entropy, and effective-institution diagnostics. A search of the PubMed-indexed FL-pathology literature found no cited method that addresses all eight dimensions jointly in a WSI context. HistoFL uses standard FedAvg. Bhalla et al. address heterogeneity in CT. Gao et al. address feature and label skew in segmentation. FAIR-WEIGHTS-H is therefore positioned as a novel institutional weighting design for pathology FL, with empirical benefit still pending stronger ablation and real multi-center validation.
+FAIR-WEIGHTS-H is an institutional weighting method operating across eight dimensions: quality, useful uniqueness, fairness, contribution, volume, uncertainty, entropy, and effective-institution diagnostics. A search of the PubMed-indexed FL-pathology literature found no cited method that addresses all eight dimensions jointly in a WSI context. HistoFL uses standard FedAvg. Bhalla et al. address heterogeneity in CT. Gao et al. address feature and label skew in segmentation. FAIR-WEIGHTS-H is therefore positioned as a novel institutional weighting design for pathology FL.
+
+FAIR-WEIGHTS-H has also been empirically evaluated for execution stability and aggregation behavior. Synthetic smoke tests, PCam federated smoke tests, the balanced PCam benchmark, and the heterogeneous PCam benchmark show that the method runs reliably, does not introduce numerical failures, produces distinct weight trajectories under heterogeneous simulated sites, and does not degrade performance in the current patch-level setting. What has not yet been demonstrated is a consistent performance or fairness advantage over simpler aggregation baselines. That stronger claim requires ablation against FedAvg, volume weighting, quality-only weighting, fairness-only weighting, and the full FAIR-WEIGHTS-H formulation.
 
 ---
 
@@ -108,8 +110,9 @@ The planned Camelyon17 multi-center validation will use PathologyFL to train acr
 | #1 AUC among compared PCam methods | Comparison table with 11 methods | Strong if comparison table remains documented | Keep methods and sources explicit |
 | TransnnMIL v2.0 architecture | Literature-motivated design | Design claim | Camelyon16 slide-level benchmark |
 | PathologyFL | Working federated scaffold and PCam FL benchmarks | Supported infrastructure claim | Real multi-center validation |
-| FAIR-WEIGHTS-H novelty | No direct comparator among cited PubMed FL-pathology papers | Strong design novelty | Ablation + Camelyon17 results |
-| FAIR-WEIGHTS-H effectiveness | Balanced and heterogeneous PCam benchmarks; null performance result | Needs more evidence | FedAvg/volume/quality/fairness/full ablation |
+| FAIR-WEIGHTS-H novelty | No direct comparator among cited PubMed FL-pathology papers | Strong design novelty | Keep literature comparison updated |
+| FAIR-WEIGHTS-H empirical behavior | Synthetic, PCam smoke, balanced PCam, and heterogeneous PCam tests; distinct weights produced under heterogeneity; no degradation observed | Supported behavior/stability claim | Stronger heterogeneous or slide-level setting |
+| FAIR-WEIGHTS-H performance advantage | Current PCam benchmarks did not show measurable performance/fairness improvement over simpler strategies | Not yet demonstrated | FedAvg/volume/quality/fairness/full ablation on PCam and Camelyon17 |
 | Camelyon17 validation | Planned | Future claim | Run five-center experiment |
 | Clinical deployment | Not claimed | Not supported | Prospective clinical workflow validation |
 
@@ -134,7 +137,7 @@ The planned Camelyon17 multi-center validation will use PathologyFL to train acr
 The following claims should not appear until the corresponding experiments are complete:
 
 - TransnnMIL v2.0 outperforms CLAM, TransMIL, NATMIL, or SlideMamba at the slide level.
-- FAIR-WEIGHTS-H improves FL performance.
+- FAIR-WEIGHTS-H improves FL performance or fairness over simpler baselines.
 - PathologyFL achieves clinical-grade performance.
 - Results generalize across cancer types, scanners, or institutions beyond the tested datasets.
 - Calibration or threshold-based clinical operating point claims.
