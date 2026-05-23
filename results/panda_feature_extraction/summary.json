@@ -1,0 +1,20 @@
+{
+  "status": "feature_extraction_finished_one_missing_slide",
+  "feature_root": "D:\\panda\\features_phikon",
+  "h5_files": 10615,
+  "tmp_files": 0,
+  "total_gb": 1.867,
+  "example_files": [
+    "D:\\panda\\features_phikon\\0005f7aaab2800f6170c399693a96917.h5",
+    "D:\\panda\\features_phikon\\000920ad0b612851f8e01bcc880d9b3d.h5",
+    "D:\\panda\\features_phikon\\0018ae58b01bdadc8e347995b69f99aa.h5",
+    "D:\\panda\\features_phikon\\001c62abd11fa4b57bf7a6c603a11bb9.h5",
+    "D:\\panda\\features_phikon\\001d865e65ef5d2579c190a0e0350d8f.h5",
+    "D:\\panda\\features_phikon\\002a4db09dad406c85505a00fb6f6144.h5",
+    "D:\\panda\\features_phikon\\003046e27c8ead3e3db155780dc5498e.h5",
+    "D:\\panda\\features_phikon\\0032bfa835ce0f43a92ae0bbab6871cb.h5",
+    "D:\\panda\\features_phikon\\003a91841da04a5a31f808fb5c21538a.h5",
+    "D:\\panda\\features_phikon\\003d4dd6bd61221ebc0bfb9350db333f.h5"
+  ],
+  "created_at_unix": 1779558448
+}

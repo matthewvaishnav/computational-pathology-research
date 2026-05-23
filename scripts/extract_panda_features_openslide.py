@@ -10,6 +10,7 @@ Speed: <1 second per slide
 import argparse
 import logging
 import sys
+import time
 from pathlib import Path
 
 import h5py
@@ -24,6 +25,7 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.data.datasets.panda_dataset import PANDASlideIndex
+from src.models.pretrained import PretrainedFeatureExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,10 @@ def create_feature_extractor(model_name: str, device: torch.device) -> tuple:
         model = models.resnet18(pretrained=True)
         model = nn.Sequential(*list(model.children())[:-1])
         feature_dim = 512
+    elif model_name in ["phikon", "uni", "gigapath"]:
+        # Use foundation model
+        model = PretrainedFeatureExtractor(model_name, device=device)
+        feature_dim = model.output_dim
     else:
         raise ValueError(f"Unknown model: {model_name}")
     
@@ -169,21 +175,48 @@ def save_features(
     features: np.ndarray,
     coordinates: np.ndarray,
     slide_id: str,
+    max_retries: int = 5,
 ):
-    """Save features to HDF5 file."""
-    with h5py.File(output_path, "w") as f:
-        f.create_dataset("features", data=features, compression="gzip")
-        f.create_dataset("coordinates", data=coordinates, compression="gzip")
-        f.attrs["slide_id"] = slide_id
-        f.attrs["num_patches"] = len(features)
-        f.attrs["feature_dim"] = features.shape[1]
+    """Save features to HDF5 file with retry logic for Windows file locking."""
+    for attempt in range(max_retries):
+        try:
+            # Use a temporary file first, then rename atomically
+            temp_path = output_path.with_suffix('.h5.tmp')
+            
+            with h5py.File(temp_path, "w") as f:
+                f.create_dataset("features", data=features, compression="gzip")
+                f.create_dataset("coordinates", data=coordinates, compression="gzip")
+                f.attrs["slide_id"] = slide_id
+                f.attrs["num_patches"] = len(features)
+                f.attrs["feature_dim"] = features.shape[1]
+            
+            # Atomic rename
+            if output_path.exists():
+                output_path.unlink()
+            temp_path.rename(output_path)
+            return
+            
+        except (OSError, PermissionError) as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # Exponential backoff
+                logger.warning(f"File lock error for {slide_id}, retrying in {wait_time}s... (attempt {attempt+1}/{max_retries})")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"Failed to save {slide_id} after {max_retries} attempts: {e}")
+                # Clean up temp file if it exists
+                if temp_path.exists():
+                    try:
+                        temp_path.unlink()
+                    except:
+                        pass
+                raise
 
 
 def main():
     parser = argparse.ArgumentParser(description="OpenSlide PANDA feature extraction")
     parser.add_argument("--data_dir", type=str, default="data/panda")
     parser.add_argument("--output_dir", type=str, default="data/panda/features")
-    parser.add_argument("--model", type=str, default="resnet50", choices=["resnet50", "resnet18"])
+    parser.add_argument("--model", type=str, default="resnet50", choices=["resnet50", "resnet18", "phikon", "uni", "gigapath"])
     parser.add_argument("--level", type=int, default=1, help="Pyramid level (0=full, 1=4x down, 2=16x down)")
     parser.add_argument("--patch_size", type=int, default=224)
     parser.add_argument("--stride", type=int, default=224)
