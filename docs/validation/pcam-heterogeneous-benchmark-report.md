@@ -220,50 +220,23 @@ Compare mean global accuracy across strategies.
 
 ## Conclusion
 
-### Summary of Findings
+The heterogeneous PCam benchmark produced an **informative null result**. Equal, volume, prestige, and FAIR-WEIGHTS-H weighting achieved effectively identical global and worst-site performance across seeds.
 
-**Null result:** All strategies achieved identical performance despite producing different weights.
+However, **the strategies did not generate identical weights**. Equal weighting remained uniform, volume weighting reflected site size, prestige weighting produced the strongest dynamic concentration, and FAIR-WEIGHTS-H produced mild dynamic reweighting.
 
-| Strategy | Weight Behavior | Approx. Range | Performance Effect |
-|----------|----------------|---------------|-------------------|
-| **Equal** | Uniform | 0.20 fixed | Baseline |
-| **Volume** | Size-weighted | 0.11–0.22 | No measurable change |
-| **Prestige** | Dynamic/concentrated | 0.12–0.35 | No measurable change |
-| **FAIR-WEIGHTS-H** | Dynamic/mildly adaptive | 0.17–0.23 | No measurable change |
+Therefore, the null result is best interpreted as **benchmark insensitivity to aggregation-weight differences**, not as evidence that all weighting strategies behave identically.
 
-### Interpretation
-
-**The null result is NOT because strategies generated identical weights.**
-
-Weight trajectory analysis confirms:
-- Volume downweighted small site (0.11 vs 0.22)
-- Prestige concentrated weights dynamically (0.12-0.35 range)
-- FAIR-WEIGHTS-H adapted weights mildly (0.17-0.23 range)
-
-**The null result is because this PCam patch-level benchmark is insensitive to aggregation-weight variation.**
-
-### Possible Causes
-
-1. **Model weakness:** Simple CNN too weak to benefit from differential weighting
-2. **Insufficient training:** 30 rounds not enough for weight differences to accumulate
-3. **Task simplicity:** Patch-level classification too simple to expose weighting effects
-4. **Gradient alignment:** All sites contribute similar gradient directions despite data heterogeneity
-
-### Scientific Value
-
-This is an **informative null result** that narrows the failure mode:
-- ✅ Weighting strategies work as designed (produce different weights)
-- ❌ Weight differences don't translate to performance changes in this setup
+This suggests that the current patch-level PCam setup, simple model, heterogeneity design, or 30-round training schedule is insufficient to test the institutional weighting theory. Stronger heterogeneity, longer training, a stronger model, or real multi-center Camelyon17 data is needed.
 
 ### Next Steps
 
-| Priority | Action | Rationale |
-|----------|--------|-----------|
-| 1 | **Increase heterogeneity** | 30%/70% imbalance may be insufficient; try 10%/90% |
-| 2 | **Extend training** | 50-100 rounds to allow weight effects to accumulate |
-| 3 | **Stronger model** | ResNet50 or pretrained encoder instead of simple CNN |
-| 4 | **Add metrics** | AUC, ECE, per-site confusion matrices for sensitivity |
-| 5 | **Real Camelyon17** | True multi-center hospital data with natural heterogeneity |
+| Priority | Next Step | Why |
+|----------|-----------|-----|
+| 1 | **Increase heterogeneity severity** | Make institutional differences large enough to affect learning |
+| 2 | **Run 50–100 rounds** | Give weight trajectories time to accumulate |
+| 3 | **Use stronger model / pretrained encoder** | Current model may be insensitive |
+| 4 | **Add AUC, ECE, site-wise confusion** | Accuracy alone may hide differences |
+| 5 | **Move to Camelyon17** | True hospital heterogeneity is the real test |
 
 **Status:** PCam validation complete. Setup insensitivity identified. Ready for next validation tier.
 
@@ -280,4 +253,5 @@ This is an **informative null result** that narrows the failure mode:
 **Generated:** 2026-05-22  
 **Benchmark Duration:** ~1 hour  
 **Total Runs:** 12 (all successful)
+
 
