@@ -37,45 +37,11 @@
   margin-top: 28px;
 }
 
-/* Compact documentation chrome without clipping the sidebar. */
-:root {
-  --vp-sidebar-width: 280px;
-  --vp-nav-height: 56px;
-}
-
-.VPSidebar {
-  width: var(--vp-sidebar-width) !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-.VPSidebar .curtain,
-.VPSidebar .nav {
-  width: var(--vp-sidebar-width) !important;
-}
-
-.VPSidebar .content {
-  width: var(--vp-sidebar-width) !important;
-  padding-left: 24px !important;
-  padding-right: 18px !important;
-}
-
-.VPSidebarItem .text,
-.VPSidebarItem .link {
-  white-space: normal !important;
-  overflow-wrap: anywhere;
-}
-
-.VPContent.has-sidebar {
-  padding-left: var(--vp-sidebar-width) !important;
-}
-
-.VPNavBar.has-sidebar .content {
-  padding-left: var(--vp-sidebar-width) !important;
-}
+/* Safer documentation chrome tweaks.
+   Do not override VitePress sidebar/content positioning. */
 
 .VPNavBarTitle .title {
-  max-width: 190px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -88,26 +54,17 @@
   font-size: 13px !important;
 }
 
-.VPDoc .container {
-  max-width: 1280px !important;
+.VPSidebarItem .text,
+.VPSidebarItem .link {
+  white-space: normal !important;
+  overflow-wrap: break-word;
 }
 
 .VPDoc .content {
   max-width: 860px !important;
 }
 
-@media (min-width: 1440px) {
-  :root {
-    --vp-sidebar-width: 290px;
-  }
-}
-
 @media (max-width: 960px) {
-  .VPContent.has-sidebar,
-  .VPNavBar.has-sidebar .content {
-    padding-left: 0 !important;
-  }
-
   .VPNavBarTitle .title {
     max-width: 220px;
   }
