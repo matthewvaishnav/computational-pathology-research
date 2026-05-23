@@ -79,18 +79,20 @@ See: [PathologyFL documentation](docs/federated/pathologyfl.md)
 
 ### FAIR-WEIGHTS-H
 
-Institutional weighting engine for federated oncology learning.
+Mathematical institutional weighting framework for federated oncology learning.
 
-It replaces simple volume or prestige weighting with an auditable weighting scaffold using:
+FAIR-WEIGHTS-H does not simply assign weights from a checklist of institutional attributes. It formalizes institutional influence as a constrained optimization problem over mathematically defined signals, including difficulty-adjusted quality, Owen/Shapley-style counterfactual contribution, Jensen-Shannon distributional uniqueness, subgroup representation constraints, uncertainty penalties, entropy, and effective-institution diagnostics.
 
-- quality
-- useful uniqueness
-- fairness
-- contribution
-- volume
-- uncertainty
-- entropy
-- effective-institution diagnostics
+The method is designed to replace crude volume or prestige weighting with an auditable mathematical framework built from:
+
+- difficulty-adjusted diagnostic quality models,
+- group-aware Owen value / counterfactual contribution estimates,
+- useful distributional uniqueness rather than raw domain difference,
+- underserved-population and subgroup-performance constraints,
+- bounded volume terms,
+- uncertainty and anomaly penalties,
+- entropy and effective-number diagnostics,
+- constrained optimization with weight caps and temporal stability limits.
 
 Current status: empirically tested for stability and aggregation behavior on synthetic and PCam federated benchmarks. It produces distinct weights under heterogeneity and does not degrade performance in the current patch-level setup. A performance/fairness advantage over simpler baselines still requires ablation and slide-level multi-center validation.
 
