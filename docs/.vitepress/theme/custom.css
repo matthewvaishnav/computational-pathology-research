@@ -36,3 +36,53 @@
   justify-content: center;
   margin-top: 28px;
 }
+
+/* Compact documentation chrome */
+:root {
+  --vp-sidebar-width: 250px;
+}
+
+.VPSidebar {
+  width: var(--vp-sidebar-width) !important;
+}
+
+.VPSidebar .content {
+  padding-left: 20px !important;
+  padding-right: 14px !important;
+}
+
+.VPContent.has-sidebar {
+  padding-left: var(--vp-sidebar-width) !important;
+}
+
+.VPNavBar.has-sidebar .content {
+  padding-left: var(--vp-sidebar-width) !important;
+}
+
+.VPNavBarMenu .VPNavBarMenuLink,
+.VPNavBarMenu .VPNavBarMenuGroup .button {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  font-size: 13px !important;
+}
+
+.VPDoc .container {
+  max-width: 1280px !important;
+}
+
+.VPDoc .content {
+  max-width: 860px !important;
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --vp-sidebar-width: 260px;
+  }
+}
+
+@media (max-width: 960px) {
+  .VPContent.has-sidebar,
+  .VPNavBar.has-sidebar .content {
+    padding-left: 0 !important;
+  }
+}
