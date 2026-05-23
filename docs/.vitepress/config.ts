@@ -56,6 +56,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Overview', link: '/overview/' },
+      { text: 'Research', link: '/research/literature-positioning' },
       { text: 'Models', link: '/models/' },
       { text: 'Federated', link: '/federated/pathologyfl' },
       { text: 'Validation', link: '/validation/' },
@@ -66,9 +67,13 @@ export default defineConfig({
       { text: 'Overview', items: [
         { text: 'Home', link: '/' },
         { text: 'What this project is', link: '/overview/' },
+        { text: 'Literature positioning', link: '/research/literature-positioning' },
         { text: 'Repository structure', link: '/repository-overview' },
         { text: 'Platform overview', link: '/platform-overview' },
         { text: 'Claim status', link: '/overview/claim-status' }
+      ]},
+      { text: 'Research', items: [
+        { text: 'Literature positioning', link: '/research/literature-positioning' }
       ]},
       { text: 'Quickstart', items: [
         { text: 'Getting started', link: '/getting-started' },
