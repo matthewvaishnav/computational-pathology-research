@@ -152,19 +152,30 @@ class PretrainedFeatureExtractor(nn.Module):
         return model.to(self.device)
 
     def _load_huggingface(self, repo_id: str, cache_dir: Optional[str]) -> nn.Module:
-        """Load model from HuggingFace Hub via timm."""
+        """Load model from HuggingFace Hub."""
         try:
-            import timm
+            from transformers import ViTModel, AutoModel
         except ImportError:
             raise ImportError(
-                "timm is required for HuggingFace models. " "Install: pip install timm"
+                "transformers is required for HuggingFace models. "
+                "Install: pip install transformers"
             )
 
-        model = timm.create_model(
-            f"hf_hub:{repo_id}",
-            pretrained=True,
-            cache_dir=cache_dir,
-        )
+        # Special handling for known ViT models
+        if "phikon" in repo_id.lower() or "uni" in repo_id.lower():
+            # Load as ViT model (these are vision transformers)
+            model = ViTModel.from_pretrained(
+                repo_id,
+                cache_dir=cache_dir,
+                add_pooling_layer=False  # We'll use the CLS token
+            )
+        else:
+            # Load model directly with transformers
+            model = AutoModel.from_pretrained(
+                repo_id,
+                cache_dir=cache_dir,
+                trust_remote_code=True
+            )
         return model.to(self.device)
 
     def _load_custom(self, model_name: str) -> nn.Module:
@@ -280,6 +291,18 @@ class PretrainedFeatureExtractor(nn.Module):
         else:
             features = self.backbone(patches)
 
+        # Handle different output formats
+        if isinstance(features, dict):
+            # Transformers models return dict with 'last_hidden_state'
+            if 'last_hidden_state' in features:
+                # For ViT: [batch, num_patches+1, hidden_dim]
+                # Take CLS token (first token)
+                features = features['last_hidden_state'][:, 0, :]
+            elif 'pooler_output' in features:
+                features = features['pooler_output']
+            else:
+                raise ValueError(f"Unknown output format: {features.keys()}")
+        
         # Flatten if needed (for CNN outputs with spatial dims)
         if features.dim() > 2:
             features = features.flatten(1)
