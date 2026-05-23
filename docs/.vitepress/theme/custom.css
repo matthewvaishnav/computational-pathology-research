@@ -37,18 +37,33 @@
   margin-top: 28px;
 }
 
-/* Compact documentation chrome */
+/* Compact documentation chrome without clipping the sidebar. */
 :root {
-  --vp-sidebar-width: 250px;
+  --vp-sidebar-width: 280px;
+  --vp-nav-height: 56px;
 }
 
 .VPSidebar {
   width: var(--vp-sidebar-width) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.VPSidebar .curtain,
+.VPSidebar .nav {
+  width: var(--vp-sidebar-width) !important;
 }
 
 .VPSidebar .content {
-  padding-left: 20px !important;
-  padding-right: 14px !important;
+  width: var(--vp-sidebar-width) !important;
+  padding-left: 24px !important;
+  padding-right: 18px !important;
+}
+
+.VPSidebarItem .text,
+.VPSidebarItem .link {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
 }
 
 .VPContent.has-sidebar {
@@ -57,6 +72,13 @@
 
 .VPNavBar.has-sidebar .content {
   padding-left: var(--vp-sidebar-width) !important;
+}
+
+.VPNavBarTitle .title {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .VPNavBarMenu .VPNavBarMenuLink,
@@ -76,7 +98,7 @@
 
 @media (min-width: 1440px) {
   :root {
-    --vp-sidebar-width: 260px;
+    --vp-sidebar-width: 290px;
   }
 }
 
@@ -84,5 +106,9 @@
   .VPContent.has-sidebar,
   .VPNavBar.has-sidebar .content {
     padding-left: 0 !important;
+  }
+
+  .VPNavBarTitle .title {
+    max-width: 220px;
   }
 }
