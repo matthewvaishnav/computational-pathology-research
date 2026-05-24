@@ -63,6 +63,8 @@ class TrainConfig:
     num_workers: int
     device: str
     limit: int | None
+    verify_read: bool
+    max_bad_files: int
 
 
 class PandaMeanFeatureDataset(Dataset):
@@ -77,16 +79,22 @@ class PandaMeanFeatureDataset(Dataset):
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, str]:
         row = self.frame.iloc[index]
         feature_path = Path(str(row["feature_path"]))
+        image_id = str(row["image_id"])
 
-        with h5py.File(feature_path, "r") as handle:
-            features = handle["features"][:]
+        try:
+            with h5py.File(feature_path, "r") as handle:
+                features = handle["features"][:]
+        except Exception as exc:
+            raise OSError(
+                f"Failed to read PANDA feature file for image_id={image_id}, "
+                f"path={feature_path}: {exc}"
+            ) from exc
 
         if features.ndim != 2 or features.shape[0] == 0:
-            raise ValueError(f"Invalid feature tensor in {feature_path}: shape={features.shape}")
+            raise ValueError(f"Invalid feature tensor for image_id={image_id}, path={feature_path}: shape={features.shape}")
 
         pooled = features.mean(axis=0).astype(np.float32)
         label = int(row["isup_grade"])
-        image_id = str(row["image_id"])
 
         return torch.from_numpy(pooled), torch.tensor(label, dtype=torch.long), image_id
 
@@ -123,6 +131,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-workers", type=int, default=0, help="Use 0 on Windows for safest HDF5 loading")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--limit", type=int, default=None, help="Optional quick smoke-test limit")
+    parser.add_argument(
+        "--verify-read",
+        action="store_true",
+        help="Read every selected feature file once before training and drop unreadable files",
+    )
+    parser.add_argument(
+        "--max-bad-files",
+        type=int,
+        default=100,
+        help="Abort verification if more than this many unreadable files are found",
+    )
     return parser.parse_args()
 
 
@@ -132,6 +151,13 @@ def set_seed(seed: int) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+
+
+def parse_valid_column(series: pd.Series) -> pd.Series:
+    """Robustly parse a CSV valid column that may contain bools or strings."""
+    if series.dtype == bool:
+        return series
+    return series.astype(str).str.lower().isin({"true", "1", "yes"})
 
 
 def load_manifest(path: Path, limit: int | None = None) -> pd.DataFrame:
@@ -146,8 +172,9 @@ def load_manifest(path: Path, limit: int | None = None) -> pd.DataFrame:
         raise ValueError(f"Manifest is missing required columns: {sorted(missing)}")
 
     # Keep only rows with valid feature files. The current PANDA manifest has one
-    # missing benign slide; this baseline excludes rows without usable features.
-    valid = frame[frame["valid"] == True].copy()  # noqa: E712 - pandas bool comparison
+    # missing benign slide and may have manually marked unreadable HDF5 files.
+    valid_mask = parse_valid_column(frame["valid"])
+    valid = frame[valid_mask].copy()
     valid = valid[valid["feature_path"].notna()].copy()
 
     if limit is not None:
@@ -158,6 +185,51 @@ def load_manifest(path: Path, limit: int | None = None) -> pd.DataFrame:
 
     valid["isup_grade"] = valid["isup_grade"].astype(int)
     return valid
+
+
+def verify_readable_features(frame: pd.DataFrame, out_dir: Path, max_bad_files: int = 100) -> pd.DataFrame:
+    """Read selected HDF5 feature arrays once and drop unreadable files.
+
+    The manifest builder validates metadata and shapes. This pass validates the
+    compressed chunks are actually readable before a training loop starts.
+    """
+    print("Verifying selected feature files are readable...")
+    good_indices: List[int] = []
+    bad_rows: List[Dict[str, object]] = []
+
+    for position, (idx, row) in enumerate(frame.iterrows(), 1):
+        image_id = str(row["image_id"])
+        feature_path = Path(str(row["feature_path"]))
+        try:
+            with h5py.File(feature_path, "r") as handle:
+                features = handle["features"][:]
+                if features.ndim != 2 or features.shape[0] == 0:
+                    raise ValueError(f"Invalid feature shape: {features.shape}")
+        except Exception as exc:
+            bad_rows.append(
+                {
+                    "image_id": image_id,
+                    "feature_path": str(feature_path),
+                    "error": repr(exc),
+                }
+            )
+            print(f"  unreadable {len(bad_rows)}: {image_id} | {feature_path} | {exc}", flush=True)
+            if len(bad_rows) > max_bad_files:
+                raise RuntimeError(f"Aborting: found more than {max_bad_files} unreadable feature files")
+        else:
+            good_indices.append(idx)
+
+        if position % 250 == 0:
+            print(f"  verified {position}/{len(frame)} files...", flush=True)
+
+    if bad_rows:
+        bad_path = out_dir / "unreadable_features.csv"
+        pd.DataFrame(bad_rows).to_csv(bad_path, index=False)
+        print(f"Dropped {len(bad_rows)} unreadable files. Details: {bad_path}")
+    else:
+        print("All selected feature files are readable.")
+
+    return frame.loc[good_indices].reset_index(drop=True)
 
 
 def infer_feature_dim(frame: pd.DataFrame) -> int:
@@ -275,6 +347,9 @@ def main() -> None:
     print(f"Using device: {device}")
 
     manifest = load_manifest(Path(config.manifest), config.limit)
+    if config.verify_read:
+        manifest = verify_readable_features(manifest, out_dir, config.max_bad_files)
+
     print(f"Loaded valid manifest rows: {len(manifest)}")
     print("Class counts:")
     print(manifest["isup_grade"].value_counts().sort_index().to_string())
