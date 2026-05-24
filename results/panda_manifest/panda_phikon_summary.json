@@ -1,0 +1,14 @@
+{
+  "labels_count": 10616,
+  "feature_files_count": 10615,
+  "manifest_rows": 10616,
+  "valid_feature_files": 10615,
+  "invalid_feature_files": 0,
+  "missing_features": 1,
+  "extra_features": 0,
+  "empty_features": 0,
+  "coordinate_features_mismatch": 0,
+  "elapsed_time_seconds": 8274.599265813828,
+  "files_per_second": 1.282841580480573,
+  "invalid_files_details": []
+}
