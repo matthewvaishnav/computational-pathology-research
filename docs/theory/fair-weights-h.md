@@ -70,8 +70,14 @@ Gradient alignment with the current global model is not used as a primary contri
 FAIR-WEIGHTS-H uses a hard gate only for integrity and safety failures, not for prestige or raw quality.
 
 $$
-I_i = \mathbf{1}[\text{data integrity OK}] \cdot \mathbf{1}[\text{no severe label corruption}] \cdot \mathbf{1}[\text{no active safety violation}]
+I_i = G_i^{\mathrm{data}} G_i^{\mathrm{label}} G_i^{\mathrm{safety}}
 $$
+
+where:
+
+- $G_i^{\mathrm{data}} = 1$ only when data integrity checks pass,
+- $G_i^{\mathrm{label}} = 1$ only when no severe label-corruption signal is detected,
+- $G_i^{\mathrm{safety}} = 1$ only when there is no active safety violation.
 
 Low resource level, rural status, or case difficulty must not directly trigger exclusion. Quality should be modeled with difficulty adjustment and uncertainty, not with a crude hard threshold.
 
