@@ -2,13 +2,20 @@
   "labels_count": 10616,
   "feature_files_count": 10615,
   "manifest_rows": 10616,
-  "valid_feature_files": 10615,
-  "invalid_feature_files": 0,
+  "valid_feature_files": 10614,
+  "invalid_feature_files": 1,
   "missing_features": 1,
   "extra_features": 0,
   "empty_features": 0,
   "coordinate_features_mismatch": 0,
   "elapsed_time_seconds": 8274.599265813828,
   "files_per_second": 1.282841580480573,
-  "invalid_files_details": []
+  "invalid_files_details": [],
+  "known_unreadable_features": [
+    {
+      "image_id": "001d865e65ef5d2579c190a0e0350d8f",
+      "feature_path": "D:\\panda\\features_phikon\\001d865e65ef5d2579c190a0e0350d8f.h5",
+      "error": "Can't synchronously read data (filter returned failure during read)"
+    }
+  ]
 }
