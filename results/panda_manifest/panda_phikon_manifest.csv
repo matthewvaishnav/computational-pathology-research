@@ -3,7 +3,7 @@ image_id,data_provider,isup_grade,gleason_score,feature_path,feature_shape,coord
 000920ad0b612851f8e01bcc880d9b3d,karolinska,0,0+0,D:\panda\features_phikon\000920ad0b612851f8e01bcc880d9b3d.h5,"(24, 768)","(24, 2)",24.0,768.0,83831.0,True,
 0018ae58b01bdadc8e347995b69f99aa,radboud,4,4+4,D:\panda\features_phikon\0018ae58b01bdadc8e347995b69f99aa.h5,"(55, 768)","(55, 2)",55.0,768.0,172528.0,True,
 001c62abd11fa4b57bf7a6c603a11bb9,karolinska,4,4+4,D:\panda\features_phikon\001c62abd11fa4b57bf7a6c603a11bb9.h5,"(61, 768)","(61, 2)",61.0,768.0,189546.0,True,
-001d865e65ef5d2579c190a0e0350d8f,karolinska,0,0+0,D:\panda\features_phikon\001d865e65ef5d2579c190a0e0350d8f.h5,"(127, 768)","(127, 2)",127.0,768.0,378305.0,True,
+001d865e65ef5d2579c190a0e0350d8f,karolinska,0,0+0,D:\panda\features_phikon\001d865e65ef5d2579c190a0e0350d8f.h5,"(127, 768)","(127, 2)",127.0,768.0,378305.0,False,Unreadable HDF5 compressed feature data: filter returned failure during read
 002a4db09dad406c85505a00fb6f6144,karolinska,0,0+0,D:\panda\features_phikon\002a4db09dad406c85505a00fb6f6144.h5,"(58, 768)","(58, 2)",58.0,768.0,180979.0,True,
 003046e27c8ead3e3db155780dc5498e,karolinska,1,3+3,D:\panda\features_phikon\003046e27c8ead3e3db155780dc5498e.h5,"(76, 768)","(76, 2)",76.0,768.0,232385.0,True,
 0032bfa835ce0f43a92ae0bbab6871cb,karolinska,1,3+3,D:\panda\features_phikon\0032bfa835ce0f43a92ae0bbab6871cb.h5,"(37, 768)","(37, 2)",37.0,768.0,121295.0,True,
