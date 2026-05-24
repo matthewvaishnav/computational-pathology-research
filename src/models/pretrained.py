@@ -33,6 +33,7 @@ PRETRAINED_MODELS = {
         "output_dim": 1024,
         "requires_timm": True,
         "requires_huggingface": True,
+        "revision": "main",
     },
     "phikon": {
         "name": "Phikon",
@@ -42,6 +43,7 @@ PRETRAINED_MODELS = {
         "output_dim": 768,
         "requires_timm": True,
         "requires_huggingface": True,
+        "revision": "main",
     },
     "gigapath": {
         "name": "Prov-GigaPath",
@@ -51,6 +53,7 @@ PRETRAINED_MODELS = {
         "output_dim": 1536,
         "requires_timm": True,
         "requires_huggingface": True,
+        "revision": "main",
     },
     "ctranspath": {
         "name": "CTransPath",
@@ -152,29 +155,33 @@ class PretrainedFeatureExtractor(nn.Module):
         return model.to(self.device)
 
     def _load_huggingface(self, repo_id: str, cache_dir: Optional[str]) -> nn.Module:
-        """Load model from HuggingFace Hub."""
+        """Load model from Hugging Face Hub with an explicit revision."""
         try:
-            from transformers import ViTModel, AutoModel
+            from transformers import AutoModel, ViTModel
         except ImportError:
             raise ImportError(
                 "transformers is required for HuggingFace models. "
                 "Install: pip install transformers"
             )
 
+        revision = str(self.config.get("revision", "main"))
+
         # Special handling for known ViT models
         if "phikon" in repo_id.lower() or "uni" in repo_id.lower():
             # Load as ViT model (these are vision transformers)
             model = ViTModel.from_pretrained(
                 repo_id,
+                revision=revision,
                 cache_dir=cache_dir,
-                add_pooling_layer=False  # We'll use the CLS token
+                add_pooling_layer=False,  # We'll use the CLS token
             )
         else:
             # Load model directly with transformers
             model = AutoModel.from_pretrained(
                 repo_id,
+                revision=revision,
                 cache_dir=cache_dir,
-                trust_remote_code=True
+                trust_remote_code=True,
             )
         return model.to(self.device)
 
@@ -294,15 +301,15 @@ class PretrainedFeatureExtractor(nn.Module):
         # Handle different output formats
         if isinstance(features, dict):
             # Transformers models return dict with 'last_hidden_state'
-            if 'last_hidden_state' in features:
+            if "last_hidden_state" in features:
                 # For ViT: [batch, num_patches+1, hidden_dim]
                 # Take CLS token (first token)
-                features = features['last_hidden_state'][:, 0, :]
-            elif 'pooler_output' in features:
-                features = features['pooler_output']
+                features = features["last_hidden_state"][:, 0, :]
+            elif "pooler_output" in features:
+                features = features["pooler_output"]
             else:
                 raise ValueError(f"Unknown output format: {features.keys()}")
-        
+
         # Flatten if needed (for CNN outputs with spatial dims)
         if features.dim() > 2:
             features = features.flatten(1)
