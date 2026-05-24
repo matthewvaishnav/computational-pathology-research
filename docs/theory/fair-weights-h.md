@@ -2,7 +2,7 @@
 
 **Status:** Proposed protocol and implementation specification  
 **Scope:** Federated computational pathology research system  
-**Validation status:** Requires empirical validation before clinical or regulatory claims
+**Validation status:** Empirically tested for execution stability and aggregation behavior; performance/fairness advantage over simpler baselines not yet demonstrated
 
 ---
 
@@ -27,15 +27,15 @@ The framework is intended as a research protocol. It does not claim clinical val
 
 A single scalar institution weight cannot by itself guarantee fairness or safety. Therefore FAIR-WEIGHTS-H separates three concepts:
 
-\[
-w_i^{train} \neq w_i^{val} \neq w_i^{monitor}
-\]
+$$
+w_i^{\mathrm{train}} \neq w_i^{\mathrm{val}} \neq w_i^{\mathrm{monitor}}
+$$
 
 where:
 
-- \(w_i^{train}\): aggregation weight used during federated model updates,
-- \(w_i^{val}\): validation representation priority,
-- \(w_i^{monitor}\): post-market or research monitoring priority.
+- $w_i^{\mathrm{train}}$: aggregation weight used during federated model updates,
+- $w_i^{\mathrm{val}}$: validation representation priority,
+- $w_i^{\mathrm{monitor}}$: post-market or research monitoring priority.
 
 A site may have a low training weight because of uncertain or noisy updates while still receiving high validation and monitoring priority if it represents an underserved or clinically important population.
 
@@ -43,23 +43,23 @@ A site may have a low training weight because of uncertain or noisy updates whil
 
 ## 3. Institutional Signals
 
-For institution \(i\), define the feature vector:
+For institution $i$, define the feature vector:
 
-\[
-z_i = [A_i^{adj}, Q_i, \phi_i^{Owen}, JS_i, F_i, V_i, -S_i]
-\]
+$$
+z_i = \left[A_i^{\mathrm{adj}}, Q_i, \phi_i^{\mathrm{Owen}}, JS_i, F_i, V_i, -S_i\right]
+$$
 
 where:
 
 | Symbol | Meaning | Status |
 |---|---|---|
-| \(A_i^{adj}\) | Difficulty-adjusted reference-case diagnostic quality | Proposed |
-| \(Q_i\) | Process and pathology quality composite | Proposed |
-| \(\phi_i^{Owen}\) | Group-aware counterfactual contribution estimate | Proposed |
-| \(JS_i\) | Jensen-Shannon distributional uniqueness | Proposed |
-| \(F_i\) | Underserved-population representation score | Proposed |
-| \(V_i\) | Bounded/sublinear volume factor | Proposed |
-| \(S_i\) | Uncertainty, instability, or anomaly penalty | Proposed |
+| $A_i^{\mathrm{adj}}$ | Difficulty-adjusted reference-case diagnostic quality | Proposed |
+| $Q_i$ | Process and pathology quality composite | Proposed |
+| $\phi_i^{\mathrm{Owen}}$ | Group-aware counterfactual contribution estimate | Proposed |
+| $JS_i$ | Jensen-Shannon distributional uniqueness | Proposed |
+| $F_i$ | Underserved-population representation score | Proposed |
+| $V_i$ | Bounded/sublinear volume factor | Proposed |
+| $S_i$ | Uncertainty, instability, or anomaly penalty | Proposed |
 
 Gradient alignment with the current global model is not used as a primary contribution factor because it can encode status quo bias. It may be used only for anomaly detection and drift monitoring.
 
@@ -69,9 +69,9 @@ Gradient alignment with the current global model is not used as a primary contri
 
 FAIR-WEIGHTS-H uses a hard gate only for integrity and safety failures, not for prestige or raw quality.
 
-\[
-I_i = \mathbf{1}[\text{data integrity OK}]\cdot\mathbf{1}[\text{no severe label corruption}]\cdot\mathbf{1}[\text{no active safety violation}]
-\]
+$$
+I_i = \mathbf{1}[\text{data integrity OK}] \cdot \mathbf{1}[\text{no severe label corruption}] \cdot \mathbf{1}[\text{no active safety violation}]
+$$
 
 Low resource level, rural status, or case difficulty must not directly trigger exclusion. Quality should be modeled with difficulty adjustment and uncertainty, not with a crude hard threshold.
 
@@ -83,25 +83,25 @@ Raw accuracy on reference cases can be misleading when institutions serve differ
 
 One defensible model is:
 
-\[
+$$
 Y_{ij} \sim \mathrm{Bernoulli}(p_{ij})
-\]
+$$
 
-\[
+$$
 \mathrm{logit}(p_{ij}) = \alpha + \beta^\top X_{ij} + b_i
-\]
+$$
 
 where:
 
-- \(Y_{ij}\): correct or incorrect diagnosis for case \(j\) at site \(i\),
-- \(X_{ij}\): tumor type, stage, slide quality, stain quality, scanner metadata, referral status, and case complexity,
-- \(b_i\): institution-level effect after adjustment.
+- $Y_{ij}$: correct or incorrect diagnosis for case $j$ at site $i$,
+- $X_{ij}$: tumor type, stage, slide quality, stain quality, scanner metadata, referral status, and case complexity,
+- $b_i$: institution-level effect after adjustment.
 
 The adjusted quality is evaluated on a standardized reference distribution:
 
-\[
-A_i^{\mathrm{adj}} = \mathbb{E}_{X \sim P_{\mathrm{ref}}} \left[ \Pr(Y = 1 \mid X, i) \right]
-\]
+$$
+A_i^{\mathrm{adj}} = \mathbb{E}_{X \sim P_{\mathrm{ref}}}\left[\Pr(Y = 1 \mid X, i)\right]
+$$
 
 This adjustment must be calibrated and audited. It cannot simply be asserted.
 
@@ -113,11 +113,11 @@ Distributional uniqueness alone is not always beneficial. A site can be unique b
 
 Therefore uniqueness is treated as a weak signal unless paired with quality and subgroup utility:
 
-\[
-D_i^{useful} = JS_i \cdot A_i^{adj} \cdot U_i^{subgroup}
-\]
+$$
+D_i^{\mathrm{useful}} = JS_i \cdot A_i^{\mathrm{adj}} \cdot U_i^{\mathrm{subgroup}}
+$$
 
-where \(U_i^{subgroup}\) measures whether the institution improves performance on the subgroup, morphology, or cancer subtype it uniquely represents.
+where $U_i^{\mathrm{subgroup}}$ measures whether the institution improves performance on the subgroup, morphology, or cancer subtype it uniquely represents.
 
 ---
 
@@ -125,17 +125,17 @@ where \(U_i^{subgroup}\) measures whether the institution improves performance o
 
 The preferred contribution signal is not local gradient alignment. It is counterfactual marginal contribution:
 
-\[
-\phi_i = \mathbb{E}_{S\subseteq N\setminus\{i\}}[U(S\cup\{i\}) - U(S)]
-\]
+$$
+\phi_i = \mathbb{E}_{S \subseteq N \setminus \{i\}}\left[U(S \cup \{i\}) - U(S)\right]
+$$
 
 For production feasibility, FAIR-WEIGHTS-H estimates this with grouped or multi-membership Owen-style sampling:
 
-\[
-\hat\phi_i^{Owen} = \sum_g m_{ig}\hat\phi_{i\mid g}
-\]
+$$
+\hat{\phi}_i^{\mathrm{Owen}} = \sum_g m_{ig}\hat{\phi}_{i\mid g}
+$$
 
-where \(m_{ig}\in[0,1]\) allows institutions to belong partly to multiple groups, such as academic, rural-serving, specialty center, or network-affiliated.
+where $m_{ig} \in [0,1]$ allows institutions to belong partly to multiple groups, such as academic, rural-serving, specialty center, or network-affiliated.
 
 This avoids forcing ambiguous hospitals into a single administrative category.
 
@@ -145,37 +145,53 @@ This avoids forcing ambiguous hospitals into a single administrative category.
 
 The quarterly training weights are produced by a constrained optimization problem:
 
-\[
-w_t = \arg\max_{w\in\mathcal W}\sum_{i=1}^K w_i(\hat\phi_{i,t}^{Owen} + \lambda_D D_{i,t}^{useful} + \lambda_F F_{i,t} + \lambda_Q Q_{i,t} - \lambda_S S_{i,t})
-\]
+$$
+w_t = \arg\max_{w \in \mathcal{W}} \sum_{i=1}^{K} w_i\left(\hat{\phi}_{i,t}^{\mathrm{Owen}} + \lambda_D D_{i,t}^{\mathrm{useful}} + \lambda_F F_{i,t} + \lambda_Q Q_{i,t} - \lambda_S S_{i,t}\right)
+$$
 
 subject to:
 
-\[
+$$
 \sum_i w_i = 1
-\]
+$$
 
-\[
-w_i^{min} \leq w_i \leq w_i^{max}
-\]
+$$
+w_i^{\min} \leq w_i \leq w_i^{\max}
+$$
 
-\[
-C_g(w) \geq C_g^{min}\quad\forall g\in\mathcal G_{underserved}
-\]
+$$
+C_g(w) \geq C_g^{\min} \quad \forall g \in \mathcal{G}_{\mathrm{underserved}}
+$$
 
-\[
-\mathrm{Perf}_g(w) \geq \mathrm{Perf}_g^{min}\quad\forall g\in\mathcal G_{clinical}
-\]
+$$
+\mathrm{Perf}_g(w) \geq \mathrm{Perf}_g^{\min} \quad \forall g \in \mathcal{G}_{\mathrm{clinical}}
+$$
 
-\[
-|w_{i,t} - w_{i,t-1}| \leq \Delta_i
-\]
+$$
+\left|w_{i,t} - w_{i,t-1}\right| \leq \Delta_i
+$$
 
 The fairness and subgroup safety requirements are constraints, not optional score boosts.
 
 ---
 
-## 9. Quarterly Algorithm
+## 9. Empirical Status
+
+FAIR-WEIGHTS-H has been empirically tested for execution stability and aggregation behavior in this repository.
+
+Completed checks include:
+
+- synthetic Camelyon-like smoke validation,
+- PCam federated smoke validation,
+- PCam all-strategy smoke validation,
+- PCam balanced federated benchmark,
+- PCam heterogeneous federated benchmark.
+
+These tests show that FAIR-WEIGHTS-H runs without numerical failure, produces distinct weight trajectories under heterogeneous simulated sites, and does not degrade performance in the current patch-level PCam setup. They do **not** yet show a consistent performance or fairness advantage over simpler aggregation baselines. That stronger claim requires the planned ablation and slide-level multi-center validation.
+
+---
+
+## 10. Quarterly Algorithm
 
 1. Collect privacy-preserving aggregate signals from institutions.
 2. Run integrity checks and anomaly detection.
@@ -190,7 +206,7 @@ The fairness and subgroup safety requirements are constraints, not optional scor
 
 ---
 
-## 10. Anomaly Monitoring
+## 11. Anomaly Monitoring
 
 Continuous or between-quarter monitoring should detect:
 
@@ -206,7 +222,7 @@ If severe anomalies are detected, weights should be throttled or frozen pending 
 
 ---
 
-## 11. Fallback Modes
+## 12. Fallback Modes
 
 FAIR-WEIGHTS-H should degrade safely rather than continue normal operation during instability.
 
@@ -219,7 +235,7 @@ FAIR-WEIGHTS-H should degrade safely rather than continue normal operation durin
 
 ---
 
-## 12. Validation Plan
+## 13. Validation Plan
 
 FAIR-WEIGHTS-H should be compared against:
 
@@ -244,7 +260,7 @@ Primary metrics should include:
 
 ---
 
-## 13. Regulatory-Safe Claim Language
+## 14. Regulatory-Safe Claim Language
 
 Use:
 
@@ -257,32 +273,3 @@ Do not use:
 Use:
 
 > Shapley/Owen values provide an axiomatic counterfactual attribution benchmark whose conclusions depend on the chosen validation utility and reference distribution.
-
-Do not use:
-
-> Shapley is an absolute ground truth.
-
-Use:
-
-> Distributional uniqueness is considered useful only when paired with quality, subgroup utility, and safety monitoring.
-
-Do not use:
-
-> Diversity alone increases institutional influence.
-
----
-
-## 14. Known Limitations
-
-- Owen/Shapley estimates can be noisy with small numbers of institutions.
-- Validation sets can encode their own demographic and institutional bias.
-- Jensen-Shannon uniqueness can be gamed by case selection or artificial specialization.
-- Difficulty adjustment can fail if case complexity is incompletely observed.
-- Multi-membership grouping requires governance and versioned definitions.
-- Mathematics cannot resolve all policy tradeoffs between global accuracy and protected-subgroup safety.
-
----
-
-## 15. Summary
-
-FAIR-WEIGHTS-H should be understood as a locked, auditable, risk-controlled weighting protocol rather than a simple formula. Its core contribution is the integration of counterfactual contribution, useful uniqueness, subgroup constraints, and regulatory traceability into one deployable institutional weighting framework.
