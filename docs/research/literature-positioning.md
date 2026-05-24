@@ -6,6 +6,16 @@ This page situates my framework — TransnnMIL v2.0, PathologyFL, and FAIR-WEIGH
 
 ---
 
+## PubMed-assisted finding
+
+A PubMed-assisted literature review found **no direct PubMed-indexed comparator for FAIR-WEIGHTS-H in WSI pathology federated learning across its full institutional weighting design**.
+
+The closest retrieved comparator is **Bhalla et al. (2026)**, which applies heterogeneity-aware aggregation in multi-center pancreatic cancer CT foundation models. That work is important for medical federated-learning heterogeneity, but it is not whole-slide pathology, and it does not jointly model the full FAIR-WEIGHTS-H set of institutional weighting dimensions: difficulty-adjusted quality, useful uniqueness, group-aware counterfactual contribution, representation constraints, uncertainty penalties, entropy, and effective-institution diagnostics.
+
+This finding does **not** prove that FAIR-WEIGHTS-H improves fairness or performance. It supports a narrower claim: within the reviewed PubMed-indexed WSI-FL literature, FAIR-WEIGHTS-H appears to occupy a distinct design space as a mathematically auditable institutional weighting framework.
+
+---
+
 ## Overview: where this work fits
 
 Computational pathology has converged on a set of shared problems: how to train slide-level models without pixel-level annotations, how to train across institutions without sharing patient data, and how to ensure that multi-center models treat contributing institutions equitably. No single published system addresses all three simultaneously at the infrastructure level.
