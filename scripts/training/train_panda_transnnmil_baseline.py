@@ -19,8 +19,8 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import sys
 import time
-from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
@@ -41,36 +41,11 @@ except ImportError as exc:
         "Install with: pip install scikit-learn"
     ) from exc
 
-import sys
-from pathlib import Path
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.models.factory import create_attention_model
-
-
-@dataclass
-class TrainConfig:
-    manifest: str
-    out_dir: str
-    epochs: int
-    batch_size: int
-    lr: float
-    weight_decay: float
-    hidden_dim: int
-    num_layers: int
-    num_heads: int
-    dropout: float
-    val_fraction: float
-    seed: int
-    num_workers: int
-    device: str
-    limit: int | None
-    max_patches: int | None
-    verify_read: bool
-    max_bad_files: int
 
 
 class PandaFeatureBagDataset(Dataset):
@@ -263,7 +238,7 @@ def run_epoch(
         bags = bags.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
         mask = mask.to(device, non_blocking=True)
-        
+
         num_patches = mask.sum(dim=1)
 
         if training:
@@ -297,12 +272,14 @@ def predict(model: nn.Module, loader: DataLoader, device: torch.device) -> pd.Da
             probs = torch.softmax(logits, dim=1).cpu().numpy()
             preds = probs.argmax(axis=1)
             for i, img_id in enumerate(image_ids):
-                results.append({
+                row: Dict[str, object] = {
                     "image_id": img_id,
                     "isup_grade": targets[i].item(),
                     "pred_isup_grade": int(preds[i]),
-                    "probability": float(probs[i][preds[i]])
-                })
+                }
+                for class_idx in range(probs.shape[1]):
+                    row[f"prob_{class_idx}"] = float(probs[i][class_idx])
+                results.append(row)
     return pd.DataFrame(results)
 
 
@@ -349,7 +326,7 @@ def main():
             "num_layers": args.num_layers,
             "num_heads": args.num_heads,
             "use_pos_encoding": False,
-        }
+        },
     }
     model = create_attention_model(config, feature_dim=feature_dim).to(device)
 
@@ -366,7 +343,11 @@ def main():
         train_metrics = run_epoch(model, train_loader, criterion, optimizer, device)
         val_metrics = run_epoch(model, val_loader, criterion, None, device)
         history.append({"epoch": epoch, "train": train_metrics, "val": val_metrics})
-        print(f"epoch {epoch:03d} | train loss {train_metrics['loss']:.4f} acc {train_metrics['accuracy']:.4f} qwk {train_metrics['qwk']:.4f} | val loss {val_metrics['loss']:.4f} acc {val_metrics['accuracy']:.4f} qwk {val_metrics['qwk']:.4f}")
+        print(
+            f"epoch {epoch:03d} | "
+            f"train loss {train_metrics['loss']:.4f} acc {train_metrics['accuracy']:.4f} qwk {train_metrics['qwk']:.4f} | "
+            f"val loss {val_metrics['loss']:.4f} acc {val_metrics['accuracy']:.4f} qwk {val_metrics['qwk']:.4f}"
+        )
         if val_metrics["qwk"] > best_qwk:
             best_qwk = val_metrics["qwk"]
             best_state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
@@ -391,6 +372,8 @@ def main():
             "num_heads": args.num_heads,
             "dropout": args.dropout,
             "feature_dim": feature_dim,
+            "max_patches": args.max_patches,
+            "seed": args.seed,
         },
         "dataset": {
             "manifest_rows_used": int(len(manifest)),
@@ -411,6 +394,7 @@ def main():
     torch.save({"model_state_dict": model.state_dict(), "config": config}, out_dir / "transnnmil.pt")
 
     print(f"\nPANDA TransnnMIL baseline complete. Best Val QWK: {best_qwk:.4f}")
+
 
 if __name__ == "__main__":
     main()
