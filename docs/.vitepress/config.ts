@@ -67,7 +67,6 @@ export default defineConfig({
       { text: 'Overview', items: [
         { text: 'Home', link: '/' },
         { text: 'What this project is', link: '/overview/' },
-        { text: 'Literature positioning', link: '/research/literature-positioning' },
         { text: 'Repository structure', link: '/repository-overview' },
         { text: 'Platform overview', link: '/platform-overview' },
         { text: 'Claim status', link: '/overview/claim-status' }
