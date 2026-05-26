@@ -1,70 +1,80 @@
-# About the platform
+# About Computational Pathology Research
 
 ## Project Overview
 
-**the platform** is a production-grade PyTorch framework for computational pathology research and clinical deployment achieving **95.37% validation AUC** on real histopathology data (262K training samples). The framework provides comprehensive infrastructure for whole-slide image analysis, featuring state-of-the-art attention-based Multiple Instance Learning (MIL) models, first open-source federated learning system for digital pathology, production-ready PACS integration, clinical workflow integration, and robust testing infrastructure.
+**Computational Pathology Research** is a PyTorch-based research engineering framework for digital pathology, whole-slide image analysis, multiple-instance learning (MIL), and federated oncology validation. The project includes end-to-end infrastructure for pathology feature extraction, manifest generation, HDF5 feature validation, slide-level MIL training, benchmark reporting, and research-only clinical workflow prototypes.
 
-### Current Statistics
+The current validated research stack includes PCam patch-level benchmarking and PANDA prostate cancer slide-level experiments using Phikon feature embeddings. On the current PANDA held-out split, mean-pooled Phikon features achieved **QWK 0.7274**, gated AttentionMIL achieved **QWK 0.8100**, and tuned TransnnMIL achieved **QWK 0.8155** after HDF5 readability verification over **10,611 readable slides**.
+
+The framework also includes **FAIR-WEIGHTS-H**, a mathematical research framework for auditable institutional weighting in federated oncology learning, and PathologyFL-oriented infrastructure for privacy-preserving multi-site experimentation.
+
+**Clinical status:** research-only. This repository is not clinically validated, not FDA-cleared, not Health Canada-authorized, and not diagnostic software.
+
+---
+
+## Current Statistics
 
 - **Source Code**: 141 Python modules in `src/`
-- **Test Suite**: 186 test files with 3,006 total tests
-- **Code Coverage**: 55% with comprehensive property-based testing
+- **Test Suite**: 186 test files with 3,006+ total tests
+- **Code Coverage**: 55% with property-based testing coverage
 - **Development Activity**: 286+ commits since January 2026
-- **Validated Performance**: 95.37% validation AUC, 85.26% test accuracy on real PCam benchmark
-- **Benchmark Superiority**: Competitive performance with state-of-the-art methods
-- **Clinical Features**: DICOM/FHIR integration, PACS connectivity, federated learning, regulatory compliance
+- **PCam Benchmark**: 95.37% validation AUC, 85.26% test accuracy
+- **PANDA Slide-Level Baselines**:
+  - Mean-pooled Phikon + MLP: QWK 0.7274
+  - Gated AttentionMIL: QWK 0.8100
+  - Tuned TransnnMIL: QWK 0.8155
+- **PANDA Feature Integrity**: 10,611 readable slide-level Phikon feature files after manifest filtering and read verification
+- **Federated Oncology Direction**: FAIR-WEIGHTS-H and PathologyFL research infrastructure
 
-### Key Capabilities
+---
 
-#### 🧠 Attention-Based MIL Models
-- **AttentionMIL**: Gated attention mechanism for weighted patch aggregation
-- **CLAM**: Clustering-constrained attention with instance-level predictions
-- **TransMIL**: Transformer encoder with positional encoding and CLS token
-- Attention weight extraction, HDF5 storage, and heatmap visualization
+## Key Capabilities
 
-#### 🏥 Clinical Workflow Integration
-- Multi-class probabilistic disease classification
-- DICOM/FHIR integration for medical standards compliance
-- PACS connectivity with vendor adapters (Orthanc, dcm4chee, Horos)
-- Longitudinal patient tracking and treatment response monitoring
-- Regulatory compliance features (FDA/CE) with audit trails
-- Privacy protection (HIPAA) with encryption and anonymization
+### Computational Pathology Modeling
+- Patch-level PCam benchmarking
+- Slide-level PANDA prostate cancer grading experiments
+- Phikon feature extraction and downstream MIL training
+- AttentionMIL, CLAM, TransMIL, and TransnnMIL model support
+- Quadratic weighted kappa (QWK), accuracy, macro F1, and confusion-matrix reporting
 
-#### 🔍 Model Interpretability
-- Grad-CAM visualizations for CNN feature extractors
-- Attention weight visualization for MIL models
-- Automated failure case analysis and clustering
-- Feature importance computation (SHAP, permutation)
-- Interactive visualization dashboard
-- Publication-quality figure generation (300+ DPI)
+### Slide-Level MIL Pipelines
+- Manifest-driven training over extracted HDF5 feature files
+- Variable-length feature-bag loading with masked padding
+- HDF5 read-integrity verification before training
+- Safe artifact tracking that excludes raw slides, feature stores, and checkpoints
+- Reproducible result artifacts for mean pooling, AttentionMIL, and TransnnMIL baselines
 
-#### 🔬 WSI Processing Pipeline
-- Multi-format support (.svs, .tiff, .ndpi, DICOM)
-- Streaming processing with memory-efficient patch extraction (<1GB RAM)
-- CNN feature extraction (ResNet-50, DenseNet-121, EfficientNet-B0)
-- GPU acceleration with automatic device selection
-- HDF5 caching with compression (1.2-2.7x reduction)
-- Production CLI for clinical deployment
+### Federated Oncology Research
+- FAIR-WEIGHTS-H institutional weighting framework
+- Difficulty-adjusted quality, contribution, uniqueness, uncertainty, entropy, and subgroup-constraint concepts
+- PathologyFL-oriented privacy-preserving multi-site learning direction
+- Research prototypes for differential privacy, secure aggregation, and federated evaluation
 
-#### 📊 Comprehensive Testing
-- 3,171 tests across all framework components
-- Property-based testing with Hypothesis for edge cases
-- Synthetic data generation for validation
-- Performance benchmarking with regression detection
-- Error handling validation for corrupted data
-- Automated CI/CD integration
+### WSI and Feature Processing Infrastructure
+- Whole-slide image processing direction with OpenSlide-based workflows
+- Multi-format pathology image support where dependencies are available
+- Patch extraction, feature extraction, and HDF5 caching workflows
+- GPU-accelerated training pipelines on consumer hardware
 
-#### 🚀 Production Ready
-- Docker/Kubernetes deployment configurations
-- ONNX export for cross-platform inference
-- Model profiling and optimization tools
-- Distributed training support (DDP)
-- Mixed precision training (AMP)
-- Real-time inference (<5 seconds)
+### Model Interpretability
+- Attention weight extraction for MIL models
+- Grad-CAM support for CNN feature extractors
+- Failure-case analysis and visualization utilities
+- Research-oriented tools for pathologist-facing explanation workflows
+
+### Testing and Engineering Hygiene
+- PyTest and Hypothesis-based testing
+- Data hygiene rules for medical imaging artifacts
+- `.gitignore` protection for `.tif`, `.h5`, `.pt`, checkpoints, feature stores, and raw datasets
+- Documentation-first experiment tracking and claim-boundary discipline
+
+---
 
 ## Author
 
-**Matthew Vaishnav** is a computational systems engineer based in Kitchener, building production-grade machine learning infrastructure for computational pathology. He is the creator of the platform, a PyTorch framework achieving **95.37% validation AUC** on real histopathology data, featuring attention-based MIL models (AttentionMIL, CLAM, TransMIL), **first open-source federated learning system for digital pathology** enabling privacy-preserving multi-site training, complete WSI processing pipelines with OpenSlide integration, production-ready PACS integration system with multi-vendor support, clinical workflow systems with DICOM/FHIR support, and comprehensive model interpretability tools. The framework includes 141 source modules, 150 test files with 3,171 tests (55% coverage), and validated performance on real-world benchmarks (85.26% test accuracy, 95.37% validation AUC on PCam). He focuses on building reliable, clinically-deployable systems with regulatory compliance features, robust testing infrastructure, and practical tools for real-world medical imaging applications.
+**Matthew Vaishnav** is building computational pathology AI research infrastructure in Kitchener-Waterloo, Ontario. His work focuses on digital pathology, multiple-instance learning, prostate cancer slide-level prediction, federated oncology learning, and mathematical validation infrastructure.
+
+Recent work includes a PANDA prostate cancer slide-level pipeline using Phikon features, a validated manifest over 10,611 readable slides, and MIL baselines where tuned TransnnMIL reached QWK 0.8155 on the current held-out split. He is also developing FAIR-WEIGHTS-H, a framework direction for auditable institutional weighting in federated oncology learning.
 
 ### Contact
 
@@ -72,19 +82,23 @@
 - **Email**: matthew.vaishnav@gmail.com
 - **Location**: Kitchener-Waterloo, Ontario, Canada
 
+---
+
 ## Project History
 
 ### 2026: Core Development
 - Initial framework architecture and PyTorch implementation
-- PatchCamelyon and CAMELYON16 benchmark pipelines
-- Attention-based MIL models (AttentionMIL, CLAM, TransMIL)
-- WSI processing pipeline with OpenSlide integration
-- Clinical workflow integration (DICOM/FHIR)
-- PACS integration system with vendor adapters
-- Comprehensive testing infrastructure (3,171 tests)
-- Model interpretability tools (Grad-CAM, attention visualization)
-- Regulatory compliance features (FDA/CE)
-- Production deployment infrastructure (Docker/K8s)
+- PatchCamelyon benchmark pipeline
+- Attention-based MIL models: AttentionMIL, CLAM, TransMIL, and TransnnMIL
+- PANDA Phikon feature extraction and slide-level manifest generation
+- PANDA mean-pooling, AttentionMIL, and tuned TransnnMIL baselines
+- HDF5 read-integrity verification for extracted feature files
+- FAIR-WEIGHTS-H theory and documentation
+- PathologyFL federated learning research direction
+- WSI processing pipeline with OpenSlide-oriented integration
+- Clinical workflow and PACS integration prototypes
+- Comprehensive testing infrastructure
+- Model interpretability tools
 
 ### Validated Benchmarks
 
@@ -96,50 +110,65 @@
 - **Hardware**: RTX 4070 Laptop (8GB VRAM)
 - **Training Time**: 2-3 hours (15 epochs)
 
-#### Clinical Deployment Optimization
-- **Sensitivity**: 90.0% (threshold=0.051) - Catches 9 out of 10 tumors
-- **Specificity**: 80.3% (maintains acceptable false positive rate)
-- **Clinical Impact**: 61.7% reduction in missed tumors for cancer screening
+#### PANDA Prostate Cancer Slide-Level Baselines
+- **Dataset**: PANDA prostate cancer histopathology
+- **Feature Source**: Phikon patch embeddings
+- **Readable Slides Used**: 10,611
+- **Train/Validation Split**: 8,488 train / 2,123 validation
+- **Mean-Pooled Phikon + MLP**: validation QWK 0.7274
+- **Gated AttentionMIL**: validation QWK 0.8100
+- **Tuned TransnnMIL**: validation QWK 0.8155
+- **Status**: research-only single-split result; repeated-seed validation and ablations planned
+
+---
 
 ## Research Applications
 
-the platform is designed for:
+Computational Pathology Research is designed for:
 
 1. **Academic Research**: Reproducible computational pathology experiments
-2. **Clinical Validation**: Testing AI models on real-world medical imaging data
-3. **Algorithm Development**: Prototyping new MIL architectures and attention mechanisms
-4. **Clinical Deployment**: Production-ready infrastructure for hospital integration
-5. **Regulatory Compliance**: FDA/CE marking support with audit trails
-6. **Educational Use**: Teaching computational pathology and deep learning
+2. **Algorithm Development**: Prototyping and comparing MIL architectures
+3. **Slide-Level Benchmarking**: PANDA, PCam, and future Camelyon-style validation
+4. **Federated Oncology Research**: Privacy-preserving multi-site validation and institutional weighting
+5. **Interpretability Research**: Attention and feature-attribution workflows for pathology AI
+6. **Engineering Education**: Teaching robust medical AI data handling, artifact hygiene, and claim boundaries
+
+---
 
 ## Technology Stack
 
-- **Deep Learning**: PyTorch 2.0+, torchvision, timm (1000+ pretrained models)
-- **Medical Imaging**: OpenSlide, pydicom, python-gdcm
-- **Clinical Standards**: DICOM, FHIR (HL7), PACS integration
+- **Deep Learning**: PyTorch, torchvision, timm
+- **Medical Imaging**: OpenSlide, pydicom, python-gdcm where available
+- **Clinical Standards Prototypes**: DICOM, FHIR, PACS-oriented interfaces
 - **Data Processing**: NumPy, pandas, h5py, Pillow
 - **Visualization**: matplotlib, seaborn, Grad-CAM
-- **Testing**: pytest, Hypothesis (property-based testing)
-- **Deployment**: Docker, Kubernetes, ONNX
+- **Testing**: pytest, Hypothesis
+- **Deployment Prototypes**: Docker, Kubernetes, ONNX
 - **CI/CD**: GitHub Actions, codecov
+
+---
 
 ## License
 
-the platform is released under the MIT License. See [LICENSE](../LICENSE) for details.
+This project is released under the MIT License. See [LICENSE](../LICENSE) for details.
+
+---
 
 ## Citation
 
-If you use the platform in your research, please cite:
+If you use this project in your research, please cite:
 
 ```bibtex
-@software{vaishnav2026the platform,
-  title = {the platform: Core Infrastructure for Computational Pathology Research},
+@software{vaishnav2026computational_pathology_research,
+  title = {Computational Pathology Research: PyTorch Infrastructure for Digital Pathology, MIL, and Federated Oncology Validation},
   author = {Vaishnav, Matthew},
   year = {2026},
-  url = {https://github.com/matthewvaishnav/the platform},
-  note = {Production-grade PyTorch framework achieving 95.37\% validation AUC with 141 modules, 3,171 tests, 55\% coverage, federated learning system, and PACS integration.}
+  url = {https://github.com/matthewvaishnav/computational-pathology-research},
+  note = {Research framework with PCam benchmarking, PANDA Phikon slide-level baselines, FAIR-WEIGHTS-H, and PathologyFL-oriented infrastructure.}
 }
 ```
+
+---
 
 ## Acknowledgments
 
@@ -150,13 +179,16 @@ This framework builds upon foundational work in computational pathology:
 - **Attention MIL**: Ilse et al. (2018) - ICML
 - **CLAM**: Lu et al. (2021) - Nature Biomedical Engineering
 - **TransMIL**: Shao et al. (2021) - NeurIPS
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
-
-For questions or collaboration opportunities, please open an issue on [GitHub](https://github.com/matthewvaishnav/the platform/issues).
+- **PANDA Challenge**: Prostate cANcer graDe Assessment dataset
 
 ---
 
-*Last updated: April 2026*
+## Contributing
+
+Contributions are welcome. Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+
+For questions or collaboration opportunities, please open an issue on [GitHub](https://github.com/matthewvaishnav/computational-pathology-research/issues).
+
+---
+
+*Last updated: May 2026*
