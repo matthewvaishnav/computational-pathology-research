@@ -1,0 +1,7 @@
+run,seed,epochs,batch_size,max_patches,lr,dropout,best_qwk,final_qwk,accuracy,macro_f1,notes,metrics_path
+tuned_seed_42_cap600,42,30,2,600,0.0003,0.15,0.8154642389266148,,,,"Tuned config, patch cap 600",results\panda_transnnmil_ablation\cap_600_seed_42\metrics.json
+lr_1e3_seed_42,42,30,2,600,0.001,0.15,0.7403494434253772,,,,Learning-rate ablation: high LR,results\panda_transnnmil_ablation\lr_1e3_seed_42\metrics.json
+dropout_25_seed_42,42,30,2,600,0.0003,0.25,0.801493355682854,,,,Dropout ablation: higher dropout,results\panda_transnnmil_ablation\dropout_25_seed_42\metrics.json
+repeated_seed_123,,30,2,,0.0003,0.15,0.8224812896395989,,,,Repeated-seed tuned TransnnMIL,results\panda_transnnmil_threshold_ready\seed_123\metrics.json
+repeated_seed_2025,2025,30,2,1200,0.0003,0.15,0.8086294661481551,,,,Repeated-seed tuned TransnnMIL,results\panda_transnnmil_threshold_ready\seed_2025\metrics.json
+baseline_seed_42_cap1200,,30,2,,0.0003,0.15,0.8154642389266148,,,,Original tuned baseline,results\panda_transnnmil_baseline\metrics.json
