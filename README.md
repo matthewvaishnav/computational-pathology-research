@@ -1,8 +1,12 @@
 # Matthew Vaishnav Computational Pathology, Federated Oncology Learning, and Mathematical Validation Infrastructure
 
-Whole-slide pathology AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H institutional weighting, PCam/PANDA/Camelyon validation, and multi-institutional oncology learning infrastructure.
+Research-focused computational pathology and oncology AI engineering framework for whole-slide histopathology modeling, multiple-instance learning, benchmark validation, and federated oncology validation experiments.
 
+**Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)  
+**Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)  
 **Documentation:** https://matthewvaishnav.github.io/computational-pathology-research/  
+**PANDA slide-level baselines:** [docs/results/panda-slide-level-baselines.md](docs/results/panda-slide-level-baselines.md)  
+**PANDA TransnnMIL ablation summary:** [results/panda_transnnmil_ablation/ablation_summary.csv](results/panda_transnnmil_ablation/ablation_summary.csv)  
 **Literature positioning:** https://matthewvaishnav.github.io/computational-pathology-research/research/literature-positioning  
 **PCam results:** https://matthewvaishnav.github.io/computational-pathology-research/results/pcam-results
 
@@ -12,19 +16,24 @@ Whole-slide pathology AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H instituti
 
 This repository is my computational pathology and oncology AI research framework. It combines model development, federated learning, benchmark validation, statistical reporting, and documentation infrastructure for pathology AI experiments.
 
+The current strongest direction is slide-level prostate cancer grading on the PANDA dataset using Phikon patch features and multiple-instance learning.
+
 The work spans:
 
 - patch-level and whole-slide pathology modeling
 - multiple-instance learning for WSI classification
-- the custom **TransnnMIL v2.0** architecture direction
+- PANDA prostate cancer grading with Phikon features
+- mean-pooling, gated AttentionMIL, and tuned TransnnMIL baselines
+- HDF5 feature-integrity validation
+- repeated-seed validation and controlled ablations
 - **PathologyFL** federated learning infrastructure
 - **FAIR-WEIGHTS-H** institutional weighting research
 - PCam, PANDA, and Camelyon validation workflows
 - threshold analysis and statistical validation
 - PubMed-grounded literature positioning
-- testing, reporting, and deployment-oriented engineering infrastructure
+- testing, reporting, and deployment-oriented research infrastructure
 
-This is a research and engineering framework. It is **not clinically validated** and is **not regulatory cleared**.
+This is a research and engineering framework. It is **not clinically validated**, **not diagnostic software**, and **not currently used for patient care**. The long-term goal is responsible clinical translation after proper validation, regulatory review, security review, usability testing, and deployment testing.
 
 ---
 
@@ -32,8 +41,17 @@ This is a research and engineering framework. It is **not clinically validated**
 
 | Area | Status |
 |---|---|
+| PCam validation | **95.37% validation AUC** |
 | PCam public benchmark | **85.26% test accuracy**, **0.9394 test AUC** on the full 32,768-sample test set |
 | PCam comparison | **#1 by AUC among 11 compared PCam methods** in the documented comparison table |
+| PANDA data integrity | **10,611 readable slide-level feature files** after HDF5 read verification |
+| PANDA mean-pooled Phikon + MLP | **QWK 0.7274** |
+| PANDA gated AttentionMIL | **QWK 0.8100** |
+| PANDA tuned TransnnMIL seed 42 | **QWK 0.8155** |
+| PANDA tuned TransnnMIL seed 123 | **QWK 0.8225** |
+| PANDA tuned TransnnMIL seed 2025 | **QWK 0.8086** |
+| PANDA TransnnMIL ablation: lr=1e-3 | **QWK 0.7403**, showing high-LR instability |
+| PANDA TransnnMIL ablation: dropout=0.25 | **QWK 0.8015**, showing higher dropout mildly hurts |
 | Bootstrap validation | 1,000 bootstrap resamples reported for PCam metrics |
 | Threshold optimization | Screening threshold analysis reduced missed tumor predictions by 61.7% in the documented PCam analysis |
 | FAIR-WEIGHTS-H smoke/unit tests | Focused tests passing |
@@ -42,9 +60,22 @@ This is a research and engineering framework. It is **not clinically validated**
 | PCam heterogeneous benchmark | Complete: strategies produced different weight trajectories, but patch-level performance was insensitive to those differences |
 | FAIR-WEIGHTS-H empirical status | Tested for execution stability and aggregation behavior; performance/fairness advantage over simpler baselines not yet demonstrated |
 | PubMed literature positioning | Added: related work, citation table, claim-strength table, and next experiment priorities |
-| PANDA feature extraction | In progress on a separate RTX 3060 12GB machine; not yet marked complete |
 | Camelyon16/17 validation | Planned next slide-level / multi-center validation target |
 | Clinical validation | Not completed |
+
+---
+
+## PANDA interpretation
+
+The PANDA slide-level experiments move the project beyond patch-level PCam validation into whole-slide prostate pathology modeling.
+
+Current interpretation:
+
+> Tuned TransnnMIL is competitive with gated AttentionMIL and slightly favorable across the current repeated-seed PANDA experiments, beating AttentionMIL on 2 of 3 tested seeds. The margin remains small, so stronger superiority claims require more controlled validation.
+
+Ablation interpretation:
+
+> TransnnMIL is highly optimization-sensitive in the current PANDA setup. Lowering learning rate from 1e-3 to 3e-4 was a major contributor to performance. Higher dropout mildly reduced performance. Patch cap increase was not the main driver in the seed-42 comparison.
 
 ---
 
@@ -59,7 +90,7 @@ Custom WSI multiple-instance learning architecture direction combining:
 - topology / graph-aware tissue structure modeling
 - optional adaptive pruning
 
-Current status: design and implementation direction documented; slide-level WSI benchmark evidence is the next required step.
+The current PANDA work provides slide-level benchmark evidence for tuned TransnnMIL-style modeling using Phikon feature bags. It is competitive with AttentionMIL in the current repeated-seed PANDA experiments, but not conclusively superior.
 
 See: [TransnnMIL v2.0 documentation](docs/models/transnnmil-v2.md)
 
@@ -114,148 +145,14 @@ Synthetic smoke validation
   -> clinical validation
 ```
 
-Current position: PCam patch-level and PCam federated validation are complete. PANDA feature extraction is nearly complete but still running on a separate RTX 3060 worker machine. Camelyon16/17 slide-level validation remains future work.
+Current position: PCam patch-level/federated validation and PANDA slide-level prostate baselines are complete. Camelyon16/17 slide-level and real multi-center validation remain future work.
 
 ---
 
-## Research positioning
+## Public claim boundary
 
-The PubMed-grounded literature review positions this work at the intersection of:
+See [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md).
 
-1. **WSI MIL architecture research** — CLAM, NATMIL, SlideMamba, foundation-model MIL comparisons.
-2. **Federated pathology infrastructure** — HistoFL and medical-imaging FL.
-3. **Institutional weighting / fairness** — FAIR-WEIGHTS-H has no direct cited WSI-FL comparator across its full eight-dimensional weighting scheme.
-4. **Benchmark and validation infrastructure** — PCam patch-level validation, PCam federated splits, PANDA/Camelyon roadmap.
+Short version:
 
-The strongest current novelty signal is FAIR-WEIGHTS-H and PathologyFL as institutional weighting / federated validation infrastructure. The strongest completed benchmark result is PCam AUC. The biggest next evidence gap is slide-level validation.
-
-See: [Literature positioning](docs/research/literature-positioning.md)
-
----
-
-## Quickstart
-
-```bash
-git clone https://github.com/matthewvaishnav/computational-pathology-research.git
-cd computational-pathology-research
-python -m venv .venv
-```
-
-Linux/macOS:
-
-```bash
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Windows PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
-
----
-
-## Useful commands
-
-Run focused FAIR-WEIGHTS-H tests:
-
-```bash
-pytest tests/federated/test_fair_weights_h.py
-pytest tests/federated/test_weighted_aggregator.py
-```
-
-Run core federated integration tests:
-
-```bash
-pytest tests/federated/test_fl_integration.py
-```
-
-Run the balanced PCam federated benchmark:
-
-```powershell
-scripts\federated\run_pcam_benchmark.ps1
-```
-
-Analyze balanced benchmark results:
-
-```bash
-python scripts/federated/analyze_pcam_benchmark.py
-```
-
-Run VitePress documentation locally:
-
-```bash
-npm install
-npm run docs:dev
-```
-
-Build documentation:
-
-```bash
-npm run docs:build
-```
-
----
-
-## Repository hygiene
-
-Large local artifacts are intentionally ignored:
-
-- raw datasets
-- WSI tiles
-- extracted features
-- PANDA / PCam / Camelyon feature stores
-- checkpoints
-- model weights
-- raw predictions
-- temporary experiment outputs
-
-Tracked artifacts should be small and reproducible:
-
-- reports
-- metrics summaries
-- benchmark tables
-- configuration files
-- documentation
-- source code
-
-See: [results policy](results/README.md)
-
----
-
-## Documentation map
-
-- [Overview](docs/overview/index.md)
-- [Literature positioning](docs/research/literature-positioning.md)
-- [Claim status](docs/overview/claim-status.md)
-- [Getting started](docs/getting-started.md)
-- [Models](docs/models/index.md)
-- [TransnnMIL v2.0](docs/models/transnnmil-v2.md)
-- [PathologyFL](docs/federated/pathologyfl.md)
-- [FAIR-WEIGHTS-H](docs/theory/fair-weights-h.md)
-- [Validation overview](docs/validation/index.md)
-- [PCam results](docs/results/pcam-results.md)
-- [Performance comparison](docs/results/performance-comparison.md)
-- [Engineering architecture](docs/engineering/architecture.md)
-- [Roadmap](docs/roadmap/index.md)
-
----
-
-## Interpretation guardrails
-
-This repository contains substantial engineering and research infrastructure, but claims should be interpreted by evidence level:
-
-- **Public pathology benchmark validation is real evidence.**
-- **PCam is patch-level.** It does not replace Camelyon16/17 slide-level WSI validation.
-- **PANDA and Camelyon are needed for stronger slide-level claims.**
-- **FAIR-WEIGHTS-H has been empirically tested for stability and behavior.** It has not yet shown a consistent performance/fairness advantage over simpler baselines.
-- **TransnnMIL v2.0 is not yet proven superior to CLAM, TransMIL, NATMIL, or SlideMamba at the slide level.**
-- **Clinical validation and regulatory clearance are separate future requirements.**
-
----
-
-## License and use
-
-This repository is intended for research and engineering development. Clinical deployment requires additional validation, governance, security review, and regulatory assessment.
+> Research-only at this stage. Not clinically validated, not diagnostic software, and not currently used for patient care. Long-term goal is responsible clinical translation after proper validation, regulatory review, security review, usability testing, and deployment testing.
