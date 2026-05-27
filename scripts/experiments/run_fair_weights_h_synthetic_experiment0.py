@@ -7,7 +7,7 @@ classification data and compares aggregation rules.
 
 Purpose:
 - validate the experiment scaffold on any machine,
-- test whether the weighting rule behaves sensibly under controlled site noise,
+- test whether weighting rules behave sensibly under controlled site noise,
 - avoid requiring PCam/PANDA data for the first logic check.
 
 Research-only. This is not clinical validation.
@@ -47,6 +47,9 @@ STRATEGIES = (
     "fair_blend_25",
     "fair_blend_50",
     "fair_blend_75",
+    "robust_blend_25",
+    "robust_blend_50",
+    "robust_blend_75",
 )
 
 
@@ -344,29 +347,57 @@ def fair_weights_h_base(
     return cap_and_renormalize({i: float(w) for i, w in zip(site_ids, weights)}, max_weight=max_weight)
 
 
-def blend_weights(
-    anchor: Mapping[int, float], correction: Mapping[int, float], fair_fraction: float
+def robust_worst_site_base(
+    site_ids: list[int],
+    site_metrics: Mapping[int, SiteMetrics],
+    temperature: float,
+    max_weight: float,
 ) -> Dict[int, float]:
-    """Blend FedAvg with FAIR-WEIGHTS-H.
+    """Weight correction that explicitly targets hard/worst-performing sites.
 
-    fair_fraction=0.25 means 75% FedAvg anchor and 25% FAIR correction.
+    This is not meant to be the final FAIR-WEIGHTS-H rule. It tests whether
+    worst-site robustness requires an explicit hard-site objective instead of
+    only rewarding low-loss/high-contribution sites.
+    """
+    losses = np.asarray([site_metrics[i].val_loss for i in site_ids], dtype=np.float64)
+    aucs = np.asarray([site_metrics[i].val_auc for i in site_ids], dtype=np.float64)
+    uncertainties = np.asarray([site_metrics[i].uncertainty for i in site_ids], dtype=np.float64)
+    update_norms = np.asarray([site_metrics[i].update_norm for i in site_ids], dtype=np.float64)
+
+    aucs = np.nan_to_num(aucs, nan=np.nanmean(aucs) if not np.isnan(aucs).all() else 0.5)
+    difficulty = zscore(losses) + zscore(1.0 - aucs)
+    uncertainty_penalty = np.maximum(0.0, zscore(uncertainties))
+    norm_penalty = np.maximum(0.0, zscore(update_norms))
+    raw = difficulty - 0.25 * uncertainty_penalty - 0.15 * norm_penalty
+    raw = raw / max(temperature, 1e-6)
+    raw -= raw.max()
+    exp = np.exp(raw)
+    weights = exp / exp.sum()
+    return cap_and_renormalize({i: float(w) for i, w in zip(site_ids, weights)}, max_weight=max_weight)
+
+
+def blend_weights(anchor: Mapping[int, float], correction: Mapping[int, float], correction_fraction: float) -> Dict[int, float]:
+    """Blend FedAvg with a correction rule.
+
+    correction_fraction=0.25 means 75% FedAvg anchor and 25% correction.
     """
     blended = {
-        i: (1.0 - fair_fraction) * float(anchor[i]) + fair_fraction * float(correction[i])
+        i: (1.0 - correction_fraction) * float(anchor[i])
+        + correction_fraction * float(correction[i])
         for i in anchor
     }
     total = sum(blended.values())
     return {i: v / total for i, v in blended.items()}
 
 
-def fair_blend_fraction(strategy: str) -> float:
-    if strategy == "fair_blend_25":
+def blend_fraction(strategy: str, prefix: str) -> float:
+    if strategy == f"{prefix}_25":
         return 0.25
-    if strategy == "fair_blend_50":
+    if strategy == f"{prefix}_50":
         return 0.50
-    if strategy == "fair_blend_75":
+    if strategy == f"{prefix}_75":
         return 0.75
-    raise ValueError(f"Not a FAIR blend strategy: {strategy}")
+    raise ValueError(f"Not a {prefix} strategy: {strategy}")
 
 
 def compute_weights(
@@ -395,7 +426,11 @@ def compute_weights(
     if strategy.startswith("fair_blend_"):
         anchor = fedavg_weights(site_ids, site_metrics)
         correction = fair_weights_h_base(site_ids, site_metrics, temperature, max_weight)
-        return blend_weights(anchor, correction, fair_blend_fraction(strategy))
+        return blend_weights(anchor, correction, blend_fraction(strategy, "fair_blend"))
+    if strategy.startswith("robust_blend_"):
+        anchor = fedavg_weights(site_ids, site_metrics)
+        correction = robust_worst_site_base(site_ids, site_metrics, temperature, max_weight)
+        return blend_weights(anchor, correction, blend_fraction(strategy, "robust_blend"))
     raise ValueError(f"Unknown strategy: {strategy}")
 
 
