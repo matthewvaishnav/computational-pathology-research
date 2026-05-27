@@ -38,7 +38,16 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
 SEED = 42
-STRATEGIES = ("equal", "fedavg", "inverse_loss", "uncertainty", "fair_weights_h")
+STRATEGIES = (
+    "equal",
+    "fedavg",
+    "inverse_loss",
+    "uncertainty",
+    "fair_weights_h",
+    "fair_blend_25",
+    "fair_blend_50",
+    "fair_blend_75",
+)
 
 
 class TinyMLP(nn.Module):
@@ -206,7 +215,13 @@ def binary_auc(labels: np.ndarray, scores: np.ndarray) -> float:
     return float((rank_sum_pos - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg))
 
 
-def evaluate_model(model: nn.Module, x: torch.Tensor, y: torch.Tensor, batch_size: int, device: torch.device) -> Dict[str, float]:
+def evaluate_model(
+    model: nn.Module,
+    x: torch.Tensor,
+    y: torch.Tensor,
+    batch_size: int,
+    device: torch.device,
+) -> Dict[str, float]:
     model.eval()
     losses, probs, labels, preds, entropies = [], [], [], [], []
     loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
@@ -299,15 +314,73 @@ def cap_and_renormalize(weights: Dict[int, float], max_weight: float) -> Dict[in
     return {k: v / total for k, v in weights.items()}
 
 
-def compute_weights(strategy: str, site_metrics: Mapping[int, SiteMetrics], temperature: float, max_weight: float) -> Dict[int, float]:
+def fedavg_weights(site_ids: list[int], site_metrics: Mapping[int, SiteMetrics]) -> Dict[int, float]:
+    sizes = np.asarray([site_metrics[i].train_size for i in site_ids], dtype=np.float64)
+    sizes /= sizes.sum()
+    return {i: float(w) for i, w in zip(site_ids, sizes)}
+
+
+def fair_weights_h_base(
+    site_ids: list[int],
+    site_metrics: Mapping[int, SiteMetrics],
+    temperature: float,
+    max_weight: float,
+) -> Dict[int, float]:
+    losses = np.asarray([site_metrics[i].val_loss for i in site_ids], dtype=np.float64)
+    uncertainties = np.asarray([site_metrics[i].uncertainty for i in site_ids], dtype=np.float64)
+    update_norms = np.asarray([site_metrics[i].update_norm for i in site_ids], dtype=np.float64)
+    sensitivities = np.asarray([site_metrics[i].sensitivity for i in site_ids], dtype=np.float64)
+    positive_rates = np.asarray([site_metrics[i].positive_rate for i in site_ids], dtype=np.float64)
+
+    contribution = -zscore(losses)
+    uncertainty_penalty = zscore(uncertainties)
+    norm_penalty = np.maximum(0.0, zscore(update_norms))
+    subgroup_bonus = zscore(np.nan_to_num(sensitivities, nan=0.0) * positive_rates)
+    raw = contribution + 0.35 * subgroup_bonus - 0.45 * uncertainty_penalty - 0.25 * norm_penalty
+    raw = raw / max(temperature, 1e-6)
+    raw -= raw.max()
+    exp = np.exp(raw)
+    weights = exp / exp.sum()
+    return cap_and_renormalize({i: float(w) for i, w in zip(site_ids, weights)}, max_weight=max_weight)
+
+
+def blend_weights(
+    anchor: Mapping[int, float], correction: Mapping[int, float], fair_fraction: float
+) -> Dict[int, float]:
+    """Blend FedAvg with FAIR-WEIGHTS-H.
+
+    fair_fraction=0.25 means 75% FedAvg anchor and 25% FAIR correction.
+    """
+    blended = {
+        i: (1.0 - fair_fraction) * float(anchor[i]) + fair_fraction * float(correction[i])
+        for i in anchor
+    }
+    total = sum(blended.values())
+    return {i: v / total for i, v in blended.items()}
+
+
+def fair_blend_fraction(strategy: str) -> float:
+    if strategy == "fair_blend_25":
+        return 0.25
+    if strategy == "fair_blend_50":
+        return 0.50
+    if strategy == "fair_blend_75":
+        return 0.75
+    raise ValueError(f"Not a FAIR blend strategy: {strategy}")
+
+
+def compute_weights(
+    strategy: str,
+    site_metrics: Mapping[int, SiteMetrics],
+    temperature: float,
+    max_weight: float,
+) -> Dict[int, float]:
     site_ids = sorted(site_metrics)
     k = len(site_ids)
     if strategy == "equal":
         return {i: 1.0 / k for i in site_ids}
     if strategy == "fedavg":
-        sizes = np.asarray([site_metrics[i].train_size for i in site_ids], dtype=np.float64)
-        sizes /= sizes.sum()
-        return {i: float(w) for i, w in zip(site_ids, sizes)}
+        return fedavg_weights(site_ids, site_metrics)
     if strategy == "inverse_loss":
         scores = np.asarray([1.0 / (site_metrics[i].val_loss + 1e-6) for i in site_ids])
         scores /= scores.sum()
@@ -318,21 +391,11 @@ def compute_weights(strategy: str, site_metrics: Mapping[int, SiteMetrics], temp
         scores /= scores.sum()
         return {i: float(w) for i, w in zip(site_ids, scores)}
     if strategy == "fair_weights_h":
-        losses = np.asarray([site_metrics[i].val_loss for i in site_ids], dtype=np.float64)
-        uncertainties = np.asarray([site_metrics[i].uncertainty for i in site_ids], dtype=np.float64)
-        update_norms = np.asarray([site_metrics[i].update_norm for i in site_ids], dtype=np.float64)
-        sensitivities = np.asarray([site_metrics[i].sensitivity for i in site_ids], dtype=np.float64)
-        positive_rates = np.asarray([site_metrics[i].positive_rate for i in site_ids], dtype=np.float64)
-        contribution = -zscore(losses)
-        uncertainty_penalty = zscore(uncertainties)
-        norm_penalty = np.maximum(0.0, zscore(update_norms))
-        subgroup_bonus = zscore(np.nan_to_num(sensitivities, nan=0.0) * positive_rates)
-        raw = contribution + 0.35 * subgroup_bonus - 0.45 * uncertainty_penalty - 0.25 * norm_penalty
-        raw = raw / max(temperature, 1e-6)
-        raw -= raw.max()
-        exp = np.exp(raw)
-        weights = exp / exp.sum()
-        return cap_and_renormalize({i: float(w) for i, w in zip(site_ids, weights)}, max_weight=max_weight)
+        return fair_weights_h_base(site_ids, site_metrics, temperature, max_weight)
+    if strategy.startswith("fair_blend_"):
+        anchor = fedavg_weights(site_ids, site_metrics)
+        correction = fair_weights_h_base(site_ids, site_metrics, temperature, max_weight)
+        return blend_weights(anchor, correction, fair_blend_fraction(strategy))
     raise ValueError(f"Unknown strategy: {strategy}")
 
 
@@ -402,13 +465,15 @@ def run_strategy(
         final_weights = compute_weights(strategy, metrics, temperature, max_weight)
         global_state = aggregate_states(local_states, final_weights)
         global_model.load_state_dict(global_state)
-        round_history.append({
-            "round": round_idx,
-            "weights": {str(k): v for k, v in final_weights.items()},
-            "weight_entropy": weight_entropy(final_weights),
-            "n_eff": n_eff(final_weights),
-            "site_metrics": {str(k): asdict(v) for k, v in metrics.items()},
-        })
+        round_history.append(
+            {
+                "round": round_idx,
+                "weights": {str(k): v for k, v in final_weights.items()},
+                "weight_entropy": weight_entropy(final_weights),
+                "n_eff": n_eff(final_weights),
+                "site_metrics": {str(k): asdict(v) for k, v in metrics.items()},
+            }
+        )
 
     all_val_x = torch.cat([s.val_x for s in sites.values()], dim=0)
     all_val_y = torch.cat([s.val_y for s in sites.values()], dim=0)
@@ -505,29 +570,33 @@ def main() -> None:
     summary_csv = args.output_dir / "summary.csv"
     with summary_csv.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([
-            "strategy",
-            "global_auc",
-            "global_accuracy",
-            "global_loss",
-            "worst_site_auc",
-            "worst_site_accuracy",
-            "mean_site_auc",
-            "weight_entropy",
-            "n_eff",
-        ])
+        writer.writerow(
+            [
+                "strategy",
+                "global_auc",
+                "global_accuracy",
+                "global_loss",
+                "worst_site_auc",
+                "worst_site_accuracy",
+                "mean_site_auc",
+                "weight_entropy",
+                "n_eff",
+            ]
+        )
         for strategy, payload in results["strategies"].items():
-            writer.writerow([
-                strategy,
-                payload["global_auc"],
-                payload["global_accuracy"],
-                payload["global_loss"],
-                payload["worst_site_auc"],
-                payload["worst_site_accuracy"],
-                payload["mean_site_auc"],
-                payload["weight_entropy"],
-                payload["n_eff"],
-            ])
+            writer.writerow(
+                [
+                    strategy,
+                    payload["global_auc"],
+                    payload["global_accuracy"],
+                    payload["global_loss"],
+                    payload["worst_site_auc"],
+                    payload["worst_site_accuracy"],
+                    payload["mean_site_auc"],
+                    payload["weight_entropy"],
+                    payload["n_eff"],
+                ]
+            )
 
     print(f"\nSaved metrics to {out_json}")
     print(f"Saved summary to {summary_csv}")
