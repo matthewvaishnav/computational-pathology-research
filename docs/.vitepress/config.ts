@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Matthew Vaishnav Computational Pathology, Federated Oncology Learning, and Mathematical Validation Infrastructure',
-  description: 'Whole-slide pathology AI, TransnnMIL v2.0, PathologyFL, FAIR-WEIGHTS-H institutional weighting, PCam/Camelyon validation, and multi-institutional oncology learning infrastructure.',
+  title: 'Computational Pathology AI Research Framework',
+  description: 'Whole-slide pathology AI, PANDA slide-level MIL benchmarking, TransnnMIL, PathologyFL, FAIR-WEIGHTS-H, and reproducible computational pathology research infrastructure.',
   base: '/computational-pathology-research/',
   cleanUrls: true,
   lastUpdated: true,
@@ -52,7 +52,7 @@ export default defineConfig({
     'training/**'
   ],
   themeConfig: {
-    siteTitle: 'Matthew Vaishnav',
+    siteTitle: 'Computational Pathology AI Research',
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Overview', link: '/overview/' },
@@ -72,7 +72,8 @@ export default defineConfig({
         { text: 'Claim status', link: '/overview/claim-status' }
       ]},
       { text: 'Research', items: [
-        { text: 'Literature positioning', link: '/research/literature-positioning' }
+        { text: 'Literature positioning', link: '/research/literature-positioning' },
+        { text: 'FAIR-WEIGHTS-H stress result', link: '/research/fair-weights-h-stress-result' }
       ]},
       { text: 'Quickstart', items: [
         { text: 'Getting started', link: '/getting-started' },
