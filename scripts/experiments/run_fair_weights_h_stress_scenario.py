@@ -12,7 +12,8 @@ Example:
     python scripts/experiments/run_fair_weights_h_stress_scenario.py \
         --output-dir results/fair_weights_h_stress_seed_42 \
         --seed 42 \
-        --rounds 5
+        --rounds 5 \
+        --large-site-label-flip 0.45
 """
 
 from __future__ import annotations
@@ -93,20 +94,39 @@ def make_stress_sites(
     val_samples_per_site: int,
     input_dim: int,
     seed: int,
+    large_site_label_flip: float,
+    large_site_size_multiplier: float,
 ) -> Dict[int, SiteData]:
     """Create a controlled anti-FedAvg setup.
 
-    Site 0 is intentionally large but noisy. The remaining sites are smaller
-    and cleaner. This scenario asks whether weighting by validated cross-site
-    contribution can outperform sample-size weighting.
+    Site 0 is intentionally large and optionally noisy. The remaining sites are
+    smaller and cleaner. This scenario asks whether weighting by validated
+    cross-site contribution can outperform sample-size weighting.
     """
+    if not 0.0 <= large_site_label_flip <= 0.5:
+        raise ValueError("large_site_label_flip must be between 0.0 and 0.5")
+    if large_site_size_multiplier <= 0:
+        raise ValueError("large_site_size_multiplier must be positive")
+
     rng = np.random.RandomState(seed)
     signal = rng.normal(size=input_dim).astype(np.float32)
     signal /= np.linalg.norm(signal) + 1e-8
 
     specs = [
         # id, name, size_mult, bias, train_shift, train_noise, flip, val_shift, val_noise, enrich, note
-        (0, "large_noisy_site", 3.00, -0.05, 0.00, 1.00, 0.45, 0.00, 1.00, False, "large site with severe label noise"),
+        (
+            0,
+            "large_noisy_site",
+            large_site_size_multiplier,
+            -0.05,
+            0.00,
+            1.00,
+            large_site_label_flip,
+            0.00,
+            1.00,
+            False,
+            f"large site with label_flip={large_site_label_flip:.2f}",
+        ),
         (1, "small_clean_site", 0.65, -0.05, 0.00, 1.00, 0.00, 0.00, 1.00, False, "small clean balanced site"),
         (2, "medium_clean_site", 1.00, -0.05, 0.00, 1.00, 0.00, 0.00, 1.00, False, "medium clean balanced site"),
         (3, "rare_signal_site", 0.80, 0.55, 0.00, 1.00, 0.00, 0.00, 1.00, True, "smaller positive-enriched useful signal site"),
@@ -158,6 +178,18 @@ def main() -> None:
     parser.add_argument("--max-weight", type=float, default=0.30)
     parser.add_argument("--device", type=str, default="cpu", choices=["cpu", "cuda"])
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument(
+        "--large-site-label-flip",
+        type=float,
+        default=0.45,
+        help="Training-label flip probability for the large site. Use 0.0 to 0.5.",
+    )
+    parser.add_argument(
+        "--large-site-size-multiplier",
+        type=float,
+        default=3.0,
+        help="Sample-size multiplier for the large site relative to samples-per-site.",
+    )
     parser.add_argument("--strategies", nargs="+", default=list(STRATEGIES), choices=list(STRATEGIES))
     args = parser.parse_args()
 
@@ -170,6 +202,8 @@ def main() -> None:
         val_samples_per_site=args.val_samples_per_site,
         input_dim=args.input_dim,
         seed=args.seed,
+        large_site_label_flip=args.large_site_label_flip,
+        large_site_size_multiplier=args.large_site_size_multiplier,
     )
 
     results: Dict[str, object] = {
