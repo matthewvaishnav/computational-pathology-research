@@ -104,6 +104,7 @@ export default defineConfig({
       { text: 'Results', items: [
         { text: 'PCam results', link: '/results/pcam-results' },
         { text: 'PANDA centralized vs federated', link: '/results/panda-centralized-vs-federated' },
+        { text: 'PANDA FAIR-WEIGHTS-H stress', link: '/results/panda-fair-weights-h-stress' },
         { text: 'Performance comparison', link: '/results/performance-comparison' }
       ]},
       { text: 'Engineering', items: [
