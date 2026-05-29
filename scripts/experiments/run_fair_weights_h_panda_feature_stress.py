@@ -74,6 +74,10 @@ class SiteData:
     train_positive_rate: float
     val_positive_rate: float
     train_label_noise_fraction: float
+    train_indices: List[int]
+    val_indices: List[int]
+    val_image_ids: List[str]
+    val_data_providers: List[str]
 
 
 @dataclass
@@ -152,6 +156,8 @@ def load_feature_cache(path: Path) -> Tuple[np.ndarray, np.ndarray, pd.DataFrame
         frame_dict["image_id"] = np.asarray([f"cache_{i}" for i in range(n)])
     if "data_provider" in data:
         frame_dict["data_provider"] = data["data_provider"].astype(str)
+    else:
+        frame_dict["data_provider"] = np.asarray(["unknown" for _ in range(n)])
     if "feature_path" in data:
         frame_dict["feature_path"] = data["feature_path"].astype(str)
     kept = pd.DataFrame(frame_dict)
@@ -227,6 +233,8 @@ def load_panda_feature_table(
         raise RuntimeError("No readable PANDA feature files were loaded")
 
     kept = pd.DataFrame(kept_rows).reset_index(drop=True)
+    if "data_provider" not in kept.columns:
+        kept["data_provider"] = "unknown"
     x = np.stack(features).astype(np.float32)
     y = np.asarray(labels, dtype=np.int64)
     metadata = {"manifest": str(manifest), "pool": pool, "direct_hdf5_load": True}
@@ -275,13 +283,19 @@ def inject_multiclass_label_noise(y: np.ndarray, fraction: float, num_classes: i
     return noisy, float((noisy != y).mean())
 
 
-def split_site_train_val(site_x: np.ndarray, site_y: np.ndarray, val_fraction: float, seed: int):
+def split_site_train_val_indices(site_indices: np.ndarray, site_y: np.ndarray, val_fraction: float, seed: int):
     counts = np.bincount(site_y, minlength=6)
     stratify = site_y if int(counts[counts > 0].min()) >= 2 else None
     try:
-        return train_test_split(site_x, site_y, test_size=val_fraction, random_state=seed, stratify=stratify)
+        return train_test_split(site_indices, site_y, test_size=val_fraction, random_state=seed, stratify=stratify)
     except ValueError:
-        return train_test_split(site_x, site_y, test_size=val_fraction, random_state=seed, stratify=None)
+        return train_test_split(site_indices, site_y, test_size=val_fraction, random_state=seed, stratify=None)
+
+
+def metadata_values(frame: pd.DataFrame, indices: Sequence[int], column: str, default_prefix: str) -> List[str]:
+    if column in frame.columns:
+        return [str(v) for v in frame.iloc[list(indices)][column].tolist()]
+    return [f"{default_prefix}_{int(i)}" for i in indices]
 
 
 def make_panda_sites(
@@ -291,15 +305,19 @@ def make_panda_sites(
     val_fraction: float,
     large_site_label_flip: float,
     site_proportions: Sequence[float],
+    metadata_frame: pd.DataFrame | None = None,
 ) -> Dict[int, SiteData]:
     assignments = stratified_site_assignments(y, seed=seed, proportions=site_proportions)
+    if metadata_frame is None:
+        metadata_frame = pd.DataFrame({"image_id": [f"slide_{i}" for i in range(len(y))], "data_provider": "unknown"})
     sites: Dict[int, SiteData] = {}
 
     for site_id in range(len(site_proportions)):
-        idx = np.where(assignments == site_id)[0]
-        site_x = x[idx]
-        site_y = y[idx]
-        train_x, val_x, train_y_clean, val_y = split_site_train_val(site_x, site_y, val_fraction, seed + site_id)
+        site_indices = np.where(assignments == site_id)[0]
+        site_y = y[site_indices]
+        train_idx, val_idx, train_y_clean, val_y = split_site_train_val_indices(
+            site_indices, site_y, val_fraction, seed + site_id
+        )
         if site_id == 0:
             train_y, realized_noise = inject_multiclass_label_noise(
                 train_y_clean, fraction=large_site_label_flip, num_classes=6, seed=seed + 10_000
@@ -313,9 +331,9 @@ def make_panda_sites(
         sites[site_id] = SiteData(
             site_id=site_id,
             name=f"panda_site_{site_id}",
-            train_x=torch.from_numpy(train_x).float(),
+            train_x=torch.from_numpy(x[train_idx]).float(),
             train_y=torch.from_numpy(train_y).long(),
-            val_x=torch.from_numpy(val_x).float(),
+            val_x=torch.from_numpy(x[val_idx]).float(),
             val_y=torch.from_numpy(val_y).long(),
             train_y_clean=torch.from_numpy(train_y_clean).long(),
             construction=construction,
@@ -324,6 +342,10 @@ def make_panda_sites(
             train_positive_rate=float((train_y > 0).mean()),
             val_positive_rate=float((val_y > 0).mean()),
             train_label_noise_fraction=realized_noise,
+            train_indices=[int(i) for i in train_idx],
+            val_indices=[int(i) for i in val_idx],
+            val_image_ids=metadata_values(metadata_frame, val_idx, "image_id", "slide"),
+            val_data_providers=metadata_values(metadata_frame, val_idx, "data_provider", "provider"),
         )
     return sites
 
@@ -520,7 +542,7 @@ def run_strategy(
     device: torch.device,
     temperature: float,
     max_weight: float,
-) -> StrategyResult:
+) -> Tuple[StrategyResult, nn.Module]:
     model = SlideMLP(input_dim=input_dim, hidden_dim=hidden_dim, num_classes=num_classes, dropout=dropout)
     round_history: List[Dict[str, object]] = []
     final_weights = fedavg_weights(sites)
@@ -551,7 +573,7 @@ def run_strategy(
     site_qwks = [payload["qwk"] for payload in per_site.values()]
     site_accs = [payload["accuracy"] for payload in per_site.values()]
 
-    return StrategyResult(
+    result = StrategyResult(
         strategy=strategy,
         global_qwk=global_metrics["qwk"],
         global_accuracy=global_metrics["accuracy"],
@@ -566,6 +588,7 @@ def run_strategy(
         per_site_metrics=per_site,
         round_history=round_history,
     )
+    return result, model.cpu()
 
 
 def parse_site_proportions(text: str) -> List[float]:
@@ -576,6 +599,66 @@ def parse_site_proportions(text: str) -> List[float]:
         raise ValueError("site proportions must all be positive")
     total = sum(values)
     return [v / total for v in values]
+
+
+def prediction_rows_for_model(
+    model: nn.Module,
+    sites: Mapping[int, SiteData],
+    strategy: str,
+    seed: int,
+    noise_level: float,
+    batch_size: int,
+    device: torch.device,
+) -> List[Dict[str, object]]:
+    rows: List[Dict[str, object]] = []
+    for site_id, site in sites.items():
+        logits = predict_logits(model, site.val_x, batch_size=batch_size, device=device)
+        probs = torch.softmax(logits, dim=1).numpy()
+        preds = probs.argmax(axis=1)
+        truth = site.val_y.numpy()
+        for i in range(len(truth)):
+            row: Dict[str, object] = {
+                "seed": seed,
+                "strategy": strategy,
+                "noise_level": noise_level,
+                "site_id": site_id,
+                "split": "val",
+                "image_id": site.val_image_ids[i] if i < len(site.val_image_ids) else f"site_{site_id}_val_{i}",
+                "data_provider": site.val_data_providers[i] if i < len(site.val_data_providers) else "unknown",
+                "isup_grade_true": int(truth[i]),
+                "isup_grade_pred": int(preds[i]),
+            }
+            for cls in range(probs.shape[1]):
+                row[f"prob_{cls}"] = float(probs[i, cls])
+            rows.append(row)
+    return rows
+
+
+def write_predictions_csv(rows: List[Dict[str, object]], output_path: Path) -> None:
+    if not rows:
+        return
+    fieldnames = [
+        "seed",
+        "strategy",
+        "noise_level",
+        "site_id",
+        "split",
+        "image_id",
+        "data_provider",
+        "isup_grade_true",
+        "isup_grade_pred",
+        "prob_0",
+        "prob_1",
+        "prob_2",
+        "prob_3",
+        "prob_4",
+        "prob_5",
+    ]
+    with output_path.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key, "") for key in fieldnames})
 
 
 def main() -> None:
@@ -603,6 +686,7 @@ def main() -> None:
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--strategies", nargs="+", default=list(STRATEGIES), choices=list(STRATEGIES))
     parser.add_argument("--no-standardize", action="store_true")
+    parser.add_argument("--save-predictions", action="store_true", help="Write per-slide validation predictions to predictions.csv")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -626,7 +710,15 @@ def main() -> None:
     if not args.no_standardize:
         x = standardize_features(x)
     site_proportions = parse_site_proportions(args.site_proportions)
-    sites = make_panda_sites(x, y, args.seed, args.val_fraction, args.large_site_label_flip, site_proportions)
+    sites = make_panda_sites(
+        x,
+        y,
+        args.seed,
+        args.val_fraction,
+        args.large_site_label_flip,
+        site_proportions,
+        metadata_frame=kept_frame,
+    )
 
     print(f"Loaded {len(y)} PANDA-derived slide feature vectors, input_dim={x.shape[1]}", flush=True)
     print(f"Label distribution: {dict(zip(*np.unique(y, return_counts=True)))}", flush=True)
@@ -662,10 +754,11 @@ def main() -> None:
         "strategies": {},
     }
 
+    prediction_rows: List[Dict[str, object]] = []
     for strategy in args.strategies:
         print(f"\n=== Running strategy: {strategy} ===", flush=True)
         set_seed(args.seed)
-        result = run_strategy(
+        result, model = run_strategy(
             strategy=strategy,
             sites=sites,
             input_dim=x.shape[1],
@@ -682,6 +775,18 @@ def main() -> None:
             max_weight=args.max_weight,
         )
         results["strategies"][strategy] = asdict(result)
+        if args.save_predictions:
+            prediction_rows.extend(
+                prediction_rows_for_model(
+                    model=model,
+                    sites=sites,
+                    strategy=strategy,
+                    seed=args.seed,
+                    noise_level=args.large_site_label_flip,
+                    batch_size=args.batch_size,
+                    device=device,
+                )
+            )
         print(
             f"{strategy}: global_qwk={result.global_qwk:.4f}, "
             f"acc={result.global_accuracy:.4f}, macro_f1={result.macro_f1:.4f}, "
@@ -728,9 +833,15 @@ def main() -> None:
     manifest_out = args.output_dir / "loaded_manifest_preview.csv"
     kept_frame.head(200).to_csv(manifest_out, index=False)
 
+    prediction_out = args.output_dir / "predictions.csv"
+    if args.save_predictions:
+        write_predictions_csv(prediction_rows, prediction_out)
+
     print(f"\nSaved metrics to {out_json}", flush=True)
     print(f"Saved summary to {summary_csv}", flush=True)
     print(f"Saved loaded manifest preview to {manifest_out}", flush=True)
+    if args.save_predictions:
+        print(f"Saved predictions to {prediction_out}", flush=True)
 
 
 if __name__ == "__main__":
