@@ -15,14 +15,6 @@ simulated site, and compares FedAvg against cross-site contribution weighting.
 
 This is PANDA-derived simulated-federation evidence. It is not real multi-center
 clinical validation and is not diagnostic software.
-
-Example cached smoke test:
-    python scripts/experiments/run_fair_weights_h_panda_feature_stress.py \
-        --feature-cache C:/panda_cache/panda_phikon_mean_features_1000.npz \
-        --output-dir results/fair_weights_h_panda_feature_stress_smoke_cached \
-        --rounds 2 \
-        --large-site-label-flip 0.25 \
-        --device cpu
 """
 
 from __future__ import annotations
@@ -56,6 +48,11 @@ STRATEGIES = (
     "cross_site_blend_25",
     "cross_site_blend_50",
     "cross_site_blend_75",
+    "ordinal_harm_full",
+    "ordinal_harm_blend_25",
+    "ordinal_harm_blend_50",
+    "ordinal_harm_blend_75",
+    "adaptive_ordinal_harm",
 )
 
 
@@ -403,6 +400,52 @@ def evaluate_model(model: nn.Module, x: torch.Tensor, y: torch.Tensor, batch_siz
     }
 
 
+def ordinal_harm_metrics(model: nn.Module, sites: Mapping[int, SiteData], batch_size: int, device: torch.device) -> Dict[str, float]:
+    abs_errors: List[np.ndarray] = []
+    severe_errors: List[np.ndarray] = []
+    over_errors: List[np.ndarray] = []
+    under_errors: List[np.ndarray] = []
+    per_site_mae: List[float] = []
+    per_site_severe: List[float] = []
+
+    for site in sites.values():
+        logits = predict_logits(model, site.val_x, batch_size=batch_size, device=device)
+        pred = logits.argmax(dim=1).numpy().astype(np.int64)
+        truth = site.val_y.numpy().astype(np.int64)
+        err = pred - truth
+        abs_err = np.abs(err).astype(np.float64)
+        severe = (abs_err >= 3).astype(np.float64)
+        over = np.maximum(err, 0).astype(np.float64)
+        under = np.maximum(-err, 0).astype(np.float64)
+        abs_errors.append(abs_err)
+        severe_errors.append(severe)
+        over_errors.append(over)
+        under_errors.append(under)
+        per_site_mae.append(float(abs_err.mean()))
+        per_site_severe.append(float(severe.mean()))
+
+    all_abs = np.concatenate(abs_errors)
+    all_severe = np.concatenate(severe_errors)
+    all_over = np.concatenate(over_errors)
+    all_under = np.concatenate(under_errors)
+    return {
+        "mean_abs_error": float(all_abs.mean()),
+        "severe_error_rate": float(all_severe.mean()),
+        "mean_overgrade": float(all_over.mean()),
+        "mean_undergrade": float(all_under.mean()),
+        "worst_site_mean_abs_error": float(max(per_site_mae)),
+        "worst_site_severe_error_rate": float(max(per_site_severe)),
+    }
+
+
+def ordinal_harm_score(metrics: Mapping[str, float], severe_weight: float, worst_site_weight: float) -> float:
+    return (
+        float(metrics["mean_abs_error"])
+        + severe_weight * float(metrics["severe_error_rate"])
+        + worst_site_weight * float(metrics["worst_site_mean_abs_error"])
+    )
+
+
 def evaluate_all_sites(model: nn.Module, sites: Mapping[int, SiteData], batch_size: int, device: torch.device):
     all_x = torch.cat([site.val_x for site in sites.values()], dim=0)
     all_y = torch.cat([site.val_y for site in sites.values()], dim=0)
@@ -502,6 +545,35 @@ def contribution_weights(
     return softmax_weights(scores, temperature=temperature, max_weight=max_weight)
 
 
+def ordinal_harm_weights(
+    global_model: nn.Module,
+    local_models: Mapping[int, nn.Module],
+    sites: Mapping[int, SiteData],
+    batch_size: int,
+    device: torch.device,
+    temperature: float,
+    max_weight: float,
+    severe_weight: float,
+    worst_site_weight: float,
+) -> Tuple[Dict[int, float], Dict[str, object]]:
+    base_metrics = ordinal_harm_metrics(global_model, sites, batch_size=batch_size, device=device)
+    base_harm = ordinal_harm_score(base_metrics, severe_weight=severe_weight, worst_site_weight=worst_site_weight)
+    scores: Dict[int, float] = {}
+    diagnostics: Dict[str, object] = {
+        "base_ordinal_harm": base_harm,
+        "base_ordinal_metrics": base_metrics,
+        "candidate_scores": {},
+        "candidate_metrics": {},
+    }
+    for site_id, model in local_models.items():
+        metrics = ordinal_harm_metrics(model, sites, batch_size=batch_size, device=device)
+        harm = ordinal_harm_score(metrics, severe_weight=severe_weight, worst_site_weight=worst_site_weight)
+        scores[site_id] = base_harm - harm
+        diagnostics["candidate_scores"][str(site_id)] = float(scores[site_id])
+        diagnostics["candidate_metrics"][str(site_id)] = metrics
+    return softmax_weights(scores, temperature=temperature, max_weight=max_weight), diagnostics
+
+
 def choose_weights(
     strategy: str,
     global_model: nn.Module,
@@ -511,19 +583,61 @@ def choose_weights(
     device: torch.device,
     temperature: float,
     max_weight: float,
-) -> Dict[int, float]:
+    ordinal_severe_weight: float,
+    ordinal_worst_site_weight: float,
+    adaptive_min_alpha: float,
+    adaptive_max_alpha: float,
+) -> Tuple[Dict[int, float], Dict[str, object]]:
     base = fedavg_weights(sites)
     if strategy == "fedavg":
-        return base
-    contrib = contribution_weights(global_model, local_models, sites, batch_size, device, temperature, max_weight)
-    if strategy == "cross_site_full":
-        return contrib
-    if strategy == "cross_site_blend_25":
-        return blend_weights(base, contrib, alpha=0.25)
-    if strategy == "cross_site_blend_50":
-        return blend_weights(base, contrib, alpha=0.50)
-    if strategy == "cross_site_blend_75":
-        return blend_weights(base, contrib, alpha=0.75)
+        return base, {"weight_source": "fedavg"}
+
+    if strategy.startswith("cross_site"):
+        contrib = contribution_weights(global_model, local_models, sites, batch_size, device, temperature, max_weight)
+        if strategy == "cross_site_full":
+            return contrib, {"weight_source": "cross_site_loss"}
+        if strategy == "cross_site_blend_25":
+            return blend_weights(base, contrib, alpha=0.25), {"weight_source": "cross_site_loss", "blend_alpha": 0.25}
+        if strategy == "cross_site_blend_50":
+            return blend_weights(base, contrib, alpha=0.50), {"weight_source": "cross_site_loss", "blend_alpha": 0.50}
+        if strategy == "cross_site_blend_75":
+            return blend_weights(base, contrib, alpha=0.75), {"weight_source": "cross_site_loss", "blend_alpha": 0.75}
+
+    if strategy.startswith("ordinal_harm") or strategy == "adaptive_ordinal_harm":
+        ordinal, diagnostics = ordinal_harm_weights(
+            global_model,
+            local_models,
+            sites,
+            batch_size,
+            device,
+            temperature,
+            max_weight,
+            severe_weight=ordinal_severe_weight,
+            worst_site_weight=ordinal_worst_site_weight,
+        )
+        diagnostics["weight_source"] = "ordinal_harm"
+        if strategy == "ordinal_harm_full":
+            diagnostics["blend_alpha"] = 1.0
+            return ordinal, diagnostics
+        if strategy == "ordinal_harm_blend_25":
+            diagnostics["blend_alpha"] = 0.25
+            return blend_weights(base, ordinal, alpha=0.25), diagnostics
+        if strategy == "ordinal_harm_blend_50":
+            diagnostics["blend_alpha"] = 0.50
+            return blend_weights(base, ordinal, alpha=0.50), diagnostics
+        if strategy == "ordinal_harm_blend_75":
+            diagnostics["blend_alpha"] = 0.75
+            return blend_weights(base, ordinal, alpha=0.75), diagnostics
+        if strategy == "adaptive_ordinal_harm":
+            base_metrics = diagnostics.get("base_ordinal_metrics", {})
+            severe = float(base_metrics.get("severe_error_rate", 0.0))
+            # Switch smoothly away from FedAvg as severe ordinal errors become common.
+            alpha = (severe - 0.08) / 0.08
+            alpha = float(np.clip(alpha, adaptive_min_alpha, adaptive_max_alpha))
+            diagnostics["blend_alpha"] = alpha
+            diagnostics["adaptive_signal_severe_error_rate"] = severe
+            return blend_weights(base, ordinal, alpha=alpha), diagnostics
+
     raise ValueError(f"Unknown strategy: {strategy}")
 
 
@@ -542,6 +656,10 @@ def run_strategy(
     device: torch.device,
     temperature: float,
     max_weight: float,
+    ordinal_severe_weight: float,
+    ordinal_worst_site_weight: float,
+    adaptive_min_alpha: float,
+    adaptive_max_alpha: float,
 ) -> Tuple[StrategyResult, nn.Module]:
     model = SlideMLP(input_dim=input_dim, hidden_dim=hidden_dim, num_classes=num_classes, dropout=dropout)
     round_history: List[Dict[str, object]] = []
@@ -552,17 +670,33 @@ def run_strategy(
             site_id: train_local_model(model, site, local_epochs, batch_size, lr, weight_decay, device)
             for site_id, site in sites.items()
         }
-        weights = choose_weights(strategy, model, local_models, sites, batch_size, device, temperature, max_weight)
+        weights, weight_diagnostics = choose_weights(
+            strategy,
+            model,
+            local_models,
+            sites,
+            batch_size,
+            device,
+            temperature,
+            max_weight,
+            ordinal_severe_weight,
+            ordinal_worst_site_weight,
+            adaptive_min_alpha,
+            adaptive_max_alpha,
+        )
         model.load_state_dict(state_dict_weighted_average(local_models, weights))
         final_weights = weights
         global_metrics, per_site = evaluate_all_sites(model, sites, batch_size=batch_size, device=device)
+        ordinal_metrics = ordinal_harm_metrics(model, sites, batch_size=batch_size, device=device)
         entropy, n_eff = entropy_and_neff(weights)
         round_history.append(
             {
                 "round": round_idx + 1,
                 "weights": {str(k): float(v) for k, v in weights.items()},
+                "weight_diagnostics": weight_diagnostics,
                 "global_metrics": global_metrics,
                 "per_site_metrics": per_site,
+                "ordinal_metrics": ordinal_metrics,
                 "weight_entropy": entropy,
                 "n_eff": n_eff,
             }
@@ -682,6 +816,10 @@ def main() -> None:
     parser.add_argument("--dropout", type=float, default=0.20)
     parser.add_argument("--temperature", type=float, default=2.0)
     parser.add_argument("--max-weight", type=float, default=0.30)
+    parser.add_argument("--ordinal-severe-weight", type=float, default=2.0)
+    parser.add_argument("--ordinal-worst-site-weight", type=float, default=0.5)
+    parser.add_argument("--adaptive-min-alpha", type=float, default=0.0)
+    parser.add_argument("--adaptive-max-alpha", type=float, default=0.75)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--strategies", nargs="+", default=list(STRATEGIES), choices=list(STRATEGIES))
@@ -732,7 +870,7 @@ def main() -> None:
     results: Dict[str, object] = {
         "experiment": "fair_weights_h_panda_feature_stress",
         "clinical_status": "PANDA-derived simulated federation; not real multi-center clinical validation; not diagnostic software",
-        "hypothesis": "Cross-site contribution weighting should be more robust than FedAvg when the largest simulated PANDA-derived site has noisy training labels.",
+        "hypothesis": "Cross-site contribution and ordinal-harm weighting should be more robust than FedAvg when the largest simulated PANDA-derived site has noisy training labels.",
         "config": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
         "input_metadata": input_metadata,
         "loaded_slide_count": int(len(y)),
@@ -773,6 +911,10 @@ def main() -> None:
             device=device,
             temperature=args.temperature,
             max_weight=args.max_weight,
+            ordinal_severe_weight=args.ordinal_severe_weight,
+            ordinal_worst_site_weight=args.ordinal_worst_site_weight,
+            adaptive_min_alpha=args.adaptive_min_alpha,
+            adaptive_max_alpha=args.adaptive_max_alpha,
         )
         results["strategies"][strategy] = asdict(result)
         if args.save_predictions:
