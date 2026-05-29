@@ -103,6 +103,7 @@ export default defineConfig({
       ]},
       { text: 'Results', items: [
         { text: 'PCam results', link: '/results/pcam-results' },
+        { text: 'PANDA centralized vs federated', link: '/results/panda-centralized-vs-federated' },
         { text: 'Performance comparison', link: '/results/performance-comparison' }
       ]},
       { text: 'Engineering', items: [
