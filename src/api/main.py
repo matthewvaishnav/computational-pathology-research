@@ -2,10 +2,11 @@
 """
 Medical AI Platform - Production API Server
 
-FastAPI-based REST API server for the Medical AI platform providing endpoints
-for image analysis, DICOM integration, case management, and system monitoring.
+FastAPI-based REST API server for Medical AI pathology analysis, DICOM integration,
+case management, and system monitoring.
 
-This is the PRODUCTION version with real database and model inference.
+This is the production API entrypoint. Legacy mobile app endpoints were removed
+when the unused mobile scaffolding was deleted from the research repository.
 """
 
 import logging
@@ -34,7 +35,7 @@ from src.api.errors import (
     not_found_handler,
     validation_error_handler,
 )
-from src.api.routers import admin, analysis, auth, mobile, monitoring
+from src.api.routers import admin, analysis, auth, monitoring
 from src.api.security import (
     limiter,
     log_security_event,
@@ -115,7 +116,6 @@ app.middleware("http")(waf_middleware)
 app.include_router(auth.router)
 app.include_router(analysis.router)
 app.include_router(admin.router)
-app.include_router(mobile.router)
 app.include_router(monitoring.router)
 
 
