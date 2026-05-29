@@ -1,31 +1,28 @@
+#!/usr/bin/env python3
 """
 PANDA-derived FAIR-WEIGHTS-H stress experiment over extracted Phikon features.
 
-This script uses real PANDA slide-level feature files from the Phikon manifest,
-pools each slide's patch features into a fixed-length vector, simulates a
-multi-site federation, injects controlled training-label noise into the largest
+This script supports two input modes:
+
+1. Direct manifest mode: reads one HDF5 feature file per slide from the PANDA
+   Phikon manifest and pools patch features on the fly.
+2. Cached feature mode: loads a single .npz file produced by
+   scripts/data/cache_panda_pooled_features.py.
+
+The experiment simulates a multi-site federation from real PANDA-derived Phikon
+slide features, injects controlled training-label noise into the largest
 simulated site, and compares FedAvg against cross-site contribution weighting.
 
 This is PANDA-derived simulated-federation evidence. It is not real multi-center
 clinical validation and is not diagnostic software.
 
-Example smoke test:
+Example cached smoke test:
     python scripts/experiments/run_fair_weights_h_panda_feature_stress.py \
-        --manifest results/panda_manifest/panda_phikon_manifest.csv \
-        --output-dir results/fair_weights_h_panda_feature_stress_smoke \
-        --limit 1000 \
+        --feature-cache C:/panda_cache/panda_phikon_mean_features_1000.npz \
+        --output-dir results/fair_weights_h_panda_feature_stress_smoke_cached \
         --rounds 2 \
-        --device cpu
-
-Example fuller run:
-    python scripts/experiments/run_fair_weights_h_panda_feature_stress.py \
-        --manifest results/panda_manifest/panda_phikon_manifest.csv \
-        --output-dir results/fair_weights_h_panda_feature_stress_noise_25_seed_42 \
-        --limit 6000 \
-        --rounds 5 \
         --large-site-label-flip 0.25 \
-        --seed 42 \
-        --device cuda
+        --device cpu
 """
 
 from __future__ import annotations
@@ -34,12 +31,10 @@ import argparse
 import copy
 import csv
 import json
-import math
 import random
-import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, MutableMapping, Sequence, Tuple
+from typing import Dict, List, Mapping, MutableMapping, Sequence, Tuple
 
 import h5py
 import numpy as np
@@ -53,6 +48,15 @@ try:
     from sklearn.model_selection import train_test_split
 except ImportError as exc:
     raise ImportError("scikit-learn is required. Install with: pip install scikit-learn") from exc
+
+
+STRATEGIES = (
+    "fedavg",
+    "cross_site_full",
+    "cross_site_blend_25",
+    "cross_site_blend_50",
+    "cross_site_blend_75",
+)
 
 
 @dataclass
@@ -89,15 +93,6 @@ class StrategyResult:
     round_history: List[Dict[str, object]]
 
 
-STRATEGIES = (
-    "fedavg",
-    "cross_site_full",
-    "cross_site_blend_25",
-    "cross_site_blend_50",
-    "cross_site_blend_75",
-)
-
-
 class SlideMLP(nn.Module):
     def __init__(self, input_dim: int, hidden_dim: int, num_classes: int, dropout: float):
         super().__init__()
@@ -127,10 +122,6 @@ def truthy(value: object) -> bool:
     return str(value).strip().lower() in {"true", "1", "yes", "y"}
 
 
-def normalize_feature_path(path: str) -> Path:
-    return Path(path)
-
-
 def pooled_feature_from_h5(path: Path, pool: str) -> np.ndarray:
     with h5py.File(path, "r") as handle:
         features = handle["features"][:]
@@ -138,10 +129,38 @@ def pooled_feature_from_h5(path: Path, pool: str) -> np.ndarray:
         raise ValueError(f"Invalid features shape {features.shape} at {path}")
     features = features.astype(np.float32)
     if pool == "mean":
-        return features.mean(axis=0)
+        return features.mean(axis=0).astype(np.float32)
     if pool == "mean_max":
         return np.concatenate([features.mean(axis=0), features.max(axis=0)], axis=0).astype(np.float32)
     raise ValueError(f"Unsupported pool mode: {pool}")
+
+
+def load_feature_cache(path: Path) -> Tuple[np.ndarray, np.ndarray, pd.DataFrame, List[Dict[str, str]], Dict[str, object]]:
+    if not path.exists():
+        raise FileNotFoundError(f"Feature cache not found: {path}")
+    data = np.load(path, allow_pickle=False)
+    if "x" not in data or "y" not in data:
+        raise ValueError(f"Expected cache to contain x and y arrays: {path}")
+    x = data["x"].astype(np.float32)
+    y = data["y"].astype(np.int64)
+
+    n = len(y)
+    frame_dict: Dict[str, object] = {"isup_grade": y}
+    if "image_id" in data:
+        frame_dict["image_id"] = data["image_id"].astype(str)
+    else:
+        frame_dict["image_id"] = np.asarray([f"cache_{i}" for i in range(n)])
+    if "data_provider" in data:
+        frame_dict["data_provider"] = data["data_provider"].astype(str)
+    if "feature_path" in data:
+        frame_dict["feature_path"] = data["feature_path"].astype(str)
+    kept = pd.DataFrame(frame_dict)
+
+    metadata: Dict[str, object] = {
+        "feature_cache": str(path),
+        "cache_arrays": {key: list(data[key].shape) for key in data.files},
+    }
+    return x, y, kept, [], metadata
 
 
 def load_panda_feature_table(
@@ -151,7 +170,7 @@ def load_panda_feature_table(
     pool: str,
     verify_exists: bool,
     max_bad_files: int,
-) -> Tuple[np.ndarray, np.ndarray, pd.DataFrame, List[Dict[str, str]]]:
+) -> Tuple[np.ndarray, np.ndarray, pd.DataFrame, List[Dict[str, str]], Dict[str, object]]:
     frame = pd.read_csv(manifest)
     required = {"image_id", "isup_grade", "feature_path", "valid"}
     missing = required - set(frame.columns)
@@ -163,10 +182,9 @@ def load_panda_feature_table(
     frame = frame[frame["isup_grade"].between(0, 5)].copy()
 
     if verify_exists:
-        frame = frame[frame["feature_path"].map(lambda p: normalize_feature_path(str(p)).exists())].copy()
+        frame = frame[frame["feature_path"].map(lambda p: Path(str(p)).exists())].copy()
 
     if limit is not None and limit < len(frame):
-        # Approximate stratified subsample to keep smoke tests representative.
         parts = []
         rng = np.random.RandomState(seed)
         per_class = max(1, limit // max(1, frame["isup_grade"].nunique()))
@@ -191,10 +209,10 @@ def load_panda_feature_table(
     bad_files: List[Dict[str, str]] = []
 
     for i, row in frame.iterrows():
-        path = normalize_feature_path(str(row["feature_path"]))
+        path = Path(str(row["feature_path"]))
         try:
             vector = pooled_feature_from_h5(path, pool=pool)
-        except Exception as exc:  # noqa: BLE001 - keep experiment robust to corrupt HDF5 files.
+        except Exception as exc:  # noqa: BLE001
             bad_files.append({"image_id": str(row["image_id"]), "feature_path": str(path), "error": str(exc)})
             if len(bad_files) > max_bad_files:
                 raise RuntimeError(f"Too many bad feature files. First errors: {bad_files[:5]}") from exc
@@ -202,9 +220,8 @@ def load_panda_feature_table(
         features.append(vector)
         labels.append(int(row["isup_grade"]))
         kept_rows.append(row)
-
-        if (i + 1) % 500 == 0:
-            print(f"Loaded {len(features)} valid pooled feature vectors; bad_files={len(bad_files)}")
+        if (i + 1) % 100 == 0:
+            print(f"Loaded {len(features)} pooled feature vectors; bad_files={len(bad_files)}", flush=True)
 
     if not features:
         raise RuntimeError("No readable PANDA feature files were loaded")
@@ -212,7 +229,8 @@ def load_panda_feature_table(
     kept = pd.DataFrame(kept_rows).reset_index(drop=True)
     x = np.stack(features).astype(np.float32)
     y = np.asarray(labels, dtype=np.int64)
-    return x, y, kept, bad_files
+    metadata = {"manifest": str(manifest), "pool": pool, "direct_hdf5_load": True}
+    return x, y, kept, bad_files, metadata
 
 
 def standardize_features(x: np.ndarray) -> np.ndarray:
@@ -257,14 +275,9 @@ def inject_multiclass_label_noise(y: np.ndarray, fraction: float, num_classes: i
     return noisy, float((noisy != y).mean())
 
 
-def split_site_train_val(
-    site_x: np.ndarray,
-    site_y: np.ndarray,
-    val_fraction: float,
-    seed: int,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    # Stratification can fail for tiny classes, so fall back to unstratified.
-    stratify = site_y if min(np.bincount(site_y, minlength=6)) >= 2 else None
+def split_site_train_val(site_x: np.ndarray, site_y: np.ndarray, val_fraction: float, seed: int):
+    counts = np.bincount(site_y, minlength=6)
+    stratify = site_y if int(counts[counts > 0].min()) >= 2 else None
     try:
         return train_test_split(site_x, site_y, test_size=val_fraction, random_state=seed, stratify=stratify)
     except ValueError:
@@ -286,9 +299,7 @@ def make_panda_sites(
         idx = np.where(assignments == site_id)[0]
         site_x = x[idx]
         site_y = y[idx]
-        train_x, val_x, train_y_clean, val_y = split_site_train_val(
-            site_x, site_y, val_fraction=val_fraction, seed=seed + site_id
-        )
+        train_x, val_x, train_y_clean, val_y = split_site_train_val(site_x, site_y, val_fraction, seed + site_id)
         if site_id == 0:
             train_y, realized_noise = inject_multiclass_label_noise(
                 train_y_clean, fraction=large_site_label_flip, num_classes=6, seed=seed + 10_000
@@ -357,29 +368,20 @@ def predict_logits(model: nn.Module, x: torch.Tensor, batch_size: int, device: t
     return torch.cat(logits_out, dim=0)
 
 
-def evaluate_model(
-    model: nn.Module,
-    x: torch.Tensor,
-    y: torch.Tensor,
-    batch_size: int,
-    device: torch.device,
-) -> Dict[str, float]:
+def evaluate_model(model: nn.Module, x: torch.Tensor, y: torch.Tensor, batch_size: int, device: torch.device) -> Dict[str, float]:
     logits = predict_logits(model, x, batch_size=batch_size, device=device)
     loss = float(nn.CrossEntropyLoss()(logits, y).item())
     pred = logits.argmax(dim=1).numpy()
     truth = y.numpy()
-    qwk = float(cohen_kappa_score(truth, pred, weights="quadratic"))
-    acc = float(accuracy_score(truth, pred))
-    macro_f1 = float(f1_score(truth, pred, average="macro", zero_division=0))
-    return {"loss": loss, "qwk": qwk, "accuracy": acc, "macro_f1": macro_f1}
+    return {
+        "loss": loss,
+        "qwk": float(cohen_kappa_score(truth, pred, weights="quadratic")),
+        "accuracy": float(accuracy_score(truth, pred)),
+        "macro_f1": float(f1_score(truth, pred, average="macro", zero_division=0)),
+    }
 
 
-def evaluate_all_sites(
-    model: nn.Module,
-    sites: Mapping[int, SiteData],
-    batch_size: int,
-    device: torch.device,
-) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
+def evaluate_all_sites(model: nn.Module, sites: Mapping[int, SiteData], batch_size: int, device: torch.device):
     all_x = torch.cat([site.val_x for site in sites.values()], dim=0)
     all_y = torch.cat([site.val_y for site in sites.values()], dim=0)
     global_metrics = evaluate_model(model, all_x, all_y, batch_size=batch_size, device=device)
@@ -396,8 +398,7 @@ def state_dict_weighted_average(models: Mapping[int, nn.Module], weights: Mappin
     for key in first:
         value = None
         for site_id, model in models.items():
-            tensor = model.state_dict()[key].float()
-            weighted = tensor * float(weights[site_id])
+            weighted = model.state_dict()[key].float() * float(weights[site_id])
             value = weighted if value is None else value + weighted
         averaged[key] = value
     return averaged
@@ -412,15 +413,13 @@ def normalized_with_cap(raw: Mapping[int, float], max_weight: float) -> Dict[int
     weights = {k: v / total for k, v in weights.items()}
     if max_weight <= 0 or max_weight >= 1:
         return weights
-
-    # Simple iterative capping and redistribution.
     capped: Dict[int, float] = {}
     remaining = dict(weights)
     mass_left = 1.0
     while remaining:
-        over = {k: v for k, v in remaining.items() if v * mass_left / sum(remaining.values()) > max_weight}
+        denom = sum(remaining.values())
+        over = {k for k, v in remaining.items() if v * mass_left / denom > max_weight}
         if not over:
-            denom = sum(remaining.values())
             for k, v in remaining.items():
                 capped[k] = mass_left * v / denom
             break
@@ -436,10 +435,8 @@ def normalized_with_cap(raw: Mapping[int, float], max_weight: float) -> Dict[int
 
 def softmax_weights(scores: Mapping[int, float], temperature: float, max_weight: float) -> Dict[int, float]:
     values = np.asarray([scores[k] for k in sorted(scores)], dtype=np.float64)
-    if not np.all(np.isfinite(values)):
-        values = np.nan_to_num(values, nan=0.0, posinf=0.0, neginf=0.0)
-    temp = max(float(temperature), 1e-6)
-    values = values / temp
+    values = np.nan_to_num(values, nan=0.0, posinf=0.0, neginf=0.0)
+    values = values / max(float(temperature), 1e-6)
     values = values - values.max()
     exp = np.exp(values)
     raw = {k: float(v) for k, v in zip(sorted(scores), exp / exp.sum())}
@@ -496,15 +493,7 @@ def choose_weights(
     base = fedavg_weights(sites)
     if strategy == "fedavg":
         return base
-    contrib = contribution_weights(
-        global_model=global_model,
-        local_models=local_models,
-        sites=sites,
-        batch_size=batch_size,
-        device=device,
-        temperature=temperature,
-        max_weight=max_weight,
-    )
+    contrib = contribution_weights(global_model, local_models, sites, batch_size, device, temperature, max_weight)
     if strategy == "cross_site_full":
         return contrib
     if strategy == "cross_site_blend_25":
@@ -538,27 +527,10 @@ def run_strategy(
 
     for round_idx in range(rounds):
         local_models = {
-            site_id: train_local_model(
-                model,
-                site=site,
-                local_epochs=local_epochs,
-                batch_size=batch_size,
-                lr=lr,
-                weight_decay=weight_decay,
-                device=device,
-            )
+            site_id: train_local_model(model, site, local_epochs, batch_size, lr, weight_decay, device)
             for site_id, site in sites.items()
         }
-        weights = choose_weights(
-            strategy=strategy,
-            global_model=model,
-            local_models=local_models,
-            sites=sites,
-            batch_size=batch_size,
-            device=device,
-            temperature=temperature,
-            max_weight=max_weight,
-        )
+        weights = choose_weights(strategy, model, local_models, sites, batch_size, device, temperature, max_weight)
         model.load_state_dict(state_dict_weighted_average(local_models, weights))
         final_weights = weights
         global_metrics, per_site = evaluate_all_sites(model, sites, batch_size=batch_size, device=device)
@@ -609,6 +581,7 @@ def parse_site_proportions(text: str) -> List[float]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="PANDA-derived FAIR-WEIGHTS-H feature stress experiment")
     parser.add_argument("--manifest", type=Path, default=Path("results/panda_manifest/panda_phikon_manifest.csv"))
+    parser.add_argument("--feature-cache", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--limit", type=int, default=3000)
     parser.add_argument("--pool", choices=["mean", "mean_max"], default="mean")
@@ -629,38 +602,39 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--strategies", nargs="+", default=list(STRATEGIES), choices=list(STRATEGIES))
+    parser.add_argument("--no-standardize", action="store_true")
     args = parser.parse_args()
 
     set_seed(args.seed)
     device = torch.device("cuda" if args.device == "cuda" and torch.cuda.is_available() else "cpu")
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("Loading PANDA Phikon feature manifest and pooled slide features...")
-    x, y, kept_frame, bad_files = load_panda_feature_table(
-        manifest=args.manifest,
-        limit=args.limit,
-        seed=args.seed,
-        pool=args.pool,
-        verify_exists=args.verify_exists,
-        max_bad_files=args.max_bad_files,
-    )
-    x = standardize_features(x)
-    site_proportions = parse_site_proportions(args.site_proportions)
-    sites = make_panda_sites(
-        x=x,
-        y=y,
-        seed=args.seed,
-        val_fraction=args.val_fraction,
-        large_site_label_flip=args.large_site_label_flip,
-        site_proportions=site_proportions,
-    )
+    if args.feature_cache is not None:
+        print(f"Loading cached PANDA pooled features from {args.feature_cache}...", flush=True)
+        x, y, kept_frame, bad_files, input_metadata = load_feature_cache(args.feature_cache)
+    else:
+        print("Loading PANDA Phikon feature manifest and pooled slide features...", flush=True)
+        x, y, kept_frame, bad_files, input_metadata = load_panda_feature_table(
+            manifest=args.manifest,
+            limit=args.limit,
+            seed=args.seed,
+            pool=args.pool,
+            verify_exists=args.verify_exists,
+            max_bad_files=args.max_bad_files,
+        )
 
-    print(f"Loaded {len(y)} PANDA-derived slide feature vectors, input_dim={x.shape[1]}")
-    print(f"Label distribution: {dict(zip(*np.unique(y, return_counts=True)))}")
+    if not args.no_standardize:
+        x = standardize_features(x)
+    site_proportions = parse_site_proportions(args.site_proportions)
+    sites = make_panda_sites(x, y, args.seed, args.val_fraction, args.large_site_label_flip, site_proportions)
+
+    print(f"Loaded {len(y)} PANDA-derived slide feature vectors, input_dim={x.shape[1]}", flush=True)
+    print(f"Label distribution: {dict(zip(*np.unique(y, return_counts=True)))}", flush=True)
     for site_id, site in sites.items():
         print(
             f"site {site_id}: train={site.train_size}, val={site.val_size}, "
-            f"noise={site.train_label_noise_fraction:.3f}, pos_train={site.train_positive_rate:.3f}"
+            f"noise={site.train_label_noise_fraction:.3f}, pos_train={site.train_positive_rate:.3f}",
+            flush=True,
         )
 
     results: Dict[str, object] = {
@@ -668,6 +642,7 @@ def main() -> None:
         "clinical_status": "PANDA-derived simulated federation; not real multi-center clinical validation; not diagnostic software",
         "hypothesis": "Cross-site contribution weighting should be more robust than FedAvg when the largest simulated PANDA-derived site has noisy training labels.",
         "config": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
+        "input_metadata": input_metadata,
         "loaded_slide_count": int(len(y)),
         "bad_file_count": int(len(bad_files)),
         "bad_files_preview": bad_files[:20],
@@ -688,7 +663,7 @@ def main() -> None:
     }
 
     for strategy in args.strategies:
-        print(f"\n=== Running strategy: {strategy} ===")
+        print(f"\n=== Running strategy: {strategy} ===", flush=True)
         set_seed(args.seed)
         result = run_strategy(
             strategy=strategy,
@@ -710,7 +685,8 @@ def main() -> None:
         print(
             f"{strategy}: global_qwk={result.global_qwk:.4f}, "
             f"acc={result.global_accuracy:.4f}, macro_f1={result.macro_f1:.4f}, "
-            f"worst_site_qwk={result.worst_site_qwk:.4f}, n_eff={result.n_eff:.2f}"
+            f"worst_site_qwk={result.worst_site_qwk:.4f}, n_eff={result.n_eff:.2f}",
+            flush=True,
         )
 
     out_json = args.output_dir / "metrics.json"
@@ -752,9 +728,9 @@ def main() -> None:
     manifest_out = args.output_dir / "loaded_manifest_preview.csv"
     kept_frame.head(200).to_csv(manifest_out, index=False)
 
-    print(f"\nSaved metrics to {out_json}")
-    print(f"Saved summary to {summary_csv}")
-    print(f"Saved loaded manifest preview to {manifest_out}")
+    print(f"\nSaved metrics to {out_json}", flush=True)
+    print(f"Saved summary to {summary_csv}", flush=True)
+    print(f"Saved loaded manifest preview to {manifest_out}", flush=True)
 
 
 if __name__ == "__main__":
