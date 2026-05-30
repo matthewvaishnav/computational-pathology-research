@@ -4,6 +4,7 @@ Research-focused computational pathology and oncology AI engineering framework f
 
 **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)  
 **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)  
+**Linux setup:** [INSTALL_LINUX.md](INSTALL_LINUX.md)  
 **Documentation:** https://matthewvaishnav.github.io/computational-pathology-research/  
 **PANDA slide-level baselines:** [docs/results/panda-slide-level-baselines.md](docs/results/panda-slide-level-baselines.md)  
 **PANDA TransnnMIL ablation summary:** [results/panda_transnnmil_ablation/ablation_summary.csv](results/panda_transnnmil_ablation/ablation_summary.csv)  
