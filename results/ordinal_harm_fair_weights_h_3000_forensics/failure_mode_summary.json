@@ -1,0 +1,246 @@
+{
+  "clinical_status": "PANDA-derived simulated federation; not clinical validation; not diagnostic software",
+  "best_by_noise": {
+    "0.0": {
+      "best_global_qwk": "fedavg",
+      "best_accuracy": "fedavg",
+      "best_macro_f1": "fedavg"
+    },
+    "0.25": {
+      "best_global_qwk": "ordinal_harm_blend_50",
+      "best_accuracy": "cross_site_blend_50",
+      "best_macro_f1": "cross_site_blend_50"
+    },
+    "0.35": {
+      "best_global_qwk": "ordinal_harm_blend_50",
+      "best_accuracy": "cross_site_blend_50",
+      "best_macro_f1": "cross_site_blend_50"
+    },
+    "0.45": {
+      "best_global_qwk": "ordinal_harm_blend_50",
+      "best_accuracy": "cross_site_blend_50",
+      "best_macro_f1": "cross_site_blend_50"
+    }
+  },
+  "fedavg_failure_signals": [
+    {
+      "noise_level": 0.45,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": 0.020583787886294492,
+      "mean_delta_accuracy_vs_fedavg": 0.012978369384359412,
+      "mean_delta_macro_f1_vs_fedavg": 0.01631645840866138
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": 0.020001372349807256,
+      "mean_delta_accuracy_vs_fedavg": 0.008652246256239593,
+      "mean_delta_macro_f1_vs_fedavg": 0.011288331359675653
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": 0.018944188851314058,
+      "mean_delta_accuracy_vs_fedavg": 0.01830282861896839,
+      "mean_delta_macro_f1_vs_fedavg": 0.02158991303668001
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": 0.018644320205634002,
+      "mean_delta_accuracy_vs_fedavg": 0.01331114808652245,
+      "mean_delta_macro_f1_vs_fedavg": 0.015108939833155265
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_global_qwk_vs_fedavg": 0.01835863438192258,
+      "mean_delta_accuracy_vs_fedavg": 0.011647254575707167,
+      "mean_delta_macro_f1_vs_fedavg": 0.013377790828110237
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": 0.016465757082120835,
+      "mean_delta_accuracy_vs_fedavg": 0.01064891846921795,
+      "mean_delta_macro_f1_vs_fedavg": 0.015830274445111692
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_global_qwk_vs_fedavg": 0.015543070286562388,
+      "mean_delta_accuracy_vs_fedavg": 0.0003327787021630502,
+      "mean_delta_macro_f1_vs_fedavg": 0.0032900249981280714
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_global_qwk_vs_fedavg": 0.015396518377100432,
+      "mean_delta_accuracy_vs_fedavg": 0.009650582362728765,
+      "mean_delta_macro_f1_vs_fedavg": 0.01416483256335439
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": 0.00933251001098372,
+      "mean_delta_accuracy_vs_fedavg": 0.014975041597337757,
+      "mean_delta_macro_f1_vs_fedavg": 0.018425823313231237
+    },
+    {
+      "noise_level": 0.0,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": -0.001196527870053976,
+      "mean_delta_accuracy_vs_fedavg": -0.002329450915141429,
+      "mean_delta_macro_f1_vs_fedavg": -0.0008186540043950474
+    },
+    {
+      "noise_level": 0.0,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_global_qwk_vs_fedavg": -0.003194412231388055,
+      "mean_delta_accuracy_vs_fedavg": -0.003993344425956735,
+      "mean_delta_macro_f1_vs_fedavg": -0.0051547200285890545
+    },
+    {
+      "noise_level": 0.0,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_global_qwk_vs_fedavg": -0.011408495210278003,
+      "mean_delta_accuracy_vs_fedavg": -0.01064891846921796,
+      "mean_delta_macro_f1_vs_fedavg": -0.009133019226094063
+    }
+  ],
+  "high_grade_recall_findings": [
+    {
+      "noise_level": 0.25,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": 0.020164485795313204,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.01597173244800747
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_high_grade_recall_vs_fedavg": 0.015149410418428788,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.012819568148284177
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": 0.009030001492611595,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.012611284479456409
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": 0.009024827105826172,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.013260822515520788
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_high_grade_recall_vs_fedavg": 0.00704980347280959,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.013684419720991969
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": -0.002020399024827091,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.009124775270432784
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": -0.013110403502661839,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.020339651018843385
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_high_grade_recall_vs_fedavg": -0.01511040350266184,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.01329724373807093
+    },
+    {
+      "noise_level": 0.0,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": -0.016120005970446293,
+      "mean_delta_high_grade_f1_vs_fedavg": -0.012235393130305505
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_high_grade_recall_vs_fedavg": -0.021100651773720093,
+      "mean_delta_high_grade_f1_vs_fedavg": 0.012189123314510431
+    }
+  ],
+  "worst_site_findings": [
+    {
+      "noise_level": 0.35,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.07056634993628372
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.047011254760044266
+    },
+    {
+      "noise_level": 0.35,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.03431871014576191
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.02076818693678706
+    },
+    {
+      "noise_level": 0.0,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.020336159549911748
+    },
+    {
+      "noise_level": 0.0,
+      "strategy": "ordinal_harm_blend_50",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.018536900885388487
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.015923287879406844
+    },
+    {
+      "noise_level": 0.25,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.0036909184491537017
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "adaptive_ordinal_harm",
+      "mean_delta_worst_site_qwk_vs_fedavg": 0.00011142789768698868
+    },
+    {
+      "noise_level": 0.45,
+      "strategy": "cross_site_blend_50",
+      "mean_delta_worst_site_qwk_vs_fedavg": -0.0017993623223513833
+    }
+  ],
+  "input_prediction_files": 20,
+  "prediction_rows": 48080,
+  "noise_levels": [
+    0.0,
+    0.25,
+    0.35,
+    0.45
+  ],
+  "seeds": [
+    7,
+    42,
+    99,
+    123,
+    2025
+  ],
+  "strategies": [
+    "adaptive_ordinal_harm",
+    "cross_site_blend_50",
+    "fedavg",
+    "ordinal_harm_blend_50"
+  ]
+}
