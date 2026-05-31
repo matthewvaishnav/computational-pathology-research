@@ -49,6 +49,22 @@ Strategies compared:
 
 ---
 
+## Delta vs FedAvg
+
+The following figures show how each non-FedAvg strategy changes performance relative to FedAvg at each dominant-site noise level.
+
+![Global QWK delta vs FedAvg](../../results/ordinal_harm_fair_weights_h_3000_forensics/global_qwk_delta_vs_fedavg.png)
+
+**Figure 1.** Global QWK delta relative to FedAvg. `ordinal_harm_blend_50` is nearly neutral under clean conditions and improves global QWK at every corrupted dominant-site noise level.
+
+![Worst-site QWK delta vs FedAvg](../../results/ordinal_harm_fair_weights_h_3000_forensics/worst_site_qwk_delta_vs_fedavg.png)
+
+**Figure 2.** Worst-site QWK delta relative to FedAvg. The strongest robustness signal appears at 35% dominant-site label noise, where `adaptive_ordinal_harm` improves worst-site QWK by +0.0706.
+
+Raw figure data: [`delta_vs_fedavg_by_noise.csv`](../../results/ordinal_harm_fair_weights_h_3000_forensics/delta_vs_fedavg_by_noise.csv)
+
+---
+
 ## Full strategy means
 
 ### 0% large-site label noise
@@ -222,4 +238,3 @@ python scripts\experiments\analyze_panda_fedavg_failure_modes.py `
 3. Test whether an automatic switch can choose FedAvg at 0% noise and ordinal-harm aggregation under noisy dominant-site conditions.
 4. Repeat with the full readable PANDA Phikon feature set if compute permits.
 5. Validate on Camelyon17 or another real multi-center pathology federation.
-6. Add a figure showing delta vs FedAvg across noise levels for global QWK and worst-site QWK.
