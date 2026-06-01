@@ -181,17 +181,28 @@ Fixed detector rule
 └── use_entropy = false
 ```
 
+Detailed detector-transfer results are documented in:
+
+```text
+docs/research/dominance-detector-transfer-results.md
+```
+
 Observed pattern:
 
 ```text
 Clean 0% conservative shift:
-  low clean-regime switching
+  trigger rate = 13.3%
+  global QWK delta = -0.00025, CI crosses zero
 
 35% conservative shift:
-  statistically positive improvements across global QWK, macro-F1, and worst-site QWK
+  global QWK +0.00542
+  macro-F1 +0.00838
+  worst-site QWK +0.00991
 
 45% conservative shift:
-  statistically positive improvements across global QWK, macro-F1, and worst-site QWK
+  global QWK +0.01053
+  macro-F1 +0.01512
+  worst-site QWK +0.01290
 ```
 
 Interpretation:
