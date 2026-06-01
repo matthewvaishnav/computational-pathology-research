@@ -1,0 +1,17 @@
+{
+  "low_quantile": 0.1,
+  "high_quantile": 0.8,
+  "min_trigger_count": 3,
+  "use_entropy": false,
+  "score": 0.014283552441238306,
+  "clean_trigger_rate": 0.06666666666666667,
+  "noisy_trigger_rate_mean": 0.888888888888889,
+  "clean_global_qwk_delta": 0.0001255099312312824,
+  "clean_worst_site_qwk_delta": 4.942373882571941e-05,
+  "noisy_global_qwk_delta_mean": 0.007053910418127766,
+  "noisy_macro_f1_delta_mean": 0.0035849898734144846,
+  "noisy_worst_site_qwk_delta_mean": 0.006493582289503729,
+  "noisy_global_positive_regime_count": 3,
+  "noisy_global_significant_regime_count": 2,
+  "noisy_global_regret_vs_oracle_mean": -0.0006448008675602419
+}
