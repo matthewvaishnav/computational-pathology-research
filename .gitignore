@@ -173,6 +173,11 @@ results/**/*.pkl
 results/**/*.pickle
 !results/.gitkeep
 !outputs/.gitkeep
+results/transnnmil_stability_warmup_cosine_clip_lr_*/
+results/transnnmil_stability_smoke/
+results/cross_site_fedavg_panda_all_15seed_noise_*_seed_*/
+results/ordinal_harm_fair_weights_h_panda_all_noise_*_seed_*/
+results/threshold_shift_panda_all_*_seed_*/
 
 # Temporary files
 tmp/
