@@ -11,6 +11,7 @@ The current strongest direction is slide-level prostate cancer grading on the PA
 ## What to look at first
 
 - PANDA slide-level results: [`docs/results/panda-slide-level-baselines.md`](docs/results/panda-slide-level-baselines.md)
+- PANDA TransnnMIL stabilization summary: [`docs/results/panda-transnnmil-stability.md`](docs/results/panda-transnnmil-stability.md)
 - PANDA TransnnMIL ablation summary: [`results/panda_transnnmil_ablation/ablation_summary.csv`](results/panda_transnnmil_ablation/ablation_summary.csv)
 - Claim boundary: [`CLAIM_BOUNDARY.md`](CLAIM_BOUNDARY.md)
 - Main project documentation: [`docs/`](docs/)
@@ -26,7 +27,9 @@ The current strongest direction is slide-level prostate cancer grading on the PA
 | PANDA tuned TransnnMIL seed 42 | QWK 0.8155 |
 | PANDA tuned TransnnMIL seed 123 | QWK 0.8225 |
 | PANDA tuned TransnnMIL seed 2025 | QWK 0.8086 |
-| TransnnMIL high-LR ablation, lr=1e-3 | QWK 0.7403 |
+| PANDA stabilized TransnnMIL LR grid | Mean best val QWK 0.8117-0.8257 across 18 full-PANDA runs |
+| PANDA stabilized TransnnMIL best LR mean | QWK 0.8257 +/- 0.0169 across 3 seeds |
+| TransnnMIL high-LR ablation, lr=1e-3 | Previously QWK 0.7403 before stabilization |
 | TransnnMIL dropout ablation, dropout=0.25 | QWK 0.8015 |
 
 ## What the PANDA work shows
@@ -40,11 +43,12 @@ The work includes:
 - slide-level feature-bag training
 - mean-pooling baseline
 - gated AttentionMIL baseline
-- tuned TransnnMIL baseline
+- tuned and stabilized TransnnMIL baselines
 - repeated-seed validation
 - controlled ablations for patch cap, learning rate, and dropout
+- optimizer-stability testing across six learning rates and three seeds
 
-The current interpretation is intentionally conservative: tuned TransnnMIL is competitive with gated AttentionMIL and slightly favorable across the current repeated-seed PANDA experiments, but not conclusively superior.
+The current interpretation is intentionally conservative: tuned and stabilized TransnnMIL is competitive with gated AttentionMIL in the current repeated-seed PANDA experiments, and stabilization widened the usable learning-rate regime, but stronger architecture-superiority claims require more controlled validation.
 
 ## What this project is not
 
@@ -65,4 +69,4 @@ Target role families:
 
 ## One-sentence pitch
 
-I build reproducible computational pathology AI research infrastructure for whole-slide histopathology modeling, MIL benchmarking, PANDA prostate cancer grading, and federated oncology validation.
+I build reproducible computational pathology AI research infrastructure for whole-slide histopathology modeling, MIL benchmarking, PANDA prostate cancer grading, TransnnMIL stability analysis, and federated oncology validation.
