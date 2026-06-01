@@ -8,6 +8,7 @@ Research-focused computational pathology and oncology AI engineering framework f
 **Documentation:** https://matthewvaishnav.github.io/computational-pathology-research/  
 **PANDA slide-level baselines:** [docs/results/panda-slide-level-baselines.md](docs/results/panda-slide-level-baselines.md)  
 **PANDA TransnnMIL ablation summary:** [results/panda_transnnmil_ablation/ablation_summary.csv](results/panda_transnnmil_ablation/ablation_summary.csv)  
+**PANDA TransnnMIL stabilization:** [docs/results/panda-transnnmil-stability.md](docs/results/panda-transnnmil-stability.md)  
 **Literature positioning:** https://matthewvaishnav.github.io/computational-pathology-research/research/literature-positioning  
 **PCam results:** https://matthewvaishnav.github.io/computational-pathology-research/results/pcam-results
 
@@ -24,7 +25,7 @@ The work spans:
 - patch-level and whole-slide pathology modeling
 - multiple-instance learning for WSI classification
 - PANDA prostate cancer grading with Phikon features
-- mean-pooling, gated AttentionMIL, and tuned TransnnMIL baselines
+- mean-pooling, gated AttentionMIL, and stabilized TransnnMIL baselines
 - HDF5 feature-integrity validation
 - repeated-seed validation and controlled ablations
 - **PathologyFL** federated learning infrastructure
@@ -51,7 +52,9 @@ This is a research and engineering framework. It is **not clinically validated**
 | PANDA tuned TransnnMIL seed 42 | **QWK 0.8155** |
 | PANDA tuned TransnnMIL seed 123 | **QWK 0.8225** |
 | PANDA tuned TransnnMIL seed 2025 | **QWK 0.8086** |
-| PANDA TransnnMIL ablation: lr=1e-3 | **QWK 0.7403**, showing high-LR instability |
+| PANDA stabilized TransnnMIL LR grid | **Mean best val QWK 0.8117-0.8257** across 18 full-PANDA runs, 6 learning rates, and 3 seeds |
+| PANDA stabilized TransnnMIL best LR mean | **1e-4 mean QWK 0.8257 ± 0.0169** across seeds 42, 123, and 2025 |
+| PANDA TransnnMIL ablation: lr=1e-3 | Previously **QWK 0.7403** before stabilization, showing high-LR sensitivity |
 | PANDA TransnnMIL ablation: dropout=0.25 | **QWK 0.8015**, showing higher dropout mildly hurts |
 | Bootstrap validation | 1,000 bootstrap resamples reported for PCam metrics |
 | Threshold optimization | Screening threshold analysis reduced missed tumor predictions by 61.7% in the documented PCam analysis |
@@ -72,11 +75,11 @@ The PANDA slide-level experiments move the project beyond patch-level PCam valid
 
 Current interpretation:
 
-> Tuned TransnnMIL is competitive with gated AttentionMIL and slightly favorable across the current repeated-seed PANDA experiments, beating AttentionMIL on 2 of 3 tested seeds. The margin remains small, so stronger superiority claims require more controlled validation.
+> Tuned and stabilized TransnnMIL is competitive with gated AttentionMIL in the current PANDA Phikon-feature experiments. The best stabilized LR-grid mean reached QWK 0.8257 across three seeds, but the margin over AttentionMIL remains small, so stronger architecture-superiority claims require more controlled validation.
 
-Ablation interpretation:
+Ablation and stabilization interpretation:
 
-> TransnnMIL is highly optimization-sensitive in the current PANDA setup. Lowering learning rate from 1e-3 to 3e-4 was a major contributor to performance. Higher dropout mildly reduced performance. Patch cap increase was not the main driver in the seed-42 comparison.
+> Initial TransnnMIL ablations showed high optimization sensitivity in the PANDA setup. A stabilized recipe using AdamW, warmup-cosine scheduling, gradient clipping, and early stopping widened the usable learning-rate regime: across 18 full-PANDA runs spanning six learning rates and three seeds, mean best validation QWK ranged from approximately 0.812 to 0.826. This supports the claim that TransnnMIL is optimizer-sensitive but trainable under a careful stabilization recipe.
 
 ---
 
@@ -91,7 +94,7 @@ Custom WSI multiple-instance learning architecture direction combining:
 - topology / graph-aware tissue structure modeling
 - optional adaptive pruning
 
-The current PANDA work provides slide-level benchmark evidence for tuned TransnnMIL-style modeling using Phikon feature bags. It is competitive with AttentionMIL in the current repeated-seed PANDA experiments, but not conclusively superior.
+The current PANDA work provides slide-level benchmark evidence for tuned and stabilized TransnnMIL-style modeling using Phikon feature bags. It is competitive with AttentionMIL in the current repeated-seed PANDA experiments, but not conclusively superior.
 
 See: [TransnnMIL v2.0 documentation](docs/models/transnnmil-v2.md)
 
