@@ -278,9 +278,6 @@ def ci95(values: np.ndarray) -> tuple[float, float, float, float]:
 
 def build_summary(detected: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
-    for (noise, metric), group in detected.groupby(["noise"]):
-        # unused; kept for readability by explicit metric loop below
-        pass
 
     for noise, group in detected.groupby("noise"):
         for metric in DEFAULT_METRICS:
