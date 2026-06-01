@@ -12,12 +12,19 @@ Example smoke test:
 Example full run:
     python scripts/training/train_panda_transnnmil_baseline.py \
         --epochs 20 --batch-size 8 --device cuda --verify-read
+
+Stabilized run:
+    python scripts/training/train_panda_transnnmil_baseline.py \
+        --epochs 20 --batch-size 8 --lr 3e-4 --scheduler warmup_cosine \
+        --warmup-epochs 2 --grad-clip-norm 1.0 --early-stopping-patience 6 \
+        --device cuda --verify-read
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import sys
 import time
@@ -29,7 +36,9 @@ import numpy as np
 import pandas as pd
 import torch
 from torch import nn
+from torch.nn.utils import clip_grad_norm_
 from torch.nn.utils.rnn import pad_sequence
+from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR, SequentialLR
 from torch.utils.data import DataLoader, Dataset
 
 try:
@@ -115,6 +124,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-patches", type=int, default=None)
     parser.add_argument("--verify-read", action="store_true")
     parser.add_argument("--max-bad-files", type=int, default=100)
+
+    # Stabilization controls for optimizer-sensitivity studies.
+    parser.add_argument(
+        "--scheduler",
+        choices=["none", "cosine", "warmup_cosine"],
+        default="none",
+        help="Learning-rate schedule. warmup_cosine is recommended for stability studies.",
+    )
+    parser.add_argument("--warmup-epochs", type=int, default=2, help="Warmup epochs for --scheduler warmup_cosine")
+    parser.add_argument("--min-lr", type=float, default=1e-6, help="Minimum LR for cosine schedules")
+    parser.add_argument("--grad-clip-norm", type=float, default=None, help="Clip gradient norm after backward pass, e.g. 1.0")
+    parser.add_argument("--early-stopping-patience", type=int, default=None, help="Stop after this many epochs without val-QWK improvement")
+    parser.add_argument("--early-stopping-min-delta", type=float, default=0.0, help="Minimum val-QWK gain to reset patience")
     return parser.parse_args()
 
 
@@ -220,17 +242,60 @@ def compute_metrics(targets: List[int], preds: List[int], loss: float | None = N
     return metrics
 
 
+def build_scheduler(
+    optimizer: torch.optim.Optimizer,
+    scheduler_name: str,
+    epochs: int,
+    warmup_epochs: int,
+    base_lr: float,
+    min_lr: float,
+):
+    if scheduler_name == "none":
+        return None
+
+    if scheduler_name == "cosine":
+        eta_min = min_lr
+        return CosineAnnealingLR(optimizer, T_max=max(epochs, 1), eta_min=eta_min)
+
+    if scheduler_name == "warmup_cosine":
+        warmup_epochs = max(0, min(warmup_epochs, epochs - 1))
+        cosine_epochs = max(epochs - warmup_epochs, 1)
+        min_lr_ratio = min_lr / base_lr if base_lr > 0 else 0.0
+
+        warmup = LambdaLR(
+            optimizer,
+            lr_lambda=lambda epoch: min(1.0, float(epoch + 1) / max(warmup_epochs, 1)),
+        )
+        cosine = CosineAnnealingLR(optimizer, T_max=cosine_epochs, eta_min=min_lr)
+
+        if warmup_epochs == 0:
+            return cosine
+        # Start optimizer at a smaller warmup LR before the first epoch.
+        for group in optimizer.param_groups:
+            group["lr"] = base_lr * max(min_lr_ratio, 1.0 / max(warmup_epochs, 1))
+        return SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_epochs])
+
+    raise ValueError(f"Unknown scheduler: {scheduler_name}")
+
+
+def current_lr(optimizer: torch.optim.Optimizer) -> float:
+    return float(optimizer.param_groups[0]["lr"])
+
+
 def run_epoch(
     model: nn.Module,
     loader: DataLoader,
     criterion: nn.Module,
     optimizer: torch.optim.Optimizer | None,
     device: torch.device,
+    grad_clip_norm: float | None = None,
 ) -> Dict[str, float]:
     training = optimizer is not None
     model.train(training)
     total_loss = 0.0
     total_examples = 0
+    total_grad_norm = 0.0
+    grad_steps = 0
     all_preds: List[int] = []
     all_targets: List[int] = []
 
@@ -249,6 +314,10 @@ def run_epoch(
             loss = criterion(logits, targets)
             if training:
                 loss.backward()
+                if grad_clip_norm is not None and grad_clip_norm > 0:
+                    grad_norm = clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
+                    total_grad_norm += float(grad_norm)
+                    grad_steps += 1
                 optimizer.step()
 
         batch_size = int(targets.shape[0])
@@ -257,7 +326,10 @@ def run_epoch(
         all_preds.extend(logits.argmax(dim=1).detach().cpu().numpy().tolist())
         all_targets.extend(targets.detach().cpu().numpy().tolist())
 
-    return compute_metrics(all_targets, all_preds, total_loss / max(total_examples, 1))
+    metrics = compute_metrics(all_targets, all_preds, total_loss / max(total_examples, 1))
+    if grad_steps:
+        metrics["mean_grad_norm_before_clip"] = total_grad_norm / grad_steps
+    return metrics
 
 
 def predict(model: nn.Module, loader: DataLoader, device: torch.device) -> pd.DataFrame:
@@ -333,24 +405,64 @@ def main():
     weights = class_weights(train_df["isup_grade"].tolist()).to(device)
     criterion = nn.CrossEntropyLoss(weight=weights)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    scheduler = build_scheduler(
+        optimizer=optimizer,
+        scheduler_name=args.scheduler,
+        epochs=args.epochs,
+        warmup_epochs=args.warmup_epochs,
+        base_lr=args.lr,
+        min_lr=args.min_lr,
+    )
 
     best_qwk = -1.0
+    best_epoch = 0
     best_state = None
+    epochs_without_improvement = 0
     history: List[Dict[str, object]] = []
     start_time = time.time()
 
     for epoch in range(1, args.epochs + 1):
-        train_metrics = run_epoch(model, train_loader, criterion, optimizer, device)
+        lr_at_start = current_lr(optimizer)
+        train_metrics = run_epoch(
+            model,
+            train_loader,
+            criterion,
+            optimizer,
+            device,
+            grad_clip_norm=args.grad_clip_norm,
+        )
         val_metrics = run_epoch(model, val_loader, criterion, None, device)
-        history.append({"epoch": epoch, "train": train_metrics, "val": val_metrics})
+
+        if scheduler is not None:
+            scheduler.step()
+        lr_at_end = current_lr(optimizer)
+
+        history.append({"epoch": epoch, "lr_start": lr_at_start, "lr_end": lr_at_end, "train": train_metrics, "val": val_metrics})
+        grad_text = ""
+        if "mean_grad_norm_before_clip" in train_metrics:
+            grad_text = f" grad_norm {train_metrics['mean_grad_norm_before_clip']:.3f}"
         print(
-            f"epoch {epoch:03d} | "
-            f"train loss {train_metrics['loss']:.4f} acc {train_metrics['accuracy']:.4f} qwk {train_metrics['qwk']:.4f} | "
+            f"epoch {epoch:03d} | lr {lr_at_start:.3e}->{lr_at_end:.3e} | "
+            f"train loss {train_metrics['loss']:.4f} acc {train_metrics['accuracy']:.4f} qwk {train_metrics['qwk']:.4f}{grad_text} | "
             f"val loss {val_metrics['loss']:.4f} acc {val_metrics['accuracy']:.4f} qwk {val_metrics['qwk']:.4f}"
         )
-        if val_metrics["qwk"] > best_qwk:
+
+        improved = val_metrics["qwk"] > (best_qwk + args.early_stopping_min_delta)
+        if improved:
             best_qwk = val_metrics["qwk"]
+            best_epoch = epoch
             best_state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
+            epochs_without_improvement = 0
+        else:
+            epochs_without_improvement += 1
+
+        if args.early_stopping_patience is not None and epochs_without_improvement >= args.early_stopping_patience:
+            print(
+                f"Early stopping at epoch {epoch}: no val-QWK improvement for "
+                f"{epochs_without_improvement} epochs. Best epoch={best_epoch}, best_qwk={best_qwk:.4f}",
+                flush=True,
+            )
+            break
 
     if best_state is not None:
         model.load_state_dict(best_state)
@@ -367,6 +479,13 @@ def main():
             "epochs": args.epochs,
             "batch_size": args.batch_size,
             "lr": args.lr,
+            "weight_decay": args.weight_decay,
+            "scheduler": args.scheduler,
+            "warmup_epochs": args.warmup_epochs,
+            "min_lr": args.min_lr,
+            "grad_clip_norm": args.grad_clip_norm,
+            "early_stopping_patience": args.early_stopping_patience,
+            "early_stopping_min_delta": args.early_stopping_min_delta,
             "hidden_dim": args.hidden_dim,
             "num_layers": args.num_layers,
             "num_heads": args.num_heads,
@@ -382,6 +501,8 @@ def main():
             "class_counts": {str(k): int(v) for k, v in manifest["isup_grade"].value_counts().sort_index().items()},
         },
         "best_val_qwk": float(best_qwk),
+        "best_epoch": int(best_epoch),
+        "epochs_ran": int(len(history)),
         "final_val_metrics": final_metrics,
         "confusion_matrix_labels_0_to_5": conf,
         "elapsed_time_seconds": time.time() - start_time,
@@ -393,7 +514,7 @@ def main():
     predictions.to_csv(out_dir / "val_predictions.csv", index=False)
     torch.save({"model_state_dict": model.state_dict(), "config": config}, out_dir / "transnnmil.pt")
 
-    print(f"\nPANDA TransnnMIL baseline complete. Best Val QWK: {best_qwk:.4f}")
+    print(f"\nPANDA TransnnMIL baseline complete. Best Val QWK: {best_qwk:.4f} at epoch {best_epoch}")
 
 
 if __name__ == "__main__":
