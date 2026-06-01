@@ -106,6 +106,7 @@ export default defineConfig({
         { text: 'PANDA centralized vs federated', link: '/results/panda-centralized-vs-federated' },
         { text: 'PANDA FAIR-WEIGHTS-H stress', link: '/results/panda-fair-weights-h-stress' },
         { text: 'FedAvg ordinal failure modes', link: '/results/fedavg-failure-modes-ordinal-pathology' },
+        { text: 'Dominance-aware switch', link: '/results/dominance-aware-switch-full-panda' },
         { text: 'Performance comparison', link: '/results/performance-comparison' }
       ]},
       { text: 'Engineering', items: [
