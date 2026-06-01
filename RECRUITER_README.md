@@ -6,12 +6,14 @@ This file is the shortest path through the repository for recruiters, hiring man
 
 This is a research-focused computational pathology and oncology AI engineering framework. It combines whole-slide histopathology modeling, multiple-instance learning, benchmark validation, federated oncology learning experiments, and reproducible experiment documentation.
 
-The current strongest direction is slide-level prostate cancer grading on the PANDA dataset using Phikon patch features and MIL models.
+The current strongest direction is slide-level prostate cancer grading on the PANDA dataset using Phikon patch features and MIL models, plus simulated federated pathology robustness studies around sample-volume / site-signal alignment failure modes.
 
 ## What to look at first
 
 - PANDA slide-level results: [`docs/results/panda-slide-level-baselines.md`](docs/results/panda-slide-level-baselines.md)
 - PANDA TransnnMIL stabilization summary: [`docs/results/panda-transnnmil-stability.md`](docs/results/panda-transnnmil-stability.md)
+- Dominance detector transfer results: [`docs/research/dominance-detector-transfer-results.md`](docs/research/dominance-detector-transfer-results.md)
+- Dominant-site federated pathology note: [`docs/research/dominant-site-federated-pathology-research-note.md`](docs/research/dominant-site-federated-pathology-research-note.md)
 - PANDA TransnnMIL ablation summary: [`results/panda_transnnmil_ablation/ablation_summary.csv`](results/panda_transnnmil_ablation/ablation_summary.csv)
 - Claim boundary: [`CLAIM_BOUNDARY.md`](CLAIM_BOUNDARY.md)
 - Main project documentation: [`docs/`](docs/)
@@ -31,6 +33,8 @@ The current strongest direction is slide-level prostate cancer grading on the PA
 | PANDA stabilized TransnnMIL best LR mean | QWK 0.8257 +/- 0.0169 across 3 seeds |
 | TransnnMIL high-LR ablation, lr=1e-3 | Previously QWK 0.7403 before stabilization |
 | TransnnMIL dropout ablation, dropout=0.25 | QWK 0.8015 |
+| Fixed detector transfer, conservative threshold shift | +0.00542 global QWK at 35%, +0.01053 at 45% |
+| Fixed detector clean switching | 13.3% trigger rate at 0% conservative shift with near-zero global QWK cost |
 
 ## What the PANDA work shows
 
@@ -49,6 +53,14 @@ The work includes:
 - optimizer-stability testing across six learning rates and three seeds
 
 The current interpretation is intentionally conservative: tuned and stabilized TransnnMIL is competitive with gated AttentionMIL in the current repeated-seed PANDA experiments, and stabilization widened the usable learning-rate regime, but stronger architecture-superiority claims require more controlled validation.
+
+## What the federated pathology work shows
+
+The federated pathology work studies a sample-volume / site-signal alignment failure mode: FedAvg gives more influence to clients with more samples, but more samples do not automatically imply better alignment with the declared validation objective.
+
+The strongest current detector result is a fixed label-noise-calibrated rule transferred to conservative ordinal threshold shift. It kept clean-regime switching low and produced statistically positive improvements at 35% and 45% conservative shift across global QWK, macro-F1, and worst-site QWK.
+
+This should be read as simulated-federation robustness research, not an institutional ranking system and not clinical validation.
 
 ## What this project is not
 
