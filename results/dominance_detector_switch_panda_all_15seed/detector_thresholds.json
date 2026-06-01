@@ -1,0 +1,8 @@
+{
+  "global_qwk_low": 0.7039872774102052,
+  "worst_site_qwk_low": 0.6673476994076748,
+  "site_qwk_spread_high": 0.10935282334725158,
+  "mean_abs_error_high": 0.7615058823529411,
+  "severe_error_rate_high": 0.09016470588235294,
+  "prediction_entropy_high": 1.1743472001212047
+}
