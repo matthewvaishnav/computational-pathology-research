@@ -9,6 +9,7 @@ Research-focused computational pathology and oncology AI engineering framework f
 **PANDA slide-level baselines:** [docs/results/panda-slide-level-baselines.md](docs/results/panda-slide-level-baselines.md)  
 **PANDA TransnnMIL ablation summary:** [results/panda_transnnmil_ablation/ablation_summary.csv](results/panda_transnnmil_ablation/ablation_summary.csv)  
 **PANDA TransnnMIL stabilization:** [docs/results/panda-transnnmil-stability.md](docs/results/panda-transnnmil-stability.md)  
+**Dominance detector transfer:** [docs/research/dominance-detector-transfer-results.md](docs/research/dominance-detector-transfer-results.md)  
 **Literature positioning:** https://matthewvaishnav.github.io/computational-pathology-research/research/literature-positioning  
 **PCam results:** https://matthewvaishnav.github.io/computational-pathology-research/results/pcam-results
 
@@ -30,6 +31,7 @@ The work spans:
 - repeated-seed validation and controlled ablations
 - **PathologyFL** federated learning infrastructure
 - **FAIR-WEIGHTS-H** institutional weighting research
+- dominance-aware detector switching for federated pathology stress tests
 - PCam, PANDA, and Camelyon validation workflows
 - threshold analysis and statistical validation
 - PubMed-grounded literature positioning
@@ -56,6 +58,7 @@ This is a research and engineering framework. It is **not clinically validated**
 | PANDA stabilized TransnnMIL best LR mean | **1e-4 mean QWK 0.8257 ± 0.0169** across seeds 42, 123, and 2025 |
 | PANDA TransnnMIL ablation: lr=1e-3 | Previously **QWK 0.7403** before stabilization, showing high-LR sensitivity |
 | PANDA TransnnMIL ablation: dropout=0.25 | **QWK 0.8015**, showing higher dropout mildly hurts |
+| Dominance detector transfer | Fixed label-noise-calibrated detector transfers to conservative threshold shift: **+0.00542 global QWK at 35%**, **+0.01053 at 45%** |
 | Bootstrap validation | 1,000 bootstrap resamples reported for PCam metrics |
 | Threshold optimization | Screening threshold analysis reduced missed tumor predictions by 61.7% in the documented PCam analysis |
 | FAIR-WEIGHTS-H smoke/unit tests | Focused tests passing |
@@ -109,8 +112,11 @@ Federated learning infrastructure for computational pathology:
 - secure aggregation work
 - byzantine/dropout robustness checks
 - balanced and heterogeneous PCam federated benchmarks
+- simulated dominant-site stress testing
+- dominance-aware detector switching
 
-See: [PathologyFL documentation](docs/federated/pathologyfl.md)
+See: [PathologyFL documentation](docs/federated/pathologyfl.md)  
+See also: [dominance detector transfer results](docs/research/dominance-detector-transfer-results.md)
 
 ### FAIR-WEIGHTS-H
 
