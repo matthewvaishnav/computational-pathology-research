@@ -1,6 +1,6 @@
 # Detector Diagnostic Ablation Summary
 
-**Status:** diagnostic summary and leave-one-diagnostic-family-out ablation over fixed conservative threshold-shift detector transfer  
+**Status:** diagnostic summary, leave-one-diagnostic-family-out ablation, and calibration-sensitivity sweep over fixed conservative threshold-shift detector transfer  
 **Scope:** simulated federated PANDA experiments over pathology-derived Phikon features  
 **Clinical status:** research-only; not clinically validated; not diagnostic software; not intended for patient-care use
 
@@ -10,7 +10,7 @@
 
 This note summarizes which clean-calibrated FedAvg diagnostics actually drive the fixed dominance-aware detector in the conservative threshold-shift transfer experiment.
 
-The detector rule was:
+The original fixed detector rule was:
 
 ```text
 low_quantile = 0.10
@@ -34,6 +34,14 @@ python scripts\experiments\ablate_detector_diagnostics.py `
   --diagnostics results\threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed\best_detector_run_diagnostics.csv `
   --thresholds results\threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed\best_detector_thresholds.json `
   --out-dir results\threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_leave_one_out
+```
+
+The calibration-sensitivity sweep was produced with:
+
+```powershell
+python scripts\experiments\sweep_detector_calibration_sensitivity.py `
+  --diagnostics results\threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed\best_detector_run_diagnostics.csv `
+  --out-dir results\threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_calibration_sensitivity
 ```
 
 ---
@@ -126,9 +134,50 @@ Headline comparison over the 35% and 45% conservative threshold-shift regimes:
 
 ---
 
+## Calibration-sensitivity result
+
+The calibration-sensitivity sweep tested nearby detector settings:
+
+```text
+low_quantile = 0.05, 0.10, 0.15
+high_quantile = 0.75, 0.80, 0.85, 0.90
+min_trigger_count = 2, 3, 4
+```
+
+This produced 36 detector configurations. A configuration was counted as robust-positive if it preserved:
+
+```text
+clean trigger rate <= 20%
+positive global-QWK deltas at both 35% and 45% conservative shift
+positive macro-F1 deltas at both 35% and 45% conservative shift
+positive worst-site-QWK deltas at both 35% and 45% conservative shift
+```
+
+Result:
+
+```text
+Evaluated configurations: 36
+Robust positive configurations: 29
+```
+
+Top configurations by 35% / 45% global-QWK transfer strength included:
+
+| Config | Clean trigger rate | Mean target trigger rate | Mean global QWK delta | Mean macro-F1 delta | Mean worst-site QWK delta | Significant global-QWK regimes | Robust positive? |
+|---|---:|---:|---:|---:|---:|---:|---|
+| low_0.15__high_0.8__min_3 | 20.0% | 70.0% | +0.00807 | +0.01246 | +0.01129 | 2 | yes |
+| low_0.15__high_0.85__min_3 | 20.0% | 66.7% | +0.00802 | +0.01209 | +0.01149 | 2 | yes |
+| low_0.15__high_0.9__min_3 | 13.3% | 66.7% | +0.00802 | +0.01209 | +0.01149 | 2 | yes |
+| low_0.05__high_0.75__min_2 | 20.0% | 80.0% | +0.00799 | +0.01263 | +0.01103 | 2 | yes |
+| low_0.05__high_0.8__min_2 | 20.0% | 80.0% | +0.00799 | +0.01263 | +0.01103 | 2 | yes |
+| low_0.1__high_0.8__min_3 | 13.3% | 66.7% | +0.00797 | +0.01175 | +0.01141 | 2 | yes |
+
+The original fixed rule, `low_0.1__high_0.8__min_3`, remains robust-positive, but it is not uniquely special. Many nearby configurations preserve the same qualitative behavior.
+
+---
+
 ## Interpretation
 
-The detector is **not** dependent on a single diagnostic family.
+The detector is **not** dependent on a single diagnostic family or one hand-picked calibration.
 
 `mean_abs_error_high` is the most frequent and strongest single diagnostic in this conservative ordinal-shift setting. The `only_mean_abs_error_high` variant has the highest trigger rate and strong 35% / 45% mean deltas.
 
@@ -145,6 +194,8 @@ minus_mean_abs_error_high:
 
 That means the transfer signal is distributed across multiple diagnostics, especially QWK degradation and severe ordinal-error signals.
 
+The calibration-sensitivity sweep further strengthens the result: 29 of 36 nearby detector settings preserved low clean-regime switching and positive 35% / 45% gains across global QWK, macro-F1, and worst-site QWK.
+
 The weakest single-family variant is `only_site_qwk_spread_high`, which produces much smaller mean gains and no significant global-QWK regimes. This weakens the simplistic interpretation that the detector is primarily a site-spread detector. In this transfer setting, site spread is a secondary signal.
 
 ---
@@ -155,9 +206,11 @@ The fixed detector appears to be a multi-signal degradation detector rather than
 
 The conservative threshold-shift mechanism is ordinal, so it is expected that `mean_abs_error_high` is highly informative. But leave-one-out ablation shows that removing that diagnostic still leaves a positive detector-transfer result at 35% and 45% shift.
 
+The calibration-sensitivity sweep shows that the result is not tightly dependent on a single threshold setting.
+
 This strengthens the detector story:
 
-> The detector is driven mainly by ordinal-error and QWK degradation signals, and its 35% / 45% transfer result does not collapse when the most frequent diagnostic family is removed.
+> The detector is driven mainly by ordinal-error and QWK degradation signals, its 35% / 45% transfer result does not collapse when the most frequent diagnostic family is removed, and the result remains qualitatively stable across nearby calibration settings.
 
 ---
 
@@ -165,7 +218,7 @@ This strengthens the detector story:
 
 Supported wording:
 
-> In the conservative threshold-shift transfer setting, the fixed detector was driven mainly by ordinal-error increase and QWK degradation diagnostics. Leave-one-diagnostic-family-out ablation showed that removing the strongest diagnostic, `mean_abs_error_high`, reduced trigger rate but did not collapse the positive 35% / 45% transfer result.
+> In the conservative threshold-shift transfer setting, the fixed detector was driven mainly by ordinal-error increase and QWK degradation diagnostics. Leave-one-diagnostic-family-out ablation showed that removing the strongest diagnostic, `mean_abs_error_high`, reduced trigger rate but did not collapse the positive 35% / 45% transfer result. Calibration-sensitivity analysis found that 29 of 36 nearby detector settings preserved low clean-regime switching and positive 35% / 45% gains across global QWK, macro-F1, and worst-site QWK.
 
 Avoid wording:
 
@@ -183,16 +236,16 @@ This is still a simulated-federation stress test over pathology-derived features
 
 ## Next ablation to run
 
-The next useful detector test is a calibration-sensitivity analysis:
+The next useful detector test is cross-stress calibration sensitivity:
 
 ```text
-min_trigger_count = 2, 3, 4
-low_quantile = 0.05, 0.10, 0.15
-high_quantile = 0.75, 0.80, 0.85, 0.90
+Use the same detector-neighborhood sweep on:
+  - aggressive threshold shift
+  - original label-noise stress
 ```
 
 The key question is:
 
-> Is the detector-transfer result robust to nearby threshold choices, or does it depend tightly on one hand-picked configuration?
+> Does the neighborhood-stability result hold across stress types, or is it specific to conservative threshold shift?
 
-A robust result should preserve the main qualitative pattern: low clean-regime switching and positive 35% / 45% conservative-shift gains across a neighborhood of detector settings.
+A robust result should preserve the main qualitative pattern on conservative threshold shift, while honestly showing weaker or failed transfer on aggressive threshold shift if that remains the case.
