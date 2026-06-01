@@ -1,6 +1,6 @@
 # When More Data Is Less Trustworthy
 
-## Dominant-site reliability failure modes in federated computational pathology
+## Site-signal alignment failure modes in federated computational pathology
 
 **Status:** research note / working draft  
 **Scope:** simulated federations over pathology-derived feature vectors  
@@ -10,7 +10,7 @@
 
 ## One-sentence claim
 
-In federated computational pathology, raw sample count is not the same as institutional reliability: FedAvg can become unsafe when the largest simulated pathology site is systematically unreliable, and dominance-aware aggregation/switching can reduce that risk.
+In federated computational pathology, raw sample count is not the same as task-specific site-signal alignment: FedAvg can become unsafe when the largest simulated pathology client has a label process that is misaligned with the validation objective, and dominance-aware aggregation/switching can reduce that risk.
 
 ---
 
@@ -24,29 +24,47 @@ That assumption is convenient, but it is not automatically safe in clinical sett
 
 The fundamental research question is:
 
-> **When should a federated pathology model trust one institution more than another?**
+> **When should a federated pathology model give one client more aggregation influence than another?**
 
 This leads to a sharper question:
 
-> **Does having more patient data mean a hospital should receive more model influence, even when its labels are less reliable?**
+> **Does having more patient data mean a client should receive more model influence, even when its label process is less aligned with the declared validation objective?**
+
+---
+
+## Ethical framing: site-signal alignment, not institutional worth
+
+This work does **not** claim that some hospitals, pathologists, or institutions are inherently more reliable, competent, or trustworthy than others.
+
+The term alignment is used in a narrow, task-specific modeling sense:
+
+> whether a simulated client's training signal appears aligned with the declared validation objective under a given experimental setup.
+
+A client may appear misaligned for many non-blameworthy reasons, including differences in grading thresholds, staining/scanning protocols, case mix, patient population, annotation workflow, label source, historical reporting practice, or local clinical policy.
+
+Therefore, dominance-aware aggregation should **not** be interpreted as an institutional ranking mechanism. It is an audit mechanism for a modeling assumption that FedAvg already makes silently:
+
+> larger client = more influence.
+
+The ethical purpose of this work is to make that assumption visible, stress-testable, and contestable. Any real deployment would require transparent governance, local clinical review, pathologist input, bias auditing, and agreement on what validation objective is appropriate.
 
 ---
 
 ## Why this matters
 
-Pathology labels are not purely mechanical ground truth. They can reflect institutional practice, grading thresholds, scanner/preparation differences, annotation policies, and pathologist disagreement. In this setting, a large institution may contribute many samples while also contributing systematic bias.
+Pathology labels are not purely mechanical ground truth. They can reflect institutional practice, grading thresholds, scanner/preparation differences, annotation policies, and pathologist disagreement. In this setting, a high-volume client may contribute many samples while also having a label process that differs from the target objective.
 
 FedAvg does not distinguish between:
 
-- a large, reliable site
-- a large, noisy site
-- a large, systematically biased site
+- a large client whose training signal is aligned with the validation objective
+- a large client with random label noise
+- a large client with systematic ordinal grading shift
 
 It only sees sample count.
 
 That creates a possible failure mode:
 
-> If the largest client becomes unreliable, FedAvg may amplify that unreliability because the client still receives dominant aggregation weight.
+> If the largest client's training signal is misaligned with the target validation objective, FedAvg may amplify that misalignment because the client still receives dominant aggregation weight.
 
 ---
 
@@ -66,13 +84,13 @@ Data and task
 └── Seeds: 15-seed stress studies
 ```
 
-Validation labels are kept clean in stress experiments. Perturbations are applied to the largest simulated site's training labels so the experiments test whether aggregation methods are robust to unreliable dominant-client training signal.
+Validation labels are kept clean in stress experiments. Perturbations are applied to the largest simulated site's training labels so the experiments test whether aggregation methods are robust to dominant-client training-signal misalignment.
 
 ---
 
 ## Stress mode 1: dominant-site label corruption
 
-The first stress mode corrupts labels at the largest simulated site. This tests whether a high-volume site can damage FedAvg when its training labels become unreliable.
+The first stress mode corrupts labels at the largest simulated site. This tests whether a high-volume client can damage FedAvg when its training labels become misaligned with the validation objective.
 
 Observed pattern:
 
@@ -97,7 +115,7 @@ Representative result summary:
 
 Interpretation:
 
-> The result is not that cross-site blending is always better. The result is conditional: when the dominant site becomes unreliable, pure sample-size weighting becomes less safe.
+> The result is not that cross-site blending is always better. The result is conditional: when the dominant client's training signal becomes misaligned, pure sample-size weighting becomes less safe.
 
 ---
 
@@ -134,7 +152,7 @@ Conservative dominant-site threshold shift
 
 Interpretation:
 
-> The dominant-site reliability effect transfers from random label corruption to a more pathology-plausible systematic ordinal grading bias.
+> The dominant-site alignment effect transfers from random label corruption to a more pathology-plausible systematic ordinal grading bias.
 
 ---
 
@@ -151,7 +169,7 @@ Cross-site blending can help in corrupted regimes, but using it unconditionally 
 
 The detector is intended to answer this question:
 
-> Can we observe when sample-size dominance has become unsafe?
+> Can we observe when sample-size dominance has become unsafe under site-specific training-signal shift?
 
 A fixed label-noise-calibrated detector rule was evaluated on conservative threshold-shift stress:
 
@@ -190,15 +208,15 @@ FedAvg encodes a statistical assumption:
 
 In computational pathology, this assumption can fail:
 
-> more samples can coexist with systematic institutional label bias.
+> more samples can coexist with systematic site-specific label-process shift.
 
 Dominance-aware weighting changes the question from:
 
-> How many samples does this site have?
+> How many samples does this client have?
 
 into:
 
-> How much influence should this site receive given both its contribution and its reliability signal?
+> How much influence should this client receive given both its contribution and its observed task-specific site-signal alignment?
 
 ---
 
@@ -206,8 +224,8 @@ into:
 
 The current evidence supports these claims:
 
-1. FedAvg has a dominant-site reliability failure mode in simulated federated pathology experiments.
-2. The failure mode appears when the largest simulated site is made less reliable while validation labels remain clean.
+1. FedAvg has a dominant-site sample-volume/alignment failure mode in simulated federated pathology experiments.
+2. The failure mode appears when the largest simulated client's training signal is made less aligned with the validation objective while validation labels remain clean.
 3. Cross-site blending improves robustness under dominant-site label corruption.
 4. The effect transfers to systematic conservative ordinal threshold shift.
 5. A fixed label-noise-calibrated detector rule transfers to conservative threshold-shift stress with low clean-regime switching and positive 35–45% shift gains.
@@ -223,8 +241,9 @@ The current evidence does **not** prove:
 3. real hospital federated deployment performance
 4. universal detector calibration across all site-shift types
 5. that the same effect will hold unchanged on every pathology dataset
+6. that any real institution, hospital, or pathologist is inherently more or less reliable than another
 
-This is simulated-federation research over real pathology-derived feature vectors, not a clinical deployment.
+This is simulated-federation research over real pathology-derived feature vectors, not a clinical deployment or institutional ranking system.
 
 ---
 
@@ -233,10 +252,10 @@ This is simulated-federation research over real pathology-derived feature vector
 The next validation steps are:
 
 1. **Camelyon17 or another real multi-center pathology benchmark**  
-   Test whether the dominant-site reliability mechanism appears when site identity is naturally defined by center.
+   Test whether the sample-volume/alignment mechanism appears when site identity is naturally defined by center.
 
 2. **External expert review**  
-   Have a computational pathology, federated learning, or pathology-AI researcher review the methods and claim boundaries.
+   Have a computational pathology, federated learning, or pathology-AI researcher review the methods, ethical framing, and claim boundaries.
 
 3. **Preprint-style write-up**  
    Convert this note into a compact methods/results paper with figures, tables, and reproducibility commands.
@@ -255,10 +274,10 @@ The broader message is:
 
 > In medical AI, more data is not always more trustworthy data.
 
-Federated learning promises privacy-preserving collaboration across institutions. But if aggregation blindly follows sample count, a large unreliable site can dominate the shared model. Computational pathology therefore needs reliability-aware validation infrastructure before federated medical AI can be trusted in high-stakes settings.
+Federated learning promises privacy-preserving collaboration across institutions. But if aggregation blindly follows sample count, a high-volume client with a misaligned training signal can dominate the shared model. Computational pathology therefore needs transparent, task-specific, alignment-aware validation infrastructure before federated medical AI can be trusted in high-stakes settings.
 
 ---
 
 ## Short pitch
 
-I am studying a fundamental safety problem in federated computational pathology: when hospitals train models together, how should the system decide which institution to trust? My current PANDA/Phikon simulated-federation results show that FedAvg can become vulnerable when the largest site is unreliable, and that cross-site blending plus dominance-aware detector switching improves robustness under dominant-site label corruption and conservative ordinal grading bias.
+I am studying a fundamental safety problem in federated computational pathology: when hospitals train models together, how should the system decide how much influence each client receives? My current PANDA/Phikon simulated-federation results show that FedAvg can become vulnerable when the largest site's training signal is misaligned with the validation objective, and that cross-site blending plus dominance-aware detector switching improves robustness under dominant-site label corruption and conservative ordinal grading bias.
