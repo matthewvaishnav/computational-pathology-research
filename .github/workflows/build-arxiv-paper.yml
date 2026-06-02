@@ -1,0 +1,44 @@
+name: Build arXiv Preprint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'paper/arxiv/**'
+      - 'figures/dominant-site-figure-3-detector-transfer.png'
+      - '.github/workflows/build-arxiv-paper.yml'
+  workflow_dispatch:
+
+jobs:
+  build-arxiv-paper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare arXiv source package
+        run: python paper/arxiv/build_arxiv_package.py
+
+      - name: Build LaTeX PDF
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: paper/arxiv/build
+          latexmk_use_xelatex: false
+          args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dominant-site-arxiv-preprint-pdf
+          path: paper/arxiv/build/main.pdf
+
+      - name: Upload arXiv source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: dominant-site-arxiv-source-package
+          path: |
+            paper/arxiv/build/main.tex
+            paper/arxiv/build/references.bib
+            paper/arxiv/build/figures/dominant-site-figure-3-detector-transfer.png
