@@ -2,10 +2,11 @@
 """
 Generate paper-style figures for the dominant-site federated pathology note.
 
-This script intentionally starts with the compact, already-curated detector
-artifacts rather than the large per-seed prediction folders.
+This script uses compact, curated CSV/JSON artifacts rather than large per-seed
+prediction folders.
 
 Outputs:
+    figures/dominant-site-figure-2-stress-overview.png
     figures/dominant-site-figure-3-detector-transfer.png
     figures/dominant-site-figure-4-detector-ablation.png
 
@@ -41,6 +42,9 @@ DEFAULT_LEAVE_ONE_OUT = Path(
 DEFAULT_CALIBRATION = Path(
     "results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_calibration_sensitivity/calibration_sensitivity_headline.csv"
 )
+DEFAULT_CONSERVATIVE_PREFIX = "results/threshold_shift_panda_all_conservative_{level}_15seed_aggregate/aggregate_summary.csv"
+DEFAULT_LABEL_NOISE_PREFIX = "results/ordinal_harm_fair_weights_h_panda_all_noise_{level}_aggregate/aggregate_summary.csv"
+DEFAULT_STRESS_LEVELS = [0, 25, 35, 45]
 
 KEY_TRANSFER_METRICS = {
     "global_qwk": "Global QWK",
@@ -59,14 +63,10 @@ DIAGNOSTIC_LABELS = {
 VARIANT_LABELS = {
     "only_mean_abs_error_high": "Only mean abs. error",
     "full": "Full detector",
-    "minus_site_qwk_spread_high": "Minus site spread",
-    "only_global_qwk_low": "Only global QWK",
-    "minus_worst_site_qwk_low": "Minus worst-site QWK",
-    "only_severe_error_rate_high": "Only severe error",
-    "minus_severe_error_rate_high": "Minus severe error",
-    "only_worst_site_qwk_low": "Only worst-site QWK",
-    "minus_global_qwk_low": "Minus global QWK",
     "minus_mean_abs_error_high": "Minus mean abs. error",
+    "only_global_qwk_low": "Only global QWK",
+    "only_worst_site_qwk_low": "Only worst-site QWK",
+    "only_severe_error_rate_high": "Only severe error",
     "only_site_qwk_spread_high": "Only site spread",
 }
 
@@ -77,6 +77,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--diagnostic-frequency", type=Path, default=DEFAULT_DIAGNOSTIC_FREQUENCY)
     parser.add_argument("--leave-one-out", type=Path, default=DEFAULT_LEAVE_ONE_OUT)
     parser.add_argument("--calibration", type=Path, default=DEFAULT_CALIBRATION)
+    parser.add_argument("--conservative-template", default=DEFAULT_CONSERVATIVE_PREFIX)
+    parser.add_argument("--label-noise-template", default=DEFAULT_LABEL_NOISE_PREFIX)
+    parser.add_argument("--stress-levels", nargs="+", type=int, default=DEFAULT_STRESS_LEVELS)
     parser.add_argument("--out-dir", type=Path, default=Path("figures"))
     parser.add_argument("--dpi", type=int, default=220)
     return parser.parse_args()
@@ -97,6 +100,102 @@ def metric_rows(summary: pd.DataFrame, metric: str) -> pd.DataFrame:
     frame = summary[summary["metric"] == metric].copy()
     frame["noise"] = frame["noise"].astype(int)
     return frame.sort_values("noise")
+
+
+def load_stress_summary(template: str, levels: list[int]) -> pd.DataFrame:
+    rows = []
+    for level in levels:
+        path = Path(template.format(level=level))
+        require_file(path)
+        frame = pd.read_csv(path)
+        if frame.empty:
+            continue
+        frame = frame.copy()
+        frame.insert(0, "stress_level", level)
+        frame.insert(1, "source_file", str(path))
+        rows.append(frame)
+    if not rows:
+        raise ValueError(f"No stress summaries found for template: {template}")
+    return pd.concat(rows, ignore_index=True)
+
+
+def first_strategy(frame: pd.DataFrame, strategy: str | None = None) -> pd.DataFrame:
+    if strategy is not None and strategy in set(frame["strategy"].astype(str)):
+        return frame[frame["strategy"].astype(str) == strategy].copy()
+    strategies = sorted(set(frame["strategy"].astype(str)))
+    if not strategies:
+        raise ValueError("No strategy rows found")
+    return frame[frame["strategy"].astype(str) == strategies[0]].copy()
+
+
+def plot_delta_panel(ax: plt.Axes, frame: pd.DataFrame, metric: str, title: str, ylabel: str) -> None:
+    x_labels = frame["stress_level"].astype(int).astype(str).tolist()
+    x = range(len(frame))
+    means = frame[f"delta_vs_fedavg_{metric}_mean"].astype(float).to_numpy()
+    stds = frame[f"delta_vs_fedavg_{metric}_std"].astype(float).to_numpy()
+    ax.axhline(0.0, linewidth=1.0)
+    ax.errorbar(x, means, yerr=stds, fmt="o-", capsize=4)
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(x_labels)
+    ax.set_title(title)
+    ax.set_xlabel("Stress level (%)")
+    ax.set_ylabel(ylabel)
+    style_axes(ax)
+
+
+def make_stress_overview_figure(
+    conservative_template: str,
+    label_noise_template: str,
+    stress_levels: list[int],
+    out_path: Path,
+    dpi: int,
+) -> None:
+    conservative = first_strategy(load_stress_summary(conservative_template, stress_levels), "cross_site_blend_50")
+    label_noise = first_strategy(load_stress_summary(label_noise_template, stress_levels), "adaptive_ordinal_harm")
+
+    conservative = conservative.sort_values("stress_level")
+    label_noise = label_noise.sort_values("stress_level")
+
+    fig, axes = plt.subplots(2, 2, figsize=(11.5, 8.4))
+    axes = axes.flatten()
+
+    plot_delta_panel(
+        axes[0],
+        label_noise,
+        metric="global_qwk",
+        title="A. Label-noise stress: global QWK",
+        ylabel="Strategy - FedAvg",
+    )
+    plot_delta_panel(
+        axes[1],
+        label_noise,
+        metric="worst_site_qwk",
+        title="B. Label-noise stress: worst-site QWK",
+        ylabel="Strategy - FedAvg",
+    )
+    plot_delta_panel(
+        axes[2],
+        conservative,
+        metric="global_qwk",
+        title="C. Conservative threshold shift: global QWK",
+        ylabel="Cross-site blend - FedAvg",
+    )
+    plot_delta_panel(
+        axes[3],
+        conservative,
+        metric="macro_f1",
+        title="D. Conservative threshold shift: macro-F1",
+        ylabel="Cross-site blend - FedAvg",
+    )
+
+    fig.suptitle(
+        "Dominant-site stress overview",
+        fontsize=14,
+        fontweight="bold",
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig.savefig(out_path, dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
 
 
 def make_detector_transfer_figure(summary_path: Path, out_path: Path, dpi: int) -> None:
@@ -230,9 +329,17 @@ def main() -> None:
         require_file(path)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    figure2_path = args.out_dir / "dominant-site-figure-2-stress-overview.png"
     figure3_path = args.out_dir / "dominant-site-figure-3-detector-transfer.png"
     figure4_path = args.out_dir / "dominant-site-figure-4-detector-ablation.png"
 
+    make_stress_overview_figure(
+        args.conservative_template,
+        args.label_noise_template,
+        args.stress_levels,
+        figure2_path,
+        dpi=args.dpi,
+    )
     make_detector_transfer_figure(args.transfer_summary, figure3_path, dpi=args.dpi)
     make_detector_ablation_figure(
         args.diagnostic_frequency,
@@ -242,6 +349,7 @@ def main() -> None:
         dpi=args.dpi,
     )
 
+    print(f"Wrote {figure2_path}")
     print(f"Wrote {figure3_path}")
     print(f"Wrote {figure4_path}")
 
