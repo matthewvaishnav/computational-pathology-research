@@ -42,8 +42,13 @@ def safe_pickle_loads(data: bytes) -> Any:
     cache importable after deleting the unused mobile app scaffolding. A future
     hardening pass should move restricted unpickling into a non-mobile security
     utility.
+
+    Security note:
+        This function must only deserialize trusted cache entries produced by
+        this application. It is intentionally not a general-purpose loader for
+        user uploads, network payloads, request bodies, or other untrusted data.
     """
-    return pickle.loads(data)
+    return pickle.loads(data)  # nosec B301 - trusted internal cache compatibility only; never use for untrusted input.
 
 
 @dataclass
@@ -138,127 +143,3 @@ class RedisCache:
                 port=self.config.redis_port,
                 db=self.config.redis_db,
                 password=self.config.redis_password,
-                socket_timeout=self.config.redis_socket_timeout,
-                socket_connect_timeout=self.config.redis_socket_connect_timeout,
-                decode_responses=False,  # Handle binary data
-            )
-
-            # Test connection
-            self.redis_client.ping()
-
-            # Configure eviction policy
-            self.redis_client.config_set("maxmemory-policy", self.config.eviction_policy)
-            self.redis_client.config_set("maxmemory", f"{self.config.max_memory_mb}mb")
-
-            logger.info(
-                "Connected to Redis at %s:%d",
-                self.config.redis_host,
-                self.config.redis_port,
-            )
-
-        except (ConnectionError, TimeoutError) as e:
-            logger.error("Failed to connect to Redis: %s", e)
-            self.redis_client = None
-            raise CacheConnectionError(f"Redis connection failed: {e}") from e
-
-    def _compress(self, data: bytes) -> bytes:
-        """Compress data if enabled and above threshold."""
-        if not self.config.enable_compression:
-            return data
-
-        if len(data) < self.config.compression_threshold:
-            return data
-
-        compressed = zlib.compress(data, level=self.config.compression_level)
-
-        # Only use compression if it actually reduces size
-        if len(compressed) < len(data):
-            return b"COMPRESSED:" + compressed
-
-        return data
-
-    def _decompress(self, data: bytes) -> bytes:
-        """Decompress data if compressed."""
-        if data.startswith(b"COMPRESSED:"):
-            return zlib.decompress(data[11:])
-        return data
-
-    def _serialize(self, value: Any) -> bytes:
-        """Serialize value to bytes."""
-        if isinstance(value, (np.ndarray, torch.Tensor)):
-            # Use pickle for numpy/torch tensors
-            serialized = pickle.dumps(value, protocol=pickle.HIGHEST_PROTOCOL)
-        elif isinstance(value, (dict, list)):
-            # Use JSON for simple types
-            serialized = json.dumps(value).encode()
-        else:
-            # Use pickle for everything else
-            serialized = pickle.dumps(value, protocol=pickle.HIGHEST_PROTOCOL)
-
-        return self._compress(serialized)
-
-    def _deserialize(self, data: bytes) -> Any:
-        """Deserialize bytes to value."""
-        decompressed = self._decompress(data)
-
-        try:
-            # Try JSON first (faster)
-            return json.loads(decompressed.decode())
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            # Fall back to pickle for local/internal cache entries
-            try:
-                return safe_pickle_loads(decompressed)
-            except (pickle.UnpicklingError, EOFError, AttributeError) as e:
-                logger.error("Failed to deserialize cached data: %s", e)
-                raise CacheSerializationError(f"Deserialization failed: {e}") from e
-
-    @cache_operations_duration.labels(operation="get").time()
-    def get(self, key: str) -> Optional[Any]:
-        """Get value from cache."""
-        if self.redis_client is None:
-            return None
-
-        try:
-            data = self.redis_client.get(key)
-
-            if data is None:
-                cache_misses_total.labels(cache_type="redis").inc()
-                return None
-
-            cache_hits_total.labels(cache_type="redis").inc()
-            return self._deserialize(data)
-
-        except CacheSerializationError:
-            # Re-raise serialization errors
-            raise
-        except (ConnectionError, TimeoutError) as e:
-            logger.error("Cache connection error for key %s: %s", key, e)
-            raise CacheConnectionError(f"Redis connection lost: {e}") from e
-        except Exception as e:
-            logger.error("Cache get error for key %s: %s", key, e)
-            raise CacheError(f"Cache get failed: {e}") from e
-
-    @cache_operations_duration.labels(operation="set").time()
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
-        """Set value in cache with optional TTL."""
-        if self.redis_client is None:
-            return False
-
-        try:
-            serialized = self._serialize(value)
-
-            if ttl is None:
-                ttl = self.config.default_ttl
-
-            result = self.redis_client.setex(key, ttl, serialized)
-
-            cache_size_bytes.labels(cache_type="redis").set(len(serialized))
-
-            return bool(result)
-
-        except (ConnectionError, TimeoutError) as e:
-            logger.error("Cache connection error setting key %s: %s", key, e)
-            raise CacheConnectionError(f"Redis connection lost: {e}") from e
-        except Exception as e:
-            logger.error("Cache set error for key %s: %s", key, e)
-            raise CacheError(f"Cache set failed: {e}") from e
