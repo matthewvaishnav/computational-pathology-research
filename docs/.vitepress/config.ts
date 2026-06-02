@@ -55,6 +55,7 @@ export default defineConfig({
     siteTitle: 'Computational Pathology AI Research',
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Paper', link: '/research/dominant-site-federated-pathology-paper' },
       { text: 'Overview', link: '/overview/' },
       { text: 'Research', link: '/research/literature-positioning' },
       { text: 'Models', link: '/models/' },
@@ -72,6 +73,10 @@ export default defineConfig({
         { text: 'Claim status', link: '/overview/claim-status' }
       ]},
       { text: 'Research', items: [
+        { text: 'Dominant-site paper', link: '/research/dominant-site-federated-pathology-paper' },
+        { text: 'Dominant-site figures', link: '/research/dominant-site-generated-figures' },
+        { text: 'Detector transfer results', link: '/research/dominance-detector-transfer-results' },
+        { text: 'Detector diagnostic ablation', link: '/research/detector-diagnostic-ablation' },
         { text: 'Literature positioning', link: '/research/literature-positioning' },
         { text: 'FAIR-WEIGHTS-H stress result', link: '/research/fair-weights-h-stress-result' }
       ]},
