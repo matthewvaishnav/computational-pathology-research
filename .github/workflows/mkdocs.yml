@@ -1,21 +1,14 @@
-name: Deploy MkDocs
+name: Deploy MkDocs Disabled
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  deploy:
+  disabled:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: |
-          pip install mkdocs-material pymdown-extensions
-      - run: mkdocs gh-deploy --force
+      - name: Explain deployment ownership
+        run: echo "MkDocs deployment is disabled. The Deploy VitePress workflow now publishes the paper PDF site."
