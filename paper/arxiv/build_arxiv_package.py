@@ -33,6 +33,34 @@ FILES = [
 ]
 
 
+REPRO_OLD = r"""\section{Reproducibility artifacts}
+Primary result files include:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed/best\_detector\_summary.csv}
+  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed/best\_detector\_run\_diagnostics.csv}
+  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed\_diagnostic\_summary/diagnostic\_frequency\_by\_stress.csv}
+  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed\_leave\_one\_out/diagnostic\_ablation\_headline\_35\_45.csv}
+  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed\_calibration\_sensitivity/calibration\_sensitivity\_headline.csv}
+\end{itemize}
+
+Figure-generation scripts include \texttt{scripts/figures/make\_dominant\_site\_schematic.py} and \texttt{scripts/figures/make\_dominant\_site\_paper\_figures.py}.
+"""
+
+REPRO_NEW = r"""\section{Reproducibility artifacts}
+The result tables, run diagnostics, diagnostic summaries, ablation outputs, calibration-sensitivity outputs, and figure-generation scripts are released in the project repository. In the PDF body, long filesystem paths are shortened to avoid two-column overflow; exact paths are available from the repository's reproducibility documentation and source tree.
+
+\begin{itemize}[leftmargin=*]
+  \item Detector summary CSV and per-run diagnostics.
+  \item Diagnostic-frequency summary by stress regime.
+  \item Leave-one-diagnostic-family-out ablation table.
+  \item Calibration-sensitivity sweep table.
+  \item Figure-generation scripts for the schematic and paper figures.
+\end{itemize}
+
+Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
+"""
+
+
 def copy_required(src: Path, dst: Path) -> None:
     if not src.exists():
         raise FileNotFoundError(f"Required arXiv source asset not found: {src}")
@@ -62,6 +90,10 @@ def apply_classic_paper_format(path: Path) -> None:
         ])
         text = text.replace(r"\usepackage[numbers,sort&compress]{natbib}", r"\usepackage[numbers,sort&compress]{natbib}" + "\n" + insert)
 
+    # Let long URLs break if any appear in the compiled PDF.
+    if r"\PassOptionsToPackage{hyphens}{url}" not in text:
+        text = text.replace(r"\usepackage{hyperref}", r"\PassOptionsToPackage{hyphens}{url}" + "\n" + r"\usepackage{hyperref}")
+
     text = text.replace(
         "\\author{Matthew Vaishnav\\\nIndependent Researcher\\\n\\texttt{matthewvaishnav@users.noreply.github.com}}",
         "\\author{Matthew Vaishnav\\\nIndependent Researcher}"
@@ -72,8 +104,10 @@ def apply_classic_paper_format(path: Path) -> None:
     text = text.replace(r"\end{table}", r"\end{table*}")
     text = text.replace(r"\begin{figure}[t]", r"\begin{figure*}[t]")
     text = text.replace(r"\end{figure}", r"\end{figure*}")
-    text = text.replace(r"\resizebox{\textwidth}{!}{%", r"\resizebox{\textwidth}{!}{%")
     text = text.replace(r"width=0.95\textwidth", r"width=0.92\textwidth")
+
+    # Replace long raw filesystem paths with short paper-style artifact labels.
+    text = text.replace(REPRO_OLD, REPRO_NEW)
 
     # Add a first schematic and an ablation/calibration figure if the source has not yet included them.
     thesis = (
