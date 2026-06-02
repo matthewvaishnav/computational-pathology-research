@@ -3,7 +3,7 @@
 
 The script copies the focused LaTeX preprint and its references into
 paper/arxiv/build/, copies the generated dominant-site figures, and applies a
-classic NIPS-style two-column paper format to the build copy.
+classic compact single-column paper format similar to early NIPS proceedings.
 
 Run from the repository root:
 
@@ -47,7 +47,7 @@ Figure-generation scripts include \texttt{scripts/figures/make\_dominant\_site\_
 """
 
 REPRO_NEW = r"""\section{Reproducibility artifacts}
-The result tables, run diagnostics, diagnostic summaries, ablation outputs, calibration-sensitivity outputs, and figure-generation scripts are released in the project repository. In the PDF body, long filesystem paths are shortened to avoid two-column overflow; exact paths are available from the repository's reproducibility documentation and source tree.
+The result tables, run diagnostics, diagnostic summaries, ablation outputs, calibration-sensitivity outputs, and figure-generation scripts are released in the project repository. Long filesystem paths are shortened in the paper body; exact paths are available from the repository's reproducibility documentation and source tree.
 
 \begin{itemize}[leftmargin=*]
   \item Detector summary CSV and per-run diagnostics.
@@ -69,18 +69,22 @@ def copy_required(src: Path, dst: Path) -> None:
 
 
 def apply_classic_paper_format(path: Path) -> None:
-    """Apply compact two-column formatting to the build copy of main.tex."""
+    """Apply compact single-column formatting to the build copy of main.tex."""
     text = path.read_text(encoding="utf-8")
 
-    text = text.replace(r"\documentclass[11pt]{article}", r"\documentclass[10pt,twocolumn]{article}")
-    text = text.replace(r"\usepackage[margin=1in]{geometry}", r"\usepackage[margin=0.75in]{geometry}")
+    text = text.replace(r"\documentclass[11pt]{article}", r"\documentclass[10pt]{article}")
+    text = text.replace(r"\documentclass[10pt,twocolumn]{article}", r"\documentclass[10pt]{article}")
+    text = text.replace(r"\usepackage[margin=1in]{geometry}", r"\usepackage[margin=0.82in]{geometry}")
+    text = text.replace(r"\usepackage[margin=0.75in]{geometry}", r"\usepackage[margin=0.82in]{geometry}")
 
     if r"\usepackage{times}" not in text:
         text = text.replace(r"\usepackage{microtype}", r"\usepackage{microtype}" + "\n" + r"\usepackage{times}")
 
-    if r"\setlength{\columnsep}" not in text:
+    if r"\PassOptionsToPackage{hyphens}{url}" not in text:
+        text = text.replace(r"\usepackage{hyperref}", r"\PassOptionsToPackage{hyphens}{url}" + "\n" + r"\usepackage{hyperref}")
+
+    if r"\setlength{\parskip}" not in text:
         insert = "\n".join([
-            r"\setlength{\columnsep}{0.24in}",
             r"\setlength{\parindent}{1em}",
             r"\setlength{\parskip}{0pt}",
             r"\setlength{\textfloatsep}{10pt plus 1pt minus 2pt}",
@@ -90,21 +94,18 @@ def apply_classic_paper_format(path: Path) -> None:
         ])
         text = text.replace(r"\usepackage[numbers,sort&compress]{natbib}", r"\usepackage[numbers,sort&compress]{natbib}" + "\n" + insert)
 
-    # Let long URLs break if any appear in the compiled PDF.
-    if r"\PassOptionsToPackage{hyphens}{url}" not in text:
-        text = text.replace(r"\usepackage{hyperref}", r"\PassOptionsToPackage{hyphens}{url}" + "\n" + r"\usepackage{hyperref}")
-
     text = text.replace(
         "\\author{Matthew Vaishnav\\\nIndependent Researcher\\\n\\texttt{matthewvaishnav@users.noreply.github.com}}",
         "\\author{Matthew Vaishnav\\\nIndependent Researcher}"
     )
 
-    # In two-column format, wide tables/figures should span both columns like the reference paper.
-    text = text.replace(r"\begin{table}[t]", r"\begin{table*}[t]")
-    text = text.replace(r"\end{table}", r"\end{table*}")
-    text = text.replace(r"\begin{figure}[t]", r"\begin{figure*}[t]")
-    text = text.replace(r"\end{figure}", r"\end{figure*}")
-    text = text.replace(r"width=0.95\textwidth", r"width=0.92\textwidth")
+    # Ensure any prior build-copy edits are normalized back to single-column floats.
+    text = text.replace(r"\begin{table*}[t]", r"\begin{table}[t]")
+    text = text.replace(r"\end{table*}", r"\end{table}")
+    text = text.replace(r"\begin{figure*}[t]", r"\begin{figure}[t]")
+    text = text.replace(r"\end{figure*}", r"\end{figure}")
+    text = text.replace(r"width=0.92\textwidth", r"width=0.88\textwidth")
+    text = text.replace(r"width=0.95\textwidth", r"width=0.88\textwidth")
 
     # Replace long raw filesystem paths with short paper-style artifact labels.
     text = text.replace(REPRO_OLD, REPRO_NEW)
@@ -116,12 +117,12 @@ def apply_classic_paper_format(path: Path) -> None:
     )
     figure1 = (
         thesis + "\n"
-        "\\begin{figure*}[t]\n"
+        "\\begin{figure}[t]\n"
         "\\centering\n"
-        "\\includegraphics[width=0.92\\textwidth]{figures/dominant-site-figure-1-problem-schematic.png}\n"
+        "\\includegraphics[width=0.88\\textwidth]{figures/dominant-site-figure-1-problem-schematic.png}\n"
         "\\caption{Problem schematic. FedAvg uses sample count as aggregation authority, but a high-volume site can have a training-label process that is less aligned with the declared validation objective.}\n"
         "\\label{fig:problem_schematic}\n"
-        "\\end{figure*}\n"
+        "\\end{figure}\n"
     )
     if "dominant-site-figure-1-problem-schematic.png" not in text and thesis in text:
         text = text.replace(thesis, figure1)
@@ -131,12 +132,12 @@ def apply_classic_paper_format(path: Path) -> None:
     )
     figure4 = (
         calib + "\n"
-        "\\begin{figure*}[t]\n"
+        "\\begin{figure}[t]\n"
         "\\centering\n"
-        "\\includegraphics[width=0.92\\textwidth]{figures/dominant-site-figure-4-detector-ablation.png}\n"
+        "\\includegraphics[width=0.88\\textwidth]{figures/dominant-site-figure-4-detector-ablation.png}\n"
         "\\caption{Detector interpretability, ablation, and calibration robustness. The transfer result is not a one-diagnostic or one-threshold artifact in the conservative threshold-shift setting.}\n"
         "\\label{fig:detector_ablation}\n"
-        "\\end{figure*}\n"
+        "\\end{figure}\n"
     )
     if "dominant-site-figure-4-detector-ablation.png" not in text and calib in text:
         text = text.replace(calib, figure4)
