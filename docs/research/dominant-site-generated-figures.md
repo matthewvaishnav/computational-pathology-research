@@ -5,6 +5,22 @@
 
 ---
 
+## Figure 1: Problem schematic
+
+![Figure 1: Sample volume is not the same as site-signal alignment](../../figures/dominant-site-figure-1-problem-schematic.png)
+
+**Source:**
+
+```text
+scripts/figures/make_dominant_site_schematic.py
+```
+
+**Caption draft:**
+
+Standard FedAvg uses sample count as aggregation authority. In computational pathology, a high-volume client can have a training-label process that is less aligned with the declared validation objective. The detector-switch framing treats sample-size dominance as an auditable modeling assumption rather than an automatic guarantee of reliability.
+
+---
+
 ## Figure 2: Dominant-site stress overview
 
 ![Figure 2: Dominant-site stress overview](../../figures/dominant-site-figure-2-stress-overview.png)
@@ -66,22 +82,25 @@ Detector triggers were driven primarily by ordinal-error increase and QWK degrad
 
 These figures support the paper's dominant-site result stack:
 
-1. dominant-site stress can expose FedAvg vulnerability when sample-size dominance and site-signal alignment diverge;
-2. the fixed detector transfers to conservative threshold shift;
-3. clean-regime switching remains low;
-4. 35% and 45% shift gains are statistically positive;
-5. detector diagnostics are interpretable;
-6. the result does not collapse when the strongest diagnostic family is removed;
-7. the result is stable across nearby calibration settings.
+1. sample-size dominance and site-signal alignment are different quantities;
+2. dominant-site stress can expose FedAvg vulnerability when those quantities diverge;
+3. the fixed detector transfers to conservative threshold shift;
+4. clean-regime switching remains low;
+5. 35% and 45% shift gains are statistically positive;
+6. detector diagnostics are interpretable;
+7. the result does not collapse when the strongest diagnostic family is removed;
+8. the result is stable across nearby calibration settings.
 
 ---
 
 ## Next figure work
 
-The remaining primary figure is:
+The four primary figures are now generated.
+
+Remaining optional figure work:
 
 ```text
-Figure 1: problem schematic
+Supplementary Figure S1: aggressive threshold-shift detector results
+Supplementary Figure S2: full calibration-sensitivity heatmap
+Supplementary Figure S3: per-seed detector-regret distribution
 ```
-
-Figure 1 should be a schematic rather than a metric plot. It should explain the core mechanism: FedAvg weights by sample count, but a dominant high-volume site can have a training signal that is less aligned with the declared validation objective.
