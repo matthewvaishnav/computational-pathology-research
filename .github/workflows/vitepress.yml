@@ -13,24 +13,52 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
+
+      - name: Prepare arXiv source package
+        run: python paper/arxiv/build_arxiv_package.py
+
+      - name: Build LaTeX PDF
+        uses: xu-cheng/latex-action@v3
         with:
-          node-version: 22
-      
-      - name: Install
-        run: npm install
-      
-      - name: Build
-        run: npm run docs:build
-      
-      - name: Deploy
+          root_file: main.tex
+          working_directory: paper/arxiv/build
+          latexmk_use_xelatex: false
+          args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error
+
+      - name: Create PDF-only site
+        run: |
+          mkdir -p paper_pdf_site
+          cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
+          touch paper_pdf_site/.nojekyll
+          cat > paper_pdf_site/index.html <<'EOF'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta http-equiv="refresh" content="0; url=./when-more-data-is-less-trustworthy.pdf">
+            <title>When More Data Is Less Trustworthy</title>
+            <script>
+              window.location.replace('./when-more-data-is-less-trustworthy.pdf');
+            </script>
+          </head>
+          <body>
+            <p>
+              Opening paper PDF:
+              <a href="./when-more-data-is-less-trustworthy.pdf">
+                When More Data Is Less Trustworthy
+              </a>
+            </p>
+          </body>
+          </html>
+          EOF
+
+      - name: Deploy PDF site
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/.vitepress/dist
+          publish_dir: paper_pdf_site
