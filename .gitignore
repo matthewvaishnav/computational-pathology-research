@@ -179,6 +179,22 @@ results/cross_site_fedavg_panda_all_15seed_noise_*_seed_*/
 results/ordinal_harm_fair_weights_h_panda_all_noise_*_seed_*/
 results/threshold_shift_panda_all_*_seed_*/
 
+# Local federated stress experiment outputs kept out of default git status.
+# Curated summaries/figures can still be committed intentionally with git add -f.
+results/dominance_detector_switch_recheck_panda_all_15seed/
+results/fair_weights_h_panda_feature_stress_*_aggregate/
+results/fair_weights_h_stress_noise_*_aggregate/
+results/fair_weights_h_stress_noise_*_seed_*/
+results/ordinal_harm_fair_weights_h_panda_all_forensics/
+results/threshold_shift_detector_aggressive_15seed/
+results/threshold_shift_detector_aggressive_fixed_labelnoise_rule_15seed/
+results/threshold_shift_detector_aggressive_tuned_15seed/
+results/threshold_shift_detector_conservative_15seed/
+results/threshold_shift_detector_conservative_tuned_15seed/
+results/threshold_shift_panda_all_aggressive_*_15seed_aggregate/
+results/threshold_shift_panda_all_aggressive_*_aggregate/
+results/threshold_shift_panda_all_conservative_*_aggregate/
+
 # Temporary files
 tmp/
 temp/
@@ -190,7 +206,7 @@ temp/
 .DS_Store?
 ._*
 .Spotlight-V100
-.Trashes
+.Trashes/
 ehthumbs.db
 Thumbs.db
 
