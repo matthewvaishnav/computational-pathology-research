@@ -296,48 +296,45 @@ This strengthens the result because the detector-transfer finding is not tightly
 
 ## 11. Figures and tables
 
-The report is designed around four primary figures and four main tables.
+The report is now organized around four generated primary figures and four main result tables.
 
 ### Figure 1: Problem schematic
 
+![Figure 1: Sample volume is not the same as site-signal alignment](../../figures/dominant-site-figure-1-problem-schematic.png)
+
 **Purpose:** Explain the mechanism visually before showing metrics.
 
+**Generated file:**
+
 ```text
-Standard FedAvg:
-  more samples -> more aggregation weight
-
-Pathology failure mode:
-  dominant client has many samples but shifted training labels
-  validation objective remains clean
-  FedAvg amplifies shifted signal because it weights by sample count
-
-Detector switch:
-  monitor clean-calibrated diagnostics
-  switch away from sample-size dominance when enough diagnostics leave safe range
+figures/dominant-site-figure-1-problem-schematic.png
 ```
 
 ### Figure 2: Dominant-site stress result overview
 
+![Figure 2: Dominant-site stress overview](../../figures/dominant-site-figure-2-stress-overview.png)
+
 **Purpose:** Show the broad stress result across perturbation levels.
 
-Candidate panels:
+**Generated file:**
 
-- label-noise stress: FedAvg vs cross-site blend global QWK
-- label-noise stress: worst-site QWK
-- conservative threshold shift: FedAvg vs cross-site blend global QWK
-- conservative threshold shift: macro-F1 or worst-site QWK
+```text
+figures/dominant-site-figure-2-stress-overview.png
+```
 
 ### Figure 3: Fixed detector transfer result
 
+![Figure 3: Fixed detector transfer to conservative ordinal threshold shift](../../figures/dominant-site-figure-3-detector-transfer.png)
+
 **Purpose:** Show the headline detector-transfer result.
 
-Data source:
+**Data source:**
 
 ```text
 results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed/best_detector_summary.csv
 ```
 
-Suggested output:
+**Generated file:**
 
 ```text
 figures/dominant-site-figure-3-detector-transfer.png
@@ -345,9 +342,11 @@ figures/dominant-site-figure-3-detector-transfer.png
 
 ### Figure 4: Detector interpretability and ablation
 
+![Figure 4: Detector interpretability, ablation, and calibration robustness](../../figures/dominant-site-figure-4-detector-ablation.png)
+
 **Purpose:** Show that the detector is not a one-feature or one-threshold trick.
 
-Data sources:
+**Data sources:**
 
 ```text
 results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_diagnostic_summary/diagnostic_frequency_by_stress.csv
@@ -355,10 +354,16 @@ results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_leave
 results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_calibration_sensitivity/calibration_sensitivity_headline.csv
 ```
 
-Suggested output:
+**Generated file:**
 
 ```text
 figures/dominant-site-figure-4-detector-ablation.png
+```
+
+See also:
+
+```text
+docs/research/dominant-site-generated-figures.md
 ```
 
 ---
@@ -463,17 +468,26 @@ results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_calib
 results/threshold_shift_detector_conservative_fixed_labelnoise_rule_15seed_calibration_sensitivity/calibration_sensitivity_config.json
 ```
 
-Figure-generation script:
+Figure-generation scripts:
 
 ```text
+scripts/figures/make_dominant_site_schematic.py
 scripts/figures/make_dominant_site_paper_figures.py
 ```
 
-Planned figures:
+Generated primary figures:
 
 ```text
+figures/dominant-site-figure-1-problem-schematic.png
+figures/dominant-site-figure-2-stress-overview.png
 figures/dominant-site-figure-3-detector-transfer.png
 figures/dominant-site-figure-4-detector-ablation.png
+```
+
+Generated figure index:
+
+```text
+docs/research/dominant-site-generated-figures.md
 ```
 
 ---
