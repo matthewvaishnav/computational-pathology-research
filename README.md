@@ -2,13 +2,30 @@
 
 Independent research and engineering work in computational pathology, multiple-instance learning, and federated medical AI validation.
 
-The main artifact in this repository is a preprint-style technical report:
+The main public artifact is the paper PDF site:
 
-**[When More Data Is Less Trustworthy: Site-Signal Alignment Failure Modes in Federated Computational Pathology](docs/research/dominant-site-federated-pathology-paper.md)**
+**[When More Data Is Less Trustworthy: Site-Signal Alignment Failure Modes in Federated Computational Pathology](https://matthewvaishnav.github.io/computational-pathology-research/)**
+
+Source paper draft:
+
+**[dominant-site federated pathology paper draft](docs/research/dominant-site-federated-pathology-paper.md)**
 
 This report studies a sample-volume / site-signal alignment failure mode in simulated federated pathology experiments over PANDA-derived Phikon features. The central question is whether FedAvg becomes less safe when the largest simulated client's training signal is misaligned with the validation objective, and whether dominance-aware switching can reduce that risk.
 
 This repository is **research-only**. It is not clinically validated, not diagnostic software, and not intended for patient-care use.
+
+---
+
+## Research package
+
+For readers who do not want to start with the full paper:
+
+1. **Paper PDF site:** [public PDF](https://matthewvaishnav.github.io/computational-pathology-research/)
+2. **Plain-English one-page summary:** [docs/outreach/plain-english-summary.md](docs/outreach/plain-english-summary.md)
+3. **Technical one-page summary:** [docs/outreach/technical-summary.md](docs/outreach/technical-summary.md)
+4. **Demo / figure thread:** [docs/outreach/demo-figure-thread.md](docs/outreach/demo-figure-thread.md)
+5. **Outreach list:** [docs/outreach/outreach-list.md](docs/outreach/outreach-list.md)
+6. **Research package index:** [docs/outreach/research-package-index.md](docs/outreach/research-package-index.md)
 
 ---
 
