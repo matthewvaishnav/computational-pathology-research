@@ -20,13 +20,20 @@
   urlcolor=blue!60!black
 }
 
-\setlength{\parindent}{1em}
-\setlength{\parskip}{0pt}
+% PDF layout normalization: keep every paragraph flush-left, use consistent
+% paragraph spacing, and avoid accidental hanging/run-in indentation.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.58em plus 0.12em minus 0.05em}
 \setlength{\textfloatsep}{10pt plus 1pt minus 2pt}
 \setlength{\floatsep}{8pt plus 1pt minus 2pt}
 \setlength{\intextsep}{8pt plus 1pt minus 2pt}
 \renewcommand{\baselinestretch}{0.98}
-\setlist{leftmargin=*}
+\setlist{leftmargin=1.8em,itemsep=0.25em,topsep=0.35em,parsep=0pt,partopsep=0pt}
+\setlist[enumerate]{label=\arabic*.,leftmargin=2.2em,labelsep=0.6em}
+\setlist[itemize]{leftmargin=1.8em,labelsep=0.5em}
+\raggedbottom
+\emergencystretch=3em
+\sloppy
 
 \title{When More Data Is Less Trustworthy:\\
 Site-Signal Alignment Failure Modes in Federated Computational Pathology}
@@ -58,7 +65,7 @@ That rule is not obviously safe in computational pathology. More samples can coe
 
 I study a controlled version of that problem. I simulate multi-site federated learning over PANDA-derived Phikon feature vectors. I perturb the largest simulated site while keeping validation labels clean. The goal is to test whether FedAvg becomes vulnerable when its sample-size assumption is violated, and whether a detector-switch mechanism can identify when sample-size dominance has become unsafe.
 
-\paragraph{Working thesis.}
+\subsection*{Working thesis}
 In federated computational pathology, raw sample count is not the same as task-specific site-signal alignment. FedAvg can become less safe when the largest simulated pathology client has a training-label process that is misaligned with the validation objective, and dominance-aware aggregation or switching can reduce that risk under controlled stress.
 
 \begin{figure}[!htbp]
