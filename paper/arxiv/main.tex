@@ -21,8 +21,7 @@
 Site-Signal Alignment Failure Modes in Federated Computational Pathology}
 
 \author{Matthew Vaishnav\\
-Independent Researcher\\
-\texttt{matthewvaishnav@users.noreply.github.com}}
+Independent Researcher}
 
 \date{\today}
 
@@ -50,6 +49,13 @@ This paper studies a controlled version of that problem. The experiments simulat
 
 \paragraph{Working thesis.}
 In federated computational pathology, raw sample count is not the same as task-specific site-signal alignment. FedAvg can become less safe when the largest simulated pathology client has a training-label process that is misaligned with the validation objective, and dominance-aware aggregation or switching can reduce that risk under controlled stress.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/dominant-site-figure-1-problem-schematic.png}
+\caption{Problem schematic. FedAvg uses sample count as aggregation authority, but a high-volume site can have a training-label process that is less aligned with the declared validation objective.}
+\label{fig:problem_schematic}
+\end{figure}
 
 \section{Contributions}
 This paper makes five main contributions.
@@ -194,7 +200,7 @@ The clean 0\% conservative-shift regime has low switching at 13.3\%, with near-z
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/dominant-site-figure-3-detector-transfer.png}
+\includegraphics[width=0.88\textwidth]{figures/dominant-site-figure-3-detector-transfer.png}
 \caption{Fixed detector transfer to conservative ordinal threshold shift.}
 \label{fig:detector_transfer}
 \end{figure}
@@ -260,6 +266,13 @@ The fixed detector should not be treated as convincing if it only works at one h
 \end{align*}
 This produced 36 detector configurations. A configuration was counted as robust-positive if it preserved clean trigger rate at or below 20\% and positive global-QWK, macro-F1, and worst-site-QWK deltas at both 35\% and 45\% conservative shift. In total, 29 of 36 configurations were robust positive.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/dominant-site-figure-4-detector-ablation.png}
+\caption{Detector interpretability, ablation, and calibration robustness. The transfer result is not a one-diagnostic or one-threshold artifact in the conservative threshold-shift setting.}
+\label{fig:detector_ablation}
+\end{figure}
+
 \section{Supplementary asymmetric-stress result: aggressive threshold shift}
 Aggressive threshold shift is a weaker and more mixed transfer setting. Under aggressive shift, the fixed detector kept the same 13.3\% clean-regime trigger rate, but trigger rates remained low rather than scaling strongly with stress: 26.7\% at 25\%, 26.7\% at 35\%, and 20.0\% at 45\%. Global QWK and worst-site QWK were mildly positive, while macro-F1 was negative at 25\% and 35\% and positive only at 45\%.
 
@@ -304,16 +317,17 @@ Supported claims include: FedAvg has a sample-volume / site-signal alignment fai
 Unsupported claims include clinical readiness, diagnostic safety, real hospital federated deployment performance, universal detector calibration, institutional ranking or institutional reliability judgment, and the claim that any real hospital, pathologist, or institution is inherently more or less trustworthy than another.
 
 \section{Reproducibility artifacts}
-Primary result files include:
+The result tables, run diagnostics, diagnostic summaries, ablation outputs, calibration-sensitivity outputs, and figure-generation scripts are released in the project repository. Long filesystem paths are shortened in the paper body; exact paths are available from the repository's reproducibility documentation and source tree.
+
 \begin{itemize}[leftmargin=*]
-  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed/best\_detector\_summary.csv}
-  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed/best\_detector\_run\_diagnostics.csv}
-  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed\_diagnostic\_summary/diagnostic\_frequency\_by\_stress.csv}
-  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed\_leave\_one\_out/diagnostic\_ablation\_headline\_35\_45.csv}
-  \item \texttt{results/threshold\_shift\_detector\_conservative\_fixed\_labelnoise\_rule\_15seed\_calibration\_sensitivity/calibration\_sensitivity\_headline.csv}
+  \item Detector summary CSV and per-run diagnostics.
+  \item Diagnostic-frequency summary by stress regime.
+  \item Leave-one-diagnostic-family-out ablation table.
+  \item Calibration-sensitivity sweep table.
+  \item Figure-generation scripts for the schematic and paper figures.
 \end{itemize}
 
-Figure-generation scripts include \texttt{scripts/figures/make\_dominant\_site\_schematic.py} and \texttt{scripts/figures/make\_dominant\_site\_paper\_figures.py}.
+Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
 
 \section{Conclusion}
 FedAvg is useful, but it silently equates sample count with aggregation authority. In pathology, sample volume and task-specific site-signal alignment can diverge. These experiments simulate that divergence by perturbing the dominant client's training signal while keeping validation labels clean. Under conservative ordinal threshold shift, a fixed label-noise-calibrated detector switch keeps clean-regime switching low and improves global QWK, macro-F1, and worst-site QWK at 35\% and 45\% shift. Diagnostic ablation and calibration-sensitivity analysis suggest that the detector is not merely a one-feature or one-threshold artifact. The result supports sample-volume / site-signal alignment auditing as a research direction for federated computational pathology.
