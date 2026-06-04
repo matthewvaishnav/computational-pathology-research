@@ -1,0 +1,283 @@
+# Camelyon17 External-Center Validation: Early Feature-Level Evidence
+
+**Status:** early external-validation note / feature-level baseline  
+**Scope:** Camelyon17/WILDS, frozen ResNet18 features, logistic-regression weighting baselines  
+**Clinical status:** research-only; not clinically validated; not diagnostic software; not intended for patient-care use
+
+---
+
+## One-sentence claim
+
+A 5-seed Camelyon17/WILDS feature-level baseline shows that FedAvg-style equal-patch weighting can look better on source-like validation while performing substantially worse on a held-out external test center, and a simple validation-aware detector-switch rule recovers much of that held-out-center gap without using test performance for policy selection.
+
+---
+
+## Why this note exists
+
+The dominant-site / site-signal alignment work originally used simulated federations over pathology-derived features. Camelyon17 adds a more natural multi-center pathology validation target: source centers are used for training, separate source-domain validation is available, and two centers are held out as out-of-distribution validation/test domains.
+
+This note documents the first external-center evidence layer. It is intentionally conservative: these are fast feature-level baselines, not full clinical or production federated-learning results.
+
+---
+
+## Dataset audit
+
+Camelyon17/WILDS metadata was audited and converted into an explicit federated-client manifest.
+
+```text
+Total examples: 455,954
+Classes: 227,977 negative / 227,977 positive
+Selected FL client column: center
+Centers: 0, 1, 2, 3, 4
+```
+
+Split structure:
+
+```text
+train: 302,436 examples from centers 0, 3, 4
+id_val: 33,560 examples from centers 0, 3, 4
+val: 34,904 examples from center 1
+test: 85,054 examples from center 2
+```
+
+Interpretation:
+
+```text
+source-domain training clients: centers 0, 3, 4
+source-domain validation: centers 0, 3, 4
+OOD validation: center 1
+OOD test: center 2
+```
+
+This structure is useful for testing whether source-domain weighting choices generalize to held-out pathology centers.
+
+---
+
+## Image-feature smoke baseline
+
+A first image-based smoke test used frozen ImageNet ResNet18 features with logistic regression. The purpose was not to claim final model performance. The purpose was to verify that image loading, center splits, source-domain training, and OOD evaluation were wired correctly.
+
+Single-smoke-test result using 8,000 sampled patches:
+
+```text
+train source centers 0/3/4: accuracy 0.9823, AUC 0.9984
+id_val source centers 0/3/4: accuracy 0.9383, AUC 0.9805
+OOD val center 1: accuracy 0.8820, AUC 0.9397
+OOD test center 2: accuracy 0.8210, AUC 0.9497
+```
+
+The smoke baseline established that the real Camelyon17 image pipeline was working and that external-center evaluation produced visible distribution-shift effects.
+
+---
+
+## Center-weighting baselines
+
+The next experiment compared three source-center weighting policies using the same frozen ResNet18 feature / logistic-regression setup:
+
+1. `fedavg_equal_patch`: every sampled patch has equal weight, so larger source centers have more influence.
+2. `equal_client`: each source center receives equal total weight.
+3. `downweight_dominant_center`: each source center is balanced, then the dominant source center is further downweighted.
+
+A 5-seed run showed the following mean accuracies:
+
+| Policy | id_val accuracy | val accuracy | test accuracy |
+|---|---:|---:|---:|
+| `fedavg_equal_patch` | 0.9303 | 0.8668 | 0.8312 |
+| `equal_client` | 0.9149 | 0.8258 | 0.9132 |
+| `downweight_dominant_center` | 0.9125 | 0.8246 | 0.9094 |
+
+Key held-out test-center differences against FedAvg-style equal-patch weighting:
+
+```text
+equal_client - fedavg_equal_patch = +0.0820 accuracy = +8.20 percentage points
+
+downweight_dominant_center - fedavg_equal_patch = +0.0782 accuracy = +7.82 percentage points
+```
+
+Interpretation:
+
+```text
+FedAvg-style equal-patch weighting performs better on source-like validation and center-1 validation.
+Equal-client weighting performs substantially better on the held-out test center.
+```
+
+This is exactly the kind of tradeoff the site-signal alignment hypothesis predicts: sample-volume weighting can optimize apparent source-domain performance while harming external-center generalization.
+
+---
+
+## Validation-aware detector switch
+
+A simple detector-switch rule was then tested using only validation diagnostics.
+
+Decision inputs:
+
+```text
+id_val: source-domain validation centers
+val: OOD validation center
+```
+
+Held-out evaluation:
+
+```text
+test: held-out OOD test center
+```
+
+The detector did not use test performance when choosing a policy.
+
+Rule:
+
+```text
+Switch from FedAvg-style equal-patch weighting to the alternative policy when:
+
+alternative val accuracy - FedAvg val accuracy >= min_val_gain
+
+and
+
+FedAvg id_val accuracy - alternative id_val accuracy <= max_id_val_cost
+
+Otherwise keep FedAvg-style equal-patch weighting.
+```
+
+With `min_val_gain = -0.05` and `max_id_val_cost = 0.03`, the detector switched in 4 of 5 seeds for both alternatives.
+
+Mean held-out test-center gains:
+
+```text
+equal-client detector switch:
+  test accuracy delta = +0.0658 = +6.58 percentage points
+  test macro-F1 delta = +0.0681
+
+ downweight-dominant detector switch:
+  test accuracy delta = +0.0628 = +6.28 percentage points
+  test macro-F1 delta = +0.0651
+```
+
+Interpretation:
+
+```text
+The detector result is weaker than always using equal-client weighting because it keeps FedAvg in one seed.
+That is expected: the detector is making a validation-aware choice without seeing the held-out test center.
+The important point is that the detector still recovers a large held-out-center improvement.
+```
+
+---
+
+## Threshold sweep
+
+To test whether the detector result depended on one hand-picked threshold, a local threshold sweep was run.
+
+Sweep grid:
+
+```text
+min_val_gain: [-0.07, -0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.00]
+max_id_val_cost: [0.01, 0.015, 0.02, 0.025, 0.03, 0.04, 0.05]
+alternatives: equal_client, downweight_dominant_center
+```
+
+Total detector settings evaluated:
+
+```text
+112
+```
+
+Robust-positive definition:
+
+```text
+mean held-out test accuracy improvement > +0.03
+mean held-out test macro-F1 improvement > +0.03
+switch rate >= 40%
+```
+
+Result:
+
+```text
+43 / 112 settings were robust-positive.
+```
+
+Best equal-client settings achieved:
+
+```text
+test accuracy delta = +0.0820
+test macro-F1 delta = +0.0848
+test AUC delta = +0.0083
+```
+
+Best downweight-dominant settings achieved:
+
+```text
+test accuracy delta = +0.0782
+test macro-F1 delta = +0.0810
+test AUC delta = +0.0075
+```
+
+Interpretation:
+
+```text
+The detector-switch result is not only a single-threshold artifact.
+A meaningful neighborhood of validation-aware settings preserves positive held-out-center gains.
+```
+
+---
+
+## Claim boundaries
+
+Supported by this note:
+
+- Camelyon17/WILDS provides a natural multi-center validation structure for the site-signal alignment question.
+- Frozen ResNet18 feature baselines show real external-center degradation.
+- FedAvg-style equal-patch weighting can perform better on source-like validation while performing worse on a held-out external test center.
+- Equal-client and downweighted-dominant policies improve held-out test-center accuracy in 5-seed feature-level baselines.
+- A validation-aware detector-switch rule can recover substantial held-out test-center improvement without using the test center to choose the policy.
+- A threshold sweep suggests the detector-switch finding is not purely a one-threshold artifact.
+
+Not supported by this note:
+
+- clinical readiness
+- diagnostic safety
+- real hospital federated deployment performance
+- superiority of any final architecture
+- universal calibration of the detector
+- institutional ranking or claims about hospital/pathologist quality
+- proof that equal-client weighting is always better
+
+---
+
+## Reproducibility artifacts
+
+Scripts:
+
+```text
+scripts/camelyon17/audit_camelyon17_wilds.py
+scripts/camelyon17/build_fl_client_manifest.py
+scripts/camelyon17/run_metadata_baselines.py
+scripts/camelyon17/run_resnet18_feature_smoke.py
+scripts/camelyon17/run_center_weighting_baselines.py
+scripts/camelyon17/run_detector_switch_from_weighting_results.py
+scripts/camelyon17/run_detector_switch_threshold_sweep.py
+```
+
+Key result artifacts:
+
+```text
+results/camelyon17/camelyon17_dataset_audit.md
+results/camelyon17/fl_client_manifest.md
+results/camelyon17/metadata_baselines.md
+results/camelyon17/resnet18_feature_smoke_results.md
+results/camelyon17/center_weighting_5seed_summary.md
+results/camelyon17/center_weighting_5seed_delta_summary.md
+results/camelyon17/detector_switch_validation_aware_summary.md
+results/camelyon17/detector_switch_threshold_sweep_summary.md
+```
+
+Large raw dataset files are not tracked in the repository.
+
+---
+
+## Next steps
+
+1. Replace frozen ImageNet ResNet18 features with pathology-specific features or supervised Camelyon17 features.
+2. Run a larger seed/sample-size sweep.
+3. Compare against real FL baselines such as FedProx, SCAFFOLD, FedBN, and robust aggregation.
+4. Add communication-cost accounting for each policy.
+5. Add privacy-stress evaluation, including update noise or DP-style perturbation.
+6. Integrate the external-center evidence into the main dominant-site / site-signal alignment paper.
