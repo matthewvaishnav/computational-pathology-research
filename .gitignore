@@ -239,3 +239,7 @@ data/wilds/
 results/camelyon17/metadata_audit.csv
 results/camelyon17/fl_client_manifest.csv
 results/camelyon17/seed_*/
+# Local model checkpoints
+*.pt
+*.pth
+results/camelyon17_supervised_resnet18/*.pt
