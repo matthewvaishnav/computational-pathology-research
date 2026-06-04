@@ -1,0 +1,103 @@
+% LaTeX-native pipeline diagram for the dominant-site detector-switch paper figure.
+% This file is input from main.tex inside a figure environment.
+\begin{tikzpicture}[
+  font=\scriptsize,
+  >=Latex,
+  node distance=0.46cm and 0.68cm,
+  stage/.style={font=\bfseries\scriptsize, align=center},
+  box/.style={draw, rounded corners=1.2pt, align=center, inner sep=3pt, fill=gray!5},
+  cubebox/.style={draw, align=center, inner sep=3pt, fill=gray!7, minimum height=0.72cm},
+  group/.style={draw, dashed, rounded corners=3pt, inner sep=5pt},
+  arrow/.style={->, line width=0.45pt},
+  dasharrow/.style={->, dashed, line width=0.45pt}
+]
+
+% Column headers.
+\node[stage] (h1) at (0, 7.2) {1) Whole-slide images\\/ site data};
+\node[stage] (h2) at (2.8, 7.2) {2) Patch / feature\\extraction};
+\node[stage] (h3) at (5.7, 7.2) {3) Local slide-level model\\(per site)};
+\node[stage] (h4) at (9.2, 7.2) {4) Federated aggregation\\(two alternatives)};
+\node[stage] (h5) at (12.0, 7.2) {5) Validation diagnostics\\(monitored on hold-out set)};
+\node[stage] (h6) at (14.8, 4.7) {6) Detector-switch rule\\(uses diagnostics)};
+\node[stage] (h7) at (17.2, 4.7) {7) Output};
+
+% Helper coordinates for four site rows.
+\foreach \row/\y/\name/\slides in {
+  1/6.0/{Site 1\\(Client 1)}/{$N_1$ slides},
+  2/4.55/{Site 2\\(Client 2)}/{$N_2$ slides},
+  3/3.10/{Site 3\\(Client 3)}/{$N_3$ slides},
+  4/1.45/{Dominant\\Site\\(Client D)}/{$N_D$ slides\\$(\gg N_1,N_2,N_3)$}
+} {
+  \node[align=center, font=\bfseries\scriptsize] (site\row) at (-0.15,\y) {\name};
+
+  % Slide stack: layered rectangles plus a pale tissue oval.
+  \draw[fill=white] (0.72,\y-0.34) rectangle (1.18,\y+0.34);
+  \draw[fill=white] (0.66,\y-0.30) rectangle (1.12,\y+0.38);
+  \draw[fill=white] (0.60,\y-0.26) rectangle (1.06,\y+0.42);
+  \draw[fill=gray!12] (0.73,\y-0.16) ellipse (0.16 and 0.25);
+  \node[align=center] at (0.88,\y-0.62) {\slides};
+
+  % Feature cuboid.
+  \node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (feat\row) at (2.85,\y) {Phikon\\768-d\\$\cdots$};
+  \draw (feat\row.north east) -- ++(0.20,0.16) -- ++(0,-0.60) -- (feat\row.south east);
+  \draw (feat\row.north west) -- ++(0.20,0.16) -- ++(1.05,0) -- (feat\row.north east);
+  \foreach \dx in {-0.34,-0.12,0.10,0.32} {\draw[gray!50] ($(feat\row.center)+(\dx,-0.30)$) -- ($(feat\row.center)+(\dx,0.30)$);}
+  \foreach \dy in {-0.12,0.10} {\draw[gray!50] ($(feat\row.center)+(-0.52,\dy)$) -- ($(feat\row.center)+(0.52,\dy)$);}
+
+  % Local model stack.
+  \node[box, minimum width=1.60cm] (enc\row) at (5.65,\y+0.35) {Patch encoder\\(frozen)};
+  \node[box, minimum width=1.60cm, below=0.05cm of enc\row] (pool\row) {Attention\\pooling};
+  \node[box, minimum width=1.60cm, below=0.05cm of pool\row] (mlp\row) {MLP head};
+  \node[box, minimum width=1.60cm, below=0.05cm of mlp\row] (train\row) {Local MIL / MLP\\training};
+  \node[group, fit=(enc\row)(pool\row)(mlp\row)(train\row)] (local\row) {};
+
+  \draw[arrow] (1.20,\y) -- (feat\row.west);
+  \draw[arrow] (feat\row.east) -- (local\row.west);
+}
+
+% Dominant-site warning.
+\node[box, minimum width=1.85cm, align=center] (warn) at (1.05,0.20) {$\triangle$\\high volume,\\possible misalignment};
+
+% Convergence from local models.
+\coordinate (join) at (7.45,3.75);
+\foreach \row in {1,2,3,4} {
+  \draw[arrow] (local\row.east) -- ++(0.50,0) |- (join);
+}
+
+% Aggregation alternatives.
+\node[cubebox, minimum width=1.45cm, minimum height=1.00cm] (fedavg) at (9.15,4.55) {Route A\\[1mm]FedAvg\\(sample-size\\weighted)};
+\node[cubebox, minimum width=1.45cm, minimum height=1.00cm] (blend) at (9.15,2.35) {Route B\\[1mm]Cross-site blend\\/ switched\\aggregation};
+\node[group, fit=(fedavg)(blend), label={[font=\bfseries\scriptsize]above:Federated aggregation}] (agg) {};
+\draw[arrow] (join) -- (agg.west);
+\draw[dasharrow] (fedavg.south) -- node[right]{Alternative} (blend.north);
+\draw[dasharrow] (blend.north) -- (fedavg.south);
+
+% Diagnostics.
+\node[box, minimum width=2.45cm, minimum height=1.65cm, align=left] (diag) at (12.0,5.55) {\textbf{Validation diagnostics}\\[-1mm]
+$\bullet$ global QWK\\
+$\bullet$ worst-site QWK\\
+$\bullet$ site-QWK spread\\
+$\bullet$ mean absolute ordinal error\\
+$\bullet$ severe error rate};
+\draw[dasharrow] (agg.north) -- (diag.south);
+
+% Detector-switch rule.
+\node[box, minimum width=2.20cm, minimum height=2.15cm] (det) at (14.8,3.40) {\Large$\circledast$\\[-1mm]
+Evaluate diagnostics\\against thresholds\\[1mm]\hrulefill\\[-1mm]
+\textbf{Decision}\\[1mm]
+\begin{tabular}{cc}
+Keep & Switch\\
+FedAvg & aggregation\\
+(Route A) & (Route B)
+\end{tabular}};
+\draw[dasharrow] (diag.east) -- ++(0.55,0) |- (det.north);
+\draw[arrow] (agg.east) -- (det.west);
+
+% Output.
+\node[cubebox, minimum width=1.30cm, minimum height=1.05cm] (model) at (17.2,3.85) {Global\\pathology\\model};
+\node[box, minimum width=1.75cm, align=center] (robust) at (17.2,2.15) {$\checkmark$\\Improved robustness\\under dominant-site\\shift};
+\draw[arrow] (det.east) -- (model.west);
+\draw[arrow] (model.south) -- (robust.north);
+
+\node[font=\bfseries\small] at (8.6,-0.35) {Figure: Dominant-site detector-switch federated pathology pipeline};
+\end{tikzpicture}
