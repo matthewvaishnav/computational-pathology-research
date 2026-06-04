@@ -26,6 +26,7 @@ For readers who do not want to start with the full paper:
 4. **Demo / figure thread:** [docs/outreach/demo-figure-thread.md](docs/outreach/demo-figure-thread.md)
 5. **Outreach list:** [docs/outreach/outreach-list.md](docs/outreach/outreach-list.md)
 6. **Research package index:** [docs/outreach/research-package-index.md](docs/outreach/research-package-index.md)
+7. **Camelyon17 external-center validation note:** [docs/research/camelyon17-external-center-validation-note.md](docs/research/camelyon17-external-center-validation-note.md)
 
 ---
 
@@ -36,8 +37,9 @@ For readers who do not want to start with the full paper:
 3. **Detector transfer result:** [dominance detector transfer results](docs/research/dominance-detector-transfer-results.md)
 4. **Detector ablation and calibration sensitivity:** [detector diagnostic ablation summary](docs/research/detector-diagnostic-ablation.md)
 5. **PANDA TransnnMIL stabilization:** [PANDA TransnnMIL stabilization results](docs/results/panda-transnnmil-stability.md)
-6. **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)
-7. **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)
+6. **Camelyon17 external-center validation:** [early feature-level validation note](docs/research/camelyon17-external-center-validation-note.md)
+7. **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)
+8. **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)
 
 ---
 
@@ -58,6 +60,29 @@ The current strongest evidence is the dominant-site federated pathology result s
 Supported claim:
 
 > In simulated federated pathology experiments over real pathology-derived features, raw sample count is not equivalent to task-specific site-signal alignment. Sample-size dominance should be treated as an auditable modeling assumption rather than an automatic guarantee of aggregation safety.
+
+### Early Camelyon17 external-center validation
+
+A new Camelyon17/WILDS feature-level validation layer tests whether the site-signal alignment pattern appears under natural external-center shift.
+
+| Result | Evidence |
+|---|---:|
+| Dataset audit | 455,954 Camelyon17/WILDS examples across 5 centers |
+| Source-domain training centers | 0, 3, 4 |
+| OOD validation center | 1 |
+| Held-out OOD test center | 2 |
+| FedAvg-style equal-patch test accuracy | 0.8312 |
+| Equal-client test accuracy | 0.9132 |
+| Equal-client test gain vs FedAvg-style | +8.20 percentage points |
+| Downweight-dominant test gain vs FedAvg-style | +7.82 percentage points |
+| Validation-aware detector switch gain | +6.58 percentage points held-out test accuracy |
+| Detector threshold sweep | 43 / 112 settings robust-positive |
+
+Interpretation:
+
+> In early Camelyon17/WILDS feature-level baselines, FedAvg-style equal-patch weighting performs better on source-like validation, but equal-client weighting performs substantially better on the held-out external test center. A validation-aware detector-switch rule recovers much of that held-out-center gain without using test performance to choose the policy.
+
+Full note: [Camelyon17 external-center validation](docs/research/camelyon17-external-center-validation-note.md)
 
 Unsupported claim:
 
@@ -99,7 +124,7 @@ Interpretation:
 | PCam federated smoke tests | Equal, volume, prestige, and FAIR-WEIGHTS-H strategies completed on real PCam patches split into simulated sites |
 | PCam balanced federated benchmark | Complete: FAIR-WEIGHTS-H stable, no performance degradation observed |
 | PCam heterogeneous benchmark | Complete: strategies produced different weight trajectories, but patch-level performance was insensitive to those differences |
-| Camelyon16/17 validation | Planned next slide-level / multi-center validation target |
+| Camelyon17 validation | Early external-center feature-level validation complete; pathology-specific feature validation remains next |
 | Clinical validation | Not completed |
 
 ---
