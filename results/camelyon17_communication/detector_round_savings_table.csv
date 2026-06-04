@@ -1,0 +1,10 @@
+baseline,detector_regime,clients,precision,baseline_rounds,detector_rounds,baseline_gb,detector_gb,gb_saved,relative_reduction
+full_resnet18_100_rounds,diagnose_or_switch_after_5_rounds,3,fp32,100,5,24.98374432325363,1.2491872161626816,23.73455710709095,0.95
+full_resnet18_100_rounds,diagnose_or_switch_after_5_rounds,3,fp16,100,5,12.491872161626816,0.6245936080813408,11.867278553545475,0.95
+full_resnet18_100_rounds,diagnose_or_switch_after_5_rounds,3,int8,100,5,6.245936080813408,0.3122968040406704,5.9336392767727375,0.95
+full_resnet18_100_rounds,diagnose_or_switch_after_10_rounds,3,fp32,100,10,24.98374432325363,2.498374432325363,22.48536989092827,0.9
+full_resnet18_100_rounds,diagnose_or_switch_after_10_rounds,3,fp16,100,10,12.491872161626816,1.2491872161626816,11.242684945464134,0.9
+full_resnet18_100_rounds,diagnose_or_switch_after_10_rounds,3,int8,100,10,6.245936080813408,0.6245936080813408,5.621342472732067,0.9
+full_resnet18_100_rounds,diagnose_or_switch_after_25_rounds,3,fp32,100,25,24.98374432325363,6.245936080813408,18.737808242440224,0.75
+full_resnet18_100_rounds,diagnose_or_switch_after_25_rounds,3,fp16,100,25,12.491872161626816,3.122968040406704,9.368904121220112,0.75
+full_resnet18_100_rounds,diagnose_or_switch_after_25_rounds,3,int8,100,25,6.245936080813408,1.561484020203352,4.684452060610056,0.75
