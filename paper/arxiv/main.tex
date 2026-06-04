@@ -7,6 +7,8 @@
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,fit,positioning}
 \usepackage{microtype}
 \usepackage{times}
 \usepackage{placeins}
@@ -88,9 +90,11 @@ In federated computational pathology, raw sample count is not the same as task-s
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.86\textwidth]{figures/dominant-site-figure-1-problem-schematic.png}
-\caption{Problem schematic. FedAvg uses sample count as aggregation authority, but a high-volume site can have a training-label process that is less aligned with the declared validation objective.}
-\label{fig:problem_schematic}
+\resizebox{\textwidth}{!}{%
+\input{figures/federated_pathology_pipeline_diagram.tex}%
+}
+\caption{Dominant-site detector-switch federated pathology pipeline. Site-level whole-slide data are converted into Phikon feature representations, local slide-level models are trained per simulated client, and validation diagnostics drive a switch between sample-size-weighted FedAvg and a dominance-aware alternative when dominant-site shift is detected.}
+\label{fig:pipeline_diagram}
 \end{figure}
 \FloatBarrier
 
