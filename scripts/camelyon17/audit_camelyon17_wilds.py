@@ -67,7 +67,27 @@ def load_wilds_camelyon17(root: Path, download: bool):
 
 
 def metadata_dataframe(dataset: Any) -> pd.DataFrame:
-    """Return one row per example with y plus WILDS metadata columns."""
+    """Return one row per example with y plus WILDS metadata columns.
+
+    Prefer WILDS internal metadata tables so this audit does not load image
+    patches. Falling back to dataset[idx] is kept only for tiny fake datasets
+    used in unit tests.
+    """
+    if hasattr(dataset, "_metadata_df"):
+        df = dataset._metadata_df.copy().reset_index(drop=True)
+        df.insert(0, "index", range(len(df)))
+
+        if "y" not in df.columns:
+            if hasattr(dataset, "_y_array"):
+                df.insert(1, "y", _to_plain(dataset._y_array))
+            elif "tumor" in df.columns:
+                df.insert(1, "y", df["tumor"].tolist())
+
+        if "center" not in df.columns and "hospital" in df.columns:
+            df["center"] = df["hospital"]
+
+        return df
+
     rows: list[dict[str, Any]] = []
     metadata_fields = list(getattr(dataset, "metadata_fields", []))
 
@@ -92,18 +112,23 @@ def split_dataframe(dataset: Any) -> pd.DataFrame:
     split_array = getattr(dataset, "split_array", None)
 
     if split_array is None:
+        split_array = getattr(dataset, "_split_array", None)
+
+    if split_array is None:
         return pd.DataFrame(columns=["index", "split"])
 
     inverse = {int(value): str(name) for name, value in split_dict.items()}
     split_values = _to_plain(split_array)
+
     for idx, split_id in enumerate(split_values):
         rows.append({"index": idx, "split": inverse.get(int(split_id), str(split_id))})
+
     return pd.DataFrame(rows)
 
 
 def pick_client_column(df: pd.DataFrame) -> str:
     """Pick the most likely hospital/domain column in Camelyon17 metadata."""
-    candidates = ["hospital", "center", "site", "domain"]
+    candidates = ["center", "hospital", "site", "domain"]
     lower_to_actual = {column.lower(): column for column in df.columns}
     for candidate in candidates:
         if candidate in lower_to_actual:
@@ -168,12 +193,13 @@ def write_markdown_report(
         "",
         f"- Total examples: {len(df):,}",
         f"- Metadata fields: {metadata_fields}",
+        f"- Available columns: {list(df.columns)}",
         f"- Selected FL client column: `{client_column}`",
         "",
         "## Split counts",
         "",
         "```json",
-        json.dumps(split_counts, indent=2, sort_keys=True),
+        json.dumps({str(k): int(v) for k, v in split_counts.items()}, indent=2, sort_keys=True),
         "```",
         "",
         "## Class counts",
@@ -204,6 +230,21 @@ def main() -> None:
     metadata = metadata_dataframe(dataset)
     splits = split_dataframe(dataset)
     df = metadata.merge(splits, on="index", how="left") if not splits.empty else metadata
+
+    # Normalize split column names. WILDS Camelyon17 metadata may already
+    # include a split column, and merging split_dataframe can create split_x
+    # / split_y. The report and downstream FL split logic expect one column:
+    # "split".
+    if "split" not in df.columns:
+        if "split_y" in df.columns:
+            df["split"] = df["split_y"]
+        elif "split_x" in df.columns:
+            df["split"] = df["split_x"]
+
+    # Keep the audit table clean after split normalization.
+    for redundant in ["split_x", "split_y"]:
+        if redundant in df.columns:
+            df = df.drop(columns=[redundant])
 
     client_column = pick_client_column(df)
     client_summary = summarize_clients(df, client_column)
