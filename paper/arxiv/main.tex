@@ -359,7 +359,11 @@ A validation-aware detector switch was then evaluated using only source-domain v
 
 A threshold sweep over 112 nearby detector settings found 43 robust-positive settings, where robust-positive required held-out test accuracy gain above 3 percentage points, held-out test macro-F1 gain above 3 percentage points, and switch rate at least 40\%. This suggests the early Camelyon17 detector result is not purely a single-threshold artifact.
 
-These results remain preliminary. They use frozen ImageNet features and logistic regression rather than pathology-specific foundation-model features or full iterative FL. The supported claim is narrower: under natural Camelyon17 center shift, source-center weighting choices materially affect held-out-center performance, and the sample-volume / site-signal alignment tradeoff appears outside the original simulated PANDA stress tests.
+I then repeated the center-weighting analysis using features from a Camelyon17 source-trained ResNet18 checkpoint rather than frozen ImageNet features. Checkpoint selection was based on source-domain validation behavior, not held-out test performance. Across 5 seeds, FedAvg-style equal-patch weighting reached 0.9991 source-train accuracy but only 0.9052 held-out test accuracy. Equal-client weighting reached 0.9318 held-out test accuracy, a +2.66 percentage-point gain, and downweight-dominant weighting reached 0.9322 held-out test accuracy, a +2.70 percentage-point gain. This indicates that the weighting effect survives beyond generic ImageNet features, although the gain is smaller with stronger learned features.
+
+
+
+These results remain preliminary. They use sampled feature-level baselines and logistic-regression weighting probes rather than full iterative FL or pathology foundation-model features. The supported claim is narrower: under natural Camelyon17 center shift, source-center weighting choices materially affect held-out-center performance, and the sample-volume / site-signal alignment tradeoff appears outside the original simulated PANDA stress tests.
 
 
 \subsection{FAIR-WEIGHTS-H}

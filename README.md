@@ -71,16 +71,22 @@ A new Camelyon17/WILDS feature-level validation layer tests whether the site-sig
 | Source-domain training centers | 0, 3, 4 |
 | OOD validation center | 1 |
 | Held-out OOD test center | 2 |
-| FedAvg-style equal-patch test accuracy | 0.8312 |
-| Equal-client test accuracy | 0.9132 |
-| Equal-client test gain vs FedAvg-style | +8.20 percentage points |
-| Downweight-dominant test gain vs FedAvg-style | +7.82 percentage points |
-| Validation-aware detector switch gain | +6.58 percentage points held-out test accuracy |
-| Detector threshold sweep | 43 / 112 settings robust-positive |
+| Frozen ImageNet ResNet18: FedAvg-style test accuracy | 0.8312 |
+| Frozen ImageNet ResNet18: equal-client test accuracy | 0.9132 |
+| Frozen ImageNet ResNet18: equal-client gain vs FedAvg-style | +8.20 percentage points |
+| Frozen ImageNet ResNet18: downweight-dominant gain vs FedAvg-style | +7.82 percentage points |
+| Frozen ImageNet ResNet18: validation-aware detector switch gain | +6.58 percentage points held-out test accuracy |
+| Frozen ImageNet ResNet18: detector threshold sweep | 43 / 112 settings robust-positive |
+| Camelyon17-trained ResNet18: FedAvg-style test accuracy | 0.9052 |
+| Camelyon17-trained ResNet18: equal-client test accuracy | 0.9318 |
+| Camelyon17-trained ResNet18: downweight-dominant test accuracy | 0.9322 |
+| Camelyon17-trained ResNet18: equal-client gain vs FedAvg-style | +2.66 percentage points |
+| Camelyon17-trained ResNet18: downweight-dominant gain vs FedAvg-style | +2.70 percentage points |
+| Camelyon17-trained ResNet18: FedAvg-style source-train accuracy | 0.9991 |
 
 Interpretation:
 
-> In early Camelyon17/WILDS feature-level baselines, FedAvg-style equal-patch weighting performs better on source-like validation, but equal-client weighting performs substantially better on the held-out external test center. A validation-aware detector-switch rule recovers much of that held-out-center gain without using test performance to choose the policy.
+> In early Camelyon17/WILDS feature-level baselines, FedAvg-style equal-patch weighting can fit the source training distribution more strongly while generalizing worse to held-out centers. The effect appears in both frozen ImageNet ResNet18 features and Camelyon17-trained ResNet18 features. With Camelyon17-trained features, FedAvg-style weighting nearly saturates source-train accuracy, while equal-client and downweight-dominant weighting improve held-out test accuracy.
 
 Full note: [Camelyon17 external-center validation](docs/research/camelyon17-external-center-validation-note.md)
 
@@ -124,7 +130,7 @@ Interpretation:
 | PCam federated smoke tests | Equal, volume, prestige, and FAIR-WEIGHTS-H strategies completed on real PCam patches split into simulated sites |
 | PCam balanced federated benchmark | Complete: FAIR-WEIGHTS-H stable, no performance degradation observed |
 | PCam heterogeneous benchmark | Complete: strategies produced different weight trajectories, but patch-level performance was insensitive to those differences |
-| Camelyon17 validation | Early external-center feature-level validation complete; pathology-specific feature validation remains next |
+| Camelyon17 validation | Early external-center validation complete with frozen ImageNet ResNet18 and Camelyon17-trained ResNet18 feature baselines; pathology foundation-model features and full iterative FL remain next |
 | Clinical validation | Not completed |
 
 ---
