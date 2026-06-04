@@ -133,6 +133,7 @@ Interpretation:
 | Camelyon17 validation | Early external-center validation complete with frozen ImageNet ResNet18 and Camelyon17-trained ResNet18 feature baselines; pathology foundation-model features and full iterative FL remain next |
 | Camelyon17 communication accounting | Full ResNet18 FL estimated at 24.98 GB for 100 fp32 rounds across 3 clients; feature/head federation estimated at 2.35 MB, about 10,894x smaller |
 | Camelyon17 accuracy per communication | Same feature/head communication budget: equal-client improves held-out test accuracy by +2.66 points and downweight-dominant improves by +2.70 points over FedAvg-style weighting |
+| Camelyon17 privacy-noise stress | Coefficient-noise probe, not formal DP: equal-client and downweight-dominant remain positive versus FedAvg-style across all tested noise levels up to noise_std 0.20 |
 | Clinical validation | Not completed |
 
 ---
