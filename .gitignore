@@ -249,3 +249,5 @@ results/camelyon17_supervised_resnet18/supervised_resnet18_weighting_seed_*.md
 results/camelyon17_supervised_resnet18/supervised_resnet18_weighting_5seed_all.csv
 # Camelyon17 privacy raw repeat outputs
 results/camelyon17_privacy/privacy_noise_stress_runs.csv
+# Camelyon17 infrastructure raw simulation outputs
+results/camelyon17_infrastructure/infrastructure_simulation_runs.csv
