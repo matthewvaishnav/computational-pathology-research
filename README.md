@@ -131,6 +131,7 @@ Interpretation:
 | PCam balanced federated benchmark | Complete: FAIR-WEIGHTS-H stable, no performance degradation observed |
 | PCam heterogeneous benchmark | Complete: strategies produced different weight trajectories, but patch-level performance was insensitive to those differences |
 | Camelyon17 validation | Early external-center validation complete with frozen ImageNet ResNet18 and Camelyon17-trained ResNet18 feature baselines; pathology foundation-model features and full iterative FL remain next |
+| Camelyon17 communication accounting | Full ResNet18 FL estimated at 24.98 GB for 100 fp32 rounds across 3 clients; feature/head federation estimated at 2.35 MB, about 10,894x smaller |
 | Clinical validation | Not completed |
 
 ---
