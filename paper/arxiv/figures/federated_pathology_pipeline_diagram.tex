@@ -3,7 +3,6 @@
 \begin{tikzpicture}[
   font=\scriptsize,
   >=Latex,
-  node distance=0.46cm and 0.68cm,
   stage/.style={font=\bfseries\scriptsize, align=center},
   box/.style={draw, rounded corners=1.2pt, align=center, inner sep=3pt, fill=gray!5},
   cubebox/.style={draw, align=center, inner sep=3pt, fill=gray!7, minimum height=0.72cm},
@@ -13,56 +12,80 @@
 ]
 
 % Column headers.
-\node[stage] (h1) at (0, 7.2) {1) Whole-slide images\\/ site data};
-\node[stage] (h2) at (2.8, 7.2) {2) Patch / feature\\extraction};
-\node[stage] (h3) at (5.7, 7.2) {3) Local slide-level model\\(per site)};
-\node[stage] (h4) at (9.2, 7.2) {4) Federated aggregation\\(two alternatives)};
-\node[stage] (h5) at (12.0, 7.2) {5) Validation diagnostics\\(monitored on hold-out set)};
-\node[stage] (h6) at (14.8, 4.7) {6) Detector-switch rule\\(uses diagnostics)};
-\node[stage] (h7) at (17.2, 4.7) {7) Output};
+\node[stage] at (0, 7.2) {1) Whole-slide images\\/ site data};
+\node[stage] at (2.8, 7.2) {2) Patch / feature\\extraction};
+\node[stage] at (5.7, 7.2) {3) Local slide-level model\\(per site)};
+\node[stage] at (9.2, 7.2) {4) Federated aggregation\\(two alternatives)};
+\node[stage] at (12.0, 7.2) {5) Validation diagnostics\\(monitored on hold-out set)};
+\node[stage] at (14.8, 4.7) {6) Detector-switch rule\\(uses diagnostics)};
+\node[stage] at (17.2, 4.7) {7) Output};
 
-% Helper coordinates for four site rows.
-\foreach \row/\y/\name/\slides in {
-  1/6.0/{Site 1\\(Client 1)}/{$N_1$ slides},
-  2/4.55/{Site 2\\(Client 2)}/{$N_2$ slides},
-  3/3.10/{Site 3\\(Client 3)}/{$N_3$ slides},
-  4/1.45/{Dominant\\Site\\(Client D)}/{$N_D$ slides\\$(\gg N_1,N_2,N_3)$}
-} {
-  \node[align=center, font=\bfseries\scriptsize] (site\row) at (-0.15,\y) {\name};
+% Site labels.
+\node[align=center, font=\bfseries\scriptsize] at (-0.15,6.0) {Site 1\\(Client 1)};
+\node[align=center, font=\bfseries\scriptsize] at (-0.15,4.55) {Site 2\\(Client 2)};
+\node[align=center, font=\bfseries\scriptsize] at (-0.15,3.10) {Site 3\\(Client 3)};
+\node[align=center, font=\bfseries\scriptsize] at (-0.15,1.45) {Dominant\\Site\\(Client D)};
 
-  % Slide stack: layered rectangles plus a pale tissue oval.
+% Slide stacks.
+\foreach \y/\lab in {6.0/{$N_1$ slides},4.55/{$N_2$ slides},3.10/{$N_3$ slides},1.45/{$N_D$ slides\\$(\gg N_1,N_2,N_3)$}} {
   \draw[fill=white] (0.72,\y-0.34) rectangle (1.18,\y+0.34);
   \draw[fill=white] (0.66,\y-0.30) rectangle (1.12,\y+0.38);
   \draw[fill=white] (0.60,\y-0.26) rectangle (1.06,\y+0.42);
   \draw[fill=gray!12] (0.73,\y-0.16) ellipse (0.16 and 0.25);
-  \node[align=center] at (0.88,\y-0.62) {\slides};
-
-  % Feature cuboid.
-  \node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (feat\row) at (2.85,\y) {Phikon\\768-d\\$\cdots$};
-  \draw (feat\row.north east) -- ++(0.20,0.16) -- ++(0,-0.60) -- (feat\row.south east);
-  \draw (feat\row.north west) -- ++(0.20,0.16) -- ++(1.05,0) -- (feat\row.north east);
-  \foreach \dx in {-0.34,-0.12,0.10,0.32} {\draw[gray!50] ($(feat\row.center)+(\dx,-0.30)$) -- ($(feat\row.center)+(\dx,0.30)$);}
-  \foreach \dy in {-0.12,0.10} {\draw[gray!50] ($(feat\row.center)+(-0.52,\dy)$) -- ($(feat\row.center)+(0.52,\dy)$);}
-
-  % Local model stack.
-  \node[box, minimum width=1.60cm] (enc\row) at (5.65,\y+0.35) {Patch encoder\\(frozen)};
-  \node[box, minimum width=1.60cm, below=0.05cm of enc\row] (pool\row) {Attention\\pooling};
-  \node[box, minimum width=1.60cm, below=0.05cm of pool\row] (mlp\row) {MLP head};
-  \node[box, minimum width=1.60cm, below=0.05cm of mlp\row] (train\row) {Local MIL / MLP\\training};
-  \node[group, fit=(enc\row)(pool\row)(mlp\row)(train\row)] (local\row) {};
-
-  \draw[arrow] (1.20,\y) -- (feat\row.west);
-  \draw[arrow] (feat\row.east) -- (local\row.west);
+  \node[align=center] at (0.88,\y-0.62) {\lab};
 }
+\node[box, minimum width=1.85cm, align=center] at (1.05,0.20) {$\triangle$\\high volume,\\possible misalignment};
 
-% Dominant-site warning.
-\node[box, minimum width=1.85cm, align=center] (warn) at (1.05,0.20) {$\triangle$\\high volume,\\possible misalignment};
+% Feature blocks.
+\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (featone) at (2.85,6.0) {Phikon\\768-d\\$\cdots$};
+\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (feattwo) at (2.85,4.55) {Phikon\\768-d\\$\cdots$};
+\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (featthree) at (2.85,3.10) {Phikon\\768-d\\$\cdots$};
+\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (featdom) at (2.85,1.45) {Phikon\\768-d\\$\cdots$};
+\foreach \n in {featone,feattwo,featthree,featdom} {
+  \draw (\n.north east) -- ++(0.20,0.16) -- ++(0,-0.60) -- (\n.south east);
+  \draw (\n.north west) -- ++(0.20,0.16) -- ++(1.05,0) -- (\n.north east);
+}
+\draw[arrow] (1.20,6.0) -- (featone.west);
+\draw[arrow] (1.20,4.55) -- (feattwo.west);
+\draw[arrow] (1.20,3.10) -- (featthree.west);
+\draw[arrow] (1.20,1.45) -- (featdom.west);
+
+% Local model stacks.
+\node[box, minimum width=1.60cm] (encone) at (5.65,6.35) {Patch encoder\\(frozen)};
+\node[box, minimum width=1.60cm, below=0.05cm of encone] (poolone) {Attention\\pooling};
+\node[box, minimum width=1.60cm, below=0.05cm of poolone] (mlpone) {MLP head};
+\node[box, minimum width=1.60cm, below=0.05cm of mlpone] (trainone) {Local MIL / MLP\\training};
+\node[group, fit=(encone)(poolone)(mlpone)(trainone)] (localone) {};
+
+\node[box, minimum width=1.60cm] (enctwo) at (5.65,4.90) {Patch encoder\\(frozen)};
+\node[box, minimum width=1.60cm, below=0.05cm of enctwo] (pooltwo) {Attention\\pooling};
+\node[box, minimum width=1.60cm, below=0.05cm of pooltwo] (mlptwo) {MLP head};
+\node[box, minimum width=1.60cm, below=0.05cm of mlptwo] (traintwo) {Local MIL / MLP\\training};
+\node[group, fit=(enctwo)(pooltwo)(mlptwo)(traintwo)] (localtwo) {};
+
+\node[box, minimum width=1.60cm] (encthree) at (5.65,3.45) {Patch encoder\\(frozen)};
+\node[box, minimum width=1.60cm, below=0.05cm of encthree] (poolthree) {Attention\\pooling};
+\node[box, minimum width=1.60cm, below=0.05cm of poolthree] (mlpthree) {MLP head};
+\node[box, minimum width=1.60cm, below=0.05cm of mlpthree] (trainthree) {Local MIL / MLP\\training};
+\node[group, fit=(encthree)(poolthree)(mlpthree)(trainthree)] (localthree) {};
+
+\node[box, minimum width=1.60cm] (encdom) at (5.65,1.80) {Patch encoder\\(frozen)};
+\node[box, minimum width=1.60cm, below=0.05cm of encdom] (pooldom) {Attention\\pooling};
+\node[box, minimum width=1.60cm, below=0.05cm of pooldom] (mlpdom) {MLP head};
+\node[box, minimum width=1.60cm, below=0.05cm of mlpdom] (traindom) {Local MIL / MLP\\training};
+\node[group, fit=(encdom)(pooldom)(mlpdom)(traindom)] (localdom) {};
+
+\draw[arrow] (featone.east) -- (localone.west);
+\draw[arrow] (feattwo.east) -- (localtwo.west);
+\draw[arrow] (featthree.east) -- (localthree.west);
+\draw[arrow] (featdom.east) -- (localdom.west);
 
 % Convergence from local models.
 \coordinate (join) at (7.45,3.75);
-\foreach \row in {1,2,3,4} {
-  \draw[arrow] (local\row.east) -- ++(0.50,0) |- (join);
-}
+\draw[arrow] (localone.east) -- ++(0.50,0) |- (join);
+\draw[arrow] (localtwo.east) -- ++(0.50,0) |- (join);
+\draw[arrow] (localthree.east) -- ++(0.50,0) |- (join);
+\draw[arrow] (localdom.east) -- ++(0.50,0) |- (join);
 
 % Aggregation alternatives.
 \node[cubebox, minimum width=1.45cm, minimum height=1.00cm] (fedavg) at (9.15,4.55) {Route A\\[1mm]FedAvg\\(sample-size\\weighted)};
@@ -83,7 +106,7 @@ $\bullet$ severe error rate};
 
 % Detector-switch rule.
 \node[box, minimum width=2.20cm, minimum height=2.15cm] (det) at (14.8,3.40) {\Large$\circledast$\\[-1mm]
-Evaluate diagnostics\\against thresholds\\[1mm]\hrulefill\\[-1mm]
+Evaluate diagnostics\\against thresholds\\[1mm]
 \textbf{Decision}\\[1mm]
 \begin{tabular}{cc}
 Keep & Switch\\
