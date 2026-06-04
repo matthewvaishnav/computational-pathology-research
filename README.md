@@ -28,6 +28,7 @@ For readers who do not want to start with the full paper:
 6. **Research package index:** [docs/outreach/research-package-index.md](docs/outreach/research-package-index.md)
 7. **Camelyon17 external-center validation note:** [docs/research/camelyon17-external-center-validation-note.md](docs/research/camelyon17-external-center-validation-note.md)
 8. **Four pillars FL pathology status:** [docs/research/four-pillars-fl-pathology-status.md](docs/research/four-pillars-fl-pathology-status.md)
+9. **Pillar 2 bounded communication resolution:** [docs/research/pillar2-communication-bounded-resolution.md](docs/research/pillar2-communication-bounded-resolution.md)
 
 ---
 
@@ -40,8 +41,9 @@ For readers who do not want to start with the full paper:
 5. **PANDA TransnnMIL stabilization:** [PANDA TransnnMIL stabilization results](docs/results/panda-transnnmil-stability.md)
 6. **Camelyon17 external-center validation:** [early feature-level validation note](docs/research/camelyon17-external-center-validation-note.md)
 7. **Four pillars FL pathology status:** [current status report](docs/research/four-pillars-fl-pathology-status.md)
-8. **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)
-9. **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)
+8. **Pillar 2 bounded communication resolution:** [communication-overhead bounded-resolution note](docs/research/pillar2-communication-bounded-resolution.md)
+9. **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)
+10. **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)
 
 ---
 
