@@ -5,122 +5,83 @@
   >=Latex,
   stage/.style={font=\bfseries\scriptsize, align=center},
   box/.style={draw, rounded corners=1.2pt, align=center, inner sep=3pt, fill=gray!5},
-  cubebox/.style={draw, align=center, inner sep=3pt, fill=gray!7, minimum height=0.72cm},
+  cubebox/.style={draw, align=center, inner sep=3pt, fill=gray!7, minimum height=0.68cm},
   group/.style={draw, dashed, rounded corners=3pt, inner sep=5pt},
   arrow/.style={->, line width=0.45pt},
   dasharrow/.style={->, dashed, line width=0.45pt}
 ]
 
-% Column headers.
-\node[stage] at (0, 7.2) {1) Whole-slide images\\/ site data};
-\node[stage] at (2.8, 7.2) {2) Patch / feature\\extraction};
-\node[stage] at (5.7, 7.2) {3) Local slide-level model\\(per site)};
-\node[stage] at (9.2, 7.2) {4) Federated aggregation\\(two alternatives)};
-\node[stage] at (12.0, 7.2) {5) Validation diagnostics\\(monitored on hold-out set)};
-\node[stage] at (14.8, 4.7) {6) Detector-switch rule\\(uses diagnostics)};
-\node[stage] at (17.2, 4.7) {7) Output};
+% Compact high-level figure. The original detailed four-row version was too
+% crowded when scaled into a single-column PDF. This version keeps the same
+% concept but uses grouped multi-site blocks so labels remain readable.
 
-% Site labels.
-\node[align=center, font=\bfseries\scriptsize] at (-0.15,6.0) {Site 1\\(Client 1)};
-\node[align=center, font=\bfseries\scriptsize] at (-0.15,4.55) {Site 2\\(Client 2)};
-\node[align=center, font=\bfseries\scriptsize] at (-0.15,3.10) {Site 3\\(Client 3)};
-\node[align=center, font=\bfseries\scriptsize] at (-0.15,1.45) {Dominant\\Site\\(Client D)};
+% Section headers.
+\node[stage] at (0.0,4.7) {1) Multi-site\\pathology data};
+\node[stage] at (2.7,4.7) {2) Feature\\extraction};
+\node[stage] at (5.4,4.7) {3) Local\\training};
+\node[stage] at (8.3,4.7) {4) Federated\\aggregation};
+\node[stage] at (11.2,4.7) {5) Validation\\diagnostics};
+\node[stage] at (13.8,4.7) {6) Detector\\switch};
+\node[stage] at (16.0,4.7) {7) Output};
 
-% Slide stacks.
-\foreach \y/\lab in {6.0/{$N_1$ slides},4.55/{$N_2$ slides},3.10/{$N_3$ slides},1.45/{$N_D$ slides\\$(\gg N_1,N_2,N_3)$}} {
-  \draw[fill=white] (0.72,\y-0.34) rectangle (1.18,\y+0.34);
-  \draw[fill=white] (0.66,\y-0.30) rectangle (1.12,\y+0.38);
-  \draw[fill=white] (0.60,\y-0.26) rectangle (1.06,\y+0.42);
-  \draw[fill=gray!12] (0.73,\y-0.16) ellipse (0.16 and 0.25);
-  \node[align=center] at (0.88,\y-0.62) {\lab};
+% Multi-site input block.
+\node[box, minimum width=1.9cm, minimum height=3.0cm] (sites) at (0,2.6) {\textbf{Simulated sites}\\[1mm]
+Site 1: $N_1$ slides\\
+Site 2: $N_2$ slides\\
+Site 3: $N_3$ slides\\[1mm]
+\textbf{Dominant site}\\$N_D \gg N_1,N_2,N_3$};
+
+% Small WSI stack icons.
+\foreach \y in {3.55,3.05,2.55,1.85} {
+  \draw[fill=white] (-1.12,\y-0.16) rectangle (-0.78,\y+0.16);
+  \draw[fill=white] (-1.17,\y-0.11) rectangle (-0.83,\y+0.21);
+  \draw[fill=gray!12] (-1.01,\y+0.02) ellipse (0.10 and 0.13);
 }
-\node[box, minimum width=1.85cm, align=center] at (1.05,0.20) {$\triangle$\\high volume,\\possible misalignment};
+\node[box, minimum width=1.55cm, align=center] (warn) at (0,0.70) {$\triangle$ high volume\\possible misalignment};
 
-% Feature blocks.
-\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (featone) at (2.85,6.0) {Phikon\\768-d\\$\cdots$};
-\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (feattwo) at (2.85,4.55) {Phikon\\768-d\\$\cdots$};
-\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (featthree) at (2.85,3.10) {Phikon\\768-d\\$\cdots$};
-\node[cubebox, minimum width=1.05cm, minimum height=0.60cm] (featdom) at (2.85,1.45) {Phikon\\768-d\\$\cdots$};
-\foreach \n in {featone,feattwo,featthree,featdom} {
-  \draw (\n.north east) -- ++(0.20,0.16) -- ++(0,-0.60) -- (\n.south east);
-  \draw (\n.north west) -- ++(0.20,0.16) -- ++(1.05,0) -- (\n.north east);
-}
-\draw[arrow] (1.20,6.0) -- (featone.west);
-\draw[arrow] (1.20,4.55) -- (feattwo.west);
-\draw[arrow] (1.20,3.10) -- (featthree.west);
-\draw[arrow] (1.20,1.45) -- (featdom.west);
+% Feature extraction.
+\node[cubebox, minimum width=1.65cm, minimum height=1.25cm] (features) at (2.7,2.6) {Phikon feature\\cache\\768-d vectors};
+\draw (features.north east) -- ++(0.20,0.16) -- ++(0,-1.25) -- (features.south east);
+\draw (features.north west) -- ++(0.20,0.16) -- ++(1.65,0) -- (features.north east);
+\foreach \dy in {-0.25,0,0.25} {\draw[gray!50] ($(features.west)+(0,\dy)$) -- ($(features.east)+(0,\dy)$);}
 
-% Local model stacks.
-\node[box, minimum width=1.60cm] (encone) at (5.65,6.35) {Patch encoder\\(frozen)};
-\node[box, minimum width=1.60cm, below=0.05cm of encone] (poolone) {Attention\\pooling};
-\node[box, minimum width=1.60cm, below=0.05cm of poolone] (mlpone) {MLP head};
-\node[box, minimum width=1.60cm, below=0.05cm of mlpone] (trainone) {Local MIL / MLP\\training};
-\node[group, fit=(encone)(poolone)(mlpone)(trainone)] (localone) {};
+% Local training.
+\node[box, minimum width=1.8cm] (encoder) at (5.4,3.35) {frozen encoder};
+\node[box, minimum width=1.8cm, below=0.08cm of encoder] (pool) {attention pooling};
+\node[box, minimum width=1.8cm, below=0.08cm of pool] (head) {MLP / MIL head};
+\node[box, minimum width=1.8cm, below=0.08cm of head] (updates) {client updates};
+\node[group, fit=(encoder)(pool)(head)(updates), label={[font=\bfseries\scriptsize]below:local slide-level models}] (local) {};
 
-\node[box, minimum width=1.60cm] (enctwo) at (5.65,4.90) {Patch encoder\\(frozen)};
-\node[box, minimum width=1.60cm, below=0.05cm of enctwo] (pooltwo) {Attention\\pooling};
-\node[box, minimum width=1.60cm, below=0.05cm of pooltwo] (mlptwo) {MLP head};
-\node[box, minimum width=1.60cm, below=0.05cm of mlptwo] (traintwo) {Local MIL / MLP\\training};
-\node[group, fit=(enctwo)(pooltwo)(mlptwo)(traintwo)] (localtwo) {};
+% Aggregation routes.
+\node[cubebox, minimum width=1.75cm, minimum height=0.95cm] (fedavg) at (8.3,3.25) {Route A\\FedAvg\\sample-weighted};
+\node[cubebox, minimum width=1.75cm, minimum height=0.95cm] (blend) at (8.3,1.80) {Route B\\switched /\\site-aware blend};
+\node[group, fit=(fedavg)(blend), label={[font=\bfseries\scriptsize]below:aggregation candidates}] (agg) {};
 
-\node[box, minimum width=1.60cm] (encthree) at (5.65,3.45) {Patch encoder\\(frozen)};
-\node[box, minimum width=1.60cm, below=0.05cm of encthree] (poolthree) {Attention\\pooling};
-\node[box, minimum width=1.60cm, below=0.05cm of poolthree] (mlpthree) {MLP head};
-\node[box, minimum width=1.60cm, below=0.05cm of mlpthree] (trainthree) {Local MIL / MLP\\training};
-\node[group, fit=(encthree)(poolthree)(mlpthree)(trainthree)] (localthree) {};
-
-\node[box, minimum width=1.60cm] (encdom) at (5.65,1.80) {Patch encoder\\(frozen)};
-\node[box, minimum width=1.60cm, below=0.05cm of encdom] (pooldom) {Attention\\pooling};
-\node[box, minimum width=1.60cm, below=0.05cm of pooldom] (mlpdom) {MLP head};
-\node[box, minimum width=1.60cm, below=0.05cm of mlpdom] (traindom) {Local MIL / MLP\\training};
-\node[group, fit=(encdom)(pooldom)(mlpdom)(traindom)] (localdom) {};
-
-\draw[arrow] (featone.east) -- (localone.west);
-\draw[arrow] (feattwo.east) -- (localtwo.west);
-\draw[arrow] (featthree.east) -- (localthree.west);
-\draw[arrow] (featdom.east) -- (localdom.west);
-
-% Convergence from local models.
-\coordinate (join) at (7.45,3.75);
-\draw[arrow] (localone.east) -- ++(0.50,0) |- (join);
-\draw[arrow] (localtwo.east) -- ++(0.50,0) |- (join);
-\draw[arrow] (localthree.east) -- ++(0.50,0) |- (join);
-\draw[arrow] (localdom.east) -- ++(0.50,0) |- (join);
-
-% Aggregation alternatives.
-\node[cubebox, minimum width=1.45cm, minimum height=1.00cm] (fedavg) at (9.15,4.55) {Route A\\[1mm]FedAvg\\(sample-size\\weighted)};
-\node[cubebox, minimum width=1.45cm, minimum height=1.00cm] (blend) at (9.15,2.35) {Route B\\[1mm]Cross-site blend\\/ switched\\aggregation};
-\node[group, fit=(fedavg)(blend), label={[font=\bfseries\scriptsize]above:Federated aggregation}] (agg) {};
-\draw[arrow] (join) -- (agg.west);
-\draw[dasharrow] (fedavg.south) -- node[right]{Alternative} (blend.north);
-\draw[dasharrow] (blend.north) -- (fedavg.south);
-
-% Diagnostics.
-\node[box, minimum width=2.45cm, minimum height=1.65cm, align=left] (diag) at (12.0,5.55) {\textbf{Validation diagnostics}\\[-1mm]
+% Diagnostics and switch.
+\node[box, minimum width=2.15cm, minimum height=1.45cm, align=left] (diag) at (11.2,3.25) {\textbf{Monitor}\\[-1mm]
 $\bullet$ global QWK\\
 $\bullet$ worst-site QWK\\
-$\bullet$ site-QWK spread\\
-$\bullet$ mean absolute ordinal error\\
-$\bullet$ severe error rate};
-\draw[dasharrow] (agg.north) -- (diag.south);
+$\bullet$ site spread\\
+$\bullet$ ordinal error};
 
-% Detector-switch rule.
-\node[box, minimum width=2.20cm, minimum height=2.15cm] (det) at (14.8,3.40) {\Large$\circledast$\\[-1mm]
-Evaluate diagnostics\\against thresholds\\[1mm]
-\textbf{Decision}\\[1mm]
-\begin{tabular}{cc}
-Keep & Switch\\
-FedAvg & aggregation\\
-(Route A) & (Route B)
-\end{tabular}};
-\draw[dasharrow] (diag.east) -- ++(0.55,0) |- (det.north);
-\draw[arrow] (agg.east) -- (det.west);
+\node[box, minimum width=1.75cm, minimum height=1.45cm] (switch) at (13.8,2.55) {threshold\\rule\\[1mm]
+\textbf{keep} FedAvg\\or\\\textbf{switch}};
 
 % Output.
-\node[cubebox, minimum width=1.30cm, minimum height=1.05cm] (model) at (17.2,3.85) {Global\\pathology\\model};
-\node[box, minimum width=1.75cm, align=center] (robust) at (17.2,2.15) {$\checkmark$\\Improved robustness\\under dominant-site\\shift};
-\draw[arrow] (det.east) -- (model.west);
-\draw[arrow] (model.south) -- (robust.north);
+\node[cubebox, minimum width=1.55cm, minimum height=1.00cm] (model) at (16.0,3.05) {global\\pathology\\model};
+\node[box, minimum width=1.75cm] (robust) at (16.0,1.55) {robustness under\\dominant-site shift};
 
-\node[font=\bfseries\small] at (8.6,-0.35) {Figure: Dominant-site detector-switch federated pathology pipeline};
+% Flow arrows.
+\draw[arrow] (sites.east) -- (features.west);
+\draw[arrow] (features.east) -- (local.west);
+\draw[arrow] (local.east) -- (agg.west);
+\draw[arrow] (fedavg.east) -- (diag.west);
+\draw[dasharrow] (blend.east) -- ++(0.55,0) |- (diag.south);
+\draw[arrow] (diag.east) -- (switch.west);
+\draw[arrow] (switch.east) -- (model.west);
+\draw[arrow] (model.south) -- (robust.north);
+\draw[dasharrow] (switch.south west) -- ++(-1.0,-0.55) -| node[pos=0.25,below]{switch decision} (blend.south);
+\draw[dasharrow] (switch.north west) -- ++(-1.0,0.65) -| (fedavg.north);
+
+\node[font=\bfseries\small] at (8.0,0.05) {Dominant-site detector-switch federated pathology pipeline};
 \end{tikzpicture}
