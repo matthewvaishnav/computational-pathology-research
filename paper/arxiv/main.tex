@@ -35,6 +35,24 @@
 \emergencystretch=3em
 \sloppy
 
+% Force the abstract to use the same no-indent paragraph style as the paper body.
+% The standard article abstract internally uses a list-like environment that
+% reintroduces first-line indentation unless it is overridden explicitly.
+\renewenvironment{abstract}
+  {%
+    \begin{center}%
+      \bfseries \abstractname
+    \end{center}%
+    \begin{quote}%
+      \small
+      \setlength{\parindent}{0pt}%
+      \setlength{\parskip}{0.58em plus 0.12em minus 0.05em}%
+      \noindent\ignorespaces
+  }
+  {%
+    \end{quote}%
+  }
+
 \title{When More Data Is Less Trustworthy:\\
 Site-Signal Alignment Failure Modes in Federated Computational Pathology}
 
