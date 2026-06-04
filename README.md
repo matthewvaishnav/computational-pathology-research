@@ -27,6 +27,7 @@ For readers who do not want to start with the full paper:
 5. **Outreach list:** [docs/outreach/outreach-list.md](docs/outreach/outreach-list.md)
 6. **Research package index:** [docs/outreach/research-package-index.md](docs/outreach/research-package-index.md)
 7. **Camelyon17 external-center validation note:** [docs/research/camelyon17-external-center-validation-note.md](docs/research/camelyon17-external-center-validation-note.md)
+8. **Four pillars FL pathology status:** [docs/research/four-pillars-fl-pathology-status.md](docs/research/four-pillars-fl-pathology-status.md)
 
 ---
 
@@ -38,8 +39,9 @@ For readers who do not want to start with the full paper:
 4. **Detector ablation and calibration sensitivity:** [detector diagnostic ablation summary](docs/research/detector-diagnostic-ablation.md)
 5. **PANDA TransnnMIL stabilization:** [PANDA TransnnMIL stabilization results](docs/results/panda-transnnmil-stability.md)
 6. **Camelyon17 external-center validation:** [early feature-level validation note](docs/research/camelyon17-external-center-validation-note.md)
-7. **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)
-8. **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)
+7. **Four pillars FL pathology status:** [current status report](docs/research/four-pillars-fl-pathology-status.md)
+8. **Claim boundary:** [CLAIM_BOUNDARY.md](CLAIM_BOUNDARY.md)
+9. **Recruiter / hiring manager quick read:** [RECRUITER_README.md](RECRUITER_README.md)
 
 ---
 
