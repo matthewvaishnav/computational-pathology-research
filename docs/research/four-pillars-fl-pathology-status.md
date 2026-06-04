@@ -24,7 +24,7 @@ The current work does not fully solve all four. It establishes measurable resear
 | Pillar | Problem | Current status | Verdict |
 |---|---|---|---|
 | 1 | Severe data heterogeneity / Non-IID site shift | PANDA stress tests plus Camelyon17 external-center validation | Strong progress |
-| 2 | Massive communication overhead | Communication accounting plus accuracy-per-communication proxy | Started |
+| 2 | Massive communication overhead | Bounded Camelyon17 feature/head communication resolution plus accuracy-per-communication proxy | Bounded resolution |
 | 3 | Residual privacy risks | Coefficient-noise privacy-style robustness probe | Started |
 | 4 | Implementation / infrastructure barriers | Infrastructure-friction simulation with client speed/dropout/straggler accounting | Started |
 
@@ -79,6 +79,16 @@ This does not prove clinical readiness, universal superiority of equal-client we
 
 ## Pillar 2: Massive communication overhead
 
+### Bounded-resolution status
+
+Pillar 2 has a bounded resolution for the Camelyon17 feature/head federation regime.
+
+This does not solve all FL communication overhead in computational pathology. It resolves the communication-overhead objection only under the explicit assumptions used in this repository: 3 source clients, 100 fp32 rounds, binary ResNet18 full-model comparison, and 512-to-2 feature/head federation.
+
+The bounded-resolution artifact is documented here:
+
+[../research/pillar2-communication-bounded-resolution.md](pillar2-communication-bounded-resolution.md)
+
 ### Evidence
 
 A Camelyon17 communication-overhead analysis was added to quantify full-model versus feature/head communication.
@@ -107,7 +117,7 @@ The equal-client and downweight-dominant gains are not purchased by additional c
 
 ### Interpretation
 
-Pillar 2 is not solved. The current contribution is an auditable accounting framework and an accuracy-per-communication proxy.
+Pillar 2 is solved only in a bounded sense: communication overhead is no longer an open blocker for the Camelyon17 feature/head validation regime. The broader full-model FL communication problem remains open.
 
 ### Next step
 
@@ -192,12 +202,12 @@ Move from simulation to containerized deployment tests using Flower, FedML, or N
 
 ## Overall conclusion
 
-The four pillars have not all been taken down.
+The four pillars have not all been taken down, but Pillar 2 now has a bounded resolution.
 
 The current honest status is:
 
 - Pillar 1 has strong evidence and is the core research contribution.
-- Pillar 2 has measurable communication accounting and accuracy-per-communication proxy results.
+- Pillar 2 has a bounded resolution for the Camelyon17 feature/head validation regime, plus measurable communication accounting and accuracy-per-communication proxy results.
 - Pillar 3 has a first privacy-noise robustness probe but no formal privacy guarantee.
 - Pillar 4 has a first infrastructure-friction simulation but no real deployment benchmark.
 
