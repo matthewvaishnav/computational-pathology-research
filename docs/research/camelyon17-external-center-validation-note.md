@@ -162,6 +162,46 @@ The important point is that the detector still recovers a large held-out-center 
 
 ---
 
+## Camelyon17-trained supervised ResNet18 feature validation
+
+The frozen ImageNet feature result is useful as a fast external-center baseline, but a natural objection is that ImageNet features are not pathology-specific. I therefore trained an ImageNet-initialized ResNet18 on Camelyon17 source-domain centers and used the resulting penultimate-layer features for the same center-weighting analysis.
+
+Training and checkpoint selection:
+
+- Training split: source centers 0, 3, and 4.
+- Checkpoint selection: source-domain validation behavior.
+- Held-out test center: not used for checkpoint selection.
+
+The 5-seed supervised-feature result showed the same direction with smaller but cleaner gains.
+
+FedAvg-style equal-patch weighting:
+
+- Train accuracy: 0.9991
+- Source-domain validation accuracy: 0.9641
+- OOD validation accuracy: 0.8986
+- Held-out OOD test accuracy: 0.9052
+
+Equal-client weighting:
+
+- Train accuracy: 0.9683
+- Source-domain validation accuracy: 0.9698
+- OOD validation accuracy: 0.9232
+- Held-out OOD test accuracy: 0.9318
+- Held-out test gain versus FedAvg-style equal-patch weighting: +0.0266 accuracy, or +2.66 percentage points.
+
+Downweight-dominant-center weighting:
+
+- Train accuracy: 0.9681
+- Source-domain validation accuracy: 0.9692
+- OOD validation accuracy: 0.9228
+- Held-out OOD test accuracy: 0.9322
+- Held-out test gain versus FedAvg-style equal-patch weighting: +0.0270 accuracy, or +2.70 percentage points.
+
+Interpretation:
+
+The effect survives when moving from frozen ImageNet features to Camelyon17-trained supervised features. The gain is smaller because the learned features are stronger overall, but the generalization pattern is cleaner: FedAvg-style equal-patch weighting nearly saturates source training accuracy, while equal-client and downweight-dominant weighting improve source-domain validation, OOD validation, and held-out OOD test performance.
+
+---
 ## Threshold sweep
 
 To test whether the detector result depended on one hand-picked threshold, a local threshold sweep was run.
