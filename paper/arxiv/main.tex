@@ -331,6 +331,37 @@ The PANDA slide-level work uses 10,611 readable Phikon feature bags with feature
 \subsection{PathologyFL}
 PathologyFL provides the federated execution layer for simulated-site computational pathology experiments. It includes coordinator/client workflows, weighted aggregation, privacy hooks, and robustness-oriented diagnostics. These systems support research experiments but do not establish real multi-center deployment readiness.
 
+\subsection{Camelyon17 external-center validation}
+As an early external-center validation layer, I evaluated frozen ImageNet ResNet18 feature baselines on Camelyon17/WILDS. Camelyon17 provides a natural multi-center structure: source-domain training uses centers 0, 3, and 4; source-domain validation uses the same centers; OOD validation uses center 1; and held-out OOD test uses center 2.
+
+The goal of this experiment is not to claim final clinical performance. It is to test whether the site-signal alignment pattern appears under natural external-center shift before full pathology-specific feature extraction or full iterative federated learning.
+
+Across 5 seeds, FedAvg-style equal-patch weighting performed better on source-like validation but worse on the held-out test center. Equal-client weighting improved held-out test-center accuracy by 8.20 percentage points over FedAvg-style equal-patch weighting. Downweighting the dominant source center improved held-out test-center accuracy by 7.82 percentage points.
+
+\begin{table}[!htbp]
+\centering
+\caption{Early Camelyon17/WILDS external-center feature-level validation. Values are 5-seed mean accuracies using frozen ImageNet ResNet18 features and logistic regression.}
+\label{tab:camelyon17_external}
+\begin{tabular}{lrrrr}
+\toprule
+Policy & id\_val acc. & val acc. & test acc. & test delta vs. FedAvg \\
+\midrule
+FedAvg-style equal-patch & 0.9303 & 0.8668 & 0.8312 & 0.0000 \\
+Equal-client & 0.9149 & 0.8258 & 0.9132 & +0.0820 \\
+Downweight dominant center & 0.9125 & 0.8246 & 0.9094 & +0.0782 \\
+Detector switch to equal-client & -- & -- & -- & +0.0658 \\
+Detector switch to downweight dominant & -- & -- & -- & +0.0628 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A validation-aware detector switch was then evaluated using only source-domain validation and OOD-validation diagnostics; the held-out test center was not used to choose the policy. With a simple transparent rule, the equal-client detector switch improved held-out test-center accuracy by 6.58 percentage points, while the downweight-dominant detector switch improved held-out test-center accuracy by 6.28 percentage points.
+
+A threshold sweep over 112 nearby detector settings found 43 robust-positive settings, where robust-positive required held-out test accuracy gain above 3 percentage points, held-out test macro-F1 gain above 3 percentage points, and switch rate at least 40\%. This suggests the early Camelyon17 detector result is not purely a single-threshold artifact.
+
+These results remain preliminary. They use frozen ImageNet features and logistic regression rather than pathology-specific foundation-model features or full iterative FL. The supported claim is narrower: under natural Camelyon17 center shift, source-center weighting choices materially affect held-out-center performance, and the sample-volume / site-signal alignment tradeoff appears outside the original simulated PANDA stress tests.
+
+
 \subsection{FAIR-WEIGHTS-H}
 FAIR-WEIGHTS-H is an auditable institutional weighting protocol that separates training weight, validation representation priority, and monitoring priority. Its intended role is to enforce pre-specified representation and subgroup-performance constraints rather than to claim that a learned scalar weight proves institutional fairness. Current empirical status is conservative: FAIR-WEIGHTS-H runs and produces distinct weight trajectories under heterogeneous simulated sites, but it has not yet demonstrated a consistent performance or fairness advantage over simpler baselines.
 
