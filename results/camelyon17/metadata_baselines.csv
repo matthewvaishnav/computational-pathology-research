@@ -1,0 +1,13 @@
+baseline,split,client_id,n,predicted_label,accuracy,balanced_accuracy,macro_f1
+global_train_majority,id_val,all,33560,1,0.49487485101311085,0.5,0.33104767979588584
+global_train_majority,test,all,85054,1,0.5,0.5,0.3333333333333333
+global_train_majority,train,all,302436,1,0.500568715364573,0.5,0.33358599992067445
+global_train_majority,val,all,34904,1,0.5,0.5,0.3333333333333333
+client_majority_or_global_fallback,id_val,0,6011,1,0.495591415737814,0.5,0.3313681868743048
+client_majority_or_global_fallback,id_val,3,12879,1,0.4966224085720941,0.5,0.33182879377431906
+client_majority_or_global_fallback,id_val,4,14670,1,0.4930470347648262,0.5,0.33022873578961787
+client_majority_or_global_fallback,test,2,85054,1,0.5,0.5,0.3333333333333333
+client_majority_or_global_fallback,train,0,53425,1,0.5004960224613945,0.5,0.3335537148844868
+client_majority_or_global_fallback,train,3,116959,1,0.5003719252045589,0.5,0.3334985924482283
+client_majority_or_global_fallback,train,4,132052,1,0.5007724229848848,0.5,0.3336764557473004
+client_majority_or_global_fallback,val,1,34904,1,0.5,0.5,0.3333333333333333

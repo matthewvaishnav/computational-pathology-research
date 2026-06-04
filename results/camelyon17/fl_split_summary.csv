@@ -1,0 +1,9 @@
+client_id,split,fl_role,0,1,total_n
+0,id_val,source_domain_validation,3032,2979,6011
+3,id_val,source_domain_validation,6483,6396,12879
+4,id_val,source_domain_validation,7437,7233,14670
+2,test,ood_test,42527,42527,85054
+0,train,federated_train,26686,26739,53425
+3,train,federated_train,58436,58523,116959
+4,train,federated_train,65924,66128,132052
+1,val,ood_validation,17452,17452,34904
