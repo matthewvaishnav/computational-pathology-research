@@ -232,3 +232,10 @@ patents/
 Dockerfile.dev
 *.yaml.bak
 *.yml.bak
+# Local WILDS/Camelyon17 dataset
+data/wilds/
+
+# Large Camelyon17 per-example artifacts
+results/camelyon17/metadata_audit.csv
+results/camelyon17/fl_client_manifest.csv
+results/camelyon17/seed_*/
