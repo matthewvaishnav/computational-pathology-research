@@ -25,6 +25,7 @@ FIGURES = [
     ROOT / "figures" / "dominant-site-figure-1-problem-schematic.png",
     ROOT / "figures" / "dominant-site-figure-3-detector-transfer.png",
     ROOT / "figures" / "dominant-site-figure-4-detector-ablation.png",
+    ARXIV / "figures" / "federated_pathology_pipeline_diagram.tex",
 ]
 
 FILES = [
@@ -60,6 +61,26 @@ The result tables, run diagnostics, diagnostic summaries, ablation outputs, cali
 Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
 """
 
+PIPELINE_FIGURE = r"""\begin{figure}[!htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\input{figures/federated_pathology_pipeline_diagram.tex}%
+}
+\caption{Dominant-site detector-switch federated pathology pipeline. Site-level whole-slide data are converted into Phikon feature representations, local slide-level models are trained per simulated client, and validation diagnostics drive a switch between sample-size-weighted FedAvg and a dominance-aware alternative when dominant-site shift is detected.}
+\label{fig:pipeline_diagram}
+\end{figure}
+\FloatBarrier
+"""
+
+PROBLEM_SCHEMATIC_FIGURE = r"""\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.86\textwidth]{figures/dominant-site-figure-1-problem-schematic.png}
+\caption{Problem schematic. FedAvg uses sample count as aggregation authority, but a high-volume site can have a training-label process that is less aligned with the declared validation objective.}
+\label{fig:problem_schematic}
+\end{figure}
+\FloatBarrier
+"""
+
 
 def copy_required(src: Path, dst: Path) -> None:
     if not src.exists():
@@ -82,6 +103,13 @@ def apply_classic_paper_format(path: Path) -> None:
 
     if r"\PassOptionsToPackage{hyphens}{url}" not in text:
         text = text.replace(r"\usepackage{hyperref}", r"\PassOptionsToPackage{hyphens}{url}" + "\n" + r"\usepackage{hyperref}")
+
+    if r"\usepackage{tikz}" not in text:
+        tikz = "\n".join([
+            r"\usepackage{tikz}",
+            r"\usetikzlibrary{arrows.meta,calc,fit,positioning}",
+        ])
+        text = text.replace(r"\usepackage{xcolor}", r"\usepackage{xcolor}" + "\n" + tikz)
 
     if r"\setlength{\parskip}" not in text:
         insert = "\n".join([
@@ -107,6 +135,10 @@ def apply_classic_paper_format(path: Path) -> None:
     text = text.replace(r"width=0.92\textwidth", r"width=0.88\textwidth")
     text = text.replace(r"width=0.95\textwidth", r"width=0.88\textwidth")
 
+    # Replace the original compact problem schematic with the fuller 3D-style
+    # LaTeX-native pipeline diagram in the build PDF.
+    text = text.replace(PROBLEM_SCHEMATIC_FIGURE, PIPELINE_FIGURE)
+
     # Replace long raw filesystem paths with short paper-style artifact labels.
     text = text.replace(REPRO_OLD, REPRO_NEW)
 
@@ -115,16 +147,8 @@ def apply_classic_paper_format(path: Path) -> None:
         "\\paragraph{Working thesis.}\n"
         "In federated computational pathology, raw sample count is not the same as task-specific site-signal alignment. FedAvg can become less safe when the largest simulated pathology client has a training-label process that is misaligned with the validation objective, and dominance-aware aggregation or switching can reduce that risk under controlled stress.\n"
     )
-    figure1 = (
-        thesis + "\n"
-        "\\begin{figure}[t]\n"
-        "\\centering\n"
-        "\\includegraphics[width=0.88\\textwidth]{figures/dominant-site-figure-1-problem-schematic.png}\n"
-        "\\caption{Problem schematic. FedAvg uses sample count as aggregation authority, but a high-volume site can have a training-label process that is less aligned with the declared validation objective.}\n"
-        "\\label{fig:problem_schematic}\n"
-        "\\end{figure}\n"
-    )
-    if "dominant-site-figure-1-problem-schematic.png" not in text and thesis in text:
+    figure1 = thesis + "\n" + PIPELINE_FIGURE
+    if "federated_pathology_pipeline_diagram.tex" not in text and thesis in text:
         text = text.replace(thesis, figure1)
 
     calib = (
