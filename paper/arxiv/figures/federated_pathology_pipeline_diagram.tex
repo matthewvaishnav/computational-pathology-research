@@ -94,12 +94,30 @@
 \VectorLayer{9.35}{2.42}{0.48}{0.90}{6}{logitD}
 \VectorLayer{10.65}{2.42}{0.62}{0.90}{$\Delta\theta_D$}{updD}
 
-% Local arrows.
-\foreach \a/\b in {
-  wsi1/patch1,patch1/feat1,feat1/proj1,proj1/att1,att1/rep1,rep1/logit1,logit1/upd1,
-  wsi2/patch2,patch2/feat2,feat2/proj2,proj2/att2,att2/rep2,rep2/logit2,logit2/upd2,
-  wsiD/patchD,patchD/featD,featD/projD,projD/attD,attD/repD,repD/logitD,logitD/updD
-}{\draw[flow] (\a-east)--(\b-west);}
+% Explicit local arrows avoid whitespace-sensitive foreach parsing.
+\draw[flow] (wsi1-east)--(patch1-west);
+\draw[flow] (patch1-east)--(feat1-west);
+\draw[flow] (feat1-east)--(proj1-west);
+\draw[flow] (proj1-east)--(att1-west);
+\draw[flow] (att1-east)--(rep1-west);
+\draw[flow] (rep1-east)--(logit1-west);
+\draw[flow] (logit1-east)--(upd1-west);
+
+\draw[flow] (wsi2-east)--(patch2-west);
+\draw[flow] (patch2-east)--(feat2-west);
+\draw[flow] (feat2-east)--(proj2-west);
+\draw[flow] (proj2-east)--(att2-west);
+\draw[flow] (att2-east)--(rep2-west);
+\draw[flow] (rep2-east)--(logit2-west);
+\draw[flow] (logit2-east)--(upd2-west);
+
+\draw[flow] (wsiD-east)--(patchD-west);
+\draw[flow] (patchD-east)--(featD-west);
+\draw[flow] (featD-east)--(projD-west);
+\draw[flow] (projD-east)--(attD-west);
+\draw[flow] (attD-east)--(repD-west);
+\draw[flow] (repD-east)--(logitD-west);
+\draw[flow] (logitD-east)--(updD-west);
 
 % Dimension annotations below stage columns, not inside the lanes.
 \node[dim] at (0.62,1.82) {$N_D\gg N_i$ only changes sample volume};
