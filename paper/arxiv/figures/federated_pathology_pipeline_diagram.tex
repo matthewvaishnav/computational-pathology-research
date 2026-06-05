@@ -1,100 +1,163 @@
-% LaTeX-native two-row pipeline diagram for the dominant-site detector-switch paper figure.
-% This file is input from main.tex inside a figure environment.
+% Professional black-and-white systems diagram for the dominant-site detector-switch pipeline.
+% Designed to render at natural width inside the paper figure environment.
 \begin{tikzpicture}[
-  font=\scriptsize,
+  font=\footnotesize,
   >=Latex,
-  stage/.style={font=\bfseries\scriptsize, align=center, text width=3.0cm},
-  box/.style={draw, rounded corners=2pt, align=center, inner sep=5pt, fill=white,
-              text width=2.75cm, minimum height=1.10cm},
-  compact/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, fill=white,
-                  text width=2.65cm},
-  group/.style={draw, dashed, rounded corners=4pt, inner sep=6pt},
-  arrow/.style={->, line width=0.55pt},
-  flowlabel/.style={font=\scriptsize, align=center, fill=white, inner sep=1.5pt}
+  line/.style={draw=black!75, line width=0.65pt},
+  flow/.style={->, draw=black!80, line width=0.75pt},
+  feedback/.style={->, draw=black!65, line width=0.65pt, dashed},
+  module/.style={
+    draw=black!70,
+    line width=0.65pt,
+    rounded corners=1.5pt,
+    fill=black!2,
+    minimum height=1.35cm,
+    align=center,
+    inner sep=6pt
+  },
+  keymodule/.style={
+    draw=black,
+    line width=0.9pt,
+    rounded corners=1.5pt,
+    fill=black!5,
+    minimum height=1.35cm,
+    align=center,
+    inner sep=6pt
+  },
+  smallmodule/.style={
+    draw=black!65,
+    line width=0.6pt,
+    rounded corners=1.2pt,
+    fill=white,
+    minimum height=0.86cm,
+    align=center,
+    inner sep=4pt
+  },
+  bandlabel/.style={
+    font=\bfseries\footnotesize,
+    anchor=east,
+    align=right,
+    text=black!80
+  },
+  captionlabel/.style={
+    font=\scriptsize,
+    text=black!65,
+    align=center
+  },
+  decision/.style={
+    diamond,
+    aspect=2.0,
+    draw=black,
+    line width=0.85pt,
+    fill=white,
+    align=center,
+    inner sep=2.5pt
+  }
 ]
 
-% Four evenly spaced columns across the page.
-\def\xone{0.0}
-\def\xtwo{4.05}
-\def\xthree{8.10}
-\def\xfour{12.15}
-\def\ytop{5.45}
-\def\ybottom{1.25}
+% -----------------------------------------------------------------------------
+% Section guides
+% -----------------------------------------------------------------------------
+\draw[black!18, line width=0.45pt] (-0.15,4.95) -- (15.55,4.95);
+\draw[black!18, line width=0.45pt] (-0.15,2.15) -- (15.55,2.15);
 
-% ------------------------------ Top row ------------------------------
-\node[stage] at (\xone,7.10) {1) Multi-site\\pathology data};
-\node[stage] at (\xtwo,7.10) {2) Feature\\extraction};
-\node[stage] at (\xthree,7.10) {3) Local\\training};
-\node[stage] at (\xfour,7.10) {4) Aggregation\\candidates};
+\node[bandlabel] at (-0.35,6.20) {LOCAL\\SITES};
+\node[bandlabel] at (-0.35,3.55) {FEDERATED\\TRAINING};
+\node[bandlabel] at (-0.35,0.75) {VALIDATION\\CONTROL};
 
-\node[box, minimum height=2.15cm] (sites) at (\xone,\ytop) {
-  \textbf{Simulated pathology sites}\\[0.7mm]
-  Site 1: $N_1$ slides\\
-  Site 2: $N_2$ slides\\
-  Site 3: $N_3$ slides\\[0.7mm]
-  \textbf{Dominant site:}\\$N_D \gg N_i$
+% -----------------------------------------------------------------------------
+% Local sites
+% -----------------------------------------------------------------------------
+\node[smallmodule, text width=2.35cm] (site1) at (1.45,6.20) {
+  \textbf{Site 1}\\$N_1$ slides
 };
-\node[compact, below=0.16cm of sites] (warning) {
-  $\triangle$ high volume may be misaligned
+\node[smallmodule, text width=2.35cm] (site2) at (4.35,6.20) {
+  \textbf{Site 2}\\$N_2$ slides
 };
-
-\node[box, minimum height=1.55cm] (features) at (\xtwo,\ytop) {
-  \textbf{Frozen Phikon encoder}\\[0.7mm]
-  cached 768-d\\patch features
+\node[keymodule, text width=2.55cm, minimum height=0.86cm] (dominant) at (7.35,6.20) {
+  \textbf{Dominant site}\\$N_D \gg N_i$
 };
-\node[compact, below=0.16cm of features] (cache) {
-  one feature bag per slide
+\node[smallmodule, text width=2.35cm] (site3) at (10.45,6.20) {
+  \textbf{Site 3}\\$N_3$ slides
 };
 
-\node[compact] (pool) at (\xthree,6.02) {attention pooling};
-\node[compact, below=0.13cm of pool] (head) {MLP / MIL head};
-\node[compact, below=0.13cm of head] (updates) {client model updates};
-\node[group, fit=(pool)(head)(updates),
-      label={[font=\bfseries\scriptsize]below:local slide-level models}] (local) {};
-
-\node[compact, minimum height=0.95cm] (fedavg) at (\xfour,5.92) {
-  \textbf{Route A: FedAvg}\\sample-weighted
-};
-\node[compact, minimum height=0.95cm, below=0.20cm of fedavg] (blend) {
-  \textbf{Route B: switch / blend}\\site-aware weighting
-};
-\node[group, fit=(fedavg)(blend),
-      label={[font=\bfseries\scriptsize]below:evaluate both routes}] (aggregation) {};
-
-% ----------------------------- Bottom row ----------------------------
-% The flow snakes back from right to left, keeping every connector short.
-\node[box, minimum height=2.15cm, align=left] (diag) at (\xfour,\ybottom) {
-  \textbf{5) Validation diagnostics}\\[0.4mm]
-  \textbf{Monitor}\\[-0.3mm]
-  $\bullet$ global QWK\\
-  $\bullet$ worst-site QWK\\
-  $\bullet$ site spread\\
-  $\bullet$ ordinal error\\
-  $\bullet$ calibration
+\node[captionlabel, text width=3.2cm] at (13.55,6.20) {
+  Site volume determines\\FedAvg influence
 };
 
-\node[box, minimum height=1.85cm] (switch) at (\xthree,\ybottom) {
-  \textbf{6) Detector switch}\\[0.5mm]
-  locked threshold rule\\[0.8mm]
-  keep FedAvg\\[-0.2mm]
-  \emph{or} switch / blend
+% Merge local data into the feature stage.
+\coordinate (merge) at (5.95,5.30);
+\draw[flow] (site1.south) |- (merge);
+\draw[flow] (site2.south) |- (merge);
+\draw[flow] (dominant.south) -- (merge);
+\draw[flow] (site3.south) |- (merge);
+
+% -----------------------------------------------------------------------------
+% Federated training pipeline
+% -----------------------------------------------------------------------------
+\node[module, text width=2.75cm] (features) at (2.10,3.55) {
+  \textbf{Phikon features}\\[0.5mm]
+  frozen encoder\\768-d patch embeddings
 };
 
-\node[box, minimum height=1.20cm] (model) at (\xtwo,1.65) {
-  \textbf{7) Selected output}\\[0.5mm]
-  global pathology model
-};
-\node[compact, below=0.16cm of model] (robust) {
-  robustness under\\dominant-site shift
+\node[module, text width=2.75cm] (local) at (5.55,3.55) {
+  \textbf{Local MIL training}\\[0.5mm]
+  attention pooling\\site-specific updates
 };
 
-% ------------------------------- Flow --------------------------------
-\draw[arrow] (sites.east) -- (features.west);
-\draw[arrow] (features.east) -- (local.west);
-\draw[arrow] (local.east) -- (aggregation.west);
-\draw[arrow] (aggregation.south) -- (diag.north);
-\draw[arrow] (diag.west) -- (switch.east);
-\draw[arrow] (switch.west) -- (model.east);
-\draw[arrow] (model.south) -- (robust.north);
+\node[keymodule, text width=3.05cm] (fedavg) at (9.25,3.55) {
+  \textbf{FedAvg candidate}\\[0.5mm]
+  sample-size weighting\\$w_k \propto N_k$
+};
+
+\node[module, text width=3.05cm] (alternative) at (13.10,3.55) {
+  \textbf{Dominance-aware candidate}\\[0.5mm]
+  switch / blend\\site-aware weighting
+};
+
+\draw[flow] (merge) -- (5.95,4.75) -| (features.north);
+\draw[flow] (features.east) -- (local.west);
+\draw[flow] (local.east) -- (fedavg.west);
+\draw[flow] (fedavg.east) -- (alternative.west);
+
+\node[captionlabel] at (7.35,2.72) {
+  Candidate global models are evaluated on a clean validation objective
+};
+
+% -----------------------------------------------------------------------------
+% Validation control loop
+% -----------------------------------------------------------------------------
+\node[module, text width=3.45cm, minimum height=1.50cm] (diagnostics) at (3.00,0.75) {
+  \textbf{Validation diagnostics}\\[0.5mm]
+  global QWK \quad worst-site QWK\\
+  site spread \quad ordinal error \quad calibration
+};
+
+\node[decision, text width=2.45cm] (decision) at (7.25,0.75) {
+  Outside clean\\safe range?
+};
+
+\node[smallmodule, text width=2.35cm, minimum height=1.05cm] (keep) at (10.55,1.25) {
+  \textbf{No}\\keep FedAvg
+};
+
+\node[keymodule, text width=2.35cm, minimum height=1.05cm] (switch) at (10.55,0.05) {
+  \textbf{Yes}\\switch / blend
+};
+
+\node[keymodule, text width=2.65cm, minimum height=1.45cm] (output) at (14.10,0.65) {
+  \textbf{Selected global model}\\[0.5mm]
+  robust under\\dominant-site shift
+};
+
+\draw[flow] (fedavg.south) -- ++(0,-0.42) -| (diagnostics.north);
+\draw[feedback] (alternative.south) -- ++(0,-0.62) -| (diagnostics.north east);
+\draw[flow] (diagnostics.east) -- (decision.west);
+\draw[flow] (decision.east) -- ++(0.58,0) |- (keep.west);
+\draw[flow] (decision.east) -- ++(0.58,0) |- (switch.west);
+\draw[flow] (keep.east) -- ++(0.45,0) |- (output.west);
+\draw[flow] (switch.east) -- ++(0.45,0) |- (output.west);
+
+\node[captionlabel, anchor=west] at (7.75,1.53) {clean-calibrated rule};
 
 \end{tikzpicture}
