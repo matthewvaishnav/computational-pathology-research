@@ -77,48 +77,50 @@
 \draw[fan] (7.05,3.78)--(7.48,3.78);
 \draw[fan] (7.05,4.08)--(7.48,4.02);
 
-\node[stage] at (2.77,2.62) {patch bag};
-\node[stage] at (4.47,2.42) {Phikon};
-\node[stage] at (6.31,2.62) {projection};
-\node[stage] at (7.75,2.62) {attention};
-\node[stage] at (8.85,2.50) {MIL pool};
-\node[stage] at (9.95,2.62) {ISUP};
-\node[stage] at (11.18,2.62) {local update};
+% Unified label baseline.
+\node[stage] at (2.77,2.48) {patch bag};
+\node[stage] at (4.47,2.48) {Phikon};
+\node[stage] at (6.31,2.48) {projection};
+\node[stage] at (7.75,2.48) {attention};
+\node[stage] at (8.85,2.48) {MIL pool};
+\node[stage] at (9.95,2.48) {ISUP};
+\node[stage] at (11.18,2.48) {local update};
 
 % -----------------------------------------------------------------------------
 % (b) Server-side aggregation and detector switch
 % -----------------------------------------------------------------------------
-\draw[tensorback] (0.00,1.70)--(11.95,1.70);
-\node[heading] at (0.00,1.38) {(b) Server-side aggregation and detector switch};
+\draw[tensorback] (0.00,1.62)--(11.95,1.62);
+\node[heading] at (0.00,1.30) {(b) Server-side aggregation and detector switch};
 
-\ThinLayer{0.10}{0.42}{0.60}{0.62}{$\Delta\theta_1$}{u1}
-\ThinLayer{0.10}{-0.36}{0.60}{0.62}{$\Delta\theta_2$}{u2}
-\ThinLayer{0.10}{-1.14}{0.60}{0.62}{$\Delta\theta_D$}{uD}
+\ThinLayer{0.10}{0.44}{0.60}{0.62}{$\Delta\theta_1$}{u1}
+\ThinLayer{0.10}{-0.34}{0.60}{0.62}{$\Delta\theta_2$}{u2}
+\ThinLayer{0.10}{-1.12}{0.60}{0.62}{$\Delta\theta_D$}{uD}
 
-\coordinate (split) at (1.30,-0.06);
+\coordinate (split) at (1.30,-0.04);
 \draw[fan] (u1-east)--(split);
 \draw[fan] (u2-east)--(split);
 \draw[fan] (uD-east)--(split);
 
-\TensorBlock{1.88}{0.36}{1.72}{0.86}{2}{FedAvg\\candidate}{fedavg}
-\TensorBlock{1.88}{-1.18}{1.72}{0.86}{2}{dominance-aware\\candidate}{domagg}
+\TensorBlock{1.88}{0.38}{1.72}{0.86}{2}{FedAvg\\candidate}{fedavg}
+\TensorBlock{1.88}{-1.16}{1.72}{0.86}{2}{dominance-aware\\candidate}{domagg}
 \draw[flow] (split)|-(fedavg-west);
 \draw[flow] (split)|-(domagg-west);
 
-\TensorBlock{4.52}{-0.46}{2.10}{1.12}{2}{validation\\diagnostics}{diagnostics}
+\TensorBlock{4.52}{-0.44}{2.10}{1.12}{2}{validation\\diagnostics}{diagnostics}
 \draw[flow] (fedavg-east)--(diagnostics-west);
 \draw[flow] (domagg-east)--(diagnostics-west);
 
-\TensorBlock{7.42}{-0.46}{1.52}{1.12}{1}{detector\\$C(r)$}{detector}
+\TensorBlock{7.42}{-0.44}{1.52}{1.12}{1}{detector\\$C(r)$}{detector}
 \draw[flow] (diagnostics-east)--(detector-west);
 
-\TensorBlock{9.76}{-0.46}{1.72}{1.12}{1}{selected\\global model}{selected}
+\TensorBlock{9.76}{-0.44}{1.72}{1.12}{1}{selected\\global model}{selected}
 \draw[flow] (detector-east)--(selected-west);
 
-\node[stage] at (2.74,-1.55) {$w_k\propto n_k$ / adjusted weights};
-\node[stage] at (5.57,-0.92) {QWK, spread, ordinal error};
-\node[stage] at (8.18,-0.92) {$T=\mathbf{1}[C\geq3]$};
-\node[stage] at (10.62,-0.92) {FedAvg / blend};
-\node[stage,text width=9.6cm] at (6.00,-1.90) {Raw slides and patch features remain local; only model updates reach the server.};
+% Clean, non-overlapping annotation row.
+\node[stage] at (2.74,-1.50) {FedAvg: $w_k\propto n_k$};
+\node[stage] at (2.74,-1.78) {dominance-aware: adjusted weights};
+\node[stage] at (5.57,-1.50) {QWK, spread, ordinal error};
+\node[stage] at (8.18,-1.50) {$T=\mathbf{1}[C\geq3]$};
+\node[stage] at (10.62,-1.50) {FedAvg / blend};
 
 \end{tikzpicture}
