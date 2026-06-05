@@ -1,142 +1,121 @@
-% Compact publication-readable wireframe architecture for federated pathology.
-% Designed to remain legible when resized to a single-column text width.
+% Minimal wireframe architecture figure for federated computational pathology.
+% Short tensor labels only; explanatory detail belongs in the caption and text.
 
 \newcommand{\Stack}[7]{%
-  % x, y, width, height, depth, label, name
   \foreach \i in {#5,...,1}{%
-    \pgfmathsetmacro{\dx}{0.075*\i}%
-    \pgfmathsetmacro{\dy}{0.055*\i}%
+    \pgfmathsetmacro{\dx}{0.08*\i}%
+    \pgfmathsetmacro{\dy}{0.06*\i}%
     \draw[thinwire] ({#1+\dx},{#2+\dy}) rectangle ({#1+#3+\dx},{#2+#4+\dy});
   }%
   \draw[wire] (#1,#2) rectangle ({#1+#3},{#2+#4});
-  \draw[thinwire] (#1,{#2+#4}) -- ({#1+0.075*#5},{#2+#4+0.055*#5});
-  \draw[thinwire] ({#1+#3},{#2+#4}) -- ({#1+#3+0.075*#5},{#2+#4+0.055*#5});
-  \draw[thinwire] ({#1+#3},#2) -- ({#1+#3+0.075*#5},{#2+0.055*#5});
+  \draw[thinwire] (#1,{#2+#4}) -- ({#1+0.08*#5},{#2+#4+0.06*#5});
+  \draw[thinwire] ({#1+#3},{#2+#4}) -- ({#1+#3+0.08*#5},{#2+#4+0.06*#5});
+  \draw[thinwire] ({#1+#3},#2) -- ({#1+#3+0.08*#5},{#2+0.06*#5});
   \node[inside,text width={#3 cm}] at ({#1+#3/2},{#2+#4/2}) {#6};
   \coordinate (#7-west) at (#1,{#2+#4/2});
-  \coordinate (#7-east) at ({#1+#3+0.075*#5},{#2+#4/2+0.055*#5});
-  \coordinate (#7-north) at ({#1+#3/2},{#2+#4+0.055*#5});
+  \coordinate (#7-east) at ({#1+#3+0.08*#5},{#2+#4/2+0.06*#5});
+  \coordinate (#7-north) at ({#1+#3/2},{#2+#4+0.06*#5});
   \coordinate (#7-south) at ({#1+#3/2},#2);
 }
 
-\newcommand{\Vector}[6]{%
-  % x, y, width, height, label, name
+\newcommand{\Vec}[6]{%
   \draw[wire] (#1,#2) rectangle ({#1+#3},{#2+#4});
-  \draw[thinwire] ({#1+0.065},{#2+0.05}) rectangle ({#1+#3+0.065},{#2+#4+0.05});
+  \draw[thinwire] ({#1+0.07},{#2+0.05}) rectangle ({#1+#3+0.07},{#2+#4+0.05});
   \node[inside,text width={#3 cm}] at ({#1+#3/2},{#2+#4/2}) {#5};
   \coordinate (#6-west) at (#1,{#2+#4/2});
-  \coordinate (#6-east) at ({#1+#3+0.065},{#2+#4/2+0.05});
+  \coordinate (#6-east) at ({#1+#3+0.07},{#2+#4/2+0.05});
   \coordinate (#6-north) at ({#1+#3/2},{#2+#4+0.05});
   \coordinate (#6-south) at ({#1+#3/2},#2);
 }
 
 \begin{tikzpicture}[
-  x=0.93cm,
-  y=0.93cm,
+  x=0.96cm,
+  y=0.96cm,
   >=Latex,
   wire/.style={draw=black,line width=0.72pt,fill=white},
   thinwire/.style={draw=black,line width=0.40pt},
-  flow/.style={->,draw=black,line width=0.72pt},
+  flow/.style={->,draw=black,line width=0.74pt},
   signal/.style={draw=black!62,line width=0.38pt,densely dashed},
   inside/.style={font=\scriptsize,align=center,inner sep=1pt},
   label/.style={font=\scriptsize,align=center},
-  heading/.style={font=\bfseries\scriptsize,align=center}
+  panel/.style={font=\bfseries\footnotesize,anchor=west}
 ]
 
-% ============================================================================
-% Panel A: local client computation
-% ============================================================================
-\node[heading,anchor=west] at (0.00,5.95) {(a) Local client computation};
+% -----------------------------------------------------------------------------
+% (a) Local client model
+% -----------------------------------------------------------------------------
+\node[panel] at (0,5.55) {(a) Local client model};
 
-% Client bags
-\Stack{0.10}{4.62}{0.72}{0.78}{2}{Site 1\\$N_1$}{site1}
-\Stack{0.32}{3.55}{0.72}{0.78}{2}{Site 2\\$N_2$}{site2}
-\Stack{0.55}{2.25}{0.82}{0.95}{5}{Dominant\\$N_D\gg N_i$}{siteD}
-\node[label] at (0.85,1.88) {different sample volumes};
+\Stack{0.10}{4.35}{0.70}{0.72}{2}{Site 1\\$N_1$}{site1}
+\Stack{0.28}{3.35}{0.70}{0.72}{2}{Site 2\\$N_2$}{site2}
+\Stack{0.48}{2.12}{0.82}{0.90}{5}{Site $D$\\$N_D\gg N_i$}{siteD}
 
-% Merge point and shared local model
-\coordinate (merge) at (2.05,3.90);
+\coordinate (merge) at (1.90,3.58);
 \draw[signal] (site1-east)--(merge);
 \draw[signal] (site2-east)--(merge);
 \draw[signal] (siteD-east)--(merge);
 
-\Stack{2.55}{3.30}{1.05}{1.22}{2}{patch bag\\$M_k$ patches}{patches}
-\Stack{4.25}{3.02}{1.26}{1.78}{4}{Phikon\\$M_k\!\times\!768$}{phikon}
-\Stack{6.20}{3.24}{1.34}{1.34}{3}{instance features\\$M_k\!\times\!h$}{instances}
-\Vector{8.18}{3.28}{0.58}{1.26}{$M_k\!\times\!1$}{attention}
-\Vector{9.38}{3.12}{0.58}{1.58}{$h$}{pooled}
-\Vector{10.58}{3.28}{0.58}{1.26}{6}{logits}
-\Vector{11.82}{3.28}{0.76}{1.26}{$\Delta\theta_k$}{update}
+\Stack{2.35}{3.05}{0.95}{1.05}{2}{$M_k$\\patches}{patch}
+\Stack{3.95}{2.78}{1.18}{1.60}{4}{$M_k\times768$}{phikon}
+\Stack{5.78}{2.98}{1.22}{1.20}{3}{$M_k\times h$}{instances}
+\Vec{7.62}{3.00}{0.56}{1.16}{$M_k\times1$}{attention}
+\Vec{8.76}{2.88}{0.56}{1.40}{$h$}{pooled}
+\Vec{9.90}{3.00}{0.56}{1.16}{6}{logits}
+\Vec{11.05}{3.00}{0.72}{1.16}{$\Delta\theta_k$}{update}
 
-\draw[flow] (merge)--(patches-west);
-\draw[flow] (patches-east)--(phikon-west);
+\draw[flow] (merge)--(patch-west);
+\draw[flow] (patch-east)--(phikon-west);
 \draw[flow] (phikon-east)--(instances-west);
 \draw[flow] (instances-east)--(attention-west);
 \draw[flow] (attention-east)--(pooled-west);
 \draw[flow] (pooled-east)--(logits-west);
 \draw[flow] (logits-east)--(update-west);
 
-% Sparse fan in attention stage
-\draw[signal] (7.73,3.43)--(8.18,3.48);
-\draw[signal] (7.73,3.77)--(8.18,3.78);
-\draw[signal] (7.73,4.11)--(8.18,4.08);
-\draw[signal] (7.73,4.43)--(8.18,4.38);
+\node[label] at (2.82,2.62) {patch bag};
+\node[label] at (4.54,2.40) {Phikon};
+\node[label] at (6.39,2.58) {projection};
+\node[label] at (7.90,2.58) {attention};
+\node[label] at (9.04,2.46) {MIL pool};
+\node[label] at (10.18,2.58) {ISUP};
+\node[label] at (11.41,2.58) {update};
 
-% Stage labels, spaced below blocks
-\node[label] at (3.08,2.84) {patch extraction};
-\node[label] at (4.88,2.56) {frozen encoder};
-\node[label] at (6.87,2.78) {projection};
-\node[label] at (8.47,2.78) {attention};
-\node[label] at (9.67,2.60) {MIL pooling};
-\node[label] at (10.87,2.78) {ISUP 0--5};
-\node[label] at (12.20,2.78) {local update};
-\node[label] at (7.30,5.26) {the same local architecture is trained at every client};
+% -----------------------------------------------------------------------------
+% (b) Federated aggregation and switch
+% -----------------------------------------------------------------------------
+\draw[thinwire] (0,1.55)--(12.25,1.55);
+\node[panel] at (0,1.26) {(b) Federated aggregation and detector switch};
 
-% ============================================================================
-% Panel B: federated server and detector switch
-% ============================================================================
-\draw[thinwire] (0.00,1.45)--(13.25,1.45);
-\node[heading,anchor=west] at (0.00,1.18) {(b) Federated aggregation and validation control};
+\Vec{0.15}{0.10}{0.60}{0.62}{$\Delta\theta_1$}{u1}
+\Vec{0.15}{-0.68}{0.60}{0.62}{$\Delta\theta_2$}{u2}
+\Vec{0.15}{-1.46}{0.60}{0.62}{$\Delta\theta_D$}{uD}
 
-% Client updates arrive as three compact vectors
-\Vector{0.15}{-0.38}{0.64}{0.76}{$\Delta\theta_1$}{u1}
-\Vector{0.15}{-1.30}{0.64}{0.76}{$\Delta\theta_2$}{u2}
-\Vector{0.15}{-2.22}{0.64}{0.76}{$\Delta\theta_D$}{uD}
-\node[label] at (0.48,-2.62) {client updates only};
-
-% Split to two aggregation candidates
-\coordinate (split) at (1.45,-0.92);
+\coordinate (split) at (1.34,-0.38);
 \draw[signal] (u1-east)--(split);
 \draw[signal] (u2-east)--(split);
 \draw[signal] (uD-east)--(split);
 
-\Stack{2.00}{-0.38}{2.15}{0.98}{2}{\textbf{FedAvg candidate}}{fedavg}
-\Stack{2.00}{-1.92}{2.15}{0.98}{2}{\textbf{Dominance-aware candidate}}{domagg}
+\Stack{1.90}{0.00}{1.65}{0.82}{2}{FedAvg}{fedavg}
+\Stack{1.90}{-1.35}{1.65}{0.82}{2}{dominance-\\aware}{domagg}
 \draw[flow] (split)|-(fedavg-west);
 \draw[flow] (split)|-(domagg-west);
-\node[label] at (3.08,-0.72) {$\Delta\theta_{\mathrm{FA}}=\sum_k\frac{n_k}{\sum_j n_j}\Delta\theta_k$};
-\node[label] at (3.08,-2.25) {$\Delta\theta_{\mathrm{DA}}=\sum_k\widetilde w_k\Delta\theta_k$};
 
-% Both candidates evaluated on clean validation
-\Stack{5.15}{-1.44}{2.55}{1.42}{2}{\textbf{Clean validation}\\QWK $\cdot$ worst-site QWK\\spread $\cdot$ MAOE $\cdot$ severe error}{diagnostics}
+\Stack{4.45}{-0.72}{1.92}{1.02}{2}{validation\\diagnostics}{diagnostics}
 \draw[flow] (fedavg-east)--(diagnostics-west);
 \draw[flow] (domagg-east)--(diagnostics-west);
 
-% Detector
-\Stack{8.55}{-1.44}{1.78}{1.42}{1}{\textbf{Detector}\\$C(r)=\sum_{j=1}^{5}I_j(r)$\\$T(r)=\mathbf{1}[C(r)\geq3]$}{detector}
+\Stack{7.20}{-0.72}{1.48}{1.02}{1}{detector\\$C(r)$}{detector}
 \draw[flow] (diagnostics-east)--(detector-west);
 
-% Selector and output
-\Stack{11.05}{-1.44}{1.70}{1.42}{1}{\textbf{Selector}\\normal: FedAvg\\abnormal: blend}{selector}
+\Stack{9.48}{-0.72}{1.48}{1.02}{1}{selector}{selector}
 \draw[flow] (detector-east)--(selector-west);
-\draw[signal] (fedavg-east) -- ++(0.25,0) |- (selector-west);
-\draw[signal] (domagg-east) -- ++(0.20,0) |- (selector-west);
 
-\Vector{13.45}{-1.38}{0.72}{1.30}{selected\\model}{selected}
+\Vec{11.70}{-0.72}{0.68}{1.02}{global\\model}{selected}
 \draw[flow] (selector-east)--(selected-west);
-\node[label] at (13.82,-1.78) {$M_\pi=(1-T)M_{\mathrm{FA}}+TM_{\mathrm{DA}}$};
 
-% Privacy note
-\node[label,text width=7.5cm] at (6.40,-2.72) {raw slides and patch features remain local; only model updates cross to the server};
+\node[label] at (2.72,-1.78) {$\Delta\theta_{\rm FA}$};
+\node[label] at (5.41,-1.18) {QWK, spread, ordinal error};
+\node[label] at (7.94,-1.18) {$T=\mathbf{1}[C\geq3]$};
+\node[label] at (10.22,-1.18) {FedAvg / blend};
+\node[label,text width=7.8cm] at (6.05,-2.20) {raw slides and patch features remain local; only model updates reach the server};
 
 \end{tikzpicture}
