@@ -55,6 +55,7 @@
 \draw[signal] (site2-east)--(merge);
 \draw[signal] (siteD-east)--(merge);
 
+% All local-model tensors share the same vertical centerline y=3.58.
 \Stack{2.35}{3.05}{0.95}{1.05}{2}{$M_k$\\patches}{patch}
 \Stack{3.95}{2.78}{1.18}{1.60}{4}{$M_k\times768$}{phikon}
 \Stack{5.78}{2.98}{1.22}{1.20}{3}{$M_k\times h$}{instances}
@@ -71,25 +72,26 @@
 \draw[flow] (pooled-east)--(logits-west);
 \draw[flow] (logits-east)--(update-west);
 
-\node[label] at (2.82,2.62) {patch bag};
-\node[label] at (4.54,2.40) {Phikon};
-\node[label] at (6.39,2.58) {projection};
-\node[label] at (7.90,2.58) {attention};
-\node[label] at (9.04,2.46) {MIL pool};
-\node[label] at (10.18,2.58) {ISUP};
-\node[label] at (11.41,2.58) {update};
+% One common baseline for all local-stage labels.
+\node[label] at (2.82,2.38) {patch bag};
+\node[label] at (4.54,2.38) {Phikon};
+\node[label] at (6.39,2.38) {projection};
+\node[label] at (7.90,2.38) {attention};
+\node[label] at (9.04,2.38) {MIL pool};
+\node[label] at (10.18,2.38) {ISUP};
+\node[label] at (11.41,2.38) {update};
 
 % -----------------------------------------------------------------------------
 % (b) Federated aggregation and switch
 % -----------------------------------------------------------------------------
-\draw[thinwire] (0,1.55)--(12.25,1.55);
+\draw[thinwire] (0,1.55)--(12.55,1.55);
 \node[panel] at (0,1.26) {(b) Federated aggregation and detector switch};
 
 \WireVector{0.15}{0.10}{0.60}{0.62}{$\Delta\theta_1$}{u1}
 \WireVector{0.15}{-0.68}{0.60}{0.62}{$\Delta\theta_2$}{u2}
 \WireVector{0.15}{-1.46}{0.60}{0.62}{$\Delta\theta_D$}{uD}
 
-\coordinate (split) at (1.34,-0.38);
+\coordinate (split) at (1.34,-0.37);
 \draw[signal] (u1-east)--(split);
 \draw[signal] (u2-east)--(split);
 \draw[signal] (uD-east)--(split);
@@ -99,23 +101,25 @@
 \draw[flow] (split)|-(fedavg-west);
 \draw[flow] (split)|-(domagg-west);
 
-\Stack{4.45}{-0.72}{1.92}{1.02}{2}{validation\\diagnostics}{diagnostics}
+% Server-side blocks share the same centerline y=-0.265.
+\Stack{4.45}{-0.775}{1.92}{1.02}{2}{validation\\diagnostics}{diagnostics}
 \draw[flow] (fedavg-east)--(diagnostics-west);
 \draw[flow] (domagg-east)--(diagnostics-west);
 
-\Stack{7.20}{-0.72}{1.48}{1.02}{1}{detector\\$C(r)$}{detector}
+\Stack{7.20}{-0.775}{1.48}{1.02}{1}{detector\\$C(r)$}{detector}
 \draw[flow] (diagnostics-east)--(detector-west);
 
-\Stack{9.48}{-0.72}{1.48}{1.02}{1}{selector}{selector}
+\Stack{9.48}{-0.775}{1.48}{1.02}{1}{selector}{selector}
 \draw[flow] (detector-east)--(selector-west);
 
-\WireVector{11.70}{-0.72}{0.68}{1.02}{global\\model}{selected}
+\WireVector{11.70}{-0.775}{0.82}{1.02}{global\\model}{selected}
 \draw[flow] (selector-east)--(selected-west);
 
+% One common baseline for server annotations.
 \node[label] at (2.72,-1.78) {$\Delta\theta_{\rm FA}$};
-\node[label] at (5.41,-1.18) {QWK, spread, ordinal error};
-\node[label] at (7.94,-1.18) {$T=\mathbf{1}[C\geq3]$};
-\node[label] at (10.22,-1.18) {FedAvg / blend};
-\node[label,text width=7.8cm] at (6.05,-2.20) {raw slides and patch features remain local; only model updates reach the server};
+\node[label] at (5.41,-1.78) {QWK, spread, ordinal error};
+\node[label] at (7.94,-1.78) {$T=\mathbf{1}[C\geq3]$};
+\node[label] at (10.22,-1.78) {FedAvg / blend};
+\node[label,text width=10.5cm] at (6.25,-2.27) {raw slides and patch features remain local; only model updates reach the server};
 
 \end{tikzpicture}
