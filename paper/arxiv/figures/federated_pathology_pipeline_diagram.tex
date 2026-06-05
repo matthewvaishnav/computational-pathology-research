@@ -1,31 +1,27 @@
-% Readable black-and-white wireframe architecture for federated computational pathology.
-% Two-row composition: local client computation above, server control below.
+% Publication-readable wireframe schematic for federated computational pathology.
+% The shared local architecture is shown once; client heterogeneity and updates
+% are represented separately to avoid repeating the entire network three times.
 
-% Perspective wireframe block.
-% #1 x, #2 y, #3 width, #4 height, #5 depth count,
-% #6 label, #7 coordinate name.
-\newcommand{\WireBlock}[7]{%
+\newcommand{\Stack}[7]{%
+  % x, y, w, h, depth, label, name
   \foreach \i in {#5,...,1}{%
-    \pgfmathsetmacro{\dx}{0.08*\i}%
-    \pgfmathsetmacro{\dy}{0.06*\i}%
-    \draw[thinwire]
-      ({#1+\dx},{#2+\dy}) rectangle
-      ({#1+#3+\dx},{#2+#4+\dy});
+    \pgfmathsetmacro{\dx}{0.09*\i}%
+    \pgfmathsetmacro{\dy}{0.07*\i}%
+    \draw[thinwire] ({#1+\dx},{#2+\dy}) rectangle ({#1+#3+\dx},{#2+#4+\dy});
   }%
   \draw[wire] (#1,#2) rectangle ({#1+#3},{#2+#4});
-  \draw[thinwire] (#1,{#2+#4}) -- ({#1+0.08*#5},{#2+#4+0.06*#5});
-  \draw[thinwire] ({#1+#3},{#2+#4}) -- ({#1+#3+0.08*#5},{#2+#4+0.06*#5});
-  \draw[thinwire] ({#1+#3},#2) -- ({#1+#3+0.08*#5},{#2+0.06*#5});
+  \draw[thinwire] (#1,{#2+#4}) -- ({#1+0.09*#5},{#2+#4+0.07*#5});
+  \draw[thinwire] ({#1+#3},{#2+#4}) -- ({#1+#3+0.09*#5},{#2+#4+0.07*#5});
+  \draw[thinwire] ({#1+#3},#2) -- ({#1+#3+0.09*#5},{#2+0.07*#5});
   \node[inside,text width={#3 cm}] at ({#1+#3/2},{#2+#4/2}) {#6};
   \coordinate (#7-west) at (#1,{#2+#4/2});
-  \coordinate (#7-east) at ({#1+#3+0.08*#5},{#2+#4/2+0.06*#5});
-  \coordinate (#7-north) at ({#1+#3/2},{#2+#4+0.06*#5});
+  \coordinate (#7-east) at ({#1+#3+0.09*#5},{#2+#4/2+0.07*#5});
+  \coordinate (#7-north) at ({#1+#3/2},{#2+#4+0.07*#5});
   \coordinate (#7-south) at ({#1+#3/2},#2);
 }
 
-% Narrow vector/dense layer.
-% #1 x, #2 y, #3 width, #4 height, #5 label, #6 coordinate name.
-\newcommand{\VectorLayer}[6]{%
+\newcommand{\Vector}[6]{%
+  % x, y, w, h, label, name
   \draw[wire] (#1,#2) rectangle ({#1+#3},{#2+#4});
   \draw[thinwire] ({#1+0.08},{#2+0.06}) rectangle ({#1+#3+0.08},{#2+#4+0.06});
   \node[inside,text width={#3 cm}] at ({#1+#3/2},{#2+#4/2}) {#5};
@@ -36,142 +32,114 @@
 }
 
 \begin{tikzpicture}[
-  x=0.88cm,
-  y=0.88cm,
+  x=0.92cm,
+  y=0.92cm,
   font=\footnotesize,
   >=Latex,
-  wire/.style={draw=black,line width=0.72pt,fill=white},
+  wire/.style={draw=black,line width=0.75pt,fill=white},
   thinwire/.style={draw=black,line width=0.42pt},
-  flow/.style={->,draw=black,line width=0.75pt},
-  fan/.style={draw=black!68,line width=0.38pt,densely dashed},
+  flow/.style={->,draw=black,line width=0.78pt},
+  fan/.style={draw=black!65,line width=0.40pt,densely dashed},
   inside/.style={font=\scriptsize,align=center,inner sep=1pt},
   dim/.style={font=\scriptsize,align=center},
   heading/.style={font=\bfseries\scriptsize,align=center}
 ]
 
 % -----------------------------------------------------------------------------
-% Headings
+% Upper row: client data and shared local model
 % -----------------------------------------------------------------------------
-\node[heading] at (1.20,7.18) {CLIENT DATA};
-\node[heading] at (4.05,7.18) {PATCH FEATURES};
-\node[heading] at (7.25,7.18) {LOCAL MIL};
-\node[heading] at (12.20,7.18) {LOCAL UPDATES};
+\node[heading] at (1.10,6.60) {MULTI-SITE INPUTS};
+\node[heading] at (4.05,6.60) {SHARED LOCAL PIPELINE};
+\node[heading] at (10.95,6.60) {CLIENT UPDATES};
 
-% -----------------------------------------------------------------------------
-% Three compact client lanes
-% -----------------------------------------------------------------------------
-\node[anchor=east,font=\scriptsize] at (-0.10,6.05) {Site 1};
-\node[anchor=east,font=\scriptsize] at (-0.10,4.55) {Site 2};
-\node[anchor=east,font=\scriptsize] at (-0.10,2.95) {Dominant};
+% Three client slide bags. Dominant site has visibly greater depth.
+\Stack{0.10}{5.00}{0.78}{0.90}{2}{Site 1\\$N_1$}{site1}
+\Stack{0.42}{3.72}{0.78}{0.90}{2}{Site 2\\$N_2$}{site2}
+\Stack{0.75}{2.18}{0.88}{1.10}{5}{Dominant\\$N_D\gg N_i$}{siteD}
 
-% Site 1
-\WireBlock{0.15}{5.52}{0.78}{0.92}{2}{WSI\\bag}{wsi1}
-\WireBlock{1.70}{5.58}{0.95}{0.80}{1}{patches}{patch1}
-\WireBlock{3.30}{5.42}{1.18}{1.10}{3}{Phikon\\$M_1\!\times\!768$}{feat1}
-\WireBlock{5.25}{5.52}{1.18}{0.90}{2}{$M_1\!\times\!h$}{proj1}
-\VectorLayer{7.10}{5.55}{0.52}{0.84}{$M_1\!\times\!1$}{att1}
-\VectorLayer{8.25}{5.42}{0.48}{1.10}{$h$}{rep1}
-\VectorLayer{9.35}{5.52}{0.48}{0.90}{6}{logit1}
-\VectorLayer{10.65}{5.52}{0.62}{0.90}{$\Delta\theta_1$}{upd1}
+% Merge into a single schematic of the identical local architecture.
+\coordinate (clientmerge) at (2.45,4.20);
+\draw[fan] (site1-east)--(clientmerge);
+\draw[fan] (site2-east)--(clientmerge);
+\draw[fan] (siteD-east)--(clientmerge);
 
-% Site 2
-\WireBlock{0.15}{4.02}{0.78}{0.92}{2}{WSI\\bag}{wsi2}
-\WireBlock{1.70}{4.08}{0.95}{0.80}{1}{patches}{patch2}
-\WireBlock{3.30}{3.92}{1.18}{1.10}{3}{Phikon\\$M_2\!\times\!768$}{feat2}
-\WireBlock{5.25}{4.02}{1.18}{0.90}{2}{$M_2\!\times\!h$}{proj2}
-\VectorLayer{7.10}{4.05}{0.52}{0.84}{$M_2\!\times\!1$}{att2}
-\VectorLayer{8.25}{3.92}{0.48}{1.10}{$h$}{rep2}
-\VectorLayer{9.35}{4.02}{0.48}{0.90}{6}{logit2}
-\VectorLayer{10.65}{4.02}{0.62}{0.90}{$\Delta\theta_2$}{upd2}
+\Stack{2.90}{3.55}{1.02}{1.32}{2}{patch bag\\$M_k$}{patches}
+\Stack{4.62}{3.25}{1.28}{1.92}{4}{Phikon\\$M_k\!\times\!768$}{phikon}
+\Stack{6.62}{3.48}{1.28}{1.46}{3}{instance\\features\\$M_k\!\times\!h$}{instances}
+\Vector{8.62}{3.58}{0.58}{1.25}{$M_k\!\times\!1$}{attention}
+\Vector{9.72}{3.38}{0.58}{1.65}{$h$}{slidevec}
+\Vector{10.85}{3.58}{0.58}{1.25}{6}{logits}
 
-% Dominant site: thicker WSI stack only.
-\WireBlock{0.15}{2.32}{0.90}{1.12}{5}{WSI\\bag}{wsiD}
-\WireBlock{1.70}{2.48}{0.95}{0.80}{1}{patches}{patchD}
-\WireBlock{3.30}{2.32}{1.18}{1.10}{3}{Phikon\\$M_D\!\times\!768$}{featD}
-\WireBlock{5.25}{2.42}{1.18}{0.90}{2}{$M_D\!\times\!h$}{projD}
-\VectorLayer{7.10}{2.45}{0.52}{0.84}{$M_D\!\times\!1$}{attD}
-\VectorLayer{8.25}{2.32}{0.48}{1.10}{$h$}{repD}
-\VectorLayer{9.35}{2.42}{0.48}{0.90}{6}{logitD}
-\VectorLayer{10.65}{2.42}{0.62}{0.90}{$\Delta\theta_D$}{updD}
+\draw[flow] (clientmerge)--(patches-west);
+\draw[flow] (patches-east)--(phikon-west);
+\draw[flow] (phikon-east)--(instances-west);
+\draw[flow] (instances-east)--(attention-west);
+\draw[flow] (attention-east)--(slidevec-west);
+\draw[flow] (slidevec-east)--(logits-west);
 
-% Explicit local arrows avoid whitespace-sensitive foreach parsing.
-\draw[flow] (wsi1-east)--(patch1-west);
-\draw[flow] (patch1-east)--(feat1-west);
-\draw[flow] (feat1-east)--(proj1-west);
-\draw[flow] (proj1-east)--(att1-west);
-\draw[flow] (att1-east)--(rep1-west);
-\draw[flow] (rep1-east)--(logit1-west);
-\draw[flow] (logit1-east)--(upd1-west);
+% Sparse fan inside MIL, echoing classic CNN diagrams without clutter.
+\draw[fan] (7.98,3.72)--(8.62,3.75);
+\draw[fan] (7.98,4.05)--(8.62,4.15);
+\draw[fan] (7.98,4.38)--(8.62,4.55);
+\draw[fan] (7.98,4.71)--(8.62,4.75);
 
-\draw[flow] (wsi2-east)--(patch2-west);
-\draw[flow] (patch2-east)--(feat2-west);
-\draw[flow] (feat2-east)--(proj2-west);
-\draw[flow] (proj2-east)--(att2-west);
-\draw[flow] (att2-east)--(rep2-west);
-\draw[flow] (rep2-east)--(logit2-west);
-\draw[flow] (logit2-east)--(upd2-west);
+% Compact labels below each stage.
+\node[dim] at (3.42,3.10) {patch extraction};
+\node[dim] at (5.26,2.88) {frozen 768-d encoder};
+\node[dim] at (7.26,3.08) {projection};
+\node[dim] at (8.91,3.12) {attention};
+\node[dim] at (10.01,3.00) {pooled slide vector};
+\node[dim] at (11.14,3.12) {ISUP 0--5};
+\node[dim,text width=4.2cm] at (6.85,5.62) {same local architecture at every client};
 
-\draw[flow] (wsiD-east)--(patchD-west);
-\draw[flow] (patchD-east)--(featD-west);
-\draw[flow] (featD-east)--(projD-west);
-\draw[flow] (projD-east)--(attD-west);
-\draw[flow] (attD-east)--(repD-west);
-\draw[flow] (repD-east)--(logitD-west);
-\draw[flow] (logitD-east)--(updD-west);
-
-% Dimension annotations below stage columns, not inside the lanes.
-\node[dim] at (0.62,1.82) {$N_D\gg N_i$ only changes sample volume};
-\node[dim] at (2.18,1.82) {$M_k$ patches};
-\node[dim] at (3.92,1.82) {frozen 768-d features};
-\node[dim] at (5.84,1.82) {instance projection};
-\node[dim] at (7.36,1.82) {attention};
-\node[dim] at (8.48,1.82) {pooled slide vector};
-\node[dim] at (9.58,1.82) {ISUP 0--5};
+% Client-specific update vectors generated by local training.
+\Vector{12.25}{4.85}{0.70}{0.92}{$\Delta\theta_1$}{upd1}
+\Vector{12.25}{3.72}{0.70}{0.92}{$\Delta\theta_2$}{upd2}
+\Vector{12.25}{2.42}{0.70}{0.92}{$\Delta\theta_D$}{updD}
+\draw[fan] (logits-east)--(upd1-west);
+\draw[fan] (logits-east)--(upd2-west);
+\draw[fan] (logits-east)--(updD-west);
 
 % Client/server boundary.
-\draw[thinwire,densely dashed] (12.02,1.42)--(12.02,6.72);
-\node[font=\scriptsize,fill=white,inner sep=1pt] at (12.02,1.20) {client/server boundary};
+\draw[thinwire,densely dashed] (13.65,1.85)--(13.65,6.20);
+\node[font=\scriptsize,fill=white,inner sep=1pt] at (13.65,1.58) {client/server boundary};
 
 % -----------------------------------------------------------------------------
-% Bottom row: server aggregation and validation control
+% Lower row: aggregation, validation, detector, selection
 % -----------------------------------------------------------------------------
-\node[heading] at (3.20,0.95) {AGGREGATION CANDIDATES};
-\node[heading] at (8.15,0.95) {CLEAN VALIDATION};
-\node[heading] at (12.35,0.95) {DETECTOR AND SELECTION};
+\node[heading] at (3.10,1.20) {AGGREGATION CANDIDATES};
+\node[heading] at (8.45,1.20) {VALIDATION CONTROL};
+\node[heading] at (14.45,1.20) {MODEL SELECTION};
 
-\WireBlock{0.55}{-1.15}{2.15}{1.18}{2}{\textbf{FedAvg}\\$\sum_k\frac{n_k}{\sum_jn_j}\Delta\theta_k$}{fedavg}
-\WireBlock{3.35}{-1.15}{2.25}{1.18}{2}{\textbf{Dominance-aware}\\$\sum_k\widetilde w_k\Delta\theta_k$}{domagg}
+\Stack{0.35}{-0.70}{2.30}{1.18}{2}{\textbf{FedAvg}\\$\Delta\theta_{\mathrm{FA}}=\sum_k\frac{n_k}{\sum_jn_j}\Delta\theta_k$}{fedavg}
+\Stack{3.35}{-0.70}{2.45}{1.18}{2}{\textbf{Dominance-aware}\\$\Delta\theta_{\mathrm{DA}}=\sum_k\widetilde w_k\Delta\theta_k$}{domagg}
 
-% Update fans routed down to aggregation candidates.
-\coordinate (merge1) at (11.65,4.85);
-\coordinate (merge2) at (11.65,3.35);
-\coordinate (mergeD) at (11.65,2.75);
-\draw[fan] (upd1-east)--(merge1)--(fedavg-north);
-\draw[fan] (upd2-east)--(merge2)--(fedavg-north);
-\draw[fan] (updD-east)--(mergeD)--(fedavg-north);
-\draw[fan] (upd1-east)--(merge1)--(domagg-north);
-\draw[fan] (upd2-east)--(merge2)--(domagg-north);
-\draw[fan] (updD-east)--(mergeD)--(domagg-north);
+% Updates fan into both candidates.
+\draw[fan] (upd1-east)--(fedavg-north);
+\draw[fan] (upd2-east)--(fedavg-north);
+\draw[fan] (updD-east)--(fedavg-north);
+\draw[fan] (upd1-east)--(domagg-north);
+\draw[fan] (upd2-east)--(domagg-north);
+\draw[fan] (updD-east)--(domagg-north);
 
-% Validation diagnostic vector as one readable block.
-\WireBlock{6.55}{-1.18}{2.70}{1.24}{2}{\textbf{Validation diagnostics}\\global QWK $\cdot$ worst-site QWK\\site spread $\cdot$ MAOE $\cdot$ severe error}{diagnostics}
+\Stack{6.65}{-0.73}{2.75}{1.24}{2}{\textbf{Clean validation diagnostics}\\global QWK $\cdot$ worst-site QWK\\site spread $\cdot$ MAOE $\cdot$ severe error}{diagnostics}
 \draw[flow] (fedavg-east)--(diagnostics-west);
 \draw[flow] (domagg-east)--(diagnostics-west);
 
-% Detector and selector.
-\WireBlock{10.15}{-1.15}{1.85}{1.18}{1}{\textbf{Detector}\\$C(r)=\sum_{j=1}^{5}I_j(r)$\\switch if $C(r)\geq3$}{detector}
-\WireBlock{12.85}{-1.15}{1.72}{1.18}{1}{\textbf{Selector}\\normal: FedAvg\\abnormal: blend}{selector}
-\VectorLayer{15.30}{-1.15}{0.72}{1.18}{selected\\model}{selected}
-\VectorLayer{16.75}{-1.02}{0.62}{0.92}{ISUP\\0--5}{output}
-
+\Stack{10.25}{-0.70}{2.08}{1.18}{1}{\textbf{Detector}\\$C(r)=\sum_{j=1}^{5}I_j(r)$\\$T(r)=\mathbf{1}[C(r)\geq3]$}{detector}
 \draw[flow] (diagnostics-east)--(detector-west);
+
+\Stack{13.15}{-0.70}{1.90}{1.18}{1}{\textbf{Selector}\\normal: FedAvg\\abnormal: blend}{selector}
 \draw[flow] (detector-east)--(selector-west);
 \draw[flow] (fedavg-east) -- ++(0.35,0) |- (selector-west);
 \draw[flow] (domagg-east) -- ++(0.25,0) |- (selector-west);
+
+\Vector{15.85}{-0.70}{0.78}{1.18}{selected\\model}{selected}
+\Vector{17.35}{-0.58}{0.66}{0.94}{ISUP\\0--5}{output}
 \draw[flow] (selector-east)--(selected-west);
 \draw[flow] (selected-east)--(output-west);
 
-\node[dim] at (15.65,-1.55) {$M_\pi=(1-T)M_{\mathrm{FA}}+TM_{\mathrm{DA}}$};
-\node[font=\scriptsize] at (6.15,-1.92) {raw slides and feature bags remain local; only model updates reach the server};
+\node[dim] at (16.20,-1.08) {$M_\pi=(1-T)M_{\mathrm{FA}}+TM_{\mathrm{DA}}$};
+\node[font=\scriptsize] at (6.70,-1.48) {raw slides and feature bags remain local; only model updates cross the boundary};
 
 \end{tikzpicture}
