@@ -1,230 +1,159 @@
-% Black-and-white wireframe architecture diagram for federated computational pathology.
-% Visual grammar follows classic CNN architecture schematics: stacked planes,
-% perspective boxes, dense connector fans, and dimension labels.
+% Readable black-and-white wireframe architecture for federated computational pathology.
+% Two-row composition: local client computation above, server control below.
 
-% Draw a perspective stack.
-% #1 x, #2 y, #3 width, #4 height, #5 number of visible back planes,
-% #6 horizontal offset, #7 vertical offset, #8 label, #9 coordinate name.
-\newcommand{\WireStack}[9]{%
-  \pgfmathsetmacro{\wx}{#1}%
-  \pgfmathsetmacro{\wy}{#2}%
-  \pgfmathsetmacro{\ww}{#3}%
-  \pgfmathsetmacro{\wh}{#4}%
+% Perspective wireframe block.
+% #1 x, #2 y, #3 width, #4 height, #5 depth count,
+% #6 label, #7 coordinate name.
+\newcommand{\WireBlock}[7]{%
   \foreach \i in {#5,...,1}{%
-    \pgfmathsetmacro{\ox}{\i*(#6)}%
-    \pgfmathsetmacro{\oy}{\i*(#7)}%
-    \draw[wirethin]
-      ({\wx+\ox},{\wy+\oy}) --
-      ({\wx+\ww+\ox},{\wy+\oy}) --
-      ({\wx+\ww+\ox},{\wy+\wh+\oy}) --
-      ({\wx+\ox},{\wy+\wh+\oy}) -- cycle;
+    \pgfmathsetmacro{\dx}{0.08*\i}%
+    \pgfmathsetmacro{\dy}{0.06*\i}%
+    \draw[thinwire]
+      ({#1+\dx},{#2+\dy}) rectangle
+      ({#1+#3+\dx},{#2+#4+\dy});
   }%
-  \draw[wire]
-    (\wx,\wy) -- (\wx+\ww,\wy) --
-    (\wx+\ww,\wy+\wh) -- (\wx,\wy+\wh) -- cycle;
-  \draw[wirethin] (\wx,\wy+\wh) -- ({\wx+#5*(#6)},{\wy+\wh+#5*(#7)});
-  \draw[wirethin] (\wx+\ww,\wy+\wh) -- ({\wx+\ww+#5*(#6)},{\wy+\wh+#5*(#7)});
-  \draw[wirethin] (\wx+\ww,\wy) -- ({\wx+\ww+#5*(#6)},{\wy+#5*(#7)});
-  \node[blocklabel,text width={#3 cm}] at ({\wx+\ww/2},{\wy+\wh/2}) {#8};
-  \coordinate (#9-west) at (\wx,{\wy+\wh/2});
-  \coordinate (#9-east) at ({\wx+\ww+#5*(#6)},{\wy+\wh/2+#5*(#7)});
-  \coordinate (#9-north) at ({\wx+\ww/2},{\wy+\wh+#5*(#7)});
-  \coordinate (#9-south) at ({\wx+\ww/2},\wy);
+  \draw[wire] (#1,#2) rectangle ({#1+#3},{#2+#4});
+  \draw[thinwire] (#1,{#2+#4}) -- ({#1+0.08*#5},{#2+#4+0.06*#5});
+  \draw[thinwire] ({#1+#3},{#2+#4}) -- ({#1+#3+0.08*#5},{#2+#4+0.06*#5});
+  \draw[thinwire] ({#1+#3},#2) -- ({#1+#3+0.08*#5},{#2+0.06*#5});
+  \node[inside,text width={#3 cm}] at ({#1+#3/2},{#2+#4/2}) {#6};
+  \coordinate (#7-west) at (#1,{#2+#4/2});
+  \coordinate (#7-east) at ({#1+#3+0.08*#5},{#2+#4/2+0.06*#5});
+  \coordinate (#7-north) at ({#1+#3/2},{#2+#4+0.06*#5});
+  \coordinate (#7-south) at ({#1+#3/2},#2);
 }
 
-% Draw a narrow dense layer.
-% #1 x, #2 y, #3 height, #4 label, #5 coordinate name.
-\newcommand{\DenseLayer}[5]{%
-  \draw[wire] (#1,#2) rectangle ({#1+0.34},{#2+#3});
-  \draw[wirethin] ({#1+0.10},{#2+0.08}) rectangle ({#1+0.44},{#2+#3+0.08});
-  \node[rotate=90,font=\scriptsize] at ({#1+0.17},{#2+#3/2}) {#4};
-  \coordinate (#5-west) at (#1,{#2+#3/2});
-  \coordinate (#5-east) at ({#1+0.44},{#2+#3/2+0.08});
-  \coordinate (#5-south) at ({#1+0.17},#2);
+% Narrow vector/dense layer.
+% #1 x, #2 y, #3 width, #4 height, #5 label, #6 coordinate name.
+\newcommand{\VectorLayer}[6]{%
+  \draw[wire] (#1,#2) rectangle ({#1+#3},{#2+#4});
+  \draw[thinwire] ({#1+0.08},{#2+0.06}) rectangle ({#1+#3+0.08},{#2+#4+0.06});
+  \node[inside,text width={#3 cm}] at ({#1+#3/2},{#2+#4/2}) {#5};
+  \coordinate (#6-west) at (#1,{#2+#4/2});
+  \coordinate (#6-east) at ({#1+#3+0.08},{#2+#4/2+0.06});
+  \coordinate (#6-north) at ({#1+#3/2},{#2+#4+0.06});
+  \coordinate (#6-south) at ({#1+#3/2},#2);
 }
 
 \begin{tikzpicture}[
-  x=0.92cm,
-  y=0.92cm,
+  x=0.88cm,
+  y=0.88cm,
   font=\footnotesize,
   >=Latex,
   wire/.style={draw=black,line width=0.72pt,fill=white},
-  wirethin/.style={draw=black,line width=0.42pt},
-  fan/.style={draw=black!72,line width=0.38pt,densely dashed},
-  flow/.style={->,draw=black,line width=0.72pt},
-  blocklabel/.style={font=\scriptsize,align=center,inner sep=1pt},
+  thinwire/.style={draw=black,line width=0.42pt},
+  flow/.style={->,draw=black,line width=0.75pt},
+  fan/.style={draw=black!68,line width=0.38pt,densely dashed},
+  inside/.style={font=\scriptsize,align=center,inner sep=1pt},
   dim/.style={font=\scriptsize,align=center},
-  stage/.style={font=\bfseries\scriptsize,align=center}
+  heading/.style={font=\bfseries\scriptsize,align=center}
 ]
 
 % -----------------------------------------------------------------------------
-% Stage headings
+% Headings
 % -----------------------------------------------------------------------------
-\node[stage] at (1.25,7.85) {CLIENT DATA};
-\node[stage] at (4.25,7.85) {PATCH FEATURES};
-\node[stage] at (7.35,7.85) {LOCAL MIL};
-\node[stage] at (11.15,7.85) {FEDERATED SERVER};
-\node[stage] at (15.20,7.85) {VALIDATION CONTROL};
-
-% -----------------------------------------------------------------------------
-% Three client lanes
-% -----------------------------------------------------------------------------
-\node[anchor=east,font=\scriptsize] at (-0.18,6.55) {Site 1};
-\node[anchor=east,font=\scriptsize] at (-0.18,4.25) {Site 2};
-\node[anchor=east,font=\scriptsize] at (-0.18,1.75) {Dominant site};
-
-% WSI bags: dominant site is visibly thicker.
-\WireStack{0.10}{5.80}{0.70}{1.30}{2}{0.10}{0.08}{\textbf{WSI bag}}{wsiOne}
-\WireStack{0.10}{3.50}{0.70}{1.30}{2}{0.10}{0.08}{\textbf{WSI bag}}{wsiTwo}
-\WireStack{0.10}{0.90}{0.82}{1.65}{5}{0.10}{0.08}{\textbf{WSI bag}}{wsiDom}
-\node[dim] at (0.45,5.50) {$N_1$ slides};
-\node[dim] at (0.45,3.20) {$N_2$ slides};
-\node[dim] at (0.50,0.58) {$N_D\gg N_i$};
-
-% Patch grids.
-\WireStack{1.85}{5.92}{0.88}{1.05}{1}{0.11}{0.08}{patches}{patchOne}
-\WireStack{1.85}{3.62}{0.88}{1.05}{1}{0.11}{0.08}{patches}{patchTwo}
-\WireStack{1.85}{1.16}{0.88}{1.05}{1}{0.11}{0.08}{patches}{patchDom}
-\foreach \y in {6.18,6.44,6.70}{\draw[wirethin] (1.85,\y)--(2.73,\y);}
-\foreach \x in {2.14,2.43}{\draw[wirethin] (\x,5.92)--(\x,6.97);}
-\foreach \y in {3.88,4.14,4.40}{\draw[wirethin] (1.85,\y)--(2.73,\y);}
-\foreach \x in {2.14,2.43}{\draw[wirethin] (\x,3.62)--(\x,4.67);}
-\foreach \y in {1.42,1.68,1.94}{\draw[wirethin] (1.85,\y)--(2.73,\y);}
-\foreach \x in {2.14,2.43}{\draw[wirethin] (\x,1.16)--(\x,2.21);}
-\node[dim] at (2.30,5.57) {$M_1$ patches};
-\node[dim] at (2.30,3.27) {$M_2$ patches};
-\node[dim] at (2.30,0.82) {$M_D$ patches};
-
-% Phikon feature bags.
-\WireStack{3.45}{5.72}{1.10}{1.48}{3}{0.09}{0.07}{\textbf{Phikon}\\$M_1\!\times\!768$}{featOne}
-\WireStack{3.45}{3.42}{1.10}{1.48}{3}{0.09}{0.07}{\textbf{Phikon}\\$M_2\!\times\!768$}{featTwo}
-\WireStack{3.45}{0.96}{1.10}{1.48}{3}{0.09}{0.07}{\textbf{Phikon}\\$M_D\!\times\!768$}{featDom}
-\node[dim] at (4.00,5.36) {frozen encoder};
-\node[dim] at (4.00,3.06) {frozen encoder};
-\node[dim] at (4.00,0.60) {frozen encoder};
-
-% Instance projections.
-\WireStack{5.30}{5.88}{1.20}{1.10}{2}{0.09}{0.07}{$M_1\!\times\!h$}{projOne}
-\WireStack{5.30}{3.58}{1.20}{1.10}{2}{0.09}{0.07}{$M_2\!\times\!h$}{projTwo}
-\WireStack{5.30}{1.12}{1.20}{1.10}{2}{0.09}{0.07}{$M_D\!\times\!h$}{projDom}
-\node[dim] at (5.90,5.53) {instance projection};
-\node[dim] at (5.90,3.23) {instance projection};
-\node[dim] at (5.90,0.77) {instance projection};
-
-% Attention vectors.
-\WireStack{7.15}{5.90}{0.58}{1.05}{1}{0.09}{0.07}{$M_1\!\times\!1$}{attOne}
-\WireStack{7.15}{3.60}{0.58}{1.05}{1}{0.09}{0.07}{$M_2\!\times\!1$}{attTwo}
-\WireStack{7.15}{1.14}{0.58}{1.05}{1}{0.09}{0.07}{$M_D\!\times\!1$}{attDom}
-\node[dim] at (7.45,5.54) {attention};
-\node[dim] at (7.45,3.24) {attention};
-\node[dim] at (7.45,0.78) {attention};
-
-% Slide representations and local heads.
-\DenseLayer{8.45}{5.73}{1.42}{$h$}{repOne}
-\DenseLayer{8.45}{3.43}{1.42}{$h$}{repTwo}
-\DenseLayer{8.45}{0.97}{1.42}{$h$}{repDom}
-\DenseLayer{9.35}{5.84}{1.20}{6}{headOne}
-\DenseLayer{9.35}{3.54}{1.20}{6}{headTwo}
-\DenseLayer{9.35}{1.08}{1.20}{6}{headDom}
-\node[dim] at (9.55,5.48) {$\Delta\theta_1$};
-\node[dim] at (9.55,3.18) {$\Delta\theta_2$};
-\node[dim] at (9.55,0.72) {$\Delta\theta_D$};
-\node[dim] at (8.62,7.35) {pooled slide representation};
-\node[dim] at (9.58,7.35) {ISUP logits};
-
-% Local pipeline flows.
-\draw[flow] (wsiOne-east)--(patchOne-west);
-\draw[flow] (wsiTwo-east)--(patchTwo-west);
-\draw[flow] (wsiDom-east)--(patchDom-west);
-\draw[flow] (patchOne-east)--(featOne-west);
-\draw[flow] (patchTwo-east)--(featTwo-west);
-\draw[flow] (patchDom-east)--(featDom-west);
-\draw[flow] (featOne-east)--(projOne-west);
-\draw[flow] (featTwo-east)--(projTwo-west);
-\draw[flow] (featDom-east)--(projDom-west);
-\draw[flow] (projOne-east)--(attOne-west);
-\draw[flow] (projTwo-east)--(attTwo-west);
-\draw[flow] (projDom-east)--(attDom-west);
-\draw[flow] (attOne-east)--(repOne-west);
-\draw[flow] (attTwo-east)--(repTwo-west);
-\draw[flow] (attDom-east)--(repDom-west);
-\draw[flow] (repOne-east)--(headOne-west);
-\draw[flow] (repTwo-east)--(headTwo-west);
-\draw[flow] (repDom-east)--(headDom-west);
-
-% Dense fan connectors inside the MIL reduction.
-\foreach \ya in {5.98,6.25,6.52,6.79}{
-  \draw[fan] (6.68,\ya)--(7.15,6.02);
-  \draw[fan] (6.68,\ya)--(7.15,6.43);
-  \draw[fan] (6.68,\ya)--(7.15,6.84);
-}
-\foreach \ya in {3.68,3.95,4.22,4.49}{
-  \draw[fan] (6.68,\ya)--(7.15,3.72);
-  \draw[fan] (6.68,\ya)--(7.15,4.13);
-  \draw[fan] (6.68,\ya)--(7.15,4.54);
-}
-\foreach \ya in {1.22,1.49,1.76,2.03}{
-  \draw[fan] (6.68,\ya)--(7.15,1.26);
-  \draw[fan] (6.68,\ya)--(7.15,1.67);
-  \draw[fan] (6.68,\ya)--(7.15,2.08);
-}
+\node[heading] at (1.20,7.18) {CLIENT DATA};
+\node[heading] at (4.05,7.18) {PATCH FEATURES};
+\node[heading] at (7.25,7.18) {LOCAL MIL};
+\node[heading] at (12.20,7.18) {LOCAL UPDATES};
 
 % -----------------------------------------------------------------------------
-% Server aggregation: two candidates
+% Three compact client lanes
 % -----------------------------------------------------------------------------
-\WireStack{10.85}{5.18}{1.62}{1.42}{2}{0.10}{0.08}{\textbf{FedAvg}\\$\sum_k\frac{n_k}{\sum_jn_j}\Delta\theta_k$}{fedavg}
-\WireStack{10.85}{2.45}{1.62}{1.42}{2}{0.10}{0.08}{\textbf{Dominance-aware}\\$\sum_k\widetilde w_k\Delta\theta_k$}{domagg}
-\node[dim] at (11.65,4.82) {sample-volume weights};
-\node[dim] at (11.65,2.08) {switch / blend candidate};
+\node[anchor=east,font=\scriptsize] at (-0.10,6.05) {Site 1};
+\node[anchor=east,font=\scriptsize] at (-0.10,4.55) {Site 2};
+\node[anchor=east,font=\scriptsize] at (-0.10,2.95) {Dominant};
 
-% Client-update fan into both aggregation candidates.
-\foreach \src in {headOne-east,headTwo-east,headDom-east}{
-  \draw[fan] (\src)--(fedavg-west);
-  \draw[fan] (\src)--(domagg-west);
-}
+% Site 1
+\WireBlock{0.15}{5.52}{0.78}{0.92}{2}{WSI\\bag}{wsi1}
+\WireBlock{1.70}{5.58}{0.95}{0.80}{1}{patches}{patch1}
+\WireBlock{3.30}{5.42}{1.18}{1.10}{3}{Phikon\\$M_1\!\times\!768$}{feat1}
+\WireBlock{5.25}{5.52}{1.18}{0.90}{2}{$M_1\!\times\!h$}{proj1}
+\VectorLayer{7.10}{5.55}{0.52}{0.84}{$M_1\!\times\!1$}{att1}
+\VectorLayer{8.25}{5.42}{0.48}{1.10}{$h$}{rep1}
+\VectorLayer{9.35}{5.52}{0.48}{0.90}{6}{logit1}
+\VectorLayer{10.65}{5.52}{0.62}{0.90}{$\Delta\theta_1$}{upd1}
+
+% Site 2
+\WireBlock{0.15}{4.02}{0.78}{0.92}{2}{WSI\\bag}{wsi2}
+\WireBlock{1.70}{4.08}{0.95}{0.80}{1}{patches}{patch2}
+\WireBlock{3.30}{3.92}{1.18}{1.10}{3}{Phikon\\$M_2\!\times\!768$}{feat2}
+\WireBlock{5.25}{4.02}{1.18}{0.90}{2}{$M_2\!\times\!h$}{proj2}
+\VectorLayer{7.10}{4.05}{0.52}{0.84}{$M_2\!\times\!1$}{att2}
+\VectorLayer{8.25}{3.92}{0.48}{1.10}{$h$}{rep2}
+\VectorLayer{9.35}{4.02}{0.48}{0.90}{6}{logit2}
+\VectorLayer{10.65}{4.02}{0.62}{0.90}{$\Delta\theta_2$}{upd2}
+
+% Dominant site: thicker WSI stack only.
+\WireBlock{0.15}{2.32}{0.90}{1.12}{5}{WSI\\bag}{wsiD}
+\WireBlock{1.70}{2.48}{0.95}{0.80}{1}{patches}{patchD}
+\WireBlock{3.30}{2.32}{1.18}{1.10}{3}{Phikon\\$M_D\!\times\!768$}{featD}
+\WireBlock{5.25}{2.42}{1.18}{0.90}{2}{$M_D\!\times\!h$}{projD}
+\VectorLayer{7.10}{2.45}{0.52}{0.84}{$M_D\!\times\!1$}{attD}
+\VectorLayer{8.25}{2.32}{0.48}{1.10}{$h$}{repD}
+\VectorLayer{9.35}{2.42}{0.48}{0.90}{6}{logitD}
+\VectorLayer{10.65}{2.42}{0.62}{0.90}{$\Delta\theta_D$}{updD}
+
+% Local arrows.
+\foreach \a/\b in {
+  wsi1/patch1,patch1/feat1,feat1/proj1,proj1/att1,att1/rep1,rep1/logit1,logit1/upd1,
+  wsi2/patch2,patch2/feat2,feat2/proj2,proj2/att2,att2/rep2,rep2/logit2,logit2/upd2,
+  wsiD/patchD,patchD/featD,featD/projD,projD/attD,attD/repD,repD/logitD,logitD/updD
+}{\draw[flow] (\a-east)--(\b-west);}
+
+% Dimension annotations below stage columns, not inside the lanes.
+\node[dim] at (0.62,1.82) {$N_D\gg N_i$ only changes sample volume};
+\node[dim] at (2.18,1.82) {$M_k$ patches};
+\node[dim] at (3.92,1.82) {frozen 768-d features};
+\node[dim] at (5.84,1.82) {instance projection};
+\node[dim] at (7.36,1.82) {attention};
+\node[dim] at (8.48,1.82) {pooled slide vector};
+\node[dim] at (9.58,1.82) {ISUP 0--5};
+
+% Client/server boundary.
+\draw[thinwire,densely dashed] (12.02,1.42)--(12.02,6.72);
+\node[font=\scriptsize,fill=white,inner sep=1pt] at (12.02,1.20) {client/server boundary};
 
 % -----------------------------------------------------------------------------
-% Validation diagnostics, detector, selector, selected model
+% Bottom row: server aggregation and validation control
 % -----------------------------------------------------------------------------
-\DenseLayer{13.25}{4.92}{1.72}{global QWK}{diagOne}
-\DenseLayer{13.72}{4.92}{1.72}{worst QWK}{diagTwo}
-\DenseLayer{14.19}{4.92}{1.72}{site spread}{diagThree}
-\DenseLayer{14.66}{4.92}{1.72}{MAOE}{diagFour}
-\DenseLayer{15.13}{4.92}{1.72}{severe rate}{diagFive}
-\node[dim] at (14.35,4.55) {five clean-calibrated diagnostics};
+\node[heading] at (3.20,0.95) {AGGREGATION CANDIDATES};
+\node[heading] at (8.15,0.95) {CLEAN VALIDATION};
+\node[heading] at (12.35,0.95) {DETECTOR AND SELECTION};
 
-% Candidate models feed the clean validation diagnostics.
-\foreach \dst in {diagOne-west,diagTwo-west,diagThree-west,diagFour-west,diagFive-west}{
-  \draw[fan] (fedavg-east)--(\dst);
-  \draw[fan] (domagg-east)--(\dst);
-}
+\WireBlock{0.55}{-1.15}{2.15}{1.18}{2}{\textbf{FedAvg}\\$\sum_k\frac{n_k}{\sum_jn_j}\Delta\theta_k$}{fedavg}
+\WireBlock{3.35}{-1.15}{2.25}{1.18}{2}{\textbf{Dominance-aware}\\$\sum_k\widetilde w_k\Delta\theta_k$}{domagg}
 
-\DenseLayer{16.10}{4.98}{1.58}{$C(r)$}{detector}
-\node[dim] at (16.30,4.60) {$C(r)=\sum_{j=1}^{5}I_j(r)$};
-\node[dim] at (16.30,4.30) {$T(r)=\mathbf{1}[C(r)\geq3]$};
-\foreach \src in {diagOne-east,diagTwo-east,diagThree-east,diagFour-east,diagFive-east}{
-  \draw[fan] (\src)--(detector-west);
-}
+% Update fans routed down to aggregation candidates.
+\coordinate (merge1) at (11.65,4.85);
+\coordinate (merge2) at (11.65,3.35);
+\coordinate (mergeD) at (11.65,2.75);
+\draw[fan] (upd1-east)--(merge1)--(fedavg-north);
+\draw[fan] (upd2-east)--(merge2)--(fedavg-north);
+\draw[fan] (updD-east)--(mergeD)--(fedavg-north);
+\draw[fan] (upd1-east)--(merge1)--(domagg-north);
+\draw[fan] (upd2-east)--(merge2)--(domagg-north);
+\draw[fan] (updD-east)--(mergeD)--(domagg-north);
 
-% Selector receives both candidate models and detector decision.
-\WireStack{17.05}{3.45}{0.82}{2.00}{1}{0.10}{0.08}{\textbf{selector}\\normal: FA\\abnormal: DA}{selector}
-\draw[flow] (fedavg-east) -- ++(0.45,0) |- (selector-west);
-\draw[flow] (domagg-east) -- ++(0.35,0) |- (selector-west);
-\draw[flow] (detector-east)--(selector-north);
+% Validation diagnostic vector as one readable block.
+\WireBlock{6.55}{-1.18}{2.70}{1.24}{2}{\textbf{Validation diagnostics}\\global QWK $\cdot$ worst-site QWK\\site spread $\cdot$ MAOE $\cdot$ severe error}{diagnostics}
+\draw[flow] (fedavg-east)--(diagnostics-west);
+\draw[flow] (domagg-east)--(diagnostics-west);
 
-\DenseLayer{18.45}{3.72}{2.02}{selected global model}{selected}
+% Detector and selector.
+\WireBlock{10.15}{-1.15}{1.85}{1.18}{1}{\textbf{Detector}\\$C(r)=\sum_{j=1}^{5}I_j(r)$\\switch if $C(r)\geq3$}{detector}
+\WireBlock{12.85}{-1.15}{1.72}{1.18}{1}{\textbf{Selector}\\normal: FedAvg\\abnormal: blend}{selector}
+\VectorLayer{15.30}{-1.15}{0.72}{1.18}{selected\\model}{selected}
+\VectorLayer{16.75}{-1.02}{0.62}{0.92}{ISUP\\0--5}{output}
+
+\draw[flow] (diagnostics-east)--(detector-west);
+\draw[flow] (detector-east)--(selector-west);
+\draw[flow] (fedavg-east) -- ++(0.35,0) |- (selector-west);
+\draw[flow] (domagg-east) -- ++(0.25,0) |- (selector-west);
 \draw[flow] (selector-east)--(selected-west);
-\node[dim] at (18.65,3.36) {$M_\pi=(1-T)M_{\mathrm{FA}}+TM_{\mathrm{DA}}$};
-
-% Final pathology output.
-\DenseLayer{19.55}{4.02}{1.42}{ISUP 0--5}{output}
 \draw[flow] (selected-east)--(output-west);
-\node[dim] at (19.75,3.67) {six-class ordinal output};
 
-% Privacy boundary annotation.
-\draw[wirethin,densely dashed] (10.35,0.20)--(10.35,7.45);
-\node[rotate=90,font=\scriptsize,fill=white,inner sep=1pt] at (10.35,0.95) {raw slides and feature bags remain local};
-\node[font=\scriptsize] at (6.0,0.18) {client-side computation};
-\node[font=\scriptsize] at (15.0,0.18) {server-side aggregation and validation control};
+\node[dim] at (15.65,-1.55) {$M_\pi=(1-T)M_{\mathrm{FA}}+TM_{\mathrm{DA}}$};
+\node[font=\scriptsize] at (6.15,-1.92) {raw slides and feature bags remain local; only model updates reach the server};
 
 \end{tikzpicture}
