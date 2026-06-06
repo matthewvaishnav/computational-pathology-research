@@ -19,6 +19,20 @@
   urlcolor=blue!55!black
 }
 
+% Full-width abstract with controlled paragraph alignment. The standard article
+% abstract uses a narrower quotation block, which looked visually off-center in
+% the compact arXiv build.
+\renewenvironment{abstract}{%
+  \par\small
+  \begin{center}\bfseries Abstract\end{center}%
+  \vspace{-0.45em}%
+  \setlength{\parindent}{0pt}%
+  \setlength{\parskip}{0.35em}%
+  \ignorespaces
+}{%
+  \par\normalsize
+}
+
 \title{When the Largest Client Is Misaligned:\\
 Dominant-Site Stress Tests for Federated Computational Pathology}
 
