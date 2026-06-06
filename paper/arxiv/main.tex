@@ -52,6 +52,7 @@ I study a controlled version of that problem. I simulate multi-site federated le
 \subsection*{Working thesis}
 In federated computational pathology, raw sample count is not the same as task-specific site-signal alignment. FedAvg can become less safe when the largest simulated pathology client has a training-label process that is misaligned with the validation objective, and dominance-aware aggregation or switching can reduce that risk under controlled stress.
 
+% The introductory architecture figure was intentionally retired; do not reinsert federated_pathology_pipeline_diagram.tex.
 \paragraph{Method at a glance.}
 For client updates $\Delta\theta_k$, the two candidate global updates are
 \[
@@ -77,7 +78,7 @@ and the selected policy is
 M_{\pi}(r)
 =[1-T(r)]M_{\mathrm{FA}}(r)+T(r)M_{\mathrm{DA}}(r).
 \]
-Raw slides and patch features remain local; only model updates reach the server. The complete definitions and first-order alignment analysis are given in Section~\ref{sec:mathematical-formulation}.
+Raw slides and patch features remain local; only model updates reach the server. The complete definitions and first-order alignment analysis are developed in the mathematical formulation section.
 
 \section{Contributions}
 I make five main contributions.
