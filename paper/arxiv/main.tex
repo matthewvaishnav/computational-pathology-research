@@ -1,62 +1,26 @@
-\documentclass[10pt]{article}
+\documentclass[11pt]{article}
 
-\usepackage[margin=0.82in]{geometry}
-\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{hyperref}
-\usepackage{enumitem}
 \usepackage{xcolor}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta,calc,fit,positioning}
 \usepackage{microtype}
-\usepackage{times}
 \usepackage{placeins}
-\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 
 \hypersetup{
   colorlinks=true,
-  linkcolor=blue!60!black,
-  citecolor=blue!60!black,
-  urlcolor=blue!60!black
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black
 }
 
-% PDF layout normalization: keep every paragraph flush-left, use consistent
-% paragraph spacing, and avoid accidental hanging/run-in indentation.
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.58em plus 0.12em minus 0.05em}
-\setlength{\textfloatsep}{10pt plus 1pt minus 2pt}
-\setlength{\floatsep}{8pt plus 1pt minus 2pt}
-\setlength{\intextsep}{8pt plus 1pt minus 2pt}
-\renewcommand{\baselinestretch}{0.98}
-\setlist{leftmargin=1.8em,itemsep=0.25em,topsep=0.35em,parsep=0pt,partopsep=0pt}
-\setlist[enumerate]{label=\arabic*.,leftmargin=2.2em,labelsep=0.6em}
-\setlist[itemize]{leftmargin=1.8em,labelsep=0.5em}
-\raggedbottom
-\emergencystretch=3em
-\sloppy
-
-% Force the abstract to use the same no-indent paragraph style as the paper body.
-% The standard article abstract internally uses a list-like environment that
-% reintroduces first-line indentation unless it is overridden explicitly.
-\renewenvironment{abstract}
-  {%
-    \begin{center}%
-      \bfseries \abstractname
-    \end{center}%
-    \begin{quote}%
-      \small
-      \setlength{\parindent}{0pt}%
-      \setlength{\parskip}{0.58em plus 0.12em minus 0.05em}%
-      \noindent\ignorespaces
-  }
-  {%
-    \end{quote}%
-  }
-
-\title{When More Data Is Less Trustworthy:\\
-Site-Signal Alignment Failure Modes in Federated Computational Pathology}
+\title{When the Largest Client Is Misaligned:\\
+Dominant-Site Stress Tests for Federated Computational Pathology}
 
 \author{Matthew Vaishnav\\
 Independent Researcher}
@@ -88,15 +52,32 @@ I study a controlled version of that problem. I simulate multi-site federated le
 \subsection*{Working thesis}
 In federated computational pathology, raw sample count is not the same as task-specific site-signal alignment. FedAvg can become less safe when the largest simulated pathology client has a training-label process that is misaligned with the validation objective, and dominance-aware aggregation or switching can reduce that risk under controlled stress.
 
-\begin{figure}[!htbp]
-\centering
-\resizebox{\textwidth}{!}{%
-\input{figures/federated_pathology_pipeline_diagram.tex}%
-}
-\caption{Dominant-site detector-switch federated pathology pipeline. Site-level whole-slide data are converted into Phikon feature representations, local slide-level models are trained per simulated client, and validation diagnostics drive a switch between sample-size-weighted FedAvg and a dominance-aware alternative when dominant-site shift is detected.}
-\label{fig:pipeline_diagram}
-\end{figure}
-\FloatBarrier
+\paragraph{Method at a glance.}
+For client updates $\Delta\theta_k$, the two candidate global updates are
+\[
+\Delta\theta_{\mathrm{FA}}
+=\sum_{k=1}^{K}\frac{n_k}{\sum_{j=1}^{K}n_j}\Delta\theta_k,
+\qquad
+\Delta\theta_{\mathrm{DA}}
+=\sum_{k=1}^{K}\widetilde w_k\Delta\theta_k.
+\]
+A clean-calibrated diagnostic vector
+\[
+d(r)=\bigl(\kappa_{\mathrm{global}},\kappa_{\min},S_\kappa,
+\operatorname{MAOE},R_{\mathrm{sev}}\bigr)
+\]
+induces the trigger
+\[
+C(r)=\sum_{j=1}^{5}I_j(r),
+\qquad
+T(r)=\mathbf{1}[C(r)\geq3],
+\]
+and the selected policy is
+\[
+M_{\pi}(r)
+=[1-T(r)]M_{\mathrm{FA}}(r)+T(r)M_{\mathrm{DA}}(r).
+\]
+Raw slides and patch features remain local; only model updates reach the server. The complete definitions and first-order alignment analysis are given in Section~\ref{sec:mathematical-formulation}.
 
 \section{Contributions}
 I make five main contributions.
@@ -119,302 +100,91 @@ Dominance-aware aggregation should therefore not be interpreted as an institutio
 The ethical purpose of this work is to make that assumption visible, stress-testable, and contestable. Any real deployment would require governance, local clinical review, pathologist input, bias auditing, institutional agreement on validation objectives, prospective validation, security review, and regulatory review.
 
 \section{Experimental setup}
-I use PANDA-derived Phikon feature representations and simulate multi-site federated learning over pathology-derived feature vectors. PANDA is a prostate cancer grading dataset \citep{bulten2022artificial}. Phikon is a pathology foundation model used here as the feature extractor \citep{filiot2023scaling}.
+\subsection{Dataset and representation}
+The experiments use PANDA-derived pathology feature representations. Whole-slide images are represented through precomputed Phikon features. The downstream task is six-class ISUP grading.
 
-\begin{table}[!htbp]
-\centering
-\caption{Experimental setup.}
-\label{tab:setup}
-\begin{tabular}{ll}
-\toprule
-Category & Value \\
-\midrule
-Dataset & PANDA prostate cancer grading \\
-Feature extractor & Phikon \\
-Readable feature files & 10,611 \\
-Feature dimension & 768 \\
-Task & ISUP grade prediction, classes 0--5 \\
-Federation & Simulated multi-site setting \\
-Perturbed client & Largest simulated client \\
-Validation labels & Kept clean during stress experiments \\
-Metrics & Global QWK, worst-site QWK, mean-site QWK, macro-F1, accuracy \\
-Seeds & 15-seed stress studies \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Simulated federations}
+The feature dataset is partitioned into simulated clients. One client is designated as the dominant client by sample volume. The clean validation objective is held fixed while the dominant client's training labels are perturbed.
 
-Quadratic weighted kappa (QWK) is used because ISUP prostate grading is ordinal. Confusing adjacent grades is less severe than confusing grade 0 with grade 5, and QWK better reflects that ordinal structure than plain accuracy alone.
-
-The experimental design keeps validation labels clean. Perturbations are applied to the largest simulated site's training labels. This isolates the question of whether aggregation remains safe when a high-volume client's training signal becomes less aligned with the target validation objective.
-
-\section{Stress modes}
-\subsection{Dominant-site label corruption}
-The first stress mode corrupts labels at the largest simulated site. This creates a controlled failure mode where the site with the most samples remains influential under FedAvg even though its training labels become less aligned with the validation objective.
-
-The observed pattern is conditional: FedAvg remains strong in the clean setting and should not be automatically replaced; cross-site blending improves robustness under corrupted dominant-site stress; and a clean-calibrated detector can switch away from FedAvg in unsafe regimes.
-
-\subsection{Systematic ordinal threshold shift}
-Random corruption is useful for exposing a mechanism, but pathology disagreement is often systematic rather than random. The second stress mode applies ordinal threshold shift to the dominant site's training labels. Aggressive shift moves selected labels upward by one ISUP grade when possible. Conservative shift moves selected labels downward by one ISUP grade when possible.
-
-The conservative threshold-shift result is the strongest transfer setting. I treat it as the headline systematic-bias result. Aggressive threshold shift is weaker and is presented as a supplementary asymmetric-stress result rather than the main claim.
-
-\section{Aggregation and detector-switch logic}
-FedAvg encodes a simple statistical assumption: more samples equals more authority. The detector-switch approach treats that as an assumption to audit rather than an axiom. The detector follows this logic:
-
+\subsection{Stress modes}
+Two dominant-site stress modes are considered:
 \begin{enumerate}
-  \item Calibrate normal FedAvg validation behavior on clean runs.
-  \item Monitor validation diagnostics.
-  \item If enough diagnostics leave the clean-calibrated safe range, switch away from sample-size dominance.
-  \item Otherwise, keep FedAvg.
+  \item random label corruption at the dominant site;
+  \item systematic ordinal threshold shift at the dominant site.
 \end{enumerate}
 
-The fixed detector rule evaluated in the conservative threshold-shift transfer experiment was:
-
-\begin{center}
-\begin{tabular}{ll}
-\toprule
-Setting & Value \\
-\midrule
-low\_quantile & 0.10 \\
-high\_quantile & 0.80 \\
-min\_trigger\_count & 3 \\
-use\_entropy & false \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-The detector diagnostics include global QWK, worst-site QWK, site-QWK spread, mean absolute ordinal error, and severe ordinal error rate. Prediction entropy is available but was not used in the fixed headline rule.
+\subsection{Evaluation metrics}
+The primary metrics are global QWK, macro-F1, and worst-site QWK. Detector diagnostics additionally include site-specific QWK spread, mean absolute ordinal error, severe-error rate, and prediction entropy where available.
 
 \section{Mathematical notation}
 Let there be $K$ simulated clients. Client $k$ has $n_k$ local training samples and produces a local model update $\Delta\theta_k$. Standard FedAvg assigns aggregation weight
 \begin{equation}
-  w_k = \frac{n_k}{\sum_{j=1}^{K} n_j}
+  w_k=\frac{n_k}{\sum_{j=1}^{K}n_j}
 \end{equation}
 and forms the global update
 \begin{equation}
-  \Delta\theta = \sum_{k=1}^{K} w_k \Delta\theta_k .
+  \Delta\theta=\sum_{k=1}^{K}w_k\Delta\theta_k.
 \end{equation}
+
 The concern studied here is that $n_k$ is a volume term, not an alignment term. A high-volume client may have a training-label process that is less aligned with the declared validation objective.
 
 Let $A_k$ denote the task-specific alignment of client $k$'s training signal with the declared validation objective. The claim is not that $A_k$ is an institutional property. It is a run-specific modeling quantity. The failure mode appears when the dominant sample-volume client has high $n_k$ but reduced $A_k$.
 
-Let $d_1, \ldots, d_m$ be clean-calibrated validation diagnostics. Each diagnostic has a clean safe range defined by lower and/or upper quantiles. For a run $r$, define
+Let $d_1,\ldots,d_m$ be clean-calibrated validation diagnostics. Each diagnostic has a clean safe range defined by lower and/or upper quantiles. For a run $r$, define
 \begin{equation}
-  I_i(r) = \begin{cases}
-  1, & \text{if diagnostic } d_i \text{ leaves its clean-calibrated safe range}, \\
-  0, & \text{otherwise.}
+  I_i(r)=
+  \begin{cases}
+    1, & \text{if diagnostic }d_i\text{ leaves its clean-calibrated safe range},\\
+    0, & \text{otherwise.}
   \end{cases}
 \end{equation}
-The fixed detector rule triggers when
+
+The fixed detector count is
 \begin{equation}
-  \sum_i I_i(r) \geq 3 .
+  C(r)=\sum_{i=1}^{m}I_i(r).
 \end{equation}
 
-Let $M_{\mathrm{clean}}(r)$ be the metric obtained by staying with the clean strategy, and $M_{\mathrm{switch}}(r)$ be the metric obtained by the detector-switch policy. The reported delta is
+The fixed transferred rule uses five diagnostics and switches when at least three are abnormal:
 \begin{equation}
-  \Delta M(r) = M_{\mathrm{switch}}(r) - M_{\mathrm{clean}}(r).
+  T(r)=\mathbf{1}[C(r)\geq3].
 \end{equation}
-Positive $\Delta M$ means the detector-switch policy improved over staying with the clean strategy for that metric.
+
+Let $M_{\mathrm{FA}}(r)$ be the metric under FedAvg and $M_{\mathrm{DA}}(r)$ the metric under the selected dominance-aware alternative. The detector-controlled metric is
+\begin{equation}
+  M_{\pi}(r)=[1-T(r)]M_{\mathrm{FA}}(r)+T(r)M_{\mathrm{DA}}(r).
+\end{equation}
+
+Prediction entropy is available but is not used in the fixed headline rule.
 
 \section{Fixed detector transfer result}
-I evaluated a fixed label-noise-calibrated detector rule on conservative threshold-shift stress. Table~\ref{tab:transfer} summarizes the result.
+The detector was calibrated under dominant-site label-noise stress and then transferred without retuning to conservative ordinal threshold shift.
 
-\begin{table}[!htbp]
-\centering
-\caption{Fixed detector transfer to conservative ordinal threshold shift. Deltas are detector-switch performance minus the clean-strategy baseline.}
-\label{tab:transfer}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{rrrrrrrr}
-\toprule
-Shift & Trigger rate & Global QWK delta & 95\% CI & Macro-F1 delta & 95\% CI & Worst-site QWK delta & 95\% CI \\
-\midrule
-0\% & 13.3\% & -0.00025 & [-0.00113, 0.00062] & +0.00009 & [-0.00039, 0.00057] & +0.00151 & [-0.00162, 0.00463] \\
-25\% & 33.3\% & +0.00129 & [-0.00175, 0.00432] & +0.00290 & [-0.00184, 0.00765] & +0.00353 & [-0.00428, 0.01133] \\
-35\% & 60.0\% & +0.00542 & [0.00062, 0.01022] & +0.00838 & [0.00272, 0.01405] & +0.00991 & [0.00169, 0.01813] \\
-45\% & 73.3\% & +0.01053 & [0.00239, 0.01866] & +0.01512 & [0.00819, 0.02204] & +0.01290 & [0.00547, 0.02034] \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
+At 35\% and 45\% conservative shift, the fixed rule produced positive paired improvements in global QWK, macro-F1, and worst-site QWK while keeping clean-regime switching at 13.3\%. The result is therefore not a claim that the alternative aggregation rule is universally superior. It is a claim that conditional switching can reduce risk when a detector identifies evidence that sample-size dominance has become unsafe.
 
-The clean 0\% conservative-shift regime has low switching at 13.3\%, with near-zero global QWK cost and a confidence interval crossing zero. At 25\% shift, the result is directionally positive but not statistically clean because the confidence intervals cross zero. The 35\% and 45\% regimes are the headline positive transfer results: both show statistically positive improvements across global QWK, macro-F1, and worst-site QWK.
+\section{Diagnostic interpretation}
+The detector is not driven by one heuristic alone. Across the transferred threshold-shift runs, the most frequent trigger component is mean absolute ordinal error increase, followed by degradation in global and worst-site QWK. Site-QWK spread contributes, but it is not the sole or dominant explanation for the result.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.86\textwidth]{figures/dominant-site-figure-3-detector-transfer.png}
-\caption{Fixed detector transfer to conservative ordinal threshold shift.}
-\label{fig:detector_transfer}
-\end{figure}
-\FloatBarrier
+This matters because a detector based only on cross-site dispersion could confuse ordinary site heterogeneity with harmful dominant-site misalignment. The transferred rule instead combines global degradation, worst-site degradation, dispersion, and ordinal-error severity.
 
-\section{Detector diagnostic analysis}
-The next question is whether the detector is interpretable. If it only triggers because of one arbitrary metric, the result is less convincing. The diagnostic-frequency analysis summarizes which clean-calibrated diagnostics were crossed by the fixed detector.
+\section{Ablation and calibration sensitivity}
+Leave-one-diagnostic-family-out ablation shows that removing the most frequent diagnostic family, mean absolute ordinal error, reduces trigger rate but does not collapse the positive 35\% / 45\% transfer result.
 
-\begin{table}[!htbp]
-\centering
-\caption{Diagnostic-frequency analysis for conservative threshold shift.}
-\label{tab:diagnostics}
-\begin{tabular}{lr}
-\toprule
-Diagnostic & Count \\
-\midrule
-mean\_abs\_error\_high & 44 \\
-worst\_site\_qwk\_low & 31 \\
-global\_qwk\_low & 27 \\
-severe\_error\_rate\_high & 22 \\
-site\_qwk\_spread\_high & 12 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The detector is driven primarily by ordinal-error and QWK degradation signals, not by site-spread alone. This is mechanistically sensible in a conservative ordinal threshold-shift setting.
-
-\section{Leave-one-diagnostic-family-out ablation}
-The most frequent diagnostic is \texttt{mean\_abs\_error\_high}. The key ablation question is whether the fixed-rule transfer result collapses if this diagnostic is removed. Table~\ref{tab:ablation} summarizes the main comparison over the 35\% and 45\% conservative threshold-shift regimes.
-
-\begin{table}[!htbp]
-\centering
-\caption{Leave-one-diagnostic-family-out and single-family ablation over 35\% and 45\% conservative threshold shift.}
-\label{tab:ablation}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrrrr}
-\toprule
-Variant & Mean trigger rate & Global QWK delta & Macro-F1 delta & Worst-site QWK delta & Significant global-QWK regimes & Positive global-QWK regimes \\
-\midrule
-only\_mean\_abs\_error\_high & 96.7\% & +0.00865 & +0.01462 & +0.01054 & 2 & 2 \\
-full & 66.7\% & +0.00797 & +0.01175 & +0.01141 & 2 & 2 \\
-minus\_site\_qwk\_spread\_high & 60.0\% & +0.00797 & +0.01124 & +0.01092 & 2 & 2 \\
-only\_global\_qwk\_low & 60.0\% & +0.00797 & +0.01124 & +0.01092 & 2 & 2 \\
-minus\_worst\_site\_qwk\_low & 53.3\% & +0.00770 & +0.01011 & +0.00940 & 2 & 2 \\
-only\_severe\_error\_rate\_high & 50.0\% & +0.00757 & +0.00958 & +0.00847 & 2 & 2 \\
-minus\_severe\_error\_rate\_high & 63.3\% & +0.00728 & +0.01167 & +0.01057 & 1 & 2 \\
-only\_worst\_site\_qwk\_low & 76.7\% & +0.00709 & +0.01357 & +0.00974 & 1 & 2 \\
-minus\_global\_qwk\_low & 56.7\% & +0.00701 & +0.01054 & +0.00904 & 2 & 2 \\
-minus\_mean\_abs\_error\_high & 50.0\% & +0.00701 & +0.01003 & +0.00856 & 1 & 2 \\
-only\_site\_qwk\_spread\_high & 23.3\% & +0.00128 & +0.00234 & +0.00228 & 0 & 2 \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
-
-Removing \texttt{mean\_abs\_error\_high} reduces trigger rate but does not collapse the transfer result. The signal is distributed across multiple diagnostics, especially QWK degradation and severe ordinal-error signals.
-
-\section{Calibration-sensitivity analysis}
-The fixed detector should not be treated as convincing if it only works at one hand-picked threshold setting. To test this, I swept nearby detector settings:
-\begin{align*}
-\texttt{low\_quantile} &\in \{0.05, 0.10, 0.15\},\\
-\texttt{high\_quantile} &\in \{0.75, 0.80, 0.85, 0.90\},\\
-\texttt{min\_trigger\_count} &\in \{2,3,4\}.
-\end{align*}
-This produced 36 detector configurations. A configuration was counted as robust-positive if it preserved clean trigger rate at or below 20\% and positive global-QWK, macro-F1, and worst-site-QWK deltas at both 35\% and 45\% conservative shift. In total, 29 of 36 configurations were robust positive.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.86\textwidth]{figures/dominant-site-figure-4-detector-ablation.png}
-\caption{Detector interpretability, ablation, and calibration robustness. The transfer result is not a one-diagnostic or one-threshold artifact in the conservative threshold-shift setting.}
-\label{fig:detector_ablation}
-\end{figure}
-\FloatBarrier
-
-\section{Supplementary asymmetric-stress result: aggressive threshold shift}
-Aggressive threshold shift is a weaker and more mixed transfer setting. Under aggressive shift, the fixed detector kept the same 13.3\% clean-regime trigger rate, but trigger rates remained low rather than scaling strongly with stress: 26.7\% at 25\%, 26.7\% at 35\%, and 20.0\% at 45\%. Global QWK and worst-site QWK were mildly positive, while macro-F1 was negative at 25\% and 35\% and positive only at 45\%.
-
-This asymmetry is important: the detector should not be presented as a universal stress detector. The conservative threshold-shift result is the headline; aggressive threshold shift is a supplementary weak-transfer result that shows where the detector is less responsive.
-
-\section{Relation to broader repository evidence}
-\subsection{PCam}
-The repository includes PCam full-dataset validation with 85.26\% test accuracy and 0.9394 AUC on the complete 32,768-sample test set. This validates the patch-level image pipeline on real pathology patches but does not validate whole-slide aggregation or hospital deployment.
-
-\subsection{PANDA and TransnnMIL}
-The PANDA slide-level work uses 10,611 readable Phikon feature bags with feature dimension 768. Mean-pooled Phikon plus MLP reached QWK 0.7274, gated AttentionMIL reached QWK 0.8100, and tuned TransnnMIL repeated-seed runs reached QWK 0.8155, 0.8225, and 0.8086. A stabilized warmup-cosine / gradient-clipping TransnnMIL grid produced mean best validation QWK between 0.8117 and 0.8257 across 18 runs. The supported claim is competitive behavior, not architecture superiority.
-
-\subsection{PathologyFL}
-PathologyFL provides the federated execution layer for simulated-site computational pathology experiments. It includes coordinator/client workflows, weighted aggregation, privacy hooks, and robustness-oriented diagnostics. These systems support research experiments but do not establish real multi-center deployment readiness.
-
-\subsection{Camelyon17 external-center validation}
-As an early external-center validation layer, I evaluated frozen ImageNet ResNet18 feature baselines on Camelyon17/WILDS. Camelyon17 provides a natural multi-center structure: source-domain training uses centers 0, 3, and 4; source-domain validation uses the same centers; OOD validation uses center 1; and held-out OOD test uses center 2.
-
-The goal of this experiment is not to claim final clinical performance. It is to test whether the site-signal alignment pattern appears under natural external-center shift before full pathology-specific feature extraction or full iterative federated learning.
-
-Across 5 seeds, FedAvg-style equal-patch weighting performed better on source-like validation but worse on the held-out test center. Equal-client weighting improved held-out test-center accuracy by 8.20 percentage points over FedAvg-style equal-patch weighting. Downweighting the dominant source center improved held-out test-center accuracy by 7.82 percentage points.
-
-\begin{table}[!htbp]
-\centering
-\caption{Early Camelyon17/WILDS external-center feature-level validation. Values are 5-seed mean accuracies using frozen ImageNet ResNet18 features and logistic regression.}
-\label{tab:camelyon17_external}
-\begin{tabular}{lrrrr}
-\toprule
-Policy & id\_val acc. & val acc. & test acc. & test delta vs. FedAvg \\
-\midrule
-FedAvg-style equal-patch & 0.9303 & 0.8668 & 0.8312 & 0.0000 \\
-Equal-client & 0.9149 & 0.8258 & 0.9132 & +0.0820 \\
-Downweight dominant center & 0.9125 & 0.8246 & 0.9094 & +0.0782 \\
-Detector switch to equal-client & -- & -- & -- & +0.0658 \\
-Detector switch to downweight dominant & -- & -- & -- & +0.0628 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-A validation-aware detector switch was then evaluated using only source-domain validation and OOD-validation diagnostics; the held-out test center was not used to choose the policy. With a simple transparent rule, the equal-client detector switch improved held-out test-center accuracy by 6.58 percentage points, while the downweight-dominant detector switch improved held-out test-center accuracy by 6.28 percentage points.
-
-A threshold sweep over 112 nearby detector settings found 43 robust-positive settings, where robust-positive required held-out test accuracy gain above 3 percentage points, held-out test macro-F1 gain above 3 percentage points, and switch rate at least 40\%. This suggests the early Camelyon17 detector result is not purely a single-threshold artifact.
-
-I then repeated the center-weighting analysis using features from a Camelyon17 source-trained ResNet18 checkpoint rather than frozen ImageNet features. Checkpoint selection was based on source-domain validation behavior, not held-out test performance. Across 5 seeds, FedAvg-style equal-patch weighting reached 0.9991 source-train accuracy but only 0.9052 held-out test accuracy. Equal-client weighting reached 0.9318 held-out test accuracy, a +2.66 percentage-point gain, and downweight-dominant weighting reached 0.9322 held-out test accuracy, a +2.70 percentage-point gain. This indicates that the weighting effect survives beyond generic ImageNet features, although the gain is smaller with stronger learned features.
-
-
-
-These results remain preliminary. They use sampled feature-level baselines and logistic-regression weighting probes rather than full iterative FL or pathology foundation-model features. The supported claim is narrower: under natural Camelyon17 center shift, source-center weighting choices materially affect held-out-center performance, and the sample-volume / site-signal alignment tradeoff appears outside the original simulated PANDA stress tests.
-
-
-\subsection{FAIR-WEIGHTS-H}
-FAIR-WEIGHTS-H is an auditable institutional weighting protocol that separates training weight, validation representation priority, and monitoring priority. Its intended role is to enforce pre-specified representation and subgroup-performance constraints rather than to claim that a learned scalar weight proves institutional fairness. Current empirical status is conservative: FAIR-WEIGHTS-H runs and produces distinct weight trajectories under heterogeneous simulated sites, but it has not yet demonstrated a consistent performance or fairness advantage over simpler baselines.
-
-\section{Discussion}
-The main scientific point is not that cross-site blending is always superior to FedAvg. The main point is conditional: FedAvg can become less safe when the dominant client's training signal becomes misaligned with the validation objective, because FedAvg continues to assign that client high influence based on sample count.
-
-The detector-switch result suggests one possible audit mechanism. Rather than replacing FedAvg everywhere, the detector preserves FedAvg in clean regimes and switches away when enough clean-calibrated diagnostics indicate degraded alignment. The clean-regime switch rate remains low in the conservative threshold-shift transfer result, while 35\% and 45\% shift regimes show positive gains.
-
-The diagnostic analyses make the detector more credible. It is mainly driven by ordinal-error and QWK degradation signals, which are mechanistically connected to ordinal threshold shift. It does not collapse when the most frequent diagnostic is removed. It also remains stable across a neighborhood of calibration settings.
+Calibration-sensitivity analysis varies the lower quantile, upper quantile, and minimum trigger count around the fixed rule. Of 36 nearby configurations, 29 preserve clean switching at or below 20\% and positive global-QWK, macro-F1, and worst-site-QWK deltas at both 35\% and 45\% conservative shift.
 
 \section{Limitations}
-The limitations are substantial. First, this is a simulated federation over pathology-derived feature vectors, not a real multi-hospital deployment. Site identity is simulated, and the perturbations are controlled. The result may not hold unchanged under naturally occurring site distributions.
+The experiments simulate federated clients over feature representations rather than training directly over distributed whole-slide image infrastructure. The sites are simulated partitions rather than independent hospitals. The stress modes are controlled perturbations, not prospective clinical observations. The detector is calibrated from clean runs and depends on the chosen validation objective. The work does not establish clinical safety, regulatory readiness, fairness across patient subgroups, resistance to adversarial clients, privacy guarantees beyond local data retention, or performance under real deployment constraints.
 
-Second, the data are derived from PANDA prostate cancer grading. A stronger claim would require external validation on real multi-center pathology data, such as Camelyon17 or another dataset with natural center identity.
+\section{Discussion}
+The results support a narrow but practically relevant conclusion: sample volume should not be treated as a complete proxy for task-specific aggregation authority. FedAvg's sample-size weighting is a modeling assumption, and in computational pathology that assumption can fail when a dominant client's training-label process is systematically misaligned with the declared validation objective.
 
-Third, the detector uses validation diagnostics. Any real deployment would need to define how validation data are governed, where diagnostics are computed, and whether those diagnostics are allowed to leave institutional environments.
+The appropriate response is not to distrust large sites. It is to make aggregation influence auditable. Clean-calibrated validation diagnostics provide one way to detect when sample-size dominance may have become unsafe. The positive cross-stress transfer result suggests that the detector is responding to broader ordinal degradation rather than memorizing one corruption mechanism.
 
-Fourth, the conservative threshold-shift result is stronger than the aggressive threshold-shift result. I headline conservative shift and treat aggressive shift as weaker or supplementary.
-
-Fifth, the detector is not universally calibrated. The calibration-sensitivity analysis shows robustness in a local neighborhood of settings for this experiment. It does not prove universal detector calibration across datasets, diseases, institutions, scanners, or label policies.
-
-Sixth, the experiments do not establish clinical readiness, diagnostic safety, regulatory compliance, or deployment suitability.
-
-\section{Claim boundaries}
-Supported claims include: FedAvg has a sample-volume / site-signal alignment failure mode in these simulated federated pathology experiments; the failure mode appears when the largest simulated client's training signal is made less aligned with the validation objective while validation labels remain clean; cross-site blending improves robustness under dominant-site label corruption and conservative ordinal threshold shift; a fixed label-noise-calibrated detector transfers to conservative threshold-shift stress with low clean-regime switching and positive 35\% / 45\% shift gains; the detector is interpretable; removing \texttt{mean\_abs\_error\_high} does not collapse the 35\% / 45\% transfer result; and calibration-sensitivity analysis shows that 29 of 36 nearby detector settings preserve the qualitative result.
-
-Unsupported claims include clinical readiness, diagnostic safety, real hospital federated deployment performance, universal detector calibration, institutional ranking or institutional reliability judgment, and the claim that any real hospital, pathologist, or institution is inherently more or less trustworthy than another.
-
-\section{Reproducibility artifacts}
-The result tables, run diagnostics, diagnostic summaries, ablation outputs, calibration-sensitivity outputs, and figure-generation scripts are released in the project repository. Long filesystem paths are shortened in the paper body; exact paths are available from the repository's reproducibility documentation and source tree.
-
-\begin{itemize}
-  \item Detector summary CSV and per-run diagnostics.
-  \item Diagnostic-frequency summary by stress regime.
-  \item Leave-one-diagnostic-family-out ablation table.
-  \item Calibration-sensitivity sweep table.
-  \item Figure-generation scripts for the schematic and paper figures.
-\end{itemize}
-
-Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
+Future work should evaluate the mechanism under real institutional federation, stronger local models, prospective pathology workflows, subgroup analysis, secure aggregation, privacy-preserving validation, and governance structures that allow participating sites to contest or interpret detector decisions.
 
 \section{Conclusion}
-FedAvg is useful, but it silently equates sample count with aggregation authority. In pathology, sample volume and task-specific site-signal alignment can diverge. I simulate that divergence by perturbing the dominant client's training signal while keeping validation labels clean. Under conservative ordinal threshold shift, a fixed label-noise-calibrated detector switch keeps clean-regime switching low and improves global QWK, macro-F1, and worst-site QWK at 35\% and 45\% shift. Diagnostic ablation and calibration-sensitivity analysis suggest that the detector is not merely a one-feature or one-threshold artifact. The result supports sample-volume / site-signal alignment auditing as a research direction for federated computational pathology.
+In simulated federated pathology experiments over PANDA-derived Phikon features, a fixed detector-switch rule calibrated under dominant-site label-noise stress transfers to conservative ordinal threshold shift. It preserves low clean-regime switching and improves global QWK, macro-F1, and worst-site QWK at stronger shift levels. The result does not establish clinical readiness. It supports treating sample-size dominance as an auditable assumption rather than an automatic guarantee of safe aggregation.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
 
 \end{document}
-
-% Trigger PDF rebuild after pipeline alignment
-
-% Rebuild PDF after figure spacing correction
