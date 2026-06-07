@@ -21,6 +21,30 @@ jobs:
       - name: Prepare arXiv source package
         run: python paper/arxiv/build_arxiv_package.py
 
+      - name: Normalize paragraph formatting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("paper/arxiv/build/main.tex")
+          text = path.read_text(encoding="utf-8")
+          anchor = r"\usepackage[numbers,sort&compress]{natbib}"
+          paragraph_style = "\n".join([
+              anchor,
+              "",
+              "% Keep every body paragraph flush left and visually separated.",
+              r"\setlength{\parindent}{0pt}",
+              r"\setlength{\parskip}{0.45em}",
+          ])
+
+          if r"\setlength{\parindent}{0pt}" not in text.split(r"\renewenvironment{abstract}", 1)[0]:
+              if anchor not in text:
+                  raise RuntimeError("Could not locate natbib preamble anchor")
+              text = text.replace(anchor, paragraph_style, 1)
+
+          path.write_text(text, encoding="utf-8")
+          PY
+
       - name: Build LaTeX PDF
         uses: xu-cheng/latex-action@v3
         with:
