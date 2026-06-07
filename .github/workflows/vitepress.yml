@@ -21,13 +21,14 @@ jobs:
       - name: Prepare arXiv source package
         run: python paper/arxiv/build_arxiv_package.py
 
-      - name: Normalize paragraph formatting
+      - name: Normalize formatting and add related work
         run: |
           python - <<'PY'
           from pathlib import Path
 
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
+
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           paragraph_style = "\n".join([
               anchor,
@@ -41,6 +42,21 @@ jobs:
               if anchor not in text:
                   raise RuntimeError("Could not locate natbib preamble anchor")
               text = text.replace(anchor, paragraph_style, 1)
+
+          related_work = r"""\section{Related work}
+Federated optimization was established by FedAvg and subsequently extended to address statistical and systems heterogeneity through methods such as FedProx, SCAFFOLD, and FedBN. Broader surveys and non-IID data-silo studies emphasize that client heterogeneity and update drift remain central design challenges in federated learning \citep{mcmahan2017communication,li2020fedprox,karimireddy2020scaffold,li2021fedbn,li2022noniid,kairouz2021advances}.
+
+In medicine, federated learning has been proposed as a way to support multi-institutional modeling without centralizing sensitive data, while computational-pathology studies have demonstrated federated learning directly on gigapixel whole-slide-image tasks \citep{rieke2020future,lu2022federatedpathology}.
+
+The pathology pipeline in this work builds on prostate-grading benchmarks, pathology foundation representations, weakly supervised whole-slide learning, attention-based multiple-instance learning, CLAM, and transformer-based MIL \citep{bulten2022artificial,filiot2023scaling,campanella2019clinical,ilse2018attention,lu2021data,shao2021transmil}.
+
+"""
+
+          marker = r"\section{Contributions}"
+          if r"\section{Related work}" not in text:
+              if marker not in text:
+                  raise RuntimeError("Could not locate Contributions section")
+              text = text.replace(marker, related_work + marker, 1)
 
           path.write_text(text, encoding="utf-8")
           PY
