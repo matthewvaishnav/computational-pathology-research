@@ -44,13 +44,13 @@ jobs:
               text = text.replace(anchor, paragraph_style, 1)
 
           related_work = r"""\section{Related work}
-Federated optimization was established by FedAvg and subsequently extended to address statistical and systems heterogeneity through methods such as FedProx, SCAFFOLD, and FedBN. Broader surveys and non-IID data-silo studies emphasize that client heterogeneity and update drift remain central design challenges in federated learning \citep{mcmahan2017communication,li2020fedprox,karimireddy2020scaffold,li2021fedbn,li2022noniid,kairouz2021advances}.
+          Federated optimization was established by FedAvg and subsequently extended to address statistical and systems heterogeneity through methods such as FedProx, SCAFFOLD, and FedBN. Broader surveys and non-IID data-silo studies emphasize that client heterogeneity and update drift remain central design challenges in federated learning \citep{mcmahan2017communication,li2020fedprox,karimireddy2020scaffold,li2021fedbn,li2022noniid,kairouz2021advances}.
 
-In medicine, federated learning has been proposed as a way to support multi-institutional modeling without centralizing sensitive data, while computational-pathology studies have demonstrated federated learning directly on gigapixel whole-slide-image tasks \citep{rieke2020future,lu2022federatedpathology}.
+          In medicine, federated learning has been proposed as a way to support multi-institutional modeling without centralizing sensitive data, while computational-pathology studies have demonstrated federated learning directly on gigapixel whole-slide-image tasks \citep{rieke2020future,lu2022federatedpathology}.
 
-The pathology pipeline in this work builds on prostate-grading benchmarks, pathology foundation representations, weakly supervised whole-slide learning, attention-based multiple-instance learning, CLAM, and transformer-based MIL \citep{bulten2022artificial,filiot2023scaling,campanella2019clinical,ilse2018attention,lu2021data,shao2021transmil}.
+          The pathology pipeline in this work builds on prostate-grading benchmarks, pathology foundation representations, weakly supervised whole-slide learning, attention-based multiple-instance learning, CLAM, and transformer-based MIL \citep{bulten2022artificial,filiot2023scaling,campanella2019clinical,ilse2018attention,lu2021data,shao2021transmil}.
 
-"""
+          """
 
           marker = r"\section{Contributions}"
           if r"\section{Related work}" not in text:
@@ -69,10 +69,20 @@ The pathology pipeline in this work builds on prostate-grading benchmarks, patho
           latexmk_use_xelatex: false
           args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error
 
+      - name: Verify bibliography expansion
+        run: |
+          test -f paper/arxiv/build/main.bbl
+          reference_count=$(grep -c '\\bibitem' paper/arxiv/build/main.bbl || true)
+          echo "Rendered bibliography entries: ${reference_count}"
+          if [ "${reference_count}" -lt 10 ]; then
+            echo "Expected at least 10 rendered references; refusing to deploy stale PDF."
+            exit 1
+          fi
+
       - name: Create PDF-only site
         run: |
           mkdir -p paper_pdf_site
-          cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
+          cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
           touch paper_pdf_site/.nojekyll
           cat > paper_pdf_site/index.html <<'EOF'
           <!doctype html>
@@ -80,16 +90,16 @@ The pathology pipeline in this work builds on prostate-grading benchmarks, patho
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta http-equiv="refresh" content="0; url=./when-more-data-is-less-trustworthy.pdf">
+            <meta http-equiv="refresh" content="0; url=./when-more-data-is-less-trustworthy-references-v2.pdf">
             <title>When More Data Is Less Trustworthy</title>
             <script>
-              window.location.replace('./when-more-data-is-less-trustworthy.pdf');
+              window.location.replace('./when-more-data-is-less-trustworthy-references-v2.pdf');
             </script>
           </head>
           <body>
             <p>
               Opening paper PDF:
-              <a href="./when-more-data-is-less-trustworthy.pdf">
+              <a href="./when-more-data-is-less-trustworthy-references-v2.pdf">
                 When More Data Is Less Trustworthy
               </a>
             </p>
