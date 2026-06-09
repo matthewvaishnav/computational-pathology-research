@@ -21,7 +21,7 @@ jobs:
       - name: Prepare arXiv source package
         run: python paper/arxiv/build_arxiv_package.py
 
-      - name: Apply AlexNet-style two-column formatting and add calculations
+      - name: Apply compact two-column formatting and add calculations
         run: |
           cp paper/arxiv/identifiability_calculations.tex paper/arxiv/build/identifiability_calculations.tex
           python - <<'PY'
@@ -66,9 +66,6 @@ jobs:
                   raise RuntimeError("Could not locate natbib preamble anchor")
               text = text.replace(anchor, compact_style, 1)
 
-          # Some class/environment setup can restore paragraph indentation after
-          # preamble assignments. Force the final body style at begin-document
-          # time so every ordinary paragraph remains flush left.
           begin_document = r"\begin{document}"
           paragraph_style = "\n".join([
               r"\AtBeginDocument{%",
