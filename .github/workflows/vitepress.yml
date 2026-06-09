@@ -21,27 +21,52 @@ jobs:
       - name: Prepare arXiv source package
         run: python paper/arxiv/build_arxiv_package.py
 
-      - name: Normalize formatting and add related work
+      - name: Apply AlexNet-style two-column formatting and add calculations
         run: |
+          cp paper/arxiv/identifiability_calculations.tex paper/arxiv/build/identifiability_calculations.tex
           python - <<'PY'
           from pathlib import Path
 
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
 
-          anchor = r"\usepackage[numbers,sort&compress]{natbib}"
-          paragraph_style = "\n".join([
-              anchor,
-              "",
-              "% Keep every body paragraph flush left and visually separated.",
-              r"\setlength{\parindent}{0pt}",
-              r"\setlength{\parskip}{0.45em}",
-          ])
+          text = text.replace(
+              r"\documentclass[10pt]{article}",
+              r"\documentclass[10pt,twocolumn]{article}",
+              1,
+          )
+          text = text.replace(
+              r"\documentclass[11pt]{article}",
+              r"\documentclass[10pt,twocolumn]{article}",
+              1,
+          )
+          text = text.replace(
+              r"\usepackage[margin=0.82in]{geometry}",
+              r"\usepackage[letterpaper,top=0.70in,bottom=0.75in,left=0.68in,right=0.68in,columnsep=0.24in]{geometry}",
+              1,
+          )
+          text = text.replace(
+              r"\usepackage[margin=1in]{geometry}",
+              r"\usepackage[letterpaper,top=0.70in,bottom=0.75in,left=0.68in,right=0.68in,columnsep=0.24in]{geometry}",
+              1,
+          )
 
-          if r"\setlength{\parindent}{0pt}" not in text.split(r"\renewenvironment{abstract}", 1)[0]:
+          anchor = r"\usepackage[numbers,sort&compress]{natbib}"
+          compact_style = "\n".join([
+              anchor,
+              r"\setlength{\parindent}{1em}",
+              r"\setlength{\parskip}{0pt}",
+              r"\setlength{\columnsep}{0.24in}",
+              r"\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}",
+              r"\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}",
+              r"\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}",
+              r"\setlength{\floatsep}{6pt plus 2pt minus 2pt}",
+              r"\setlength{\intextsep}{6pt plus 2pt minus 2pt}",
+          ])
+          if r"\setlength{\columnsep}{0.24in}" not in text:
               if anchor not in text:
                   raise RuntimeError("Could not locate natbib preamble anchor")
-              text = text.replace(anchor, paragraph_style, 1)
+              text = text.replace(anchor, compact_style, 1)
 
           project_links = r"""
           \begin{center}
@@ -75,6 +100,13 @@ jobs:
               if marker not in text:
                   raise RuntimeError("Could not locate Contributions section")
               text = text.replace(marker, related_work + marker, 1)
+
+          calc_input = r"\input{identifiability_calculations.tex}"
+          calc_marker = r"\section{Limitations}"
+          if calc_input not in text:
+              if calc_marker not in text:
+                  raise RuntimeError("Could not locate Limitations section")
+              text = text.replace(calc_marker, calc_input + "\n\n" + calc_marker, 1)
 
           path.write_text(text, encoding="utf-8")
           PY
