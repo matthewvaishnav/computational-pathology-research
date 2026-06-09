@@ -54,8 +54,8 @@ jobs:
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           compact_style = "\n".join([
               anchor,
-              r"\setlength{\parindent}{1em}",
-              r"\setlength{\parskip}{0pt}",
+              r"\setlength{\parindent}{0pt}",
+              r"\setlength{\parskip}{0.32em plus 0.05em minus 0.03em}",
               r"\setlength{\columnsep}{0.24in}",
               r"\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}",
               r"\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}",
@@ -67,6 +67,15 @@ jobs:
               if anchor not in text:
                   raise RuntimeError("Could not locate natbib preamble anchor")
               text = text.replace(anchor, compact_style, 1)
+          else:
+              text = text.replace(
+                  r"\setlength{\parindent}{1em}",
+                  r"\setlength{\parindent}{0pt}",
+              )
+              text = text.replace(
+                  r"\setlength{\parskip}{0pt}",
+                  r"\setlength{\parskip}{0.32em plus 0.05em minus 0.03em}",
+              )
 
           project_links = r"""
           \begin{center}
@@ -107,6 +116,22 @@ jobs:
               if calc_marker not in text:
                   raise RuntimeError("Could not locate Limitations section")
               text = text.replace(calc_marker, calc_input + "\n\n" + calc_marker, 1)
+
+          old_expectation = r"""\begin{align}
+  \mathbb{E}[\Delta M]
+  &=\Pr(H)\Pr(T=1\mid H)\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H,T=1] \\
+  &\quad+\Pr(H^c)\Pr(T=1\mid H^c)\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H^c,T=1].
+\end{align}"""
+          new_expectation = r"""\begin{align}
+  \mathbb{E}[\Delta M]
+  &=\Pr(H)\Pr(T=1\mid H) \\
+  &\quad\times\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H,T=1] \\
+  &\quad+\Pr(H^c)\Pr(T=1\mid H^c) \\
+  &\quad\times\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H^c,T=1].
+\end{align}"""
+          if old_expectation not in text:
+              raise RuntimeError("Could not locate overflowing expected-gain equation")
+          text = text.replace(old_expectation, new_expectation, 1)
 
           path.write_text(text, encoding="utf-8")
           PY
