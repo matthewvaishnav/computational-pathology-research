@@ -54,8 +54,6 @@ jobs:
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           compact_style = "\n".join([
               anchor,
-              r"\setlength{\parindent}{0pt}",
-              r"\setlength{\parskip}{0.32em plus 0.05em minus 0.03em}",
               r"\setlength{\columnsep}{0.24in}",
               r"\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}",
               r"\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}",
@@ -67,15 +65,22 @@ jobs:
               if anchor not in text:
                   raise RuntimeError("Could not locate natbib preamble anchor")
               text = text.replace(anchor, compact_style, 1)
-          else:
-              text = text.replace(
-                  r"\setlength{\parindent}{1em}",
-                  r"\setlength{\parindent}{0pt}",
-              )
-              text = text.replace(
-                  r"\setlength{\parskip}{0pt}",
-                  r"\setlength{\parskip}{0.32em plus 0.05em minus 0.03em}",
-              )
+
+          # Some class/environment setup can restore paragraph indentation after
+          # preamble assignments. Force the final body style at begin-document
+          # time so every ordinary paragraph remains flush left.
+          begin_document = r"\begin{document}"
+          paragraph_style = "\n".join([
+              r"\AtBeginDocument{%",
+              r"  \setlength{\parindent}{0pt}%",
+              r"  \setlength{\parskip}{0.32em plus 0.05em minus 0.03em}%",
+              r"}",
+              begin_document,
+          ])
+          if r"\AtBeginDocument{%" not in text:
+              if begin_document not in text:
+                  raise RuntimeError("Could not locate begin document")
+              text = text.replace(begin_document, paragraph_style, 1)
 
           project_links = r"""
           \begin{center}
