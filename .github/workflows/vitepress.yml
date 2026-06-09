@@ -43,6 +43,24 @@ jobs:
                   raise RuntimeError("Could not locate natbib preamble anchor")
               text = text.replace(anchor, paragraph_style, 1)
 
+          project_links = r"""
+          \begin{center}
+          \small
+          \href{https://github.com/matthewvaishnav/computational-pathology-research}{\textbf{Project repository}}
+          \quad$\vert$\quad
+          \href{https://github.com/matthewvaishnav/computational-pathology-research/tree/main/paper/arxiv}{Paper source}
+          \quad$\vert$\quad
+          \href{https://github.com/matthewvaishnav/computational-pathology-research/tree/main/results}{Experimental results}
+          \end{center}
+          \vspace{0.35em}
+          """
+
+          title_marker = r"\maketitle"
+          if "Project repository" not in text:
+              if title_marker not in text:
+                  raise RuntimeError("Could not locate maketitle")
+              text = text.replace(title_marker, title_marker + project_links, 1)
+
           related_work = r"""\section{Related work}
           Federated optimization was established by FedAvg and subsequently extended to address statistical and systems heterogeneity through methods such as FedProx, SCAFFOLD, and FedBN. Broader surveys and non-IID data-silo studies emphasize that client heterogeneity and update drift remain central design challenges in federated learning \citep{mcmahan2017communication,li2020fedprox,karimireddy2020scaffold,li2021fedbn,li2022noniid,kairouz2021advances}.
 
