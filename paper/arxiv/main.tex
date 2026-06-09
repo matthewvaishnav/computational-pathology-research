@@ -47,7 +47,7 @@ Independent Researcher}
 \begin{abstract}
 I study a failure mode in federated computational pathology: FedAvg gives more aggregation authority to clients with more samples, but sample count is not necessarily the same as task-specific site-signal alignment. Pathology labels may reflect local grading thresholds, staining and scanning workflows, case mix, annotation practices, pathologist disagreement, or historical reporting policy. A high-volume site can therefore contribute many samples while also producing a training signal that is less aligned with the declared validation objective.
 
-I test this failure mode using simulated federations over PANDA-derived Phikon feature representations for prostate cancer grading. Validation labels are kept clean while the largest simulated client's training signal is perturbed through dominant-site label corruption and systematic ordinal threshold shift. The central question is whether sample-size-dominant aggregation becomes less safe when the dominant client's training signal is misaligned, and whether dominance-aware switching can reduce that risk.
+I test this failure mode using simulated federations over PANDA-derived Phikon feature representations for prostate cancer grading. Each simulated client trains the same compact slide-level neural network: a two-hidden-layer multilayer perceptron with ReLU activations and dropout, followed by a six-class ISUP-grade output layer. Validation labels are kept clean while the largest simulated client's training signal is perturbed through dominant-site label corruption and systematic ordinal threshold shift. The central question is whether sample-size-dominant aggregation becomes less safe when the dominant client's training signal is misaligned, and whether dominance-aware switching can reduce that risk.
 
 The strongest result is a fixed detector-switch rule calibrated under dominant-site label-noise stress and evaluated on conservative ordinal threshold-shift stress. The rule keeps clean-regime switching low at 13.3\% and produces statistically positive improvements at 35\% and 45\% conservative shift across global quadratic weighted kappa (QWK), macro-F1, and worst-site QWK. Diagnostic analysis shows that detector triggers are mainly driven by ordinal-error increase and QWK degradation, not by a single site-spread heuristic. Leave-one-diagnostic-family-out ablation shows that removing the most frequent diagnostic, mean absolute ordinal error, reduces trigger rate but does not collapse the positive 35\% / 45\% transfer result. Calibration-sensitivity analysis finds that 29 of 36 nearby detector settings preserve low clean-regime switching and positive 35\% / 45\% gains across global QWK, macro-F1, and worst-site QWK.
 
@@ -116,7 +116,24 @@ The ethical purpose of this work is to make that assumption visible, stress-test
 
 \section{Experimental setup}
 \subsection{Dataset and representation}
-The experiments use PANDA-derived pathology feature representations. Whole-slide images are represented through precomputed Phikon features. The downstream task is six-class ISUP grading.
+The experiments use PANDA-derived pathology feature representations. Whole-slide images are represented through precomputed Phikon features. Patch-level representations are pooled into one standardized slide vector $x\in\mathbb{R}^{D}$ for the downstream six-class ISUP grading task.
+
+\subsection{Slide-level neural network}
+Every client trains the same neural network architecture, so comparisons isolate aggregation policy rather than model-capacity differences. The slide classifier is a compact multilayer perceptron
+\begin{equation}
+  h_1=\operatorname{Dropout}_{0.20}\!\left(\operatorname{ReLU}(W_1x+b_1)\right),
+\end{equation}
+\begin{equation}
+  h_2=\operatorname{Dropout}_{0.20}\!\left(\operatorname{ReLU}(W_2h_1+b_2)\right),
+\end{equation}
+\begin{equation}
+  \widehat y=W_3h_2+b_3,
+\end{equation}
+where $W_1$ maps the pooled Phikon input from $D$ dimensions to 256 hidden units, $W_2$ maps 256 units to 128, and $W_3$ produces six logits corresponding to ISUP grades 0--5. Softmax probabilities are used for prediction and evaluation, while local optimization uses multiclass cross-entropy.
+
+Unless otherwise specified by an experiment configuration, each simulated client performs one local epoch per federated round using AdamW with learning rate $10^{-3}$, weight decay $10^{-4}$, and batch size 64. The global experiment runs for five communication rounds. Each strategy starts from the same seeded architecture and uses the same local optimizer; only the server-side aggregation weights or detector-controlled switching policy differ.
+
+This network is deliberately modest. The scientific target is the relationship between client influence and site-signal alignment, not a claim that this MLP is a new pathology backbone. Phikon supplies the pretrained pathology representation, and the federated neural network learns the task-specific slide classifier over those representations.
 
 \subsection{Simulated federations}
 The feature dataset is partitioned into simulated clients. One client is designated as the dominant client by sample volume. The clean validation objective is held fixed while the dominant client's training labels are perturbed.
@@ -187,7 +204,7 @@ Leave-one-diagnostic-family-out ablation shows that removing the most frequent d
 Calibration-sensitivity analysis varies the lower quantile, upper quantile, and minimum trigger count around the fixed rule. Of 36 nearby configurations, 29 preserve clean switching at or below 20\% and positive global-QWK, macro-F1, and worst-site-QWK deltas at both 35\% and 45\% conservative shift.
 
 \section{Limitations}
-The experiments simulate federated clients over feature representations rather than training directly over distributed whole-slide image infrastructure. The sites are simulated partitions rather than independent hospitals. The stress modes are controlled perturbations, not prospective clinical observations. The detector is calibrated from clean runs and depends on the chosen validation objective. The work does not establish clinical safety, regulatory readiness, fairness across patient subgroups, resistance to adversarial clients, privacy guarantees beyond local data retention, or performance under real deployment constraints.
+The experiments simulate federated clients over fixed feature representations rather than training an end-to-end neural network directly over distributed whole-slide images. The shared task model is a compact slide-level MLP on pooled Phikon vectors; results may change with attention-based MIL, transformer-based MIL, foundation-model fine-tuning, or full patch-level training. The sites are simulated partitions rather than independent hospitals. The stress modes are controlled perturbations, not prospective clinical observations. The detector is calibrated from clean runs and depends on the chosen validation objective. The work does not establish clinical safety, regulatory readiness, fairness across patient subgroups, resistance to adversarial clients, privacy guarantees beyond local data retention, or performance under real deployment constraints.
 
 \section{Discussion}
 The results support a narrow but practically relevant conclusion: sample volume should not be treated as a complete proxy for task-specific aggregation authority. FedAvg's sample-size weighting is a modeling assumption, and in computational pathology that assumption can fail when a dominant client's training-label process is systematically misaligned with the declared validation objective.
