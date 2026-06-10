@@ -1,0 +1,26 @@
+{
+  "analysis_script_sha256": "2d51456719e151c7cb86833d509f30e81c9ad1b30467207c0561ffd2258befe1",
+  "inputs": {
+    "results\\pathoalign_two_resource_phase_map\\summary.csv": {
+      "sha256": "e34b398a15e62d69babc3c4f61ad720e2e32feea628a64faf3ae5d314d027e04",
+      "size_bytes": 347244
+    },
+    "results\\pathoalign_two_resource_phase_map\\two_resource_phase_map.csv": {
+      "sha256": "2bfe90cfb44597bc66743ace547265c4b9490b21abd122378b289a21b68830b1",
+      "size_bytes": 404256
+    },
+    "results\\pathoalign_two_resource_phase_map\\config.json": {
+      "sha256": "2f7bbd9d1c469548e65889360ee9441c21e7fdc9eeee32303109c6be0662fcd8",
+      "size_bytes": 985
+    }
+  },
+  "thresholds": [
+    0.45,
+    0.5,
+    0.55,
+    0.6
+  ],
+  "primary_endpoint": "universal_biological_score_mean",
+  "primary_threshold": 0.5,
+  "boundary_rule": "sustained crossing"
+}
