@@ -1,0 +1,60 @@
+{
+  "out_dir": "results\\pathoalign_two_resource_phase_map",
+  "methods": [
+    "factorized",
+    "pair_consistency",
+    "operator",
+    "hybrid_curriculum"
+  ],
+  "sample_sizes": [
+    500,
+    1000,
+    3000,
+    10000
+  ],
+  "pair_counts": [
+    0,
+    2,
+    5,
+    10,
+    15,
+    20,
+    30,
+    40,
+    50,
+    60,
+    75,
+    100,
+    150,
+    200,
+    250,
+    300
+  ],
+  "overlaps": [
+    0.9,
+    0.95
+  ],
+  "nonlinear": [
+    0,
+    1
+  ],
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "epochs": 40,
+  "batch_size": 128,
+  "lr": 0.001,
+  "device": "cuda",
+  "recovery_threshold": 0.5,
+  "resume": true,
+  "checkpoint_every": 20,
+  "pair_weight": 1.0,
+  "environment_weight": 0.5,
+  "reconstruction_weight": 0.25,
+  "transport_weight": 1.0,
+  "primary_hypothesis": "Observational data estimates latent geometry while paired interventions orient that geometry into biological and acquisition directions."
+}
