@@ -31,6 +31,11 @@ jobs:
           text = path.read_text(encoding="utf-8")
 
           text = text.replace(
+              r"\date{\today}",
+              r"\date{June 10, 2026}",
+              1,
+          )
+          text = text.replace(
               r"\documentclass[10pt]{article}",
               r"\documentclass[10pt,twocolumn]{article}",
               1,
