@@ -1,16 +1,29 @@
-"""
-Training infrastructure for nnMIL Multiple Instance Learning.
+"""Training namespace with lazy imports for optional trainer dependencies."""
 
-This package provides training utilities including:
-- nnMILTrainer: Large-batch training with gradient accumulation
-- UnifiedTrainer: Unified interface for TransMIL and nnMIL
-- QuickTrainer: Simple high-level training interface
-- Training monitoring and logging
-- Checkpointing and early stopping
-"""
+from importlib import import_module
+from typing import Any
 
-from .nnmil_trainer import nnMILTrainer
-from .quick import QuickTrainer, evaluate, train
-from .unified_trainer import UnifiedTrainer
+_EXPORTS = {
+    "nnMILTrainer": (".nnmil_trainer", "nnMILTrainer"),
+    "UnifiedTrainer": (".unified_trainer", "UnifiedTrainer"),
+    "QuickTrainer": (".quick", "QuickTrainer"),
+    "train": (".quick", "train"),
+    "evaluate": (".quick", "evaluate"),
+}
 
-__all__ = ["nnMILTrainer", "UnifiedTrainer", "QuickTrainer", "train", "evaluate"]
+__all__ = list(_EXPORTS)
+
+
+def __getattr__(name: str) -> Any:
+    """Load a training component only when its public symbol is requested."""
+    try:
+        module_name, attribute = _EXPORTS[name]
+    except KeyError as exc:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from exc
+    value = getattr(import_module(module_name, __name__), attribute)
+    globals()[name] = value
+    return value
+
+
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))
