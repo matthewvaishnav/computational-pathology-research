@@ -1,62 +1,53 @@
+"""Computational pathology research package.
+
+Public convenience symbols are loaded lazily so importing the package does not
+require every optional model, slide reader, or training dependency.
 """
-HistoCore: Production-grade computational pathology framework
 
-Simple Python API for training and inference on histopathology data.
-"""
+from importlib import import_module
+from typing import Any
 
-# Conditional imports to avoid torch dependency in analysis tests
-try:
-    from .data import MultimodalDataset, UniversalSlideReader
-    from .models import CLAM, AttentionMIL, nnMIL
-    from .training import evaluate, train
-except ImportError:
-    # Analysis tests don't need torch models
-    pass
+__version__ = "0.1.0"
 
-__version__ = "1.0.0"
-__all__ = [
-    "nnMIL",
-    "AttentionMIL",
-    "CLAM",
-    "MultimodalDataset",
-    "UniversalSlideReader",
-    "train",
-    "evaluate",
-]
+_EXPORTS = {
+    "nnMIL": ("src.models", "nnMIL"),
+    "AttentionMIL": ("src.models", "AttentionMIL"),
+    "CLAM": ("src.models", "CLAM"),
+    "MultimodalDataset": ("src.data", "MultimodalDataset"),
+    "UniversalSlideReader": ("src.data", "UniversalSlideReader"),
+    "train": ("src.training", "train"),
+    "evaluate": ("src.training", "evaluate"),
+}
+
+__all__ = [*list(_EXPORTS), "quick_train", "benchmark"]
 
 
-# Quick start functions
-def quick_train(dataset: str = "pcam", model: str = "nnmil", epochs: int = 10, **kwargs) -> dict:
-    """
-    Quick training with sensible defaults.
+def __getattr__(name: str) -> Any:
+    """Load an optional public symbol only when requested."""
+    try:
+        module_name, attribute = _EXPORTS[name]
+    except KeyError as exc:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from exc
+    value = getattr(import_module(module_name), attribute)
+    globals()[name] = value
+    return value
 
-    Args:
-        dataset: "pcam" or "camelyon"
-        model: "nnmil", "attention", or "clam"
-        epochs: Number of training epochs
-        **kwargs: Additional training arguments
 
-    Returns:
-        Trained model and results
-    """
-    from .training import QuickTrainer
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))
 
-    trainer = QuickTrainer(dataset=dataset, model=model, epochs=epochs, **kwargs)
+
+def quick_train(
+    dataset: str = "pcam", model: str = "nnmil", epochs: int = 10, **kwargs: Any
+) -> dict:
+    """Run the optional high-level training helper."""
+    quick_trainer = getattr(import_module("src.training"), "QuickTrainer")
+    trainer = quick_trainer(dataset=dataset, model=model, epochs=epochs, **kwargs)
     return trainer.train()
 
 
-def benchmark(model_name: str = "histocore", output_dir: str = "results/") -> dict:
-    """
-    Run benchmark comparison against foundation models.
-
-    Args:
-        model_name: Name for your model in results
-        output_dir: Directory to save results
-
-    Returns:
-        Benchmark results dictionary
-    """
-    from .benchmarks import BenchmarkRunner
-
-    runner = BenchmarkRunner(model_name=model_name, output_dir=output_dir)
+def benchmark(model_name: str = "research-model", output_dir: str = "results/") -> dict:
+    """Run the optional benchmark suite."""
+    benchmark_runner = getattr(import_module("src.benchmarks"), "BenchmarkRunner")
+    runner = benchmark_runner(model_name=model_name, output_dir=output_dir)
     return runner.run_all()
