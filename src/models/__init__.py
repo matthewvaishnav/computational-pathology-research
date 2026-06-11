@@ -1,97 +1,41 @@
-"""Neural network model definitions."""
+"""Model namespace with lazy imports for optional research dependencies."""
 
-from src.models.mil.attention_mil import CLAM, AttentionMIL
-from src.models.baselines import (
-    AttentionBaseline,
-    LateFusionModel,
-    SingleModalityModel,
-    get_baseline_model,
-)
-from src.models.components.encoders import ClinicalTextEncoder, GenomicEncoder, WSIEncoder
-from src.models.foundation import (
-    CONCHEncoder,
-    FeatureProjector,
-    FoundationModelEncoder,
-    PhikonEncoder,
-    UNIEncoder,
-    load_foundation_model,
-)
-from src.models.foundation_adapter import FoundationModelAdapter
-from src.models.components.fusion import CrossModalAttention, MultiModalFusionLayer
-from src.models.components.heads import ClassificationHead, MultiTaskHead, SurvivalPredictionHead
-from src.models.mil.instance_clustering import (
-    CLAMInstanceBranch,
-    InstanceClusteringModule,
-    cluster_instances,
-)
-from src.models.mil.mil_base import MILBase
-from src.models.multimodal import MultimodalFusionModel
-from src.models.mil.nnmil import nnMIL
-from src.models.pretrained import (
-    PretrainedFeatureExtractor,
-    create_wsi_encoder_with_pretrained,
-    get_recommended_model,
-    list_pretrained_models,
-)
-from src.models.stain_normalization import (
-    ColorFeatureEncoder,
-    PatchEmbedding,
-    StainNormalizationTransformer,
-    StyleConditioner,
-    StyleTransferDecoder,
-)
-from src.models.temporal import CrossSlideTemporalReasoner, TemporalAttention
-from src.models.mil.transmil import TransMIL
+from importlib import import_module
+from typing import Any
+
+_EXPORTS = {
+    "PathoAlign": (".pathoalign", "PathoAlign"),
+    "AttentionMIL": (".attention_mil", "AttentionMIL"),
+    "CLAM": (".clam", "CLAM"),
+    "CLAMModel": (".clam", "CLAMModel"),
+    "GraphMIL": (".graph_mil", "GraphMIL"),
+    "GraphMILClassifier": (".graph_mil", "GraphMILClassifier"),
+    "GraphMILConfig": (".graph_mil", "GraphMILConfig"),
+    "nnMIL": (".nnmil", "nnMIL"),
+    "TransMIL": (".transmil", "TransMIL"),
+    "TransMILModel": (".transmil_model", "TransMILModel"),
+    "PatchCNN": (".patch_cnn", "PatchCNN"),
+    "PCamPatchClassifier": (".patch_cnn", "PCamPatchClassifier"),
+    "create_foundation_model": (".foundation", "create_foundation_model"),
+    "get_foundation_model_info": (".foundation", "get_foundation_model_info"),
+    "PathoAlignV2": (".pathoalign_v2", "PathoAlignV2"),
+    "NNMILBaseline": (".baselines", "NNMILBaseline"),
+    "GatedAttention": (".attention", "GatedAttention"),
+}
+
+__all__ = list(_EXPORTS)
 
 
-def __getattr__(name):
-    """Lazy import for ResNetFeatureExtractor to avoid eager torchvision import."""
-    if name == "ResNetFeatureExtractor":
-        from src.models.components.feature_extractors import ResNetFeatureExtractor
+def __getattr__(name: str) -> Any:
+    """Load a model only when its public symbol is requested."""
+    try:
+        module_name, attribute = _EXPORTS[name]
+    except KeyError as exc:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from exc
+    value = getattr(import_module(module_name, __name__), attribute)
+    globals()[name] = value
+    return value
 
-        return ResNetFeatureExtractor
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-
-__all__ = [
-    "AttentionMIL",
-    "CLAM",
-    "nnMIL",
-    "TransMIL",
-    "FoundationModelAdapter",
-    "StainNormalizationTransformer",
-    "PatchEmbedding",
-    "ColorFeatureEncoder",
-    "StyleConditioner",
-    "StyleTransferDecoder",
-    "WSIEncoder",
-    "GenomicEncoder",
-    "ClinicalTextEncoder",
-    "CrossModalAttention",
-    "MultiModalFusionLayer",
-    "MultimodalFusionModel",
-    "TemporalAttention",
-    "CrossSlideTemporalReasoner",
-    "ClassificationHead",
-    "SurvivalPredictionHead",
-    "MultiTaskHead",
-    "SingleModalityModel",
-    "LateFusionModel",
-    "AttentionBaseline",
-    "get_baseline_model",
-    "ResNetFeatureExtractor",
-    "PretrainedFeatureExtractor",
-    "create_wsi_encoder_with_pretrained",
-    "get_recommended_model",
-    "list_pretrained_models",
-    "FoundationModelEncoder",
-    "PhikonEncoder",
-    "UNIEncoder",
-    "CONCHEncoder",
-    "load_foundation_model",
-    "FeatureProjector",
-    "InstanceClusteringModule",
-    "CLAMInstanceBranch",
-    "cluster_instances",
-    "MILBase",
-]
+def __dir__() -> list[str]:
+    return sorted(set(globals()) | set(__all__))
