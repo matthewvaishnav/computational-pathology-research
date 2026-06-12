@@ -7,12 +7,12 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 import torch
-
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
+
+from src.data.wsi.streaming import TileBufferPool
 from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import BatchSizeOptimizer, GPUMemoryManager, GPUPipeline
-from src.data.wsi.streaming import TileBufferPool
 
 
 # Hypothesis strategies

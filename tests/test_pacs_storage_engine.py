@@ -9,9 +9,9 @@ Property 11: Multi-Algorithm SR Generation
 
 from datetime import datetime
 
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.data_models import (
     AnalysisResults,
     DetectedRegion,

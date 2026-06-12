@@ -13,7 +13,6 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from scipy import stats
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -106,7 +105,8 @@ class ClinicalImpactTracker:
 
         with sqlite3.connect(self.db_path) as conn:
             # Diagnostic accuracy table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS diagnostic_accuracy (
                     case_id TEXT PRIMARY KEY,
                     ai_prediction TEXT,
@@ -117,10 +117,12 @@ class ClinicalImpactTracker:
                     timestamp TEXT,
                     site_id TEXT
                 )
-            """)
+            """
+            )
 
             # Turnaround time table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS turnaround_times (
                     case_id TEXT PRIMARY KEY,
                     slide_received TEXT,
@@ -131,10 +133,12 @@ class ClinicalImpactTracker:
                     report_finalized TEXT,
                     site_id TEXT
                 )
-            """)
+            """
+            )
 
             # User satisfaction table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS user_satisfaction (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id TEXT,
@@ -148,10 +152,12 @@ class ClinicalImpactTracker:
                     would_recommend BOOLEAN,
                     comments TEXT
                 )
-            """)
+            """
+            )
 
             # Clinical outcomes table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS clinical_outcomes (
                     case_id TEXT PRIMARY KEY,
                     patient_id TEXT,
@@ -163,7 +169,8 @@ class ClinicalImpactTracker:
                     site_id TEXT,
                     timestamp TEXT
                 )
-            """)
+            """
+            )
 
     def track_diagnostic_accuracy(self, metric: DiagnosticAccuracyMetric):
         """Track diagnostic accuracy metric."""

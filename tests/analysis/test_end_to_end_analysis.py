@@ -29,7 +29,8 @@ def test_project():
             '"""Large file for testing."""\n' + "def func():\n    pass\n" * 300  # 901 lines total
         )
 
-        (tmpdir / "complex_function.py").write_text("""
+        (tmpdir / "complex_function.py").write_text(
+            """
 def complex_function(x):
     if x > 10:
         if x > 20:
@@ -42,9 +43,11 @@ def complex_function(x):
             return "medium"
         return "low-medium"
     return "low"
-""")
+"""
+        )
 
-        (tmpdir / "duplicate_code.py").write_text("""
+        (tmpdir / "duplicate_code.py").write_text(
+            """
 def process_data_1(data):
     result = []
     for item in data:
@@ -58,21 +61,26 @@ def process_data_2(data):
         if item > 0:
             result.append(item * 2)
     return result
-""")
+"""
+        )
 
-        (tmpdir / "no_docstring.py").write_text("""
+        (tmpdir / "no_docstring.py").write_text(
+            """
 def function_without_docstring(x, y):
     return x + y
 
 class ClassWithoutDocstring:
     def method(self):
         return 42
-""")
+"""
+        )
 
-        (tmpdir / "requirements.txt").write_text("""
+        (tmpdir / "requirements.txt").write_text(
+            """
 requests==2.25.0
 numpy==1.19.0
-""")
+"""
+        )
 
         yield tmpdir
 

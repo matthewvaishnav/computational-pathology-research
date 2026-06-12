@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 import torch
 
+from src.data.wsi.streaming import StreamingMetadata, TileBufferPool
 from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUMemoryManager, GPUPipeline
-from src.data.wsi.streaming import StreamingMetadata, TileBufferPool
 
 
 class TestMemoryBounds:

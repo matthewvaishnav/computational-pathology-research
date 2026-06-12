@@ -14,10 +14,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
-from PIL import Image
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from PIL import Image
+
 from src.features.clinical.workflow.pacs.data_models import DicomPriority, StudyInfo
 from src.features.federated.pathology_fl.client.pacs_connector import PACSConnector
 

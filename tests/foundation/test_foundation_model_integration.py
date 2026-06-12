@@ -3,7 +3,6 @@ Comprehensive integration tests for the Foundation Model system
 Tests all components: multi-disease model, self-supervised pre-training, zero-shot detection, and training pipeline
 """
 
-
 # Import foundation model components
 import sys
 import tempfile

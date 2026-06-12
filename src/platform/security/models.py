@@ -13,6 +13,7 @@ class SecurityEnvironment(Enum):
     """Security environment types."""
 
     DEVELOPMENT = "development"
+    RESEARCH = "research"
     STAGING = "staging"
     PRODUCTION = "production"
     TESTING = "testing"

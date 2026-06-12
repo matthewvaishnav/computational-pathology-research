@@ -11,14 +11,14 @@ to JSON and deserialized back without data loss.
 import json
 from pathlib import Path
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from experiments.benchmark_system.models import (
     BenchmarkConfig,
     TaskSpecification,
     TrainingResult,
 )
-from hypothesis import given, settings
-from hypothesis import strategies as st
 
 
 # Hypothesis strategies for generating test data

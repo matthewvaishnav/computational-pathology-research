@@ -16,11 +16,6 @@ from typing import Dict
 import torch
 import torch.nn as nn
 
-from src.models.mil.attention_mil import AttentionMIL
-from src.models.mil.clam import CLAM
-from src.models.mil.transmil import TransMIL
-from src.models.transnnmil.transnnmil import TransnnMIL
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,9 +23,9 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
     """
     Factory function to create attention-based MIL models from configuration.
 
-    This function reads the model configuration and instantiates the appropriate
-    attention-based MIL model (AttentionMIL, CLAM, TransMIL, or TransnnMIL). It also
-    supports baseline pooling models (mean, max) for comparison.
+    Model classes are imported only inside the selected branch. This keeps the
+    compatibility import from ``attention_mil`` from recursively importing
+    ``TransnnMIL`` while the TransnnMIL module is still being initialized.
 
     Args:
         config: Configuration dictionary with model parameters
@@ -65,7 +60,8 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
     )
 
     if model_type == "attention_mil":
-        # AttentionMIL configuration
+        from src.models.mil.attention_mil import AttentionMIL
+
         attention_config = config.get("attention_mil", {})
         model = AttentionMIL(
             feature_dim=feature_dim,
@@ -81,7 +77,8 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
         )
 
     elif model_type == "clam":
-        # CLAM configuration
+        from src.models.mil.clam import CLAM
+
         clam_config = config.get("clam", {})
         model = CLAM(
             feature_dim=feature_dim,
@@ -98,7 +95,8 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
         )
 
     elif model_type == "transmil":
-        # TransMIL configuration
+        from src.models.mil.transmil import TransMIL
+
         transmil_config = config.get("transmil", {})
         model = TransMIL(
             feature_dim=feature_dim,
@@ -115,7 +113,8 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
         )
 
     elif model_type == "transnnmil":
-        # TransnnMIL configuration (fusion of TransMIL and nnMIL)
+        from src.models.transnnmil.transnnmil import TransnnMIL
+
         transnnmil_config = config.get("transnnmil", {})
         model = TransnnMIL(
             feature_dim=feature_dim,
@@ -133,7 +132,7 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
         )
 
     elif model_type in ["mean", "max"]:
-        # Baseline pooling models
+
         class SimplePoolingModel(nn.Module):
             """Simple pooling baseline model."""
 
@@ -148,10 +147,8 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                 )
 
             def forward(self, features, num_patches=None, return_attention=False):
-                # Apply pooling
                 if self.pooling == "mean":
                     if num_patches is not None:
-                        # Masked mean pooling
                         mask = torch.arange(features.size(1), device=features.device).unsqueeze(
                             0
                         ) < num_patches.unsqueeze(1)
@@ -159,9 +156,8 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                         pooled = (features * mask).sum(dim=1) / (mask.sum(dim=1) + 1e-8)
                     else:
                         pooled = features.mean(dim=1)
-                elif self.pooling == "max":
+                else:
                     if num_patches is not None:
-                        # Masked max pooling
                         mask = torch.arange(features.size(1), device=features.device).unsqueeze(
                             0
                         ) < num_patches.unsqueeze(1)
@@ -174,7 +170,6 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                 logits = self.classifier(pooled)
 
                 if return_attention:
-                    # Return uniform attention for compatibility
                     attention = torch.ones(
                         features.size(0), features.size(1), device=features.device
                     )
@@ -185,8 +180,7 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                         attention = attention.masked_fill(~mask, 0.0)
                     attention = attention / (attention.sum(dim=1, keepdim=True) + 1e-8)
                     return logits, attention
-                else:
-                    return logits
+                return logits
 
         model = SimplePoolingModel(feature_dim, hidden_dim, num_classes, pooling=model_type)
         logger.info(f"Baseline {model_type} pooling model created")

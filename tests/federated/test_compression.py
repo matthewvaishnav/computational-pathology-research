@@ -7,9 +7,9 @@ property-based testing for round-trip correctness.
 
 import pytest
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.features.federated.pathology_fl.compression import (
     CompressionConfig,
     CompressionMethod,

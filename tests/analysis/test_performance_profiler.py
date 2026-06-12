@@ -8,7 +8,6 @@ import subprocess
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-
 from src.analysis.models import PerformanceAnalysis
 from src.analysis.performance import PerformanceProfiler
 

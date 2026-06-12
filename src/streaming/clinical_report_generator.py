@@ -15,7 +15,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-
 # PDF generation
 try:
     from reportlab.lib import colors

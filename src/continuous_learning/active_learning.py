@@ -441,7 +441,8 @@ class ActiveLearningSystem:
                 cursor = conn.cursor()
 
                 # Cases table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS cases (
                         case_id TEXT PRIMARY KEY,
                         slide_id TEXT,
@@ -455,10 +456,12 @@ class ActiveLearningSystem:
                         identified_at TIMESTAMP,
                         status TEXT DEFAULT 'pending'
                     )
-                """)
+                """
+                )
 
             # Annotations table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS annotations (
                     annotation_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     case_id TEXT,
@@ -474,10 +477,12 @@ class ActiveLearningSystem:
                     created_at TIMESTAMP,
                     FOREIGN KEY (case_id) REFERENCES cases (case_id)
                 )
-            """)
+            """
+            )
 
             # Tasks table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS tasks (
                     task_id TEXT PRIMARY KEY,
                     case_id TEXT,
@@ -490,7 +495,8 @@ class ActiveLearningSystem:
                     deadline TIMESTAMP,
                     FOREIGN KEY (case_id) REFERENCES cases (case_id)
                 )
-            """)
+            """
+            )
 
             conn.commit()
         except Exception as e:

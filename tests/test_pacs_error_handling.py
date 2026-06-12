@@ -4,9 +4,9 @@ import time
 from datetime import datetime
 
 import pytest
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,

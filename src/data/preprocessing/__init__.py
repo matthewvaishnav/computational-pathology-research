@@ -45,7 +45,9 @@ _LEGACY_EXPORTS = [
 ]
 
 if _LEGACY_MODULE_PATH.exists():
-    _spec = importlib.util.spec_from_file_location("src.data._legacy_preprocessing", _LEGACY_MODULE_PATH)
+    _spec = importlib.util.spec_from_file_location(
+        "src.data._legacy_preprocessing", _LEGACY_MODULE_PATH
+    )
     if _spec is not None and _spec.loader is not None:
         _legacy = importlib.util.module_from_spec(_spec)
         _spec.loader.exec_module(_legacy)

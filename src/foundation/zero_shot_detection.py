@@ -458,9 +458,7 @@ class ZeroShotDetector:
         parts.extend(f"- {feature}\n" for feature in disease.pathological_features)
 
         if prediction.requires_expert_review:
-            parts.append(
-                "\n⚠️ Expert review recommended due to low confidence or high uncertainty."
-            )
+            parts.append("\n⚠️ Expert review recommended due to low confidence or high uncertainty.")
 
         parts.append(f"\nTop {len(prediction.top_k_diseases)} similar diseases:\n")
         parts.extend(

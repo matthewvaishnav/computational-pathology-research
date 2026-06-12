@@ -198,7 +198,8 @@ class SlideDatabase:
 
     def _create_tables(self):
         """Create database tables"""
-        self.conn.execute("""
+        self.conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS slides (
                 slide_id TEXT PRIMARY KEY,
                 file_path TEXT UNIQUE NOT NULL,
@@ -220,19 +221,26 @@ class SlideDatabase:
                 created_at TEXT,
                 processed_at TEXT
             )
-        """)
+        """
+        )
 
-        self.conn.execute("""
+        self.conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_quality_score ON slides(quality_score);
-        """)
+        """
+        )
 
-        self.conn.execute("""
+        self.conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_tissue_type ON slides(tissue_type);
-        """)
+        """
+        )
 
-        self.conn.execute("""
+        self.conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_staining ON slides(staining);
-        """)
+        """
+        )
 
         self.conn.commit()
 

@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 import torch
 
+from src.data.wsi.streaming import StreamingMetadata, TileBatch, WSIStreamReader
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
 from src.streaming.gpu_pipeline import GPUPipeline
-from src.data.wsi.streaming import StreamingMetadata, TileBatch, WSIStreamReader
 
 
 class TestCorruptedWSIFiles:

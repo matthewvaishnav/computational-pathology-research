@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-
 from src.streaming.emr_integration import (
     ClinicalNote,
     EMRConfig,

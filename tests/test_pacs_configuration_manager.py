@@ -14,9 +14,9 @@ from pathlib import Path
 import pytest
 import yaml
 from cryptography.fernet import Fernet
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.configuration_manager import ConfigurationManager
 from src.features.clinical.workflow.pacs.data_models import (
     PACSConfiguration,

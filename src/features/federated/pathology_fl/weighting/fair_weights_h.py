@@ -5,10 +5,9 @@ institutional weighting in federated computational pathology. It is not a
 clinically validated or regulatory-cleared weighting policy.
 """
 
+import math
 from dataclasses import dataclass
 from typing import Dict, List, Literal
-import math
-
 
 ScoreTransform = Literal["linear", "log_linear"]
 UpdateRule = Literal["softmax", "mirror_descent"]

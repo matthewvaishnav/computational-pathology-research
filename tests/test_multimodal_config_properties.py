@@ -14,9 +14,9 @@ import tempfile
 import pytest
 import torch
 import yaml
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.core.config.nnmil_config import nnMILConfig
 
 # ============================================================================
