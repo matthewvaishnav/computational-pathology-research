@@ -33,9 +33,14 @@ jobs:
         pip install -r requirements.txt
         pip install -e .
 
-    - name: Run quick tests (no slow/property tests)
+    - name: Run quick tests (no slow/property/integration tests)
       run: |
-        pytest tests/ -q --tb=short -m "not property and not slow and not integration" --maxfail=1 --junitxml=quick-test-results.xml
+        pytest tests/ \
+          --ignore=tests/foundation/test_foundation_model_integration.py \
+          -q --tb=short \
+          -m "not property and not slow and not integration" \
+          --maxfail=1 \
+          --junitxml=quick-test-results.xml
       timeout-minutes: 10
 
     - name: Upload quick-test report
