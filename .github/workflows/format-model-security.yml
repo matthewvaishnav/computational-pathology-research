@@ -1,0 +1,41 @@
+name: Format Model Security Files
+
+on:
+  push:
+    branches: [repo-cleanup-2026-06-10]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: repo-cleanup-2026-06-10
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Apply repository formatters
+        run: |
+          pip install 'black>=23.0.0,<25.0.0' isort
+          isort src/platform/security/exceptions.py src/platform/security/model_download_manager.py
+          black src/platform/security/exceptions.py src/platform/security/model_download_manager.py
+          git diff --check
+          rm .github/workflows/format-model-security.yml
+
+      - name: Commit formatted security files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Format model security compatibility files
+          branch: repo-cleanup-2026-06-10
+          file_pattern: 'src/platform/security/exceptions.py src/platform/security/model_download_manager.py .github/workflows/format-model-security.yml'
