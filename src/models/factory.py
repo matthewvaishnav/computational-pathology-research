@@ -149,20 +149,18 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
             def forward(self, features, num_patches=None, return_attention=False):
                 if self.pooling == "mean":
                     if num_patches is not None:
-                        mask = torch.arange(
-                            features.size(1), device=features.device
-                        ).unsqueeze(0) < num_patches.unsqueeze(1)
+                        mask = torch.arange(features.size(1), device=features.device).unsqueeze(
+                            0
+                        ) < num_patches.unsqueeze(1)
                         mask = mask.unsqueeze(-1).float()
-                        pooled = (features * mask).sum(dim=1) / (
-                            mask.sum(dim=1) + 1e-8
-                        )
+                        pooled = (features * mask).sum(dim=1) / (mask.sum(dim=1) + 1e-8)
                     else:
                         pooled = features.mean(dim=1)
                 else:
                     if num_patches is not None:
-                        mask = torch.arange(
-                            features.size(1), device=features.device
-                        ).unsqueeze(0) < num_patches.unsqueeze(1)
+                        mask = torch.arange(features.size(1), device=features.device).unsqueeze(
+                            0
+                        ) < num_patches.unsqueeze(1)
                         features_masked = features.clone()
                         features_masked[~mask] = float("-inf")
                         pooled = features_masked.max(dim=1)[0]
@@ -176,19 +174,15 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                         features.size(0), features.size(1), device=features.device
                     )
                     if num_patches is not None:
-                        mask = torch.arange(
-                            features.size(1), device=features.device
-                        ).unsqueeze(0) < num_patches.unsqueeze(1)
+                        mask = torch.arange(features.size(1), device=features.device).unsqueeze(
+                            0
+                        ) < num_patches.unsqueeze(1)
                         attention = attention.masked_fill(~mask, 0.0)
-                    attention = attention / (
-                        attention.sum(dim=1, keepdim=True) + 1e-8
-                    )
+                    attention = attention / (attention.sum(dim=1, keepdim=True) + 1e-8)
                     return logits, attention
                 return logits
 
-        model = SimplePoolingModel(
-            feature_dim, hidden_dim, num_classes, pooling=model_type
-        )
+        model = SimplePoolingModel(feature_dim, hidden_dim, num_classes, pooling=model_type)
         logger.info(f"Baseline {model_type} pooling model created")
 
     else:
