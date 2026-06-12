@@ -20,6 +20,7 @@ sys.path.append("src")
 
 # Import nnMIL components directly
 from config.nnmil_config import nnMILConfig
+
 from data.bag_samplers import FixedLengthBagSampler
 from data.data_models import Bag, InferenceOutput
 from inference.sliding_window import SlidingWindowInference

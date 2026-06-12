@@ -9,9 +9,9 @@ Feature: nnmil-architecture-upgrade
 """
 
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.inference.uncertainty import UncertaintyEstimator
 
 # ============================================================================

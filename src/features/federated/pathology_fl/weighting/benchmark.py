@@ -4,9 +4,9 @@ The benchmark is deterministic and intended for engineering validation of weight
 behavior. It is not evidence of clinical effectiveness.
 """
 
+import math
 from dataclasses import dataclass
 from typing import Dict, List
-import math
 
 from src.features.federated.pathology_fl.weighting.fair_weights_h import (
     FairWeightsHEngine,

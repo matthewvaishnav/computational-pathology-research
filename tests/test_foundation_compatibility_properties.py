@@ -11,9 +11,9 @@ Feature: nnmil-architecture-upgrade
 
 import pytest
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.models.foundation_adapter import FoundationModelAdapter
 from src.models.mil.nnmil import nnMIL
 

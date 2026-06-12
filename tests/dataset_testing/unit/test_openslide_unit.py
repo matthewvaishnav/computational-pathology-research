@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, Dict
 from unittest.mock import Mock, patch
 
-
 from src.data.wsi.openslide_utils import WSIReader, get_slide_info
 from tests.dataset_testing.base_interfaces import ErrorSimulator
 from tests.dataset_testing.synthetic.wsi_generator import WSISyntheticGenerator

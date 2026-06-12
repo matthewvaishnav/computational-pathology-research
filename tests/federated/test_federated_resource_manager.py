@@ -21,9 +21,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 import torch
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.federated.pathology_fl.client.resource_manager import (
     ResourceLimits,
     ResourceManager,

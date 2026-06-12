@@ -10,11 +10,11 @@ Property 7: Workflow Notification Completeness
 import hashlib
 from pathlib import Path
 
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.uid import ExplicitVRLittleEndian
 
-from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,

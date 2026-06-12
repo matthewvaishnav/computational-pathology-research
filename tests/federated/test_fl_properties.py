@@ -12,9 +12,9 @@ Covers all correctness properties from Task 17:
 
 import pytest
 import torch
-
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
+
 from src.features.federated.pathology_fl.aggregator.byzantine_robust import (
     KrumAggregator,
     TrimmedMeanAggregator,

@@ -31,10 +31,10 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
+from src.models.mil.transmil import TransMIL
 from src.models.transnnmil.adaptive_pruning import AdaptivePruning
 from src.models.transnnmil.hierarchical_pooling import HierarchicalPooling, RegionAttentionPooling
 from src.models.transnnmil.topology_branch import TopologyBranch
-from src.models.mil.transmil import TransMIL
 
 
 class TransnnMILv2(nn.Module):
