@@ -1,0 +1,40 @@
+name: Format Model Factory
+
+on:
+  push:
+    branches: [repo-cleanup-2026-06-10]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: repo-cleanup-2026-06-10
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Apply repository formatter
+        run: |
+          pip install 'black>=23.0.0,<25.0.0'
+          black src/models/factory.py
+          rm .github/workflows/format-factory.yml
+          git diff --check
+
+      - name: Commit formatter output
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Format lazy model factory imports
+          branch: repo-cleanup-2026-06-10
+          file_pattern: 'src/models/factory.py .github/workflows/format-factory.yml'
