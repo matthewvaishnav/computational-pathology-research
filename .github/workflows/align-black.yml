@@ -1,0 +1,58 @@
+name: Align Black Version
+
+on:
+  push:
+    branches: [repo-cleanup-2026-06-10]
+
+permissions:
+  contents: write
+
+jobs:
+  align:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: repo-cleanup-2026-06-10
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Align CI and format touched files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          ci = Path('.github/workflows/ci.yml')
+          ci_text = ci.read_text()
+          ci_text = ci_text.replace(
+              'pip install flake8 black isort mypy',
+              "pip install flake8 'black>=23.0.0,<25.0.0' isort mypy",
+          )
+          ci.write_text(ci_text)
+
+          quick = Path('.github/workflows/quick-check.yml')
+          quick_text = quick.read_text()
+          quick_text = quick_text.replace(
+              'pip install flake8 black',
+              "pip install flake8 'black>=23.0.0,<25.0.0'",
+          )
+          quick.write_text(quick_text)
+          PY
+          pip install 'black>=23.0.0,<25.0.0'
+          black src/models/factory.py tests/models/test_import_boundaries.py
+          git diff --check
+
+      - name: Commit aligned formatter configuration
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Align CI with declared Black version
+          branch: repo-cleanup-2026-06-10
+          file_pattern: '.github/workflows/ci.yml .github/workflows/quick-check.yml src/models/factory.py tests/models/test_import_boundaries.py'
