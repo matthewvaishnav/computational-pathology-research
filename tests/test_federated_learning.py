@@ -7,9 +7,9 @@ Tests correctness properties using Hypothesis for comprehensive validation.
 import pytest
 import torch
 import torch.nn as nn
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.federated.pathology_fl.aggregator.fedavg import FedAvgAggregator
 from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator

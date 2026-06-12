@@ -36,13 +36,13 @@ from typing import Optional, Tuple, Union
 import torch
 import torch.nn as nn
 
+from src.models.mil.nnmil import nnMIL
+from src.models.mil.transmil import TransMIL
 from src.models.transnnmil.hierarchical_pooling import (
     HierarchicalPooling,
     RegionAttentionPooling,
     RegionTransformer,
 )
-from src.models.mil.nnmil import nnMIL
-from src.models.mil.transmil import TransMIL
 
 # Import topology branch if available
 try:

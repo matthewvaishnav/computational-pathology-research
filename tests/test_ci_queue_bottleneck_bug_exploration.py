@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Dict
 
 import yaml
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
 

@@ -30,9 +30,8 @@ from queue import Empty
 from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 import hypothesis
+import pytest
 
 # Hypothesis for property-based testing
 from hypothesis import Phase, given, settings

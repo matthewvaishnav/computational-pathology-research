@@ -11,9 +11,9 @@ import time
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.data_models import (
     DicomPriority,
     OperationResult,

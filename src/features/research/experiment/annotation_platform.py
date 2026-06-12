@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 
-
 @dataclass
 class Annotation:
     """Image annotation"""

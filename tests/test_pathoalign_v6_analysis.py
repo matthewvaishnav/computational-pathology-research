@@ -1,5 +1,8 @@
+import importlib.util
+import sys
 from pathlib import Path
-import importlib.util, sys, pandas as pd
+
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/pathoalign_identifiability_v6/analyze_two_resource_law.py"

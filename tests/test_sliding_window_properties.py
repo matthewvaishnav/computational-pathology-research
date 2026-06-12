@@ -9,9 +9,9 @@ Feature: nnmil-architecture-upgrade
 """
 
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.data.data_models import Bag
 from src.inference.sliding_window import SlidingWindowInference
 from src.models.mil.nnmil import nnMIL

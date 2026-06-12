@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,

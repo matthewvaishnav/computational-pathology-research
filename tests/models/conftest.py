@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 _ATTENTION_BACKUP = (
     Path(__file__).resolve().parents[2] / "src" / "models" / "attention_mil.py.backup"
 )

@@ -8,6 +8,13 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from src.continuous_learning.active_learning import (
+    ActiveLearningSystem,
+    AnnotationTask,
+    CaseForReview,
+)
+from src.features.clinical.workflow.pacs.data_models import OperationResult
+from src.features.clinical.workflow.pacs.pacs_adapter import PACSAdapter
 from src.features.research.annotation.workflow.active_learning_connector import (
     ActiveLearningConnector,
 )
@@ -19,13 +26,6 @@ from src.features.research.annotation.workflow.notification_service import (
     NotificationService,
 )
 from src.features.research.annotation.workflow.pacs_connector import PACSConnector
-from src.features.clinical.workflow.pacs.data_models import OperationResult
-from src.features.clinical.workflow.pacs.pacs_adapter import PACSAdapter
-from src.continuous_learning.active_learning import (
-    ActiveLearningSystem,
-    AnnotationTask,
-    CaseForReview,
-)
 
 
 class TestActiveLearningConnector:
