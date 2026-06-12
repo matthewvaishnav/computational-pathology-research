@@ -1,0 +1,214 @@
+name: Repository Audit
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build repository inventory
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import csv
+          import hashlib
+          import json
+          import os
+          import subprocess
+          from collections import Counter, defaultdict
+          from pathlib import Path
+
+          root = Path.cwd()
+          out = root / "repository_audit"
+          out.mkdir(exist_ok=True)
+
+          tracked = subprocess.check_output(
+              ["git", "ls-files", "-z"],
+              text=False,
+          ).split(b"\0")
+          paths = [Path(item.decode("utf-8")) for item in tracked if item]
+
+          records: list[dict[str, object]] = []
+          hashes: dict[str, list[str]] = defaultdict(list)
+          directory_counts: Counter[str] = Counter()
+          directory_bytes: Counter[str] = Counter()
+          extension_counts: Counter[str] = Counter()
+          extension_bytes: Counter[str] = Counter()
+
+          for relative in paths:
+              absolute = root / relative
+              if not absolute.is_file():
+                  continue
+              size = absolute.stat().st_size
+              suffix = relative.suffix.lower() or "[no extension]"
+              top = relative.parts[0] if relative.parts else "."
+              digest = hashlib.sha256(absolute.read_bytes()).hexdigest()
+              hashes[digest].append(relative.as_posix())
+              directory_counts[top] += 1
+              directory_bytes[top] += size
+              extension_counts[suffix] += 1
+              extension_bytes[suffix] += size
+              records.append(
+                  {
+                      "path": relative.as_posix(),
+                      "size_bytes": size,
+                      "top_level": top,
+                      "extension": suffix,
+                      "sha256": digest,
+                  }
+              )
+
+          records.sort(key=lambda row: str(row["path"]))
+          with (out / "tracked_files.csv").open("w", newline="", encoding="utf-8") as handle:
+              writer = csv.DictWriter(handle, fieldnames=list(records[0]) if records else ["path"])
+              writer.writeheader()
+              writer.writerows(records)
+
+          with (out / "directory_summary.csv").open("w", newline="", encoding="utf-8") as handle:
+              writer = csv.writer(handle)
+              writer.writerow(["top_level", "tracked_files", "size_bytes", "size_mib"])
+              for name in sorted(directory_counts):
+                  size = directory_bytes[name]
+                  writer.writerow([name, directory_counts[name], size, round(size / 1024 / 1024, 3)])
+
+          with (out / "extension_summary.csv").open("w", newline="", encoding="utf-8") as handle:
+              writer = csv.writer(handle)
+              writer.writerow(["extension", "tracked_files", "size_bytes", "size_mib"])
+              for name, count in extension_counts.most_common():
+                  size = extension_bytes[name]
+                  writer.writerow([name, count, size, round(size / 1024 / 1024, 3)])
+
+          largest = sorted(records, key=lambda row: int(row["size_bytes"]), reverse=True)[:250]
+          with (out / "largest_files.csv").open("w", newline="", encoding="utf-8") as handle:
+              writer = csv.DictWriter(handle, fieldnames=["path", "size_bytes", "size_mib"])
+              writer.writeheader()
+              for row in largest:
+                  size = int(row["size_bytes"])
+                  writer.writerow(
+                      {
+                          "path": row["path"],
+                          "size_bytes": size,
+                          "size_mib": round(size / 1024 / 1024, 3),
+                      }
+                  )
+
+          duplicates = [group for group in hashes.values() if len(group) > 1]
+          duplicates.sort(key=lambda group: (-len(group), group))
+          with (out / "duplicate_content.txt").open("w", encoding="utf-8") as handle:
+              for group in duplicates:
+                  handle.write("\n".join(group))
+                  handle.write("\n---\n")
+
+          suspicious_suffixes = {".bak", ".old", ".orig", ".tmp", ".temp", ".log", ".pyc"}
+          suspicious_names = {
+              "desktop.ini",
+              "thumbs.db",
+              ".ds_store",
+          }
+          suspicious: list[tuple[str, str]] = []
+          for row in records:
+              path = Path(str(row["path"]))
+              path_text = path.as_posix()
+              lower = path.name.lower()
+              size = int(row["size_bytes"])
+              reasons: list[str] = []
+              if path.suffix.lower() in suspicious_suffixes:
+                  reasons.append("temporary/backup suffix")
+              if lower in suspicious_names:
+                  reasons.append("OS-generated file")
+              if "__pycache__" in path.parts:
+                  reasons.append("Python cache")
+              if any(part in {"build", "dist", "htmlcov", ".pytest_cache"} for part in path.parts):
+                  reasons.append("generated build/test output")
+              if size > 5 * 1024 * 1024:
+                  reasons.append("tracked file larger than 5 MiB")
+              if path.parts and path.parts[0] == "results" and any(
+                  part in {"raw", "checkpoints", "predictions", "tmp"} for part in path.parts
+              ):
+                  reasons.append("raw/generated result content")
+              if path.parts and path.parts[0] == "paper" and "build" in path.parts:
+                  reasons.append("generated paper build output")
+              if reasons:
+                  suspicious.append((path_text, "; ".join(sorted(set(reasons)))))
+
+          with (out / "suspicious_tracked_files.csv").open("w", newline="", encoding="utf-8") as handle:
+              writer = csv.writer(handle)
+              writer.writerow(["path", "reason"])
+              writer.writerows(suspicious)
+
+          empty_dirs: list[str] = []
+          for directory, dirs, files in os.walk(root):
+              current = Path(directory)
+              if ".git" in current.parts or current == out or out in current.parents:
+                  continue
+              if not dirs and not files:
+                  empty_dirs.append(current.relative_to(root).as_posix())
+          (out / "empty_directories.txt").write_text("\n".join(sorted(empty_dirs)), encoding="utf-8")
+
+          manifest = {
+              "tracked_file_count": len(records),
+              "tracked_size_bytes": sum(int(row["size_bytes"]) for row in records),
+              "duplicate_groups": len(duplicates),
+              "suspicious_tracked_files": len(suspicious),
+              "top_level_directories": sorted(directory_counts),
+          }
+          (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+          report = [
+              "# Repository audit",
+              "",
+              f"- Tracked files: {manifest['tracked_file_count']:,}",
+              f"- Tracked size: {manifest['tracked_size_bytes'] / 1024 / 1024:.2f} MiB",
+              f"- Duplicate-content groups: {manifest['duplicate_groups']:,}",
+              f"- Suspicious tracked files: {manifest['suspicious_tracked_files']:,}",
+              "",
+              "## Top-level inventory",
+              "",
+              "| Path | Files | MiB |",
+              "|---|---:|---:|",
+          ]
+          for name in sorted(directory_counts):
+              report.append(
+                  f"| `{name}` | {directory_counts[name]:,} | {directory_bytes[name] / 1024 / 1024:.2f} |"
+              )
+          report.extend(
+              [
+                  "",
+                  "## Notes",
+                  "",
+                  "This artifact is an inventory only. It does not delete or move files.",
+                  "Review `largest_files.csv`, `duplicate_content.txt`, and "
+                  "`suspicious_tracked_files.csv` before restructuring the repository.",
+              ]
+          )
+          (out / "REPORT.md").write_text("\n".join(report) + "\n", encoding="utf-8")
+          PY
+
+      - name: Check Python syntax
+        continue-on-error: true
+        run: |
+          python -m compileall -q src scripts tests 2>&1 | tee repository_audit/compileall.log
+
+      - name: Capture repository status
+        run: |
+          git status --short > repository_audit/git_status.txt
+          git log -25 --date=short --pretty=format:'%h,%ad,%s' > repository_audit/recent_commits.csv
+
+      - name: Upload audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-audit
+          path: repository_audit
+          retention-days: 14

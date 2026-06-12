@@ -10,9 +10,9 @@ Feature: nnmil-architecture-upgrade
 
 import pytest
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.data.loaders.bag_samplers import FixedLengthBagSampler
 
 # ============================================================================

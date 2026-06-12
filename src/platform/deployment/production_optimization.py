@@ -69,7 +69,8 @@ class PerformanceMonitor:
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
 
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS performance_metrics (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp TEXT,
@@ -79,9 +80,11 @@ class PerformanceMonitor:
                     site_id TEXT,
                     component TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS system_alerts (
                     alert_id TEXT PRIMARY KEY,
                     severity TEXT,
@@ -91,7 +94,8 @@ class PerformanceMonitor:
                     resolved BOOLEAN,
                     resolution_time TEXT
                 )
-            """)
+            """
+            )
 
     def start_monitoring(self, interval_seconds: int = 60):
         """Start continuous performance monitoring."""

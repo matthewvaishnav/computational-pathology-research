@@ -10,7 +10,6 @@ class WSIProcessingError(Exception):
     """Base exception for WSI processing errors."""
 
 
-
 class FileFormatError(WSIProcessingError):
     """Raised when file format is unsupported or corrupted.
 
@@ -19,7 +18,6 @@ class FileFormatError(WSIProcessingError):
         - Corrupted WSI file
         - Missing required metadata
     """
-
 
 
 class ResourceError(WSIProcessingError):
@@ -32,7 +30,6 @@ class ResourceError(WSIProcessingError):
     """
 
 
-
 class ProcessingError(WSIProcessingError):
     """Raised when processing step fails.
 
@@ -41,4 +38,3 @@ class ProcessingError(WSIProcessingError):
         - Feature extraction failure
         - HDF5 write failure
     """
-

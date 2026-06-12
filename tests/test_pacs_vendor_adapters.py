@@ -6,14 +6,13 @@ Property 13: Vendor Tag Normalization
 Property 14: Vendor-Specific Optimization Selection
 """
 
-
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 from pydicom.tag import Tag
 from pynetdicom import AE
 
-from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
 from src.features.clinical.workflow.pacs.data_models import (
     PACSEndpoint,
     PACSVendor,

@@ -21,9 +21,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 import torch
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.federated.pathology_fl.client.resource_manager import (
     ResourceLimits,
     ResourceManager,
@@ -502,7 +502,9 @@ class TestScheduledTrainingWindows:
         )
 
         # Test at 23:00 (should be inside)
-        with patch("src.features.federated.pathology_fl.client.resource_manager.datetime") as mock_dt:
+        with patch(
+            "src.features.federated.pathology_fl.client.resource_manager.datetime"
+        ) as mock_dt:
             mock_dt.now.return_value = datetime(2024, 1, 1, 23, 0)  # Monday 23:00
             mock_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 

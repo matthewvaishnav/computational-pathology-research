@@ -10,9 +10,9 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pytest
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.audit_logger import (
     AuditMessage,
     AuditParticipant,

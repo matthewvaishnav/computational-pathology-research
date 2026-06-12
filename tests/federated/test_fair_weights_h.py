@@ -117,7 +117,9 @@ def test_empty_input_raises():
 
 def test_conservative_mode_changes_weights():
     normal = FairWeightsHEngine().compute(_signals()).weights
-    conservative = FairWeightsHEngine(FairWeightsHConfig(conservative_mode=True)).compute(_signals()).weights
+    conservative = (
+        FairWeightsHEngine(FairWeightsHConfig(conservative_mode=True)).compute(_signals()).weights
+    )
     assert normal != conservative
 
 

@@ -9,11 +9,11 @@ Property 3: Result Validation Sanity Checks
 
 from pathlib import Path
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from experiments.benchmark_system.models import TaskSpecification, TrainingResult
 from experiments.benchmark_system.result_validator import ResultValidator
-from hypothesis import given, settings
-from hypothesis import strategies as st
 
 
 # Strategy for generating TaskSpecification instances

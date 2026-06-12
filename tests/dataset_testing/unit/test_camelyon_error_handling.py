@@ -265,12 +265,14 @@ class TestCAMELYONXMLParsingErrors:
         # Create XML with valid syntax but invalid structure
         invalid_xml = tmp_path / "invalid_structure.xml"
         with open(invalid_xml, "w") as f:
-            f.write("""<?xml version='1.0'?>
+            f.write(
+                """<?xml version='1.0'?>
             <root>
                 <unexpected_element>
                     <data>Some data</data>
                 </unexpected_element>
-            </root>""")
+            </root>"""
+            )
 
         # Should parse successfully but may fail validation
         tree = ET.parse(str(invalid_xml))
@@ -294,10 +296,12 @@ class TestCAMELYONXMLParsingErrors:
         # Create XML with special characters
         special_xml = tmp_path / "special_chars.xml"
         with open(special_xml, "w", encoding="utf-8") as f:
-            f.write("""<?xml version='1.0' encoding='UTF-8'?>
+            f.write(
+                """<?xml version='1.0' encoding='UTF-8'?>
             <root>
                 <text>Special chars: àáâãäåæçèéêë</text>
-            </root>""")
+            </root>"""
+            )
 
         # Should parse successfully with proper encoding
         tree = ET.parse(str(special_xml))

@@ -13,13 +13,13 @@ import numpy as np
 import pytest
 import torch
 
+from src.data.wsi.streaming import WSIStreamReader
 from src.models.mil.attention_mil import AttentionMIL
 from src.streaming.attention_aggregator import StreamingAttentionAggregator
 from src.streaming.fhir_streaming_client import FHIRStreamingClient
 from src.streaming.gpu_pipeline import GPUPipeline
 from src.streaming.memory.monitor import MemoryMonitor
 from src.streaming.pacs_wsi_client import PACSWSIStreamingClient
-from src.data.wsi.streaming import WSIStreamReader
 
 # ============================================================================
 # Fixtures

@@ -8,9 +8,9 @@ import time
 
 import pytest
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.features.federated.pathology_fl.async_training import (
     AsyncCoordinator,
     ClientUpdate,

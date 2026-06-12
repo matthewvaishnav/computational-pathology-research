@@ -2,8 +2,9 @@
 """Client and server classes corresponding to protobuf-defined services."""
 
 
-from . import federated_learning_pb2 as federated__learning__pb2
 import grpc
+
+from . import federated_learning_pb2 as federated__learning__pb2
 
 GRPC_GENERATED_VERSION = "1.80.0"
 GRPC_VERSION = grpc.__version__

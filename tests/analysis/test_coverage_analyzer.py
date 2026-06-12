@@ -10,7 +10,6 @@ import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-
 from src.analysis.coverage import CoverageAnalyzer
 from src.analysis.models import CoverageAnalysis
 

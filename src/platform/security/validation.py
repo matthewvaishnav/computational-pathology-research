@@ -12,7 +12,6 @@ class ValidationError(Exception):
     """Input validation error."""
 
 
-
 class InputValidator:
     """Validate user inputs for security.
 

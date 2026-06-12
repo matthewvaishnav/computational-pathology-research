@@ -9,7 +9,6 @@ import os
 from unittest.mock import patch
 
 
-
 class TestAnalysisRouterComponents:
     """Test suite for analysis router components."""
 

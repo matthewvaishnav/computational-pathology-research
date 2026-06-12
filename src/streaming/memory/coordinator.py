@@ -22,7 +22,6 @@ Example:
 import logging
 from typing import Any, Dict, Optional
 
-
 from .batch_optimizer import BatchOptimizer, OptimalSizes
 from .cache_manager import CacheManager
 from .config import OptimizerConfig

@@ -3,23 +3,30 @@ requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "histocore"
-version = "1.0.0"
-description = "Production-grade PyTorch framework for computational pathology. Attention-based MIL (nnMIL, CLAM, TransMIL), foundation model integration (UNI/Phikon/CONCH), clinical PACS/DICOM integration, federated learning (Flower + DP-SGD), and 5,000+ tests. 47k+ Python modules for research and clinical deployment."
+name = "computational-pathology-research"
+version = "0.1.0"
+description = "Research code for computational pathology, multiple-instance learning, federated learning, representation auditing, and reproducible PyTorch experiments."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "Matthew Vaishnav"}
 ]
-keywords = ["pathology", "deep-learning", "medical-imaging", "pytorch"]
+keywords = [
+    "computational-pathology",
+    "multiple-instance-learning",
+    "federated-learning",
+    "representation-learning",
+    "pytorch",
+]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
 ]
 
@@ -82,17 +89,14 @@ federated = [
 ]
 
 all = [
-    "histocore[cloud,dev,ml,federated]",
+    "computational-pathology-research[cloud,dev,ml,federated]",
 ]
 
-[project.scripts]
-histocore = "histocore:main"
-
 [project.urls]
-Homepage = "https://github.com/matthewvaishnav/histocore"
-Documentation = "https://github.com/matthewvaishnav/histocore/docs"
-Repository = "https://github.com/matthewvaishnav/histocore"
-Issues = "https://github.com/matthewvaishnav/histocore/issues"
+Homepage = "https://github.com/matthewvaishnav/computational-pathology-research"
+Documentation = "https://matthewvaishnav.github.io/computational-pathology-research/"
+Repository = "https://github.com/matthewvaishnav/computational-pathology-research"
+Issues = "https://github.com/matthewvaishnav/computational-pathology-research/issues"
 
 [tool.black]
 line-length = 100

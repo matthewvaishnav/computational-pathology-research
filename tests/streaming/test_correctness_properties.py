@@ -1,14 +1,13 @@
 """Correctness property tests for streaming components."""
 
-
 import numpy as np
 import pytest
 import torch
-
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
-from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
+
 from src.data.wsi.streaming import TileBatch
+from src.streaming.attention_aggregator import AttentionMIL, StreamingAttentionAggregator
 
 
 @st.composite

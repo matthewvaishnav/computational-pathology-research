@@ -5,10 +5,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra import numpy as npst
+
 from src.features.interpretability.gradcam.failure_analysis import FailureAnalyzer
 
 

@@ -14,8 +14,6 @@ Tests cover:
 - File I/O and encoding
 """
 
-
-
 from src.core.utils.benchmark_report import (
     _add_baseline_comparison,
     _add_dataset_description,

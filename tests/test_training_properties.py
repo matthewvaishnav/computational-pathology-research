@@ -13,9 +13,9 @@ from unittest.mock import Mock
 
 import pytest
 import torch
-
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from src.core.config.nnmil_config import nnMILConfig
 from src.models.mil.nnmil import nnMIL
 from src.training.nnmil_trainer import nnMILTrainer

@@ -1,6 +1,5 @@
 """Tests for batch optimizer."""
 
-
 from src.streaming.memory.batch_optimizer import BatchOptimizer, OptimalSizes
 
 

@@ -9,9 +9,9 @@ Property 3: Date Range Filtering Correctness
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+
 from src.features.clinical.workflow.pacs.data_models import (
     DicomPriority,
     PACSEndpoint,

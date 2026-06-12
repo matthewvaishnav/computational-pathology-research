@@ -13,8 +13,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from src.api.security import decode_access_token, log_security_event
-from src.platform.database import UserOperations, get_db_session
 from src.inference import InferenceEngine
+from src.platform.database import UserOperations, get_db_session
 
 logger = logging.getLogger(__name__)
 
