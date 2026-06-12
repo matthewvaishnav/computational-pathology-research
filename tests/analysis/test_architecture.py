@@ -422,7 +422,9 @@ import pandas as pd
     def method1(self):
         pass
     
-''' + "\n".join([f"    def method{i}(self): pass" for i in range(2, 520)])  # Create 520+ lines
+''' + "\n".join(
+            [f"    def method{i}(self): pass" for i in range(2, 520)]
+        )  # Create 520+ lines
 
         self.create_python_file("src/large_class.py", large_class_content)
 

@@ -8,7 +8,6 @@ a minimum of 100 iterations to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-
 import torch
 
 from hypothesis import given, settings

@@ -4,7 +4,6 @@ Tests for input validation utilities.
 Tests tensor validation, modality-specific validation, and batch validation.
 """
 
-
 import pytest
 import torch
 

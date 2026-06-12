@@ -9,7 +9,6 @@ import subprocess
 import sys
 
 
-
 def test_validate_setup_help():
     """Test that validate_setup.py --help works."""
     result = subprocess.run(

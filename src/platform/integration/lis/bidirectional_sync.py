@@ -145,7 +145,8 @@ class BidirectionalSyncManager:
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
 
         with safe_db_transaction(Path(self.db_path)) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS sync_records (
                     sync_id TEXT PRIMARY KEY,
                     entity_type TEXT NOT NULL,
@@ -160,9 +161,11 @@ class BidirectionalSyncManager:
                     error_message TEXT,
                     retry_count INTEGER DEFAULT 0
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS data_conflicts (
                     conflict_id TEXT PRIMARY KEY,
                     entity_type TEXT NOT NULL,
@@ -178,17 +181,22 @@ class BidirectionalSyncManager:
                     resolved_by TEXT,
                     created_at TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_sync_entity 
                 ON sync_records(entity_type, entity_id)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_sync_status 
                 ON sync_records(status)
-            """)
+            """
+            )
 
     def register_lis_plugin(self, name: str, plugin):
         """Register LIS plugin"""
@@ -678,15 +686,19 @@ class BidirectionalSyncManager:
             stats = {}
 
             # Total syncs by status
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT status, COUNT(*) FROM sync_records GROUP BY status
-            """)
+            """
+            )
             stats["by_status"] = dict(cursor.fetchall())
 
             # Syncs by entity type
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT entity_type, COUNT(*) FROM sync_records GROUP BY entity_type
-            """)
+            """
+            )
             stats["by_entity_type"] = dict(cursor.fetchall())
 
             # Recent sync activity (last 24 hours)

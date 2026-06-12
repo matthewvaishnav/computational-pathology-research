@@ -6,7 +6,6 @@ Property 13: Vendor Tag Normalization
 Property 14: Vendor-Specific Optimization Selection
 """
 
-
 from pydicom.dataelem import DataElement
 from pydicom.dataset import Dataset
 from pydicom.tag import Tag

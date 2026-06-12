@@ -235,7 +235,8 @@ class ModelPerformanceTracker:
         try:
             with safe_db_transaction(Path(self.db_path)) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS performance_metrics (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         timestamp TEXT NOT NULL,
@@ -248,12 +249,15 @@ class ModelPerformanceTracker:
                         ground_truth TEXT,
                         uncertainty_score REAL
                     )
-                """)
+                """
+                )
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_model_timestamp 
                     ON performance_metrics(model_version, timestamp)
-                """)
+                """
+                )
 
         except DatabaseError:
             raise

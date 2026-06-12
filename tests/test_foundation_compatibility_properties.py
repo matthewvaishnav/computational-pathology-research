@@ -9,7 +9,6 @@ to verify universal invariants.
 Feature: nnmil-architecture-upgrade
 """
 
-
 import pytest
 import torch
 
