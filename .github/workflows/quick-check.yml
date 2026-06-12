@@ -36,6 +36,7 @@ jobs:
     - name: Run quick tests (no slow/property/integration tests)
       run: |
         pytest tests/ \
+          --ignore=tests/integration \
           --ignore=tests/foundation/test_foundation_model_integration.py \
           -q --tb=short \
           -m "not property and not slow and not integration" \
