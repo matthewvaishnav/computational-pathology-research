@@ -13,6 +13,10 @@ class PickleSecurityError(SecurityError):
     """Exception raised when pickle deserialization security check fails."""
 
 
+class ModelSecurityError(SecurityError):
+    """Exception raised when a model download violates revision policy."""
+
+
 class ValidationError(SecurityError):
     """Exception raised when input validation fails."""
 
