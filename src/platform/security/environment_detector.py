@@ -30,21 +30,16 @@ class SecurityEnvironmentDetector:
         normalized = raw_value.strip().lower()
 
         if not normalized:
-            logger.warning(
-                "No environment specified; defaulting to DEVELOPMENT"
-            )
+            logger.warning("No environment specified; defaulting to DEVELOPMENT")
             self._detected = SecurityEnvironment.DEVELOPMENT
             return self._detected
 
         try:
             self._detected = SecurityEnvironment(normalized)
         except ValueError as exc:
-            valid_values = ", ".join(
-                environment.value for environment in SecurityEnvironment
-            )
+            valid_values = ", ".join(environment.value for environment in SecurityEnvironment)
             raise ValueError(
-                f"Invalid environment {raw_value!r}; "
-                f"expected one of: {valid_values}"
+                f"Invalid environment {raw_value!r}; " f"expected one of: {valid_values}"
             ) from exc
 
         return self._detected
