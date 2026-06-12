@@ -191,7 +191,6 @@ class AttentionMIL(MockAttentionMIL):
     """Alias for MockAttentionMIL for compatibility."""
 
 
-
 if __name__ == "__main__":
     # Test mock models
     print("Testing Mock Models")

@@ -14,7 +14,6 @@ class RegexTimeout(Exception):
     """Raised when regex execution times out."""
 
 
-
 @contextmanager
 def timeout_context(seconds: int):
     """Context manager for timeout.

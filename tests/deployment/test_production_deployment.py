@@ -227,10 +227,12 @@ class TestProductionOptimization:
         """Test performance monitoring setup."""
         # Test database initialization
         with sqlite3.connect(monitor.db_path) as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name='performance_metrics'
-            """)
+            """
+            )
             assert cursor.fetchone() is not None
 
     def test_auto_scaler_setup(self, monitor):

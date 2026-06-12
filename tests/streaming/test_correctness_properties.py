@@ -1,6 +1,5 @@
 """Correctness property tests for streaming components."""
 
-
 import numpy as np
 import pytest
 import torch

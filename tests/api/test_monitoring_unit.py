@@ -8,7 +8,6 @@ import os
 from unittest.mock import Mock, patch
 
 
-
 class TestMonitoringRouterComponents:
     """Test suite for monitoring router components."""
 

@@ -1,6 +1,5 @@
 """Unit tests for Grad-CAM generator."""
 
-
 import numpy as np
 import pytest
 import torch

@@ -11,7 +11,6 @@ class ValidationError(ValueError):
     """Raised when input validation fails."""
 
 
-
 def validate_site_id(site_id: str, max_length: int = 50) -> str:
     """
     Validate hospital site identifier.

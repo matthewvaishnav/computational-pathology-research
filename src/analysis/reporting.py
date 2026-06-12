@@ -108,9 +108,7 @@ class ReportGenerator:
             else (
                 "good"
                 if result.overall_score >= 60
-                else "needs improvement"
-                if result.overall_score >= 40
-                else "critical"
+                else "needs improvement" if result.overall_score >= 40 else "critical"
             )
         )
 
@@ -164,16 +162,12 @@ This analysis evaluated the HistoCore computational pathology project across 8 d
             priority_emoji = (
                 "🔴"
                 if issue.priority == Priority.P0
-                else "🟡"
-                if issue.priority == Priority.P1
-                else "🟢"
+                else "🟡" if issue.priority == Priority.P1 else "🟢"
             )
             severity_emoji = (
                 "🚨"
                 if issue.severity == Severity.CRITICAL
-                else "⚠️"
-                if issue.severity == Severity.HIGH
-                else "ℹ️"
+                else "⚠️" if issue.severity == Severity.HIGH else "ℹ️"
             )
 
             issue_lines.append(

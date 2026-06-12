@@ -9,7 +9,6 @@ import os
 from unittest.mock import patch
 
 
-
 class TestAuthRouterComponents:
     """Test suite for authentication router components."""
 

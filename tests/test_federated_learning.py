@@ -4,7 +4,6 @@ Property-based tests for federated learning system.
 Tests correctness properties using Hypothesis for comprehensive validation.
 """
 
-
 import pytest
 import torch
 import torch.nn as nn

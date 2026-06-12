@@ -9,7 +9,6 @@ import os
 from unittest.mock import Mock, patch
 
 
-
 class TestAdminRouterComponents:
     """Test suite for admin router components."""
 

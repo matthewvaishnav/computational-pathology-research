@@ -358,9 +358,7 @@ class FeatureCache:
         self.redis_cache = RedisCache(config) if config.feature_cache_enabled else None
         self.lru_cache = LRUCache(max_size=10000)
 
-    def get_features(
-        self, slide_id: str, patch_coords: Tuple[int, int]
-    ) -> Optional[torch.Tensor]:
+    def get_features(self, slide_id: str, patch_coords: Tuple[int, int]) -> Optional[torch.Tensor]:
         key = CacheKey.feature_key(slide_id, patch_coords)
         features = self.lru_cache.get(key)
         if features is not None:
@@ -454,9 +452,7 @@ class SlideCache:
 
     def set_result(self, slide_id: str, result: Dict[str, Any]) -> None:
         if self.redis_cache is not None:
-            self.redis_cache.set(
-                CacheKey.result_key(slide_id), result, ttl=self.config.slide_ttl
-            )
+            self.redis_cache.set(CacheKey.result_key(slide_id), result, ttl=self.config.slide_ttl)
 
 
 _feature_cache: Optional[FeatureCache] = None

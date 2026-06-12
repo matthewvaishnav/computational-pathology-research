@@ -10,7 +10,6 @@ import ast
 from pathlib import Path
 
 
-
 class TestPreservation:
     """Preservation tests to verify unchanged behavior."""
 

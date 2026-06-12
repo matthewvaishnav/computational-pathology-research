@@ -148,23 +148,27 @@ class TestReportSnapshots:
             test_project = Path(temp_dir)
 
             # Create sample Python files
-            (test_project / "main.py").write_text("""
+            (test_project / "main.py").write_text(
+                """
 def hello_world():
     print("Hello, World!")
     return True
 
 if __name__ == "__main__":
     hello_world()
-""")
+"""
+            )
 
-            (test_project / "utils.py").write_text("""
+            (test_project / "utils.py").write_text(
+                """
 def add_numbers(a, b):
     return a + b
 
 def multiply(x, y):
     result = x * y
     return result
-""")
+"""
+            )
 
             # Run analysis
             orchestrator = AnalysisOrchestrator(project_path=str(test_project))
