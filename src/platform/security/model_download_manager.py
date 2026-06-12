@@ -27,7 +27,9 @@ class ModelDownloadManager:
 
     def __init__(self, revision_config_path: Optional[str] = None) -> None:
         self.revision_config_path = (
-            Path(revision_config_path) if revision_config_path else Path("config/model_revisions.yaml")
+            Path(revision_config_path)
+            if revision_config_path
+            else Path("config/model_revisions.yaml")
         )
         self._revision_config: Optional[Dict[str, str]] = None
 
@@ -44,9 +46,7 @@ class ModelDownloadManager:
             with self.revision_config_path.open("r", encoding="utf-8") as handle:
                 loaded = yaml.safe_load(handle) or {}
         except (OSError, yaml.YAMLError) as exc:
-            raise ModelSecurityError(
-                f"Failed to load model revision configuration: {exc}"
-            ) from exc
+            raise ModelSecurityError(f"Failed to load model revision configuration: {exc}") from exc
 
         if not isinstance(loaded, dict):
             raise ModelSecurityError("Model revision configuration must be a mapping")
@@ -80,9 +80,7 @@ class ModelDownloadManager:
             )
         return normalized
 
-    def download_model(
-        self, model_name: str, revision: Optional[str] = None, **kwargs: Any
-    ) -> Any:
+    def download_model(self, model_name: str, revision: Optional[str] = None, **kwargs: Any) -> Any:
         """Download a model when a revision is supplied or policy permits it."""
         environment = self._environment()
 
