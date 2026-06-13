@@ -1,0 +1,12 @@
+\subsection{Compute-controlled follow-up}
+The fixed-epoch phase map coupled observational sample size to optimization exposure because larger datasets produced more minibatches per epoch. A follow-up protocol therefore fixed optimizer steps at $S=320$, observational batch size at 128, and one separate paired-supervision batch per optimizer step. It preserved held-out pairs for diagnostics and evaluated the harder unseen setting $\rho=0.975$ with nonlinear mixing across 20 seeds.
+
+Under the predefined mean sustained-recovery rule, hybrid curriculum required 175 anchors at $N_u=750$ and 150 at $N_u=1500$. Pair consistency required 225 and 125 anchors, respectively. These point crossings were close to the threshold and should not be read as sharply identified constants.
+
+A seed-cluster bootstrap produced broad, right-censored intervals. The median reduction was 25 anchors for hybrid curriculum and 50 for pair consistency, but both intervals crossed zero. The probability of a positive reduction was 0.564 and 0.670, respectively. These results are suggestive, not confirmatory.
+
+The fixed-epoch relation remains a description of that training protocol, but recovery also depends on optimization exposure. A more complete resource description is
+\begin{equation}
+  \operatorname{Recovery}=f(N_u,N_p,R_p,S,\rho,V),
+\end{equation}
+where $R_p$ denotes paired-anchor repetition and $S$ denotes optimizer steps.
