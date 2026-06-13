@@ -123,6 +123,55 @@ These results support a threshold-dependent empirical family
 \end{equation}
 not a universal coefficient set. The raw-overlap term is a local approximation over the tested high-overlap range and does not by itself confirm the theoretical $(1-\rho^2)^{-2}$ dependence.
 
+\subsection{Compute-controlled follow-up}
+The fixed-epoch phase map coupled observational sample size to optimization exposure because larger datasets produced more minibatches per epoch. A follow-up protocol therefore fixed optimizer steps at $S=320$, observational batch size at 128, and one separate paired-supervision batch per optimizer step. It preserved held-out pairs for diagnostics and evaluated the harder unseen setting $\rho=0.975$ with nonlinear mixing across 20 seeds.
+
+Under the predefined mean sustained-recovery rule, the corrected point boundaries were
+\begin{table}[t]
+\centering
+\caption{Compute-controlled point boundaries at $\rho=0.975$, nonlinear mixing, and $S=320$.}
+\small
+\begin{tabular}{lcc}
+\toprule
+Method & $N_u=750$ & $N_u=1500$\\
+\midrule
+Hybrid curriculum & 175 & 150\\
+Pair consistency & 225 & 125\\
+\bottomrule
+\end{tabular}
+\end{table}
+The first-line interpretation is modest: observational diversity remained potentially helpful after compute control, but the exact crossings were close to $\tau=0.50$ and should not be read as sharply identified sample-complexity constants.
+
+A seed-cluster bootstrap with pool-adjacent-violators monotonicization produced broad, right-censored uncertainty intervals. For hybrid curriculum, the median boundary reduction from increasing $N_u$ was 25 anchors with a 95\% bootstrap interval from $-50$ to 125 and probability $0.564$ of a positive reduction. For pair consistency, the corresponding values were 50 anchors, an interval from $-75$ to 125, and probability $0.670$. Between 10.4\% and 26.6\% of bootstrap boundaries exceeded the largest tested count of 225. These results are suggestive, not confirmatory.
+
+The controlled experiments therefore revise the earlier interpretation rather than erase it. The fixed-epoch relation remains a valid description of that training protocol, but biological recovery depends on optimization exposure in addition to observational and paired sample counts. A more complete resource description is
+\begin{equation}
+  \operatorname{Recovery}
+  =f(N_u,N_p,R_p,S,\rho,V),
+\end{equation}
+where $R_p$ denotes paired-anchor repetition and $S$ denotes optimizer steps.
+
+\subsection{Exact anchor diversity--repetition pilot}
+A subsequent exact-schedule pilot separated unique paired anchors $N_p$ from presentations per anchor $R_p$. Every selected anchor appeared exactly $R_p$ times in a deterministic shuffled schedule. The pilot crossed $N_u\in\{750,1500\}$, $N_p\in\{50,125,225\}$, $R_p\in\{32,64,128\}$, two methods, and five new seeds, for 180 neural-network fits.
+
+Increasing repetition improved the universal biological score in all 12 fixed-$(N_u,N_p,\text{method})$ slices. Increasing unique-anchor diversity also improved it in all 12 fixed-$(N_u,R_p,\text{method})$ slices. At the highest tested diversity and repetition,
+\begin{table}[t]
+\centering
+\caption{Universal biological score at $N_p=225$ and $R_p=128$ in the exact-schedule pilot.}
+\small
+\begin{tabular}{lcc}
+\toprule
+Method & $N_u=750$ & $N_u=1500$\\
+\midrule
+Hybrid curriculum & 0.503 & 0.524\\
+Pair consistency & 0.495 & 0.505\\
+\bottomrule
+\end{tabular}
+\end{table}
+Task AUC remained approximately $0.96$--$0.98$ across the pilot while biological recovery, factor separation, and paired-invariance error changed substantially. This again shows that strong task prediction does not certify a disentangled biological representation.
+
+The pilot does not yet isolate diversity from repetition at a fixed total pair-presentation budget because $N_pR_p$ changes across cells. The decisive next test holds total paired presentations constant, for example $50\times128=100\times64=200\times32=6400$, while varying how the same supervision budget is allocated between unique interventions and rehearsal.
+
 \subsection{Objective conflict in transport models}
 For an operator trained with task, environment, reconstruction, transport, and consistency losses,
 \begin{equation}
@@ -159,4 +208,4 @@ If a fraction $q$ of pairs are incorrect, random pair differences introduce biol
 Unlike finite-sample variance, this creates an asymptotic bias floor that more corrupted pairs cannot remove.
 
 \subsection{Testable predictions and current evidence}
-The calculations predict: (i) observational and paired data act as complementary resources; (ii) required paired-anchor count decreases as observational sample size grows; (iii) overlap and nonlinear mixing raise the intervention requirement; (iv) operator underperformance may correlate with negative transport--consistency gradient cosine; and (v) biology-changing interventions and wrong pairs create bias floors rather than merely slower convergence. The synthetic phase map supports the first three qualitative predictions within the tested regime, but held-out sample sizes, intermediate overlap values, alternative recovery endpoints, and pair-integrity falsification remain necessary before treating the fitted relation as a general law.
+The calculations predict that observational breadth, unique paired-anchor diversity, paired-anchor repetition, and optimization exposure are distinct but interacting resources. The original phase map supports qualitative complementarity within its fixed-epoch regime. The compute-controlled follow-up shows that the large original observational-data effect was partly protocol-dependent, while its bootstrap analysis leaves a smaller positive effect unresolved. The exact-schedule pilot provides coherent evidence that both unique intervention diversity and repeated paired supervision improve representation recovery, but a matched-total-presentation experiment is still required before assigning separate coefficients to $N_p$ and $R_p$. Pair-integrity falsification, held-out overlap values, alternative endpoints, and real-data validation remain necessary before treating any fitted relation as a general law.
