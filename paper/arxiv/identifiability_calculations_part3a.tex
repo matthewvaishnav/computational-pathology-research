@@ -1,0 +1,12 @@
+\subsection{Objective conflict in transport models}
+For an operator trained with task, environment, reconstruction, transport, and consistency losses,
+\begin{equation}
+  \mathcal L=\mathcal L_{\mathrm{task}}+\lambda_e\mathcal L_{\mathrm{env}}+
+  \lambda_r\mathcal L_{\mathrm{recon}}+\lambda_t\mathcal L_{\mathrm{transport}}+
+  \lambda_c\mathcal L_{\mathrm{consistency}},
+\end{equation}
+the transport and consistency objectives may conflict. Their gradient cosine is
+\begin{equation}
+  G_{ct}=\frac{\nabla\mathcal L_c^\top\nabla\mathcal L_t}{\|\nabla\mathcal L_c\|\,\|\nabla\mathcal L_t\|}.
+\end{equation}
+A negative $G_{ct}$ indicates that reconstruction of acquisition-specific detail is opposing biological invariance.
