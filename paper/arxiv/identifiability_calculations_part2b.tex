@@ -1,0 +1,22 @@
+\subsection{Exact anchor diversity--repetition pilot}
+A subsequent exact-schedule pilot separated unique paired anchors $N_p$ from presentations per anchor $R_p$. Every selected anchor appeared exactly $R_p$ times in a deterministic shuffled schedule. The pilot crossed $N_u\in\{750,1500\}$, $N_p\in\{50,125,225\}$, $R_p\in\{32,64,128\}$, two methods, and five new seeds, for 180 neural-network fits.
+
+Increasing repetition improved the universal biological score in all 12 fixed-$(N_u,N_p,\text{method})$ slices. Increasing unique-anchor diversity also improved it in all 12 fixed-$(N_u,R_p,\text{method})$ slices.
+
+\begin{table}[t]
+\centering
+\caption{Universal biological score at $N_p=225$ and $R_p=128$.}
+\small
+\begin{tabular}{lcc}
+\toprule
+Method & $N_u=750$ & $N_u=1500$\\
+\midrule
+Hybrid curriculum & 0.503 & 0.524\\
+Pair consistency & 0.495 & 0.505\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Task AUC remained approximately $0.96$--$0.98$ while biological recovery, factor separation, and paired-invariance error changed substantially. Strong task prediction therefore did not certify a disentangled biological representation.
+
+The pilot did not yet isolate diversity from repetition at fixed total pair presentations because $N_pR_p$ changed across cells. The next test holds the total equal, for example $50\times128=100\times64=200\times32=6400$, while changing the allocation between unique interventions and rehearsal.
