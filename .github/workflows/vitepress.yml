@@ -8,9 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: paper-pages
@@ -138,16 +136,11 @@ jobs:
           <a href="./when-more-data-is-less-trustworthy-references-v2.pdf">Open paper PDF</a>
           EOF
 
-      - name: Configure Pages
+      - name: Deploy PDF site to gh-pages
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: paper_pdf_site
-
-      - name: Deploy Pages
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: paper_pdf_site
+          publish_branch: gh-pages
+          force_orphan: true
