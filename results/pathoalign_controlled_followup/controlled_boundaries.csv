@@ -1,0 +1,5 @@
+n,method,first_crossing,sustained_crossing,score_at_maximum_pairs,maximum_observed_score,n_seeds,threshold,maximum_tested_pair_count
+750,hybrid_curriculum,175,175,0.5092537405434996,0.5092537405434996,20,0.5,225
+1500,hybrid_curriculum,150,150,0.5045559229794889,0.512819,20,0.5,225
+750,pair_consistency,225,225,0.5051587499357992,0.5051587499357992,20,0.5,225
+1500,pair_consistency,125,125,0.5015286974725314,0.5057515962835168,20,0.5,225
