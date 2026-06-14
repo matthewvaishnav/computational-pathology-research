@@ -25,7 +25,7 @@ jobs:
       - name: Prepare arXiv source package
         run: python paper/arxiv/build_arxiv_package.py
 
-      - name: Apply two-column academic formatting
+      - name: Apply single-column conference formatting
         run: |
           cp paper/arxiv/identifiability_calculations.tex paper/arxiv/build/identifiability_calculations.tex
           python - <<'PY'
@@ -34,25 +34,83 @@ jobs:
 
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
-          text = re.sub(r"\\documentclass\[[^\]]*\]\{article\}", r"\\documentclass[10pt,twocolumn]{article}", text, count=1)
-          text = re.sub(r"\\usepackage\[[^\]]*\]\{geometry\}", r"\\usepackage[letterpaper,top=0.70in,bottom=0.75in,left=0.68in,right=0.68in,columnsep=0.24in]{geometry}", text, count=1)
+
+          # AlexNet-style conference structure: one justified text column. Tables
+          # and figures may float beside text where useful, but the document is
+          # never forced into a global two-column layout.
+          text = re.sub(
+              r"\\documentclass\[[^\]]*\]\{article\}",
+              r"\\documentclass[10pt]{article}",
+              text,
+              count=1,
+          )
+          text = re.sub(
+              r"\\usepackage\[[^\]]*\]\{geometry\}",
+              r"\\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
+              text,
+              count=1,
+          )
           text = re.sub(r"\\date\{[^}]*\}", r"\\date{June 13, 2026}", text, count=1)
 
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
-          style = "\n".join([
-              anchor,
-              r"\setlength{\columnsep}{0.24in}",
-              r"\setlength{\parindent}{0pt}",
-              r"\setlength{\parskip}{0.65em}",
-              r"\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}",
-              r"\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}",
-              r"\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}",
-              r"\setlength{\floatsep}{6pt plus 2pt minus 2pt}",
-              r"\setlength{\intextsep}{6pt plus 2pt minus 2pt}",
-              r"\emergencystretch=1em",
-          ])
-          if r"\setlength{\columnsep}{0.24in}" not in text:
-              text = text.replace(anchor, style, 1)
+          conference_style = r"""
+          \usepackage{titlesec}
+          \usepackage{titling}
+          \usepackage{wrapfig}
+
+          \setlength{\parindent}{0pt}
+          \setlength{\parskip}{0.48em}
+          \setlength{\abovedisplayskip}{5pt plus 1pt minus 1pt}
+          \setlength{\belowdisplayskip}{5pt plus 1pt minus 1pt}
+          \setlength{\textfloatsep}{9pt plus 2pt minus 2pt}
+          \setlength{\floatsep}{8pt plus 2pt minus 2pt}
+          \setlength{\intextsep}{8pt plus 2pt minus 2pt}
+          \emergencystretch=1.2em
+
+          \titleformat{\section}{\large\bfseries}{\thesection}{0.85em}{}
+          \titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.75em}{}
+          \titlespacing*{\section}{0pt}{1.45em}{0.48em}
+          \titlespacing*{\subsection}{0pt}{1.05em}{0.35em}
+
+          \setlength{\droptitle}{-3.2em}
+          \pretitle{\begin{center}\hrule height 2.6pt\vspace{0.75em}\LARGE\bfseries}
+          \posttitle{\par\vspace{0.75em}\hrule height 0.7pt\end{center}\vspace{0.9em}}
+          \preauthor{\begin{center}\normalsize}
+          \postauthor{\end{center}\vspace{-0.45em}}
+          \predate{\begin{center}\small}
+          \postdate{\end{center}\vspace{0.6em}}
+
+          \renewenvironment{abstract}{%
+            \begin{center}%
+            \begin{minipage}{0.79\textwidth}%
+            \small
+            \begin{center}\bfseries Abstract\end{center}%
+            \vspace{-0.45em}%
+            \setlength{\parindent}{0pt}%
+            \setlength{\parskip}{0.34em}%
+            \ignorespaces
+          }{%
+            \end{minipage}%
+            \end{center}%
+            \vspace{0.45em}%
+          }
+          """
+
+          if r"\usepackage{titlesec}" not in text:
+              text = text.replace(anchor, anchor + conference_style, 1)
+
+          # Remove any earlier global paragraph settings that would override the
+          # final single-column style. The abstract receives its own spacing above.
+          text = re.sub(
+              r"(?m)^\\setlength\{\\parindent\}\{[^}]+\}\s*$",
+              "",
+              text,
+          )
+          text = re.sub(
+              r"(?m)^\\setlength\{\\parskip\}\{[^}]+\}\s*$",
+              "",
+              text,
+          )
 
           links = r"""
           \begin{center}
@@ -63,14 +121,18 @@ jobs:
           \quad$\vert$\quad
           \href{https://github.com/matthewvaishnav/computational-pathology-research/tree/main/results}{Experimental results}
           \end{center}
-          \vspace{0.35em}
+          \vspace{0.25em}
           """
           if "Project repository" not in text:
               text = text.replace(r"\maketitle", r"\maketitle" + links, 1)
 
           calc = r"\input{identifiability_calculations.tex}"
           if calc not in text:
-              text = text.replace(r"\section{Limitations}", calc + "\n\n" + r"\section{Limitations}", 1)
+              text = text.replace(
+                  r"\section{Limitations}",
+                  calc + "\n\n" + r"\section{Limitations}",
+                  1,
+              )
 
           old = r"""\begin{align}
             \mathbb{E}[\Delta M]
@@ -87,10 +149,13 @@ jobs:
           if old in text:
               text = text.replace(old, new, 1)
 
-          if r"\setlength{\parindent}{0pt}" not in text:
-              raise RuntimeError("Flush-left paragraph formatting was not applied")
+          if "twocolumn" in text:
+              raise RuntimeError("Global two-column formatting remains")
+          if r"\usepackage{titlesec}" not in text:
+              raise RuntimeError("Single-column conference style was not applied")
           if calc not in text:
               raise RuntimeError("Calculations section was not included")
+
           path.write_text(text, encoding="utf-8")
           PY
 
