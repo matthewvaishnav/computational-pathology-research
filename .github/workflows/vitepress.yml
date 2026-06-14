@@ -41,10 +41,9 @@ jobs:
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           style = "\n".join([
               anchor,
-              r"\usepackage{indentfirst}",
               r"\setlength{\columnsep}{0.24in}",
-              r"\setlength{\parindent}{1em}",
-              r"\setlength{\parskip}{0pt}",
+              r"\setlength{\parindent}{0pt}",
+              r"\setlength{\parskip}{0.65em}",
               r"\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}",
               r"\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}",
               r"\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}",
@@ -52,11 +51,8 @@ jobs:
               r"\setlength{\intextsep}{6pt plus 2pt minus 2pt}",
               r"\emergencystretch=1em",
           ])
-          if r"\usepackage{indentfirst}" not in text:
+          if r"\setlength{\columnsep}{0.24in}" not in text:
               text = text.replace(anchor, style, 1)
-
-          text = text.replace(r"\setlength{\parindent}{0pt}%", r"\setlength{\parindent}{1em}%")
-          text = text.replace(r"\setlength{\parskip}{0.35em}%", r"\setlength{\parskip}{0pt}%")
 
           links = r"""
           \begin{center}
@@ -91,8 +87,8 @@ jobs:
           if old in text:
               text = text.replace(old, new, 1)
 
-          if r"\setlength{\parindent}{0pt}" in text:
-              raise RuntimeError("Block-style paragraph indentation remains")
+          if r"\setlength{\parindent}{0pt}" not in text:
+              raise RuntimeError("Flush-left paragraph formatting was not applied")
           if calc not in text:
               raise RuntimeError("Calculations section was not included")
           path.write_text(text, encoding="utf-8")
