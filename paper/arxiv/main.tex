@@ -12,9 +12,11 @@
 \usepackage{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 
-% Keep all body paragraphs flush with the left margin.
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.65em}
+% Keep all body paragraphs flush with the left margin, including in generated builds.
+\AtBeginDocument{%
+  \setlength{\parindent}{0pt}%
+  \setlength{\parskip}{0.48em}%
+}
 
 \hypersetup{
   colorlinks=true,
