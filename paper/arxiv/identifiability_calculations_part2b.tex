@@ -19,4 +19,30 @@ Pair consistency & 0.495 & 0.505\\
 
 Task AUC remained approximately $0.96$--$0.98$ while biological recovery, factor separation, and paired-invariance error changed substantially. Strong task prediction therefore did not certify a disentangled biological representation.
 
-The pilot did not yet isolate diversity from repetition at fixed total pair presentations because $N_pR_p$ changed across cells. The next test holds the total equal, for example $50\times128=100\times64=200\times32=6400$, while changing the allocation between unique interventions and rehearsal.
+\subsection{Matched paired-supervision budget}
+To isolate intervention diversity from repeated exposure, a matched-budget experiment fixed total paired presentations at
+\begin{equation}
+  N_pR_p=6400,
+\end{equation}
+and fixed pair-loss updates at 100. It compared $50\times128$, $100\times64$, and $200\times32$ allocations across $N_u\in\{750,1500\}$, hybrid curriculum and pair consistency, and 10 matched seeds, for 120 fits.
+
+\begin{table}[t]
+\centering
+\caption{Mean universal biological score across the four method-by-$N_u$ strata at a fixed paired-supervision budget.}
+\small
+\begin{tabular}{lcc}
+\toprule
+Allocation & Mean score & Gain vs. $50\times128$\\
+\midrule
+$50\times128$ & 0.4081 & ---\\
+$100\times64$ & 0.4243 & 0.0163\\
+$200\times32$ & 0.4259 & 0.0179\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both higher-diversity allocations exceeded $50\times128$ in mean recovery in all four strata. The $100\times64$ allocation improved the score by 0.0163 on average, and $200\times32$ improved it by 0.0179. Increasing from 100 to 200 unique anchors added only 0.0016 on average and had inconsistent stratum-level effects, indicating diminishing returns beyond approximately 100 anchors in this tested regime.
+
+Paired seed-level contrasts supported a cautious interpretation. The strongest individual contrast was hybrid curriculum at $N_u=750$, where $100\times64$ exceeded $50\times128$ by 0.0226 with a bootstrap interval of $[0.0067,0.0387]$ and an exact two-sided sign-flip $p$-value of 0.029. The other stratum-specific intervals generally included zero, and no individual test is treated as confirmatory after accounting for multiple comparisons.
+
+The matched-budget result therefore provides consistent descriptive evidence that allocating supervision across more unique paired interventions is preferable to excessive rehearsal of a small anchor set. It also shows that total paired presentations alone are insufficient to describe supervision value: the allocation between unique-anchor diversity and repetition matters. None of the 6400-presentation conditions crossed the predefined recovery threshold of 0.50, so this experiment identifies resource-allocation efficiency rather than a recovery boundary.
