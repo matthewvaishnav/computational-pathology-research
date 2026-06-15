@@ -21,6 +21,7 @@ class ProjectionConfig:
     covariance_weight: float = 0.01
     scanner_adversary_weight: float = 0.50
     scanner_acquisition_weight: float = 0.50
+    scanner_dependence_weight: float = 0.0
     cross_covariance_weight: float = 0.05
     gradient_reversal_strength: float = 1.0
 
@@ -157,6 +158,35 @@ def cross_covariance_loss(
     return cross_covariance.square().mean()
 
 
+def scanner_dependence_loss(
+    biological: torch.Tensor,
+    scanner_labels: torch.Tensor,
+    n_scanners: int = 5,
+) -> torch.Tensor:
+    """Penalize normalized linear dependence between biology and scanner labels.
+
+    With balanced five-view batches, this is a differentiable scanner-centroid
+    separation penalty. It directly targets the same linear dependence measured
+    by the held-out logistic scanner probe while preserving within-scanner tissue
+    variation.
+    """
+    centered_b = biological - biological.mean(dim=0, keepdim=True)
+    standardized_b = centered_b / torch.sqrt(
+        biological.var(dim=0, unbiased=False, keepdim=True) + 1e-4
+    )
+    one_hot = F.one_hot(scanner_labels, num_classes=n_scanners).to(
+        dtype=biological.dtype
+    )
+    centered_scanner = one_hot - one_hot.mean(dim=0, keepdim=True)
+    standardized_scanner = centered_scanner / torch.sqrt(
+        one_hot.var(dim=0, unbiased=False, keepdim=True) + 1e-4
+    )
+    dependence = standardized_b.T @ standardized_scanner / max(
+        1, len(biological) - 1
+    )
+    return dependence.square().mean()
+
+
 def projection_loss(
     model: ScorpionProjection,
     inputs: torch.Tensor,
@@ -186,6 +216,9 @@ def projection_loss(
         acquisition = output["acquisition"]
         parts["scanner_b"] = F.cross_entropy(output["scanner_b"], scanner_labels)
         parts["scanner_a"] = F.cross_entropy(output["scanner_a"], scanner_labels)
+        parts["scanner_dependence"] = scanner_dependence_loss(
+            biological, scanner_labels
+        )
         parts["variance_a"] = variance_loss(acquisition)
         parts["cross_covariance"] = cross_covariance_loss(
             biological, acquisition
@@ -194,6 +227,7 @@ def projection_loss(
             total
             + config.scanner_adversary_weight * parts["scanner_b"]
             + config.scanner_acquisition_weight * parts["scanner_a"]
+            + config.scanner_dependence_weight * parts["scanner_dependence"]
             + 0.25 * config.variance_weight * parts["variance_a"]
             + config.cross_covariance_weight * parts["cross_covariance"]
         )
