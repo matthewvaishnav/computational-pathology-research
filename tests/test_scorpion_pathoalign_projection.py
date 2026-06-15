@@ -8,6 +8,7 @@ from src.models.scorpion_pathoalign import (
     covariance_loss,
     cross_covariance_loss,
     projection_loss,
+    scanner_dependence_loss,
     supervised_contrastive_loss,
 )
 
@@ -52,6 +53,7 @@ def test_pathoalign_forward_and_loss_include_factor_terms():
         hidden_dim=16,
         biological_dim=8,
         acquisition_dim=4,
+        scanner_dependence_weight=1.0,
     )
     model = ScorpionProjection("pathoalign", config)
     output = model(inputs)
@@ -65,6 +67,7 @@ def test_pathoalign_forward_and_loss_include_factor_terms():
     assert set(parts) >= {
         "scanner_b",
         "scanner_a",
+        "scanner_dependence",
         "variance_a",
         "cross_covariance",
     }
@@ -87,8 +90,21 @@ def test_covariance_penalties_are_nonnegative():
     torch.manual_seed(13)
     biological = torch.randn(20, 8)
     acquisition = torch.randn(20, 4)
+    scanner_labels = torch.arange(5).repeat(4)
     assert covariance_loss(biological) >= 0
     assert cross_covariance_loss(biological, acquisition) >= 0
+    assert scanner_dependence_loss(biological, scanner_labels) >= 0
+
+
+def test_scanner_dependence_detects_scanner_aligned_representation():
+    scanner_labels = torch.arange(5).repeat(4)
+    aligned = torch.nn.functional.one_hot(scanner_labels, num_classes=5).float()
+    torch.manual_seed(17)
+    random_representation = torch.randn(20, 5)
+
+    aligned_loss = scanner_dependence_loss(aligned, scanner_labels)
+    random_loss = scanner_dependence_loss(random_representation, scanner_labels)
+    assert aligned_loss > random_loss
 
 
 def test_gradient_reversal_changes_biological_gradient_direction():
