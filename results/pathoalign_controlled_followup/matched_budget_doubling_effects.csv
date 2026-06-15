@@ -1,0 +1,5 @@
+scope,pair_count,comparison,cells_per_seed,n_seed_blocks,mean_difference,median_difference,bootstrap_ci_025,bootstrap_ci_975,fraction_seed_blocks_positive,exact_sign_flip_p_two_sided
+by_allocation,50,12800_minus_6400,4,10,0.040848,0.047842,0.027168,0.05271,0.9,0.003906
+by_allocation,100,12800_minus_6400,4,10,0.035189,0.033733,0.026867,0.044626,1.0,0.001953
+by_allocation,200,12800_minus_6400,4,10,0.036034,0.036249,0.026404,0.044289,1.0,0.001953
+overall,-1,12800_minus_6400,12,10,0.037357,0.041387,0.030315,0.043657,1.0,0.001953
