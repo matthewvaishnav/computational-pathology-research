@@ -1,5 +1,8 @@
 # Overview
 
+
+> **Data provenance correction:** Scientific evaluations on PCam, PANDA, and CAMELYON17/WILDS use public datasets derived from real human histopathology. Generated tensors or mock manifests are isolated software-test fixtures only. See [Data provenance](../DATA_PROVENANCE.md).
+
 This project is a **Computational Pathology AI Research Framework**: a research and engineering platform for building, testing, benchmarking, and documenting computational pathology systems.
 
 It brings together whole-slide pathology AI, multiple-instance learning, federated learning, benchmark automation, clinical-data integration prototypes, and mathematical validation tooling. The goal is not just to train a model, but to build the surrounding infrastructure needed to make computational pathology experiments reproducible, inspectable, and extensible.
@@ -42,7 +45,7 @@ Key modeling areas include:
 - feature extraction with pretrained CNN and pathology foundation-style encoders,
 - and threshold tuning for screening-style sensitivity/specificity tradeoffs.
 
-The strongest current evidence is the combination of PCam validation and PANDA slide-level MIL benchmarking. The PCam work reports **95.37% validation AUC** and **0.9394 test AUC** on the full 32,768-sample PCam test split. The PANDA work validates **10,611 readable slide-level Phikon feature files** and compares mean pooling, gated AttentionMIL, and tuned TransnnMIL.
+The strongest current evidence combines PCam validation, PANDA slide-level MIL benchmarking, and CAMELYON17/WILDS external-center analysis. The PCam work reports **95.37% validation AUC** and **0.9394 test AUC** on the full 32,768-sample PCam test split. The PANDA work validates **10,611 readable slide-level Phikon feature files** and compares mean pooling, gated AttentionMIL, and tuned TransnnMIL. The CAMELYON17/WILDS work audits **455,954 real pathology image examples across five centers**.
 
 ### 2. TransnnMIL
 
@@ -104,14 +107,14 @@ The project uses a staged validation ladder rather than treating every result as
 
 | Stage | Status | Meaning |
 |---|---|---|
-| Synthetic smoke validation | Complete | Basic plumbing and numerical stability checks |
+| Software-only generated fixtures | Complete | Plumbing and numerical-stability checks only; not scientific dataset evidence |
 | PCam patch-level validation | Complete | Real pathology patch benchmark validation |
 | PCam federated smoke tests | Complete | Federated pipeline runs on real PCam patches split into simulated sites |
 | PCam balanced federated benchmark | Complete | Weighting strategies compared under balanced simulated sites |
 | PCam heterogeneous benchmark | Complete | Different weights produced, but no performance sensitivity observed |
 | PANDA slide-level prostate benchmark | Complete | Slide-level MIL over Phikon feature bags |
 | PANDA TransnnMIL ablations | Complete | Patch cap, learning rate, and dropout ablations documented |
-| Camelyon16/17 validation | Planned | Real multi-center WSI validation target |
+| CAMELYON17/WILDS external-center validation | Complete, feature-level evidence | Real multi-center pathology data with held-out OOD centers |
 | Clinical validation | Not completed | Requires clinical workflow / patient-level validation and governance |
 
 ## Key results so far

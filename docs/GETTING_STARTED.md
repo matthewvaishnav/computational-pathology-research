@@ -5,6 +5,9 @@ title: Getting Started
 
 # Getting Started
 
+
+> **Data provenance correction:** Scientific evaluations on PCam, PANDA, and CAMELYON17/WILDS use public datasets derived from real human histopathology. Generated tensors or mock manifests are isolated software-test fixtures only and are not the source of reported benchmark results. See [Data provenance](DATA_PROVENANCE.md).
+
 Complete guide to installing and using the Computational Pathology Research Framework.
 
 ---

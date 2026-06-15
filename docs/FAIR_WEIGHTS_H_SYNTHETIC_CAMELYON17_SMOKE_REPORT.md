@@ -1,5 +1,9 @@
 # FAIR-WEIGHTS-H Synthetic Camelyon17-like Smoke Test Report
 
+
+> **Historical software-only smoke test — superseded by real-data evidence.** This report documents a generated fixture used only to test execution. It must not be cited as the current CAMELYON17 data status. Current real-data evidence is in `docs/research/camelyon17-external-center-validation-note.md` and `docs/DATA_PROVENANCE.md`.
+
+
 **Date**: 2026-05-22
 **Data**: Synthetic Camelyon17-like (NOT real Camelyon17)
 **Purpose**: Pipeline execution validation (NOT performance comparison)
