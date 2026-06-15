@@ -19,7 +19,7 @@ text = re.sub(
 )
 text = re.sub(
     r"\\date\{[^}]*\}",
-    r"\\date{June 13, 2026}",
+    r"\\date{June 15, 2026}",
     text,
     count=1,
 )
