@@ -5,6 +5,11 @@ title: Documentation Index
 
 # Documentation Index
 
+
+> **Data provenance correction:** Scientific evaluations on PCam, PANDA, and CAMELYON17/WILDS use public datasets derived from real human histopathology. Generated tensors or mock manifests are isolated software-test fixtures only and are not the source of reported benchmark results. See [Data provenance](DATA_PROVENANCE.md).
+
+- **[Data provenance](DATA_PROVENANCE.md)** — canonical dataset provenance and test-fixture boundary
+
 Comprehensive documentation for the platform - the production-grade computational pathology framework.
 
 ---

@@ -1,4 +1,7 @@
 # the platform Project Status Report
+
+> **Data provenance correction:** Scientific evaluations on PCam, PANDA, and CAMELYON17/WILDS use public datasets derived from real human histopathology. Generated tensors or mock manifests are isolated software-test fixtures only and are not the source of reported benchmark results. See [Data provenance](DATA_PROVENANCE.md).
+
 **Date**: May 14, 2026 (Thursday)
 **Repository**: computational-pathology-research
 **Author**: Matthew Vaishnav
@@ -33,7 +36,7 @@ the platform is a production-grade computational pathology platform with **195k+
   - Intra-region aggregation (attention, mean, max)
   - Inter-region transformer (2 layers)
   - Ablation studies completed
-  - **Result**: Attention pooling achieves 100% accuracy on synthetic data
+  - **Result**: Attention pooling software-fixture smoke test achieved 100% accuracy; this is not a benchmark result
 
 - ✅ Phase 2: Topology Branch (Weeks 5-7, partial)
   - k-NN graph construction (PyTorch Geometric)
@@ -442,7 +445,7 @@ src/
    - Requires significant compute resources
 
 2. **Limited Real-World Testing**
-   - Most benchmarks on synthetic or public datasets
+   - Scientific benchmarks use public real-human pathology datasets; generated fixtures are restricted to isolated software tests
    - PACS integration needs real hospital testing
    - Federated learning needs multi-site validation
 
