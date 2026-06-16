@@ -186,6 +186,7 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p paper_pdf_site
+          cp paper/arxiv/build/main.pdf paper_pdf_site/pathoalign-computational-pathology-research.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
           touch paper_pdf_site/.nojekyll
@@ -193,9 +194,9 @@ jobs:
           <!doctype html>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <meta http-equiv="refresh" content="0; url=./when-more-data-is-less-trustworthy.pdf">
-          <title>When More Data Is Less Trustworthy</title>
-          <a href="./when-more-data-is-less-trustworthy.pdf">Open paper PDF</a>
+          <meta http-equiv="refresh" content="0; url=./pathoalign-computational-pathology-research.pdf">
+          <title>PathoAlign Computational Pathology Research</title>
+          <a href="./pathoalign-computational-pathology-research.pdf">Open research PDF</a>
           EOF
 
       - name: Deploy PDF site to gh-pages
