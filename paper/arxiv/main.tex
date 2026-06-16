@@ -12,7 +12,6 @@
 \usepackage{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 
-% Keep all body paragraphs flush with the left margin, including in generated builds.
 \AtBeginDocument{%
   \setlength{\parindent}{0pt}%
   \setlength{\parskip}{0.48em}%
@@ -25,9 +24,6 @@
   urlcolor=blue!55!black
 }
 
-% Full-width abstract with controlled paragraph alignment. The standard article
-% abstract uses a narrower quotation block, which looked visually off-center in
-% the compact arXiv build.
 \renewenvironment{abstract}{%
   \par\small
   \begin{center}\bfseries Abstract\end{center}%
@@ -39,8 +35,8 @@
   \par\normalsize
 }
 
-\title{When Site Signal and Biology Collide:\\
-PathoAlign Neural Identifiability and Dominant-Site Stress Tests for Computational Pathology}
+\title{PathoAlign: Paired-Acquisition Neural Identifiability for Computational Pathology\\
+Separating Scanner Signal from Tissue Identity on Real Human Histopathology}
 
 \author{Matthew Vaishnav\\
 Independent Researcher}
@@ -51,215 +47,231 @@ Independent Researcher}
 \maketitle
 
 \begin{abstract}
-Computational-pathology representations often contain both clinically useful biological information and acquisition-dependent information associated with staining, scanners, preparation protocols, institutions, and annotation workflows. These components can be statistically entangled. A model that removes site information too aggressively may therefore erase diagnostic morphology, while a federated model that assigns influence only by sample count may amplify a site-specific training process that is poorly aligned with the declared validation objective.
+Computational-pathology representations can encode tissue morphology together with scanner, staining, preparation, and institutional acquisition effects. High task or retrieval performance does not establish that these factors are separated. I present PathoAlign, a neural identifiability program centered on biology-preserving paired acquisitions: the same tissue is observed under different acquisition systems, providing direct supervision for information that should remain biologically stable and information that may be isolated as acquisition-specific.
 
-I study these two related failure modes through PathoAlign, a neural identifiability program for separating biological and acquisition factors, and through dominant-site federated stress tests over PANDA-derived Phikon features. PathoAlign experiments include task-only neural networks, gradient-reversal site-adversarial models, factorized diagnostic/site branches, pair-consistency objectives, learned acquisition operators, and hybrid curricula. A locked confirmatory experiment found no task-accuracy advantage for the adversarial PathoAlign model over the tumor-only baseline, but did find a small reproducible reduction in site leakage. Factorized modeling selected the diagnostic-only baseline, and unconditional site-component subtraction was falsified because the learned site component remained strongly tumor-predictive. These negative results establish that center invariance alone is not sufficient and that nuisance removal must preserve biology conditionally.
+The main empirical study uses the public SCORPION benchmark, which contains 480 spatially aligned tissue regions from 48 original H\&E slides, each scanned on five scanners for 2,400 real-human-tissue image patches \citep{ryu2025scorpion}. Frozen-feature audits show that scanner identity remains strongly linearly decodable across three representation families despite high cross-scanner tissue retention: 75.6\% for ImageNet ResNet50, 84.0\% for DINOv2-Base, and 96.4\% for the pathology-native Phikon encoder. PathoAlign factorizes a frozen representation into biological and acquisition branches using multi-positive same-region contrastive learning, direct scanner-dependence suppression, scanner prediction in the acquisition branch, cross-factor decorrelation, reconstruction, and collapse controls.
 
-Paired biology-preserving acquisition interventions provide a stronger information source: differencing paired representations cancels the shared biological term and exposes acquisition variation. Controlled synthetic experiments vary observational sample size, paired-anchor count, biological--acquisition overlap, linear versus nonlinear mixing, method, and seed. The resulting phase maps reveal a two-resource recovery boundary. At the primary threshold, an interval/right-censored fit gives a local empirical relation in which more observational data reduces the required paired-anchor count, while overlap and nonlinear mixing increase it. This relation is treated as a falsifiable synthetic scaling hypothesis, not a universal law.
-
-The federated experiments study a complementary influence problem. A fixed detector-switch rule calibrated under dominant-site label-noise stress transfers to conservative ordinal threshold shift, while maintaining low clean-regime switching and producing positive improvements at stronger shift levels. Together, the results support a narrow conclusion: site variation cannot be treated as pure nuisance, sample volume cannot be treated as complete aggregation authority, and pathology models require auditable tests of what information is removed, retained, and allowed to dominate.
+After calibration on one development partition, the objective was frozen and evaluated over five rotating original-slide test folds with five new optimization seeds per fold. Relative to paired consistency alone, PathoAlign reduced biological scanner-probe accuracy from 0.7825 to 0.3989, a slide-blocked difference of $-0.3854$ with 95\% bootstrap interval $[-0.4079,-0.3622]$. Mean and worst scanner-pair cosine agreement improved by approximately 0.031, while mean and worst cross-scanner tissue retrieval changed by less than 0.0005 and remained above 0.9987. The scanner-probe and cosine effects were favorable on all 48 original slides. The acquisition branch retained scanner identity at 0.8602 accuracy while carrying only 0.1042 mean tissue retrieval, supporting factor separation rather than representational collapse. Synthetic recovery studies and a secondary federated stress test provide supporting evidence about intervention budgets and influence failures, but the central result is a frozen out-of-fold paired-scanner separation result on real human histopathology.
 \end{abstract}
 
 \section{Introduction}
-Federated learning is attractive in medicine because raw patient data is difficult, risky, and often impossible to centralize. In pathology, the motivation is especially clear: whole-slide images and derived feature representations may be governed by institutional policy, patient privacy requirements, storage constraints, and clinical governance. Federated learning offers a way for multiple sites to train collaboratively while keeping raw local data inside each environment.
+Digital pathology models operate on images whose appearance depends not only on tissue morphology but also on scanners, staining, compression, preparation, and local workflow. These acquisition effects may coexist with biological information inside the same representation. A model can therefore achieve strong prediction or tissue retrieval while still encoding acquisition identity, and an invariance objective can remove useful biology if nuisance and morphology overlap.
 
-However, federated learning does not remove the question of influence. It changes the question from ``who owns the data?'' to ``how much should each site shape the shared model?'' Standard FedAvg answers that question with a simple rule: clients with more samples receive more aggregation influence \citep{mcmahan2017communication}.
+Most observational datasets do not identify which acquisition-associated directions are nuisance and which carry tissue information. Biology-preserving paired acquisitions change that information structure. When the same tissue region is scanned on multiple devices, tissue identity is held fixed while scanner conditions change. This provides a controlled intervention for testing and learning biological stability rather than guessing invariance from unpaired center labels.
 
-A related problem appears inside the representation itself. Pathology features may encode tumor morphology together with staining, scanner, preparation, annotation, and institutional effects. If those components overlap, an unconditional site-removal operation can remove clinically useful information along with acquisition variation. The central PathoAlign question is therefore not merely whether a representation predicts site, but whether the model can identify which site-associated directions are nuisance and which are carrying biological signal.
+SCORPION was designed for this purpose: 480 aligned tissue regions from 48 original H\&E slides were scanned on five devices, yielding 2,400 paired patches \citep{ryu2025scorpion}. The dataset enables a direct question: can a learned biological representation preserve the identity of the same tissue across scanners while making scanner identity difficult to recover, and can a separate acquisition representation retain the removed scanner information?
 
-I study controlled versions of both problems. In the federated setting, I simulate multi-site learning over PANDA-derived Phikon feature vectors and perturb the largest simulated site's training labels while keeping validation labels clean. In the PathoAlign setting, I train neural models under known synthetic biological and acquisition factors, test adversarial and factorized representations, introduce paired acquisition interventions that preserve biology, and measure where recovery succeeds or fails.
+PathoAlign treats this as a factorization and identifiability problem rather than a generic domain-generalization score. The program combines real paired-scanner experiments, controlled synthetic studies with known latent factors, and negative results showing that unconditional site removal can erase biological information. A smaller federated component examines a related but secondary question: whether sample count should automatically determine model influence when site-specific training signals differ.
 
 \subsection*{Working thesis}
-In computational pathology, site information is neither automatically useless nor automatically trustworthy. It can contain nuisance variation, biological signal, or both. Safe modeling therefore requires conditional, tumor-preserving nuisance removal at the representation level and auditable limits on sample-size dominance at the federation level.
-
-% The introductory architecture figure was intentionally retired; do not reinsert federated_pathology_pipeline_diagram.tex.
-\paragraph{Method at a glance.}
-For client updates $\Delta\theta_k$, the two candidate global updates are
-\[
-\Delta\theta_{\mathrm{FA}}
-=\sum_{k=1}^{K}\frac{n_k}{\sum_{j=1}^{K}n_j}\Delta\theta_k,
-\qquad
-\Delta\theta_{\mathrm{DA}}
-=\sum_{k=1}^{K}\widetilde w_k\Delta\theta_k.
-\]
-A clean-calibrated diagnostic vector
-\[
-d(r)=\bigl(\kappa_{\mathrm{global}},\kappa_{\min},S_\kappa,
-\operatorname{MAOE},R_{\mathrm{sev}}\bigr)
-\]
-induces the trigger
-\[
-C(r)=\sum_{j=1}^{5}I_j(r),
-\qquad
-T(r)=\mathbf{1}[C(r)\geq3],
-\]
-and the selected policy is
-\[
-M_{\pi}(r)
-=[1-T(r)]M_{\mathrm{FA}}(r)+T(r)M_{\mathrm{DA}}(r).
-\]
-At the representation level, paired acquisitions of the same biological specimen satisfy
-\[
-x_i=Bz_{b,i}+Az_{a,i}+\varepsilon_i,
-\qquad
-x_i'=Bz_{b,i}+Az'_{a,i}+\varepsilon_i',
-\]
-so that
-\[
-\Delta x_i=x_i'-x_i
-=A(z'_{a,i}-z_{a,i})+(\varepsilon_i'-\varepsilon_i).
-\]
-The shared biological term cancels, providing direct supervision for acquisition-sensitive directions while biological representations are trained to remain stable.
+Paired interventions provide the strongest available supervision for separating biological content from acquisition variation. A successful method should reduce acquisition predictability in the biological representation, preserve tissue identity and representation rank, and retain acquisition information in a distinct factor rather than destroying it.
 
 \section{Contributions}
-I make eight main contributions.
+The principal contributions are:
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{A real-tissue multi-backbone scanner-entanglement audit.} ResNet50, DINOv2-Base \citep{oquab2023dinov2}, and Phikon \citep{filiot2023scaling} all preserve tissue identity while retaining strong scanner information on SCORPION.
+  \item \textbf{A paired-acquisition PathoAlign objective.} The method combines same-region multi-positive contrastive learning with a biological branch, a scanner-predictive acquisition branch, direct scanner-dependence suppression in biology, gradient reversal, reconstruction, variance control, and cross-factor decorrelation.
+  \item \textbf{A locked five-fold result on unseen original slides.} Hyperparameters selected on one development partition were frozen before five rotating slide-level test folds, using new seeds and no validation checkpoint selection.
+  \item \textbf{A slide-blocked separation result.} PathoAlign substantially reduces biological scanner leakage and improves same-tissue paired agreement while preserving near-perfect cross-scanner tissue retrieval on all 48 original slides.
+  \item \textbf{A factor-retention audit.} Scanner identity remains strongly decodable in the compact acquisition branch, while tissue identity is concentrated in the biological branch and all biological dimensions remain active.
+  \item \textbf{Supporting synthetic identifiability maps.} Controlled experiments vary observational data, paired-anchor diversity, repeated exposure, overlap, nonlinearity, method, and optimization budget to characterize recovery boundaries and resource allocation.
+  \item \textbf{Negative-result and claim-boundary discipline.} Earlier adversarial and subtraction experiments show that lower site leakage alone does not guarantee better diagnosis, and the present real-tissue result is not presented as clinical validation.
+  \item \textbf{A secondary federated influence stress test.} Dominant-client experiments illustrate that sample volume is an influence rule, not a complete measure of task alignment; this component is complementary rather than the paper's primary focus.
+\end{enumerate}
+\FloatBarrier
 
-\begin{enumerate}
-  \item \textbf{A neural identifiability framework for computational pathology.} PathoAlign treats biological and acquisition signals as potentially entangled latent factors and evaluates task-only, gradient-reversal adversarial, factorized, pair-consistency, learned-operator, and hybrid neural models under controlled conditions.
+\section{Real paired-scanner benchmark}
+\subsection{SCORPION structure and leakage boundary}
+The SCORPION release contains 48 original H\&E slides, ten aligned regions per slide, and one image from each of five scanners for every region: AT2, GT450, DP200, P1000, and B300 \citep{ryu2025scorpion}. The resulting 480 regions and 2,400 patches are real human histopathology images.
 
-  \item \textbf{A locked neural-network confirmation and falsification result.} The adversarial PathoAlign model reduced site leakage slightly but did not improve held-out tumor accuracy over the tumor-only baseline. A factorized model selected the diagnostic-only baseline, and unconditional site-component subtraction failed because the removed component remained tumor-predictive. These results rule out the simple claim that stronger center invariance is automatically better.
+The original slide is the split, bootstrap, and permutation unit. All ten regions and all five scanner views from a slide remain in the same partition. Patch-level or region-level random splitting would expose nearly identical tissue content across train and test sets and is therefore prohibited.
 
-  \item \textbf{A paired-intervention identifiability mechanism.} Biology-preserving acquisition pairs cancel the shared biological term under differencing, turning otherwise ambiguous site variation into a learnable intervention signal and motivating pair-consistency and operator-based neural objectives.
+\subsection{Frozen representation audit}
+The first audit used three unrelated representation families: ImageNet-pretrained ResNet50 \citep{he2016deep}, general-purpose self-supervised DINOv2-Base \citep{oquab2023dinov2}, and pathology-native Phikon \citep{filiot2023scaling}. For each frozen feature space, a logistic scanner probe was trained on slide-disjoint training data and evaluated on held-out slides. Tissue identity was measured by bidirectional cross-scanner region retrieval.
 
-  \item \textbf{Failure and recovery phase maps.} I vary observational sample size, paired-anchor count, biological--acquisition overlap, nonlinear mixing, neural method, and seed to identify regimes where factor separation is possible, unstable, or right-censored beyond the tested intervention budget.
+\begin{table}[!htbp]
+\centering
+\caption{Frozen fold-0 validation audit. Tissue retrieval is mean bidirectional top-1 region retrieval over the ten scanner pairs. Raw cosine and effective-rank values are interpreted within, not across, encoder families.}
+\small
+\begin{tabular}{lccc}
+\toprule
+Encoder & Mean paired cosine & Mean tissue retrieval & Scanner probe \\
+\midrule
+ResNet50 ImageNet & 0.8849 & 0.9550 & 0.7560 \\
+DINOv2-Base & 0.9851 & 0.9995 & 0.8400 \\
+Phikon & 0.8787 & 0.9825 & 0.9640 \\
+\bottomrule
+\end{tabular}
+\label{tab:frozen_audit}
+\end{table}
+\FloatBarrier
 
-  \item \textbf{A two-resource empirical recovery law.} Interval/right-censored analysis links the required paired-anchor count to observational sample size, overlap, and nonlinear mixing. The relationship is reported as a threshold-dependent local empirical family and is reserved for held-out falsification rather than presented as a universal theorem.
+Scanner identity is therefore not a ResNet-specific texture artifact. It remains strongly recoverable from a general self-supervised vision transformer and is strongest in the pathology-native encoder, even while tissue identity is preserved. DINOv2-Base was selected as the development substrate because it provided nearly saturated tissue retrieval together with substantial residual scanner information.
 
-  \item \textbf{A sample-volume / site-signal alignment failure-mode framing.} I reframe dominant-client failure not as institutional reliability ranking, but as an audit of a modeling assumption that FedAvg already makes silently: larger client equals more influence.
+\section{PathoAlign paired-factor model}
+Let $x_{r,s}\in\mathbb{R}^{D}$ denote the frozen feature for tissue region $r$ scanned by scanner $s$. PathoAlign learns
+\begin{equation}
+  z_b=f_b(x_{r,s})\in\mathbb{R}^{256},
+  \qquad
+  z_a=f_a(x_{r,s})\in\mathbb{R}^{64},
+\end{equation}
+where $z_b$ is the biological representation and $z_a$ is the acquisition representation. A decoder reconstructs the standardized frozen feature:
+\begin{equation}
+  \widehat{x}_{r,s}=g([z_b,z_a]).
+\end{equation}
 
-  \item \textbf{A fixed detector-switch transfer result in neural federated pathology.} Compact slide-level neural networks trained over PANDA-derived Phikon representations show that a detector calibrated under dominant-site label-noise stress can transfer to conservative ordinal threshold shift with low clean-regime switching and positive gains at stronger shift levels.
+\subsection{Paired biological objective}
+Every contrastive minibatch contains all five scanner views of each selected tissue region. The biological branch uses a multi-positive supervised contrastive loss in which all other scanner views of the same region are positives and views of different regions are negatives:
+\begin{equation}
+  \mathcal{L}_{\mathrm{pair}}=
+  -\frac{1}{B}\sum_i
+  \frac{1}{|P(i)|}
+  \sum_{p\in P(i)}
+  \log
+  \frac{\exp(\operatorname{sim}(z_{b,i},z_{b,p})/\tau)}
+  {\sum_{j\neq i}\exp(\operatorname{sim}(z_{b,i},z_{b,j})/\tau)}.
+\end{equation}
 
-  \item \textbf{Robustness, negative-result, and ethical reporting.} The project includes locked confirmation, paired bootstrap analysis, threshold sensitivity, leave-one-diagnostic-family-out ablation, calibration sensitivity, explicit unsupported-claim boundaries, and a non-blameworthy interpretation of site variation.
+\subsection{Direct scanner-dependence control}
+Gradient reversal alone was insufficient in an initial smoke experiment. The frozen objective therefore adds a direct normalized linear-dependence penalty between biological features and one-hot scanner labels. Let $\widetilde Z_b$ and $\widetilde Y_s$ be column-standardized batch matrices. Then
+\begin{equation}
+  \mathcal{L}_{\mathrm{dep}}
+  =\left\|
+  \frac{1}{B-1}\widetilde Z_b^{\top}\widetilde Y_s
+  \right\|_F^2.
+\end{equation}
+This targets the same class of linear dependence measured by the held-out scanner probe without forcing the biological representation to become constant.
+
+\subsection{Acquisition retention and factor separation}
+The acquisition branch is trained to predict scanner identity with cross-entropy $\mathcal{L}_{\mathrm{scan},a}$. A scanner classifier connected through gradient reversal discourages scanner prediction from $z_b$, producing $\mathcal{L}_{\mathrm{scan},b}$. Cross-covariance penalizes redundant information between the two factors:
+\begin{equation}
+  \mathcal{L}_{\mathrm{xcov}}
+  =\left\|
+  \frac{1}{B-1}
+  (Z_b-\overline Z_b)^{\top}(Z_a-\overline Z_a)
+  \right\|_F^2.
+\end{equation}
+Reconstruction, variance, and within-branch covariance terms prevent collapse and retain information needed to represent the input.
+
+The frozen total objective is
+\begin{align}
+  \mathcal{L}
+  &=\mathcal{L}_{\mathrm{pair}}
+  +\mathcal{L}_{\mathrm{recon}}
+  +\mathcal{L}_{\mathrm{var}}
+  +0.01\mathcal{L}_{\mathrm{cov}} \\
+  &\quad+0.5\mathcal{L}_{\mathrm{scan},b}
+  +0.5\mathcal{L}_{\mathrm{scan},a}
+  +20\mathcal{L}_{\mathrm{dep}}
+  +0.05\mathcal{L}_{\mathrm{xcov}}.
+\end{align}
+The comparison method uses the same biological projection, paired contrastive loss, reconstruction, variance, and covariance terms, but no acquisition branch or scanner-separation losses.
+
+\section{Frozen development and evaluation protocol}
+The study separated objective selection from confirmation and final fold evaluation.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Bounded calibration.} Four predefined PathoAlign dependence settings were compared with one fixed paired-consistency reference using seeds 401--403 on fold-0 train/validation data. The dependence weight 20 setting was selected because it reduced scanner leakage while preserving tissue retrieval.
+  \item \textbf{Independent-seed confirmation.} The selected objective was frozen and tested with new seeds 501--510 on the same fold-0 train/validation partition. PathoAlign reduced scanner-probe balanced accuracy by 0.3958 relative to paired consistency, with all ten seeds favorable and exact sign-flip $p=0.001953$.
+  \item \textbf{Five-fold test stage.} No objective, architecture, schedule, or threshold was changed. For each rotating fold, all non-test slides were used for fitting because model selection was complete. Seeds 601--605 were new. Every original slide served as test exactly once per seed and method.
 \end{enumerate}
 
-\section{PathoAlign neural identifiability program}
-\subsection{Neural models}
-PathoAlign is not a single network architecture. It is a controlled neural experimental program for testing what forms of supervision can separate biological and acquisition factors without discarding diagnostic information. The initial model used a shared feature encoder with a tumor-prediction head and a gradient-reversal site head. The adversarial objective encouraged tumor prediction while discouraging directly recoverable center information.
+Each model used 75 epochs, region batch size 32, AdamW learning rate $3\times10^{-4}$, and weight decay $10^{-4}$. Inferential contrasts average optimization seeds within slide and use the 48 original slides as independent blocks.
 
-A later factorized model used a shared stem with separate diagnostic and site branches, reconstruction pressure, and a covariance penalty intended to reduce redundancy between the branches. Subsequent synthetic experiments added pair-consistency models that force biology-preserving pairs to agree in biological representation, learned operators that model acquisition-induced transformations, and hybrid curricula that combine observational task supervision with paired-intervention supervision.
+\FloatBarrier
+\section{Five-fold real-tissue results}
+\subsection{Descriptive test means}
+\begin{table}[!htbp]
+\centering
+\caption{Frozen five-fold test results across 25 trained models per method.}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Mean cos. & Worst cos. & Mean retr. & Worst retr. & Scanner probe & Eff. rank \\
+\midrule
+Paired consistency & 0.8476 & 0.8202 & 0.99987 & 0.99911 & 0.7825 & 56.93 \\
+PathoAlign dep20 & \textbf{0.8789} & \textbf{0.8502} & 0.99979 & 0.99873 & \textbf{0.3989} & 54.50 \\
+\bottomrule
+\end{tabular}
+\label{tab:crossfold_means}
+\end{table}
+\FloatBarrier
 
-The methods are compared using more than task accuracy. Evaluation includes site leakage from biological representations, tumor predictability from acquisition representations, factor separation, paired biological invariance, counterfactual transport, canonical-correlation recovery, and Procrustes alignment to known latent factors in the synthetic setting.
+\subsection{Slide-blocked contrasts}
+\begin{table}[!htbp]
+\centering
+\caption{PathoAlign minus paired-consistency contrasts after averaging the five optimization seeds within each of 48 original-slide blocks.}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Metric & Mean difference & 95\% bootstrap interval & Favorable slides \\
+\midrule
+Scanner-probe accuracy & $-0.3854$ & $[-0.4079,-0.3622]$ & 48/48 \\
+Mean paired cosine & $+0.0310$ & $[+0.0287,+0.0333]$ & 48/48 \\
+Worst paired cosine & $+0.0311$ & $[+0.0279,+0.0344]$ & 48/48 \\
+Mean top-1 retrieval & $-0.00008$ & $[-0.00031,+0.00013]$ & 1/48 \\
+Worst top-1 retrieval & $-0.00042$ & $[-0.00167,+0.00083]$ & 1/48 \\
+\bottomrule
+\end{tabular}
+\label{tab:slide_contrasts}
+\end{table}
+\FloatBarrier
 
-\subsection{Locked confirmation and negative results}
-Development experiments initially suggested a small tumor-accuracy improvement and reduced site leakage for the adversarial model. A locked confirmatory run over new seeds did not reproduce the accuracy advantage: PathoAlign achieved approximately 0.9264 test accuracy versus 0.9270 for the tumor-only baseline, with a paired difference of approximately $-0.000625$ and an interval crossing zero. The site-probe difference was approximately $-0.003258$, with the paired bootstrap interval excluding zero, supporting a small reduction in recoverable site information.
+The scanner-probe and paired-cosine Monte Carlo sign-flip tests each gave $p=0.000004$ with 250,000 draws. Retrieval differences were statistically and practically negligible. Their lower confidence bounds are far above the predefined non-inferiority margin of $-0.02$. Most slides were exact retrieval ties at or near perfect accuracy, so the low count of strictly positive retrieval differences does not indicate meaningful loss.
 
-This result is scientifically useful precisely because it is not a task-performance win. It shows that the adversarial neural objective can alter representation leakage without establishing better diagnosis. The factorized v1 model likewise selected the diagnostic-only baseline under validation-based model selection. A later unconditional subtraction test was more decisive: the learned site component was itself strongly tumor-predictive, so subtracting it removed useful biology. The resulting conclusion is that center invariance alone is not sufficient and that site-associated information must be decomposed conditionally rather than erased wholesale.
+\subsection{Factorization audit}
+Across the test folds, the acquisition branch achieved 0.8602 scanner-probe accuracy, 0.1042 mean tissue retrieval, effective rank 5.44, and normalized biological/acquisition cross-covariance RMS 0.0928. Every biological dimension retained nonzero test-fold variance. Biological effective rank decreased modestly from 56.93 to 54.50 rather than collapsing.
 
-\subsection{Why paired interventions change the problem}
-Observational data alone does not identify whether a site-associated direction is nuisance, biology, or an entangled mixture. Biology-preserving acquisition pairs add intervention structure: the same specimen or latent biology is observed under different acquisition states. Under the controlled generative model, subtraction cancels the shared biology and exposes acquisition variation. This changes the problem from unsupervised nuisance guessing to partially supervised identifiability.
+These diagnostics distinguish separation from erasure. Scanner information remains available in a compact acquisition factor, tissue identity remains nearly saturated in biology, and biological scanner leakage is substantially lower. The result is strong but not perfect disentanglement: residual scanner information remains in $z_b$, and residual tissue information remains in $z_a$.
 
-The synthetic PathoAlign experiments therefore treat unpaired observations and paired interventions as distinct resources. Observational data teaches the task manifold, while paired interventions reveal which changes should not alter biological representation. The resulting phase maps test how much of each resource is required as overlap and nonlinearity increase.
+\section{Supporting identifiability studies}
+\subsection{Negative results before paired real-tissue factorization}
+Earlier PathoAlign experiments used adversarial center removal and factorized diagnostic/site branches on pathology-derived representations. A locked adversarial confirmation reduced site leakage only slightly and did not improve held-out tumor accuracy. Unconditional subtraction was falsified because the learned acquisition-associated component remained strongly tumor-predictive. These results motivate the present design: acquisition information should be isolated under biology-preserving pairing, not removed solely because it predicts site.
 
-\section{Ethical framing: site-signal alignment, not institutional worth}
-This work does \emph{not} claim that some hospitals, pathologists, or institutions are inherently more reliable, competent, or trustworthy than others.
+\subsection{Synthetic recovery regimes}
+Controlled generators with known biological and acquisition factors varied observational sample size, paired-anchor count, repeated exposure, biological--acquisition overlap, linear versus nonlinear mixing, method, and seed. The resulting phase maps show that paired interventions and ordinary observations are distinct resources. Recovery becomes harder as overlap and nonlinearity increase, and matched-budget experiments show that total paired exposure is the dominant resource over the tested range, with a smaller benefit from anchor diversity and diminishing returns beyond approximately 100 unique anchors.
 
-The term \emph{site-signal alignment} is used in a narrow modeling sense: whether a simulated client's training signal appears aligned with the declared validation objective under a specific experimental setup. A client may appear misaligned for many non-blameworthy reasons, including different grading thresholds, staining or scanning protocol differences, local case mix, patient-population differences, annotation workflow differences, label-source differences, historical reporting practice, local clinical policy, or pathologist disagreement.
+The detailed calculations and threshold-dependent empirical recovery models are included below as a supporting synthetic extension. They are not used to claim a universal scaling law or clinical performance.
 
-Dominance-aware aggregation should therefore not be interpreted as an institutional ranking system. It is an audit mechanism for a modeling assumption that FedAvg already makes silently: larger client equals more influence.
+\section{Secondary federated influence stress test}
+A separate PANDA-derived experiment studies model influence rather than representation factorization. Standard FedAvg weights simulated clients by sample count \citep{mcmahan2017communication}. Controlled dominant-client label-noise and ordinal-threshold shifts show that sample count can grant excessive influence to a training process that is poorly aligned with the declared validation objective. A fixed detector-switch rule calibrated under label noise transferred to stronger conservative threshold shifts with low clean-regime switching and positive improvements in global QWK, macro-F1, and worst-site QWK.
 
-The ethical purpose of this work is to make that assumption visible, stress-testable, and contestable. Any real deployment would require governance, local clinical review, pathologist input, bias auditing, institutional agreement on validation objectives, prospective validation, security review, and regulatory review.
+This result is deliberately secondary in the present paper. It does not rank institutions or claim that large sites are untrustworthy. It demonstrates that aggregation influence, like representation removal, should be audited rather than treated as self-justifying.
 
-\section{Experimental setup}
-\subsection{Dataset and representation}
-The federated experiments use PANDA-derived pathology feature representations. Whole-slide images are represented through precomputed Phikon features. Patch-level representations are pooled into one standardized slide vector $x\in\mathbb{R}^{D}$ for the downstream six-class ISUP grading task. The PathoAlign identifiability experiments use both controlled synthetic representations with known biological and acquisition factors and pathology-derived representations for leakage and task-retention tests.
+\section{Reproducibility artifacts}
+The repository contains the SCORPION manifest builder and auditor, frozen feature extractors, PathoAlign model and loss code, bounded calibration, independent-seed confirmation, five-fold runner, slide-blocked analysis, and compact result summaries.
 
-\subsection{Slide-level neural network}
-Every federated client trains the same neural network architecture, so comparisons isolate aggregation policy rather than model-capacity differences. The slide classifier is a compact multilayer perceptron
-\begin{equation}
-  h_1=\operatorname{Dropout}_{0.20}\!\left(\operatorname{ReLU}(W_1x+b_1)\right),
-\end{equation}
-\begin{equation}
-  h_2=\operatorname{Dropout}_{0.20}\!\left(\operatorname{ReLU}(W_2h_1+b_2)\right),
-\end{equation}
-\begin{equation}
-  \widehat y=W_3h_2+b_3,
-\end{equation}
-where $W_1$ maps the pooled Phikon input from $D$ dimensions to 256 hidden units, $W_2$ maps 256 units to 128, and $W_3$ produces six logits corresponding to ISUP grades 0--5. Softmax probabilities are used for prediction and evaluation, while local optimization uses multiclass cross-entropy.
+\begin{itemize}[leftmargin=*]
+  \item \texttt{scripts/scorpion/build\_scorpion\_manifest.py}
+  \item \texttt{scripts/scorpion/audit\_scorpion\_manifest.py}
+  \item \texttt{src/models/scorpion\_pathoalign.py}
+  \item \texttt{experiments/scorpion/run\_pathoalign\_crossfold.py}
+  \item \texttt{scripts/scorpion/analyze\_pathoalign\_crossfold.py}
+  \item \texttt{results/scorpion/pathoalign\_dinov2\_crossfold\_analysis/}
+\end{itemize}
 
-Unless otherwise specified by an experiment configuration, each simulated client performs one local epoch per federated round using AdamW with learning rate $10^{-3}$, weight decay $10^{-4}$, and batch size 64. The global experiment runs for five communication rounds. Each strategy starts from the same seeded architecture and uses the same local optimizer; only the server-side aggregation weights or detector-controlled switching policy differ.
+Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
 
-This network is deliberately modest. The scientific target is the relationship between client influence and site-signal alignment, not a claim that this MLP is a new pathology backbone. Phikon supplies the pretrained pathology representation, and the federated neural network learns the task-specific slide classifier over those representations.
-
-\subsection{Simulated federations}
-The feature dataset is partitioned into simulated clients. One client is designated as the dominant client by sample volume. The clean validation objective is held fixed while the dominant client's training labels are perturbed.
-
-\subsection{Stress modes}
-Two dominant-site stress modes are considered:
-\begin{enumerate}
-  \item random label corruption at the dominant site;
-  \item systematic ordinal threshold shift at the dominant site.
-\end{enumerate}
-
-\subsection{Evaluation metrics}
-The primary federated metrics are global QWK, macro-F1, and worst-site QWK. Detector diagnostics additionally include site-specific QWK spread, mean absolute ordinal error, severe-error rate, and prediction entropy where available. PathoAlign metrics additionally audit tumor retention, site leakage, cross-factor leakage, paired invariance, transport error, and latent-factor recovery.
-
-\section{Mathematical notation}
-Let there be $K$ simulated clients. Client $k$ has $n_k$ local training samples and produces a local model update $\Delta\theta_k$. Standard FedAvg assigns aggregation weight
-\begin{equation}
-  w_k=\frac{n_k}{\sum_{j=1}^{K}n_j}
-\end{equation}
-and forms the global update
-\begin{equation}
-  \Delta\theta=\sum_{k=1}^{K}w_k\Delta\theta_k.
-\end{equation}
-
-The concern studied here is that $n_k$ is a volume term, not an alignment term. A high-volume client may have a training-label process that is less aligned with the declared validation objective.
-
-Let $A_k$ denote the task-specific alignment of client $k$'s training signal with the declared validation objective. The claim is not that $A_k$ is an institutional property. It is a run-specific modeling quantity. The failure mode appears when the dominant sample-volume client has high $n_k$ but reduced $A_k$.
-
-Let $d_1,\ldots,d_m$ be clean-calibrated validation diagnostics. Each diagnostic has a clean safe range defined by lower and/or upper quantiles. For a run $r$, define
-\begin{equation}
-  I_i(r)=
-  \begin{cases}
-    1, & \text{if diagnostic }d_i\text{ leaves its clean-calibrated safe range},\\
-    0, & \text{otherwise.}
-  \end{cases}
-\end{equation}
-
-The fixed detector count is
-\begin{equation}
-  C(r)=\sum_{i=1}^{m}I_i(r).
-\end{equation}
-
-The fixed transferred rule uses five diagnostics and switches when at least three are abnormal:
-\begin{equation}
-  T(r)=\mathbf{1}[C(r)\geq3].
-\end{equation}
-
-Let $M_{\mathrm{FA}}(r)$ be the metric under FedAvg and $M_{\mathrm{DA}}(r)$ the metric under the selected dominance-aware alternative. The detector-controlled metric is
-\begin{equation}
-  M_{\pi}(r)=[1-T(r)]M_{\mathrm{FA}}(r)+T(r)M_{\mathrm{DA}}(r).
-\end{equation}
-
-Prediction entropy is available but is not used in the fixed headline rule.
-
-\section{Fixed detector transfer result}
-The detector was calibrated under dominant-site label-noise stress and then transferred without retuning to conservative ordinal threshold shift.
-
-At 35\% and 45\% conservative shift, the fixed rule produced positive paired improvements in global QWK, macro-F1, and worst-site QWK while keeping clean-regime switching at 13.3\%. The result is therefore not a claim that the alternative aggregation rule is universally superior. It is a claim that conditional switching can reduce risk when a detector identifies evidence that sample-size dominance has become unsafe.
-
-\section{Diagnostic interpretation}
-The detector is not driven by one heuristic alone. Across the transferred threshold-shift runs, the most frequent trigger component is mean absolute ordinal error increase, followed by degradation in global and worst-site QWK. Site-QWK spread contributes, but it is not the sole or dominant explanation for the result.
-
-This matters because a detector based only on cross-site dispersion could confuse ordinary site heterogeneity with harmful dominant-site misalignment. The transferred rule instead combines global degradation, worst-site degradation, dispersion, and ordinal-error severity.
-
-\section{Ablation and calibration sensitivity}
-Leave-one-diagnostic-family-out ablation shows that removing the most frequent diagnostic family, mean absolute ordinal error, reduces trigger rate but does not collapse the positive 35\% / 45\% transfer result.
-
-Calibration-sensitivity analysis varies the lower quantile, upper quantile, and minimum trigger count around the fixed rule. Of 36 nearby configurations, 29 preserve clean switching at or below 20\% and positive global-QWK, macro-F1, and worst-site-QWK deltas at both 35\% and 45\% conservative shift.
+\input{identifiability_calculations.tex}
 
 \section{Limitations}
-The experiments include controlled synthetic generators and simulated federated clients over fixed feature representations rather than prospective multi-hospital deployment. The shared federated task model is a compact slide-level MLP on pooled Phikon vectors; results may change with attention-based MIL, transformer-based MIL, foundation-model fine-tuning, or full patch-level training. The PathoAlign scaling relation is local to the tested synthetic regime, threshold definition, pair-count grid, and methods. The locked adversarial result reduces leakage but does not improve task accuracy. The stress modes are controlled perturbations, not prospective clinical observations. The detector is calibrated from clean runs and depends on the chosen validation objective. The work does not establish clinical safety, regulatory readiness, fairness across patient subgroups, resistance to adversarial clients, privacy guarantees beyond local data retention, or performance under real deployment constraints.
+The central result is limited to the SCORPION benchmark, its 48 original slides, five scanners, sampled tissue regions, and frozen DINOv2 features. It does not establish generalization to new tissue types, laboratories, staining protocols, scanner models outside the benchmark, or end-to-end whole-slide diagnostic systems. Cross-backbone transfer of the frozen objective to Phikon and ResNet50 remains an important next test.
+
+Tissue-region retrieval is an identity-retention diagnostic, not a clinical endpoint. The study does not evaluate diagnosis, treatment decisions, patient outcomes, prospective deployment, subgroup fairness, regulatory readiness, or scanner equivalence for clinical use. Linear probes measure recoverable scanner information under a specified model class; they do not prove that all scanner information has been removed. The acquisition factor remains imperfect because it retains some tissue identity, and the biological factor remains imperfect because scanner prediction is above chance.
+
+The synthetic recovery equations are local empirical descriptions of tested thresholds and regimes. The federated experiments use simulated clients over fixed pathology-derived features rather than prospective institutional federation. All claims are therefore bounded to representation separation and controlled stress testing.
 
 \section{Discussion}
-The combined results support a broader but still bounded conclusion: site-associated information must be audited rather than automatically removed or automatically trusted. At the representation level, site information can be entangled with diagnostic morphology, making unconditional subtraction unsafe. At the federation level, sample size can overstate the authority of a training signal that is poorly aligned with the declared objective.
+The multi-backbone audit demonstrates that strong tissue representations can simultaneously preserve scanner identity. Domain-specific pretraining does not automatically solve acquisition entanglement: Phikon had the strongest scanner probe of the three frozen encoders. DINOv2 provided a particularly clean test because tissue retrieval was already nearly perfect, leaving little room for a method to claim success by simply improving identity retention.
 
-Paired interventions provide a principled way to distinguish changes that should alter acquisition representation from features that should remain biologically stable. The synthetic two-resource phase map suggests that ordinary observations and paired interventions play different roles: observations estimate the task manifold, while interventions reveal transformation structure. The required intervention budget rises sharply with biological--acquisition overlap and nonlinear mixing.
+The five-fold result shows that paired consistency alone is not the complete solution. It preserves tissue identity and reduces some scanner leakage, but the factorized PathoAlign objective produces a much larger reduction while improving paired agreement. The acquisition audit matters as much as the biological probe: without it, lower scanner accuracy in biology could be caused by information destruction. Here, scanner identity remains strongly available in a low-rank acquisition factor, retrieval remains saturated in biology, and all biological dimensions remain active.
 
-The appropriate response is not to distrust large sites or to force complete site invariance. It is to make both representation removal and aggregation influence auditable. Future work should test the frozen PathoAlign recovery predictions on unseen conditions, evaluate conditional tumor-preserving low-rank removal on real pathology data, extend the models to MIL and foundation-model feature bags, and validate the federation mechanism under real institutional partitions and governance.
+The broader lesson is not that scanner information is always useless. Acquisition and biology may overlap, and some acquisition-correlated directions may carry task-relevant morphology. The role of paired interventions is to provide controlled evidence about what should remain stable. Future work should transfer the frozen objective unchanged across backbones, evaluate task-labeled paired-scanner datasets, extend the method to patch bags and multiple-instance learning, and test unseen laboratories and acquisition pipelines.
 
 \section{Conclusion}
-PathoAlign shows that neural site invariance is not equivalent to biological identifiability. A model can reduce site leakage without improving diagnosis, and a learned site component can still carry tumor information. Paired biology-preserving interventions change the information structure and support a measurable recovery boundary linking observational data, intervention count, overlap, and nonlinearity. Complementary federated experiments show that sample-size dominance should also be treated as an auditable assumption. Together, these results motivate pathology systems that explicitly test what information is removed, retained, and allowed to dominate rather than assuming that site signal is pure nuisance or that more data automatically deserves more influence.
+PathoAlign reframes scanner robustness as a neural identifiability problem. On real paired human histopathology, scanner identity was strongly recoverable from ResNet50, DINOv2, and Phikon representations despite high tissue retention. A frozen factorized objective then generalized across all 48 SCORPION slides, reducing biological scanner-probe accuracy by approximately 0.385 absolute, improving same-tissue scanner-pair agreement by approximately 0.031, and preserving near-perfect tissue retrieval. Scanner information remained concentrated in a compact acquisition factor, and the biological representation did not collapse.
+
+The supported conclusion is narrow but substantive: biology-preserving paired acquisitions can supervise a representation in which tissue identity is retained while scanner information becomes substantially less recoverable. This is a real-tissue out-of-fold representation result, not a claim of clinical validation or universal disentanglement.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
