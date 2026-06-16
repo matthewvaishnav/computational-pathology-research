@@ -35,63 +35,94 @@
   \par\normalsize
 }
 
-\title{PathoAlign: Paired-Acquisition Neural Identifiability for Computational Pathology\\
-Separating Scanner Signal from Tissue Identity on Real Human Histopathology}
+\title{Computational Pathology Research Platform for Federated Oncology\\
+PathoAlign Representation Alignment, TransnnMIL Whole-Slide Modeling, and PathologyFL Federated Training}
 
 \author{Matthew Vaishnav\\
 Independent Researcher}
 
-\date{\today}
+\date{June 16, 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Computational-pathology representations can encode tissue morphology together with scanner, staining, preparation, and institutional acquisition effects. High task or retrieval performance does not establish that these factors are separated. I present PathoAlign, a neural identifiability program centered on biology-preserving paired acquisitions: the same tissue is observed under different acquisition systems, providing direct supervision for information that should remain biologically stable and information that may be isolated as acquisition-specific.
+Reliable federated oncology requires more than a private communication channel or a strong slide classifier. It requires auditing three coupled levels of learning: what information is encoded in a pathology representation, how patch evidence is aggregated into a slide prediction, and how institutional influence is assigned during federated training. This technical report organizes one research platform around three distinct components. PathoAlign is a neural representation-alignment program that uses biology-preserving paired acquisitions to separate tissue identity from acquisition signal. TransnnMIL is a custom multiple-instance learning model that combines a transformer-based correlated branch with an nnMIL-style gated-attention branch for whole-slide inference. PathologyFL is a custom federated-learning framework containing FedAvg baselines, contribution-aware weighting, FAIR-WEIGHTS-H mechanisms, and dominance-aware switching.
 
-The main empirical study uses the public SCORPION benchmark, which contains 480 spatially aligned tissue regions from 48 original H\&E slides, each scanned on five scanners for 2,400 real-human-tissue image patches \citep{ryu2025scorpion}. Frozen-feature audits show that scanner identity remains strongly linearly decodable across three representation families despite high cross-scanner tissue retention: 75.6\% for ImageNet ResNet50, 84.0\% for DINOv2-Base, and 96.4\% for the pathology-native Phikon encoder. PathoAlign factorizes a frozen representation into biological and acquisition branches using multi-positive same-region contrastive learning, direct scanner-dependence suppression, scanner prediction in the acquisition branch, cross-factor decorrelation, reconstruction, and collapse controls.
+The strongest PathoAlign result uses 2,400 real human histopathology patches from the SCORPION paired-scanner benchmark. Relative to paired consistency alone, a frozen five-fold PathoAlign objective reduced biological scanner-probe accuracy from 0.7825 to 0.3989 while improving paired agreement by approximately 0.031 and preserving cross-scanner tissue retrieval above 0.9987. TransnnMIL has been evaluated for optimization stability on 10,611 readable PANDA Phikon feature bags: across 18 runs spanning six learning rates and three seeds, mean best validation quadratic weighted kappa ranged from 0.8117 to 0.8257. This supports stability under a careful recipe, not yet superiority over simpler MIL baselines. PathologyFL experiments show that standard sample-weighted FedAvg remains competitive in clean conditions but can become vulnerable when sample volume and client reliability diverge. On the full PANDA feature cache across 15 seeds, a tuned observable switch preserved clean performance while improving global QWK at 25\% and 35\% dominant-site corruption. Camelyon17 external-center studies additionally found held-out-center accuracy of 0.9052 for FedAvg-style weighting versus 0.9318 and 0.9322 for equal-client and dominant-center-downweighting policies.
 
-After calibration on one development partition, the objective was frozen and evaluated over five rotating original-slide test folds with five new optimization seeds per fold. Relative to paired consistency alone, PathoAlign reduced biological scanner-probe accuracy from 0.7825 to 0.3989, a slide-blocked difference of $-0.3854$ with 95\% bootstrap interval $[-0.4079,-0.3622]$. Mean and worst scanner-pair cosine agreement improved by approximately 0.031, while mean and worst cross-scanner tissue retrieval changed by less than 0.0005 and remained above 0.9987. The scanner-probe and cosine effects were favorable on all 48 original slides. The acquisition branch retained scanner identity at 0.8602 accuracy while carrying only 0.1042 mean tissue retrieval, supporting factor separation rather than representational collapse. Synthetic recovery studies and a secondary federated stress test provide supporting evidence about intervention budgets and influence failures, but the central result is a frozen out-of-fold paired-scanner separation result on real human histopathology.
+The platform is privacy-aware because PathologyFL is designed to keep raw pathology data local and exposes privacy-engine, secure-aggregation, and differential-privacy interfaces. The present experiments do not establish a formal privacy guarantee, clinical validity, or end-to-end hospital deployment. The supported conclusion is narrower: representation alignment, slide aggregation, and institutional aggregation are separate failure surfaces, and each requires explicit, reproducible audits before the complete pipeline can be trusted.
 \end{abstract}
 
 \section{Introduction}
-Digital pathology models operate on images whose appearance depends not only on tissue morphology but also on scanners, staining, compression, preparation, and local workflow. These acquisition effects may coexist with biological information inside the same representation. A model can therefore achieve strong prediction or tissue retrieval while still encoding acquisition identity, and an invariance objective can remove useful biology if nuisance and morphology overlap.
+Computational pathology systems learn across a hierarchy: local image patches are encoded into representations, patch evidence is aggregated into slide- or patient-level predictions, and multi-institutional training combines information across sites. Failure at any one level can be hidden by a strong aggregate score.
 
-Most observational datasets do not identify which acquisition-associated directions are nuisance and which carry tissue information. Biology-preserving paired acquisitions change that information structure. When the same tissue region is scanned on multiple devices, tissue identity is held fixed while scanner conditions change. This provides a controlled intervention for testing and learning biological stability rather than guessing invariance from unpaired center labels.
+At the representation level, scanner, staining, preparation, institution, and tissue morphology can be statistically entangled. Removing site information indiscriminately can erase useful biology. At the whole-slide level, thousands of correlated patch embeddings must be aggregated under weak supervision. At the federation level, sample-weighted FedAvg silently assumes that more local samples should grant more authority over the global model \citep{mcmahan2017communication}. That assumption can fail when sample volume, label policy, acquisition workflow, and task-relevant signal diverge.
 
-SCORPION was designed for this purpose: 480 aligned tissue regions from 48 original H\&E slides were scanned on five devices, yielding 2,400 paired patches \citep{ryu2025scorpion}. The dataset enables a direct question: can a learned biological representation preserve the identity of the same tissue across scanners while making scanner identity difficult to recover, and can a separate acquisition representation retain the removed scanner information?
+This report separates these questions into three named components:
 
-PathoAlign treats this as a factorization and identifiability problem rather than a generic domain-generalization score. The program combines real paired-scanner experiments, controlled synthetic studies with known latent factors, and negative results showing that unconditional site removal can erase biological information. A smaller federated component examines a related but secondary question: whether sample count should automatically determine model influence when site-specific training signals differ.
+\begin{itemize}[leftmargin=*]
+  \item \textbf{PathoAlign} addresses neural representation alignment and identifiability.
+  \item \textbf{TransnnMIL} addresses whole-slide multiple-instance learning.
+  \item \textbf{PathologyFL} addresses privacy-aware federated training and institutional aggregation.
+\end{itemize}
+
+FAIR-WEIGHTS-H, cross-site contribution-aware weighting, and dominance-aware detector switching are methods within PathologyFL; they are not separate umbrella systems. The complete platform is therefore broader than any one component.
 
 \subsection*{Working thesis}
-Paired interventions provide the strongest available supervision for separating biological content from acquisition variation. A successful method should reduce acquisition predictability in the biological representation, preserve tissue identity and representation rank, and retain acquisition information in a distinct factor rather than destroying it.
+Reliable federated oncology requires auditable control over what information is retained in representations, how local tissue evidence is combined into a prediction, and how much influence each institution receives. Improvement at one level does not certify the others.
 
-\section{Contributions}
-The principal contributions are:
-\begin{enumerate}[leftmargin=*]
-  \item \textbf{A real-tissue multi-backbone scanner-entanglement audit.} ResNet50, DINOv2-Base \citep{oquab2023dinov2}, and Phikon \citep{filiot2023scaling} all preserve tissue identity while retaining strong scanner information on SCORPION.
-  \item \textbf{A paired-acquisition PathoAlign objective.} The method combines same-region multi-positive contrastive learning with a biological branch, a scanner-predictive acquisition branch, direct scanner-dependence suppression in biology, gradient reversal, reconstruction, variance control, and cross-factor decorrelation.
-  \item \textbf{A locked five-fold result on unseen original slides.} Hyperparameters selected on one development partition were frozen before five rotating slide-level test folds, using new seeds and no validation checkpoint selection.
-  \item \textbf{A slide-blocked separation result.} PathoAlign substantially reduces biological scanner leakage and improves same-tissue paired agreement while preserving near-perfect cross-scanner tissue retrieval on all 48 original slides.
-  \item \textbf{A factor-retention audit.} Scanner identity remains strongly decodable in the compact acquisition branch, while tissue identity is concentrated in the biological branch and all biological dimensions remain active.
-  \item \textbf{Supporting synthetic identifiability maps.} Controlled experiments vary observational data, paired-anchor diversity, repeated exposure, overlap, nonlinearity, method, and optimization budget to characterize recovery boundaries and resource allocation.
-  \item \textbf{Negative-result and claim-boundary discipline.} Earlier adversarial and subtraction experiments show that lower site leakage alone does not guarantee better diagnosis, and the present real-tissue result is not presented as clinical validation.
-  \item \textbf{A secondary federated influence stress test.} Dominant-client experiments illustrate that sample volume is an influence rule, not a complete measure of task alignment; this component is complementary rather than the paper's primary focus.
-\end{enumerate}
+\section{Platform organization and interfaces}
+\begin{table}[!htbp]
+\centering
+\caption{The three platform components address distinct learning levels.}
+\small
+\begin{tabular}{p{0.17\linewidth}p{0.16\linewidth}p{0.25\linewidth}p{0.32\linewidth}}
+\toprule
+Component & Level & Input and output & Primary research question \\
+\midrule
+PathoAlign & Representation & Patch or region features $\rightarrow$ biology- and acquisition-sensitive factors & Can acquisition variation be isolated without erasing tissue or tumor information? \\
+TransnnMIL & Slide & Patch-feature bag $\rightarrow$ slide or patient prediction & How should correlated and heterogeneous patch evidence be aggregated under weak supervision? \\
+PathologyFL & Institution & Local model updates and diagnostics $\rightarrow$ global model policy & How should institutional influence be assigned when sample volume and task-relevant signal diverge? \\
+\bottomrule
+\end{tabular}
+\label{tab:platform_components}
+\end{table}
 \FloatBarrier
 
-\section{Real paired-scanner benchmark}
-\subsection{SCORPION structure and leakage boundary}
+The intended integrated pipeline is
+\[
+\text{pathology features}
+\xrightarrow{\text{PathoAlign}}
+\text{aligned representations}
+\xrightarrow{\text{TransnnMIL}}
+\text{slide predictions and updates}
+\xrightarrow{\text{PathologyFL}}
+\text{federated global model}.
+\]
+The components can also be tested independently. The present evidence is therefore reported component by component, followed by an explicit integration agenda rather than an unsupported claim that the entire chain has already been validated end to end.
+
+\section{Contributions}
+The report makes four top-level contributions.
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{PathoAlign: biology-preserving representation alignment.} A real-tissue multi-backbone audit, paired-acquisition factorization objective, locked five-fold SCORPION result, factor-retention audit, negative results, and matched-budget synthetic identifiability studies.
+  \item \textbf{TransnnMIL: custom whole-slide learning.} A dual-branch fusion of TransMIL-style correlated modeling and nnMIL-style gated aggregation, with optional hierarchical and topology extensions, together with repeated-seed PANDA optimization-stability evidence.
+  \item \textbf{PathologyFL: custom federated pathology.} A framework containing standard and contribution-aware aggregation, FAIR-WEIGHTS-H mechanisms, dominance-aware switching, communication accounting, privacy-oriented interfaces, PANDA stress tests, and Camelyon17 external-center validation.
+  \item \textbf{An integrated evaluation contract.} A factorial plan that isolates representation, slide-model, and federation effects rather than attributing an end-to-end result to whichever component is most visible.
+\end{enumerate}
+
+\section{Component I: PathoAlign neural representation alignment}
+\subsection{Real paired-scanner benchmark}
 The SCORPION release contains 48 original H\&E slides, ten aligned regions per slide, and one image from each of five scanners for every region: AT2, GT450, DP200, P1000, and B300 \citep{ryu2025scorpion}. The resulting 480 regions and 2,400 patches are real human histopathology images.
 
 The original slide is the split, bootstrap, and permutation unit. All ten regions and all five scanner views from a slide remain in the same partition. Patch-level or region-level random splitting would expose nearly identical tissue content across train and test sets and is therefore prohibited.
 
 \subsection{Frozen representation audit}
-The first audit used three unrelated representation families: ImageNet-pretrained ResNet50 \citep{he2016deep}, general-purpose self-supervised DINOv2-Base \citep{oquab2023dinov2}, and pathology-native Phikon \citep{filiot2023scaling}. For each frozen feature space, a logistic scanner probe was trained on slide-disjoint training data and evaluated on held-out slides. Tissue identity was measured by bidirectional cross-scanner region retrieval.
+The audit used ImageNet-pretrained ResNet50 \citep{he2016deep}, general-purpose self-supervised DINOv2-Base \citep{oquab2023dinov2}, and pathology-native Phikon \citep{filiot2023scaling}. A logistic scanner probe was trained on slide-disjoint training data and evaluated on held-out slides. Tissue identity was measured by bidirectional cross-scanner region retrieval.
 
 \begin{table}[!htbp]
 \centering
-\caption{Frozen fold-0 validation audit. Tissue retrieval is mean bidirectional top-1 region retrieval over the ten scanner pairs. Raw cosine and effective-rank values are interpreted within, not across, encoder families.}
+\caption{Frozen fold-0 validation audit. Tissue retrieval is mean bidirectional top-1 region retrieval over scanner pairs.}
 \small
 \begin{tabular}{lccc}
 \toprule
@@ -106,9 +137,9 @@ Phikon & 0.8787 & 0.9825 & 0.9640 \\
 \end{table}
 \FloatBarrier
 
-Scanner identity is therefore not a ResNet-specific texture artifact. It remains strongly recoverable from a general self-supervised vision transformer and is strongest in the pathology-native encoder, even while tissue identity is preserved. DINOv2-Base was selected as the development substrate because it provided nearly saturated tissue retrieval together with substantial residual scanner information.
+Scanner identity is therefore not confined to one encoder family. It remains strongly recoverable while tissue identity is preserved. DINOv2-Base was selected as the development substrate because tissue retrieval was nearly saturated while residual scanner information remained substantial.
 
-\section{PathoAlign paired-factor model}
+\subsection{Paired-factor model}
 Let $x_{r,s}\in\mathbb{R}^{D}$ denote the frozen feature for tissue region $r$ scanned by scanner $s$. PathoAlign learns
 \begin{equation}
   z_b=f_b(x_{r,s})\in\mathbb{R}^{256},
@@ -120,8 +151,7 @@ where $z_b$ is the biological representation and $z_a$ is the acquisition repres
   \widehat{x}_{r,s}=g([z_b,z_a]).
 \end{equation}
 
-\subsection{Paired biological objective}
-Every contrastive minibatch contains all five scanner views of each selected tissue region. The biological branch uses a multi-positive supervised contrastive loss in which all other scanner views of the same region are positives and views of different regions are negatives:
+Every contrastive minibatch contains all five scanner views of each selected tissue region. The biological branch uses a multi-positive supervised contrastive loss in which other scanner views of the same region are positives and different regions are negatives:
 \begin{equation}
   \mathcal{L}_{\mathrm{pair}}=
   -\frac{1}{B}\sum_i
@@ -132,18 +162,15 @@ Every contrastive minibatch contains all five scanner views of each selected tis
   {\sum_{j\neq i}\exp(\operatorname{sim}(z_{b,i},z_{b,j})/\tau)}.
 \end{equation}
 
-\subsection{Direct scanner-dependence control}
-Gradient reversal alone was insufficient in an initial smoke experiment. The frozen objective therefore adds a direct normalized linear-dependence penalty between biological features and one-hot scanner labels. Let $\widetilde Z_b$ and $\widetilde Y_s$ be column-standardized batch matrices. Then
+Gradient reversal alone was insufficient in an initial smoke experiment. The frozen objective therefore adds a direct normalized linear-dependence penalty between biological features and one-hot scanner labels. Let $\widetilde Z_b$ and $\widetilde Y_s$ be column-standardized batch matrices:
 \begin{equation}
   \mathcal{L}_{\mathrm{dep}}
   =\left\|
   \frac{1}{B-1}\widetilde Z_b^{\top}\widetilde Y_s
   \right\|_F^2.
 \end{equation}
-This targets the same class of linear dependence measured by the held-out scanner probe without forcing the biological representation to become constant.
 
-\subsection{Acquisition retention and factor separation}
-The acquisition branch is trained to predict scanner identity with cross-entropy $\mathcal{L}_{\mathrm{scan},a}$. A scanner classifier connected through gradient reversal discourages scanner prediction from $z_b$, producing $\mathcal{L}_{\mathrm{scan},b}$. Cross-covariance penalizes redundant information between the two factors:
+The acquisition branch predicts scanner identity. A gradient-reversal scanner classifier discourages scanner prediction from $z_b$. Cross-covariance penalizes redundant information between factors:
 \begin{equation}
   \mathcal{L}_{\mathrm{xcov}}
   =\left\|
@@ -151,7 +178,7 @@ The acquisition branch is trained to predict scanner identity with cross-entropy
   (Z_b-\overline Z_b)^{\top}(Z_a-\overline Z_a)
   \right\|_F^2.
 \end{equation}
-Reconstruction, variance, and within-branch covariance terms prevent collapse and retain information needed to represent the input.
+Reconstruction, variance, and within-branch covariance terms prevent collapse.
 
 The frozen total objective is
 \begin{align}
@@ -165,22 +192,17 @@ The frozen total objective is
   +20\mathcal{L}_{\mathrm{dep}}
   +0.05\mathcal{L}_{\mathrm{xcov}}.
 \end{align}
-The comparison method uses the same biological projection, paired contrastive loss, reconstruction, variance, and covariance terms, but no acquisition branch or scanner-separation losses.
 
-\section{Frozen development and evaluation protocol}
+\subsection{Frozen development and evaluation protocol}
 The study separated objective selection from confirmation and final fold evaluation.
-
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Bounded calibration.} Four predefined PathoAlign dependence settings were compared with one fixed paired-consistency reference using seeds 401--403 on fold-0 train/validation data. The dependence weight 20 setting was selected because it reduced scanner leakage while preserving tissue retrieval.
-  \item \textbf{Independent-seed confirmation.} The selected objective was frozen and tested with new seeds 501--510 on the same fold-0 train/validation partition. PathoAlign reduced scanner-probe balanced accuracy by 0.3958 relative to paired consistency, with all ten seeds favorable and exact sign-flip $p=0.001953$.
-  \item \textbf{Five-fold test stage.} No objective, architecture, schedule, or threshold was changed. For each rotating fold, all non-test slides were used for fitting because model selection was complete. Seeds 601--605 were new. Every original slide served as test exactly once per seed and method.
+  \item \textbf{Bounded calibration.} Four predefined dependence settings were compared with one fixed paired-consistency reference using seeds 401--403 on fold-0 train/validation data.
+  \item \textbf{Independent-seed confirmation.} The selected objective was frozen and tested with new seeds 501--510. PathoAlign reduced scanner-probe balanced accuracy by 0.3958 relative to paired consistency, with all ten seeds favorable and exact sign-flip $p=0.001953$.
+  \item \textbf{Five-fold test stage.} No objective, architecture, schedule, or threshold was changed. Each original slide served as test exactly once per seed and method.
 \end{enumerate}
-
 Each model used 75 epochs, region batch size 32, AdamW learning rate $3\times10^{-4}$, and weight decay $10^{-4}$. Inferential contrasts average optimization seeds within slide and use the 48 original slides as independent blocks.
 
-\FloatBarrier
-\section{Five-fold real-tissue results}
-\subsection{Descriptive test means}
+\subsection{Five-fold real-tissue results}
 \begin{table}[!htbp]
 \centering
 \caption{Frozen five-fold test results across 25 trained models per method.}
@@ -197,10 +219,9 @@ PathoAlign dep20 & \textbf{0.8789} & \textbf{0.8502} & 0.99979 & 0.99873 & \text
 \end{table}
 \FloatBarrier
 
-\subsection{Slide-blocked contrasts}
 \begin{table}[!htbp]
 \centering
-\caption{PathoAlign minus paired-consistency contrasts after averaging the five optimization seeds within each of 48 original-slide blocks.}
+\caption{PathoAlign minus paired-consistency contrasts after averaging five optimization seeds within each of 48 original-slide blocks.}
 \small
 \begin{tabular}{lrrr}
 \toprule
@@ -217,61 +238,211 @@ Worst top-1 retrieval & $-0.00042$ & $[-0.00167,+0.00083]$ & 1/48 \\
 \end{table}
 \FloatBarrier
 
-The scanner-probe and paired-cosine Monte Carlo sign-flip tests each gave $p=0.000004$ with 250,000 draws. Retrieval differences were statistically and practically negligible. Their lower confidence bounds are far above the predefined non-inferiority margin of $-0.02$. Most slides were exact retrieval ties at or near perfect accuracy, so the low count of strictly positive retrieval differences does not indicate meaningful loss.
+Scanner-probe and paired-cosine sign-flip tests each gave $p=0.000004$ with 250,000 Monte Carlo draws. Retrieval differences were statistically and practically negligible. Across folds, the acquisition branch achieved 0.8602 scanner-probe accuracy, 0.1042 mean tissue retrieval, effective rank 5.44, and normalized biological/acquisition cross-covariance RMS 0.0928. Every biological dimension retained nonzero test-fold variance.
 
-\subsection{Factorization audit}
-Across the test folds, the acquisition branch achieved 0.8602 scanner-probe accuracy, 0.1042 mean tissue retrieval, effective rank 5.44, and normalized biological/acquisition cross-covariance RMS 0.0928. Every biological dimension retained nonzero test-fold variance. Biological effective rank decreased modestly from 56.93 to 54.50 rather than collapsing.
+These diagnostics distinguish separation from erasure. Scanner information remains available in a compact acquisition factor, tissue identity remains nearly saturated in biology, and biological scanner leakage is substantially lower. The result is strong but not perfect disentanglement.
 
-These diagnostics distinguish separation from erasure. Scanner information remains available in a compact acquisition factor, tissue identity remains nearly saturated in biology, and biological scanner leakage is substantially lower. The result is strong but not perfect disentanglement: residual scanner information remains in $z_b$, and residual tissue information remains in $z_a$.
+\subsection{Supporting identifiability studies}
+Earlier adversarial center-removal and factorized diagnostic/site experiments reduced site leakage only slightly and did not improve held-out tumor accuracy. Unconditional subtraction was falsified because the learned acquisition-associated component remained strongly tumor-predictive. These negative results motivate the paired design: acquisition information should be isolated under biology-preserving interventions, not removed solely because it predicts site.
 
-\section{Supporting identifiability studies}
-\subsection{Negative results before paired real-tissue factorization}
-Earlier PathoAlign experiments used adversarial center removal and factorized diagnostic/site branches on pathology-derived representations. A locked adversarial confirmation reduced site leakage only slightly and did not improve held-out tumor accuracy. Unconditional subtraction was falsified because the learned acquisition-associated component remained strongly tumor-predictive. These results motivate the present design: acquisition information should be isolated under biology-preserving pairing, not removed solely because it predicts site.
+Controlled synthetic generators varied observational sample size, paired-anchor count, repeated exposure, biological--acquisition overlap, nonlinear mixing, method, and seed. Matched-budget experiments identify total paired exposure as the dominant resource over the tested range, with a smaller benefit from anchor diversity and diminishing returns beyond approximately 100 unique anchors. Detailed calculations are retained in the appendix as a supporting synthetic extension, not as a universal scaling law.
 
-\subsection{Synthetic recovery regimes}
-Controlled generators with known biological and acquisition factors varied observational sample size, paired-anchor count, repeated exposure, biological--acquisition overlap, linear versus nonlinear mixing, method, and seed. The resulting phase maps show that paired interventions and ordinary observations are distinct resources. Recovery becomes harder as overlap and nonlinearity increase, and matched-budget experiments show that total paired exposure is the dominant resource over the tested range, with a smaller benefit from anchor diversity and diminishing returns beyond approximately 100 unique anchors.
+\section{Component II: TransnnMIL whole-slide modeling}
+\subsection{Model definition}
+A whole-slide image is represented as a bag of patch embeddings $B_i=\{x_{i1},\ldots,x_{im_i}\}$ with one slide- or patient-level label. TransnnMIL is the repository's custom slide learner. Its validated baseline implementation combines two parallel branches:
+\begin{itemize}[leftmargin=*]
+  \item a TransMIL branch for correlated patch interactions through transformer self-attention \citep{shao2021transmil};
+  \item an nnMIL-style gated-attention branch for lightweight stochastic aggregation \citep{luo2025nnmil}.
+\end{itemize}
+Both branches process the same bag. Their intermediate features are projected to a common 512-dimensional space, fused by cross-attention, and mapped to class logits. Positional encoding can be disabled for compatibility with random sub-bag sampling. The code additionally exposes optional hierarchical spatial pooling and a topology branch, but those extensions are not treated as validated improvements in this report.
 
-The detailed calculations and threshold-dependent empirical recovery models are included below as a supporting synthetic extension. They are not used to claim a universal scaling law or clinical performance.
+The component addresses a different problem from PathoAlign. PathoAlign changes the representation supplied to a learner; TransnnMIL determines how evidence distributed across a slide is combined into a prediction.
 
-\section{Secondary federated influence stress test}
-A separate PANDA-derived experiment studies model influence rather than representation factorization. Standard FedAvg weights simulated clients by sample count \citep{mcmahan2017communication}. Controlled dominant-client label-noise and ordinal-threshold shifts show that sample count can grant excessive influence to a training process that is poorly aligned with the declared validation objective. A fixed detector-switch rule calibrated under label noise transferred to stronger conservative threshold shifts with low clean-regime switching and positive improvements in global QWK, macro-F1, and worst-site QWK.
+\subsection{PANDA optimization-stability evidence}
+The completed stability grid used 10,611 readable PANDA Phikon feature bags, a 768-dimensional feature space, three seeds, and six learning rates. The stabilized recipe used AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping.
 
-This result is deliberately secondary in the present paper. It does not rank institutions or claim that large sites are untrustworthy. It demonstrates that aggregation influence, like representation removal, should be audited rather than treated as self-justifying.
+\begin{table}[!htbp]
+\centering
+\caption{TransnnMIL stability across three seeds per learning rate on PANDA Phikon feature bags.}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Learning rate & Mean best val QWK & Std. & Min. & Max. \\
+\midrule
+$1\times10^{-4}$ & \textbf{0.8257} & 0.0169 & 0.8087 & 0.8425 \\
+$2\times10^{-4}$ & 0.8245 & 0.0192 & 0.8077 & 0.8455 \\
+$3\times10^{-4}$ & 0.8238 & 0.0160 & 0.8127 & 0.8422 \\
+$5\times10^{-4}$ & 0.8158 & 0.0144 & 0.8042 & 0.8319 \\
+$7\times10^{-4}$ & 0.8117 & 0.0163 & 0.7994 & 0.8301 \\
+$1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
+\bottomrule
+\end{tabular}
+\label{tab:transnnmil_stability}
+\end{table}
+\FloatBarrier
+
+The supported claim is that the initial model was optimizer-sensitive but the stabilized recipe widened the usable learning-rate range. The result does not yet establish that TransnnMIL is superior to gated AttentionMIL, TransMIL alone, nnMIL alone, or simpler pooling.
+
+\subsection{Required architecture ablation}
+A decisive evaluation should control the feature extractor, patient split, patch-presentation budget, optimizer, scheduler, stopping rule, and seeds while varying:
+\begin{enumerate}[leftmargin=*]
+  \item TransMIL branch on/off;
+  \item nnMIL branch on/off;
+  \item learned fusion versus fixed averaging;
+  \item random patch sampling on/off;
+  \item random feature sampling on/off;
+  \item positional or hierarchical structure on/off;
+  \item sliding-window ensembling on/off.
+\end{enumerate}
+External-center performance, calibration, patch-sampling variance, and computational cost should be reported alongside QWK or AUC.
+
+\section{Component III: PathologyFL federated training}
+\subsection{Framework scope}
+PathologyFL is the custom federated-learning framework in the repository. It separates client-side local training from coordinator-side aggregation, registry, monitoring, privacy, and robustness services. Its aggregation layer includes standard FedAvg, contribution-aware cross-site weighting, FAIR-WEIGHTS-H mechanisms, and dominance-aware policy switching.
+
+For client updates $\Delta\theta_k$, the standard and dominance-aware candidates are
+\[
+\Delta\theta_{\mathrm{FA}}
+=\sum_{k=1}^{K}\frac{n_k}{\sum_{j=1}^{K}n_j}\Delta\theta_k,
+\qquad
+\Delta\theta_{\mathrm{DA}}
+=\sum_{k=1}^{K}\widetilde w_k\Delta\theta_k.
+\]
+A clean-calibrated diagnostic vector
+\[
+d(r)=\bigl(\kappa_{\mathrm{global}},\kappa_{\min},S_\kappa,
+\operatorname{MAOE},R_{\mathrm{sev}}\bigr)
+\]
+induces a trigger count $C(r)=\sum_{j=1}^{5}I_j(r)$ and switch $T(r)=\mathbf{1}[C(r)\geq3]$. The selected policy is
+\[
+M_{\pi}(r)=[1-T(r)]M_{\mathrm{FA}}(r)+T(r)M_{\mathrm{DA}}(r).
+\]
+
+\subsection{Full-PANDA dominance-aware result}
+The strongest controlled result uses 10,611 readable PANDA Phikon feature vectors, five simulated sites, 15 seeds, and label corruption applied only to the largest simulated site. The clean strategy is FedAvg and the fallback is a 50\% cross-site blend.
+
+\begin{table}[!htbp]
+\centering
+\caption{Selected full-PANDA paired results for cross-site blending and the tuned observable switch.}
+\small
+\begin{tabular}{rllrr}
+\toprule
+Noise & Metric & Policy & Delta vs. FedAvg & 95\% interval \\
+\midrule
+0\% & Global QWK & Tuned switch & $+0.000126$ & $[-0.000144,0.000395]$ \\
+25\% & Global QWK & Tuned switch & $+0.008009$ & $[0.001345,0.014672]$ \\
+35\% & Global QWK & Tuned switch & $+0.007482$ & $[0.003919,0.011046]$ \\
+45\% & Worst-site QWK & Tuned switch & $+0.009713$ & $[-0.000257,0.019683]$ \\
+\bottomrule
+\end{tabular}
+\label{tab:pathologyfl_panda}
+\end{table}
+\FloatBarrier
+
+The tuned rule reduced clean false switching to 6.7\% while triggering on 86.7\%, 86.7\%, and 93.3\% of runs at 25\%, 35\%, and 45\% corruption. It preserved statistically positive global-QWK gains at 25\% and 35\% corruption. The 45\% worst-site interval narrowly crossed zero.
+
+The result supports a conditional claim: contribution-aware aggregation is useful as a stress-regime mechanism when sample volume and client reliability diverge, not as a universal replacement for FedAvg.
+
+\subsection{Camelyon17 external-center evidence}
+Camelyon17/WILDS provides a natural center shift rather than a synthetic dominant-client corruption \citep{bandi2018camelyon17,koh2021wilds}. With features from a Camelyon17 source-trained ResNet18, the held-out-center accuracies were:
+\begin{table}[!htbp]
+\centering
+\caption{Five-seed Camelyon17 held-out-center accuracy with source-trained ResNet18 features.}
+\small
+\begin{tabular}{lc}
+\toprule
+Policy & Held-out test accuracy \\
+\midrule
+FedAvg-style sample weighting & 0.9052 \\
+Equal-client weighting & 0.9318 \\
+Dominant-center downweighting & 0.9322 \\
+\bottomrule
+\end{tabular}
+\label{tab:camelyon_external}
+\end{table}
+\FloatBarrier
+These feature-level results support the possibility that source-volume weighting can optimize source-like performance while transferring worse to a new center. They do not constitute end-to-end federated WSI training.
+
+\subsection{Privacy and communication boundary}
+PathologyFL is privacy-aware by architecture: raw pathology data remains local, and the framework exposes secure-aggregation and differential-privacy support surfaces. However, local data retention alone is not a formal privacy guarantee. The current privacy evidence is a coefficient-noise robustness probe, not differential-privacy accounting, membership-inference evaluation, update-inversion resistance, or verified secure aggregation.
+
+Communication has a bounded feature/head result. Under one explicit Camelyon17 accounting regime, 100 fp32 rounds across three source clients require approximately 24.98 GB for full ResNet18 model exchange versus 2.35 MB for a 512-to-2 feature/head learner. This demonstrates a practical low-communication regime, not a universal solution to full-model federated pathology.
+
+\section{Integrated evaluation across components}
+The full pipeline has not yet been validated as one end-to-end experiment. The next integrated study should use a factorial design rather than comparing only the complete stack:
+
+\begin{table}[!htbp]
+\centering
+\caption{Proposed integrated comparison matrix.}
+\small
+\begin{tabular}{lll}
+\toprule
+Representation & Slide learner & Federation \\
+\midrule
+Frozen foundation features & Mean/attention baseline & FedAvg \\
+Frozen foundation features & TransnnMIL & FedAvg \\
+PathoAlign representation & TransnnMIL & FedAvg \\
+Frozen foundation features & TransnnMIL & PathologyFL switch \\
+PathoAlign representation & TransnnMIL & PathologyFL switch \\
+\bottomrule
+\end{tabular}
+\label{tab:integrated_matrix}
+\end{table}
+\FloatBarrier
+
+This design can answer whether PathoAlign improves external transfer independently of the slide learner, whether TransnnMIL changes site leakage or aggregation sensitivity, and whether PathologyFL gains persist across representation and MIL choices. The primary unit should be the patient, with untouched external institutions and matched seeds, manifests, compute budgets, and stopping rules.
+
+\section{Evidence status and claim boundaries}
+\begin{table}[!htbp]
+\centering
+\caption{Current evidence is intentionally asymmetric across components.}
+\small
+\begin{tabular}{p{0.18\linewidth}p{0.35\linewidth}p{0.36\linewidth}}
+\toprule
+Component & Supported now & Not supported yet \\
+\midrule
+PathoAlign & Frozen out-of-fold paired-scanner separation on real human tissue; synthetic resource-allocation evidence & Clinical diagnosis, universal disentanglement, unseen-laboratory generalization \\
+TransnnMIL & Repeated-seed optimizer stability on PANDA Phikon bags & Architectural superiority, broad external validation, clinical utility \\
+PathologyFL & Controlled PANDA FedAvg failure modes; observable switching; Camelyon17 feature-level external-center evidence & Real hospital federation, formal privacy guarantee, universal weighting superiority \\
+Integrated stack & Defined interfaces and a reproducible factorial plan & End-to-end PathoAlign--TransnnMIL--PathologyFL validation \\
+\bottomrule
+\end{tabular}
+\label{tab:evidence_status}
+\end{table}
+\FloatBarrier
 
 \section{Reproducibility artifacts}
-The repository contains the SCORPION manifest builder and auditor, frozen feature extractors, PathoAlign model and loss code, bounded calibration, independent-seed confirmation, five-fold runner, slide-blocked analysis, and compact result summaries.
-
+The repository contains component-specific code, tests, experiment scripts, and frozen result artifacts. Representative paths include:
 \begin{itemize}[leftmargin=*]
-  \item \texttt{scripts/scorpion/build\_scorpion\_manifest.py}
-  \item \texttt{scripts/scorpion/audit\_scorpion\_manifest.py}
-  \item \texttt{src/models/scorpion\_pathoalign.py}
-  \item \texttt{experiments/scorpion/run\_pathoalign\_crossfold.py}
-  \item \texttt{scripts/scorpion/analyze\_pathoalign\_crossfold.py}
-  \item \texttt{results/scorpion/pathoalign\_dinov2\_crossfold\_analysis/}
+  \item PathoAlign: \texttt{src/models/scorpion\_pathoalign.py}, \texttt{experiments/scorpion/run\_pathoalign\_crossfold.py}, and \texttt{results/scorpion/pathoalign\_dinov2\_crossfold\_analysis/}.
+  \item TransnnMIL: \texttt{src/models/transnnmil/transnnmil.py}, \texttt{scripts/training/train\_panda\_transnnmil\_baseline.py}, and \texttt{results/transnnmil\_stability\_summary/}.
+  \item PathologyFL: \texttt{src/features/federated/pathology\_fl/}, \texttt{scripts/experiments/analyze\_dominance\_detector\_switch.py}, and the committed PANDA/Camelyon17 result reports.
 \end{itemize}
-
 Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
 
-\input{identifiability_calculations.tex}
-
 \section{Limitations}
-The central result is limited to the SCORPION benchmark, its 48 original slides, five scanners, sampled tissue regions, and frozen DINOv2 features. It does not establish generalization to new tissue types, laboratories, staining protocols, scanner models outside the benchmark, or end-to-end whole-slide diagnostic systems. Cross-backbone transfer of the frozen objective to Phikon and ResNet50 remains an important next test.
+PathoAlign is currently strongest as a representation-factorization result on SCORPION's 48 original slides, five scanners, sampled tissue regions, and frozen features. Tissue retrieval is an identity-retention diagnostic, not a clinical endpoint. Linear probes measure recoverable scanner information under a specified model class; they do not prove removal of all acquisition information.
 
-Tissue-region retrieval is an identity-retention diagnostic, not a clinical endpoint. The study does not evaluate diagnosis, treatment decisions, patient outcomes, prospective deployment, subgroup fairness, regulatory readiness, or scanner equivalence for clinical use. Linear probes measure recoverable scanner information under a specified model class; they do not prove that all scanner information has been removed. The acquisition factor remains imperfect because it retains some tissue identity, and the biological factor remains imperfect because scanner prediction is above chance.
+TransnnMIL's completed evidence is primarily optimization stability. The architecture still requires controlled component ablations, external cohorts, calibration analysis, and direct comparison against TransMIL, nnMIL, AttentionMIL, and simple pooling under equal compute.
 
-The synthetic recovery equations are local empirical descriptions of tested thresholds and regimes. The federated experiments use simulated clients over fixed pathology-derived features rather than prospective institutional federation. All claims are therefore bounded to representation separation and controlled stress testing.
+PathologyFL uses simulated clients over fixed pathology-derived features for its strongest controlled stress tests. Camelyon17 provides natural external-center evidence but remains feature-level. The project has not yet demonstrated formal differential privacy, a verified secure-aggregation deployment, leakage resistance, prospective hospital federation, subgroup clinical safety, or regulatory readiness.
+
+The integrated stack has not been executed as one locked experiment. No result in one component should be used to imply that the other two components have been validated.
 
 \section{Discussion}
-The multi-backbone audit demonstrates that strong tissue representations can simultaneously preserve scanner identity. Domain-specific pretraining does not automatically solve acquisition entanglement: Phikon had the strongest scanner probe of the three frozen encoders. DINOv2 provided a particularly clean test because tissue retrieval was already nearly perfect, leaving little room for a method to claim success by simply improving identity retention.
+The three components expose related but non-identical forms of hidden authority. In a representation, a nuisance-correlated direction can dominate what a downstream model learns. In a slide learner, a small subset of patches or one aggregation branch can dominate the prediction. In federation, a high-volume client can dominate the global update. Each authority mechanism can be reasonable in one regime and harmful in another.
 
-The five-fold result shows that paired consistency alone is not the complete solution. It preserves tissue identity and reduces some scanner leakage, but the factorized PathoAlign objective produces a much larger reduction while improving paired agreement. The acquisition audit matters as much as the biological probe: without it, lower scanner accuracy in biology could be caused by information destruction. Here, scanner identity remains strongly available in a low-rank acquisition factor, retrieval remains saturated in biology, and all biological dimensions remain active.
+PathoAlign shows that lower site leakage is not sufficient; useful biology must be retained and the removed information must be accounted for. TransnnMIL shows that whole-slide model quality cannot be inferred from one tuned run; optimizer stability and branch-level ablation are necessary. PathologyFL shows that FedAvg is not universally weak, but its sample-volume rule should be stress-tested when reliability and volume may diverge.
 
-The broader lesson is not that scanner information is always useless. Acquisition and biology may overlap, and some acquisition-correlated directions may carry task-relevant morphology. The role of paired interventions is to provide controlled evidence about what should remain stable. Future work should transfer the frozen objective unchanged across backbones, evaluate task-labeled paired-scanner datasets, extend the method to patch bags and multiple-instance learning, and test unseen laboratories and acquisition pipelines.
+The platform's value is therefore not a claim that one large architecture solves computational pathology. It is a decomposition of the reliability problem into auditable levels with explicit interfaces, baselines, negative results, and next experiments.
 
 \section{Conclusion}
-PathoAlign reframes scanner robustness as a neural identifiability problem. On real paired human histopathology, scanner identity was strongly recoverable from ResNet50, DINOv2, and Phikon representations despite high tissue retention. A frozen factorized objective then generalized across all 48 SCORPION slides, reducing biological scanner-probe accuracy by approximately 0.385 absolute, improving same-tissue scanner-pair agreement by approximately 0.031, and preserving near-perfect tissue retrieval. Scanner information remained concentrated in a compact acquisition factor, and the biological representation did not collapse.
+This report defines a computational pathology research platform for federated oncology with three separate components. PathoAlign addresses biology-preserving neural representation alignment, TransnnMIL addresses whole-slide evidence aggregation, and PathologyFL addresses privacy-aware federated training and institutional influence. The strongest current results are a frozen real-tissue paired-scanner PathoAlign separation result, a repeated-seed TransnnMIL stability result, and PathologyFL evidence that dominance-aware switching can preserve FedAvg in clean regimes while improving controlled stress and external-center performance.
 
-The supported conclusion is narrow but substantive: biology-preserving paired acquisitions can supervise a representation in which tissue identity is retained while scanner information becomes substantially less recoverable. This is a real-tissue out-of-fold representation result, not a claim of clinical validation or universal disentanglement.
+The supported conclusion is deliberately bounded: reliable federated oncology requires separate audits of representation, slide aggregation, and federation. The complete integrated pipeline remains a testable research program rather than a finished clinical system.
+
+\appendix
+\input{identifiability_calculations.tex}
 
 \bibliographystyle{plainnat}
 \bibliography{references}

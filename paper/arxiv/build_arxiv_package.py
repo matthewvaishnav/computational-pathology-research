@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Prepare a self-contained PathoAlign LaTeX source folder.
+"""Prepare a self-contained umbrella-platform LaTeX source folder.
 
-The build copy preserves the paper's PathoAlign and paired-scanner emphasis. It
-applies compact single-column formatting but does not inject legacy federated
-figures, replace scientific sections, or rewrite the working thesis.
+The build copy preserves the sectioned PathoAlign, TransnnMIL, and PathologyFL
+technical report. It applies compact single-column formatting without rewriting
+scientific sections or injecting legacy figures.
 
 Run from the repository root:
 
@@ -74,10 +74,13 @@ def apply_compact_single_column_format(path: Path) -> None:
 
     if "twocolumn" in text:
         raise RuntimeError("Global two-column formatting remains in the paper build")
-    if "dominant-site-figure" in text or "federated_pathology_pipeline_diagram" in text:
-        raise RuntimeError("Legacy dominant-site figures were unexpectedly injected")
-    if "PathoAlign" not in text or "SCORPION" not in text:
-        raise RuntimeError("The build copy lost the PathoAlign/SCORPION paper focus")
+    if "federated_pathology_pipeline_diagram" in text:
+        raise RuntimeError("A retired legacy pipeline figure was unexpectedly injected")
+
+    required_terms = ("PathoAlign", "TransnnMIL", "PathologyFL", "SCORPION")
+    missing = [term for term in required_terms if term not in text]
+    if missing:
+        raise RuntimeError(f"The build copy lost required platform sections: {missing}")
 
     path.write_text(text, encoding="utf-8")
 
