@@ -50,7 +50,7 @@ jobs:
               text,
               count=1,
           )
-          text = re.sub(r"\date\{[^}]*\}", r"\date{June 15, 2026}", text, count=1)
+          text = re.sub(r"\date\{[^}]*\}", r"\date{June 16, 2026}", text, count=1)
 
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           conference_style = r"""
