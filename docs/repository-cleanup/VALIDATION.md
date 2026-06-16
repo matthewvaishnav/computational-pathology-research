@@ -10,7 +10,7 @@ PR #7 remains draft until the cleanup branch satisfies all required checks on a 
 - Internal and standalone security scans pass.
 - Full test matrix and Docker build complete successfully.
 - PathoAlign reproducibility evidence remains present and unchanged except for mechanical formatting.
-- The paper builds without changing `when-more-data-is-less-trustworthy-references-v2.pdf` or its deployed URL.
+- The paper builds and deploys to the canonical URL `when-more-data-is-less-trustworthy.pdf`; the previous `when-more-data-is-less-trustworthy-references-v2.pdf` path remains available as a compatibility alias.
 
 ## Completed repairs
 
