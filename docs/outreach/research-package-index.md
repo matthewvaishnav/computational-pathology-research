@@ -1,6 +1,6 @@
 # Research outreach package
 
-This directory packages the dominant-site federated pathology work for readers who do not want to start with the full paper.
+This directory provides short entry points into the broader PathoAlign computational-pathology research program for readers who do not want to begin with the full paper.
 
 ## Read order
 
@@ -11,7 +11,7 @@ This directory packages the dominant-site federated pathology work for readers w
 
 ## Main PDF site
 
-The public site is intentionally reduced to the paper PDF. The active deploy workflow builds the LaTeX paper and publishes a PDF-only GitHub Pages site.
+The public site is intentionally reduced to the research PDF. The active deploy workflow builds the LaTeX paper and publishes a PDF-only GitHub Pages site.
 
 Expected public site:
 
@@ -19,12 +19,14 @@ Expected public site:
 https://matthewvaishnav.github.io/computational-pathology-research/
 ```
 
-Expected PDF path:
+Canonical PDF path:
 
 ```text
-https://matthewvaishnav.github.io/computational-pathology-research/when-more-data-is-less-trustworthy.pdf
+https://matthewvaishnav.github.io/computational-pathology-research/pathoalign-computational-pathology-research.pdf
 ```
+
+Older paper URLs remain deployed as compatibility aliases for links already shared.
 
 ## Claim boundary
 
-This package is for research and employment outreach. It must not be framed as clinical validation, diagnostic software, hospital deployment evidence, or regulatory readiness. The supported claim is narrower: in these simulated federated pathology experiments over real pathology-derived features, sample count is not equivalent to task-specific site-signal alignment, and sample-size dominance should be audited rather than assumed safe.
+This package is for research and employment outreach. It must not be framed as clinical validation, diagnostic software, hospital deployment evidence, or regulatory readiness. The broader supported framing is a computational-pathology research program studying neural identifiability, biological/acquisition factor separation, paired interventions, scanner and site leakage, and federated influence failure modes. Individual experiments retain their narrower dataset-specific and simulation-specific claim boundaries.
