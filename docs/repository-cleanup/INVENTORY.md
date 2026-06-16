@@ -27,7 +27,7 @@ The classification is intentionally conservative. A path marked **review/relocat
 4. Do not treat a skipped test as validation. Duplicate or obsolete tests must be consolidated or archived with an explanation.
 5. Do not weaken CI to hide failures. Split CI into fast core, optional subsystem, slow integration, and paper/reproducibility tiers.
 6. Do not make unconditional acquisition-component subtraction the default PathoAlign method; preserve the tumor-information leakage audits and the conditional low-rank direction.
-7. Never change the deployed PDF path `when-more-data-is-less-trustworthy-references-v2.pdf`.
+7. Preserve the canonical deployed PDF path `when-more-data-is-less-trustworthy.pdf`; keep `when-more-data-is-less-trustworthy-references-v2.pdf` only as a compatibility alias.
 
 ## Top-level directory classification
 
@@ -57,11 +57,11 @@ The classification is intentionally conservative. A path marked **review/relocat
 | `k8s/` | 50 Kubernetes/Helm files | optional subsystem / likely historical archive | Verify deployability and remove unsupported production claims; consolidate with `kubernetes/`. |
 | `kubernetes/` | 1 file | duplicate/misplaced optional subsystem | Merge into the canonical deployment location or archive. |
 | `migrations/` | 3 Alembic files | optional subsystem | Keep only if the active package still exposes a database-backed service and tests its schema. |
-| `models/` | only `.gitkeep` | generated output | Remove placeholder after confirming model outputs are ignored. |
+| `models/` | only `.gitkeep` | generated output | Remove placeholder after confirming model outputs are ignored and documented. |
 | `monitoring/` | 12 Prometheus/Grafana files | optional subsystem / likely historical archive | Deduplicate Grafana/Prometheus configuration with `docker/`; retain only maintained dashboards. |
 | `notebooks/` | 5 notebooks/placeholders | documentation / historical archive | Execute or clearly mark notebooks as historical; remove empty placeholder if unnecessary. |
 | `panda/` | dataset CSV and split JSON | active research data metadata | Verify licensing and whether the full CSV belongs in Git; preserve deterministic split metadata where legally appropriate. |
-| `paper/` | 7 source/build files | paper/documentation | Preserve source, bibliography, calculations, build script, filename, and public URL; remove generated `build/main.tex` from tracking if reproducible. |
+| `paper/` | 7 source/build files | paper/documentation | Preserve source, bibliography, calculations, build script, canonical filename, compatibility alias, and public URL; remove generated `build/main.tex` from tracking if reproducible. |
 | `patents/` | 1 file | historical archive or obsolete/removable | Remove from active scientific navigation unless there is a clear repository purpose. |
 | `results/` | 267 files, 9.67 MiB | reproducibility evidence mixed with generated output | Preserve compact frozen evidence chains; inventory every result family and remove raw predictions/repeated run outputs when summaries and manifests suffice. |
 | `scripts/` | 175 files | active research experiment mixed with historical tooling | Repair syntax first; group active data, training, Camelyon17, federated, and PathoAlign entry points; archive HistoCore administration/deployment scripts. |
