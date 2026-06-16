@@ -39,18 +39,18 @@ jobs:
           # and figures may float beside text where useful, but the document is
           # never forced into a global two-column layout.
           text = re.sub(
-              r"\\documentclass\[[^\]]*\]\{article\}",
-              r"\\documentclass[10pt]{article}",
+              r"\documentclass\[[^\]]*\]\{article\}",
+              r"\documentclass[10pt]{article}",
               text,
               count=1,
           )
           text = re.sub(
-              r"\\usepackage\[[^\]]*\]\{geometry\}",
-              r"\\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
+              r"\usepackage\[[^\]]*\]\{geometry\}",
+              r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
               text,
               count=1,
           )
-          text = re.sub(r"\\date\{[^}]*\}", r"\\date{June 15, 2026}", text, count=1)
+          text = re.sub(r"\date\{[^}]*\}", r"\date{June 15, 2026}", text, count=1)
 
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           conference_style = r"""
@@ -102,12 +102,12 @@ jobs:
           # Remove any earlier global paragraph settings that would override the
           # final single-column style. The abstract receives its own spacing above.
           text = re.sub(
-              r"(?m)^\\setlength\{\\parindent\}\{[^}]+\}\s*$",
+              r"(?m)^\setlength\{\parindent\}\{[^}]+\}\s*$",
               "",
               text,
           )
           text = re.sub(
-              r"(?m)^\\setlength\{\\parskip\}\{[^}]+\}\s*$",
+              r"(?m)^\setlength\{\parskip\}\{[^}]+\}\s*$",
               "",
               text,
           )
@@ -171,7 +171,7 @@ jobs:
         run: |
           test -s paper/arxiv/build/main.pdf
           test -f paper/arxiv/build/main.bbl
-          reference_count=$(grep -c '\\bibitem' paper/arxiv/build/main.bbl || true)
+          reference_count=$(grep -c '\bibitem' paper/arxiv/build/main.bbl || true)
           echo "Rendered bibliography entries: ${reference_count}"
           test "${reference_count}" -ge 10
 
@@ -186,15 +186,16 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p paper_pdf_site
+          cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
           touch paper_pdf_site/.nojekyll
           cat > paper_pdf_site/index.html <<'EOF'
           <!doctype html>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <meta http-equiv="refresh" content="0; url=./when-more-data-is-less-trustworthy-references-v2.pdf">
+          <meta http-equiv="refresh" content="0; url=./when-more-data-is-less-trustworthy.pdf">
           <title>When More Data Is Less Trustworthy</title>
-          <a href="./when-more-data-is-less-trustworthy-references-v2.pdf">Open paper PDF</a>
+          <a href="./when-more-data-is-less-trustworthy.pdf">Open paper PDF</a>
           EOF
 
       - name: Deploy PDF site to gh-pages
