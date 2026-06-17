@@ -1,0 +1,60 @@
+\section{Broader computational-pathology research program}
+PathoAlign is the central result of this paper, but it is not the entire research program. The repository also contains substantial whole-slide modeling on PANDA and external-center/federated validation on CAMELYON17. These projects address later stages of the pathology learning pipeline and should remain visible in the public research PDF without being conflated with the paired-scanner claim.
+
+\subsection{PANDA whole-slide grading and TransnnMIL}
+The PANDA work studies weakly supervised prostate-cancer grading from whole-slide Phikon feature bags on the PANDA challenge data \citep{bulten2022artificial}. After HDF5 readability verification, 10,611 slide-level feature files were retained. The current evidence stack includes a mean-pooled Phikon MLP baseline, gated AttentionMIL \citep{ilse2018attention}, and TransnnMIL, a hybrid direction combining correlated transformer aggregation with local gated-attention reasoning inspired by TransMIL \citep{shao2021transmil} and nnMIL \citep{luo2025nnmil}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Current PANDA validation evidence on Phikon feature bags. QWK denotes quadratic weighted kappa.}
+\small
+\begin{tabular}{lr}
+\toprule
+Model or run & Validation QWK \\
+\midrule
+Mean-pooled Phikon + MLP & 0.7274 \\
+Gated AttentionMIL & 0.8100 \\
+Tuned TransnnMIL, seed 42 & 0.8155 \\
+Tuned TransnnMIL, seed 123 & 0.8225 \\
+Tuned TransnnMIL, seed 2025 & 0.8086 \\
+Stabilized TransnnMIL, learning rate $10^{-4}$ & $0.8257\pm0.0169$ \\
+\bottomrule
+\end{tabular}
+\label{tab:panda_transnnmil}
+\end{table}
+\FloatBarrier
+
+The supported conclusion is deliberately conservative: stabilized TransnnMIL is competitive with gated AttentionMIL in the present PANDA feature-bag experiments, but the margin is small and does not yet justify a broad architecture-superiority claim. This line of work supplies the whole-slide diagnostic-modeling component of the broader program.
+
+\subsection{CAMELYON17 external-center and aggregation validation}
+The CAMELYON17/WILDS work tests whether training procedures that fit source-center data more strongly also generalize better to unseen centers \citep{bandi2018camelyon17,koh2021wilds}. The audited feature-level dataset contains 455,954 examples from five centers. Centers 0, 3, and 4 are used as source-training centers, center 1 as OOD validation, and center 2 as the held-out OOD test center.
+
+\begin{table}[!htbp]
+\centering
+\caption{Current CAMELYON17 held-out-center feature-level results. Accuracy values refer to center 2 test performance.}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Feature extractor & FedAvg-style & Equal-client & Downweight dominant \\
+\midrule
+Frozen ImageNet ResNet18 & 0.8312 & 0.9132 & 0.9094 \\
+CAMELYON17-trained ResNet18 & 0.9052 & 0.9318 & 0.9322 \\
+\bottomrule
+\end{tabular}
+\label{tab:camelyon17_external}
+\end{table}
+\FloatBarrier
+
+With frozen ImageNet ResNet18 features, equal-client weighting improves held-out test accuracy by 8.20 percentage points over FedAvg-style weighting, while downweighting the dominant source improves it by 7.82 points. A validation-aware detector switch improves held-out test accuracy by 6.58 points over the FedAvg-style baseline. With CAMELYON17-trained ResNet18 features, equal-client and downweight-dominant weighting improve held-out test accuracy by 2.66 and 2.70 points, respectively, even though FedAvg-style weighting reaches 0.9991 source-train accuracy.
+
+These are early feature-level external-center baselines rather than a full iterative federated deployment study. They support the narrower observation that stronger source fit and sample-proportional influence do not automatically imply better held-out-center generalization. They do not establish clinical readiness, institution ranking, or superiority of one aggregation rule in every federated setting.
+
+\subsection{How the three lines fit together}
+The three principal empirical lines address different levels of the same computational-pathology system:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{PathoAlign / SCORPION:} representation factorization under biology-preserving paired scanner interventions;
+  \item \textbf{TransnnMIL / PANDA:} whole-slide aggregation and ordinal grading from pathology foundation-model feature bags;
+  \item \textbf{PathologyFL / CAMELYON17:} external-center generalization and auditable institutional influence under distribution shift.
+\end{itemize}
+
+PathoAlign remains the paper's strongest and most fully locked result, but PANDA and CAMELYON17 are substantive research components rather than footnotes. Their results are reported separately because their datasets, units of analysis, objectives, and claim boundaries differ.
