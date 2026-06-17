@@ -71,37 +71,26 @@ jobs:
               r"20\mathcal{L}_{\mathrm{dep}}",
               "same-region agreement and scanner suppression",
               "scanner prediction and acquisition retention",
-              r"\input{pathoalign_architecture_fullpage.tex}",
-              r"\pdfpageattr{/Rotate 90}",
-              r"\captionof{figure}",
           )
           missing_math = [item for item in required_math if item not in model_math]
           if missing_math:
               raise RuntimeError(
                   f"PathoAlign mathematical specification is incomplete: {missing_math}"
               )
-          if "pathoalign_architecture_diagram" in model_math:
-              raise RuntimeError("Retired compact PathoAlign flowchart remains in the paper")
 
-          architecture_path = Path(
-              "paper/arxiv/build/pathoalign_architecture_fullpage.tex"
+          retired_architecture_terms = (
+              "pathoalign_architecture_diagram",
+              "pathoalign_architecture_fullpage",
+              r"\pdfpageattr{/Rotate 90}",
+              r"\captionof{figure}",
           )
-          architecture = architecture_path.read_text(encoding="utf-8")
-          required_architecture = (
-              "PathoAlign: paired-acquisition neural factorization",
-              "Biological factor",
-              "Acquisition factor",
-              "decoder MLP",
-              r"\mathcal L_{\mathrm{xcov}}",
-              r"\mathcal L_{\mathrm{recon}}",
-          )
-          missing_architecture = [
-              item for item in required_architecture if item not in architecture
+          present_architecture_terms = [
+              item for item in retired_architecture_terms if item in model_math
           ]
-          if missing_architecture:
+          if present_architecture_terms:
               raise RuntimeError(
-                  f"Full-page PathoAlign architecture is incomplete: "
-                  f"{missing_architecture}"
+                  "Retired PathoAlign architecture figure remains in the paper: "
+                  f"{present_architecture_terms}"
               )
 
           forbidden = (
@@ -116,7 +105,7 @@ jobs:
 
           print("Validated compact single-column result-first paper composition")
           print("Validated complete implementation-faithful PathoAlign mathematics")
-          print("Validated dedicated full-page 3D PathoAlign architecture")
+          print("Validated math-only PathoAlign architecture section")
           PY
 
       - name: Build LaTeX PDF
@@ -174,7 +163,7 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ github.token }}
           publish_dir: paper_pdf_site
           publish_branch: gh-pages
           force_orphan: true
