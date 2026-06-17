@@ -58,7 +58,6 @@ jobs:
           model_math_path = Path("paper/arxiv/build/pathoalign_model_math.tex")
           model_math = model_math_path.read_text(encoding="utf-8")
           required_math = (
-              r"\input{pathoalign_architecture_diagram.tex}",
               r"\mathcal{L}_{\mathrm{pair}}",
               r"\mathcal{L}_{\mathrm{recon}}",
               r"\mathcal{L}_{\mathrm{var},a}",
@@ -70,12 +69,16 @@ jobs:
               r"\operatorname{GRL}_{\gamma}",
               r"0.25\mathcal{L}_{\mathrm{var},a}",
               r"20\mathcal{L}_{\mathrm{dep}}",
+              "same-region agreement and scanner suppression",
+              "scanner prediction and acquisition retention",
           )
           missing_math = [item for item in required_math if item not in model_math]
           if missing_math:
               raise RuntimeError(
                   f"PathoAlign mathematical specification is incomplete: {missing_math}"
               )
+          if "pathoalign_architecture_diagram" in model_math:
+              raise RuntimeError("Retired PathoAlign flowchart remains in the paper")
 
           forbidden = (
               "twocolumn",
@@ -89,6 +92,7 @@ jobs:
 
           print("Validated compact single-column result-first paper composition")
           print("Validated complete implementation-faithful PathoAlign mathematics")
+          print("Validated mathematical architecture summary without a flowchart")
           PY
 
       - name: Build LaTeX PDF
