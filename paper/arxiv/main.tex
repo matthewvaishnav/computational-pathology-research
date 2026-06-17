@@ -101,38 +101,7 @@ x_{r,s'}-x_{r,s}=A(z_{a,s'}-z_{a,s})+(\varepsilon_{r,s'}-\varepsilon_{r,s}).
 \]
 The neural model does not assume the observation map is exactly linear, but the cancellation argument explains why paired observations contain information that ordinary site labels do not.
 
-\subsection{Architecture}
-PathoAlign maps a standardized frozen feature into a biological representation $z_b=f_b(x)\in\mathbb{R}^{256}$ and an acquisition representation $z_a=f_a(x)\in\mathbb{R}^{64}$. A decoder reconstructs the input feature from the concatenated factors. Scanner information is discouraged in biology and predicted from acquisition. Same-region views are positives for the biological contrastive objective.
-
-\begin{figure}[!htbp]
-\centering
-\resizebox{\textwidth}{!}{\input{pathoalign_architecture_diagram.tex}}
-\caption{PathoAlign uses multiple scanner views of the same tissue region to learn a stable biological branch and a compact acquisition branch. The objective accounts for removed information rather than simply suppressing site predictability.}
-\label{fig:pathoalign_architecture}
-\end{figure}
-\FloatBarrier
-
-\subsection{Objective}
-The frozen objective is
-\begin{align}
-\mathcal{L}
-&=\mathcal{L}_{\mathrm{pair}}
-+\mathcal{L}_{\mathrm{recon}}
-+\mathcal{L}_{\mathrm{var}}
-+0.01\mathcal{L}_{\mathrm{cov}} \\
-&\quad+0.5\mathcal{L}_{\mathrm{scan},b}
-+0.5\mathcal{L}_{\mathrm{scan},a}
-+20\mathcal{L}_{\mathrm{dep}}
-+0.05\mathcal{L}_{\mathrm{xcov}}.
-\end{align}
-The pair term is a multi-positive same-region contrastive loss. The direct scanner-dependence term is
-\[
-\mathcal{L}_{\mathrm{dep}}
-=\left\|\frac{1}{B-1}\widetilde Z_b^{\top}\widetilde Y_s\right\|_F^2,
-\]
-where the batch matrices are column-standardized. The biological scanner classifier is trained through gradient reversal; the acquisition classifier is trained normally. Reconstruction and variance terms prevent trivial collapse, and cross-covariance discourages redundant information between factors.
-
-The comparison method uses the same biological projection, pair contrast, reconstruction, variance, and covariance terms, but omits the acquisition branch and scanner-separation losses. This makes the comparison stricter than contrasting PathoAlign with an untrained or task-only projection.
+\input{pathoalign_model_math.tex}
 
 \section{Preventing Representation Failure}
 \subsection{Why site invariance was not enough}
