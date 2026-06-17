@@ -2,10 +2,10 @@
 """Prepare a self-contained LaTeX source folder for the public research PDF.
 
 The source is organized as a compact, result-first main paper followed by a
-complete empirical appendix. The build preserves the PathoAlign architecture,
-its complete mathematical specification, and the matched-budget resource-
-allocation figure together with the detailed PANDA, CAMELYON17, PCam,
-federated, and identifiability evidence.
+complete empirical appendix. The build preserves the complete mathematical
+PathoAlign specification and the matched-budget resource-allocation figure
+together with the detailed PANDA, CAMELYON17, PCam, federated, and
+identifiability evidence.
 
 Run from the repository root:
 
@@ -27,7 +27,6 @@ FILES = [
     ARXIV / "references.bib",
     ARXIV / "broader_research_program.tex",
     ARXIV / "pathoalign_model_math.tex",
-    ARXIV / "pathoalign_architecture_diagram.tex",
     ARXIV / "pathoalign_resource_allocation_figure.tex",
     ARXIV / "identifiability_calculations.tex",
     ARXIV / "identifiability_calculations_part1.tex",
@@ -42,7 +41,6 @@ The repository also contains whole-slide multiple-instance learning and federate
 
 BROADER_RESEARCH_INCLUDE = r"\input{broader_research_program.tex}"
 MODEL_MATH_INCLUDE = r"\input{pathoalign_model_math.tex}"
-ARCHITECTURE_INCLUDE = r"\input{pathoalign_architecture_diagram.tex}"
 ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure.tex}"
 
 TITLE_REPOSITORY_LINK = (
@@ -203,18 +201,16 @@ def validate_and_normalize_main(path: Path) -> None:
         r"\operatorname{GRL}_{\gamma}",
         r"0.25\mathcal{L}_{\mathrm{var},a}",
         r"20\mathcal{L}_{\mathrm{dep}}",
+        "same-region agreement and scanner suppression",
+        "scanner prediction and acquisition retention",
     )
     model_math_missing = [term for term in model_math_required if term not in model_math]
     if model_math_missing:
         raise RuntimeError(
             f"The PathoAlign mathematical specification is incomplete: {model_math_missing}"
         )
-
-    architecture = (BUILD / "pathoalign_architecture_diagram.tex").read_text(
-        encoding="utf-8"
-    )
-    if "biological branch" not in architecture or "acquisition branch" not in architecture:
-        raise RuntimeError("The PathoAlign architecture figure is incomplete")
+    if "pathoalign_architecture_diagram" in model_math:
+        raise RuntimeError("The retired PathoAlign flowchart remains in the model section")
 
     allocation = (BUILD / "pathoalign_resource_allocation_figure.tex").read_text(
         encoding="utf-8"
