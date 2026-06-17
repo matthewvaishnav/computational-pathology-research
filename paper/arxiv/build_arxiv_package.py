@@ -32,10 +32,11 @@ FILES = [
     ARXIV / "identifiability_calculations_part3a.tex",
 ]
 
-
 GENERIC_SECONDARY_BLOCK = r"""\section{Secondary research components}
 The repository also contains whole-slide multiple-instance learning and federated-pathology experiments. TransnnMIL combines correlated transformer aggregation with gated attention for slide-level modeling. PathologyFL studies sample-weighted and contribution-aware institutional aggregation under controlled corruption and external-center validation. These projects are scientifically related because they address later stages of the pathology learning pipeline, but they are not the central evidence in this paper and are not used to strengthen the PathoAlign representation claim.
 """
+
+BROADER_RESEARCH_INCLUDE = r"\input{broader_research_program.tex}"
 
 
 def copy_required(source: Path, destination: Path) -> None:
@@ -74,15 +75,21 @@ def apply_compact_single_column_format(path: Path) -> None:
             1,
         )
 
-    if GENERIC_SECONDARY_BLOCK not in text:
-        raise RuntimeError(
-            "Could not locate the generic secondary-research block in main.tex"
+    # Older source copies contained a short generic secondary-research section
+    # that the public build replaced with the full broader-program include.
+    # Current main.tex already contains the include directly, so the build must
+    # accept that state instead of failing while searching for retired text.
+    if BROADER_RESEARCH_INCLUDE not in text:
+        if GENERIC_SECONDARY_BLOCK not in text:
+            raise RuntimeError(
+                "Could not locate either the broader-research include or the "
+                "legacy generic secondary-research block in main.tex"
+            )
+        text = text.replace(
+            GENERIC_SECONDARY_BLOCK,
+            BROADER_RESEARCH_INCLUDE + "\n",
+            1,
         )
-    text = text.replace(
-        GENERIC_SECONDARY_BLOCK,
-        r"\input{broader_research_program.tex}" + "\n",
-        1,
-    )
 
     text = text.replace(r"\begin{table*}[t]", r"\begin{table}[t]")
     text = text.replace(r"\end{table*}", r"\end{table}")
