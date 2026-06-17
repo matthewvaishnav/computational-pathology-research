@@ -35,21 +35,26 @@ jobs:
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
 
-          # Conference-style single-column layout. Tables and figures may float,
-          # but the document is never forced into a global two-column layout.
+          # Use callable replacements so LaTeX backslashes are returned literally
+          # instead of being parsed as regular-expression replacement escapes.
           text = re.sub(
               r"\documentclass\[[^\]]*\]\{article\}",
-              r"\documentclass[10pt]{article}",
+              lambda _match: r"\documentclass[10pt]{article}",
               text,
               count=1,
           )
           text = re.sub(
               r"\usepackage\[[^\]]*\]\{geometry\}",
-              r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
+              lambda _match: r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
               text,
               count=1,
           )
-          text = re.sub(r"\date\{[^}]*\}", r"\date{June 17, 2026}", text, count=1)
+          text = re.sub(
+              r"\date\{[^}]*\}",
+              lambda _match: r"\date{June 17, 2026}",
+              text,
+              count=1,
+          )
 
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           conference_style = r"""
