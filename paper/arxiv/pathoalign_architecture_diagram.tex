@@ -1,63 +1,47 @@
 % Compact black-and-white PathoAlign architecture diagram.
-% Intended to be included inside a resizebox from main.tex.
+% Two shallow rows keep every label readable at full paper width.
 \begin{tikzpicture}[
   x=1cm,
   y=1cm,
   >=Latex,
-  box/.style={draw=black, line width=0.75pt, fill=white, rounded corners=1.5pt, align=center, minimum height=0.72cm, inner sep=4pt},
-  smallbox/.style={draw=black, line width=0.65pt, fill=white, align=center, minimum height=0.56cm, inner sep=3pt, font=\scriptsize},
-  branch/.style={draw=black, line width=0.9pt, fill=white, rounded corners=2pt, align=center, minimum height=0.95cm, inner sep=5pt},
-  loss/.style={draw=black, line width=0.55pt, densely dashed, fill=white, align=center, minimum height=0.62cm, inner sep=3pt, font=\scriptsize},
-  arrow/.style={->, draw=black, line width=0.8pt},
-  dashedarrow/.style={->, draw=black, line width=0.55pt, densely dashed},
-  label/.style={font=\scriptsize, align=center}
+  block/.style={draw=black, line width=0.78pt, fill=white, rounded corners=1.5pt, align=center, minimum height=0.88cm, inner sep=5pt, font=\small},
+  branch/.style={draw=black, line width=0.95pt, fill=white, rounded corners=2pt, align=center, minimum height=1.00cm, inner sep=5pt, font=\small},
+  objective/.style={draw=black, line width=0.62pt, densely dashed, fill=white, rounded corners=1pt, align=center, minimum height=0.92cm, inner sep=4pt, font=\scriptsize},
+  audit/.style={draw=black, line width=0.72pt, fill=white, align=center, minimum height=0.92cm, inner sep=4pt, font=\scriptsize},
+  arrow/.style={->, draw=black, line width=0.85pt},
+  dashedarrow/.style={->, draw=black, line width=0.60pt, densely dashed},
+  note/.style={font=\scriptsize, align=center}
 ]
 
-% Paired scanner views.
-\node[font=\bfseries\small, anchor=west] at (0.0,3.55) {Biology-preserving acquisition set};
-\foreach \x/\name in {0.0/AT2,1.05/GT450,2.10/DP200,3.15/P1000,4.20/B300} {
-  \node[smallbox, minimum width=0.88cm] (v\name) at (\x+0.44,2.72) {$x_{r,s}$\\\name};
-}
-\node[label, anchor=west] at (0.02,2.10) {same tissue region $r$; scanner $s$ changes};
+% Shared input and encoder.
+\node[block, minimum width=2.60cm] (views) at (1.30,1.42) {same tissue region\\five scanner views\\$\{x_{r,s}\}_{s=1}^{5}$};
+\node[note] at (1.30,0.53) {biology fixed; acquisition changes};
 
-% Frozen encoder and branch point.
-\node[box, minimum width=1.35cm] (enc) at (6.10,2.72) {frozen\\encoder $E$};
-\foreach \name in {AT2,GT450,DP200,P1000,B300} {
-  \draw[arrow] (v\name.east) -- (enc.west);
-}
-\node[box, minimum width=1.30cm] (std) at (7.95,2.72) {standardize\\feature $x$};
-\draw[arrow] (enc) -- (std);
+\node[block, minimum width=2.20cm] (encoder) at (4.30,1.42) {frozen encoder\\ResNet50, DINOv2,\\or Phikon};
+\draw[arrow] (views.east) -- (encoder.west);
 
-% Biological and acquisition branches.
-\node[branch, minimum width=2.05cm] (bio) at (10.05,3.55) {biological branch\\$z_b=f_b(x)\in\mathbb{R}^{256}$};
-\node[branch, minimum width=2.05cm] (acq) at (10.05,1.88) {acquisition branch\\$z_a=f_a(x)\in\mathbb{R}^{64}$};
-\draw[arrow] (std.east) -- ++(0.42,0) |- (bio.west);
-\draw[arrow] (std.east) -- ++(0.42,0) |- (acq.west);
+% Factor branches.
+\node[branch, minimum width=2.25cm] (bio) at (7.25,2.18) {biological branch\\$z_b\in\mathbb{R}^{256}$};
+\node[branch, minimum width=2.25cm] (acq) at (7.25,0.65) {acquisition branch\\$z_a\in\mathbb{R}^{64}$};
+\draw[arrow] (encoder.east) -- ++(0.42,0) |- (bio.west);
+\draw[arrow] (encoder.east) -- ++(0.42,0) |- (acq.west);
 
-% Biological objectives.
-\node[loss, minimum width=2.05cm] (pair) at (12.85,4.12) {multi-positive\\same-region contrast};
-\node[loss, minimum width=2.05cm] (dep) at (12.85,3.10) {scanner dependence\\+ gradient reversal};
-\draw[dashedarrow] (bio.east) -- (pair.west);
-\draw[dashedarrow] (bio.east) -- (dep.west);
+% Branch-specific objectives.
+\node[objective, minimum width=2.75cm] (bioobj) at (10.35,2.18) {same-region contrast\\scanner dependence penalty\\gradient reversal};
+\node[objective, minimum width=2.75cm] (acqobj) at (10.35,0.65) {scanner prediction\\from acquisition factor};
+\draw[dashedarrow] (bio.east) -- (bioobj.west);
+\draw[dashedarrow] (acq.east) -- (acqobj.west);
 
-% Acquisition objectives.
-\node[loss, minimum width=2.05cm] (scan) at (12.85,1.88) {scanner prediction\\from $z_a$};
-\draw[dashedarrow] (acq.east) -- (scan.west);
+% Output audits.
+\node[audit, minimum width=2.55cm] (bioaudit) at (13.55,2.18) {tissue retrieval preserved\\scanner probe reduced};
+\node[audit, minimum width=2.55cm] (acqaudit) at (13.55,0.65) {scanner identity retained\\tissue retrieval reduced};
+\draw[arrow] (bioobj.east) -- (bioaudit.west);
+\draw[arrow] (acqobj.east) -- (acqaudit.west);
 
-% Joint constraints and decoder.
-\node[loss, minimum width=2.05cm] (xcov) at (12.85,0.72) {cross-factor decorrelation\\variance control};
-\draw[dashedarrow] (bio.south east) -- (xcov.north west);
-\draw[dashedarrow] (acq.south east) -- (xcov.west);
+% Joint constraints below both branches.
+\node[objective, minimum width=5.05cm, minimum height=0.72cm] (joint) at (9.15,-0.72) {joint reconstruction $\widehat{x}=g([z_b,z_a])$ \quad + \quad variance, covariance, and cross-factor decorrelation};
+\draw[dashedarrow] (bio.south) -- ++(0,-0.28) -| (joint.north west);
+\draw[dashedarrow] (acq.south) -- ++(0,-0.20) -| (joint.north east);
 
-\node[box, minimum width=1.65cm] (dec) at (15.65,2.72) {decoder\\$\widehat{x}=g([z_b,z_a])$};
-\draw[arrow] (bio.east) -- ++(0.30,0) |- (dec.west);
-\draw[arrow] (acq.east) -- ++(0.30,0) |- (dec.west);
-
-% Outputs.
-\node[smallbox, minimum width=1.95cm] (bout) at (18.15,3.55) {biology: tissue retained,\\scanner less recoverable};
-\node[smallbox, minimum width=1.95cm] (aout) at (18.15,1.88) {acquisition: scanner retained,\\tissue retrieval reduced};
-\draw[arrow] (bio.east) -- ++(5.00,0) -- (bout.west);
-\draw[arrow] (acq.east) -- ++(5.00,0) -- (aout.west);
-
-\node[label, anchor=west] at (15.00,0.58) {The model separates factors; it does not erase the input representation.};
+\node[note, anchor=west] at (11.85,-0.70) {separate the factors; do not erase the representation};
 \end{tikzpicture}
