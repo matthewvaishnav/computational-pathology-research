@@ -35,22 +35,22 @@ jobs:
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
 
-          # Use callable replacements so LaTeX backslashes are returned literally
-          # instead of being parsed as regular-expression replacement escapes.
+          # Match literal LaTeX command backslashes and return replacement text
+          # through callables so neither side is parsed as a regex escape.
           text = re.sub(
-              r"\documentclass\[[^\]]*\]\{article\}",
+              r"\\documentclass\[[^\]]*\]\{article\}",
               lambda _match: r"\documentclass[10pt]{article}",
               text,
               count=1,
           )
           text = re.sub(
-              r"\usepackage\[[^\]]*\]\{geometry\}",
+              r"\\usepackage\[[^\]]*\]\{geometry\}",
               lambda _match: r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
               text,
               count=1,
           )
           text = re.sub(
-              r"\date\{[^}]*\}",
+              r"\\date\{[^}]*\}",
               lambda _match: r"\date{June 17, 2026}",
               text,
               count=1,
@@ -103,15 +103,15 @@ jobs:
           if r"\usepackage{titlesec}" not in text:
               text = text.replace(anchor, anchor + conference_style, 1)
 
-          # Remove earlier global paragraph settings that could override the
-          # final conference layout. The abstract has its own spacing above.
+          # Remove earlier top-level paragraph settings without touching the
+          # scoped settings inside the abstract environment.
           text = re.sub(
-              r"(?m)^\setlength\{\parindent\}\{[^}]+\}\s*$",
+              r"(?m)^\s*\\setlength\{\\parindent\}\{[^}]+\}\s*$",
               "",
               text,
           )
           text = re.sub(
-              r"(?m)^\setlength\{\parskip\}\{[^}]+\}\s*$",
+              r"(?m)^\s*\\setlength\{\\parskip\}\{[^}]+\}\s*$",
               "",
               text,
           )
