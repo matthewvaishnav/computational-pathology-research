@@ -42,6 +42,28 @@ BROADER_RESEARCH_INCLUDE = r"\input{broader_research_program.tex}"
 ARCHITECTURE_INCLUDE = r"\input{pathoalign_architecture_diagram.tex}"
 ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure.tex}"
 
+TITLE_REPOSITORY_LINK = (
+    r"\url{https://github.com/matthewvaishnav/computational-pathology-research}"
+)
+TITLE_REPOSITORY_TEXT = (
+    r"{\ttfamily github.com/matthewvaishnav/computational-pathology-research}"
+)
+
+APPENDIX_WRAPPER = r"""\appendix
+\section{Complete Empirical Study Record}
+The main text is deliberately narrow and result-first. The following appendix preserves the complete study-by-study research record, including methods, secondary experiments, negative results, systems probes, and claim boundaries.
+
+\input{broader_research_program.tex}
+
+\section{Supporting Identifiability Calculations}
+\input{identifiability_calculations.tex}
+"""
+
+APPENDIX_COMPACT = r"""\appendix
+\input{broader_research_program.tex}
+\input{identifiability_calculations.tex}
+"""
+
 
 def copy_required(source: Path, destination: Path) -> None:
     if not source.is_file():
@@ -51,7 +73,7 @@ def copy_required(source: Path, destination: Path) -> None:
 
 
 def validate_and_normalize_main(path: Path) -> None:
-    """Apply only idempotent compatibility transforms and validate composition."""
+    """Apply idempotent composition transforms and validate the public build."""
     text = path.read_text(encoding="utf-8")
 
     # Compatibility with older source copies. The current source already uses
@@ -77,6 +99,17 @@ def validate_and_normalize_main(path: Path) -> None:
             r"\PassOptionsToPackage{hyphens}{url}" + "\n" + r"\usepackage{hyperref}",
             1,
         )
+
+    # Keep the classic paper appearance black-and-white, including references.
+    text = text.replace("blue!55!black", "black")
+
+    # Avoid a large colored URL annotation in the title block while preserving
+    # the public repository address in a classic monospace author line.
+    text = text.replace(TITLE_REPOSITORY_LINK, TITLE_REPOSITORY_TEXT, 1)
+
+    # The included appendix files already define their own top-level sections.
+    # Remove the temporary wrapper headings to keep appendix lettering clean.
+    text = text.replace(APPENDIX_WRAPPER, APPENDIX_COMPACT, 1)
 
     if BROADER_RESEARCH_INCLUDE not in text:
         if GENERIC_SECONDARY_BLOCK not in text:
