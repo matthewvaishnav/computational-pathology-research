@@ -35,9 +35,8 @@ jobs:
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
 
-          # AlexNet-style conference structure: one justified text column. Tables
-          # and figures may float beside text where useful, but the document is
-          # never forced into a global two-column layout.
+          # Conference-style single-column layout. Tables and figures may float,
+          # but the document is never forced into a global two-column layout.
           text = re.sub(
               r"\documentclass\[[^\]]*\]\{article\}",
               r"\documentclass[10pt]{article}",
@@ -50,7 +49,7 @@ jobs:
               text,
               count=1,
           )
-          text = re.sub(r"\date\{[^}]*\}", r"\date{June 16, 2026}", text, count=1)
+          text = re.sub(r"\date\{[^}]*\}", r"\date{June 17, 2026}", text, count=1)
 
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           conference_style = r"""
@@ -99,8 +98,8 @@ jobs:
           if r"\usepackage{titlesec}" not in text:
               text = text.replace(anchor, anchor + conference_style, 1)
 
-          # Remove any earlier global paragraph settings that would override the
-          # final single-column style. The abstract receives its own spacing above.
+          # Remove earlier global paragraph settings that could override the
+          # final conference layout. The abstract has its own spacing above.
           text = re.sub(
               r"(?m)^\setlength\{\parindent\}\{[^}]+\}\s*$",
               "",
@@ -134,27 +133,15 @@ jobs:
                   1,
               )
 
-          old = r"""\begin{align}
-            \mathbb{E}[\Delta M]
-            &=\Pr(H)\Pr(T=1\mid H)\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H,T=1] \\
-            &\quad+\Pr(H^c)\Pr(T=1\mid H^c)\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H^c,T=1].
-          \end{align}"""
-          new = r"""\begin{align}
-            \mathbb{E}[\Delta M]
-            &=\Pr(H)\Pr(T=1\mid H) \\
-            &\quad\times\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H,T=1] \\
-            &\quad+\Pr(H^c)\Pr(T=1\mid H^c) \\
-            &\quad\times\mathbb{E}[M_{\mathrm{DA}}-M_{\mathrm{FA}}\mid H^c,T=1].
-          \end{align}"""
-          if old in text:
-              text = text.replace(old, new, 1)
-
           if "twocolumn" in text:
               raise RuntimeError("Global two-column formatting remains")
           if r"\usepackage{titlesec}" not in text:
               raise RuntimeError("Single-column conference style was not applied")
           if calc not in text:
               raise RuntimeError("Calculations section was not included")
+          for required in ("PathoAlign", "TransnnMIL", "PathologyFL"):
+              if required not in text:
+                  raise RuntimeError(f"Missing platform section: {required}")
 
           path.write_text(text, encoding="utf-8")
           PY
@@ -186,17 +173,28 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p paper_pdf_site
+          canonical="computational-pathology-research-platform-for-federated-oncology.pdf"
+          cp paper/arxiv/build/main.pdf "paper_pdf_site/${canonical}"
+
+          # Stable compatibility aliases for previously shared links.
           cp paper/arxiv/build/main.pdf paper_pdf_site/pathoalign-computational-pathology-research.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
+
           touch paper_pdf_site/.nojekyll
           cat > paper_pdf_site/index.html <<'EOF'
           <!doctype html>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <meta http-equiv="refresh" content="0; url=./pathoalign-computational-pathology-research.pdf">
-          <title>PathoAlign Computational Pathology Research</title>
-          <a href="./pathoalign-computational-pathology-research.pdf">Open research PDF</a>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta http-equiv="refresh" content="0; url=./computational-pathology-research-platform-for-federated-oncology.pdf">
+            <title>Computational Pathology Research Platform for Federated Oncology</title>
+          </head>
+          <body>
+            <p><a href="./computational-pathology-research-platform-for-federated-oncology.pdf">Open the computational pathology research platform PDF</a></p>
+          </body>
+          </html>
           EOF
 
       - name: Deploy PDF site to gh-pages
