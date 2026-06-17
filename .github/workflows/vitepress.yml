@@ -162,8 +162,8 @@ jobs:
       - name: Verify PDF and bibliography
         run: |
           test -s paper/arxiv/build/main.pdf
-          test -f paper/arxiv/build/main.bbl
-          reference_count=$(grep -c '\bibitem' paper/arxiv/build/main.bbl || true)
+          test -s paper/arxiv/build/main.bbl
+          reference_count=$(grep -F -c '\bibitem' paper/arxiv/build/main.bbl || true)
           echo "Rendered bibliography entries: ${reference_count}"
           test "${reference_count}" -ge 10
 
