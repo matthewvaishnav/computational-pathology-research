@@ -9,38 +9,34 @@
   objective/.style={draw=black, line width=0.62pt, densely dashed, fill=white, rounded corners=1pt, align=center, minimum height=0.92cm, inner sep=4pt, font=\scriptsize},
   audit/.style={draw=black, line width=0.72pt, fill=white, align=center, minimum height=0.92cm, inner sep=4pt, font=\scriptsize},
   arrow/.style={->, draw=black, line width=0.85pt},
-  dashedarrow/.style={->, draw=black, line width=0.60pt, densely dashed},
-  note/.style={font=\scriptsize, align=center}
+  dashedarrow/.style={->, draw=black, line width=0.60pt, densely dashed}
 ]
 
 % Shared input and encoder.
 \node[block, minimum width=2.55cm] (views) at (1.28,1.42) {same tissue region\\five scanner views\\$\{x_{r,s}\}_{s=1}^{5}$};
-\node[note] at (1.28,0.50) {biology fixed; acquisition changes};
-
-\node[block, minimum width=2.15cm] (encoder) at (4.20,1.42) {frozen feature\\encoder};
-\node[note] at (4.20,0.78) {ResNet50, DINOv2, or Phikon};
+\node[block, minimum width=2.30cm] (encoder) at (4.28,1.42) {frozen encoder\\ResNet50 / DINOv2\\Phikon};
 \draw[arrow] (views.east) -- (encoder.west);
 
 % Factor branches.
-\node[branch, minimum width=2.20cm] (bio) at (7.00,2.18) {biological branch\\$z_b\in\mathbb{R}^{256}$};
-\node[branch, minimum width=2.20cm] (acq) at (7.00,0.65) {acquisition branch\\$z_a\in\mathbb{R}^{64}$};
+\node[branch, minimum width=2.20cm] (bio) at (7.10,2.18) {biological branch\\$z_b\in\mathbb{R}^{256}$};
+\node[branch, minimum width=2.20cm] (acq) at (7.10,0.65) {acquisition branch\\$z_a\in\mathbb{R}^{64}$};
 \draw[arrow] (encoder.east) -- (bio.west);
 \draw[arrow] (encoder.east) -- (acq.west);
 
 % Branch-specific objectives.
-\node[objective, minimum width=2.70cm] (bioobj) at (10.00,2.18) {same-region contrast\\scanner dependence penalty\\gradient reversal};
-\node[objective, minimum width=2.70cm] (acqobj) at (10.00,0.65) {scanner prediction\\from acquisition factor};
+\node[objective, minimum width=2.70cm] (bioobj) at (10.10,2.18) {same-region contrast\\scanner dependence penalty\\gradient reversal};
+\node[objective, minimum width=2.70cm] (acqobj) at (10.10,0.65) {scanner prediction\\from acquisition factor};
 \draw[dashedarrow] (bio.east) -- (bioobj.west);
 \draw[dashedarrow] (acq.east) -- (acqobj.west);
 
 % Output audits.
-\node[audit, minimum width=2.48cm] (bioaudit) at (13.08,2.18) {tissue retrieval preserved\\scanner probe reduced};
-\node[audit, minimum width=2.48cm] (acqaudit) at (13.08,0.65) {scanner identity retained\\tissue retrieval reduced};
+\node[audit, minimum width=2.48cm] (bioaudit) at (13.18,2.18) {tissue retrieval preserved\\scanner probe reduced};
+\node[audit, minimum width=2.48cm] (acqaudit) at (13.18,0.65) {scanner identity retained\\tissue retrieval reduced};
 \draw[arrow] (bioobj.east) -- (bioaudit.west);
 \draw[arrow] (acqobj.east) -- (acqaudit.west);
 
 % Joint constraints below both branches.
-\node[objective, minimum width=6.15cm, minimum height=0.78cm] (joint) at (9.20,-0.78) {joint reconstruction $\widehat{x}=g([z_b,z_a])$\\variance, covariance, and cross-factor decorrelation prevent collapse and redundant factors};
+\node[objective, minimum width=6.20cm, minimum height=0.78cm] (joint) at (9.30,-0.82) {joint reconstruction $\widehat{x}=g([z_b,z_a])$\\variance, covariance, and cross-factor decorrelation prevent collapse and redundant factors};
 \draw[dashedarrow] (bio.south) -- ++(0,-0.18) -| (joint.north west);
 \draw[dashedarrow] (acq.south) -- ++(0,-0.18) -| (joint.north east);
 \end{tikzpicture}
