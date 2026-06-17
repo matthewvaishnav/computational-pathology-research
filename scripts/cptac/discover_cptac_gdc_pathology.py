@@ -2,8 +2,8 @@
 """Discover whether CPTAC pathology slide images are exposed through the GDC API.
 
 This script is metadata-only. It enumerates GDC projects, selects any project or
-program containing ``CPTAC``, and separately inventories all public GDC files
-whose data type is ``Slide Image``. It never downloads slide bytes.
+program containing ``CPTAC``, and then queries slide-image files directly within
+those project IDs. It never downloads slide bytes.
 """
 
 from __future__ import annotations
@@ -45,8 +45,6 @@ FILE_FIELDS = [
     "cases.samples.submitter_id",
     "cases.samples.sample_type",
     "cases.samples.tissue_type",
-    "cases.samples.portions.slides.slide_id",
-    "cases.samples.portions.slides.submitter_id",
 ]
 
 
@@ -73,6 +71,16 @@ def hits_from_response(payload: dict[str, Any]) -> list[dict[str, Any]]:
     data = payload.get("data", {})
     hits = data.get("hits", []) if isinstance(data, dict) else []
     return hits if isinstance(hits, list) else []
+
+
+def pagination_total(payload: dict[str, Any]) -> int | None:
+    data = payload.get("data", {})
+    pagination = data.get("pagination", {}) if isinstance(data, dict) else {}
+    value = pagination.get("total") if isinstance(pagination, dict) else None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def flatten_project(project: dict[str, Any]) -> dict[str, Any]:
@@ -135,6 +143,28 @@ def contains_cptac(value: Any) -> bool:
     return "CPTAC" in str(value or "").upper()
 
 
+def direct_slide_filter(project_ids: list[str]) -> dict[str, Any]:
+    return {
+        "op": "and",
+        "content": [
+            {
+                "op": "in",
+                "content": {
+                    "field": "files.data_type",
+                    "value": ["Slide Image"],
+                },
+            },
+            {
+                "op": "in",
+                "content": {
+                    "field": "cases.project.project_id",
+                    "value": project_ids,
+                },
+            },
+        ],
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, required=True)
@@ -166,77 +196,73 @@ def main() -> None:
         cptac_projects = projects.loc[mask].copy()
     cptac_projects.to_csv(args.out_dir / "cptac_gdc_projects.csv", index=False)
 
-    slide_filter = {
-        "op": "in",
-        "content": {
-            "field": "files.data_type",
-            "value": ["Slide Image"],
-        },
-    }
-    file_response = request_json(
-        "files",
-        params={
-            "format": "JSON",
-            "size": args.page_size,
-            "expand": "cases,cases.project,cases.samples",
-            "fields": ",".join(FILE_FIELDS),
-        },
-        payload={"filters": slide_filter},
-    )
-    file_hits = hits_from_response(file_response)
-    slide_rows: list[dict[str, Any]] = []
-    for hit in file_hits:
-        slide_rows.extend(flatten_slide_file(hit))
-    slide_files = pd.DataFrame(slide_rows)
-    slide_files.to_csv(args.out_dir / "all_gdc_slide_images.csv", index=False)
-
-    if slide_files.empty or "project_id" not in slide_files.columns:
-        cptac_slide_files = slide_files.copy()
-    else:
-        cptac_slide_files = slide_files[
-            slide_files["project_id"].map(contains_cptac)
-        ].copy()
-    cptac_slide_files.to_csv(args.out_dir / "cptac_gdc_slide_images.csv", index=False)
-
     project_ids = (
         sorted(cptac_projects["project_id"].dropna().astype(str).unique().tolist())
         if not cptac_projects.empty
         else []
     )
+
+    if project_ids:
+        file_response = request_json(
+            "files",
+            params={
+                "format": "JSON",
+                "size": args.page_size,
+                "expand": "cases,cases.project,cases.samples",
+                "fields": ",".join(FILE_FIELDS),
+            },
+            payload={"filters": direct_slide_filter(project_ids)},
+        )
+        direct_total = pagination_total(file_response)
+        file_hits = hits_from_response(file_response)
+    else:
+        direct_total = 0
+        file_hits = []
+
+    if direct_total is not None and direct_total > args.page_size:
+        raise RuntimeError(
+            "Direct CPTAC slide query exceeded page size; increase --page-size "
+            f"above {direct_total}."
+        )
+
+    slide_rows: list[dict[str, Any]] = []
+    for hit in file_hits:
+        slide_rows.extend(flatten_slide_file(hit))
+    cptac_slide_files = pd.DataFrame(slide_rows)
+    cptac_slide_files.to_csv(args.out_dir / "cptac_gdc_slide_images.csv", index=False)
+
     slide_project_ids = (
         sorted(cptac_slide_files["project_id"].dropna().astype(str).unique().tolist())
         if not cptac_slide_files.empty and "project_id" in cptac_slide_files.columns
         else []
     )
+    unique_slide_files = (
+        int(cptac_slide_files["file_id"].nunique())
+        if not cptac_slide_files.empty and "file_id" in cptac_slide_files.columns
+        else 0
+    )
+
     summary = {
         "status": (
             "cptac_slide_images_found_in_gdc"
-            if not cptac_slide_files.empty
+            if unique_slide_files > 0
             else (
                 "cptac_projects_found_but_no_slide_images"
                 if project_ids
                 else "no_cptac_projects_found_in_gdc"
             )
         ),
+        "query_mode": "direct_project_and_slide_image_filter",
         "all_gdc_project_count": int(len(projects)),
         "cptac_project_count": int(len(cptac_projects)),
         "cptac_project_ids": project_ids,
-        "all_gdc_slide_image_rows": int(len(slide_files)),
-        "all_gdc_slide_image_files": (
-            int(slide_files["file_id"].nunique())
-            if not slide_files.empty and "file_id" in slide_files.columns
-            else 0
-        ),
+        "direct_query_total_file_hits": direct_total,
         "cptac_slide_image_rows": int(len(cptac_slide_files)),
-        "cptac_slide_image_files": (
-            int(cptac_slide_files["file_id"].nunique())
-            if not cptac_slide_files.empty and "file_id" in cptac_slide_files.columns
-            else 0
-        ),
+        "cptac_slide_image_files": unique_slide_files,
         "cptac_slide_project_ids": slide_project_ids,
         "next_gate": (
             "Audit patient labels and scanner metadata before downloading any slide."
-            if not cptac_slide_files.empty
+            if unique_slide_files > 0
             else "Do not use GDC as the CPTAC pathology route; inspect PDC/publication supporting-data resources."
         ),
     }
