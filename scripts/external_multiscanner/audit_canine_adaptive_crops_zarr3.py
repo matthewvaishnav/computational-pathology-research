@@ -95,10 +95,10 @@ def read_adaptive_patch_zarr3(
         slices[y_axis] = slice(source_y0, source_y1)
         slices[x_axis] = slice(source_x0, source_x1)
 
-        # Opening the whole pyramid is deliberate: with Zarr 3, a pyramidal
-        # TIFF store is a Group and each resolution is an array named "0",
-        # "1", ... . Older/single-level files may still expose an Array root.
-        store = audit.tifffile.imread(path, series=0, return_as="zarr")
+        # The installed tifffile release exposes ``level.aszarr()``. Under
+        # Zarr 3 this store may open as a Group rather than an Array, even for
+        # one selected level. Resolve the requested level or its sole array.
+        store = level.aszarr()
         try:
             root = audit.zarr.open(store, mode="r")
             zarray = select_level_array(root, level_index)
