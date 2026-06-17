@@ -35,8 +35,8 @@
   \par\normalsize
 }
 
-\title{PathoAlign: Paired-Acquisition Neural Identifiability\\
-Across Three Representation Families in Computational Pathology}
+\title{PathoAlign and a Broader Computational-Pathology Research Program\\
+Paired-Acquisition Identifiability, Whole-Slide Modeling, and External-Center Validation}
 
 \author{Matthew Vaishnav\\
 Independent Researcher}
@@ -47,61 +47,36 @@ Independent Researcher}
 \maketitle
 
 \begin{abstract}
-Computational-pathology representations can preserve tissue identity while simultaneously encoding scanner, staining, preparation, and institutional acquisition effects. High task accuracy or retrieval performance therefore does not establish that biological and acquisition information have been separated. I present PathoAlign, a paired-acquisition factorization objective that uses biology-preserving interventions---the same tissue observed on multiple scanners---to learn a biological representation and a distinct acquisition representation.
+This paper summarizes a computational-pathology research program with three linked empirical lines: PathoAlign for paired-acquisition representation factorization on SCORPION, TransnnMIL for weakly supervised whole-slide modeling on PANDA, and PathologyFL for external-center/federated validation on CAMELYON17. The strongest locked result is PathoAlign, but PANDA and CAMELYON17 are substantive parts of the public research record and are reported explicitly rather than treated as footnotes.
 
-The main study uses SCORPION: 480 aligned regions from 48 original human H\&E slides, each scanned on five devices, yielding 2,400 real-tissue image patches \citep{ryu2025scorpion}. Frozen-feature audits found strong scanner predictability despite high tissue retention in three representation families: ImageNet ResNet50, self-supervised DINOv2-Base, and pathology-native Phikon. PathoAlign combines multi-positive same-region contrastive learning, a direct scanner-dependence penalty in biology, scanner prediction in the acquisition branch, gradient reversal, reconstruction, variance control, and cross-factor decorrelation.
+PathoAlign addresses the fact that pathology representations can preserve tissue identity while simultaneously encoding scanner, staining, preparation, and institutional acquisition effects. The main paired-scanner study uses SCORPION: 480 aligned regions from 48 original human H\&E slides, each scanned on five devices, yielding 2,400 real-tissue image patches \citep{ryu2025scorpion}. Frozen-feature audits found strong scanner predictability despite high tissue retention in ImageNet ResNet50, DINOv2-Base, and pathology-native Phikon. PathoAlign combines multi-positive same-region contrastive learning, a direct scanner-dependence penalty in biology, scanner prediction in the acquisition branch, gradient reversal, reconstruction, variance control, and cross-factor decorrelation.
 
-The objective was calibrated only on DINOv2 development data, then frozen. Five-fold original-slide evaluation reduced biological scanner-probe accuracy from 0.7825 to 0.3989 relative to paired consistency while improving mean paired cosine by 0.0310 and preserving near-perfect tissue retrieval. Without any backbone-specific tuning, the same objective transferred to Phikon and ResNet50. Scanner-probe accuracy decreased by 0.4353 on Phikon and 0.3685 on ResNet50; mean paired cosine increased by 0.0900 and 0.0255, respectively; retrieval was preserved or improved. Every transfer backbone independently passed all preregistered criteria. Across the two transfer backbones, the repeated-measures slide-blocked scanner-probe difference was $-0.4019$ with 95\% bootstrap interval $[-0.4145,-0.3895]$, favorable on all 48 slides. Scanner identity remained strongly decodable from the compact acquisition branch, supporting factor separation rather than representational erasure.
+The objective was calibrated only on DINOv2 development data, then frozen. Five-fold original-slide evaluation reduced biological scanner-probe accuracy from 0.7825 to 0.3989 relative to paired consistency while improving mean paired cosine by 0.0310 and preserving near-perfect tissue retrieval. Without any backbone-specific tuning, the same objective transferred to Phikon and ResNet50. Scanner-probe accuracy decreased by 0.4353 on Phikon and 0.3685 on ResNet50; mean paired cosine increased by 0.0900 and 0.0255, respectively; retrieval was preserved or improved. Across the two transfer backbones, the repeated-measures slide-blocked scanner-probe difference was $-0.4019$ with 95\% bootstrap interval $[-0.4145,-0.3895]$, favorable on all 48 slides. Scanner identity remained strongly decodable from the compact acquisition branch, supporting factor separation rather than representational erasure.
 
-The central result is therefore not site-signal alignment or federated weighting. It is frozen transfer of a paired-acquisition neural-identifiability objective across three pretrained representation families on real human histopathology. The result remains bounded to SCORPION and does not establish clinical validation or external-dataset generalization.
+The public PDF also reports PANDA/TransnnMIL whole-slide grading and CAMELYON17/PathologyFL external-center aggregation results with their own claim boundaries. None of these results establish clinical validation, diagnostic deployment readiness, or universal biological/acquisition identifiability.
 \end{abstract}
 
 \section{Introduction}
 Digital pathology images contain both tissue morphology and acquisition-specific variation. Scanner optics, color response, compression, staining, preparation, and local workflow can all influence the representation learned from a patch. These factors are not necessarily orthogonal to biological content. A model may therefore retrieve the correct tissue or perform well on a downstream task while still encoding scanner identity, and indiscriminate nuisance removal can erase biologically useful information.
 
-Observational site labels alone do not identify which directions are nuisance and which carry tissue information. Biology-preserving paired acquisitions change the information structure. When the same tissue region is scanned on multiple devices, tissue identity is held fixed while scanner conditions change. This creates a controlled intervention for learning what should remain stable and what can be isolated as acquisition-specific.
-
-SCORPION was constructed around this design: 480 aligned tissue regions from 48 original H\&E slides were scanned on five systems, producing 2,400 paired real-human-tissue patches \citep{ryu2025scorpion}. The dataset supports a direct representation question: can a learned biological factor preserve the identity of the same tissue across scanners while making scanner identity difficult to recover, and can the removed information remain available in a separate acquisition factor?
-
-PathoAlign treats this as neural identifiability and factorization rather than as a generic domain-generalization score. The core evidence chain is:
-\begin{enumerate}[leftmargin=*]
-  \item audit scanner entanglement in several frozen feature families;
-  \item calibrate the objective on one development backbone;
-  \item freeze every weight and training choice;
-  \item evaluate unseen original-slide folds;
-  \item transfer the objective unchanged to new representation families;
-  \item verify that scanner information is retained in a separate acquisition branch rather than simply destroyed.
-\end{enumerate}
+The repository has three major empirical threads. PathoAlign studies representation factorization under paired scanner interventions. TransnnMIL studies whole-slide aggregation and ordinal grading from pathology foundation-model feature bags. PathologyFL studies external-center generalization and auditable institutional influence under distribution shift. They are related parts of one computational-pathology program, but they have different datasets, units of analysis, metrics, and claim boundaries.
 
 \subsection*{Working thesis}
-Paired interventions can supervise a representation in which tissue identity is retained while acquisition identity becomes substantially less recoverable. A credible result must survive unseen-slide evaluation, transfer across representation families, retrieval and collapse audits, and explicit inspection of the acquisition factor.
+Biology-preserving paired interventions can supervise a representation in which tissue identity is retained while acquisition identity becomes substantially less recoverable. Whole-slide aggregation and external-center validation then test later stages of the pathology learning pipeline. These stages should be reported together but not conflated.
 
 \section{Contributions}
-The paper makes seven principal contributions.
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{A real-tissue multi-backbone entanglement audit.} Scanner identity remains strongly linearly recoverable from ResNet50, DINOv2-Base \citep{oquab2023dinov2}, and Phikon \citep{filiot2023scaling} representations despite high cross-scanner tissue retention.
-  \item \textbf{A paired-acquisition factorization objective.} PathoAlign learns biological and acquisition factors using same-region positives, direct scanner-dependence suppression, acquisition prediction, gradient reversal, reconstruction, variance control, and cross-factor decorrelation.
-  \item \textbf{A locked DINOv2 development chain.} Objective calibration, independent-seed confirmation, and final five-fold original-slide evaluation are separated to reduce tuning against the final test outcomes.
-  \item \textbf{A frozen three-backbone transfer test.} The DINOv2-selected objective is applied unchanged to Phikon and ImageNet ResNet50 with new seeds and no backbone-specific tuning.
-  \item \textbf{Slide-blocked inference.} Optimization seeds are averaged within each original slide, and the 48 slides---not patches, regions, or scanner views---are treated as the independent blocks.
-  \item \textbf{Factor-retention and collapse audits.} Scanner identity remains available in a compact acquisition factor, tissue identity remains concentrated in biology, and every biological dimension retains nonzero test-fold variance.
-  \item \textbf{Supporting identifiability studies and negative results.} Controlled synthetic experiments map paired-resource recovery regimes, while earlier failures show why lower site leakage alone is insufficient evidence of better biological representations.
+  \item \textbf{PathoAlign / SCORPION:} a real-tissue multi-backbone scanner-entanglement audit and frozen paired-acquisition factorization across DINOv2, Phikon, and ResNet50.
+  \item \textbf{TransnnMIL / PANDA:} weakly supervised whole-slide modeling on 10,611 verified PANDA Phikon feature bags, including mean-pooled, AttentionMIL, and TransnnMIL baselines.
+  \item \textbf{PathologyFL / CAMELYON17:} external-center feature-level validation over 455,954 examples from five centers, comparing sample-proportional, equal-client, and dominant-source-downweighted aggregation.
+  \item \textbf{Claim-boundary discipline:} the paper separates representation diagnostics, slide-level grading, and external-center aggregation rather than using one result to overstate another.
 \end{enumerate}
 
-\section{SCORPION paired-scanner benchmark}
-\subsection{Dataset structure}
-The public SCORPION release contains 48 original H\&E slides, ten aligned regions per slide, and one image from each of five scanners for every region: AT2, GT450, DP200, P1000, and B300 \citep{ryu2025scorpion}. This yields 480 tissue regions and 2,400 images.
+\section{SCORPION paired-scanner PathoAlign study}
+\subsection{Dataset and frozen representation audit}
+The public SCORPION release contains 48 original H\&E slides, ten aligned regions per slide, and one image from each of five scanners for every region: AT2, GT450, DP200, P1000, and B300 \citep{ryu2025scorpion}. This yields 480 tissue regions and 2,400 images. The original slide is the split, bootstrap, and permutation unit.
 
-The original slide is the split, bootstrap, and permutation unit. All ten regions and all five scanner views from a slide remain in the same fold. Patch-level or region-level random splitting would expose nearly identical tissue content across training and test data and is therefore prohibited.
-
-\subsection{Frozen representation audit}
-Three representation families were audited:
-\begin{itemize}[leftmargin=*]
-  \item ImageNet-pretrained ResNet50 \citep{he2016deep};
-  \item general-purpose self-supervised DINOv2-Base \citep{oquab2023dinov2};
-  \item pathology-native Phikon \citep{filiot2023scaling}.
-\end{itemize}
-A logistic scanner probe was trained on slide-disjoint training data and evaluated on held-out slides. Tissue identity was measured with bidirectional cross-scanner region retrieval.
+Three representation families were audited: ImageNet-pretrained ResNet50 \citep{he2016deep}, self-supervised DINOv2-Base \citep{oquab2023dinov2}, and pathology-native Phikon \citep{filiot2023scaling}. A logistic scanner probe was trained on slide-disjoint training data and evaluated on held-out slides. Tissue identity was measured with bidirectional cross-scanner region retrieval.
 
 \begin{table}[!htbp]
 \centering
@@ -122,93 +97,23 @@ Phikon & 0.8787 & 0.9825 & 0.9640 \\
 
 Scanner identity is therefore not confined to one architecture or pretraining domain. Phikon retained the strongest scanner signal, even though it was pretrained specifically for pathology. DINOv2 was selected as the development substrate because tissue retrieval was nearly saturated while residual scanner information remained substantial.
 
-\section{PathoAlign paired-factor objective}
-Let $x_{r,s}\in\mathbb{R}^{D}$ denote the frozen feature for tissue region $r$ scanned by scanner $s$. PathoAlign learns
-\begin{equation}
-  z_b=f_b(x_{r,s})\in\mathbb{R}^{256},
-  \qquad
-  z_a=f_a(x_{r,s})\in\mathbb{R}^{64},
-\end{equation}
-where $z_b$ is the biological representation and $z_a$ is the acquisition representation. A decoder reconstructs the standardized input feature:
-\begin{equation}
-  \widehat{x}_{r,s}=g([z_b,z_a]).
-\end{equation}
+\subsection{PathoAlign objective}
+Let $x_{r,s}\in\mathbb{R}^{D}$ denote the frozen feature for tissue region $r$ scanned by scanner $s$. PathoAlign learns a biological representation $z_b=f_b(x_{r,s})\in\mathbb{R}^{256}$ and an acquisition representation $z_a=f_a(x_{r,s})\in\mathbb{R}^{64}$. The biological branch is trained with multi-positive same-region contrastive learning in batches containing all five scanner views of each selected region.
 
-\subsection{Paired biological objective}
-Every minibatch contains all five scanner views of each selected tissue region. All other views of the same region are positives, and views of different regions are negatives:
-\begin{equation}
-  \mathcal{L}_{\mathrm{pair}}=
-  -\frac{1}{B}\sum_i
-  \frac{1}{|P(i)|}
-  \sum_{p\in P(i)}
-  \log
-  \frac{\exp(\operatorname{sim}(z_{b,i},z_{b,p})/\tau)}
-  {\sum_{j\neq i}\exp(\operatorname{sim}(z_{b,i},z_{b,j})/\tau)}.
-\end{equation}
-
-\subsection{Direct scanner-dependence suppression}
-Gradient reversal alone was insufficient in an initial smoke experiment. The frozen objective therefore includes a direct normalized linear-dependence penalty between biological features and one-hot scanner labels. Let $\widetilde Z_b$ and $\widetilde Y_s$ be column-standardized batch matrices:
+The frozen objective adds a direct normalized scanner-dependence penalty between biological features and one-hot scanner labels,
 \begin{equation}
   \mathcal{L}_{\mathrm{dep}}
   =\left\|
   \frac{1}{B-1}\widetilde Z_b^{\top}\widetilde Y_s
-  \right\|_F^2.
+  \right\|_F^2,
 \end{equation}
-This directly targets the class of scanner dependence measured by the held-out linear probe while the variance and contrastive terms prevent a constant solution.
+plus scanner prediction from the acquisition branch, gradient reversal against scanner prediction from biology, reconstruction, variance control, and biological/acquisition cross-covariance. The frozen weights are scanner adversary 0.5, scanner acquisition 0.5, direct scanner-dependence 20.0, cross-covariance 0.05, reconstruction 1.0, variance 1.0, and biological covariance 0.01. The comparison method uses the same biological projection, paired contrastive loss, reconstruction, variance, and covariance terms, but no acquisition branch or scanner-separation losses.
 
-\subsection{Acquisition retention and factor separation}
-The acquisition branch predicts scanner identity with $\mathcal{L}_{\mathrm{scan},a}$. A scanner classifier connected through gradient reversal discourages scanner prediction from $z_b$, producing $\mathcal{L}_{\mathrm{scan},b}$. Cross-covariance penalizes redundant information between factors:
-\begin{equation}
-  \mathcal{L}_{\mathrm{xcov}}
-  =\left\|
-  \frac{1}{B-1}
-  (Z_b-\overline Z_b)^{\top}(Z_a-\overline Z_a)
-  \right\|_F^2.
-\end{equation}
-Reconstruction, variance, and within-biological covariance terms retain information and discourage collapse.
+\subsection{Frozen evaluation protocol}
+DINOv2 development was separated into bounded calibration, independent-seed confirmation, and final five-fold original-slide evaluation. The selected dependence weight of 20 was frozen before final testing. Cross-backbone transfer was preregistered before inspecting Phikon or ResNet50 outcomes. Both transfer backbones used new shared seeds 701--705, the same five rotating folds, and exactly the same objective and training schedule.
 
-The frozen objective is
-\begin{align}
-  \mathcal{L}
-  &=\mathcal{L}_{\mathrm{pair}}
-  +\mathcal{L}_{\mathrm{recon}}
-  +\mathcal{L}_{\mathrm{var}}
-  +0.01\mathcal{L}_{\mathrm{cov}} \\
-  &\quad+0.5\mathcal{L}_{\mathrm{scan},b}
-  +0.5\mathcal{L}_{\mathrm{scan},a}
-  +20\mathcal{L}_{\mathrm{dep}}
-  +0.05\mathcal{L}_{\mathrm{xcov}}.
-\end{align}
-The comparison method uses the same biological projection, paired contrastive loss, reconstruction, variance, and covariance terms, but no acquisition branch or scanner-separation losses.
-
-\section{Frozen evaluation protocol}
-\subsection{DINOv2 development}
-Development was separated into three stages:
-\begin{enumerate}[leftmargin=*]
-  \item \textbf{Bounded calibration.} Four predefined dependence settings were compared with one paired-consistency reference using seeds 401--403 on fold-0 train/validation data.
-  \item \textbf{Independent-seed confirmation.} The selected dependence weight of 20 was frozen and tested with new seeds 501--510 on the same development partition. The scanner-probe difference was $-0.3958$, favorable in all ten seeds, with exact sign-flip $p=0.001953$.
-  \item \textbf{Five-fold original-slide evaluation.} No objective, architecture, schedule, or success threshold was changed. Seeds 601--605 were new, and every original slide served as test exactly once per seed and method.
-\end{enumerate}
-
-\subsection{Cross-backbone preregistration}
-Before inspecting transfer outcomes, the DINOv2-selected objective was preregistered for Phikon and ResNet50. Both transfer backbones used new shared seeds 701--705, the same five rotating folds, and exactly the same objective and training schedule. Each transfer backbone required 50 fits: five folds, five seeds, and two methods.
-
-A backbone passed only if all seven conditions held:
-\begin{enumerate}[leftmargin=*]
-  \item scanner-probe reduction at least 0.15 absolute;
-  \item scanner-probe bootstrap interval entirely below zero;
-  \item mean retrieval non-inferior within a 0.02 margin;
-  \item worst-pair retrieval non-inferior within a 0.02 margin;
-  \item mean paired-cosine interval entirely above zero;
-  \item worst paired-cosine interval entirely above zero;
-  \item every biological dimension retained nonzero test-fold variance.
-\end{enumerate}
-The cross-backbone claim required both Phikon and ResNet50 to pass independently without retuning.
-
-\subsection{Inference unit}
 Each model used 75 epochs, region batch size 32, AdamW learning rate $3\times10^{-4}$, and weight decay $10^{-4}$. Optimization seeds were averaged within slide. Bootstrap intervals and sign-flip tests used the 48 original slides as matched blocks. Patches, regions, scanner views, and backbone repetitions were not treated as independent biological samples.
 
-\section{Results}
 \subsection{DINOv2 five-fold result}
 \begin{table}[!htbp]
 \centering
@@ -228,45 +133,7 @@ PathoAlign & \textbf{0.8789} & \textbf{0.8502} & 0.99979 & 0.99873 & \textbf{0.3
 
 The slide-blocked scanner-probe difference was $-0.3854$ with 95\% bootstrap interval $[-0.4079,-0.3622]$, favorable on all 48 slides. Mean paired cosine improved by $0.0310$ with interval $[0.0287,0.0333]$, and worst paired cosine improved by $0.0311$ with interval $[0.0279,0.0344]$. Mean and worst retrieval changes were $-0.00008$ and $-0.00042$, both far inside the non-inferiority margin.
 
-\subsection{Frozen transfer to Phikon}
-\begin{table}[!htbp]
-\centering
-\caption{Phikon transfer means. No objective or training parameter was changed from DINOv2 development.}
-\small
-\begin{tabular}{lrrrrrr}
-\toprule
-Method & Mean cos. & Worst cos. & Mean retr. & Worst retr. & Scanner probe & Eff. rank \\
-\midrule
-Paired consistency & 0.7740 & 0.7364 & 0.99906 & 0.99404 & 0.9543 & 55.36 \\
-PathoAlign & \textbf{0.8645} & \textbf{0.8300} & \textbf{0.99968} & \textbf{0.99744} & \textbf{0.5200} & 46.75 \\
-\bottomrule
-\end{tabular}
-\label{tab:phikon_means}
-\end{table}
-\FloatBarrier
-
-The scanner-probe difference was $-0.4353$ with interval $[-0.4489,-0.4215]$, favorable on all 48 slides. Mean paired cosine improved by $0.0900$ and worst paired cosine by $0.0963$, both favorable on all slides. Mean and worst retrieval increased by $0.00060$ and $0.00479$. All preregistered criteria passed.
-
-\subsection{Frozen transfer to ResNet50}
-\begin{table}[!htbp]
-\centering
-\caption{ImageNet ResNet50 transfer means under the same frozen objective.}
-\small
-\begin{tabular}{lrrrrrr}
-\toprule
-Method & Mean cos. & Worst cos. & Mean retr. & Worst retr. & Scanner probe & Eff. rank \\
-\midrule
-Paired consistency & 0.6286 & 0.5713 & 0.96447 & 0.93556 & 0.6828 & 87.60 \\
-PathoAlign & \textbf{0.6544} & \textbf{0.5978} & \textbf{0.97262} & \textbf{0.94549} & \textbf{0.3145} & 85.09 \\
-\bottomrule
-\end{tabular}
-\label{tab:resnet_means}
-\end{table}
-\FloatBarrier
-
-The scanner-probe difference was $-0.3685$ with interval $[-0.3907,-0.3449]$, favorable on all 48 slides. Mean paired cosine improved by $0.0255$ on all slides; worst paired cosine improved by $0.0294$ on 47 of 48 slides. Mean retrieval increased by $0.00808$ and worst retrieval by $0.01688$. All preregistered criteria passed.
-
-\subsection{Cross-backbone summary}
+\subsection{Frozen transfer across representation families}
 \begin{table}[!htbp]
 \centering
 \caption{Slide-blocked PathoAlign minus paired-consistency contrasts for all three feature families.}
@@ -284,15 +151,7 @@ ResNet50 & $-0.3685$ & $+0.0255$ & $+0.0294$ & $+0.00808$ & $+0.01688$ \\
 \end{table}
 \FloatBarrier
 
-Both unseen transfer backbones independently passed all seven criteria, so the preregistered cross-backbone transfer claim passed. Averaging Phikon and ResNet50 method differences within each of the same 48 slides gave:
-\begin{itemize}[leftmargin=*]
-  \item scanner-probe difference $-0.4019$, 95\% interval $[-0.4145,-0.3895]$;
-  \item mean paired-cosine difference $+0.0578$, interval $[0.0539,0.0615]$;
-  \item worst paired-cosine difference $+0.0628$, interval $[0.0585,0.0672]$;
-  \item mean retrieval difference $+0.00434$, interval $[0.00331,0.00543]$;
-  \item worst retrieval difference $+0.01083$, interval $[0.00708,0.01458]$.
-\end{itemize}
-The scanner-probe and both cosine effects were favorable on all 48 slides. These are repeated measurements across feature families on the same slides, not 96 independent biological units.
+Both unseen transfer backbones independently passed all seven preregistered criteria. Averaging Phikon and ResNet50 method differences within each of the same 48 slides gave scanner-probe difference $-0.4019$ with 95\% interval $[-0.4145,-0.3895]$, mean paired-cosine difference $+0.0578$ with interval $[0.0539,0.0615]$, and worst paired-cosine difference $+0.0628$ with interval $[0.0585,0.0672]$.
 
 \subsection{Acquisition-factor audit}
 \begin{table}[!htbp]
@@ -312,7 +171,9 @@ ResNet50 & 0.7845 & 0.1705 & 9.24 & 0.0896 \\
 \end{table}
 \FloatBarrier
 
-Scanner identity remains strongly accessible in the compact acquisition branch across all three feature families, while tissue retrieval there is much lower than in biology. Every biological dimension retained nonzero test-fold variance. Effective-rank changes were modest relative to the preservation or improvement of tissue retrieval. The result is therefore consistent with factor separation rather than a constant or information-free biological representation.
+Scanner identity remains strongly accessible in the compact acquisition branch across all three feature families, while tissue retrieval there is much lower than in biology. Every biological dimension retained nonzero test-fold variance. The result is therefore consistent with factor separation rather than a constant or information-free biological representation.
+
+\input{broader_research_program.tex}
 
 \section{Supporting identifiability studies}
 \subsection{Negative results motivating paired supervision}
@@ -323,15 +184,13 @@ Controlled generators with known biological and acquisition factors varied obser
 
 The detailed calculations and threshold-dependent empirical recovery models are included below as a supporting synthetic extension. They are not used to claim a universal scaling law or clinical performance.
 
-\section{Secondary research components}
-The repository also contains whole-slide multiple-instance learning and federated-pathology experiments. TransnnMIL combines correlated transformer aggregation with gated attention for slide-level modeling. PathologyFL studies sample-weighted and contribution-aware institutional aggregation under controlled corruption and external-center validation. These projects are scientifically related because they address later stages of the pathology learning pipeline, but they are not the central evidence in this paper and are not used to strengthen the PathoAlign representation claim.
-
 \section{Reproducibility artifacts}
-The repository contains the SCORPION manifest builder and auditor, frozen feature extractors, PathoAlign model and loss code, bounded calibration, independent-seed confirmation, five-fold runner, preregistered cross-backbone protocol, transfer runner, slide-blocked analyses, and compact result summaries.
+The repository contains the SCORPION manifest builder and auditor, frozen feature extractors, PathoAlign model and loss code, bounded calibration, independent-seed confirmation, five-fold runner, preregistered cross-backbone protocol, transfer runner, slide-blocked analyses, PANDA/TransnnMIL experiments, CAMELYON17/PathologyFL experiments, and compact result summaries.
 
 \begin{itemize}[leftmargin=*]
   \item \texttt{docs/research/scorpion-pathoalign-crossbackbone-protocol.md}
   \item \texttt{docs/research/scorpion-pathoalign-crossbackbone-results.md}
+  \item \texttt{paper/arxiv/broader\_research\_program.tex}
   \item \texttt{src/models/scorpion\_pathoalign.py}
   \item \texttt{experiments/scorpion/run\_pathoalign\_crossfold.py}
   \item \texttt{experiments/scorpion/run\_pathoalign\_crossbackbone\_transfer.py}
@@ -341,36 +200,22 @@ The repository contains the SCORPION manifest builder and auditor, frozen featur
 
 Repository: \url{https://github.com/matthewvaishnav/computational-pathology-research}.
 
-The completed Windows CUDA transfer logs emitted PyTorch warnings because deterministic algorithms were requested without setting \texttt{CUBLAS\_WORKSPACE\_CONFIG}. The inferential results use five seeds and 48 slide blocks rather than exact replay of a single run, but the completed runs should not be described as guaranteed bitwise deterministic. The runner now configures deterministic CuBLAS before Torch import for future repetitions.
-
 \input{identifiability_calculations.tex}
 
 \section{Limitations}
-The central evidence is limited to the SCORPION benchmark, its 48 original slides, five scanners, sampled regions, and three frozen feature families. Cross-backbone transfer rules out a narrow DINOv2-specific explanation, but it does not establish transfer to a new dataset, laboratory, tissue type, stain, preparation workflow, magnification, or scanner model outside SCORPION.
+The central PathoAlign evidence is limited to the SCORPION benchmark, its 48 original slides, five scanners, sampled regions, and three frozen feature families. Cross-backbone transfer rules out a narrow DINOv2-specific explanation, but it does not establish transfer to a new dataset, laboratory, tissue type, stain, preparation workflow, magnification, or scanner model outside SCORPION.
 
-Tissue-region retrieval is an identity-retention diagnostic, not a clinical endpoint. The study does not evaluate diagnosis, treatment decisions, patient outcomes, prospective deployment, subgroup fairness, regulatory readiness, or scanner equivalence for clinical use. The method acts on frozen patch features rather than an end-to-end whole-slide diagnostic system.
+Tissue-region retrieval is an identity-retention diagnostic, not a clinical endpoint. The PANDA experiments are feature-bag validation results rather than clinical prostate grading deployment. The CAMELYON17 experiments are feature-level external-center aggregation baselines rather than a prospective federated hospital system. None of the reported work evaluates treatment decisions, patient outcomes, regulatory readiness, or clinical scanner equivalence.
 
 Linear probes measure recoverable scanner information under a specified model class; they do not prove that all scanner information has been removed. Scanner prediction in biology remains above chance, and acquisition factors retain some tissue identity. The result is strong separation, not perfect disentanglement or a universal identifiability theorem.
 
-The synthetic recovery equations are local empirical descriptions of tested thresholds and regimes. They should not be extrapolated without further experiments. The completed transfer runs were multi-seed but were not guaranteed bitwise deterministic because of the CuBLAS configuration warning described above.
-
 \section{Discussion}
-The frozen audit shows that pathology-specific pretraining does not automatically remove acquisition information. Phikon had the strongest baseline scanner probe, while DINOv2 had nearly perfect tissue retrieval and substantial scanner leakage. ResNet50 began from a weaker tissue representation but still encoded scanner identity. These different starting points make the unchanged transfer result especially informative.
+PathoAlign shows that pathology-specific pretraining does not automatically remove acquisition information. Phikon had the strongest baseline scanner probe, while DINOv2 had nearly perfect tissue retrieval and substantial scanner leakage. ResNet50 began from a weaker tissue representation but still encoded scanner identity. The unchanged transfer result across all three feature families supports a representation-family rather than backbone-specific finding.
 
-PathoAlign improved all three representation families in the same intended direction. On DINOv2 it substantially reduced scanner leakage without sacrificing saturated retrieval. On Phikon it produced the largest scanner and cosine improvements while preserving already high retrieval. On ResNet50 it reduced scanner leakage and simultaneously improved retrieval, suggesting that factorization can help even when the starting feature space is less well aligned across scanners.
-
-The acquisition audit is central. A lower biological scanner probe alone could reflect erased information. Instead, scanner identity remains strongly recoverable from a low-rank acquisition branch across every backbone. Tissue identity remains highly recoverable from biology, and every biological dimension remains active. This combination supports a factor-separation interpretation.
-
-The result also clarifies the role of paired consistency. Same-region contrastive learning is a strong baseline, but it does not remove scanner information as effectively as the full factorized objective. Pairing tells the model which observations share biology; the acquisition branch and direct dependence penalty determine where scanner information should go.
-
-The next decisive experiment is external paired-acquisition validation on a different tissue collection or laboratory. Further work should also test task-labeled paired-scanner data, patch bags and multiple-instance learning, unseen scanner models, and whether the learned biological factor improves downstream diagnostic robustness rather than only representation diagnostics.
+The broader program connects this representation result to whole-slide and external-center problems. PANDA/TransnnMIL tests whether slide-level aggregation can improve ordinal grading from pathology feature bags. CAMELYON17/PathologyFL tests whether sample-proportional institutional influence and source-center fit predict held-out-center generalization. These lines should remain visible because they define the larger research direction, but their claims are separate from the paired-scanner factorization result.
 
 \section{Conclusion}
-PathoAlign reframes scanner robustness as a paired-acquisition neural-identifiability problem. Scanner identity remained strongly recoverable from ResNet50, DINOv2, and Phikon representations despite high tissue retention. An objective developed on DINOv2 then transferred without retuning to Phikon and ResNet50, reducing biological scanner predictability, improving same-tissue cross-scanner agreement, and preserving or improving tissue retrieval across unseen original-slide folds.
-
-Both preregistered transfer backbones passed every criterion. The transfer-backbone scanner-probe effect was approximately $-0.402$ absolute and favorable on all 48 slides. Scanner identity remained concentrated in a compact acquisition factor, and the biological representation did not collapse.
-
-The supported conclusion is narrow but substantive: biology-preserving paired acquisitions can supervise a factorization that transfers across substantially different pretrained representation families on real human histopathology. This is representation-family transfer within SCORPION, not clinical validation or external-dataset generalization.
+The supported conclusion is narrow but substantive: biology-preserving paired acquisitions can supervise a factorization that transfers across substantially different pretrained representation families on real human histopathology. In the broader research program, this sits alongside PANDA whole-slide modeling and CAMELYON17 external-center validation. Together, the work studies representation separation, slide aggregation, and institutional generalization without claiming clinical validation or universal robustness.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
