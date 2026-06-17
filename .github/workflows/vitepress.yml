@@ -71,6 +71,9 @@ jobs:
               r"20\mathcal{L}_{\mathrm{dep}}",
               "same-region agreement and scanner suppression",
               "scanner prediction and acquisition retention",
+              r"\input{pathoalign_architecture_fullpage.tex}",
+              r"\pdfpageattr{/Rotate 90}",
+              r"\captionof{figure}",
           )
           missing_math = [item for item in required_math if item not in model_math]
           if missing_math:
@@ -78,7 +81,28 @@ jobs:
                   f"PathoAlign mathematical specification is incomplete: {missing_math}"
               )
           if "pathoalign_architecture_diagram" in model_math:
-              raise RuntimeError("Retired PathoAlign flowchart remains in the paper")
+              raise RuntimeError("Retired compact PathoAlign flowchart remains in the paper")
+
+          architecture_path = Path(
+              "paper/arxiv/build/pathoalign_architecture_fullpage.tex"
+          )
+          architecture = architecture_path.read_text(encoding="utf-8")
+          required_architecture = (
+              "PathoAlign: paired-acquisition neural factorization",
+              "Biological factor",
+              "Acquisition factor",
+              "decoder MLP",
+              r"\mathcal L_{\mathrm{xcov}}",
+              r"\mathcal L_{\mathrm{recon}}",
+          )
+          missing_architecture = [
+              item for item in required_architecture if item not in architecture
+          ]
+          if missing_architecture:
+              raise RuntimeError(
+                  f"Full-page PathoAlign architecture is incomplete: "
+                  f"{missing_architecture}"
+              )
 
           forbidden = (
               "twocolumn",
@@ -92,7 +116,7 @@ jobs:
 
           print("Validated compact single-column result-first paper composition")
           print("Validated complete implementation-faithful PathoAlign mathematics")
-          print("Validated mathematical architecture summary without a flowchart")
+          print("Validated dedicated full-page 3D PathoAlign architecture")
           PY
 
       - name: Build LaTeX PDF
