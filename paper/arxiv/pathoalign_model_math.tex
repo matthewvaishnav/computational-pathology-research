@@ -21,7 +21,7 @@ with hidden width 512. The decoder has widths $(d_b+d_a)\to512\to D$ with a GELU
  \qquad
  \frac{\partial\operatorname{GRL}_{\gamma}}{\partial z}=-\gamma I.
 \end{equation}
-Thus $q_b$ learns to predict scanner identity while $f_b$ receives the opposite gradient; $q_a$ and $f_a$ both minimize ordinary scanner cross-entropy. The factorization can be summarized without a separate diagram as
+Thus $q_b$ learns to predict scanner identity while $f_b$ receives the opposite gradient; $q_a$ and $f_a$ both minimize ordinary scanner cross-entropy. The factorization is summarized compactly by
 \begin{equation}
  x\longmapsto
  \begin{cases}
@@ -31,6 +31,21 @@ Thus $q_b$ learns to predict scanner identity while $f_b$ receives the opposite 
  \qquad
  \widehat{x}=g([z_b;z_a]).
 \end{equation}
+
+\clearpage
+\begingroup
+\pdfpageattr{/Rotate 90}
+\thispagestyle{empty}
+\noindent\makebox[\textwidth][c]{%
+\rotatebox{90}{%
+\begin{minipage}{0.94\textheight}
+\centering
+\resizebox{\linewidth}{!}{\input{pathoalign_architecture_fullpage.tex}}
+\captionof{figure}{Full PathoAlign architecture. Five scanner views of the same tissue region share a frozen encoder, then enter biological and acquisition factor branches. The biological branch receives paired agreement, direct scanner-dependence suppression, anti-collapse regularization, and an adversarial scanner gradient; the acquisition branch predicts scanner identity. Both factors reconstruct the standardized frozen feature and are decorrelated by cross-covariance.}
+\label{fig:pathoalign_architecture_fullpage}
+\end{minipage}}}
+\clearpage
+\endgroup
 
 \subsection{Objective}
 Let a minibatch be $\{(x_i,r_i,s_i)\}_{i=1}^{n}$, where $r_i$ is tissue-region identity and $s_i\in\{1,\ldots,C\}$ is scanner identity. Write $Z_b\in\mathbb{R}^{n\times d_b}$ and $Z_a\in\mathbb{R}^{n\times d_a}$ for the stacked factors, and let $u_i=z_{b,i}/\lVert z_{b,i}\rVert_2$. For anchor $i$, the positive set is $P(i)=\{p\ne i:r_p=r_i\}$. The multi-positive paired loss is
