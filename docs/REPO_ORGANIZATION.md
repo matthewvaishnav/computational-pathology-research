@@ -1,189 +1,77 @@
-# Repository Organization
+# Repository organization
 
-## Directory Structure
+This is a public research codebase. Dated notes, setup guides, recruiter material, experiment reports, and legacy product documents belong under `docs/`, not at the repository root.
 
-### Core Code
-```
-models/                    # Model implementations
-├── transnnmil_v2.py      # TransnnMIL v2.0 (3-branch architecture)
-├── adaptive_pruning.py   # Adaptive pruning module
-├── hierarchical_pooling.py # Hierarchical pooling branch
-├── topology_branch.py    # Topology/graph branch
-└── ...                   # Other models
+## Canonical directories
 
-src/                      # Source code modules
-├── data/                 # Data loading, preprocessing
-├── training/             # Training loops, optimizers
-├── evaluation/           # Metrics, evaluation
-└── utils/                # Utilities
-
-scripts/                  # Executable scripts
-├── train_v2_0.py        # TransnnMIL v2.0 training
-├── prepare_panda_features.py # PANDA data preparation
-├── verify_panda_features.py  # Feature verification
-└── ...                   # Other scripts
-
-utils/                    # Utility modules
-├── data_utils.py        # Data utilities
-├── model_utils.py       # Model utilities
-└── ...                   # Other utilities
+```text
+.github/      CI and publication workflows
+configs/      active experiment configurations
+data/         small manifests and split metadata
+experiments/  reproducible runners and frozen protocols
+docs/         canonical documentation and historical archive
+figures/      paper and research figures
+panda/        PANDA metadata and deterministic splits
+paper/        LaTeX source and publication tooling
+results/      compact evidence supporting research claims
+scripts/      preparation, training, analysis, and audit tools
+src/          maintained Python package
+tests/        automated tests
 ```
 
-### Tests
-```
-tests/                    # Test suite
-├── models/              # Model tests
-│   ├── test_transnnmil_v2.py
-│   ├── test_adaptive_pruning.py
-│   └── ...
-├── data/                # Data pipeline tests
-└── integration/         # Integration tests
-```
+## Root allowlist
 
-### Documentation
-```
-docs/                     # Documentation
-├── TRANSNNMIL_V2_ARCHITECTURE.md  # Architecture guide
-├── TRANSNNMIL_V2_TRAINING.md      # Training guide
-├── TRANSNNMIL_V2_API.md           # API reference
-├── MODEL_CARD_V2.md               # Model card
-└── ...                            # Other docs
+The root is reserved for conventional project entry points and files directly required by tooling:
 
-TRAINING_SETUP.md         # Training setup guide
-TRANSFER_CHECKLIST.md     # Transfer guide for other PC
-README.md                 # Main README
-```
-
-### Data
-```
-panda/                    # PANDA dataset
-├── features_resnet50_300patches/  # Feature files (gitignored)
-├── splits.json          # Train/val/test splits
-└── train.csv            # Labels
-
-data/                     # Other datasets (gitignored)
+```text
+README.md
+LICENSE
+CITATION.cff
+CLAIM_BOUNDARY.md
+CONTRIBUTING.md
+SECURITY.md
+CHANGELOG.md
+VERSION
+pyproject.toml
+requirements*.txt
+Dockerfile
+docker-compose*.yml
+.env*.example
+mkdocs.yml
+package.json
+package-lock.json
+alembic.ini
 ```
 
-### Configuration
-```
-config/                   # Configuration files
-configs/                  # Model configs
-requirements*.txt         # Dependencies
-pyproject.toml           # Project metadata
-```
+Do not add new loose Markdown reports to the root.
 
-### CI/CD
-```
-.github/
-└── workflows/           # GitHub Actions
-    ├── ci.yml          # Continuous integration
-    ├── cd.yml          # Continuous deployment
-    └── ...             # Other workflows
-```
+## Documentation layout
 
-## Gitignored Directories
-
-These exist locally but are not tracked:
-
-### Development
-- `.venv*/`, `venv*/`, `envs/` - Virtual environments
-- `.vscode/`, `.idea/`, `.cursor/` - IDE configs
-- `.kilo/`, `.kiro/`, `.qodo/`, `.zap/` - AI assistant dirs
-
-### Experiments & Outputs
-- `experiments/` - Experiment runs
-- `results/` - Training results
-- `outputs/` - Model outputs
-- `checkpoints/` - Model checkpoints
-- `demo_*/` - Demo outputs
-- `coverage_reports/` - Test coverage
-- `dataset_test_results/` - Dataset tests
-
-### Data & Cache
-- `panda/features_resnet50_300patches/` - Feature files (large)
-- `data/` - Datasets
-- `pacs_cache/` - PACS cache
-- `.cache/`, `__pycache__/` - Python cache
-
-### Deployment
-- `deploy/` - Deployment configs
-- `kubernetes/`, `k8s/` - K8s configs
-- `mobile/` - Mobile app
-- `website/` - Website
-
-### Private
-- `business/`, `enterprise/`, `patents/` - Private content
-- `ecosystem/` - Ecosystem projects
-
-### Temporary
-- `test_*.py`, `check_*.py`, `quick_*.py` (root only) - Temp scripts
-- `*.log` - Log files
-- `bandit*.json`, `security*.json` - Security scan results
-
-## File Organization Guidelines
-
-### What to Commit
-✓ Source code (`.py`, `.js`, etc.)
-✓ Tests
-✓ Documentation (`.md`)
-✓ Configuration (`.yaml`, `.json`, `.toml`)
-✓ Small data files (<1MB)
-✓ Requirements files
-✓ CI/CD workflows
-
-### What NOT to Commit
-✗ Virtual environments
-✗ IDE configs (personal)
-✗ Large datasets (>10MB)
-✗ Model checkpoints (`.pth`, `.pt`)
-✗ Experiment outputs
-✗ Temporary/debug scripts (root level)
-✗ Security scan results
-✗ Cache files
-✗ Log files
-
-## Cleaning Up
-
-### Check what's ignored:
-```bash
-git status --ignored
+```text
+docs/
+  overview/     research-program orientation
+  quickstart/   first-run guides
+  models/       model and architecture documentation
+  federated/    PathologyFL documentation
+  validation/   evaluation design and claim boundaries
+  results/      stable result summaries
+  research/     protocols and technical research notes
+  outreach/     recruiter and public communication material
+  engineering/  implementation and maintenance documentation
+  setup/        environment-specific setup guides
+  roadmap/      active future work
+  archive/      dated, superseded, commercial, or noncanonical material
 ```
 
-### See untracked files:
-```bash
-git status --short
-```
+Archiving preserves provenance; it does not validate historical claims.
 
-### Clean ignored files (dry run):
-```bash
-git clean -Xdn
-```
+## Rules
 
-### Clean ignored files (actual):
-```bash
-git clean -Xdf
-```
+1. Put maintained code in `src/`, reproducible runners in `experiments/`, and command-line utilities in `scripts/`.
+2. Put every new Markdown report under `docs/`.
+3. Keep raw datasets, checkpoints, large feature archives, logs, and generated run directories outside Git.
+4. Keep compact summaries and manifests only when they support a reproducible claim.
+5. Keep PathoAlign/SCORPION, TransnnMIL/PANDA, and PathologyFL/CAMELYON17 visible as separate research lines.
+6. Archive obsolete deployment, enterprise, patent, and marketing material instead of presenting it as active research infrastructure.
 
-## Current Status
-
-✓ Gitignore updated to exclude:
-  - Temp files and debug scripts
-  - Experiment outputs
-  - Tool directories
-  - Virtual environments
-  - Cache directories
-
-✓ Repository organized:
-  - Core code in `models/`, `src/`, `scripts/`
-  - Tests in `tests/`
-  - Docs in `docs/`
-  - Data in `panda/`, `data/`
-
-✓ No files deleted (all preserved locally)
-
-## Next Steps
-
-1. Review untracked files: `git status`
-2. Add important files: `git add <file>`
-3. Clean up if needed: `git clean -Xdf` (removes ignored files)
-4. Keep working - gitignore handles the rest
+Active Docker entry points remain at the root because CI and existing workflows reference them.
