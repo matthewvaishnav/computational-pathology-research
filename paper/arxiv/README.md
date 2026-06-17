@@ -10,6 +10,14 @@ PathoAlign Representation Alignment, TransnnMIL Whole-Slide Modeling,
 and PathologyFL Federated Training
 ```
 
+Canonical public PDF:
+
+```text
+https://matthewvaishnav.github.io/computational-pathology-research/computational-pathology-research-platform-for-federated-oncology.pdf
+```
+
+The repository-root Pages URL redirects to this canonical document. Previously shared PathoAlign and *When More Data Is Less Trustworthy* PDF URLs remain compatibility aliases.
+
 The report treats the three systems as separate components rather than aliases:
 
 - **PathoAlign** — neural representation alignment and identifiability.
