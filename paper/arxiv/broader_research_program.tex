@@ -1,12 +1,103 @@
-\section{Broader computational-pathology research program}
-PathoAlign is the central result of this paper, but it is not the entire research program. The repository also contains substantial whole-slide modeling on PANDA and external-center/federated validation on CAMELYON17. These projects address later stages of the pathology learning pipeline and should remain visible in the public research PDF without being conflated with the paired-scanner claim.
+\section{Broader computational-pathology study record}
+The detailed SCORPION paired-scanner study above is the newest and strongest locked PathoAlign result, but it is not the whole research record. Earlier public PDF versions treated the repository as a three-level platform---representation, whole-slide aggregation, and institutional aggregation---and reported several distinct studies inside those levels. This section restores that study-by-study structure and adds the newer evidence without using one experiment to overstate another.
 
-\subsection{PANDA whole-slide grading and TransnnMIL}
-The PANDA work studies weakly supervised prostate-cancer grading from whole-slide Phikon feature bags on the PANDA challenge data \citep{bulten2022artificial}. After HDF5 readability verification, 10,611 slide-level feature files were retained. The current evidence stack includes a mean-pooled Phikon MLP baseline, gated AttentionMIL \citep{ilse2018attention}, and TransnnMIL, a hybrid direction combining correlated transformer aggregation with local gated-attention reasoning inspired by TransMIL \citep{shao2021transmil} and nnMIL \citep{luo2025nnmil}.
+\subsection{Study map}
+\begin{table}[!htbp]
+\centering
+\caption{Empirical studies represented in the public research record. Each row has its own unit of analysis and claim boundary.}
+\small
+\begin{tabular}{p{0.25\linewidth}p{0.20\linewidth}p{0.40\linewidth}}
+\toprule
+Study & Data or experimental substrate & Primary question \\
+\midrule
+Adversarial PathoAlign confirmation & Pathology-derived representations & Does lower site leakage improve tumor prediction? \\
+Factorized and subtraction falsification & Pathology-derived representations & Can a learned site component be removed without deleting biology? \\
+Synthetic two-resource phase maps & Controlled latent-factor generators & How do ordinary observations and paired interventions jointly control recovery? \\
+Matched-budget anchor allocation & Controlled nonlinear high-overlap regime & Under fixed paired exposure, how much does unique-anchor diversity matter relative to repetition? \\
+PANDA baseline hierarchy & 10,611 verified Phikon feature bags & How much do mean pooling, gated attention, and TransnnMIL differ for whole-slide grading? \\
+TransnnMIL stability grid & PANDA feature bags & Is the custom MIL model stable across optimization settings and seeds? \\
+Dominant-site label-noise stress & PANDA-derived federations & When does sample-volume dominance become unsafe under controlled corruption? \\
+Fixed detector transfer & PANDA-derived federations & Does a label-noise-calibrated detector transfer to systematic ordinal threshold shift? \\
+Detector ablation and sensitivity & PANDA-derived federations & Is the detector dependent on one diagnostic family or one exact calibration? \\
+CAMELYON17 external-center validation & 455,954 examples from five centers & Does sample-proportional source weighting generalize best to an unseen center? \\
+Communication accounting & CAMELYON17 feature/head regime & What communication burden is avoided by feature/head federation? \\
+Privacy-noise stress & CAMELYON17-trained features & Do aggregation differences survive coefficient-noise perturbation? \\
+Infrastructure-friction simulation & Three heterogeneous source-client profiles & How do speed, dropout, and stragglers affect practical federation? \\
+PCam patch validation & Full public PCam test set & How well does the patch classifier perform, and how stable are its estimates? \\
+PCam federated strategy probes & Real PCam patches split into simulated sites & Do institutional weighting strategies behave differently under balanced and heterogeneous partitions? \\
+\bottomrule
+\end{tabular}
+\label{tab:study_map}
+\end{table}
+\FloatBarrier
+
+\section{Earlier PathoAlign studies}
+
+\subsection{Locked adversarial confirmation}
+The first neural PathoAlign study used a shared feature encoder with a tumor head and a gradient-reversal site head. Development experiments suggested a small task improvement and reduced site leakage. A locked confirmation over new seeds did not reproduce the task advantage: the adversarial model reached approximately 0.9264 held-out tumor accuracy versus 0.9270 for the tumor-only baseline, a paired difference of approximately $-0.000625$ with an interval crossing zero. The site-probe difference was approximately $-0.003258$, with the paired bootstrap interval excluding zero.
+
+The result therefore established a representation change, not a diagnostic-performance improvement. Lower recoverable site information was achievable, but it was not sufficient evidence that the representation had become more useful for tumor prediction.
+
+\subsection{Factorized model selection and unconditional-subtraction falsification}
+A later model used a shared stem with diagnostic and acquisition branches, reconstruction pressure, and cross-branch covariance control. Validation-based selection preferred the diagnostic-only baseline rather than the more elaborate factorized model. A subsequent subtraction experiment was more decisive: the learned acquisition-associated component remained strongly tumor-predictive, so removing it also removed useful biological information.
+
+This falsified the simple rule that a direction should be deleted merely because it predicts site. The negative result directly motivated biology-preserving paired supervision and the later SCORPION study.
+
+\subsection{Synthetic two-resource phase maps}
+Controlled generators made the latent biological and acquisition factors known, allowing recovery to be measured rather than inferred indirectly. The experiments varied observational sample size $N_u$, unique paired-anchor count $N_p$, biological--acquisition overlap, linear versus nonlinear mixing, neural method, and seed. Pair-consistency, learned-operator, and hybrid-curriculum variants were evaluated using task retention, site leakage, cross-factor leakage, paired biological invariance, counterfactual transport, canonical-correlation recovery, and Procrustes recovery.
+
+Under the compute-controlled high-overlap nonlinear protocol, sustained recovery boundaries were:
+\begin{table}[!htbp]
+\centering
+\caption{Compute-controlled paired-anchor boundaries in the frozen synthetic follow-up.}
+\small
+\begin{tabular}{lrr}
+\toprule
+Method & $N_u$ & Sustained paired-anchor crossing \\
+\midrule
+Hybrid curriculum & 750 & 175 \\
+Hybrid curriculum & 1500 & 150 \\
+Pair consistency & 750 & 225 \\
+Pair consistency & 1500 & 125 \\
+\bottomrule
+\end{tabular}
+\label{tab:synthetic_boundaries}
+\end{table}
+\FloatBarrier
+
+The threshold analysis used interval- and right-censored fits because some cells did not cross the historical recovery threshold within the tested intervention budget. The resulting relationship is a local, threshold-dependent empirical family: more observational data can reduce the paired-anchor requirement, while stronger overlap and nonlinear mixing increase it. It is not presented as a universal law.
+
+\subsection{Matched-budget anchor diversity versus repetition}
+A separate allocation study fixed observational presentations, optimizer steps, pair-batch size, and total paired presentations while redistributing the paired budget between unique anchors and repetitions. The high-overlap nonlinear setting used $N_u\in\{750,1500\}$, pair-consistency and hybrid-curriculum methods, and ten matched seeds.
 
 \begin{table}[!htbp]
 \centering
-\caption{Current PANDA validation evidence on Phikon feature bags. QWK denotes quadratic weighted kappa.}
+\caption{Mean universal biological score across four method-by-$N_u$ strata under matched paired-presentation budgets.}
+\small
+\begin{tabular}{rrrr}
+\toprule
+Paired presentations & 50 anchors & 100 anchors & 200 anchors \\
+\midrule
+6,400 & 0.4081 & 0.4243 & 0.4259 \\
+12,800 & 0.4489 & 0.4595 & 0.4619 \\
+\bottomrule
+\end{tabular}
+\label{tab:matched_budget_means}
+\end{table}
+\FloatBarrier
+
+At 6,400 presentations, the seed-blocked 200-versus-50 contrast was $+0.017865$, with 95\% bootstrap interval $[0.010560,0.026079]$, a positive difference in all ten seed blocks, and exact two-sided sign-flip $p=0.001953$. The 200-versus-100 contrast was only $+0.001578$. At 12,800 presentations, the corresponding contrasts were $+0.013050$ and $+0.002422$. Doubling total paired exposure increased recovery by $+0.037357$ overall, with interval $[0.030315,0.043657]$, positive effects in all ten seed blocks, and exact $p=0.001953$.
+
+The supported interpretation is that total paired exposure was the dominant resource in this regime, unique-anchor diversity provided an additional benefit, and gains diminished beyond approximately 100 anchors. No allocation crossed the historical 0.50 recovery threshold, so this is an allocation and exposure result rather than a recovered phase boundary.
+
+\section{PANDA whole-slide studies}
+
+\subsection{Mean pooling, AttentionMIL, and TransnnMIL comparison}
+The PANDA work studies weakly supervised prostate-cancer grading from whole-slide Phikon feature bags on the PANDA challenge data \citep{bulten2022artificial}. After HDF5 readability verification, 10,611 slide-level feature files were retained. Three principal model families were evaluated: a mean-pooled Phikon MLP, gated AttentionMIL \citep{ilse2018attention}, and TransnnMIL, a custom direction combining TransMIL-style correlated self-attention \citep{shao2021transmil} with nnMIL-style gated aggregation \citep{luo2025nnmil}.
+
+\begin{table}[!htbp]
+\centering
+\caption{PANDA whole-slide validation evidence. QWK denotes quadratic weighted kappa.}
 \small
 \begin{tabular}{lr}
 \toprule
@@ -17,21 +108,109 @@ Gated AttentionMIL & 0.8100 \\
 Tuned TransnnMIL, seed 42 & 0.8155 \\
 Tuned TransnnMIL, seed 123 & 0.8225 \\
 Tuned TransnnMIL, seed 2025 & 0.8086 \\
-Stabilized TransnnMIL, learning rate $10^{-4}$ & $0.8257\pm0.0169$ \\
 \bottomrule
 \end{tabular}
-\label{tab:panda_transnnmil}
+\label{tab:panda_model_hierarchy}
 \end{table}
 \FloatBarrier
 
-The supported conclusion is deliberately conservative: stabilized TransnnMIL is competitive with gated AttentionMIL in the present PANDA feature-bag experiments, but the margin is small and does not yet justify a broad architecture-superiority claim. This line of work supplies the whole-slide diagnostic-modeling component of the broader program.
+The model hierarchy establishes that attention-based slide aggregation substantially improved on simple mean pooling in this feature-bag setting. TransnnMIL was favorable on two of three listed tuned seeds, but the margin over AttentionMIL remained small.
 
-\subsection{CAMELYON17 external-center and aggregation validation}
-The CAMELYON17/WILDS work tests whether training procedures that fit source-center data more strongly also generalize better to unseen centers \citep{bandi2018camelyon17,koh2021wilds}. The audited feature-level dataset contains 455,954 examples from five centers. Centers 0, 3, and 4 are used as source-training centers, center 1 as OOD validation, and center 2 as the held-out OOD test center.
+\subsection{TransnnMIL optimization-stability grid}
+The stabilization study used the same 10,611 readable PANDA bags, three seeds, and six learning rates. The recipe used AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping.
 
 \begin{table}[!htbp]
 \centering
-\caption{Current CAMELYON17 held-out-center feature-level results. Accuracy values refer to center 2 test performance.}
+\caption{TransnnMIL stability across three seeds per learning rate.}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Learning rate & Mean best val QWK & Std. & Min. & Max. \\
+\midrule
+$1\times10^{-4}$ & \textbf{0.8257} & 0.0169 & 0.8087 & 0.8425 \\
+$2\times10^{-4}$ & 0.8245 & 0.0192 & 0.8077 & 0.8455 \\
+$3\times10^{-4}$ & 0.8238 & 0.0160 & 0.8127 & 0.8422 \\
+$5\times10^{-4}$ & 0.8158 & 0.0144 & 0.8042 & 0.8319 \\
+$7\times10^{-4}$ & 0.8117 & 0.0163 & 0.7994 & 0.8301 \\
+$1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
+\bottomrule
+\end{tabular}
+\label{tab:transnnmil_stability_full}
+\end{table}
+\FloatBarrier
+
+This study supports optimizer stabilization and a wider usable learning-rate range. It does not yet establish that the complete TransnnMIL architecture is superior to simpler MIL methods under matched compute. Optional hierarchical, topology, and pruning branches remain separate implementation directions until controlled ablations validate them.
+
+\section{PANDA federated site-signal studies}
+
+\subsection{Dominant-site label-noise stress}
+PathologyFL partitions PANDA-derived Phikon slide representations into simulated clients and applies label corruption only to the largest client. The study asks whether FedAvg's implicit rule---more samples means more influence---remains safe when sample volume and task-specific label signal diverge.
+
+In the full-cache 15-seed study, a tuned observable switch kept FedAvg in the clean regime and moved to a 50\% cross-site blend when clean-calibrated diagnostics crossed a trigger threshold. Selected paired results were:
+\begin{table}[!htbp]
+\centering
+\caption{Selected full-PANDA label-noise stress results for the tuned observable switch.}
+\small
+\begin{tabular}{rllr}
+\toprule
+Dominant-site corruption & Metric & Delta versus FedAvg & 95\% interval \\
+\midrule
+0\% & Global QWK & $+0.000126$ & $[-0.000144,0.000395]$ \\
+25\% & Global QWK & $+0.008009$ & $[0.001345,0.014672]$ \\
+35\% & Global QWK & $+0.007482$ & $[0.003919,0.011046]$ \\
+45\% & Worst-site QWK & $+0.009713$ & $[-0.000257,0.019683]$ \\
+\bottomrule
+\end{tabular}
+\label{tab:panda_label_noise}
+\end{table}
+\FloatBarrier
+
+The clean false-switch rate was 6.7\%, while trigger rates increased strongly under 25--45\% corruption. The result supports a conditional stress-regime mechanism, not a universal replacement for FedAvg.
+
+\subsection{Fixed detector transfer to conservative ordinal threshold shift}
+A stronger transfer study froze one detector calibrated under dominant-site label noise and applied it without retuning to a systematic conservative ordinal threshold shift. The fixed rule used the 0.10 lower quantile, 0.80 upper quantile, at least three triggered diagnostic families, and no entropy diagnostic.
+
+\begin{table}[!htbp]
+\centering
+\caption{Fifteen-seed fixed-detector transfer to conservative ordinal threshold shift. Deltas are detector-switch minus the clean-strategy baseline.}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Shift & Trigger rate & Global QWK $\Delta$ & Macro-F1 $\Delta$ & Worst-site QWK $\Delta$ \\
+\midrule
+0\% & 13.3\% & $-0.00025$ & $+0.00009$ & $+0.00151$ \\
+25\% & 33.3\% & $+0.00129$ & $+0.00290$ & $+0.00353$ \\
+35\% & 60.0\% & $+0.00542$ & $+0.00838$ & $+0.00991$ \\
+45\% & 73.3\% & $+0.01053$ & $+0.01512$ & $+0.01290$ \\
+\bottomrule
+\end{tabular}
+\label{tab:detector_transfer}
+\end{table}
+\FloatBarrier
+
+At 35\% and 45\% shift, the bootstrap intervals for all three headline deltas were positive. The 25\% regime was directionally positive but inconclusive. The scientific value is transfer across stress mechanisms: the detector was calibrated under random label-noise stress and evaluated as frozen under systematic ordinal bias.
+
+\subsection{Diagnostic ablation and calibration sensitivity}
+The detector uses global QWK, worst-site QWK, site-QWK spread, mean absolute ordinal error, and severe-error rate. In the conservative-shift study, mean absolute error was the most frequent trigger, followed by worst-site and global-QWK degradation. Site spread alone was the weakest single-family variant.
+
+Removing the strongest diagnostic family, \texttt{mean\_abs\_error\_high}, reduced the mean 35/45 trigger rate to 50.0\% but retained positive mean deltas of $+0.00701$ global QWK, $+0.01003$ macro-F1, and $+0.00856$ worst-site QWK. A 36-setting neighborhood sweep varied lower quantile, upper quantile, and minimum trigger count; 29 of 36 configurations preserved a clean trigger rate at or below 20\% and positive 35\%/45\% gains across all three headline metrics.
+
+This study weakens the explanation that the transfer result is a one-feature shortcut or a single hand-picked calibration.
+
+\section{CAMELYON17 external-center studies}
+
+\subsection{Natural center-shift design}
+CAMELYON17/WILDS provides natural hospital-center labels rather than only simulated client partitions \citep{bandi2018camelyon17,koh2021wilds}. The audited feature-level dataset contains 455,954 examples across five centers. Centers 0, 3, and 4 are source-training centers, center 1 is OOD validation, and center 2 is the held-out OOD test center.
+
+\subsection{Frozen ImageNet ResNet18 feature study}
+With frozen ImageNet ResNet18 features, FedAvg-style equal-patch weighting reached 0.8312 held-out test accuracy. Equal-client weighting reached 0.9132, an improvement of 8.20 percentage points, while downweighting the dominant source improved accuracy by 7.82 points. A validation-aware detector switch improved held-out accuracy by 6.58 points, and 43 of 112 detector settings were robust-positive in the threshold sweep.
+
+\subsection{CAMELYON17-trained ResNet18 feature study}
+A second study repeated the aggregation comparison using features from a source-trained CAMELYON17 ResNet18 checkpoint.
+
+\begin{table}[!htbp]
+\centering
+\caption{Held-out center-2 accuracy under two feature families and three aggregation policies.}
 \small
 \begin{tabular}{lrrr}
 \toprule
@@ -41,20 +220,52 @@ Frozen ImageNet ResNet18 & 0.8312 & 0.9132 & 0.9094 \\
 CAMELYON17-trained ResNet18 & 0.9052 & 0.9318 & 0.9322 \\
 \bottomrule
 \end{tabular}
-\label{tab:camelyon17_external}
+\label{tab:camelyon17_two_feature_studies}
 \end{table}
 \FloatBarrier
 
-With frozen ImageNet ResNet18 features, equal-client weighting improves held-out test accuracy by 8.20 percentage points over FedAvg-style weighting, while downweighting the dominant source improves it by 7.82 points. A validation-aware detector switch improves held-out test accuracy by 6.58 points over the FedAvg-style baseline. With CAMELYON17-trained ResNet18 features, equal-client and downweight-dominant weighting improve held-out test accuracy by 2.66 and 2.70 points, respectively, even though FedAvg-style weighting reaches 0.9991 source-train accuracy.
+Under the source-trained representation, FedAvg-style weighting reached 0.9991 source-training accuracy while generalizing worse to center 2 than equal-client or dominant-source-downweighted weighting. The result supports the narrow observation that stronger source fit and sample-proportional influence do not automatically imply better external-center generalization.
 
-These are early feature-level external-center baselines rather than a full iterative federated deployment study. They support the narrower observation that stronger source fit and sample-proportional influence do not automatically imply better held-out-center generalization. They do not establish clinical readiness, institution ranking, or superiority of one aggregation rule in every federated setting.
+\section{Federated systems stress studies}
 
-\subsection{How the three lines fit together}
-The three principal empirical lines address different levels of the same computational-pathology system:
+\subsection{Communication accounting}
+Communication was bounded for the CAMELYON17 feature/head regime. Under an explicit comparison with three source clients, 100 fp32 rounds, and a binary ResNet18 full-model proxy, full-model exchange was estimated at 24.98 GB. A 512-to-2 feature/head learner required approximately 2.35 MB, making the full-model proxy about 10,894 times larger.
+
+Equal-client and dominant-source-downweighted policies used the same feature/head communication budget as FedAvg-style weighting, so their held-out-center gains were not purchased with additional traffic. A detector-style decision after 5, 10, or 25 rounds corresponds to estimated full-model communication reductions of 95\%, 90\%, or 75\% relative to 100 rounds. This is a bounded accounting result, not a measured wide-area hospital-network deployment.
+
+\subsection{Privacy-noise robustness probe}
+A coefficient-noise stress test used the CAMELYON17-trained ResNet18 features and added Gaussian perturbations to logistic-head coefficients at standard deviations 0.0, 0.01, 0.03, 0.05, 0.10, and 0.20, with five repeats per level. Equal-client and dominant-source-downweighted policies remained positive versus FedAvg-style weighting at every tested level. At noise standard deviation 0.20, the gains were approximately $+1.98$ and $+1.90$ percentage points.
+
+This is not differential privacy, privacy accounting, membership-inference testing, or an update-inversion audit. It is a robustness probe under coefficient perturbation.
+
+\subsection{Infrastructure-friction simulation}
+A separate systems simulation modeled heterogeneous client speed, dropout, synchronous stragglers, an asynchronous proxy, communication cost, and detector-style reduced-round operation. The illustrative clients required 4, 7, and 13 minutes per local update. The outputs quantify wall-clock burden, failed rounds, straggler sensitivity, active-client counts, and traffic.
+
+This study provides reproducible infrastructure accounting but is not a real hospital deployment benchmark. Containerized orchestration and measured network experiments remain future work.
+
+\section{PCam validation studies}
+
+\subsection{Patch-level classifier and uncertainty analysis}
+The PCam study provides the repository's patch-level cancer-classification validation layer. The reported validation AUC was 0.9537. On the full 32,768-example public test set, the model reached 0.8526 accuracy and 0.9394 AUC. One thousand bootstrap resamples were used to report uncertainty.
+
+A threshold and false-negative analysis examined screening-style operating trade-offs. In the documented analysis, threshold adjustment reduced missed tumor predictions by 61.7\% relative to the default operating point. This is retrospective benchmark analysis, not a prospective screening claim.
+
+\subsection{Federated strategy probes on PCam}
+Real PCam patches were also divided into simulated sites to exercise equal, volume-based, prestige-style legacy, and FAIR-WEIGHTS-H aggregation. The balanced benchmark completed without performance degradation from FAIR-WEIGHTS-H. Under heterogeneous simulated sites, the strategies produced different weighting trajectories, but patch-level performance was comparatively insensitive to those differences.
+
+The value of this study is methodological: it verifies that the aggregation implementations run on real image data and that distinct policies actually alter institutional influence. It does not establish that FAIR-WEIGHTS-H improves clinical fairness or predictive performance.
+
+\section{How the studies fit together}
+The study sequence follows the learning pipeline:
 \begin{itemize}[leftmargin=*]
-  \item \textbf{PathoAlign / SCORPION:} representation factorization under biology-preserving paired scanner interventions;
-  \item \textbf{TransnnMIL / PANDA:} whole-slide aggregation and ordinal grading from pathology foundation-model feature bags;
-  \item \textbf{PathologyFL / CAMELYON17:} external-center generalization and auditable institutional influence under distribution shift.
+  \item \textbf{PCam} establishes patch-level classification, uncertainty, and threshold-analysis infrastructure.
+  \item \textbf{PANDA MIL} tests slide-level aggregation from pathology foundation-model feature bags.
+  \item \textbf{Earlier PathoAlign} falsifies unconditional site removal and motivates paired supervision.
+  \item \textbf{Synthetic PathoAlign} measures recovery when the ground-truth latent factors are known.
+  \item \textbf{SCORPION PathoAlign} tests paired-acquisition separation on real human tissue across multiple representation families.
+  \item \textbf{PANDA federated stress} audits sample-volume dominance under controlled label-process misalignment.
+  \item \textbf{CAMELYON17} tests related aggregation hypotheses under natural held-out-center shift.
+  \item \textbf{Communication, privacy-noise, and infrastructure studies} bound systems constraints without claiming that deployment is solved.
 \end{itemize}
 
-PathoAlign remains the paper's strongest and most fully locked result, but PANDA and CAMELYON17 are substantive research components rather than footnotes. Their results are reported separately because their datasets, units of analysis, objectives, and claim boundaries differ.
+The integrated hypothesis is not that one architecture solves all of computational pathology. It is that representation formation, whole-slide aggregation, institutional influence, and systems constraints are separate failure surfaces that require separate experiments and explicit claim boundaries.
