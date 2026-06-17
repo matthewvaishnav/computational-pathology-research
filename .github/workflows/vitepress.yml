@@ -35,21 +35,26 @@ jobs:
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
 
-          # Conference-style single-column layout. Tables and figures may float,
-          # but the document is never forced into a global two-column layout.
+          # Match literal LaTeX command backslashes and return replacement text
+          # through callables so neither side is parsed as a regex escape.
           text = re.sub(
-              r"\documentclass\[[^\]]*\]\{article\}",
-              r"\documentclass[10pt]{article}",
+              r"\\documentclass\[[^\]]*\]\{article\}",
+              lambda _match: r"\documentclass[10pt]{article}",
               text,
               count=1,
           )
           text = re.sub(
-              r"\usepackage\[[^\]]*\]\{geometry\}",
-              r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
+              r"\\usepackage\[[^\]]*\]\{geometry\}",
+              lambda _match: r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
               text,
               count=1,
           )
-          text = re.sub(r"\date\{[^}]*\}", r"\date{June 17, 2026}", text, count=1)
+          text = re.sub(
+              r"\\date\{[^}]*\}",
+              lambda _match: r"\date{June 17, 2026}",
+              text,
+              count=1,
+          )
 
           anchor = r"\usepackage[numbers,sort&compress]{natbib}"
           conference_style = r"""
@@ -98,15 +103,15 @@ jobs:
           if r"\usepackage{titlesec}" not in text:
               text = text.replace(anchor, anchor + conference_style, 1)
 
-          # Remove earlier global paragraph settings that could override the
-          # final conference layout. The abstract has its own spacing above.
+          # Remove earlier top-level paragraph settings without touching the
+          # scoped settings inside the abstract environment.
           text = re.sub(
-              r"(?m)^\setlength\{\parindent\}\{[^}]+\}\s*$",
+              r"(?m)^\s*\\setlength\{\\parindent\}\{[^}]+\}\s*$",
               "",
               text,
           )
           text = re.sub(
-              r"(?m)^\setlength\{\parskip\}\{[^}]+\}\s*$",
+              r"(?m)^\s*\\setlength\{\\parskip\}\{[^}]+\}\s*$",
               "",
               text,
           )
@@ -157,8 +162,8 @@ jobs:
       - name: Verify PDF and bibliography
         run: |
           test -s paper/arxiv/build/main.pdf
-          test -f paper/arxiv/build/main.bbl
-          reference_count=$(grep -c '\bibitem' paper/arxiv/build/main.bbl || true)
+          test -s paper/arxiv/build/main.bbl
+          reference_count=$(grep -F -c '\bibitem' paper/arxiv/build/main.bbl || true)
           echo "Rendered bibliography entries: ${reference_count}"
           test "${reference_count}" -ge 10
 
