@@ -2,9 +2,10 @@
 """Prepare a self-contained LaTeX source folder for the public research PDF.
 
 The source is organized as a compact, result-first main paper followed by a
-complete empirical appendix. The build preserves the PathoAlign architecture
-and matched-budget resource-allocation figures together with the detailed
-PANDA, CAMELYON17, PCam, federated, and identifiability evidence.
+complete empirical appendix. The build preserves the PathoAlign architecture,
+its complete mathematical specification, and the matched-budget resource-
+allocation figure together with the detailed PANDA, CAMELYON17, PCam,
+federated, and identifiability evidence.
 
 Run from the repository root:
 
@@ -25,6 +26,7 @@ FILES = [
     ARXIV / "main.tex",
     ARXIV / "references.bib",
     ARXIV / "broader_research_program.tex",
+    ARXIV / "pathoalign_model_math.tex",
     ARXIV / "pathoalign_architecture_diagram.tex",
     ARXIV / "pathoalign_resource_allocation_figure.tex",
     ARXIV / "identifiability_calculations.tex",
@@ -39,6 +41,7 @@ The repository also contains whole-slide multiple-instance learning and federate
 """
 
 BROADER_RESEARCH_INCLUDE = r"\input{broader_research_program.tex}"
+MODEL_MATH_INCLUDE = r"\input{pathoalign_model_math.tex}"
 ARCHITECTURE_INCLUDE = r"\input{pathoalign_architecture_diagram.tex}"
 ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure.tex}"
 
@@ -65,11 +68,28 @@ APPENDIX_COMPACT = r"""\appendix
 """
 
 
+ARCHITECTURE_START = r"\subsection{Architecture}"
+ARCHITECTURE_END = r"\section{Preventing Representation Failure}"
+
+
 def copy_required(source: Path, destination: Path) -> None:
     if not source.is_file():
         raise FileNotFoundError(f"Required paper source is missing: {source}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, destination)
+
+
+def restore_model_math(text: str) -> str:
+    """Replace the compact prose-only model block with the canonical math include."""
+    if MODEL_MATH_INCLUDE in text:
+        return text
+    start = text.find(ARCHITECTURE_START)
+    end = text.find(ARCHITECTURE_END)
+    if start < 0 or end < 0 or end <= start:
+        raise RuntimeError(
+            "Could not locate the PathoAlign architecture/objective block in main.tex"
+        )
+    return text[:start] + MODEL_MATH_INCLUDE + "\n\n" + text[end:]
 
 
 def validate_and_normalize_main(path: Path) -> None:
@@ -107,6 +127,10 @@ def validate_and_normalize_main(path: Path) -> None:
     # the public repository address in a classic monospace author line.
     text = text.replace(TITLE_REPOSITORY_LINK, TITLE_REPOSITORY_TEXT, 1)
 
+    # Restore the complete, implementation-faithful model specification before
+    # applying the remaining composition transforms.
+    text = restore_model_math(text)
+
     # The included appendix files already define their own top-level sections.
     # Remove the temporary wrapper headings to keep appendix lettering clean.
     text = text.replace(APPENDIX_WRAPPER, APPENDIX_COMPACT, 1)
@@ -141,15 +165,15 @@ def validate_and_normalize_main(path: Path) -> None:
         "CAMELYON17",
         "PCam",
         "broader_research_program.tex",
-        "pathoalign_architecture_diagram.tex",
+        "pathoalign_model_math.tex",
         "pathoalign_resource_allocation_figure.tex",
     )
     missing = [term for term in required_terms if term not in text]
     if missing:
         raise RuntimeError(f"The build copy lost required paper content: {missing}")
 
-    if ARCHITECTURE_INCLUDE not in text or ALLOCATION_INCLUDE not in text:
-        raise RuntimeError("The compact main paper lost one or both primary figures")
+    if MODEL_MATH_INCLUDE not in text or ALLOCATION_INCLUDE not in text:
+        raise RuntimeError("The compact main paper lost the model math or allocation figure")
 
     broader = (BUILD / "broader_research_program.tex").read_text(encoding="utf-8")
     broader_required = (
@@ -164,6 +188,26 @@ def validate_and_normalize_main(path: Path) -> None:
     if broader_missing:
         raise RuntimeError(
             f"The complete empirical appendix lost study families: {broader_missing}"
+        )
+
+    model_math = (BUILD / "pathoalign_model_math.tex").read_text(encoding="utf-8")
+    model_math_required = (
+        r"\mathcal{L}_{\mathrm{pair}}",
+        r"\mathcal{L}_{\mathrm{recon}}",
+        r"\mathcal{L}_{\mathrm{var},a}",
+        r"\mathcal{L}_{\mathrm{cov},b}",
+        r"\mathcal{L}_{\mathrm{scan},b}",
+        r"\mathcal{L}_{\mathrm{scan},a}",
+        r"\mathcal{L}_{\mathrm{dep}}",
+        r"\mathcal{L}_{\mathrm{xcov}}",
+        r"\operatorname{GRL}_{\gamma}",
+        r"0.25\mathcal{L}_{\mathrm{var},a}",
+        r"20\mathcal{L}_{\mathrm{dep}}",
+    )
+    model_math_missing = [term for term in model_math_required if term not in model_math]
+    if model_math_missing:
+        raise RuntimeError(
+            f"The PathoAlign mathematical specification is incomplete: {model_math_missing}"
         )
 
     architecture = (BUILD / "pathoalign_architecture_diagram.tex").read_text(
