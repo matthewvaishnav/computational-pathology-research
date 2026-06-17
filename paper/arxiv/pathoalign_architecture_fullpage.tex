@@ -1,0 +1,142 @@
+% Full-page PathoAlign architecture, drawn as 3D feature blocks.
+\definecolor{paGray}{RGB}{205,210,218}
+\definecolor{paBlue}{RGB}{118,164,212}
+\definecolor{paOrange}{RGB}{224,158,96}
+\definecolor{paGreen}{RGB}{133,188,148}
+\definecolor{paPurple}{RGB}{164,143,193}
+
+\newcommand{\paBlock}[9]{%
+  \pgfmathsetmacro{\paX}{#2}%
+  \pgfmathsetmacro{\paY}{#3}%
+  \pgfmathsetmacro{\paW}{#4}%
+  \pgfmathsetmacro{\paH}{#5}%
+  \pgfmathsetmacro{\paD}{#6}%
+  \pgfmathsetmacro{\paRise}{0.55*#6}%
+  \path[draw=black, line width=0.78pt, fill=#7]
+    (\paX,\paY) rectangle ++(\paW,\paH);
+  \path[draw=black, line width=0.78pt, fill=#7!70!black]
+    (\paX+\paW,\paY) -- ++(\paD,\paRise) -- ++(0,\paH)
+    -- ++(-\paD,-\paRise) -- cycle;
+  \path[draw=black, line width=0.78pt, fill=#7!55!white]
+    (\paX,\paY+\paH) -- ++(\paD,\paRise) -- ++(\paW,0)
+    -- ++(-\paD,-\paRise) -- cycle;
+  \node[align=center, font=\bfseries\normalsize, text width=#4cm]
+    at (\paX+0.5*\paW,\paY+0.60*\paH) {#8};
+  \node[align=center, font=\scriptsize]
+    at (\paX+0.5*\paW,\paY+0.22*\paH) {#9};
+  \coordinate (#1-west) at (\paX,\paY+0.5*\paH);
+  \coordinate (#1-east) at (\paX+\paW+\paD,\paY+0.5*\paH+0.5*\paRise);
+  \coordinate (#1-north) at (\paX+0.5*\paW+0.5*\paD,\paY+\paH+\paRise);
+  \coordinate (#1-south) at (\paX+0.5*\paW,\paY);
+}
+
+\begin{tikzpicture}[
+  x=1cm,
+  y=1cm,
+  >=Latex,
+  forward/.style={->, draw=black, line width=1.10pt},
+  branch/.style={->, draw=black, line width=1.00pt, rounded corners=3pt},
+  loss/.style={->, draw=black!70, line width=0.76pt, densely dashed, rounded corners=2pt},
+  lossbox/.style={draw=black!75, fill=white, rounded corners=2pt,
+    align=center, inner sep=5pt, font=\small, line width=0.66pt},
+  lane/.style={font=\Large\bfseries, anchor=west},
+  note/.style={font=\small, align=center, text=black!78}
+]
+
+% Header.
+\node[font=\Large\bfseries, anchor=west] at (0.2,12.55)
+  {PathoAlign: paired-acquisition neural factorization};
+\draw[black!45, line width=0.58pt] (0.2,12.10) -- (25.75,12.10);
+
+% Input and frozen representation.
+\foreach \k in {0,...,4}{
+  \pgfmathsetmacro{\dx}{0.17*\k}
+  \pgfmathsetmacro{\dy}{0.11*\k}
+  \path[draw=black, line width=0.68pt, fill=gray!12]
+    (0.45+\dx,5.10+\dy) rectangle ++(1.55,2.25);
+}
+\node[align=center, font=\normalsize\bfseries] at (1.52,6.30)
+  {same tissue region\\five scanners};
+\node[font=\small] at (1.52,5.45) {$\{x_{r,s}\}_{s=1}^{5}$};
+
+\paBlock{encoder}{3.05}{5.00}{2.45}{2.60}{0.46}{paGray}
+  {frozen encoder}{ResNet50 / DINOv2\\Phikon}
+\paBlock{feature}{6.30}{5.34}{1.65}{1.95}{0.46}{paGray}
+  {feature}{${x\in\mathbb{R}^{D}}$}
+\draw[forward] (2.35,6.25) -- (encoder-west);
+\draw[forward] (encoder-east) -- (feature-west);
+
+\coordinate (split) at (8.70,6.36);
+\draw[forward] (feature-east) -- (split);
+\fill (split) circle (2.2pt);
+
+% Biological branch.
+\node[lane, text=blue!55!black] at (9.20,10.55) {Biological factor};
+\paBlock{biohidden}{9.20}{7.65}{2.00}{2.25}{0.44}{paBlue}
+  {biological MLP}{${D\rightarrow512}$}
+\paBlock{bio}{12.15}{7.85}{1.55}{1.85}{0.46}{paBlue}
+  {$z_b$}{${\mathbb{R}^{256}}$}
+\draw[branch] (split) -- ++(0,2.40) -- (biohidden-west);
+\draw[forward] (biohidden-east) -- (bio-west);
+
+% Biological auxiliary scanner head above the main path.
+\paBlock{biohead}{15.10}{9.47}{1.75}{1.55}{0.36}{paBlue}
+  {scanner head}{${256\rightarrow128\rightarrow5}$}
+\paBlock{biologits}{17.75}{9.62}{1.25}{1.25}{0.30}{paBlue}
+  {logits}{${\widehat y_b}$}
+\draw[branch] (bio-north) -- node[left, font=\small] {$\operatorname{GRL}_{1}$} (biohead-west);
+\draw[forward] (biohead-east) -- (biologits-west);
+\node[lossbox, text width=3.15cm] (biomainloss) at (23.20,10.72)
+  {$\mathcal L_{\mathrm{pair}}\quad\mathcal L_{\mathrm{dep}}$\\
+   $\mathcal L_{\mathrm{var},b}\quad\mathcal L_{\mathrm{cov},b}$};
+\draw[loss] (bio-north) -- ++(0,1.35) -| (biomainloss.west);
+\node[lossbox, text width=2.15cm] (bioadvloss) at (21.10,9.68)
+  {$\mathcal L_{\mathrm{scan},b}$\\reversed into $f_b$};
+\draw[loss] (biologits-east) -- (bioadvloss.west);
+
+% Acquisition branch.
+\node[lane, text=orange!65!black] at (9.20,4.70) {Acquisition factor};
+\paBlock{acqhidden}{9.20}{1.90}{2.00}{2.25}{0.44}{paOrange}
+  {acquisition MLP}{${D\rightarrow512}$}
+\paBlock{acq}{12.15}{2.10}{1.55}{1.85}{0.46}{paOrange}
+  {$z_a$}{${\mathbb{R}^{64}}$}
+\draw[branch] (split) -- ++(0,-2.45) -- (acqhidden-west);
+\draw[forward] (acqhidden-east) -- (acq-west);
+
+% Acquisition auxiliary head below the main path.
+\paBlock{acqhead}{15.10}{0.15}{1.75}{1.55}{0.36}{paOrange}
+  {scanner head}{${64\rightarrow64\rightarrow5}$}
+\paBlock{acqlogits}{17.75}{0.30}{1.25}{1.25}{0.30}{paOrange}
+  {logits}{${\widehat y_a}$}
+\draw[branch] (acq-south) -- (acqhead-west);
+\draw[forward] (acqhead-east) -- (acqlogits-west);
+\node[lossbox, text width=2.80cm] (acqloss) at (21.10,0.92)
+  {$\mathcal L_{\mathrm{scan},a}\quad\mathcal L_{\mathrm{var},a}$};
+\draw[loss] (acqlogits-east) -- (acqloss.west);
+
+% Cross-factor decorrelation.
+\draw[loss, <->] (bio-south) -- node[right, font=\small, fill=white, inner sep=2pt]
+  {$\mathcal L_{\mathrm{xcov}}$} (acq-north);
+
+% Main factors merge and reconstruct the frozen input.
+\paBlock{concat}{18.60}{5.12}{1.45}{2.05}{0.40}{paPurple}
+  {concat.}{${[z_b;z_a]\in\mathbb{R}^{320}}$}
+\paBlock{decoder}{21.05}{4.70}{2.10}{2.90}{0.50}{paGreen}
+  {decoder MLP}{${320\rightarrow512\rightarrow D}$}
+\paBlock{recon}{24.25}{5.10}{1.45}{2.10}{0.42}{paGreen}
+  {$\widehat x$}{${\mathbb{R}^{D}}$}
+
+\draw[branch] (bio-east) -- ++(3.65,0) |- (concat-north);
+\draw[branch] (acq-east) -- ++(3.65,0) |- (concat-south);
+\draw[forward] (concat-east) -- (decoder-west);
+\draw[forward] (decoder-east) -- (recon-west);
+\node[lossbox, text width=2.35cm] (reconloss) at (24.35,3.52)
+  {$\mathcal L_{\mathrm{recon}}$\\match $\widehat x$ to $x$};
+\draw[loss] (recon-south) -- (reconloss.north);
+
+% Interpretation strip.
+\draw[black!45, line width=0.58pt] (0.2,-0.20) -- (25.75,-0.20);
+\node[note, text width=24.8cm, anchor=north west] at (0.55,-0.42)
+  {Solid arrows show forward computation; dashed arrows show training losses or reversed gradients. The biological factor is protected by paired agreement and anti-collapse terms while scanner dependence is suppressed directly and adversarially. The acquisition factor retains scanner identity. Joint reconstruction and cross-factor decorrelation require the two factors to remain informative but nonredundant.};
+
+\end{tikzpicture}
