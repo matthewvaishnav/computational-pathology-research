@@ -21,15 +21,16 @@ with hidden width 512. The decoder has widths $(d_b+d_a)\to512\to D$ with a GELU
  \qquad
  \frac{\partial\operatorname{GRL}_{\gamma}}{\partial z}=-\gamma I.
 \end{equation}
-Thus $q_b$ learns to predict scanner identity while $f_b$ receives the opposite gradient; $q_a$ and $f_a$ both minimize ordinary scanner cross-entropy.
-
-\begin{figure}[!htbp]
-\centering
-\resizebox{\textwidth}{!}{\input{pathoalign_architecture_diagram.tex}}
-\caption{PathoAlign uses multiple scanner views of the same tissue region to learn a stable biological branch and a compact acquisition branch. The objective accounts for removed information rather than simply suppressing site predictability.}
-\label{fig:pathoalign_architecture}
-\end{figure}
-\FloatBarrier
+Thus $q_b$ learns to predict scanner identity while $f_b$ receives the opposite gradient; $q_a$ and $f_a$ both minimize ordinary scanner cross-entropy. The factorization can be summarized without a separate diagram as
+\begin{equation}
+ x\longmapsto
+ \begin{cases}
+ z_b=f_b(x), & \text{same-region agreement and scanner suppression},\\
+ z_a=f_a(x), & \text{scanner prediction and acquisition retention},
+ \end{cases}
+ \qquad
+ \widehat{x}=g([z_b;z_a]).
+\end{equation}
 
 \subsection{Objective}
 Let a minibatch be $\{(x_i,r_i,s_i)\}_{i=1}^{n}$, where $r_i$ is tissue-region identity and $s_i\in\{1,\ldots,C\}$ is scanner identity. Write $Z_b\in\mathbb{R}^{n\times d_b}$ and $Z_a\in\mathbb{R}^{n\times d_a}$ for the stacked factors, and let $u_i=z_{b,i}/\lVert z_{b,i}\rVert_2$. For anchor $i$, the positive set is $P(i)=\{p\ne i:r_p=r_i\}$. The multi-positive paired loss is
