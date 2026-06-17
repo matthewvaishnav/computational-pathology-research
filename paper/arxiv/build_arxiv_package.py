@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Prepare a self-contained umbrella-platform LaTeX source folder.
 
-The build copy preserves the sectioned PathoAlign, TransnnMIL, and PathologyFL
-technical report. It applies compact single-column formatting without rewriting
-scientific sections or injecting legacy figures.
+The build copy preserves the PathoAlign-first paper while explicitly retaining
+PANDA/TransnnMIL and CAMELYON17/PathologyFL as substantive secondary research
+lines. It applies compact single-column formatting without injecting retired
+legacy figures or rewriting the central scientific claims.
 
 Run from the repository root:
 
@@ -23,12 +24,18 @@ BUILD = ARXIV / "build"
 FILES = [
     ARXIV / "main.tex",
     ARXIV / "references.bib",
+    ARXIV / "broader_research_program.tex",
     ARXIV / "identifiability_calculations.tex",
     ARXIV / "identifiability_calculations_part1.tex",
     ARXIV / "identifiability_calculations_part2a.tex",
     ARXIV / "identifiability_calculations_part2b.tex",
     ARXIV / "identifiability_calculations_part3a.tex",
 ]
+
+
+GENERIC_SECONDARY_BLOCK = r"""\section{Secondary research components}
+The repository also contains whole-slide multiple-instance learning and federated-pathology experiments. TransnnMIL combines correlated transformer aggregation with gated attention for slide-level modeling. PathologyFL studies sample-weighted and contribution-aware institutional aggregation under controlled corruption and external-center validation. These projects are scientifically related because they address later stages of the pathology learning pipeline, but they are not the central evidence in this paper and are not used to strengthen the PathoAlign representation claim.
+"""
 
 
 def copy_required(source: Path, destination: Path) -> None:
@@ -39,7 +46,7 @@ def copy_required(source: Path, destination: Path) -> None:
 
 
 def apply_compact_single_column_format(path: Path) -> None:
-    """Apply layout-only transformations to the build copy."""
+    """Apply layout and public-PDF composition transformations."""
     text = path.read_text(encoding="utf-8")
     text = text.replace(
         r"\documentclass[11pt]{article}",
@@ -67,6 +74,16 @@ def apply_compact_single_column_format(path: Path) -> None:
             1,
         )
 
+    if GENERIC_SECONDARY_BLOCK not in text:
+        raise RuntimeError(
+            "Could not locate the generic secondary-research block in main.tex"
+        )
+    text = text.replace(
+        GENERIC_SECONDARY_BLOCK,
+        r"\input{broader_research_program.tex}" + "\n",
+        1,
+    )
+
     text = text.replace(r"\begin{table*}[t]", r"\begin{table}[t]")
     text = text.replace(r"\end{table*}", r"\end{table}")
     text = text.replace(r"\begin{figure*}[t]", r"\begin{figure}[t]")
@@ -77,10 +94,22 @@ def apply_compact_single_column_format(path: Path) -> None:
     if "federated_pathology_pipeline_diagram" in text:
         raise RuntimeError("A retired legacy pipeline figure was unexpectedly injected")
 
-    required_terms = ("PathoAlign", "TransnnMIL", "PathologyFL", "SCORPION")
+    required_terms = (
+        "PathoAlign",
+        "SCORPION",
+        "broader_research_program.tex",
+    )
     missing = [term for term in required_terms if term not in text]
     if missing:
-        raise RuntimeError(f"The build copy lost required platform sections: {missing}")
+        raise RuntimeError(f"The build copy lost required paper sections: {missing}")
+
+    broader = (BUILD / "broader_research_program.tex").read_text(encoding="utf-8")
+    broader_required = ("PANDA", "CAMELYON17", "TransnnMIL", "PathologyFL")
+    broader_missing = [term for term in broader_required if term not in broader]
+    if broader_missing:
+        raise RuntimeError(
+            f"The public PDF lost broader research components: {broader_missing}"
+        )
 
     path.write_text(text, encoding="utf-8")
 
