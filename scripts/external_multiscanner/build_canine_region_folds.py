@@ -14,7 +14,7 @@ import json
 import math
 import random
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -98,76 +98,153 @@ def sample_profiles(frame: pd.DataFrame) -> dict[str, dict[str, Any]]:
     return result
 
 
+def assignment_objective(
+    assignments: dict[str, int],
+    profiles: dict[str, dict[str, Any]],
+    n_folds: int,
+) -> float:
+    """Score global balance over region counts, sample counts, and categories."""
+    fold_regions = np.zeros(n_folds, dtype=float)
+    fold_samples = np.zeros(n_folds, dtype=float)
+    fold_categories = [Counter() for _ in range(n_folds)]
+
+    for sample_id, fold in assignments.items():
+        profile = profiles[sample_id]
+        fold_regions[fold] += profile["n_regions"]
+        fold_samples[fold] += 1
+        fold_categories[fold].update(profile["categories"])
+
+    total_regions = sum(item["n_regions"] for item in profiles.values())
+    target_regions = total_regions / n_folds
+    target_samples = len(profiles) / n_folds
+    region_penalty = float(
+        np.mean(((fold_regions - target_regions) / max(target_regions, 1.0)) ** 2)
+    )
+    sample_penalty = float(
+        np.mean(((fold_samples - target_samples) / max(target_samples, 1.0)) ** 2)
+    )
+
+    category_totals: Counter[str] = Counter()
+    for item in profiles.values():
+        category_totals.update(item["categories"])
+    category_penalties: list[float] = []
+    for category, total in category_totals.items():
+        target = total / n_folds
+        observed = np.asarray(
+            [fold_categories[fold][category] for fold in range(n_folds)],
+            dtype=float,
+        )
+        category_penalties.append(
+            float(np.mean(((observed - target) / max(target, 1.0)) ** 2))
+        )
+    category_penalty = float(np.mean(category_penalties)) if category_penalties else 0.0
+
+    empty_fold_penalty = 0.0
+    if len(assignments) >= n_folds and np.any(fold_samples == 0):
+        empty_fold_penalty = 1_000_000.0
+
+    return (
+        empty_fold_penalty
+        + region_penalty
+        + 0.20 * sample_penalty
+        + 0.35 * category_penalty
+    )
+
+
+def greedy_assignment_trial(
+    profiles: dict[str, dict[str, Any]],
+    *,
+    n_folds: int,
+    rng: random.Random,
+) -> tuple[dict[str, int], float]:
+    sample_ids = list(profiles)
+    jitter = {sample_id: rng.random() for sample_id in sample_ids}
+    sample_ids.sort(
+        key=lambda sample_id: (
+            -profiles[sample_id]["n_regions"],
+            jitter[sample_id],
+            sample_id,
+        )
+    )
+
+    fold_order = list(range(n_folds))
+    rng.shuffle(fold_order)
+    assignments: dict[str, int] = {
+        sample_id: fold
+        for sample_id, fold in zip(sample_ids[:n_folds], fold_order)
+    }
+
+    for sample_id in sample_ids[n_folds:]:
+        current_regions = [
+            sum(
+                profiles[assigned_sample]["n_regions"]
+                for assigned_sample, assigned_fold in assignments.items()
+                if assigned_fold == fold
+            )
+            for fold in range(n_folds)
+        ]
+        current_samples = [
+            sum(1 for assigned_fold in assignments.values() if assigned_fold == fold)
+            for fold in range(n_folds)
+        ]
+
+        candidates: list[tuple[float, int, int, int]] = []
+        for fold in range(n_folds):
+            trial = dict(assignments)
+            trial[sample_id] = fold
+            candidates.append(
+                (
+                    assignment_objective(trial, profiles, n_folds),
+                    current_regions[fold],
+                    current_samples[fold],
+                    fold,
+                )
+            )
+        selected = min(candidates)[3]
+        assignments[sample_id] = selected
+
+    return assignments, assignment_objective(assignments, profiles, n_folds)
+
+
 def assign_folds(
     profiles: dict[str, dict[str, Any]],
     *,
     n_folds: int,
     seed: int,
-) -> dict[str, int]:
+    search_trials: int,
+) -> tuple[dict[str, int], float]:
     if n_folds < 3:
         raise ValueError("At least three folds are required")
     if n_folds > len(profiles):
         raise ValueError("Number of folds exceeds number of samples")
+    if search_trials < 1:
+        raise ValueError("search_trials must be positive")
 
-    rng = random.Random(seed)
-    sample_ids = list(profiles)
-    rng.shuffle(sample_ids)
-    random_rank = {sample_id: index for index, sample_id in enumerate(sample_ids)}
-    sample_ids.sort(
-        key=lambda sample_id: (
-            -profiles[sample_id]["n_regions"],
-            random_rank[sample_id],
+    best_assignments: dict[str, int] | None = None
+    best_score = math.inf
+    best_signature: tuple[tuple[str, int], ...] | None = None
+
+    for trial_index in range(search_trials):
+        rng = random.Random(seed + trial_index * 104729)
+        assignments, score = greedy_assignment_trial(
+            profiles,
+            n_folds=n_folds,
+            rng=rng,
         )
-    )
+        signature = tuple(sorted(assignments.items()))
+        if score < best_score or (
+            math.isclose(score, best_score)
+            and (best_signature is None or signature < best_signature)
+        ):
+            best_assignments = assignments
+            best_score = score
+            best_signature = signature
 
-    total_regions = sum(item["n_regions"] for item in profiles.values())
-    target_regions = total_regions / n_folds
-    category_totals: Counter[str] = Counter()
-    for item in profiles.values():
-        category_totals.update(item["categories"])
-    category_targets = {
-        category: count / n_folds for category, count in category_totals.items()
-    }
-
-    fold_regions = [0 for _ in range(n_folds)]
-    fold_samples = [0 for _ in range(n_folds)]
-    fold_categories = [Counter() for _ in range(n_folds)]
-    assignments: dict[str, int] = {}
-
-    for sample_id in sample_ids:
-        profile = profiles[sample_id]
-        candidate_scores: list[tuple[float, int]] = []
-        for fold in range(n_folds):
-            new_regions = fold_regions[fold] + profile["n_regions"]
-            region_penalty = ((new_regions - target_regions) / target_regions) ** 2
-
-            category_penalty = 0.0
-            for category, target in category_targets.items():
-                denominator = max(target, 1.0)
-                new_count = (
-                    fold_categories[fold][category]
-                    + profile["categories"].get(category, 0)
-                )
-                category_penalty += ((new_count - target) / denominator) ** 2
-            category_penalty /= max(len(category_targets), 1)
-
-            sample_penalty = (
-                (fold_samples[fold] + 1 - len(profiles) / n_folds)
-                / max(len(profiles) / n_folds, 1.0)
-            ) ** 2
-            score = region_penalty + 0.35 * category_penalty + 0.10 * sample_penalty
-            candidate_scores.append((score, fold))
-
-        _, selected = min(
-            candidate_scores,
-            key=lambda item: (item[0], fold_regions[item[1]], fold_samples[item[1]], item[1]),
-        )
-        assignments[sample_id] = selected
-        fold_regions[selected] += profile["n_regions"]
-        fold_samples[selected] += 1
-        fold_categories[selected].update(profile["categories"])
-
-    return assignments
+    if best_assignments is None:
+        raise RuntimeError("Fold search produced no assignment")
+    if set(best_assignments.values()) != set(range(n_folds)):
+        raise RuntimeError("Fold search failed to populate every fold")
+    return best_assignments, float(best_score)
 
 
 def add_geometry(frame: pd.DataFrame) -> pd.DataFrame:
@@ -208,7 +285,6 @@ def geometry_audit(
             summary_rows.append(row)
 
     coverage_rows: list[dict[str, Any]] = []
-    region_groups = frame.groupby("region_id", sort=False)
     for crop_size in crop_sizes:
         contains = (
             (frame["bbox_width"] <= crop_size)
@@ -262,6 +338,7 @@ def main() -> None:
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--n-folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--fold-search-trials", type=int, default=512)
     parser.add_argument(
         "--crop-sizes",
         nargs="+",
@@ -276,11 +353,21 @@ def main() -> None:
     frame = add_geometry(frame)
 
     profiles = sample_profiles(frame)
-    assignments = assign_folds(profiles, n_folds=args.n_folds, seed=args.seed)
+    assignments, assignment_score = assign_folds(
+        profiles,
+        n_folds=args.n_folds,
+        seed=args.seed,
+        search_trials=args.fold_search_trials,
+    )
     frame["fold"] = frame["sample_id"].astype(str).map(assignments)
     if frame["fold"].isna().any():
         raise RuntimeError("At least one sample did not receive a fold")
     frame["fold"] = frame["fold"].astype(int)
+    observed_folds = sorted(frame["fold"].unique().tolist())
+    if observed_folds != list(range(args.n_folds)):
+        raise RuntimeError(
+            f"Expected folds 0..{args.n_folds - 1}, observed {observed_folds}"
+        )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     frame.to_csv(args.out_dir / "manifest.csv", index=False)
@@ -318,6 +405,8 @@ def main() -> None:
             }
             for name in ("train", "val", "test")
         }
+        if any(split_summaries[f"fold_{test_fold}"][name]["samples"] == 0 for name in ("train", "val", "test")):
+            raise RuntimeError(f"Fold {test_fold} contains an empty split")
 
     scanner_geometry, crop_coverage, geometry_summary = geometry_audit(
         frame, tuple(args.crop_sizes)
@@ -325,19 +414,21 @@ def main() -> None:
     scanner_geometry.to_csv(args.out_dir / "scanner_geometry_quantiles.csv", index=False)
     crop_coverage.to_csv(args.out_dir / "crop_size_coverage.csv", index=False)
 
-    fold_counts = (
+    sample_counts = (
         frame.drop_duplicates("sample_id")
         .groupby("fold")
         .agg(samples=("sample_id", "nunique"))
+        .reindex(range(args.n_folds), fill_value=0)
         .reset_index()
     )
     region_counts = (
         frame.drop_duplicates("region_id")
         .groupby("fold")
         .agg(regions=("region_id", "nunique"))
+        .reindex(range(args.n_folds), fill_value=0)
         .reset_index()
     )
-    fold_counts = fold_counts.merge(region_counts, on="fold", how="left")
+    fold_counts = sample_counts.merge(region_counts, on="fold", how="left")
     fold_counts.to_csv(args.out_dir / "fold_summary.csv", index=False)
 
     summary = {
@@ -349,6 +440,8 @@ def main() -> None:
         "n_scanners": int(frame["scanner_id"].nunique()),
         "n_folds": args.n_folds,
         "fold_seed": args.seed,
+        "fold_search_trials": args.fold_search_trials,
+        "fold_assignment_score": assignment_score,
         "folds": fold_counts.to_dict(orient="records"),
         "rotating_split_summaries": split_summaries,
         "geometry": geometry_summary,
