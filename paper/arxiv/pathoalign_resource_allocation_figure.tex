@@ -39,7 +39,7 @@
 \draw[seriesa] (a1) -- (a2) -- (a3);
 \foreach \p/\lab in {a1/0.4081,a2/0.4243,a3/0.4259} {
   \filldraw[fill=white, draw=black, line width=0.8pt] (\p) circle (0.075);
-  \node[tick, anchor=south] at ($ (\p)+(0,0.10) $) {\lab};
+  \node[tick, anchor=south] at ($(\p)+(0,0.10)$) {\lab};
 }
 
 % 12,800 presentations: scores 0.4489, 0.4595, 0.4619.
@@ -48,8 +48,8 @@
 \coordinate (b3) at (7.45,2.7855);
 \draw[seriesb] (b1) -- (b2) -- (b3);
 \foreach \p/\lab in {b1/0.4489,b2/0.4595,b3/0.4619} {
-  \draw[fill=white, draw=black, line width=0.8pt] ($ (\p)+(-0.075,-0.075) $) rectangle ($ (\p)+(0.075,0.075) $);
-  \node[tick, anchor=south] at ($ (\p)+(0,0.11) $) {\lab};
+  \draw[fill=white, draw=black, line width=0.8pt] ($(\p)+(-0.075,-0.075)$) rectangle ($(\p)+(0.075,0.075)$);
+  \node[tick, anchor=south] at ($(\p)+(0,0.11)$) {\lab};
 }
 
 % Legend and compact interpretation.
