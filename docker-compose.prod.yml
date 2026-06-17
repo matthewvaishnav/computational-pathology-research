@@ -1,0 +1,265 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: federated_learning
+      POSTGRES_USER: fluser
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - fl_network
+    secrets:
+      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fluser -d federated_learning"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass-file /run/secrets/redis_password
+    volumes:
+      - redis_data:/data
+    networks:
+      - fl_network
+    secrets:
+      - redis_password
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FL Coordinator
+  coordinator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.coordinator
+    environment:
+      - FL_MODE=production
+      - DATABASE_URL=postgresql://fluser@postgres:5432/federated_learning
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+      - METRICS_ENABLED=true
+    volumes:
+      - ./config:/app/config:ro
+      - ./certs:/app/certs:ro
+      - coordinator_logs:/app/logs
+      - coordinator_checkpoints:/app/checkpoints
+    ports:
+      - "8080:8080"  # HTTP API
+      - "50051:50051"  # gRPC
+    networks:
+      - fl_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    secrets:
+      - db_password
+      - redis_password
+      - tls_cert
+      - tls_key
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # FL Clients (Hospital A)
+  client_hospital_a:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.client
+    environment:
+      - FL_MODE=production
+      - CLIENT_ID=hospital_a
+      - COORDINATOR_URL=coordinator:50051
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./config:/app/config:ro
+      - ./certs:/app/certs:ro
+      - ./data/hospital_a:/app/data:ro
+      - client_a_logs:/app/logs
+    ports:
+      - "8081:8081"
+    networks:
+      - fl_network
+    depends_on:
+      - coordinator
+    secrets:
+      - tls_cert
+      - tls_key
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # FL Clients (Hospital B)
+  client_hospital_b:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.client
+    environment:
+      - FL_MODE=production
+      - CLIENT_ID=hospital_b
+      - COORDINATOR_URL=coordinator:50051
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./config:/app/config:ro
+      - ./certs:/app/certs:ro
+      - ./data/hospital_b:/app/data:ro
+      - client_b_logs:/app/logs
+    ports:
+      - "8082:8081"
+    networks:
+      - fl_network
+    depends_on:
+      - coordinator
+    secrets:
+      - tls_cert
+      - tls_key
+
+  # FL Clients (Hospital C)
+  client_hospital_c:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.client
+    environment:
+      - FL_MODE=production
+      - CLIENT_ID=hospital_c
+      - COORDINATOR_URL=coordinator:50051
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./config:/app/config:ro
+      - ./certs:/app/certs:ro
+      - ./data/hospital_c:/app/data:ro
+      - client_c_logs:/app/logs
+    ports:
+      - "8083:8081"
+    networks:
+      - fl_network
+    depends_on:
+      - coordinator
+    secrets:
+      - tls_cert
+      - tls_key
+
+  # Monitoring - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - fl_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  # Monitoring - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD_FILE=/run/secrets/grafana_password
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - fl_network
+    secrets:
+      - grafana_password
+
+  # Log Aggregation - ELK Stack
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - fl_network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+    networks:
+      - fl_network
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - fl_network
+    depends_on:
+      - elasticsearch
+
+networks:
+  fl_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+  redis_data:
+  coordinator_logs:
+  coordinator_checkpoints:
+  client_a_logs:
+  client_b_logs:
+  client_c_logs:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  grafana_password:
+    file: ./secrets/grafana_password.txt
+  tls_cert:
+    file: ./certs/server-cert.pem
+  tls_key:
+    file: ./certs/server-key.pem
