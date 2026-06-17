@@ -22,133 +22,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare arXiv source package
+      - name: Prepare self-contained paper source
         run: python paper/arxiv/build_arxiv_package.py
 
-      - name: Apply single-column conference formatting
+      - name: Validate result-first paper composition
         run: |
-          cp paper/arxiv/identifiability_calculations.tex paper/arxiv/build/identifiability_calculations.tex
           python - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path("paper/arxiv/build/main.tex")
           text = path.read_text(encoding="utf-8")
 
-          # Match literal LaTeX command backslashes and return replacement text
-          # through callables so neither side is parsed as a regex escape.
-          text = re.sub(
-              r"\\documentclass\[[^\]]*\]\{article\}",
-              lambda _match: r"\documentclass[10pt]{article}",
-              text,
-              count=1,
+          required = (
+              "Paired-Acquisition Neural Factorization",
+              r"\section{Introduction}",
+              r"\section{The Data}",
+              r"\section{The PathoAlign Model}",
+              r"\section{Preventing Representation Failure}",
+              r"\section{Details of Learning}",
+              r"\section{Results}",
+              r"\section{Discussion}",
+              r"\section{Conclusion}",
+              r"\input{pathoalign_architecture_diagram.tex}",
+              r"\input{pathoalign_resource_allocation_figure.tex}",
+              r"\input{broader_research_program.tex}",
+              r"\input{identifiability_calculations.tex}",
+              "PANDA",
+              "CAMELYON17",
+              "PCam",
           )
-          text = re.sub(
-              r"\\usepackage\[[^\]]*\]\{geometry\}",
-              lambda _match: r"\usepackage[letterpaper,top=0.68in,bottom=0.72in,left=1.02in,right=1.02in]{geometry}",
-              text,
-              count=1,
+          missing = [item for item in required if item not in text]
+          if missing:
+              raise RuntimeError(f"Paper composition is incomplete: {missing}")
+
+          forbidden = (
+              "twocolumn",
+              "federated_pathology_pipeline_diagram",
+              r"\usepackage{titling}",
+              r"\maketitle",
           )
-          text = re.sub(
-              r"\\date\{[^}]*\}",
-              lambda _match: r"\date{June 17, 2026}",
-              text,
-              count=1,
-          )
+          present = [item for item in forbidden if item in text]
+          if present:
+              raise RuntimeError(f"Legacy paper formatting remains: {present}")
 
-          anchor = r"\usepackage[numbers,sort&compress]{natbib}"
-          conference_style = r"""
-          \usepackage{titlesec}
-          \usepackage{titling}
-          \usepackage{wrapfig}
-
-          \setlength{\parindent}{0pt}
-          \setlength{\parskip}{0.48em}
-          \setlength{\abovedisplayskip}{5pt plus 1pt minus 1pt}
-          \setlength{\belowdisplayskip}{5pt plus 1pt minus 1pt}
-          \setlength{\textfloatsep}{9pt plus 2pt minus 2pt}
-          \setlength{\floatsep}{8pt plus 2pt minus 2pt}
-          \setlength{\intextsep}{8pt plus 2pt minus 2pt}
-          \emergencystretch=1.2em
-
-          \titleformat{\section}{\large\bfseries}{\thesection}{0.85em}{}
-          \titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.75em}{}
-          \titlespacing*{\section}{0pt}{1.45em}{0.48em}
-          \titlespacing*{\subsection}{0pt}{1.05em}{0.35em}
-
-          \setlength{\droptitle}{-3.2em}
-          \pretitle{\begin{center}\hrule height 2.6pt\vspace{0.75em}\LARGE\bfseries}
-          \posttitle{\par\vspace{0.75em}\hrule height 0.7pt\end{center}\vspace{0.9em}}
-          \preauthor{\begin{center}\normalsize}
-          \postauthor{\end{center}\vspace{-0.45em}}
-          \predate{\begin{center}\small}
-          \postdate{\end{center}\vspace{0.6em}}
-
-          \renewenvironment{abstract}{%
-            \begin{center}%
-            \begin{minipage}{0.79\textwidth}%
-            \small
-            \begin{center}\bfseries Abstract\end{center}%
-            \vspace{-0.45em}%
-            \setlength{\parindent}{0pt}%
-            \setlength{\parskip}{0.34em}%
-            \ignorespaces
-          }{%
-            \end{minipage}%
-            \end{center}%
-            \vspace{0.45em}%
-          }
-          """
-
-          if r"\usepackage{titlesec}" not in text:
-              text = text.replace(anchor, anchor + conference_style, 1)
-
-          # Remove earlier top-level paragraph settings without touching the
-          # scoped settings inside the abstract environment.
-          text = re.sub(
-              r"(?m)^\s*\\setlength\{\\parindent\}\{[^}]+\}\s*$",
-              "",
-              text,
-          )
-          text = re.sub(
-              r"(?m)^\s*\\setlength\{\\parskip\}\{[^}]+\}\s*$",
-              "",
-              text,
-          )
-
-          links = r"""
-          \begin{center}
-          \small
-          \href{https://github.com/matthewvaishnav/computational-pathology-research}{\textbf{Project repository}}
-          \quad$\vert$\quad
-          \href{https://github.com/matthewvaishnav/computational-pathology-research/tree/main/paper/arxiv}{Paper source}
-          \quad$\vert$\quad
-          \href{https://github.com/matthewvaishnav/computational-pathology-research/tree/main/results}{Experimental results}
-          \end{center}
-          \vspace{0.25em}
-          """
-          if "Project repository" not in text:
-              text = text.replace(r"\maketitle", r"\maketitle" + links, 1)
-
-          calc = r"\input{identifiability_calculations.tex}"
-          if calc not in text:
-              text = text.replace(
-                  r"\section{Limitations}",
-                  calc + "\n\n" + r"\section{Limitations}",
-                  1,
-              )
-
-          if "twocolumn" in text:
-              raise RuntimeError("Global two-column formatting remains")
-          if r"\usepackage{titlesec}" not in text:
-              raise RuntimeError("Single-column conference style was not applied")
-          if calc not in text:
-              raise RuntimeError("Calculations section was not included")
-          for required in ("PathoAlign", "TransnnMIL", "PathologyFL"):
-              if required not in text:
-                  raise RuntimeError(f"Missing platform section: {required}")
-
-          path.write_text(text, encoding="utf-8")
+          print("Validated compact single-column result-first paper composition")
           PY
 
       - name: Build LaTeX PDF
@@ -194,10 +111,10 @@ jobs:
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <meta http-equiv="refresh" content="0; url=./computational-pathology-research-platform-for-federated-oncology.pdf">
-            <title>Computational Pathology Research Platform for Federated Oncology</title>
+            <title>Computational Pathology Research Platform</title>
           </head>
           <body>
-            <p><a href="./computational-pathology-research-platform-for-federated-oncology.pdf">Open the computational pathology research platform PDF</a></p>
+            <p><a href="./computational-pathology-research-platform-for-federated-oncology.pdf">Open the computational pathology research PDF</a></p>
           </body>
           </html>
           EOF
