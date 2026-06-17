@@ -10,8 +10,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
+
+# PyTorch requires this to be configured before CUDA/cuBLAS initialization when
+# deterministic algorithms are requested. Respect an explicit user override.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 import numpy as np
 import torch
@@ -150,6 +155,7 @@ def main() -> None:
         "learning_rate": args.learning_rate,
         "weight_decay": args.weight_decay,
         "device": args.device,
+        "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
         "hyperparameters_frozen": True,
         "no_backbone_specific_tuning": True,
         "protocol": "docs/research/scorpion-pathoalign-crossbackbone-protocol.md",
