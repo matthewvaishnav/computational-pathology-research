@@ -1,6 +1,6 @@
 \documentclass[10pt]{article}
 
-\usepackage[letterpaper,top=0.58in,bottom=0.66in,left=1.02in,right=1.02in]{geometry}
+\usepackage[letterpaper,top=0.55in,bottom=0.64in,left=0.72in,right=0.72in]{geometry}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{booktabs}
 \usepackage{graphicx}
@@ -10,6 +10,7 @@
 \usepackage{caption}
 \usepackage{enumitem}
 \usepackage{times}
+\usepackage{titlesec}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc,fit}
 \PassOptionsToPackage{hyphens}{url}
@@ -23,44 +24,58 @@
   urlcolor=blue!55!black
 }
 
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.43em}
-\setlength{\textfloatsep}{0.55em}
-\setlength{\floatsep}{0.45em}
-\setlength{\intextsep}{0.45em}
+\setlength{\columnsep}{0.24in}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0.08em}
+\setlength{\textfloatsep}{0.55em plus 0.2em minus 0.2em}
+\setlength{\floatsep}{0.45em plus 0.2em minus 0.2em}
+\setlength{\intextsep}{0.45em plus 0.2em minus 0.2em}
 \setlist{nosep,leftmargin=*}
 \captionsetup{font=small,labelfont=bf,skip=3pt}
+\titlespacing*{\section}{0pt}{0.80em}{0.35em}
+\titlespacing*{\subsection}{0pt}{0.55em}{0.20em}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+\AtBeginDocument{%
+  \setlength{\abovedisplayskip}{0.36em plus 0.16em minus 0.12em}%
+  \setlength{\belowdisplayskip}{0.36em plus 0.16em minus 0.12em}%
+  \setlength{\abovedisplayshortskip}{0.18em plus 0.10em minus 0.08em}%
+  \setlength{\belowdisplayshortskip}{0.26em plus 0.10em minus 0.08em}%
+}
 \emergencystretch=2em
 
 \begin{document}
-
+\twocolumn[{
 % Title block intentionally follows the direct, compact structure of classic
 % landmark neural-network papers: one problem, one method, one result.
 \begin{center}
-\rule{\textwidth}{1.45pt}
-\vspace{0.18in}
+\rule{\textwidth}{1.35pt}
+\vspace{0.12in}
 
 {\LARGE\bfseries Paired-Acquisition Neural Factorization\\
 for Computational Pathology\par}
 
-\vspace{0.16in}
-\rule{\textwidth}{0.55pt}
-\vspace{0.24in}
+\vspace{0.10in}
+\rule{\textwidth}{0.50pt}
+\vspace{0.14in}
 
 {\bfseries Matthew Vaishnav}\par
 Independent Researcher, Kitchener-Waterloo, Canada\par
 \url{https://github.com/matthewvaishnav/computational-pathology-research}
 \end{center}
 
-\vspace{0.15in}
+\vspace{0.05in}
 \begin{center}
-\begin{minipage}{0.79\textwidth}
+\begin{minipage}{0.90\textwidth}
 \begin{center}\bfseries Abstract\end{center}
+\small
 I trained a neural factorization model to separate biological tissue signal from scanner and acquisition signal using biology-preserving paired observations. The principal experiment uses 2,400 real histopathology images from 480 aligned regions on 48 human H\&E slides, each scanned on five devices. A frozen PathoAlign objective reduced biological scanner-probe accuracy from 0.7825 to 0.3989 on DINOv2 features while improving paired agreement and preserving near-perfect cross-scanner tissue retrieval. Without backbone-specific tuning, the same objective transferred to pathology-native Phikon and ImageNet ResNet50. Across the two unseen feature families, the slide-blocked scanner-probe difference was $-0.4019$ with 95\% bootstrap interval $[-0.4145,-0.3895]$, favorable on all 48 slides. Scanner identity remained strongly recoverable from a compact acquisition branch, indicating factor separation rather than representational erasure.
 
 The method follows from two earlier failures. A locked adversarial study reduced site leakage but did not improve held-out tumor accuracy, and unconditional removal of a learned site component erased tumor-predictive information. Controlled latent-factor experiments then showed that ordinary observations and paired acquisitions are distinct resources. Under matched compute, doubling paired exposure improved recovery by $+0.037357$, while increasing unique anchors from 50 to 100 helped substantially more than increasing them from 100 to 200. Downstream PANDA, CAMELYON17, and PCam studies test whole-slide aggregation, institutional influence, external-center generalization, and systems constraints. The evidence supports a narrow conclusion: acquisition-associated information must be separated conditionally, with explicit protection of biology, rather than removed merely because it predicts site.
 \end{minipage}
 \end{center}
+\vspace{0.08in}
+}]
 
 \section{Introduction}
 Digital pathology representations contain more than morphology. Scanner optics, color response, compression, staining, preparation, local workflow, and institutional policy can all be encoded alongside tumor-relevant tissue structure. A representation may retrieve the correct specimen and support a downstream classifier while still making scanner or center identity easy to recover. Conversely, a method that suppresses every site-predictive direction can delete useful biology.
@@ -128,7 +143,7 @@ The matched-budget synthetic study used overlap 0.975, nonlinear mixing, 320 opt
 \subsection{Frozen paired-scanner factorization}
 Before PathoAlign training, scanner identity was strongly recoverable from all three feature families despite high tissue retention. The pathology-native Phikon representation had the highest baseline scanner-probe score.
 
-\begin{table}[!htbp]
+\begin{table}[t]
 \centering
 \caption{Frozen representation audit before PathoAlign training.}
 \small
@@ -146,7 +161,7 @@ Phikon & 0.8787 & 0.9825 & 0.9640 \\
 
 On DINOv2, the frozen five-fold comparison reduced scanner-probe accuracy from 0.7825 to 0.3989, increased mean paired cosine from 0.8476 to 0.8789, and preserved mean tissue retrieval at approximately 0.9998.
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{PathoAlign minus paired-consistency slide-blocked contrasts. Positive cosine and retrieval values and negative scanner-probe values are favorable.}
 \small
@@ -160,21 +175,19 @@ ResNet50 & $-0.3685$ & $+0.0255$ & $+0.0294$ & $+0.00808$ & $+0.01688$ \\
 \bottomrule
 \end{tabular}
 \label{tab:crossbackbone}
-\end{table}
-\FloatBarrier
+\end{table*}
 
 Both unseen backbones passed all seven preregistered criteria without retuning. Averaging Phikon and ResNet50 method differences within the same 48 slides gave scanner-probe difference $-0.4019$ with interval $[-0.4145,-0.3895]$, mean paired-cosine difference $+0.0578$ with interval $[0.0539,0.0615]$, and worst paired-cosine difference $+0.0628$ with interval $[0.0585,0.0672]$.
 
 The acquisition branch retained scanner-probe accuracies of 0.8602, 0.9711, and 0.7845 for DINOv2, Phikon, and ResNet50, respectively. Its tissue retrieval was much lower than the biological branch: 0.1042, 0.0739, and 0.1705. Every biological dimension retained nonzero test-fold variance. The result is therefore consistent with separation, not a constant representation or simple information deletion.
 
 \subsection{Resource allocation under matched compute}
-\begin{figure}[!htbp]
+\begin{figure*}[t]
 \centering
-\resizebox{0.94\textwidth}{!}{\input{pathoalign_resource_allocation_figure.tex}}
+\resizebox{0.78\textwidth}{!}{\input{pathoalign_resource_allocation_figure.tex}}
 \caption{Matched-budget allocation of unique paired anchors and repeated presentations. More total exposure produced the largest gain. Increasing unique-anchor diversity helped, with diminishing returns beyond approximately 100 anchors in the tested regime. No allocation crossed the historical 0.50 recovery threshold.}
 \label{fig:resource_allocation}
-\end{figure}
-\FloatBarrier
+\end{figure*}
 
 At 6,400 paired presentations, the seed-blocked 200-versus-50 anchor contrast was $+0.017865$, with 95\% interval $[0.010560,0.026079]$, positive in all ten seed blocks, and exact two-sided sign-flip $p=0.001953$. The 200-versus-100 contrast was only $+0.001578$. At 12,800 presentations, the corresponding contrasts were $+0.013050$ and $+0.002422$.
 
@@ -188,7 +201,7 @@ These results show a large improvement from mean pooling to attention-based MIL 
 \subsection{Federated site-signal auditing}
 In the full-PANDA label-noise study, a tuned observable detector-switch policy kept clean performance effectively unchanged while improving global QWK by $+0.008009$ at 25\% dominant-site corruption and $+0.007482$ at 35\% corruption. A stronger transfer experiment froze a detector calibrated under label noise and applied it without retuning to systematic conservative ordinal threshold shift.
 
-\begin{table}[!htbp]
+\begin{table*}[t]
 \centering
 \caption{Fixed detector transfer to conservative ordinal threshold shift. Deltas are detector-switch minus the clean-strategy baseline.}
 \small
@@ -203,7 +216,7 @@ Shift & Trigger & Global QWK $\Delta$ & Macro-F1 $\Delta$ & Worst-site QWK $\Del
 \bottomrule
 \end{tabular}
 \label{tab:main_detector_transfer}
-\end{table}
+\end{table*}
 
 At 35\% and 45\% shift, the bootstrap intervals for all three headline metrics were positive. Removing the most frequent diagnostic family reduced trigger rate but retained positive 35/45-shift means. In a 36-setting calibration-neighborhood sweep, 29 settings preserved low clean switching and positive 35\%/45\% gains across global QWK, macro-F1, and worst-site QWK.
 
@@ -231,6 +244,7 @@ Biology-preserving paired acquisitions can supervise a neural factorization in w
 The broader research record extends this principle to slide aggregation, federated influence, external-center validation, and systems constraints. The supported claim remains bounded: acquisition-associated variation should be separated conditionally and audited explicitly, not erased merely because it predicts site.
 
 \clearpage
+\onecolumn
 \appendix
 \section{Complete Empirical Study Record}
 The main text is deliberately narrow and result-first. The following appendix preserves the complete study-by-study research record, including methods, secondary experiments, negative results, systems probes, and claim boundaries.
