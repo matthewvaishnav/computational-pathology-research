@@ -5,8 +5,8 @@ The source is organized as a compact, result-first main paper followed by a
 complete empirical appendix. The build preserves the complete mathematical
 PathoAlign specification and the matched-budget resource-allocation figure
 together with the detailed PANDA, CAMELYON17, PCam, federated, and
-identifiability evidence. The main paper uses an AlexNet-style two-column
-layout with full-width title/abstract and full-width floats only when needed.
+identifiability evidence. The main paper uses a compact two-column layout with
+full-width title/abstract and full-width floats only when needed.
 
 Run from the repository root:
 
