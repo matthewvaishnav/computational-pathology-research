@@ -63,6 +63,21 @@ function Copy-RequiredDirectory {
     Copy-Item $source $target -Recurse -Force
 }
 
+function Copy-OptionalDirectory {
+    param(
+        [string]$RelativePath,
+        [string]$TargetRelativePath = $RelativePath
+    )
+    $source = Join-Path $SourceRoot $RelativePath
+    $target = Join-Path $DestinationRoot $TargetRelativePath
+    if (Test-Path $source) {
+        New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
+        Copy-Item $source $target -Recurse -Force
+    } else {
+        Write-Warning "Skipping optional missing directory: $source"
+    }
+}
+
 function New-TextFile {
     param(
         [string]$RelativePath,
@@ -98,6 +113,8 @@ Copy-RequiredFile "results\external_multiscanner_caninescc\geometry_qualified\ge
 Copy-RequiredFile "data\external_multiscanner_caninescc\patch_manifests\patch_extraction_summary.json" "results\patch_extraction_summary.json"
 Copy-RequiredDirectory "results\external_multiscanner_caninescc\pathoalign_dinov2_crossfold_analysis" "results\pathoalign_dinov2_crossfold_analysis"
 Copy-OptionalDirectory "results\external_multiscanner_caninescc\frozen_dinov2_base_fold0_val" "results\frozen_encoder_baselines\dinov2_base_fold0_val"
+Copy-OptionalDirectory "results\external_multiscanner_caninescc\frozen_resnet50_fold0_val" "results\frozen_encoder_baselines\resnet50_fold0_val"
+Copy-OptionalDirectory "results\external_multiscanner_caninescc\frozen_phikon_fold0_val" "results\frozen_encoder_baselines\phikon_fold0_val"
 
 # Create top-level repository files.
 $readme = @"
