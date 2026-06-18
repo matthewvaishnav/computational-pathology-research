@@ -11,12 +11,14 @@ Independent research on representation identifiability, whole-slide modeling, an
 | Research line | Dataset | Question | Current evidence |
 |---|---|---|---|
 | **PathoAlign** | SCORPION | Can paired acquisitions separate tissue identity from scanner signal? | Frozen five-fold and cross-backbone transfer across DINOv2, Phikon, and ResNet50 |
+| **PathoAlign external validation** | Multi-Scanner Canine SCC | Does the locked PathoAlign objective transfer to an independent paired-scanner benchmark? | DINOv2 five-fold sample-blocked external test: scanner probe 0.7529 to 0.3614, cosine improved, retrieval preserved |
 | **TransnnMIL** | PANDA | How should pathology foundation-model feature bags be aggregated for whole-slide grading? | Stabilized multi-seed PANDA validation against mean pooling and AttentionMIL |
 | **PathologyFL** | CAMELYON17 / WILDS | How do institutional weighting rules affect held-out-center generalization? | Feature-level external-center comparisons and controlled aggregation stress tests |
 
 ## Start here
 
 - [PathoAlign cross-backbone results](docs/research/scorpion-pathoalign-crossbackbone-results.md)
+- [PathoAlign external canine SCC validation results](docs/research/pathoalign-external-caninescc-results.md)
 - [PANDA TransnnMIL stability results](docs/results/panda-transnnmil-stability.md)
 - [CAMELYON17 external-center validation](docs/research/camelyon17-external-center-validation-note.md)
 - [Plain-English research summary](docs/outreach/plain-english-summary.md)
