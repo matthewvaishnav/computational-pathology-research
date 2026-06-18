@@ -5,7 +5,8 @@ The source is organized as a compact, result-first main paper followed by a
 complete empirical appendix. The build preserves the complete mathematical
 PathoAlign specification and the matched-budget resource-allocation figure
 together with the detailed PANDA, CAMELYON17, PCam, federated, and
-identifiability evidence.
+identifiability evidence. The main paper uses an AlexNet-style two-column
+layout with full-width title/abstract and full-width floats only when needed.
 
 Run from the repository root:
 
@@ -95,13 +96,9 @@ def validate_and_normalize_main(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
 
     # Compatibility with older source copies. The current source already uses
-    # the intended compact single-column format and explicit geometry.
+    # the intended compact two-column format and explicit geometry.
     text = text.replace(
         r"\documentclass[11pt]{article}",
-        r"\documentclass[10pt]{article}",
-    )
-    text = text.replace(
-        r"\documentclass[10pt,twocolumn]{article}",
         r"\documentclass[10pt]{article}",
     )
 
@@ -145,13 +142,13 @@ def validate_and_normalize_main(path: Path) -> None:
             1,
         )
 
-    text = text.replace(r"\begin{table*}[t]", r"\begin{table}[t]")
-    text = text.replace(r"\end{table*}", r"\end{table}")
-    text = text.replace(r"\begin{figure*}[t]", r"\begin{figure}[t]")
-    text = text.replace(r"\end{figure*}", r"\end{figure}")
+    if r"\twocolumn[" not in text:
+        raise RuntimeError("The main paper must use a compact two-column layout")
+    if r"\onecolumn" not in text:
+        raise RuntimeError("The appendix should switch back to one-column layout")
+    if r"\begin{figure*}" not in text or r"\begin{table*}" not in text:
+        raise RuntimeError("Wide result floats must use two-column-spanning environments")
 
-    if "twocolumn" in text:
-        raise RuntimeError("Global two-column formatting remains in the paper build")
     if "federated_pathology_pipeline_diagram" in text:
         raise RuntimeError("A retired legacy pipeline figure was unexpectedly injected")
 
