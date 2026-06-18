@@ -6,6 +6,14 @@
 
 This note freezes the external paired-acquisition validation of PathoAlign on the public Multi-Scanner Canine Cutaneous Squamous Cell Carcinoma histopathology dataset. The study uses a geometry-qualified paired-scanner subset rather than all released polygons, because the P1000 raster orientation and crop boundary required explicit qualification before feature extraction.
 
+## Standalone package
+
+This main repository is the research-program hub. Detailed protocol, compact result tables, paper source, and reproduction scripts for this external validation live in the standalone study package:
+
+- [Standalone repository](https://github.com/matthewvaishnav/pathoalign-external-caninescc)
+- [Standalone study PDF](https://matthewvaishnav.github.io/pathoalign-external-caninescc/pathoalign-external-caninescc.pdf)
+- [PDF landing page](https://matthewvaishnav.github.io/pathoalign-external-caninescc/)
+
 ## Dataset and preprocessing boundary
 
 - Dataset: Multi-Scanner Canine Cutaneous Squamous Cell Carcinoma histopathology.
@@ -131,11 +139,3 @@ Supported claim:
 > On an independent external paired-scanner canine SCC benchmark, a PathoAlign projection with hyperparameters locked from SCORPION reduced scanner identifiability by approximately 0.38 absolute while preserving same-region retrieval and improving cross-scanner cosine consistency.
 
 Do not overstate this as clinical validation or diagnostic performance. This is a representation-identifiability and paired-acquisition validation study.
-
-## Recommended standalone study package
-
-This result is mature enough to become its own standalone repository and short paper:
-
-- Repository: `pathoalign-external-caninescc`
-- Paper focus: external paired-scanner validation of PathoAlign.
-- Main repository role: research-program hub that links to the standalone PDF, code, and results.
