@@ -106,7 +106,7 @@ jobs:
           if present:
               raise RuntimeError(f"Legacy paper formatting remains: {present}")
 
-          print("Validated AlexNet-style two-column main paper composition")
+          print("Validated compact two-column main paper composition")
           print("Validated complete implementation-faithful PathoAlign mathematics")
           print("Validated math-only PathoAlign architecture section")
           PY
