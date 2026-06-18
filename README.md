@@ -15,6 +15,14 @@ Independent research on representation identifiability, whole-slide modeling, an
 | **TransnnMIL** | PANDA | How should pathology foundation-model feature bags be aggregated for whole-slide grading? | Stabilized multi-seed PANDA validation against mean pooling and AttentionMIL |
 | **PathologyFL** | CAMELYON17 / WILDS | How do institutional weighting rules affect held-out-center generalization? | Feature-level external-center comparisons and controlled aggregation stress tests |
 
+## Study-specific packages
+
+The main PDF is the research-program overview. Focused study repositories and PDFs carry the detailed protocols, frozen result tables, and reproduction scripts.
+
+| Study package | Scope | Links |
+|---|---|---|
+| **PathoAlign external canine SCC validation** | Independent five-scanner canine SCC paired-acquisition validation of the locked PathoAlign objective | [Repository](https://github.com/matthewvaishnav/pathoalign-external-caninescc) · [Study PDF](https://matthewvaishnav.github.io/pathoalign-external-caninescc/pathoalign-external-caninescc.pdf) |
+
 ## Start here
 
 - [PathoAlign cross-backbone results](docs/research/scorpion-pathoalign-crossbackbone-results.md)
