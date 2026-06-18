@@ -35,6 +35,8 @@ jobs:
 
           required = (
               "Paired-Acquisition Neural Factorization",
+              r"\twocolumn[",
+              r"\onecolumn",
               r"\section{Introduction}",
               r"\section{The Data}",
               r"\section{The PathoAlign Model}",
@@ -47,6 +49,8 @@ jobs:
               r"\input{pathoalign_resource_allocation_figure.tex}",
               r"\input{broader_research_program.tex}",
               r"\input{identifiability_calculations.tex}",
+              r"\begin{figure*}",
+              r"\begin{table*}",
               "PANDA",
               "CAMELYON17",
               "PCam",
@@ -94,7 +98,6 @@ jobs:
               )
 
           forbidden = (
-              "twocolumn",
               "federated_pathology_pipeline_diagram",
               r"\usepackage{titling}",
               r"\maketitle",
@@ -103,7 +106,7 @@ jobs:
           if present:
               raise RuntimeError(f"Legacy paper formatting remains: {present}")
 
-          print("Validated compact single-column result-first paper composition")
+          print("Validated AlexNet-style two-column main paper composition")
           print("Validated complete implementation-faithful PathoAlign mathematics")
           print("Validated math-only PathoAlign architecture section")
           PY
