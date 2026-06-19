@@ -5,6 +5,7 @@ The main computational-pathology repository is the hub for the research program.
 | Study | What it contains | Repository | PDF |
 |---|---|---|---|
 | PathoAlign external canine SCC validation | Independent five-scanner canine SCC paired-acquisition validation of locked PathoAlign on 805 geometry-qualified five-view regions from 44 biological samples | [pathoalign-external-caninescc](https://github.com/matthewvaishnav/pathoalign-external-caninescc) | [pathoalign-external-caninescc.pdf](https://matthewvaishnav.github.io/pathoalign-external-caninescc/pathoalign-external-caninescc.pdf) |
+| PathoAlign matched-budget allocation | Resource-allocation study testing biological pair diversity versus anchor repetition under matched pair-presentation budgets of 6,400 and 12,800 | [pathoalign-matched-budget-allocation](https://github.com/matthewvaishnav/pathoalign-matched-budget-allocation) | [pathoalign-matched-budget-allocation.pdf](https://matthewvaishnav.github.io/pathoalign-matched-budget-allocation/pathoalign-matched-budget-allocation.pdf) |
 
 ## Linking policy
 
