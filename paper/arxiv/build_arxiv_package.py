@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Prepare a self-contained LaTeX source folder for the public research PDF.
 
 The source is organized as a compact, result-first main paper followed by a
@@ -26,6 +26,7 @@ BUILD = ARXIV / "build"
 FILES = [
     ARXIV / "main.tex",
     ARXIV / "references.bib",
+    ARXIV / "study_specific_packages.tex",
     ARXIV / "broader_research_program.tex",
     ARXIV / "pathoalign_model_math.tex",
     ARXIV / "pathoalign_resource_allocation_figure.tex",
