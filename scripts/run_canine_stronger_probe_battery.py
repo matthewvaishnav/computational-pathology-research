@@ -17,7 +17,7 @@ Representations:
 - PathoAlign acquisition features.
 
 Probes:
-- multinomial logistic regression;
+- logistic linear probe;
 - MLP;
 - random forest;
 - kNN.
@@ -25,26 +25,23 @@ Probes:
 from __future__ import annotations
 
 import argparse
-import json
-import subprocess
-import sys
 import time
 import warnings
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.model_selection import GroupKFold
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.linear_model import LogisticRegression
 
 RAW_DINOV2 = Path("results/external_multiscanner_caninescc/features/fold_0_dinov2_base.npz")
 MANIFEST = Path("results/external_multiscanner_caninescc/geometry_qualified/geometry_qualified_manifest.csv")
@@ -56,16 +53,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--out", type=Path, default=Path("tmp/canine_stronger_probe_battery"))
     parser.add_argument("--folds", default="0,1,2,3,4")
     parser.add_argument("--seeds", default="911,912,913,914,915")
-    parser.add_argument(
-        "--probes",
-        default="linear,mlp,random_forest,knn",
-        help="Comma-separated probes: linear,mlp,random_forest,knn",
-    )
-    parser.add_argument(
-        "--targets",
-        default="scanner_id,sample_id",
-        help="Comma-separated targets: scanner_id,sample_id",
-    )
+    parser.add_argument("--probes", default="linear,mlp,random_forest,knn")
+    parser.add_argument("--targets", default="scanner_id,sample_id")
     parser.add_argument("--rf-trees", type=int, default=200)
     parser.add_argument("--mlp-max-iter", type=int, default=300)
     parser.add_argument("--mlp-hidden", type=int, default=128)
@@ -74,6 +63,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-existing", action="store_true")
     parser.add_argument("--allow-missing", action="store_true")
     parser.add_argument("--quick", action="store_true", help="Run fold 0 and seeds 911,912 only.")
+    parser.add_argument(
+        "--no-random-label-control",
+        action="store_true",
+        help="Skip random-label refits. Useful for very slow full nonlinear sweeps.",
+    )
     return parser.parse_args()
 
 
@@ -133,7 +127,6 @@ def make_probe(name: str, args: argparse.Namespace, random_state: int):
                 solver="lbfgs",
                 C=1.0,
                 n_jobs=-1,
-                multi_class="auto",
                 random_state=random_state,
             ),
         )
@@ -227,16 +220,17 @@ def evaluate_probe(
             y_true_all.extend(y[test_idx].tolist())
             y_pred_all.extend(pred.tolist())
 
-            perm_clf = clone(estimator)
-            perm_clf.fit(Xv[train_idx], y_perm[train_idx])
-            perm_pred = perm_clf.predict(Xv[test_idx])
-            y_perm_true_all.extend(y_perm[test_idx].tolist())
-            y_perm_pred_all.extend(perm_pred.tolist())
+            if not args.no_random_label_control:
+                perm_clf = clone(estimator)
+                perm_clf.fit(Xv[train_idx], y_perm[train_idx])
+                perm_pred = perm_clf.predict(Xv[test_idx])
+                y_perm_true_all.extend(y_perm[test_idx].tolist())
+                y_perm_pred_all.extend(perm_pred.tolist())
 
     counts = pd.Series(y_text).value_counts().to_dict()
     majority = max(counts.values()) / len(y_text)
     elapsed = time.time() - start
-    return {
+    result = {
         "status": "ok",
         "target": target,
         "group_column": group_col,
@@ -249,10 +243,19 @@ def evaluate_probe(
         "majority_baseline": float(majority),
         "accuracy": float(accuracy_score(y_true_all, y_pred_all)),
         "balanced_accuracy": float(balanced_accuracy_score(y_true_all, y_pred_all)),
-        "random_label_accuracy": float(accuracy_score(y_perm_true_all, y_perm_pred_all)),
-        "random_label_balanced_accuracy": float(balanced_accuracy_score(y_perm_true_all, y_perm_pred_all)),
         "elapsed_seconds": float(elapsed),
     }
+    if args.no_random_label_control:
+        result.update({
+            "random_label_accuracy": np.nan,
+            "random_label_balanced_accuracy": np.nan,
+        })
+    else:
+        result.update({
+            "random_label_accuracy": float(accuracy_score(y_perm_true_all, y_perm_pred_all)),
+            "random_label_balanced_accuracy": float(balanced_accuracy_score(y_perm_true_all, y_perm_pred_all)),
+        })
+    return result
 
 
 def representation_specs(folds: list[int], seeds: list[int]) -> list[dict[str, Any]]:
@@ -269,36 +272,30 @@ def representation_specs(folds: list[int], seeds: list[int]) -> list[dict[str, A
     for fold in folds:
         for seed in seeds:
             fold_root = RUN_ROOT / f"fold_{fold}" / "runs"
-            specs.append(
-                {
-                    "name": f"fold_{fold}_paired_reference_seed_{seed}",
-                    "representation": "paired_reference_features",
-                    "fold": fold,
-                    "seed": seed,
-                    "npz": fold_root / f"paired_reference_seed_{seed}" / "projected_features.npz",
-                    "feature_key": "features",
-                }
-            )
-            specs.append(
-                {
-                    "name": f"fold_{fold}_pathoalign_seed_{seed}_biological_features",
-                    "representation": "pathoalign_biological_features",
-                    "fold": fold,
-                    "seed": seed,
-                    "npz": fold_root / f"pathoalign_dep20_seed_{seed}" / "projected_features.npz",
-                    "feature_key": "features",
-                }
-            )
-            specs.append(
-                {
-                    "name": f"fold_{fold}_pathoalign_seed_{seed}_acquisition_features",
-                    "representation": "pathoalign_acquisition_features",
-                    "fold": fold,
-                    "seed": seed,
-                    "npz": fold_root / f"pathoalign_dep20_seed_{seed}" / "projected_features.npz",
-                    "feature_key": "acquisition_features",
-                }
-            )
+            specs.append({
+                "name": f"fold_{fold}_paired_reference_seed_{seed}",
+                "representation": "paired_reference_features",
+                "fold": fold,
+                "seed": seed,
+                "npz": fold_root / f"paired_reference_seed_{seed}" / "projected_features.npz",
+                "feature_key": "features",
+            })
+            specs.append({
+                "name": f"fold_{fold}_pathoalign_seed_{seed}_biological_features",
+                "representation": "pathoalign_biological_features",
+                "fold": fold,
+                "seed": seed,
+                "npz": fold_root / f"pathoalign_dep20_seed_{seed}" / "projected_features.npz",
+                "feature_key": "features",
+            })
+            specs.append({
+                "name": f"fold_{fold}_pathoalign_seed_{seed}_acquisition_features",
+                "representation": "pathoalign_acquisition_features",
+                "fold": fold,
+                "seed": seed,
+                "npz": fold_root / f"pathoalign_dep20_seed_{seed}" / "projected_features.npz",
+                "feature_key": "acquisition_features",
+            })
     return specs
 
 
