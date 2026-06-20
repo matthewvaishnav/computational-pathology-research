@@ -55,7 +55,6 @@ jobs:
               "PANDA",
               "CAMELYON17",
               "PCam",
-              "external multi-scanner canine SCC benchmark",
           )
           missing = [item for item in required if item not in text]
           if missing:
@@ -65,6 +64,7 @@ jobs:
           figure1 = figure1_path.read_text(encoding="utf-8")
           figure1_required = (
               "PathoAlign separates biological identity from acquisition identity",
+              "external multi-scanner canine SCC benchmark",
               "PathoAlign biological",
               "PathoAlign acquisition",
               "Linear/RF/kNN",
@@ -161,7 +161,6 @@ jobs:
           canonical="computational-pathology-research-platform-for-federated-oncology.pdf"
           cp paper/arxiv/build/main.pdf "paper_pdf_site/${canonical}"
 
-          # Stable compatibility aliases for previously shared links.
           cp paper/arxiv/build/main.pdf paper_pdf_site/pathoalign-computational-pathology-research.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
