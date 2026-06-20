@@ -29,6 +29,7 @@ FILES = [
     ARXIV / "broader_research_program.tex",
     ARXIV / "pathoalign_model_math.tex",
     ARXIV / "pathoalign_resource_allocation_figure.tex",
+    ARXIV / "pathoalign_figure1_benchmark_table.tex",
     ARXIV / "identifiability_calculations.tex",
     ARXIV / "identifiability_calculations_part1.tex",
     ARXIV / "identifiability_calculations_part2a.tex",
@@ -43,6 +44,7 @@ The repository also contains whole-slide multiple-instance learning and federate
 BROADER_RESEARCH_INCLUDE = r"\input{broader_research_program.tex}"
 MODEL_MATH_INCLUDE = r"\input{pathoalign_model_math.tex}"
 ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure.tex}"
+FIGURE1_INCLUDE = r"\input{pathoalign_figure1_benchmark_table.tex}"
 
 TITLE_REPOSITORY_LINK = (
     r"\url{https://github.com/matthewvaishnav/computational-pathology-research}"
@@ -162,13 +164,14 @@ def validate_and_normalize_main(path: Path) -> None:
         "broader_research_program.tex",
         "pathoalign_model_math.tex",
         "pathoalign_resource_allocation_figure.tex",
+        "pathoalign_figure1_benchmark_table.tex",
     )
     missing = [term for term in required_terms if term not in text]
     if missing:
         raise RuntimeError(f"The build copy lost required paper content: {missing}")
 
-    if MODEL_MATH_INCLUDE not in text or ALLOCATION_INCLUDE not in text:
-        raise RuntimeError("The compact main paper lost the model math or allocation figure")
+    if MODEL_MATH_INCLUDE not in text or ALLOCATION_INCLUDE not in text or FIGURE1_INCLUDE not in text:
+        raise RuntimeError("The compact main paper lost the model math, allocation figure, or Figure 1 benchmark table")
 
     broader = (BUILD / "broader_research_program.tex").read_text(encoding="utf-8")
     broader_required = (
@@ -227,6 +230,12 @@ def validate_and_normalize_main(path: Path) -> None:
     )
     if "6,400" not in allocation or "12,800" not in allocation:
         raise RuntimeError("The matched-budget allocation figure is incomplete")
+
+    figure1 = (BUILD / "pathoalign_figure1_benchmark_table.tex").read_text(
+        encoding="utf-8"
+    )
+    if "PathoAlign separates biological identity from acquisition identity" not in figure1:
+        raise RuntimeError("The Figure 1 benchmark table is incomplete")
 
     path.write_text(text, encoding="utf-8")
 
