@@ -47,6 +47,7 @@ jobs:
               r"\section{Conclusion}",
               r"\input{pathoalign_model_math.tex}",
               r"\input{pathoalign_resource_allocation_figure.tex}",
+              r"\input{pathoalign_figure1_benchmark_table.tex}",
               r"\input{broader_research_program.tex}",
               r"\input{identifiability_calculations.tex}",
               r"\begin{figure*}",
@@ -54,10 +55,28 @@ jobs:
               "PANDA",
               "CAMELYON17",
               "PCam",
+              "external multi-scanner canine SCC benchmark",
           )
           missing = [item for item in required if item not in text]
           if missing:
               raise RuntimeError(f"Paper composition is incomplete: {missing}")
+
+          figure1_path = Path("paper/arxiv/build/pathoalign_figure1_benchmark_table.tex")
+          figure1 = figure1_path.read_text(encoding="utf-8")
+          figure1_required = (
+              "PathoAlign separates biological identity from acquisition identity",
+              "PathoAlign biological",
+              "PathoAlign acquisition",
+              "Linear/RF/kNN",
+              "MLP",
+              "0.300",
+              "0.968",
+              "0.207",
+              "0.972",
+          )
+          figure1_missing = [item for item in figure1_required if item not in figure1]
+          if figure1_missing:
+              raise RuntimeError(f"Figure 1 benchmark table is incomplete: {figure1_missing}")
 
           model_math_path = Path("paper/arxiv/build/pathoalign_model_math.tex")
           model_math = model_math_path.read_text(encoding="utf-8")
@@ -107,6 +126,7 @@ jobs:
               raise RuntimeError(f"Legacy paper formatting remains: {present}")
 
           print("Validated compact two-column main paper composition")
+          print("Validated external canine Figure 1 benchmark table")
           print("Validated complete implementation-faithful PathoAlign mathematics")
           print("Validated math-only PathoAlign architecture section")
           PY
