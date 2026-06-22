@@ -28,7 +28,7 @@ HERE = Path(__file__).resolve().parent
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-import run_pathoalign_v5_cleaned_feature_adversary as v5  # noqa: E402
+import run_pathoalign_v3_tumor_preserving as feature_utils  # noqa: E402
 
 ROOT = Path("data/wilds")
 METADATA = Path("results/camelyon17/metadata_audit.csv")
@@ -115,20 +115,20 @@ def main() -> None:
 
     metadata = pd.read_csv(METADATA)
     dataset = get_dataset(dataset="camelyon17", root_dir=str(ROOT), download=False)
-    feature_model = v5.load_feature_model(CHECKPOINT, str(device))
+    feature_model = feature_utils.load_feature_model(CHECKPOINT, str(device))
 
     rows = []
 
     for seed in SEEDS:
         print("Seed", seed)
 
-        sample = v5.stratified_sample(
+        sample = feature_utils.stratified_sample(
             metadata,
             MAX_PER_SPLIT_CENTER_CLASS,
             seed,
         )
 
-        x, y, _indices = v5.extract_features(
+        x, y, _indices = feature_utils.extract_features(
             feature_model,
             dataset,
             sample["index"].tolist(),
