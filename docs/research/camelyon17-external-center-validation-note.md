@@ -1,14 +1,14 @@
 # Camelyon17 External-Center Validation: Early Feature-Level Evidence
 
 **Status:** early external-validation note / feature-level baseline  
-**Scope:** Camelyon17/WILDS, frozen ResNet18 features, logistic-regression weighting baselines, PathoAlign center-leakage mechanism diagnostics  
+**Scope:** Camelyon17/WILDS, frozen ResNet18 features, logistic-regression weighting baselines, center-leakage mechanism diagnostics  
 **Clinical status:** research-only; not clinically validated; not diagnostic software; not intended for patient-care use
 
 ---
 
 ## One-sentence claim
 
-A 5-seed Camelyon17/WILDS feature-level baseline shows that FedAvg-style equal-patch weighting can look better on source-like validation while performing substantially worse on a held-out external test center, and a separate PathoAlign mechanism branch shows that supervised linear center-subspace projection can partially attenuate source-center leakage while preserving tumor signal.
+A 5-seed Camelyon17/WILDS feature-level baseline shows that FedAvg-style equal-patch weighting can look better on source-like validation while performing substantially worse on a held-out external test center, and a separate center-subspace projection mechanism branch shows that supervised linear center-subspace projection can partially attenuate source-center leakage while preserving tumor signal.
 
 ---
 
@@ -203,9 +203,9 @@ The effect survives when moving from frozen ImageNet features to Camelyon17-trai
 
 ---
 
-## PathoAlign center-leakage mechanism branch
+## Center-subspace projection mechanism branch
 
-A separate PathoAlign branch used the Camelyon17-trained supervised ResNet18 feature substrate to ask a different question: can source-center identity be attenuated without collapsing tumor signal?
+A separate center-subspace projection branch used the Camelyon17-trained supervised ResNet18 feature substrate to ask a different question: can source-center identity be attenuated without collapsing tumor signal?
 
 This branch produced a negative-to-positive mechanism result:
 
@@ -314,7 +314,7 @@ Supported by this note:
 - Equal-client and downweighted-dominant policies improve held-out test-center accuracy in 5-seed feature-level baselines.
 - A validation-aware detector-switch rule can recover substantial held-out test-center improvement without using the test center to choose the policy.
 - A threshold sweep suggests the detector-switch finding is not purely a one-threshold artifact.
-- The PathoAlign center-leakage mechanism branch shows that explicit supervised center-subspace projection partially attenuates center decodability while preserving tumor AUC in internal feature-level probes.
+- The center-subspace projection mechanism branch shows that explicit supervised center-subspace projection partially attenuates center decodability while preserving tumor AUC in internal feature-level probes.
 
 Not supported by this note:
 
