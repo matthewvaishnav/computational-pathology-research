@@ -63,7 +63,7 @@ The first version of the benchmark is supported by focused PathoAlign evidence p
 | Evidence package | Role |
 |---|---|
 | External paired-scanner canine SCC validation | Tests acquisition-identity reduction and biological preservation under paired scanner acquisition. |
-| Matched-budget biological-pair allocation study | Tests whether representation alignment benefits more from broader biological pair diversity than repeated anchors. |
+| Pair-repeat biological-anchor allocation study | Tests whether representation alignment benefits more from broader biological pair diversity than repeated anchors. |
 | TransnnMIL slide-level utility experiments | Tests whether biological representations remain useful for whole-slide learning. |
 | PathologyFL client/site identity experiments | Tests whether institution identity remains controlled under decentralized multi-site training. |
 

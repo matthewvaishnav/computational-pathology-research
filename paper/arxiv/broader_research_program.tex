@@ -13,7 +13,7 @@ Study & Data or experimental substrate & Primary question \\
 Adversarial PathoAlign confirmation & Pathology-derived representations & Does lower site leakage improve tumor prediction? \\
 Factorized and subtraction falsification & Pathology-derived representations & Can a learned site component be removed without deleting biology? \\
 Synthetic two-resource phase maps & Controlled latent-factor generators & How do ordinary observations and paired interventions jointly control recovery? \\
-Matched-budget anchor allocation & Controlled nonlinear high-overlap regime & Under fixed paired exposure, how much does unique-anchor diversity matter relative to repetition? \\
+Pair-repeat anchor allocation & Controlled nonlinear high-overlap regime & Under fixed paired exposure, how much does unique-anchor diversity matter relative to repetition? \\
 PANDA baseline hierarchy & 10,611 verified Phikon feature bags & How much do mean pooling, gated attention, and TransnnMIL differ for whole-slide grading? \\
 TransnnMIL stability grid & PANDA feature bags & Is the custom MIL model stable across optimization settings and seeds? \\
 Dominant-site label-noise stress & PANDA-derived federations & When does sample-volume dominance become unsafe under controlled corruption? \\
@@ -67,7 +67,7 @@ Pair consistency & 1500 & 125 \\
 
 The threshold analysis used interval- and right-censored fits because some cells did not cross the historical recovery threshold within the tested intervention budget. The resulting relationship is a local, threshold-dependent empirical family: more observational data can reduce the paired-anchor requirement, while stronger overlap and nonlinear mixing increase it. It is not presented as a universal law.
 
-\subsection{Matched-budget anchor diversity versus repetition}
+\subsection{Pair-repeat anchor diversity versus repetition}
 A separate allocation study fixed observational presentations, optimizer steps, pair-batch size, and total paired presentations while redistributing the paired budget between unique anchors and repetitions. The high-overlap nonlinear setting used $N_u\in\{750,1500\}$, pair-consistency and hybrid-curriculum methods, and ten matched seeds.
 
 \begin{table}[!htbp]
