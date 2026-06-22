@@ -1,152 +1,160 @@
-﻿#!/usr/bin/env python3
-"""Prepare a self-contained LaTeX source folder for the public research PDF.
+#!/usr/bin/env python3
+"""Build an arXiv-ready source package for the PathoAlign paper.
 
-The source is organized as a compact, result-first main paper followed by a
-complete empirical appendix. The build preserves the complete mathematical
-PathoAlign specification and the matched-budget resource-allocation figure
-together with the detailed PANDA, CAMELYON17, PCam, federated, and
-identifiability evidence. The main paper uses a compact two-column layout with
-full-width title/abstract and full-width floats only when needed.
-
-Run from the repository root:
-
-    python paper/arxiv/build_arxiv_package.py
+The script copies the paper source into ``paper/arxiv/build`` and performs a few
+lightweight source-normalization checks before optionally compiling with
+``latexmk`` if it is available on the local machine.
 """
 
 from __future__ import annotations
 
+import argparse
+import os
 import shutil
+import subprocess
+import sys
+import zipfile
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[2]
 ARXIV = ROOT / "paper" / "arxiv"
 BUILD = ARXIV / "build"
+PACKAGE = ARXIV / "pathoalign_arxiv_source.zip"
 
-FILES = [
-    ARXIV / "main.tex",
-    ARXIV / "references.bib",
-    ARXIV / "study_specific_packages.tex",
-    ARXIV / "broader_research_program.tex",
-    ARXIV / "pathoalign_model_math.tex",
-    ARXIV / "pathoalign_resource_allocation_figure.tex",
-    ARXIV / "pathoalign_figure1_benchmark_table.tex",
-    ARXIV / "identifiability_calculations.tex",
-    ARXIV / "identifiability_calculations_part1.tex",
-    ARXIV / "identifiability_calculations_part2a.tex",
-    ARXIV / "identifiability_calculations_part2b.tex",
-    ARXIV / "identifiability_calculations_part3a.tex",
-]
+MAIN_SOURCE = ARXIV / "main.tex"
+MODEL_MATH_SOURCE = ARXIV / "pathoalign_model_math.tex"
+ALLOCATION_SOURCE = ARXIV / "pathoalign_resource_allocation_figure.tex"
+FIGURE1_SOURCE = ARXIV / "pathoalign_figure1_benchmark_table.tex"
+BROADER_SOURCE = ARXIV / "broader_research_program.tex"
 
-GENERIC_SECONDARY_BLOCK = r"""\section{Secondary research components}
-The repository also contains whole-slide multiple-instance learning and federated-pathology experiments. TransnnMIL combines correlated transformer aggregation with gated attention for slide-level modeling. PathologyFL studies sample-weighted and contribution-aware institutional aggregation under controlled corruption and external-center validation. These projects are scientifically related because they address later stages of the pathology learning pipeline, but they are not the central evidence in this paper and are not used to strengthen the PathoAlign representation claim.
-"""
+MODEL_MATH_INCLUDE = r"\input{pathoalign_model_math}"
+ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure}"
+FIGURE1_INCLUDE = r"\input{pathoalign_figure1_benchmark_table}"
+BROADER_INCLUDE = r"\input{broader_research_program}"
 
-BROADER_RESEARCH_INCLUDE = r"\input{broader_research_program.tex}"
-MODEL_MATH_INCLUDE = r"\input{pathoalign_model_math.tex}"
-ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure.tex}"
-FIGURE1_INCLUDE = r"\input{pathoalign_figure1_benchmark_table.tex}"
-
-TITLE_REPOSITORY_LINK = (
-    r"\url{https://github.com/matthewvaishnav/computational-pathology-research}"
-)
-TITLE_REPOSITORY_TEXT = (
-    r"{\ttfamily github.com/matthewvaishnav/computational-pathology-research}"
-)
-
-APPENDIX_WRAPPER = r"""\appendix
-\section{Complete Empirical Study Record}
-The main text is deliberately narrow and result-first. The following appendix preserves the complete study-by-study research record, including methods, secondary experiments, negative results, systems probes, and claim boundaries.
-
-\input{broader_research_program.tex}
-
-\section{Supporting Identifiability Calculations}
-\input{identifiability_calculations.tex}
-"""
-
-APPENDIX_COMPACT = r"""\appendix
-\input{broader_research_program.tex}
-\input{identifiability_calculations.tex}
-"""
+RETIRE_BEGIN = "% BEGIN retired legacy platform framing"
+RETIRE_END = "% END retired legacy platform framing"
 
 
-ARCHITECTURE_START = r"\subsection{Architecture}"
-ARCHITECTURE_END = r"\section{Preventing Representation Failure}"
+def run(cmd: list[str], cwd: Path) -> None:
+    print("+", " ".join(cmd), flush=True)
+    subprocess.run(cmd, cwd=cwd, check=True)
 
 
-def copy_required(source: Path, destination: Path) -> None:
-    if not source.is_file():
-        raise FileNotFoundError(f"Required paper source is missing: {source}")
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination)
-
-
-def restore_model_math(text: str) -> str:
-    """Replace the compact prose-only model block with the canonical math include."""
-    if MODEL_MATH_INCLUDE in text:
+def remove_retired_block(text: str) -> str:
+    start = text.find(RETIRE_BEGIN)
+    end = text.find(RETIRE_END)
+    if start == -1 and end == -1:
         return text
-    start = text.find(ARCHITECTURE_START)
-    end = text.find(ARCHITECTURE_END)
-    if start < 0 or end < 0 or end <= start:
-        raise RuntimeError(
-            "Could not locate the PathoAlign architecture/objective block in main.tex"
-        )
-    return text[:start] + MODEL_MATH_INCLUDE + "\n\n" + text[end:]
+    if start == -1 or end == -1 or end < start:
+        raise RuntimeError("Malformed retired legacy block markers in main.tex")
+    return text[:start] + text[end + len(RETIRE_END) :]
+
+
+def normalize_main_source(text: str) -> str:
+    text = remove_retired_block(text)
+
+    if BROADER_INCLUDE not in text:
+        marker = r"\end{document}"
+        if marker not in text:
+            raise RuntimeError("main.tex is missing \\end{document}")
+        text = text.replace(marker, f"\n{BROADER_INCLUDE}\n\n{marker}")
+
+    if MODEL_MATH_INCLUDE not in text:
+        marker = r"\section{Method}"
+        if marker not in text:
+            raise RuntimeError("main.tex is missing the Method section marker")
+        text = text.replace(marker, f"{marker}\n{MODEL_MATH_INCLUDE}\n", 1)
+
+    if ALLOCATION_INCLUDE not in text:
+        marker = r"\section{Synthetic resource-allocation experiment}"
+        if marker not in text:
+            raise RuntimeError("main.tex is missing the synthetic allocation section marker")
+        text = text.replace(marker, f"{marker}\n{ALLOCATION_INCLUDE}\n", 1)
+
+    if FIGURE1_INCLUDE not in text:
+        marker = r"\section{External validation evidence}"
+        if marker not in text:
+            raise RuntimeError("main.tex is missing the external validation section marker")
+        text = text.replace(marker, f"{marker}\n{FIGURE1_INCLUDE}\n", 1)
+
+    return text
+
+
+def copy_sources() -> None:
+    if BUILD.exists():
+        shutil.rmtree(BUILD)
+    BUILD.mkdir(parents=True)
+
+    for path in ARXIV.iterdir():
+        if path == BUILD or path == PACKAGE:
+            continue
+        if path.is_file():
+            shutil.copy2(path, BUILD / path.name)
+
+    normalized = normalize_main_source(MAIN_SOURCE.read_text(encoding="utf-8"))
+    (BUILD / "main.tex").write_text(normalized, encoding="utf-8")
+
+
+def find_pdflatex() -> str | None:
+    return shutil.which("pdflatex")
+
+
+def find_latexmk() -> str | None:
+    return shutil.which("latexmk")
+
+
+def compile_pdf() -> None:
+    latexmk = find_latexmk()
+    if latexmk:
+        run([latexmk, "-pdf", "-interaction=nonstopmode", "main.tex"], cwd=BUILD)
+        return
+
+    pdflatex = find_pdflatex()
+    if not pdflatex:
+        print("latexmk/pdflatex not found; skipping PDF compilation", flush=True)
+        return
+
+    for _ in range(3):
+        run([pdflatex, "-interaction=nonstopmode", "main.tex"], cwd=BUILD)
+
+
+def zip_sources() -> None:
+    if PACKAGE.exists():
+        PACKAGE.unlink()
+
+    allowed_suffixes = {
+        ".tex",
+        ".bib",
+        ".bst",
+        ".cls",
+        ".sty",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".pdf",
+    }
+
+    with zipfile.ZipFile(PACKAGE, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for path in sorted(BUILD.iterdir()):
+            if path.suffix.lower() in allowed_suffixes:
+                zf.write(path, path.name)
+
+    print(f"Wrote {PACKAGE}", flush=True)
 
 
 def validate_and_normalize_main(path: Path) -> None:
-    """Apply idempotent composition transforms and validate the public build."""
     text = path.read_text(encoding="utf-8")
 
-    # Compatibility with older source copies. The current source already uses
-    # the intended compact two-column format and explicit geometry.
-    text = text.replace(
-        r"\documentclass[11pt]{article}",
-        r"\documentclass[10pt]{article}",
-    )
+    if r"\section{Synthetic resource-allocation experiment}" not in text:
+        raise RuntimeError("The synthetic allocation section was unexpectedly removed")
+    if r"\section{External validation evidence}" not in text:
+        raise RuntimeError("The external validation section was unexpectedly removed")
+    if r"\section{Method}" not in text:
+        raise RuntimeError("The method section was unexpectedly removed")
+    if r"\section{Broader computational-pathology study record}" not in text:
+        raise RuntimeError("The broader research-program appendix was not injected")
 
-    if r"\usepackage{times}" not in text:
-        text = text.replace(
-            r"\usepackage{microtype}",
-            r"\usepackage{microtype}" + "\n" + r"\usepackage{times}",
-            1,
-        )
-    if r"\PassOptionsToPackage{hyphens}{url}" not in text:
-        text = text.replace(
-            r"\usepackage{hyperref}",
-            r"\PassOptionsToPackage{hyphens}{url}" + "\n" + r"\usepackage{hyperref}",
-            1,
-        )
-
-    # Keep the classic paper appearance black-and-white, including references.
-    text = text.replace("blue!55!black", "black")
-
-    # Avoid a large colored URL annotation in the title block while preserving
-    # the public repository address in a classic monospace author line.
-    text = text.replace(TITLE_REPOSITORY_LINK, TITLE_REPOSITORY_TEXT, 1)
-
-    # Restore the complete, implementation-faithful model specification before
-    # applying the remaining composition transforms.
-    text = restore_model_math(text)
-
-    # The included appendix files already define their own top-level sections.
-    # Remove the temporary wrapper headings to keep appendix lettering clean.
-    text = text.replace(APPENDIX_WRAPPER, APPENDIX_COMPACT, 1)
-
-    if BROADER_RESEARCH_INCLUDE not in text:
-        if GENERIC_SECONDARY_BLOCK not in text:
-            raise RuntimeError(
-                "Could not locate either the complete-study appendix include or "
-                "the legacy generic secondary-research block in main.tex"
-            )
-        text = text.replace(
-            GENERIC_SECONDARY_BLOCK,
-            BROADER_RESEARCH_INCLUDE + "\n",
-            1,
-        )
-
-    if r"\twocolumn[" not in text:
-        raise RuntimeError("The main paper must use a compact two-column layout")
     if r"\onecolumn" not in text:
         raise RuntimeError("The appendix should switch back to one-column layout")
     if r"\begin{figure*}" not in text or r"\begin{table*}" not in text:
@@ -181,7 +189,7 @@ def validate_and_normalize_main(path: Path) -> None:
         "TransnnMIL",
         "PathologyFL",
         "PCam",
-        "Matched-budget",
+        "Pair-repeat",
     )
     broader_missing = [term for term in broader_required if term not in broader]
     if broader_missing:
@@ -207,54 +215,34 @@ def validate_and_normalize_main(path: Path) -> None:
     )
     model_math_missing = [term for term in model_math_required if term not in model_math]
     if model_math_missing:
-        raise RuntimeError(
-            f"The PathoAlign mathematical specification is incomplete: {model_math_missing}"
-        )
-
-    retired_architecture_terms = (
-        "pathoalign_architecture_diagram",
-        "pathoalign_architecture_fullpage",
-        r"\pdfpageattr{/Rotate 90}",
-        r"\captionof{figure}",
-    )
-    present_architecture_terms = [
-        term for term in retired_architecture_terms if term in model_math
-    ]
-    if present_architecture_terms:
-        raise RuntimeError(
-            "A retired PathoAlign architecture figure remains in the model section: "
-            f"{present_architecture_terms}"
-        )
+        raise RuntimeError(f"The model math include lost objective terms: {model_math_missing}")
 
     allocation = (BUILD / "pathoalign_resource_allocation_figure.tex").read_text(
         encoding="utf-8"
     )
-    if "6,400" not in allocation or "12,800" not in allocation:
-        raise RuntimeError("The matched-budget allocation figure is incomplete")
-
-    figure1 = (BUILD / "pathoalign_figure1_benchmark_table.tex").read_text(
-        encoding="utf-8"
+    allocation_required = (
+        "0.4259",
+        "0.4619",
+        "+0.0374",
+        "100 anchors",
     )
-    if "PathoAlign separates biological identity from acquisition identity" not in figure1:
-        raise RuntimeError("The Figure 1 benchmark table is incomplete")
-
-    path.write_text(text, encoding="utf-8")
+    allocation_missing = [term for term in allocation_required if term not in allocation]
+    if allocation_missing:
+        raise RuntimeError(f"The allocation include lost frozen numeric results: {allocation_missing}")
 
 
 def main() -> None:
-    if BUILD.exists():
-        shutil.rmtree(BUILD)
-    BUILD.mkdir(parents=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-compile", action="store_true")
+    args = parser.parse_args()
 
-    for source in FILES:
-        copy_required(source, BUILD / source.name)
-
+    copy_sources()
     validate_and_normalize_main(BUILD / "main.tex")
 
-    print(f"Prepared {BUILD.relative_to(ROOT)}")
-    print("Build with:")
-    print("  cd paper/arxiv/build")
-    print("  latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex")
+    if not args.no_compile:
+        compile_pdf()
+
+    zip_sources()
 
 
 if __name__ == "__main__":
