@@ -1,14 +1,14 @@
 # Camelyon17 External-Center Validation: Early Feature-Level Evidence
 
 **Status:** early external-validation note / feature-level baseline  
-**Scope:** Camelyon17/WILDS, frozen ResNet18 features, logistic-regression weighting baselines  
+**Scope:** Camelyon17/WILDS, frozen ResNet18 features, logistic-regression weighting baselines, PathoAlign center-leakage mechanism diagnostics  
 **Clinical status:** research-only; not clinically validated; not diagnostic software; not intended for patient-care use
 
 ---
 
 ## One-sentence claim
 
-A 5-seed Camelyon17/WILDS feature-level baseline shows that FedAvg-style equal-patch weighting can look better on source-like validation while performing substantially worse on a held-out external test center, and a simple validation-aware detector-switch rule recovers much of that held-out-center gap without using test performance for policy selection.
+A 5-seed Camelyon17/WILDS feature-level baseline shows that FedAvg-style equal-patch weighting can look better on source-like validation while performing substantially worse on a held-out external test center, and a separate PathoAlign mechanism branch shows that supervised linear center-subspace projection can partially attenuate source-center leakage while preserving tumor signal.
 
 ---
 
@@ -16,7 +16,7 @@ A 5-seed Camelyon17/WILDS feature-level baseline shows that FedAvg-style equal-p
 
 The dominant-site / site-signal alignment work originally used simulated federations over pathology-derived features. Camelyon17 adds a more natural multi-center pathology validation target: source centers are used for training, separate source-domain validation is available, and two centers are held out as out-of-distribution validation/test domains.
 
-This note documents the first external-center evidence layer. It is intentionally conservative: these are fast feature-level baselines, not full clinical or production federated-learning results.
+This note documents the first external-center evidence layer. It is intentionally conservative: these are fast feature-level baselines and representation-mechanism diagnostics, not full clinical or production federated-learning results.
 
 ---
 
@@ -49,7 +49,7 @@ OOD validation: center 1
 OOD test: center 2
 ```
 
-This structure is useful for testing whether source-domain weighting choices generalize to held-out pathology centers.
+This structure is useful for testing whether source-domain weighting choices generalize to held-out pathology centers and whether center-identifying representation directions can be audited separately from tumor information.
 
 ---
 
@@ -202,6 +202,51 @@ Interpretation:
 The effect survives when moving from frozen ImageNet features to Camelyon17-trained supervised features. The gain is smaller because the learned features are stronger overall, but the generalization pattern is cleaner: FedAvg-style equal-patch weighting nearly saturates source training accuracy, while equal-client and downweight-dominant weighting improve source-domain validation, OOD validation, and held-out OOD test performance.
 
 ---
+
+## PathoAlign center-leakage mechanism branch
+
+A separate PathoAlign branch used the Camelyon17-trained supervised ResNet18 feature substrate to ask a different question: can source-center identity be attenuated without collapsing tumor signal?
+
+This branch produced a negative-to-positive mechanism result:
+
+1. v3/v4/v5 learned adversarial or subtractive nuisance-removal objectives did not materially reduce post-hoc center leakage.
+2. v6b/v6c showed that a supervised linear center-discriminant subspace is partially removable.
+3. v7 formalized the explicit projection baseline.
+
+The v7 projection protocol is intentionally simple:
+
+1. draw a stratified Camelyon17 feature subset,
+2. split it into an internal projection/calibration half and an independent probe half,
+3. fit a linear center classifier on the projection half,
+4. remove the top `k` right-singular directions of the center-classifier weight matrix,
+5. evaluate independent center and tumor probes on held-out probe features.
+
+With `C=0.01`, ranks `0..4`, and seeds `911..915`, the formal v7 baseline reproduced the v6c result:
+
+| Removed rank | Center accuracy mean | Center accuracy std | Tumor AUC mean | Tumor AUC std | Tumor accuracy mean |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 0.8946 | 0.0122 | 0.9903 | 0.0018 | 0.9550 |
+| 1 | 0.8530 | 0.0117 | 0.9903 | 0.0017 | 0.9564 |
+| 2 | 0.8256 | 0.0124 | 0.9903 | 0.0017 | 0.9564 |
+| 3 | 0.8092 | 0.0138 | 0.9901 | 0.0015 | 0.9562 |
+| 4 | 0.7636 | 0.0122 | 0.9903 | 0.0015 | 0.9560 |
+
+Interpretation:
+
+```text
+The adversarial/subtractive objectives failed, but this was not evidence that center information was inseparable from tumor information. Explicit supervised center-subspace projection partially reduced center leakage while preserving tumor AUC.
+```
+
+This mechanism branch does not claim improved clinical performance or full center invariance. It supports a narrower representation claim: a partially removable center subspace exists in the frozen Camelyon17 feature substrate, and removing the effective four-dimensional center-discriminant subspace attenuates center decodability without collapsing tumor signal.
+
+See the dedicated mechanism note:
+
+```text
+docs/benchmarks/camelyon17_center_projection_negative_to_positive_mechanism.md
+```
+
+---
+
 ## Threshold sweep
 
 To test whether the detector result depended on one hand-picked threshold, a local threshold sweep was run.
@@ -269,6 +314,7 @@ Supported by this note:
 - Equal-client and downweighted-dominant policies improve held-out test-center accuracy in 5-seed feature-level baselines.
 - A validation-aware detector-switch rule can recover substantial held-out test-center improvement without using the test center to choose the policy.
 - A threshold sweep suggests the detector-switch finding is not purely a one-threshold artifact.
+- The PathoAlign center-leakage mechanism branch shows that explicit supervised center-subspace projection partially attenuates center decodability while preserving tumor AUC in internal feature-level probes.
 
 Not supported by this note:
 
@@ -279,6 +325,8 @@ Not supported by this note:
 - universal calibration of the detector
 - institutional ranking or claims about hospital/pathologist quality
 - proof that equal-client weighting is always better
+- complete source-center invariance
+- proof of improved held-out-center tumor classification from center-subspace projection
 
 ---
 
@@ -294,6 +342,8 @@ scripts/camelyon17/run_resnet18_feature_smoke.py
 scripts/camelyon17/run_center_weighting_baselines.py
 scripts/camelyon17/run_detector_switch_from_weighting_results.py
 scripts/camelyon17/run_detector_switch_threshold_sweep.py
+scripts/camelyon17/run_pathoalign_v6c_center_projection_rank_sweep.py
+scripts/camelyon17/run_pathoalign_v7_center_projection_baseline.py
 ```
 
 Key result artifacts:
@@ -307,17 +357,16 @@ results/camelyon17/center_weighting_5seed_summary.md
 results/camelyon17/center_weighting_5seed_delta_summary.md
 results/camelyon17/detector_switch_validation_aware_summary.md
 results/camelyon17/detector_switch_threshold_sweep_summary.md
+docs/benchmarks/camelyon17_center_projection_negative_to_positive_mechanism.md
 ```
 
-Large raw dataset files are not tracked in the repository.
+Large raw dataset files, checkpoints, and generated run directories are not tracked in the repository.
 
 ---
 
 ## Next steps
 
-1. Replace frozen ImageNet ResNet18 features with pathology-specific features or supervised Camelyon17 features.
-2. Run a larger seed/sample-size sweep.
-3. Compare against real FL baselines such as FedProx, SCAFFOLD, FedBN, and robust aggregation.
-4. Add communication-cost accounting for each policy.
-5. Add privacy-stress evaluation, including update noise or DP-style perturbation.
-6. Integrate the external-center evidence into the main dominant-site / site-signal alignment paper.
+1. Replace fast feature-level baselines with larger confirmatory runs where practical.
+2. Compare the center-projection baseline against stricter source/train-only or calibration-only projection fitting.
+3. Add stronger conditional probes for residual center leakage after projection.
+4. Compare against real FL baselines such as FedProx, SCAFFOLD, FedBN, and robust aggregation.
