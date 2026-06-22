@@ -134,14 +134,14 @@ A low scanner-probe score is meaningless if the biological branch is constant. P
 \subsection{Ordinary observations and paired resources}
 The controlled program treats three quantities separately: ordinary observations $N_u$, unique paired anchors $N_p$, and paired repetitions $R_p$. Ordinary observations learn the task manifold. Unique anchors expose more biological locations under acquisition changes. Repetition supplies additional optimization signal for already observed interventions.
 
-The matched-budget experiments hold total paired presentations fixed while changing the allocation between $N_p$ and $R_p$. This distinguishes a true anchor-diversity effect from the simpler explanation that a model merely received more pair-loss updates.
+The pair-repeat experiments hold total paired presentations fixed while changing the allocation between $N_p$ and $R_p$. This distinguishes a true anchor-diversity effect from the simpler explanation that a model merely received more pair-loss updates.
 
 \section{Details of Learning}
 The frozen DINOv2 objective was selected through bounded calibration on development data, followed by independent-seed confirmation and final five-fold evaluation. The direct dependence weight of 20 was fixed before the final test stage. Cross-backbone transfer to Phikon and ResNet50 was preregistered before inspecting those outcomes. The transfer experiments used new shared seeds 701--705, the same rotating slide folds, and no backbone-specific objective or schedule changes.
 
 Each SCORPION model used 75 epochs, region batch size 32, AdamW learning rate $3\times10^{-4}$, and weight decay $10^{-4}$. Every contrastive minibatch included all five scanner views of selected tissue regions. Inference used slide-block bootstrap intervals and sign-flip tests after averaging optimization seeds within each slide.
 
-The matched-budget synthetic study used overlap 0.975, nonlinear mixing, 320 optimizer steps, observational batch size 128, paired batch size 64, $N_u\in\{750,1500\}$, pair-consistency and hybrid-curriculum methods, and ten matched seeds. The two paired-presentation budgets were 6,400 and 12,800. Within each budget, the tested allocations were 50, 100, and 200 unique anchors with compensating repetition counts.
+The pair-repeat synthetic study used overlap 0.975, nonlinear mixing, 320 optimizer steps, observational batch size 128, paired batch size 64, $N_u\in\{750,1500\}$, pair-consistency and hybrid-curriculum methods, and ten matched seeds. The two paired-presentation budgets were 6,400 and 12,800. Within each budget, the tested allocations were 50, 100, and 200 unique anchors with compensating repetition counts.
 
 \section{Results}
 \subsection{Frozen paired-scanner factorization}
@@ -251,7 +251,7 @@ The later PANDA, CAMELYON17, and PCam studies expose related authority problems 
 The main limitations are clear. SCORPION contains 48 original slides and five scanners from one benchmark. Tissue retrieval is not a clinical endpoint. Linear probes cannot prove that every form of acquisition information has been removed; the canine stronger-probe battery reduces this concern but still cannot prove absolute independence. Synthetic recovery laws are local to the tested generator, metrics, and budgets. PANDA and CAMELYON17 results are retrospective and largely feature-level. Privacy-noise and infrastructure experiments are probes, not deployment guarantees. Companion PDFs provide exact study-specific boundaries so that external, canine, synthetic, whole-slide, and federated results are not collapsed into one clinical claim. No experiment establishes treatment benefit, prospective workflow safety, regulatory readiness, or universal biological--acquisition identifiability.
 
 \section{Conclusion}
-Biology-preserving paired acquisitions can supervise a neural factorization in which tissue identity is retained while scanner identity becomes substantially less recoverable from the biological branch. The same frozen objective transferred across DINOv2, Phikon, and ResNet50 on real human histopathology, while a compact acquisition branch retained scanner information. The external canine audit reproduced the branch-separation pattern across folds, seeds, and stronger probes. Earlier failures show why unconditional site removal is unsafe, and matched-budget experiments show that unique anchors and repeated exposure are separate resources.
+Biology-preserving paired acquisitions can supervise a neural factorization in which tissue identity is retained while scanner identity becomes substantially less recoverable from the biological branch. The same frozen objective transferred across DINOv2, Phikon, and ResNet50 on real human histopathology, while a compact acquisition branch retained scanner information. The external canine audit reproduced the branch-separation pattern across folds, seeds, and stronger probes. Earlier failures show why unconditional site removal is unsafe, and pair-repeat experiments show that unique anchors and repeated exposure are separate resources.
 
 The broader research record extends this principle to slide aggregation, federated influence, external-center validation, and systems constraints. Focused companion PDFs now carry the detailed protocols and exact tables for bounded studies such as the external canine SCC validation. The supported claim remains bounded: acquisition-associated variation should be separated conditionally and audited explicitly, not erased merely because it predicts site.
 
@@ -270,3 +270,4 @@ The main text is deliberately narrow and result-first. The following appendix pr
 \bibliography{references}
 
 \end{document}
+
