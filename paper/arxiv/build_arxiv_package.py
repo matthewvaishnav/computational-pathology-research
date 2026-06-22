@@ -173,11 +173,9 @@ def zip_sources() -> None:
 def validate_and_normalize_main(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
 
-    if r"\section{Broader computational-pathology study record}" not in text:
-        raise RuntimeError("The broader research-program appendix was not injected")
+    if not include_present(text, BROADER_BASENAME):
+        raise RuntimeError("The broader research-program appendix include was not injected")
 
-    if r"\onecolumn" not in text:
-        raise RuntimeError("The appendix should switch back to one-column layout")
     if r"\begin{figure*}" not in text or r"\begin{table*}" not in text:
         raise RuntimeError("Wide result floats must use two-column-spanning environments")
 
@@ -203,6 +201,11 @@ def validate_and_normalize_main(path: Path) -> None:
         raise RuntimeError("The compact main paper lost the Figure 1 benchmark table include")
 
     broader = (BUILD / f"{BROADER_BASENAME}.tex").read_text(encoding="utf-8")
+    if r"\section{Broader computational-pathology study record}" not in broader:
+        raise RuntimeError("The broader research-program appendix file lost its section header")
+    if r"\onecolumn" not in broader:
+        raise RuntimeError("The appendix file should switch back to one-column layout")
+
     broader_required = (
         "PANDA",
         "CAMELYON17",
