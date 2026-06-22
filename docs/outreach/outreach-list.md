@@ -1,4 +1,4 @@
-# Outreach strategy for the computational pathology research program
+﻿# Outreach strategy for the computational pathology research program
 
 This document is the current outreach plan for research collaboration, external validation, supervision, funding, education, and employment.
 
@@ -33,7 +33,7 @@ Do not weaken the work by calling it only a student project, coding portfolio, o
 
 ### Technical positioning
 
-> PathoAlign treats ordinary observations and biology-preserving acquisition pairs as separately budgeted information resources. It evaluates task-only, adversarial, factorized, pair-consistency, learned-operator, and hybrid neural methods using task retention, site leakage, cross-factor leakage, paired biological invariance, counterfactual transport, canonical-correlation recovery, Procrustes recovery, and thresholded factor-separation metrics. The experimental program includes locked confirmation, falsified nuisance-removal hypotheses, failure/recovery phase maps, interval- and right-censored threshold analysis, and matched-budget comparisons of unique paired-anchor diversity versus repetition.
+> PathoAlign treats ordinary observations and biology-preserving acquisition pairs as separately budgeted information resources. It evaluates task-only, adversarial, factorized, pair-consistency, learned-operator, and hybrid neural methods using task retention, site leakage, cross-factor leakage, paired biological invariance, counterfactual transport, canonical-correlation recovery, Procrustes recovery, and thresholded factor-separation metrics. The experimental program includes locked confirmation, falsified nuisance-removal hypotheses, failure/recovery phase maps, interval- and right-censored threshold analysis, and pair-repeat comparisons of unique paired-anchor diversity versus repetition.
 
 ### Full-program positioning
 
@@ -55,7 +55,7 @@ Use only the part of this stack relevant to the recipient. Do not paste the enti
 - Biology-preserving paired acquisitions change the information structure of the problem by holding biology fixed while acquisition changes.
 - Controlled experiments vary observational sample count, paired-anchor count, paired repetition, biological-acquisition overlap, nonlinear mixing, method, and seed.
 - The program reports failure/recovery phase maps and interval/right-censored recovery thresholds rather than only downstream task accuracy.
-- In matched-budget experiments holding total paired presentations and pair-loss updates fixed, higher unique-anchor diversity outperformed heavy repetition in all four tested method/sample-size strata, with diminishing gains at the highest tested diversity allocation.
+- In pair-repeat experiments holding total paired presentations and pair-loss updates fixed, higher unique-anchor diversity outperformed heavy repetition in all four tested method/sample-size strata, with diminishing gains at the highest tested diversity allocation.
 
 ### Federated site-signal alignment
 
@@ -78,7 +78,7 @@ Use only the part of this stack relevant to the recipient. Do not paste the enti
 - Mean-pooled Phikon + MLP: QWK 0.7274.
 - Gated AttentionMIL: QWK 0.8100.
 - Repeated-seed TransnnMIL results: 0.8155, 0.8225, and 0.8086 QWK.
-- The stabilized learning-rate grid reached a best three-seed mean QWK of 0.8257 ± 0.0169.
+- The stabilized learning-rate grid reached a best three-seed mean QWK of 0.8257 Â± 0.0169.
 - The correct claim is that stabilized TransnnMIL is competitive with AttentionMIL in the current setup, not conclusively superior.
 
 ### PCam validation
@@ -158,7 +158,7 @@ Best fit:
 
 Primary ask:
 
-> The pathology application led to a two-resource identifiability problem: ordinary observations learn the task manifold, while biology-preserving acquisition pairs expose transformations that should not change biological representation. I am looking for criticism of the assumptions, recovery metrics, censoring analysis, and matched-budget design.
+> The pathology application led to a two-resource identifiability problem: ordinary observations learn the task manifold, while biology-preserving acquisition pairs expose transformations that should not change biological representation. I am looking for criticism of the assumptions, recovery metrics, censoring analysis, and pair-repeat design.
 
 ### Priority D: federated learning and robust distributed ML researchers
 
@@ -274,7 +274,7 @@ Hi [Name],
 
 I am an independent computational pathology researcher based in Kitchener-Waterloo. I developed PathoAlign, a neural identifiability program studying when biological morphology can be separated from staining, scanner, preparation, and institutional acquisition effects without erasing diagnostically useful information.
 
-The work began with a negative result: reducing site leakage did not improve held-out tumor accuracy, and unconditional subtraction of a learned site component removed tumor-predictive signal. I then introduced biology-preserving paired acquisitions and treated ordinary observations, unique paired anchors, and repeated paired presentations as distinct resources. The current experiments include locked confirmation, failure/recovery phase maps, interval/right-censored recovery thresholds, and matched-budget anchor-diversity comparisons.
+The work began with a negative result: reducing site leakage did not improve held-out tumor accuracy, and unconditional subtraction of a learned site component removed tumor-predictive signal. I then introduced biology-preserving paired acquisitions and treated ordinary observations, unique paired anchors, and repeated paired presentations as distinct resources. The current experiments include locked confirmation, failure/recovery phase maps, interval/right-censored recovery thresholds, and pair-repeat anchor-diversity comparisons.
 
 Your work on [specific paper/problem] appears directly relevant because [one sentence]. I am looking for a technically critical external collaborator who can challenge the assumptions and help test the framework on real paired-acquisition pathology data.
 
@@ -298,7 +298,7 @@ Hi [Name],
 
 I am based in Kitchener-Waterloo and am developing an independent computational pathology research program focused on biological-acquisition identifiability, whole-slide modeling, and cross-site validation.
 
-The flagship question is whether biology-preserving paired acquisitions provide enough structure to identify acquisition-sensitive variation without removing tumor-relevant morphology. I have already completed controlled neural experiments, locked negative-result confirmation, matched-budget paired-anchor studies, PANDA whole-slide experiments, and Camelyon17 external-center validation.
+The flagship question is whether biology-preserving paired acquisitions provide enough structure to identify acquisition-sensitive variation without removing tumor-relevant morphology. I have already completed controlled neural experiments, locked negative-result confirmation, pair-repeat paired-anchor studies, PANDA whole-slide experiments, and Camelyon17 external-center validation.
 
 I am seeking a faculty supervisor or research host who can provide technical criticism, pathology interpretation, and a path to real paired-acquisition validation. Most implementation, training, and analysis can be performed remotely through SSH, RDP, VPN, or a secure institutional environment. I can travel to [London/Toronto/location] for scanner work, onboarding, pathology review, or scheduled meetings where required.
 
@@ -422,3 +422,4 @@ A successful outreach cycle produces one or more of:
 - a concrete publication path.
 
 Five highly targeted messages are more valuable than fifty generic messages.
+
