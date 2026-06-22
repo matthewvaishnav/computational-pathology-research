@@ -45,6 +45,10 @@ def include_present(text: str, basename: str) -> bool:
     return rf"\input{{{basename}}}" in text or rf"\input{{{basename}.tex}}" in text
 
 
+def first_present(text: str, markers: tuple[str, ...]) -> str | None:
+    return next((marker for marker in markers if marker in text), None)
+
+
 def remove_retired_block(text: str) -> str:
     start = text.find(RETIRE_BEGIN)
     end = text.find(RETIRE_END)
@@ -65,22 +69,40 @@ def normalize_main_source(text: str) -> str:
         text = text.replace(marker, f"\n{BROADER_INCLUDE}\n\n{marker}")
 
     if not include_present(text, MODEL_MATH_BASENAME):
-        markers = (r"\section{The PathoAlign Model}", r"\section{Method}")
-        marker = next((candidate for candidate in markers if candidate in text), None)
+        marker = first_present(
+            text,
+            (
+                r"\section{The PathoAlign Model}",
+                r"\section{The Paired-Acquisition Neural Factorization Model}",
+                r"\section{Method}",
+            ),
+        )
         if marker is None:
             raise RuntimeError("main.tex is missing the model/method section marker")
         text = text.replace(marker, f"{marker}\n{MODEL_MATH_INCLUDE}\n", 1)
 
     if not include_present(text, ALLOCATION_BASENAME):
-        marker = r"\section{Synthetic resource-allocation experiment}"
-        if marker not in text:
-            raise RuntimeError("main.tex is missing the synthetic allocation section marker")
+        marker = first_present(
+            text,
+            (
+                r"\subsection{Resource allocation under matched compute}",
+                r"\section{Synthetic resource-allocation experiment}",
+            ),
+        )
+        if marker is None:
+            raise RuntimeError("main.tex is missing the allocation insertion marker")
         text = text.replace(marker, f"{marker}\n{ALLOCATION_INCLUDE}\n", 1)
 
     if not include_present(text, FIGURE1_BASENAME):
-        marker = r"\section{External validation evidence}"
-        if marker not in text:
-            raise RuntimeError("main.tex is missing the external validation section marker")
+        marker = first_present(
+            text,
+            (
+                r"\subsection{External paired-scanner validation package}",
+                r"\section{External validation evidence}",
+            ),
+        )
+        if marker is None:
+            raise RuntimeError("main.tex is missing the external-validation insertion marker")
         text = text.replace(marker, f"{marker}\n{FIGURE1_INCLUDE}\n", 1)
 
     return text
@@ -151,12 +173,6 @@ def zip_sources() -> None:
 def validate_and_normalize_main(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
 
-    if r"\section{Synthetic resource-allocation experiment}" not in text:
-        raise RuntimeError("The synthetic allocation section was unexpectedly removed")
-    if r"\section{External validation evidence}" not in text:
-        raise RuntimeError("The external validation section was unexpectedly removed")
-    if r"\section{The PathoAlign Model}" not in text and r"\section{Method}" not in text:
-        raise RuntimeError("The model/method section was unexpectedly removed")
     if r"\section{Broader computational-pathology study record}" not in text:
         raise RuntimeError("The broader research-program appendix was not injected")
 
@@ -179,12 +195,12 @@ def validate_and_normalize_main(path: Path) -> None:
     if missing:
         raise RuntimeError(f"The build copy lost required paper content: {missing}")
 
-    if (
-        not include_present(text, MODEL_MATH_BASENAME)
-        or not include_present(text, ALLOCATION_BASENAME)
-        or not include_present(text, FIGURE1_BASENAME)
-    ):
-        raise RuntimeError("The compact main paper lost the model math, allocation figure, or Figure 1 benchmark table")
+    if not include_present(text, MODEL_MATH_BASENAME):
+        raise RuntimeError("The compact main paper lost the model math include")
+    if not include_present(text, ALLOCATION_BASENAME):
+        raise RuntimeError("The compact main paper lost the allocation figure include")
+    if not include_present(text, FIGURE1_BASENAME):
+        raise RuntimeError("The compact main paper lost the Figure 1 benchmark table include")
 
     broader = (BUILD / f"{BROADER_BASENAME}.tex").read_text(encoding="utf-8")
     broader_required = (
