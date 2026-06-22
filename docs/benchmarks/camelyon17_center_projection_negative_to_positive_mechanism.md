@@ -70,13 +70,20 @@ The v6c rank sweep removed the top `k` supervised center-discriminant directions
 
 Interpretation: the center signal is distributed across the full four-dimensional center-discriminant subspace rather than concentrated in a single dominant direction.
 
+## v7 explicit projection baseline
+
+The v7 baseline formalizes the v6b/v6c diagnostic as a reproducible script: draw a stratified CAMELYON17 feature subset, split it into an internal projection/calibration half and an independent probe half, fit a linear center classifier on the projection split, remove the top-k right-singular directions of the center classifier weights, then fit independent center and tumor probes on the probe split.
+
+With `C=0.01`, ranks `0..4`, and seeds `911..915`, v7 reproduces the v6c pattern: center accuracy decreases monotonically as more center-discriminant directions are removed, while tumor AUC remains essentially flat.
+
 ## What this does and does not show
 
 This shows:
 
 - center information in CAMELYON17 frozen features is partly linearly removable,
 - tumor signal can remain stable after removing supervised center directions,
-- learned adversarial/subtractive variants v3/v4/v5 did not recover this removable structure.
+- learned adversarial/subtractive variants v3/v4/v5 did not recover this removable structure,
+- the effective center-discriminant projection rank is four for five centers after centering the one-vs-rest classifier weights.
 
 This does not show:
 
@@ -88,13 +95,8 @@ This does not show:
 
 ## Next experimental implication
 
-The next useful model family should not simply increase adversarial weight. A better v7 direction is an explicit center-subspace projection or residualization baseline, possibly followed by a learnable constrained projection layer.
+The next useful model family should not simply increase adversarial weight. The v7 explicit center-subspace projection baseline is now the clean reference point.
 
-A clean next baseline is:
-
-1. fit center directions on source/train or internal calibration data,
-2. project out top `k` center-discriminant directions,
-3. train/evaluate tumor probes on residualized features,
-4. measure center leakage under independent post-hoc probes.
+A stricter follow-up should evaluate whether the projection directions can be fit only on source/train or calibration data, then reused without leakage into held-out evaluation. A learnable constrained projection layer should only be considered after this explicit projection baseline is fully characterized.
 
 The target claim should remain conservative: CAMELYON17 contains a partially removable center subspace that can be attenuated without collapsing tumor signal in frozen features.
