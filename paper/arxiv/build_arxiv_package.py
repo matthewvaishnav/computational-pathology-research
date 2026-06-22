@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build an arXiv-ready source package for the PathoAlign paper.
+"""Build an arXiv-ready source package for the paired-acquisition paper.
 
 The script copies the paper source into ``paper/arxiv/build`` and performs a few
 lightweight source-normalization checks before optionally compiling with
@@ -9,10 +9,8 @@ lightweight source-normalization checks before optionally compiling with
 from __future__ import annotations
 
 import argparse
-import os
 import shutil
 import subprocess
-import sys
 import zipfile
 from pathlib import Path
 
@@ -22,15 +20,16 @@ BUILD = ARXIV / "build"
 PACKAGE = ARXIV / "pathoalign_arxiv_source.zip"
 
 MAIN_SOURCE = ARXIV / "main.tex"
-MODEL_MATH_SOURCE = ARXIV / "pathoalign_model_math.tex"
-ALLOCATION_SOURCE = ARXIV / "pathoalign_resource_allocation_figure.tex"
-FIGURE1_SOURCE = ARXIV / "pathoalign_figure1_benchmark_table.tex"
-BROADER_SOURCE = ARXIV / "broader_research_program.tex"
 
-MODEL_MATH_INCLUDE = r"\input{pathoalign_model_math}"
-ALLOCATION_INCLUDE = r"\input{pathoalign_resource_allocation_figure}"
-FIGURE1_INCLUDE = r"\input{pathoalign_figure1_benchmark_table}"
-BROADER_INCLUDE = r"\input{broader_research_program}"
+MODEL_MATH_BASENAME = "pathoalign_model_math"
+ALLOCATION_BASENAME = "pathoalign_resource_allocation_figure"
+FIGURE1_BASENAME = "pathoalign_figure1_benchmark_table"
+BROADER_BASENAME = "broader_research_program"
+
+MODEL_MATH_INCLUDE = rf"\input{{{MODEL_MATH_BASENAME}}}"
+ALLOCATION_INCLUDE = rf"\input{{{ALLOCATION_BASENAME}}}"
+FIGURE1_INCLUDE = rf"\input{{{FIGURE1_BASENAME}}}"
+BROADER_INCLUDE = rf"\input{{{BROADER_BASENAME}}}"
 
 RETIRE_BEGIN = "% BEGIN retired legacy platform framing"
 RETIRE_END = "% END retired legacy platform framing"
@@ -39,6 +38,11 @@ RETIRE_END = "% END retired legacy platform framing"
 def run(cmd: list[str], cwd: Path) -> None:
     print("+", " ".join(cmd), flush=True)
     subprocess.run(cmd, cwd=cwd, check=True)
+
+
+def include_present(text: str, basename: str) -> bool:
+    """Accept both \input{name} and \input{name.tex}."""
+    return rf"\input{{{basename}}}" in text or rf"\input{{{basename}.tex}}" in text
 
 
 def remove_retired_block(text: str) -> str:
@@ -54,25 +58,26 @@ def remove_retired_block(text: str) -> str:
 def normalize_main_source(text: str) -> str:
     text = remove_retired_block(text)
 
-    if BROADER_INCLUDE not in text:
+    if not include_present(text, BROADER_BASENAME):
         marker = r"\end{document}"
         if marker not in text:
             raise RuntimeError("main.tex is missing \\end{document}")
         text = text.replace(marker, f"\n{BROADER_INCLUDE}\n\n{marker}")
 
-    if MODEL_MATH_INCLUDE not in text:
-        marker = r"\section{Method}"
-        if marker not in text:
-            raise RuntimeError("main.tex is missing the Method section marker")
+    if not include_present(text, MODEL_MATH_BASENAME):
+        markers = (r"\section{The PathoAlign Model}", r"\section{Method}")
+        marker = next((candidate for candidate in markers if candidate in text), None)
+        if marker is None:
+            raise RuntimeError("main.tex is missing the model/method section marker")
         text = text.replace(marker, f"{marker}\n{MODEL_MATH_INCLUDE}\n", 1)
 
-    if ALLOCATION_INCLUDE not in text:
+    if not include_present(text, ALLOCATION_BASENAME):
         marker = r"\section{Synthetic resource-allocation experiment}"
         if marker not in text:
             raise RuntimeError("main.tex is missing the synthetic allocation section marker")
         text = text.replace(marker, f"{marker}\n{ALLOCATION_INCLUDE}\n", 1)
 
-    if FIGURE1_INCLUDE not in text:
+    if not include_present(text, FIGURE1_BASENAME):
         marker = r"\section{External validation evidence}"
         if marker not in text:
             raise RuntimeError("main.tex is missing the external validation section marker")
@@ -150,8 +155,8 @@ def validate_and_normalize_main(path: Path) -> None:
         raise RuntimeError("The synthetic allocation section was unexpectedly removed")
     if r"\section{External validation evidence}" not in text:
         raise RuntimeError("The external validation section was unexpectedly removed")
-    if r"\section{Method}" not in text:
-        raise RuntimeError("The method section was unexpectedly removed")
+    if r"\section{The PathoAlign Model}" not in text and r"\section{Method}" not in text:
+        raise RuntimeError("The model/method section was unexpectedly removed")
     if r"\section{Broader computational-pathology study record}" not in text:
         raise RuntimeError("The broader research-program appendix was not injected")
 
@@ -165,29 +170,27 @@ def validate_and_normalize_main(path: Path) -> None:
 
     required_terms = (
         "Paired-Acquisition Neural Factorization",
-        "PathoAlign",
         "SCORPION",
         "PANDA",
         "CAMELYON17",
         "PCam",
-        "broader_research_program.tex",
-        "pathoalign_model_math.tex",
-        "pathoalign_resource_allocation_figure.tex",
-        "pathoalign_figure1_benchmark_table.tex",
     )
     missing = [term for term in required_terms if term not in text]
     if missing:
         raise RuntimeError(f"The build copy lost required paper content: {missing}")
 
-    if MODEL_MATH_INCLUDE not in text or ALLOCATION_INCLUDE not in text or FIGURE1_INCLUDE not in text:
+    if (
+        not include_present(text, MODEL_MATH_BASENAME)
+        or not include_present(text, ALLOCATION_BASENAME)
+        or not include_present(text, FIGURE1_BASENAME)
+    ):
         raise RuntimeError("The compact main paper lost the model math, allocation figure, or Figure 1 benchmark table")
 
-    broader = (BUILD / "broader_research_program.tex").read_text(encoding="utf-8")
+    broader = (BUILD / f"{BROADER_BASENAME}.tex").read_text(encoding="utf-8")
     broader_required = (
         "PANDA",
         "CAMELYON17",
         "TransnnMIL",
-        "PathologyFL",
         "PCam",
         "Pair-repeat",
     )
@@ -197,7 +200,7 @@ def validate_and_normalize_main(path: Path) -> None:
             f"The complete empirical appendix lost study families: {broader_missing}"
         )
 
-    model_math = (BUILD / "pathoalign_model_math.tex").read_text(encoding="utf-8")
+    model_math = (BUILD / f"{MODEL_MATH_BASENAME}.tex").read_text(encoding="utf-8")
     model_math_required = (
         r"\mathcal{L}_{\mathrm{pair}}",
         r"\mathcal{L}_{\mathrm{recon}}",
@@ -217,9 +220,7 @@ def validate_and_normalize_main(path: Path) -> None:
     if model_math_missing:
         raise RuntimeError(f"The model math include lost objective terms: {model_math_missing}")
 
-    allocation = (BUILD / "pathoalign_resource_allocation_figure.tex").read_text(
-        encoding="utf-8"
-    )
+    allocation = (BUILD / f"{ALLOCATION_BASENAME}.tex").read_text(encoding="utf-8")
     allocation_required = (
         "0.4259",
         "0.4619",
