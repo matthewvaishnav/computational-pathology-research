@@ -20,6 +20,7 @@ Dominant-site label-noise stress & PANDA-derived federations & When does sample-
 Fixed detector transfer & PANDA-derived federations & Does a label-noise-calibrated detector transfer to systematic ordinal threshold shift? \\
 Detector ablation and sensitivity & PANDA-derived federations & Is the detector dependent on one diagnostic family or one exact calibration? \\
 CAMELYON17 external-center validation & 455,954 examples from five centers & Does sample-proportional source weighting generalize best to an unseen center? \\
+CAMELYON17 center-subspace projection & CAMELYON17-trained features & Can source-center leakage be attenuated without collapsing tumor signal? \\
 Communication accounting & CAMELYON17 feature/head regime & What communication burden is avoided by feature/head federation? \\
 Privacy-noise stress & CAMELYON17-trained features & Do aggregation differences survive coefficient-noise perturbation? \\
 Infrastructure-friction simulation & Three heterogeneous source-client profiles & How do speed, dropout, and stragglers affect practical federation? \\
@@ -226,6 +227,30 @@ CAMELYON17-trained ResNet18 & 0.9052 & 0.9318 & 0.9322 \\
 
 Under the source-trained representation, FedAvg-style weighting reached 0.9991 source-training accuracy while generalizing worse to center 2 than equal-client or dominant-source-downweighted weighting. The result supports the narrow observation that stronger source fit and sample-proportional influence do not automatically imply better external-center generalization.
 
+\subsection{PathoAlign center-subspace projection branch}
+A separate CAMELYON17 mechanism branch asked whether source-center information in the CAMELYON17-trained feature substrate could be attenuated without deleting tumor signal. Learned adversarial and subtractive variants did not materially reduce post-hoc center leakage. An explicit supervised center-subspace projection did: fitting a linear center classifier on an internal calibration split, removing the top right-singular directions of the centered classifier weight matrix, and probing on a separate internal split reduced center decodability while leaving tumor AUC essentially unchanged.
+
+\begin{table}[!htbp]
+\centering
+\caption{CAMELYON17 center-subspace projection rank sweep. The effective center-discriminant rank is four after centering the five one-vs-rest class weight vectors.}
+\small
+\begin{tabular}{rrrr}
+\toprule
+Removed rank & Center accuracy & Tumor AUC & Tumor accuracy \\
+\midrule
+0 & 0.8946 & 0.9903 & 0.9550 \\
+1 & 0.8530 & 0.9903 & 0.9564 \\
+2 & 0.8256 & 0.9903 & 0.9564 \\
+3 & 0.8092 & 0.9901 & 0.9562 \\
+4 & 0.7636 & 0.9903 & 0.9560 \\
+\bottomrule
+\end{tabular}
+\label{tab:camelyon17_center_projection}
+\end{table}
+\FloatBarrier
+
+This is not a clinical-performance improvement claim and not complete source-center invariance. Its value is mechanistic: the adversarial variants failed, but a partially removable center-discriminant subspace exists and can be attenuated without collapsing the tumor probe.
+
 \section{Federated systems stress studies}
 
 \subsection{Communication accounting}
@@ -264,7 +289,7 @@ The study sequence follows the learning pipeline:
   \item \textbf{Synthetic PathoAlign} measures recovery when the ground-truth latent factors are known.
   \item \textbf{SCORPION PathoAlign} tests paired-acquisition separation on real human tissue across multiple representation families.
   \item \textbf{PANDA federated stress} audits sample-volume dominance under controlled label-process misalignment.
-  \item \textbf{CAMELYON17} tests related aggregation hypotheses under natural held-out-center shift.
+  \item \textbf{CAMELYON17} tests related aggregation hypotheses under natural held-out-center shift and tests whether explicit center-subspace projection can attenuate center leakage without collapsing tumor signal.
   \item \textbf{Communication, privacy-noise, and infrastructure studies} bound systems constraints without claiming that deployment is solved.
 \end{itemize}
 
