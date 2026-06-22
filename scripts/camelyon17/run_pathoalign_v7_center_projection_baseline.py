@@ -98,7 +98,8 @@ def center_projection_basis(
     weights = weights - weights.mean(axis=0, keepdims=True)
 
     _, singular_values, right_vectors = np.linalg.svd(weights, full_matrices=False)
-    return scaler, singular_values, right_vectors
+    effective_rank = int(np.sum(singular_values > singular_values.max() * 1e-6))
+    return scaler, singular_values[:effective_rank], right_vectors[:effective_rank]
 
 
 def apply_projection(
@@ -114,7 +115,7 @@ def apply_projection(
 
     max_rank = right_vectors.shape[0]
     if rank > max_rank:
-        raise ValueError(f"rank={rank} exceeds available rank={max_rank}")
+        raise ValueError(f"rank={rank} exceeds effective rank={max_rank}")
 
     basis = right_vectors[:rank].T
     return standardized - (standardized @ basis) @ basis.T
@@ -211,10 +212,10 @@ def main() -> None:
                 c_center=c_center,
             )
 
-            available_rank = right_vectors.shape[0]
+            effective_rank = right_vectors.shape[0]
 
             for rank in args.ranks:
-                if rank > available_rank:
+                if rank > effective_rank:
                     continue
 
                 X_projected = apply_projection(
@@ -247,12 +248,12 @@ def main() -> None:
                         "seed": seed,
                         "c_center": c_center,
                         "removed_rank": rank,
-                        "available_rank": available_rank,
+                        "effective_rank": effective_rank,
                         "center_acc": center_metrics["accuracy"],
                         "tumor_acc": tumor_metrics["accuracy"],
                         "tumor_auc": tumor_metrics.get("auc", np.nan),
                         "singular_values": ";".join(
-                            [f"{value:.6f}" for value in singular_values[:available_rank]]
+                            [f"{value:.6f}" for value in singular_values]
                         ),
                     }
                 )
