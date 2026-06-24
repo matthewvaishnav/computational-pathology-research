@@ -8,9 +8,9 @@ Independent research on representation identifiability, paired-acquisition neura
 
 ## Central framing
 
-PathoAlign treats computational pathology robustness as a representation-audit problem: frozen pathology embeddings can entangle tissue morphology with acquisition provenance, including scanner, stain, center, preparation, and workflow signals. The paired-acquisition neural factorization work asks whether matched views of the same underlying tissue can separate a scanner-suppressed tissue factor from an acquisition-specific factor, and then audits whether each branch contains the intended information.
+I use PathoAlign to treat computational pathology robustness as a representation-audit problem: frozen pathology embeddings can entangle tissue morphology with acquisition provenance, including scanner, stain, center, preparation, and workflow signals. The paired-acquisition neural factorization work asks whether matched views of the same underlying tissue can separate a scanner-suppressed tissue factor from an acquisition-specific factor, and then audits whether each branch contains the intended information.
 
-The high-ground claim is not that the repository proves disease biology. The supported claim is narrower: PathoAlign provides a paired-acquisition framework for testing and improving whether pathology representations preserve tissue identity while suppressing linearly recoverable scanner signal in the tissue branch.
+I am not claiming that this repository proves disease biology. The supported claim is narrower: PathoAlign provides a paired-acquisition framework for testing and improving whether pathology representations preserve tissue identity while suppressing linearly recoverable scanner signal in the tissue branch.
 
 ## Research program
 
