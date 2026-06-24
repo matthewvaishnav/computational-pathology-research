@@ -28,13 +28,14 @@ I am not claiming that this proves disease biology. I am making a narrower repre
 
 | Study package | Scope | Links |
 |---|---|---|
+| **SCORPION core paired-acquisition factorization** | Primary paired-scanner method study on 48 original human H&E slides, five scanners, and three feature families | Repository target: `paired-acquisition-factorization-scorpion` |
 | **External canine SCC validation** | Independent five-scanner paired-acquisition validation of the locked neural factorization objective | [Repository](https://github.com/matthewvaishnav/paired-acquisition-factorization-caninescc) |
 | **Pair-repeat allocation study** | Matched-budget test of whether unique biological pair diversity improves factor separation more than repeated-anchor allocation | [Repository](https://github.com/matthewvaishnav/paired-acquisition-factorization-allocation) |
 
 ## Start here
 
 - [Paired-Acquisition Neural Factorization positioning](docs/research/paired-acquisition-neural-factorization-positioning.md)
-- [Cross-backbone results](docs/research/scorpion-pathoalign-crossbackbone-results.md)
+- [SCORPION core paired-acquisition factorization results](docs/research/paired-acquisition-factorization-scorpion-results.md)
 - [External canine SCC validation results](docs/research/paired-acquisition-factorization-caninescc-results.md)
 - [Claim boundary](CLAIM_BOUNDARY.md)
 
