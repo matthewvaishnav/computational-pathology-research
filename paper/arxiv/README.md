@@ -6,7 +6,7 @@ This folder contains the single, sectioned technical report for the computationa
 
 ```text
 Computational Pathology Research Platform for Federated Oncology:
-PathoAlign Representation Alignment, TransnnMIL Whole-Slide Modeling,
+Paired-Acquisition Neural Factorization Representation Alignment, TransnnMIL Whole-Slide Modeling,
 and PathologyFL Federated Training
 ```
 
@@ -16,15 +16,15 @@ Canonical public PDF:
 https://matthewvaishnav.github.io/computational-pathology-research/computational-pathology-research-platform-for-federated-oncology.pdf
 ```
 
-The repository-root Pages URL redirects to this canonical document. Previously shared PathoAlign and *When More Data Is Less Trustworthy* PDF URLs remain compatibility aliases.
+The repository-root Pages URL redirects to this canonical document. Previously shared Paired-Acquisition Neural Factorization and *When More Data Is Less Trustworthy* PDF URLs remain compatibility aliases.
 
 The report treats the three systems as separate components rather than aliases:
 
-- **PathoAlign** — neural representation alignment and identifiability.
+- **Paired-Acquisition Neural Factorization** — neural representation alignment and identifiability.
 - **TransnnMIL** — custom whole-slide multiple-instance learning.
 - **PathologyFL** — custom federated learning, including FedAvg baselines, FAIR-WEIGHTS-H mechanisms, contribution-aware weighting, and dominance-aware switching.
 
-The current PDF is an umbrella technical report. Each component has its own problem statement, methods, evidence, limitations, and interface with the other components. The complete PathoAlign → TransnnMIL → PathologyFL pipeline is presented as an integration agenda until a locked end-to-end experiment is completed.
+The current PDF is an umbrella technical report. Each component has its own problem statement, methods, evidence, limitations, and interface with the other components. The complete Paired-Acquisition Neural Factorization → TransnnMIL → PathologyFL pipeline is presented as an integration agenda until a locked end-to-end experiment is completed.
 
 ## Files
 
