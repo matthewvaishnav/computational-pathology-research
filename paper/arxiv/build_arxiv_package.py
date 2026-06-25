@@ -241,10 +241,14 @@ def validate_and_normalize_main(path: Path) -> None:
 
     allocation = (BUILD / f"{ALLOCATION_BASENAME}.tex").read_text(encoding="utf-8")
     allocation_required = (
+        "0.4081",
         "0.4259",
+        "0.4489",
         "0.4619",
-        "+0.0374",
-        "100 anchors",
+        "100",
+        "200",
+        "6,400 presentations",
+        "12,800 presentations",
     )
     allocation_missing = [term for term in allocation_required if term not in allocation]
     if allocation_missing:
