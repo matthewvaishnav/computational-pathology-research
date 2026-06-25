@@ -1,0 +1,65 @@
+% Pair-repeat Paired-Acquisition Neural Factorization resource-allocation figure.
+% Black-and-white rendering designed for the compact main paper.
+\begin{tikzpicture}[
+  x=1cm,
+  y=1cm,
+  >=Latex,
+  axis/.style={draw=black, line width=0.78pt},
+  grid/.style={draw=black!24, line width=0.34pt},
+  seriesa/.style={draw=black, line width=1.05pt},
+  seriesb/.style={draw=black, line width=1.05pt, densely dashed},
+  tick/.style={font=\scriptsize},
+  legend/.style={font=\scriptsize, anchor=west}
+]
+
+% Plot area: x from 0 to 8.2; y=0 corresponds to score 0.40 and y=4.5 to 0.50.
+\draw[axis] (0,0) -- (8.15,0);
+\draw[axis] (0,0) -- (0,4.68);
+
+% Horizontal grid and labels.
+\foreach \yy/\lab in {0/0.40,0.9/0.42,1.8/0.44,2.7/0.46,3.6/0.48,4.5/0.50} {
+  \draw[grid] (0,\yy) -- (8.15,\yy);
+  \node[tick, anchor=east] at (-0.16,\yy) {\lab};
+}
+\node[tick, rotate=90, anchor=south] at (-0.82,2.25) {universal biological score};
+
+% x ticks and label.
+\foreach \xx/\lab in {1.15/50,4.05/100,7.45/200} {
+  \draw[axis] (\xx,0.07) -- (\xx,-0.07);
+  \node[tick, anchor=north] at (\xx,-0.13) {\lab};
+}
+\node[tick, anchor=north] at (4.08,-0.52) {unique paired anchors};
+
+% Historical threshold.
+\draw[draw=black, line width=0.64pt, dash pattern=on 3pt off 2pt] (0,4.5) -- (8.15,4.5);
+\node[tick, anchor=south east] at (8.08,4.53) {historical recovery threshold};
+
+% Legend, kept inside the unused upper-left region.
+\draw[seriesa] (0.42,4.06) -- (1.08,4.06);
+\filldraw[fill=white, draw=black, line width=0.82pt] (0.75,4.06) circle (0.075);
+\node[legend] at (1.20,4.06) {6,400 presentations};
+
+\draw[seriesb] (3.45,4.06) -- (4.11,4.06);
+\draw[fill=white, draw=black, line width=0.82pt] (3.705,3.985) rectangle (3.855,4.135);
+\node[legend] at (4.23,4.06) {12,800 presentations};
+
+% 6,400 presentations: scores 0.4081, 0.4243, 0.4259.
+\coordinate (a1) at (1.15,0.3645);
+\coordinate (a2) at (4.05,1.0935);
+\coordinate (a3) at (7.45,1.1655);
+\draw[seriesa] (a1) -- (a2) -- (a3);
+\foreach \p/\lab in {a1/0.4081,a2/0.4243,a3/0.4259} {
+  \filldraw[fill=white, draw=black, line width=0.82pt] (\p) circle (0.075);
+  \node[tick, anchor=south] at ($(\p)+(0,0.11)$) {\lab};
+}
+
+% 12,800 presentations: scores 0.4489, 0.4595, 0.4619.
+\coordinate (b1) at (1.15,2.2005);
+\coordinate (b2) at (4.05,2.6775);
+\coordinate (b3) at (7.45,2.7855);
+\draw[seriesb] (b1) -- (b2) -- (b3);
+\foreach \p/\lab in {b1/0.4489,b2/0.4595,b3/0.4619} {
+  \draw[fill=white, draw=black, line width=0.82pt] ($(\p)+(-0.075,-0.075)$) rectangle ($(\p)+(0.075,0.075)$);
+  \node[tick, anchor=south] at ($(\p)+(0,0.12)$) {\lab};
+}
+\end{tikzpicture}
