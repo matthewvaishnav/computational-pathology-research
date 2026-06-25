@@ -29,10 +29,10 @@ I am not claiming that this proves disease biology. I am making a narrower repre
 | Study package | Scope | Repository status |
 |---|---|---|
 | **SCORPION core paired-acquisition factorization** | Primary paired-scanner method study on 48 original human H&E slides, five scanners, and three feature families | Repository target: `paired-acquisition-factorization-scorpion` |
-| **External canine SCC validation** | Independent five-scanner paired-acquisition validation of the locked neural factorization objective | Repository target: `paired-acquisition-factorization-caninescc` |
-| **Pair-repeat allocation study** | Matched-budget test of whether unique biological pair diversity improves factor separation more than repeated-anchor allocation | Repository target: `paired-acquisition-factorization-allocation` |
+| **External canine SCC validation** | Independent five-scanner paired-acquisition validation of the locked neural factorization objective | [repository](https://github.com/matthewvaishnav/paired-acquisition-factorization-caninescc); [PDF](https://matthewvaishnav.github.io/paired-acquisition-factorization-caninescc/paired-acquisition-factorization-caninescc.pdf) |
+| **Pair-repeat allocation study** | Matched-budget test of whether unique biological pair diversity improves factor separation more than repeated-anchor allocation | [repository](https://github.com/matthewvaishnav/paired-acquisition-factorization-allocation); [PDF](https://matthewvaishnav.github.io/paired-acquisition-factorization-allocation/paired-acquisition-factorization-allocation.pdf) |
 
-Child-package repository links stay unlinked here until the package URLs are verified from the public view.
+Verified child-package repositories and PDFs are linked from the public view.
 
 ## Start here
 

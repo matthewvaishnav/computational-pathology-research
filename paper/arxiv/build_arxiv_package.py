@@ -134,8 +134,11 @@ def find_latexmk() -> str | None:
 def compile_pdf() -> None:
     latexmk = find_latexmk()
     if latexmk:
-        run([latexmk, "-pdf", "-interaction=nonstopmode", "main.tex"], cwd=BUILD)
-        return
+        try:
+            run([latexmk, "-pdf", "-interaction=nonstopmode", "main.tex"], cwd=BUILD)
+            return
+        except subprocess.CalledProcessError:
+            print("latexmk failed; falling back to pdflatex", flush=True)
 
     pdflatex = find_pdflatex()
     if not pdflatex:
