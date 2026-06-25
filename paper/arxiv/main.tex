@@ -71,7 +71,7 @@ Independent Researcher, Kitchener-Waterloo, Canada\par
 \begin{minipage}{0.90\textwidth}
 \begin{center}\bfseries Abstract\end{center}
 \small
-I trained a neural factorization model to separate biological tissue signal from scanner and acquisition signal using biology-preserving paired observations. The principal experiment uses 2,400 real histopathology images from 480 aligned regions on 48 human H\&E slides, each scanned on five devices. A frozen PathoAlign objective reduced biological scanner-probe accuracy from 0.7825 to 0.3989 on DINOv2 features while improving paired agreement and preserving near-perfect cross-scanner tissue retrieval. Without backbone-specific tuning, the same objective transferred to pathology-native Phikon and ImageNet ResNet50. Across the two unseen feature families, the slide-blocked scanner-probe difference was $-0.4019$ with 95\% bootstrap interval $[-0.4145,-0.3895]$, favorable on all 48 slides. Scanner identity remained strongly recoverable from a compact acquisition branch, indicating factor separation rather than representational erasure.
+I trained a neural factorization model to separate biological tissue signal from scanner and acquisition signal using biology-preserving paired observations. The principal experiment uses 2,400 real histopathology images from 480 aligned regions on 48 human H\&E slides, each scanned on five devices. A frozen Paired-Acquisition Neural Factorization objective reduced biological scanner-probe accuracy from 0.7825 to 0.3989 on DINOv2 features while improving paired agreement and preserving near-perfect cross-scanner tissue retrieval. Without backbone-specific tuning, the same objective transferred to pathology-native Phikon and ImageNet ResNet50. Across the two unseen feature families, the slide-blocked scanner-probe difference was $-0.4019$ with 95\% bootstrap interval $[-0.4145,-0.3895]$, favorable on all 48 slides. Scanner identity remained strongly recoverable from a compact acquisition branch, indicating factor separation rather than representational erasure.
 
 The method follows from two earlier failures. A locked adversarial study reduced site leakage but did not improve held-out tumor accuracy, and unconditional removal of a learned site component erased tumor-predictive information. Controlled latent-factor experiments then showed that ordinary observations and paired acquisitions are distinct resources. Under matched compute, doubling paired exposure improved recovery by $+0.037357$, while increasing unique anchors from 50 to 100 helped substantially more than increasing them from 100 to 200. Downstream PANDA, CAMELYON17, and PCam studies test whole-slide aggregation, institutional influence, external-center generalization, and systems constraints. The evidence supports a narrow conclusion: acquisition-associated information must be separated conditionally, with explicit protection of biology, rather than removed merely because it predicts site.
 \end{minipage}
@@ -84,7 +84,7 @@ Digital pathology representations contain more than morphology. Scanner optics, 
 
 The central problem is therefore not ordinary domain invariance. It is \emph{conditional factorization}: acquisition-sensitive variation should become less recoverable from the biological representation, but tissue and diagnostic information must remain. This is difficult from ordinary observations alone because site and biology may be correlated. If a site-associated direction predicts tumor status, observational data cannot determine whether that direction is nuisance, biology, or an entangled mixture.
 
-Biology-preserving acquisition pairs change the information structure. The same tissue region is observed under different scanners or acquisition states. What changes across a pair is candidate acquisition variation; what remains shared is candidate biology. PathoAlign uses this intervention structure to learn separate biological and acquisition branches and evaluates both what is removed and where it goes.
+Biology-preserving acquisition pairs change the information structure. The same tissue region is observed under different scanners or acquisition states. What changes across a pair is candidate acquisition variation; what remains shared is candidate biology. Paired-Acquisition Neural Factorization uses this intervention structure to learn separate biological and acquisition branches and evaluates both what is removed and where it goes.
 
 The specific contributions of this paper are as follows. First, I provide a locked negative-result sequence showing that lower site leakage alone does not imply better tumor prediction and that unconditional subtraction can erase biology. Second, I introduce a paired-acquisition factorization objective with explicit biological retention, acquisition prediction, reconstruction, variance control, and cross-factor decorrelation. Third, I evaluate the frozen objective on real paired scanner data with original-slide blocking and transfer it without retuning across three substantially different feature families. Fourth, I measure the separate roles of ordinary observations, unique paired anchors, and repeated paired exposure in controlled latent-factor experiments. Finally, I connect representation failure to later whole-slide and federated studies without using those studies to inflate the central paired-scanner claim. Focused companion PDFs carry exact protocols, frozen result tables, and reproduction scripts for study-specific claims.
 
@@ -102,7 +102,7 @@ Synthetic experiments generate known biological and acquisition factors, then mi
 \subsection{Downstream pathology datasets}
 PANDA supplies 10,611 verified slide-level Phikon feature bags for prostate grading and federated stress experiments \citep{bulten2022artificial}. CAMELYON17/WILDS supplies 455,954 examples from five centers for natural external-center validation \citep{bandi2018camelyon17,koh2021wilds}. PCam supplies a public patch-classification benchmark used for full-test, bootstrap, threshold, and simulated-site validation. These datasets test later levels of the learning pipeline; they are not substitutes for the paired-acquisition experiment.
 
-\section{The PathoAlign Model}
+\section{The Paired-Acquisition Neural Factorization Model}
 \subsection{Paired acquisition supervision}
 Let $x_{r,s}\in\mathbb{R}^{D}$ be the frozen feature for tissue region $r$ acquired by scanner $s$. A biology-preserving set contains several views of the same region:
 \[
@@ -120,16 +120,16 @@ x_{r,s'}-x_{r,s}=A(z_{a,s'}-z_{a,s})+(\varepsilon_{r,s'}-\varepsilon_{r,s}).
 \]
 The neural model does not assume the observation map is exactly linear, but the cancellation argument explains why paired observations contain information that ordinary site labels do not.
 
-\input{pathoalign_model_math.tex}
+\input{paired_acquisition_model_math.tex}
 
 \section{Preventing Representation Failure}
 \subsection{Why site invariance was not enough}
-The first PathoAlign study used a shared feature encoder, tumor head, and gradient-reversal site head. A locked confirmation reached approximately 0.9264 held-out tumor accuracy versus 0.9270 for the tumor-only baseline. The paired accuracy difference was approximately $-0.000625$ with an interval crossing zero. Site leakage decreased slightly, but the result was not a diagnostic-performance improvement.
+The first Paired-Acquisition Neural Factorization study used a shared feature encoder, tumor head, and gradient-reversal site head. A locked confirmation reached approximately 0.9264 held-out tumor accuracy versus 0.9270 for the tumor-only baseline. The paired accuracy difference was approximately $-0.000625$ with an interval crossing zero. Site leakage decreased slightly, but the result was not a diagnostic-performance improvement.
 
-A later factorized model separated diagnostic and site branches with reconstruction and covariance control. Validation selected the diagnostic-only baseline. An unconditional subtraction experiment was more decisive: the learned site-associated component remained strongly tumor-predictive, so subtracting it deleted useful biological signal. These failures define the design requirement for PathoAlign: removed information must be accounted for, and biology must be protected directly.
+A later factorized model separated diagnostic and site branches with reconstruction and covariance control. Validation selected the diagnostic-only baseline. An unconditional subtraction experiment was more decisive: the learned site-associated component remained strongly tumor-predictive, so subtracting it deleted useful biological signal. These failures define the design requirement for Paired-Acquisition Neural Factorization: removed information must be accounted for, and biology must be protected directly.
 
 \subsection{Collapse and factor-retention controls}
-A low scanner-probe score is meaningless if the biological branch is constant. PathoAlign therefore reports effective rank, per-dimension variance, tissue-region retrieval, paired cosine similarity, reconstruction, acquisition-branch scanner prediction, and acquisition-branch tissue retrieval. The desired pattern is not zero information everywhere. It is high tissue retention and reduced scanner recovery in biology, paired with high scanner recovery and substantially lower tissue retrieval in acquisition.
+A low scanner-probe score is meaningless if the biological branch is constant. Paired-Acquisition Neural Factorization therefore reports effective rank, per-dimension variance, tissue-region retrieval, paired cosine similarity, reconstruction, acquisition-branch scanner prediction, and acquisition-branch tissue retrieval. The desired pattern is not zero information everywhere. It is high tissue retention and reduced scanner recovery in biology, paired with high scanner recovery and substantially lower tissue retrieval in acquisition.
 
 \subsection{Ordinary observations and paired resources}
 The controlled program treats three quantities separately: ordinary observations $N_u$, unique paired anchors $N_p$, and paired repetitions $R_p$. Ordinary observations learn the task manifold. Unique anchors expose more biological locations under acquisition changes. Repetition supplies additional optimization signal for already observed interventions.
@@ -145,11 +145,11 @@ The pair-repeat synthetic study used overlap 0.975, nonlinear mixing, 320 optimi
 
 \section{Results}
 \subsection{Frozen paired-scanner factorization}
-Before PathoAlign training, scanner identity was strongly recoverable from all three feature families despite high tissue retention. The pathology-native Phikon representation had the highest baseline scanner-probe score.
+Before Paired-Acquisition Neural Factorization training, scanner identity was strongly recoverable from all three feature families despite high tissue retention. The pathology-native Phikon representation had the highest baseline scanner-probe score.
 
 \begin{table}[t]
 \centering
-\caption{Frozen representation audit before PathoAlign training.}
+\caption{Frozen representation audit before Paired-Acquisition Neural Factorization training.}
 \scriptsize
 \setlength{\tabcolsep}{2.6pt}
 \begin{tabular}{@{}lccc@{}}
@@ -168,7 +168,7 @@ On DINOv2, the frozen five-fold comparison reduced scanner-probe accuracy from 0
 
 \begin{table*}[t]
 \centering
-\caption{PathoAlign minus paired-consistency slide-blocked contrasts. Positive cosine and retrieval values and negative scanner-probe values are favorable.}
+\caption{Paired-Acquisition Neural Factorization minus paired-consistency slide-blocked contrasts. Positive cosine and retrieval values and negative scanner-probe values are favorable.}
 \small
 \begin{tabular}{lrrrrr}
 \toprule
@@ -187,14 +187,14 @@ Both unseen backbones passed all seven preregistered criteria without retuning. 
 The acquisition branch retained scanner-probe accuracies of 0.8602, 0.9711, and 0.7845 for DINOv2, Phikon, and ResNet50, respectively. Its tissue retrieval was much lower than the biological branch: 0.1042, 0.0739, and 0.1705. Every biological dimension retained nonzero test-fold variance. The result is therefore consistent with separation, not a constant representation or simple information deletion.
 
 \subsection{External paired-scanner validation package}
-A companion external validation study applies the locked PathoAlign protocol to a public five-scanner canine squamous-cell-carcinoma dataset after geometry qualification. On 805 complete five-view regions from 44 biological samples, PathoAlign reduced sample-blocked scanner-probe accuracy from 0.7529 to 0.3614. The scanner-probe contrast was $-0.3803$ with bootstrap interval $[-0.3996,-0.3611]$, favorable in all 44 sample blocks, while same-region retrieval remained non-inferior. A later representation audit tested the branch-separation claim directly across folds 0--4 and seeds 911--915: scanner prediction fell from 0.878 in raw DINOv2 to 0.300 in the PathoAlign biological branch while same-region retrieval rose from 0.873 to 0.959; the acquisition branch retained scanner prediction at 0.968 while same-region retrieval fell to 0.031. Stronger linear, random-forest, kNN, and nonlinear MLP probes reproduced the same separation pattern. The exact dataset audit, P1000 orientation-normalization boundary, frozen encoder triage, five-fold result tables, and reproduction scripts are in the linked companion package: \href{https://matthewvaishnav.github.io/pathoalign-external-caninescc/pathoalign-external-caninescc.pdf}{study PDF} and \href{https://github.com/matthewvaishnav/pathoalign-external-caninescc}{repository}.
+A companion external validation study applies the locked Paired-Acquisition Neural Factorization protocol to a public five-scanner canine squamous-cell-carcinoma dataset after geometry qualification. On 805 complete five-view regions from 44 biological samples, Paired-Acquisition Neural Factorization reduced sample-blocked scanner-probe accuracy from 0.7529 to 0.3614. The scanner-probe contrast was $-0.3803$ with bootstrap interval $[-0.3996,-0.3611]$, favorable in all 44 sample blocks, while same-region retrieval remained non-inferior. A later representation audit tested the branch-separation claim directly across folds 0--4 and seeds 911--915: scanner prediction fell from 0.878 in raw DINOv2 to 0.300 in the Paired-Acquisition Neural Factorization biological branch while same-region retrieval rose from 0.873 to 0.959; the acquisition branch retained scanner prediction at 0.968 while same-region retrieval fell to 0.031. Stronger linear, random-forest, kNN, and nonlinear MLP probes reproduced the same separation pattern. The exact dataset audit, P1000 orientation-normalization boundary, frozen encoder triage, five-fold result tables, and reproduction scripts are assigned to the companion repository target \texttt{paired-acquisition-factorization-caninescc}.
 
-\input{pathoalign_figure1_benchmark_table.tex}
+\input{paired_acquisition_figure1_benchmark_table.tex}
 
 \subsection{Resource allocation under matched compute}
 \begin{figure*}[t]
 \centering
-\resizebox{0.78\textwidth}{!}{\input{pathoalign_resource_allocation_figure.tex}}
+\resizebox{0.78\textwidth}{!}{\input{paired_acquisition_resource_allocation_figure.tex}}
 \caption{Pair-repeat allocation of unique paired anchors and repeated presentations. More total exposure produced the largest gain. Increasing unique-anchor diversity helped, with diminishing returns beyond approximately 100 anchors in the tested regime. No allocation crossed the historical 0.50 recovery threshold.}
 \label{fig:resource_allocation}
 \end{figure*}

@@ -1,0 +1,114 @@
+\subsection{Architecture}
+For a standardized frozen feature $x\in\mathbb{R}^{D}$, Paired-Acquisition Neural Factorization uses two factor encoders, a joint decoder, and two scanner heads:
+\begin{align}
+ z_b &= f_b(x)\in\mathbb{R}^{d_b}, & d_b&=256,\\
+ z_a &= f_a(x)\in\mathbb{R}^{d_a}, & d_a&=64,\\
+ \widehat{x} &= g([z_b;z_a])\in\mathbb{R}^{D},\\
+ \widehat{y}_{b} &= q_b(\operatorname{GRL}_{\gamma}(z_b)),\\
+ \widehat{y}_{a} &= q_a(z_a), & \gamma&=1.
+\end{align}
+Both encoders are MLPs with hidden width 512:
+\begin{align}
+ h_c(x)&=\operatorname{LN}\{\operatorname{GELU}(W_{c,1}x+b_{c,1})\},\\
+ f_c(x)&=W_{c,2}h_c(x)+b_{c,2},\qquad c\in\{b,a\}.
+\end{align}
+The decoder has widths $(d_b+d_a)\to512\to D$. The biological scanner head has widths $256\to128\to C$, the acquisition scanner head has widths $64\to64\to C$, and $C=5$ scanners. Gradient reversal is the identity in the forward pass and negates the encoder gradient:
+\begin{equation}
+ \operatorname{GRL}_{\gamma}(z)=z,
+ \qquad
+ \frac{\partial\operatorname{GRL}_{\gamma}}{\partial z}=-\gamma I.
+\end{equation}
+Thus $q_b$ predicts scanner identity while $f_b$ receives the opposite gradient; $q_a$ and $f_a$ minimize ordinary scanner cross-entropy. The architecture is therefore the factorization
+\begin{equation}
+ x\mapsto (z_b,z_a)=(f_b(x),f_a(x)),
+ \qquad
+ \widehat{x}=g([z_b;z_a]),
+\end{equation}
+where $z_b$ is optimized for same-region agreement and scanner suppression, and $z_a$ is optimized for scanner prediction and acquisition retention.
+
+\subsection{Objective}
+Let a minibatch be $\{(x_i,r_i,s_i)\}_{i=1}^{n}$, where $r_i$ is tissue-region identity and $s_i\in\{1,\ldots,C\}$ is scanner identity. Write $Z_b\in\mathbb{R}^{n\times d_b}$ and $Z_a\in\mathbb{R}^{n\times d_a}$ for the stacked factors, and let $u_i=z_{b,i}/\lVert z_{b,i}\rVert_2$. For anchor $i$, define $P(i)=\{p\ne i:r_p=r_i\}$ and
+\begin{align}
+ S_i &= \sum_{j\ne i}\exp(u_i^{\top}u_j/\tau),\\
+ \ell_i &= -\frac{1}{|P(i)|}\sum_{p\in P(i)}
+ \log\frac{\exp(u_i^{\top}u_p/\tau)}{S_i},\\
+ \mathcal{L}_{\mathrm{pair}} &= \frac{1}{n}\sum_{i=1}^{n}\ell_i,
+ \qquad \tau=0.1.
+\end{align}
+The reconstruction loss is the mean squared error
+\begin{equation}
+ \mathcal{L}_{\mathrm{recon}}
+ =\frac{1}{nD}\lVert\widehat{X}-X\rVert_F^2.
+\end{equation}
+For $Z\in\mathbb{R}^{n\times d}$, define
+\begin{align}
+ v_j(Z)&=\frac{1}{n}\sum_{i=1}^{n}(Z_{ij}-\bar Z_j)^2,\\
+ \ell_{\mathrm{var}}(Z)
+ &=\frac{1}{d}\sum_{j=1}^{d}
+ \left[1-\sqrt{v_j(Z)+\varepsilon}\right]_{+},
+ \qquad \varepsilon=10^{-4},\\
+ \mathcal{L}_{\mathrm{var},b}&=\ell_{\mathrm{var}}(Z_b),\qquad
+ \mathcal{L}_{\mathrm{var},a}=\ell_{\mathrm{var}}(Z_a).
+\end{align}
+Let $Z_b^c=Z_b-\mathbf{1}\bar z_b^{\top}$ and
+\begin{equation}
+ C_b=\frac{1}{n-1}(Z_b^c)^{\top}Z_b^c.
+\end{equation}
+The within-biological covariance penalty is
+\begin{equation}
+ \mathcal{L}_{\mathrm{cov},b}
+ =\frac{1}{d_b}
+  \left\lVert C_b-\operatorname{diag}(\operatorname{diag}C_b)\right\rVert_F^2.
+\end{equation}
+The scanner losses are forward cross-entropies:
+\begin{align}
+ \mathcal{L}_{\mathrm{scan},b}
+ &=-\frac{1}{n}\sum_i
+ \log\!\left[\operatorname{softmax}
+ \{q_b(\operatorname{GRL}_{\gamma}(z_{b,i}))\}\right]_{s_i},\\
+ \mathcal{L}_{\mathrm{scan},a}
+ &=-\frac{1}{n}\sum_i
+ \log\!\left[\operatorname{softmax}\{q_a(z_{a,i})\}\right]_{s_i}.
+\end{align}
+Only the gradient entering $f_b$ is reversed.
+
+Let $Y_s\in\mathbb{R}^{n\times C}$ be the one-hot scanner matrix. Column-standardize $Z_b$ and $Y_s$ using the same $\varepsilon=10^{-4}$ variance floor, producing $\widetilde Z_b$ and $\widetilde Y_s$. The direct scanner-dependence penalty is
+\begin{equation}
+ \mathcal{L}_{\mathrm{dep}}
+ =\frac{1}{d_bC}
+  \left\lVert
+   \frac{1}{n-1}\widetilde Z_b^{\top}\widetilde Y_s
+  \right\rVert_F^2.
+\end{equation}
+For $Z_a^c=Z_a-\mathbf{1}\bar z_a^{\top}$, the cross-factor penalty is
+\begin{equation}
+ \mathcal{L}_{\mathrm{xcov}}
+ =\frac{1}{d_bd_a}
+  \left\lVert
+   \frac{1}{n-1}(Z_b^c)^{\top}Z_a^c
+  \right\rVert_F^2.
+\end{equation}
+The frozen Paired-Acquisition Neural Factorization objective used in the five-fold and cross-backbone experiments is
+\begin{align}
+ \mathcal{L}
+ &=\mathcal{L}_{\mathrm{pair}}
+ +\mathcal{L}_{\mathrm{recon}}
+ +\mathcal{L}_{\mathrm{var},b}
+ +0.25\mathcal{L}_{\mathrm{var},a} \\
+ &\quad
+ +0.01\mathcal{L}_{\mathrm{cov},b}
+ +0.5\mathcal{L}_{\mathrm{scan},b}
+ +0.5\mathcal{L}_{\mathrm{scan},a} \\
+ &\quad
+ +20\mathcal{L}_{\mathrm{dep}}
+ +0.05\mathcal{L}_{\mathrm{xcov}}.
+\end{align}
+The paired-consistency baseline is
+\begin{equation}
+ \mathcal{L}_{\mathrm{base}}
+ =\mathcal{L}_{\mathrm{pair}}
+ +\mathcal{L}_{\mathrm{recon}}
+ +\mathcal{L}_{\mathrm{var},b}
+ +0.01\mathcal{L}_{\mathrm{cov},b}.
+\end{equation}
+It shares the main retention and collapse controls but has no acquisition branch, scanner classifiers, direct scanner-dependence penalty, or cross-factor penalty.

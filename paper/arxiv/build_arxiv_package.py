@@ -17,13 +17,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 ARXIV = ROOT / "paper" / "arxiv"
 BUILD = ARXIV / "build"
-PACKAGE = ARXIV / "pathoalign_arxiv_source.zip"
+PACKAGE = ARXIV / "paired_acquisition_neural_factorization_arxiv_source.zip"
 
 MAIN_SOURCE = ARXIV / "main.tex"
 
-MODEL_MATH_BASENAME = "pathoalign_model_math"
-ALLOCATION_BASENAME = "pathoalign_resource_allocation_figure"
-FIGURE1_BASENAME = "pathoalign_figure1_benchmark_table"
+MODEL_MATH_BASENAME = "paired_acquisition_model_math"
+ALLOCATION_BASENAME = "paired_acquisition_resource_allocation_figure"
+FIGURE1_BASENAME = "paired_acquisition_figure1_benchmark_table"
 BROADER_BASENAME = "broader_research_program"
 
 MODEL_MATH_INCLUDE = rf"\input{{{MODEL_MATH_BASENAME}}}"
@@ -72,7 +72,7 @@ def normalize_main_source(text: str) -> str:
         marker = first_present(
             text,
             (
-                r"\section{The PathoAlign Model}",
+                r"\section{The Paired-Acquisition Neural Factorization Model}",
                 r"\section{The Paired-Acquisition Neural Factorization Model}",
                 r"\section{Method}",
             ),
