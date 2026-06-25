@@ -175,6 +175,8 @@ def validate_and_normalize_main(path: Path) -> None:
 
     if not include_present(text, BROADER_BASENAME):
         raise RuntimeError("The broader research-program appendix include was not injected")
+    if r"\onecolumn" not in text:
+        raise RuntimeError("main.tex should switch to one-column layout before the appendix")
 
     if r"\begin{figure*}" not in text or r"\begin{table*}" not in text:
         raise RuntimeError("Wide result floats must use two-column-spanning environments")
@@ -203,8 +205,6 @@ def validate_and_normalize_main(path: Path) -> None:
     broader = (BUILD / f"{BROADER_BASENAME}.tex").read_text(encoding="utf-8")
     if r"\section{Broader computational-pathology study record}" not in broader:
         raise RuntimeError("The broader research-program appendix file lost its section header")
-    if r"\onecolumn" not in broader:
-        raise RuntimeError("The appendix file should switch back to one-column layout")
 
     broader_required = (
         "PANDA",
