@@ -1,5 +1,5 @@
 \section{Broader computational-pathology study record}
-The detailed SCORPION paired-scanner study above is the newest and strongest locked PathoAlign result, but it is not the whole research record. Earlier public PDF versions treated the repository as a three-level platform---representation, whole-slide aggregation, and institutional aggregation---and reported several distinct studies inside those levels. This section restores that study-by-study structure and adds the newer evidence without using one experiment to overstate another.
+The detailed SCORPION paired-scanner study above is the newest and strongest locked Paired-Acquisition Neural Factorization result, but it is not the whole research record. Earlier public PDF versions treated the repository as a three-level platform---representation, whole-slide aggregation, and institutional aggregation---and reported several distinct studies inside those levels. This section restores that study-by-study structure and adds the newer evidence without using one experiment to overstate another.
 
 \subsection{Study map}
 \begin{table}[!htbp]
@@ -10,7 +10,7 @@ The detailed SCORPION paired-scanner study above is the newest and strongest loc
 \toprule
 Study & Data or experimental substrate & Primary question \\
 \midrule
-Adversarial PathoAlign confirmation & Pathology-derived representations & Does lower site leakage improve tumor prediction? \\
+Adversarial Paired-Acquisition Neural Factorization confirmation & Pathology-derived representations & Does lower site leakage improve tumor prediction? \\
 Factorized and subtraction falsification & Pathology-derived representations & Can a learned site component be removed without deleting biology? \\
 Synthetic two-resource phase maps & Controlled latent-factor generators & How do ordinary observations and paired interventions jointly control recovery? \\
 Pair-repeat anchor allocation & Controlled nonlinear high-overlap regime & Under fixed paired exposure, how much does unique-anchor diversity matter relative to repetition? \\
@@ -32,10 +32,10 @@ PCam federated strategy probes & Real PCam patches split into simulated sites & 
 \end{table}
 \FloatBarrier
 
-\section{Earlier PathoAlign studies}
+\section{Earlier Paired-Acquisition Neural Factorization studies}
 
 \subsection{Locked adversarial confirmation}
-The first neural PathoAlign study used a shared feature encoder with a tumor head and a gradient-reversal site head. Development experiments suggested a small task improvement and reduced site leakage. A locked confirmation over new seeds did not reproduce the task advantage: the adversarial model reached approximately 0.9264 held-out tumor accuracy versus 0.9270 for the tumor-only baseline, a paired difference of approximately $-0.000625$ with an interval crossing zero. The site-probe difference was approximately $-0.003258$, with the paired bootstrap interval excluding zero.
+The first neural Paired-Acquisition Neural Factorization study used a shared feature encoder with a tumor head and a gradient-reversal site head. Development experiments suggested a small task improvement and reduced site leakage. A locked confirmation over new seeds did not reproduce the task advantage: the adversarial model reached approximately 0.9264 held-out tumor accuracy versus 0.9270 for the tumor-only baseline, a paired difference of approximately $-0.000625$ with an interval crossing zero. The site-probe difference was approximately $-0.003258$, with the paired bootstrap interval excluding zero.
 
 The result therefore established a representation change, not a diagnostic-performance improvement. Lower recoverable site information was achievable, but it was not sufficient evidence that the representation had become more useful for tumor prediction.
 
@@ -227,7 +227,7 @@ CAMELYON17-trained ResNet18 & 0.9052 & 0.9318 & 0.9322 \\
 
 Under the source-trained representation, FedAvg-style weighting reached 0.9991 source-training accuracy while generalizing worse to center 2 than equal-client or dominant-source-downweighted weighting. The result supports the narrow observation that stronger source fit and sample-proportional influence do not automatically imply better external-center generalization.
 
-\subsection{PathoAlign center-subspace projection branch}
+\subsection{Paired-Acquisition Neural Factorization center-subspace projection branch}
 A separate CAMELYON17 mechanism branch asked whether source-center information in the CAMELYON17-trained feature substrate could be attenuated without deleting tumor signal. Learned adversarial and subtractive variants did not materially reduce post-hoc center leakage. An explicit supervised center-subspace projection did: fitting a linear center classifier on an internal calibration split, removing the top right-singular directions of the centered classifier weight matrix, and probing on a separate internal split reduced center decodability while leaving tumor AUC essentially unchanged.
 
 \begin{table}[!htbp]
@@ -285,9 +285,9 @@ The study sequence follows the learning pipeline:
 \begin{itemize}[leftmargin=*]
   \item \textbf{PCam} establishes patch-level classification, uncertainty, and threshold-analysis infrastructure.
   \item \textbf{PANDA MIL} tests slide-level aggregation from pathology foundation-model feature bags.
-  \item \textbf{Earlier PathoAlign} falsifies unconditional site removal and motivates paired supervision.
-  \item \textbf{Synthetic PathoAlign} measures recovery when the ground-truth latent factors are known.
-  \item \textbf{SCORPION PathoAlign} tests paired-acquisition separation on real human tissue across multiple representation families.
+  \item \textbf{Earlier Paired-Acquisition Neural Factorization} falsifies unconditional site removal and motivates paired supervision.
+  \item \textbf{Synthetic Paired-Acquisition Neural Factorization} measures recovery when the ground-truth latent factors are known.
+  \item \textbf{SCORPION Paired-Acquisition Neural Factorization} tests paired-acquisition separation on real human tissue across multiple representation families.
   \item \textbf{PANDA federated stress} audits sample-volume dominance under controlled label-process misalignment.
   \item \textbf{CAMELYON17} tests related aggregation hypotheses under natural held-out-center shift and tests whether explicit center-subspace projection can attenuate center leakage without collapsing tumor signal.
   \item \textbf{Communication, privacy-noise, and infrastructure studies} bound systems constraints without claiming that deployment is solved.
