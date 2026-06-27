@@ -25,7 +25,7 @@ class TestEnvironmentDetector:
 
     def test_detect_production_from_deployment_env_var(self):
         """Test production environment detection from DEPLOYMENT_ENV variable."""
-        with patch.dict(os.environ, {"DEPLOYMENT_ENV": "production"}):
+        with patch.dict(os.environ, {"DEPLOYMENT_ENV": "production"}, clear=True):
             detector = SecurityEnvironmentDetector()
             env = detector.detect()
             assert env == SecurityEnvironment.PRODUCTION

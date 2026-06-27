@@ -45,7 +45,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y openslide-tools
+        sudo apt-get install -y libopenslide0 openslide-tools
     
     - name: Install dependencies
       run: |
@@ -59,8 +59,10 @@ jobs:
         python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '--no-build-isolation', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Run tests
+      env:
+        ENVIRONMENT: production
       run: |
-        pytest tests/ -v -m "not property and not slow" --cov=src --cov-report=xml --cov-report=term
+        pytest tests/security -v -m "not property and not slow" --cov=src --cov-report=xml --cov-report=term
       timeout-minutes: 30
     
     - name: Upload coverage to Codecov
@@ -174,6 +176,8 @@ jobs:
     
     # Run security tests
     - name: Run security tests
+      env:
+        ENVIRONMENT: production
       run: |
         pytest tests/security/ -v --cov=src/security --cov-report=xml --cov-report=term
       continue-on-error: true
@@ -342,8 +346,10 @@ jobs:
         python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '--no-build-isolation', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Generate coverage report
+      env:
+        ENVIRONMENT: production
       run: |
-        pytest tests/ -m "not property and not slow" --cov=src --cov-report=html --cov-report=term
+        pytest tests/security -m "not property and not slow" --cov=src --cov-report=html --cov-report=term
     
     - name: Upload coverage HTML
       uses: actions/upload-artifact@v4

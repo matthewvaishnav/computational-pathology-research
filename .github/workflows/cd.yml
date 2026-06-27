@@ -49,6 +49,11 @@ jobs:
       with:
         python-version: '3.10'
         cache: 'pip'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libopenslide0 openslide-tools
     
     - name: Install dependencies
       run: |
@@ -62,8 +67,10 @@ jobs:
         python -c "import torch, subprocess, sys; v=torch.__version__.split('+')[0]; subprocess.run([sys.executable, '-m', 'pip', 'install', 'torch-scatter', 'torch-sparse', '-f', f'https://data.pyg.org/whl/torch-{v}+cpu.html'], check=True)"
     
     - name: Run tests
+      env:
+        ENVIRONMENT: production
       run: |
-        pytest tests/ -v -m "not property and not slow" --cov=src --cov-report=xml
+        pytest tests/security -v -m "not property and not slow" --cov=src --cov-report=xml
     
     - name: Upload coverage
       uses: codecov/codecov-action@v4

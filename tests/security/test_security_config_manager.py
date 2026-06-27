@@ -191,7 +191,10 @@ research:
 
     def test_config_immutability(self, sample_config_file):
         """Test configuration cannot be modified after loading."""
-        manager = SecurityConfigManager(config_path=sample_config_file)
+        manager = SecurityConfigManager(
+            config_path=sample_config_file,
+            environment=SecurityEnvironment.PRODUCTION,
+        )
 
         # Attempting to modify should not affect internal config
         config = manager.get_config_for_environment(SecurityEnvironment.PRODUCTION)

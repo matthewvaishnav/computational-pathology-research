@@ -161,10 +161,14 @@ jobs:
         pip install -e ".[foundation]"
     
     - name: Run security unit tests
+      env:
+        ENVIRONMENT: production
       run: |
         pytest tests/security/ -v --cov=src/security --cov-report=xml --cov-report=term
     
     - name: Run security property tests
+      env:
+        ENVIRONMENT: production
       run: |
         pytest tests/security/ -v -m property --hypothesis-show-statistics
       continue-on-error: true
