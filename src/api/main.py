@@ -41,6 +41,7 @@ from src.api.security import (
     log_security_event,
     validate_security_configuration,
 )
+from src.api.middleware import security_headers_middleware
 
 # Database and monitoring
 from src.platform.database import DatabaseManager, initialize_database
@@ -92,6 +93,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
     max_age=3600,
 )
+app.middleware("http")(security_headers_middleware)
 
 # Add rate limiting
 app.state.limiter = limiter
@@ -195,7 +197,7 @@ def main():
     app.middleware("http")(security_headers_middleware)
 
     # Get safe host binding
-    safe_host = NetworkBindingManager.get_safe_host()
+    safe_host = NetworkBindingManager().get_safe_host()
 
     # Run server
     uvicorn.run(app, host=safe_host, port=8000, log_level="info", access_log=True)

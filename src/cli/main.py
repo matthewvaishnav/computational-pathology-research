@@ -308,7 +308,7 @@ def web():
         from src.platform.security.network_binding import NetworkBindingManager
         from src.web.app import app
 
-        safe_host = NetworkBindingManager.get_safe_host()
+        safe_host = NetworkBindingManager().get_safe_host()
         click.echo(
             f"📍 Access at: http://{safe_host if safe_host != '0.0.0.0' else 'localhost'}:5000"  # nosec B104
         )

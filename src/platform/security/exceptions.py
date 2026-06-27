@@ -35,3 +35,11 @@ class RateLimitError(SecurityError):
 
 class InputSanitizationError(SecurityError):
     """Exception raised when input sanitization fails."""
+
+
+class NetworkBindingSecurityError(SecurityError):
+    """Raised when a requested network binding violates security policy."""
+
+
+class URLSecurityError(SecurityError):
+    """Raised when a URL is unsafe for network access."""

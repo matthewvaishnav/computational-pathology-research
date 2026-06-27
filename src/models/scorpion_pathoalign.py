@@ -59,14 +59,10 @@ class ScorpionProjection(nn.Module):
             raise ValueError(f"Unknown method: {method}")
         self.method = method
         self.config = config
-        self.biological = _mlp(
-            config.input_dim, config.hidden_dim, config.biological_dim
-        )
+        self.biological = _mlp(config.input_dim, config.hidden_dim, config.biological_dim)
 
         if method == "pathoalign":
-            self.acquisition = _mlp(
-                config.input_dim, config.hidden_dim, config.acquisition_dim
-            )
+            self.acquisition = _mlp(config.input_dim, config.hidden_dim, config.acquisition_dim)
             decoder_dim = config.biological_dim + config.acquisition_dim
             self.scanner_from_b = nn.Sequential(
                 nn.Linear(config.biological_dim, 128),
@@ -94,9 +90,7 @@ class ScorpionProjection(nn.Module):
         biological = self.biological(inputs)
         acquisition = self.acquisition(inputs) if self.acquisition is not None else None
         decoder_input = (
-            torch.cat([biological, acquisition], dim=1)
-            if acquisition is not None
-            else biological
+            torch.cat([biological, acquisition], dim=1) if acquisition is not None else biological
         )
         output: dict[str, torch.Tensor | None] = {
             "biological": biological,
@@ -107,9 +101,7 @@ class ScorpionProjection(nn.Module):
         }
         if self.method == "pathoalign":
             output["scanner_b"] = self.scanner_from_b(
-                gradient_reverse(
-                    biological, self.config.gradient_reversal_strength
-                )
+                gradient_reverse(biological, self.config.gradient_reversal_strength)
             )
             output["scanner_a"] = self.scanner_from_a(acquisition)
         return output
@@ -128,13 +120,8 @@ def supervised_contrastive_loss(
     if not torch.all(positives.sum(dim=1) > 0):
         raise ValueError("Every anchor requires another scanner view as a positive.")
     denominator_logits = logits.masked_fill(identity, float("-inf"))
-    log_probability = logits - torch.logsumexp(
-        denominator_logits, dim=1, keepdim=True
-    )
-    return -(
-        log_probability.masked_fill(~positives, 0.0).sum(dim=1)
-        / positives.sum(dim=1)
-    ).mean()
+    log_probability = logits - torch.logsumexp(denominator_logits, dim=1, keepdim=True)
+    return -(log_probability.masked_fill(~positives, 0.0).sum(dim=1) / positives.sum(dim=1)).mean()
 
 
 def variance_loss(representation: torch.Tensor) -> torch.Tensor:
@@ -149,9 +136,7 @@ def covariance_loss(representation: torch.Tensor) -> torch.Tensor:
     return off_diagonal.square().sum() / representation.shape[1]
 
 
-def cross_covariance_loss(
-    biological: torch.Tensor, acquisition: torch.Tensor
-) -> torch.Tensor:
+def cross_covariance_loss(biological: torch.Tensor, acquisition: torch.Tensor) -> torch.Tensor:
     biological = biological - biological.mean(dim=0, keepdim=True)
     acquisition = acquisition - acquisition.mean(dim=0, keepdim=True)
     cross_covariance = biological.T @ acquisition / max(1, len(biological) - 1)
@@ -174,16 +159,12 @@ def scanner_dependence_loss(
     standardized_b = centered_b / torch.sqrt(
         biological.var(dim=0, unbiased=False, keepdim=True) + 1e-4
     )
-    one_hot = F.one_hot(scanner_labels, num_classes=n_scanners).to(
-        dtype=biological.dtype
-    )
+    one_hot = F.one_hot(scanner_labels, num_classes=n_scanners).to(dtype=biological.dtype)
     centered_scanner = one_hot - one_hot.mean(dim=0, keepdim=True)
     standardized_scanner = centered_scanner / torch.sqrt(
         one_hot.var(dim=0, unbiased=False, keepdim=True) + 1e-4
     )
-    dependence = standardized_b.T @ standardized_scanner / max(
-        1, len(biological) - 1
-    )
+    dependence = standardized_b.T @ standardized_scanner / max(1, len(biological) - 1)
     return dependence.square().mean()
 
 
@@ -198,9 +179,7 @@ def projection_loss(
     biological = output["biological"]
     config = model.config
     parts: dict[str, torch.Tensor] = {
-        "contrastive": supervised_contrastive_loss(
-            biological, region_labels, config.temperature
-        ),
+        "contrastive": supervised_contrastive_loss(biological, region_labels, config.temperature),
         "reconstruction": F.mse_loss(output["reconstruction"], inputs),
         "variance_b": variance_loss(biological),
         "covariance_b": covariance_loss(biological),
@@ -216,13 +195,9 @@ def projection_loss(
         acquisition = output["acquisition"]
         parts["scanner_b"] = F.cross_entropy(output["scanner_b"], scanner_labels)
         parts["scanner_a"] = F.cross_entropy(output["scanner_a"], scanner_labels)
-        parts["scanner_dependence"] = scanner_dependence_loss(
-            biological, scanner_labels
-        )
+        parts["scanner_dependence"] = scanner_dependence_loss(biological, scanner_labels)
         parts["variance_a"] = variance_loss(acquisition)
-        parts["cross_covariance"] = cross_covariance_loss(
-            biological, acquisition
-        )
+        parts["cross_covariance"] = cross_covariance_loss(biological, acquisition)
         total = (
             total
             + config.scanner_adversary_weight * parts["scanner_b"]

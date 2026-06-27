@@ -14,9 +14,7 @@ def test_canonical_data_provenance_document_exists():
 
 
 def test_camelyon_status_does_not_misstate_research_data():
-    text = (ROOT / "docs" / "CAMELYON_TRAINING_STATUS.md").read_text(
-        encoding="utf-8"
-    ).lower()
+    text = (ROOT / "docs" / "CAMELYON_TRAINING_STATUS.md").read_text(encoding="utf-8").lower()
     forbidden = (
         "current results are on synthetic data",
         "camelyon results are synthetic",
@@ -28,8 +26,6 @@ def test_camelyon_status_does_not_misstate_research_data():
 
 
 def test_active_overview_has_data_provenance_boundary():
-    text = (ROOT / "docs" / "overview" / "index.md").read_text(
-        encoding="utf-8"
-    )
+    text = (ROOT / "docs" / "overview" / "index.md").read_text(encoding="utf-8")
     assert "real human histopathology" in text
     assert "software-test fixtures" in text
