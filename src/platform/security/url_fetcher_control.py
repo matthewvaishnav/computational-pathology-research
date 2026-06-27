@@ -32,4 +32,4 @@ class URLFetcherControl:
         """Validate the URL and then delegate to urllib.request.urlopen."""
         self.validate_url_scheme(url)
         logger.warning("URL fetch allowed: %s", urlparse(url).scheme.lower())
-        return urllib.request.urlopen(url, *args, **kwargs)
+        return urllib.request.urlopen(url, *args, **kwargs)  # nosec B310

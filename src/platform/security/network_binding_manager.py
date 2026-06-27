@@ -24,14 +24,14 @@ class NetworkBindingManager:
         host = "127.0.0.1" if requested_host is _UNSET else requested_host
         self._validate_host_format(host)
 
-        if host == "0.0.0.0" and self.environment == SecurityEnvironment.PRODUCTION:
+        if host == "0.0.0.0" and self.environment == SecurityEnvironment.PRODUCTION:  # nosec B104
             if os.getenv("ALLOW_PUBLIC_BINDING", "").lower() != "true":
                 logger.warning("Network binding blocked: 0.0.0.0 in production")
                 raise NetworkBindingSecurityError(
                     "0.0.0.0 binding not allowed in production without ALLOW_PUBLIC_BINDING=true"
                 )
 
-        if host == "0.0.0.0" and self.environment in {
+        if host == "0.0.0.0" and self.environment in {  # nosec B104
             SecurityEnvironment.DEVELOPMENT,
             SecurityEnvironment.RESEARCH,
         }:

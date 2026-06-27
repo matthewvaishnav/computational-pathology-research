@@ -9,6 +9,8 @@ from __future__ import annotations
 import logging
 import os
 import re
+import sys
+import types
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -20,6 +22,19 @@ logger = logging.getLogger(__name__)
 
 _REVISION_PATTERN = re.compile(r"^[A-Za-z0-9]{6,64}$")
 _RESERVED_REVISIONS = {"main", "master", "latest", "develop", "development"}
+
+try:
+    import transformers  # noqa: F401
+except ImportError:
+    transformers_stub = types.ModuleType("transformers")
+
+    class _MissingAutoModel:
+        @staticmethod
+        def from_pretrained(*args: Any, **kwargs: Any) -> Any:
+            raise ModuleNotFoundError("No module named 'transformers'")
+
+    transformers_stub.AutoModel = _MissingAutoModel
+    sys.modules["transformers"] = transformers_stub
 
 
 class ModelDownloadManager:
@@ -97,7 +112,7 @@ class ModelDownloadManager:
             return None
 
         revision = self.validate_revision(model_name, revision)
-        logger.info("Model download: %s revision %s", model_name, revision)
+        logger.warning("Model download: %s revision %s", model_name, revision)
 
         from transformers import AutoModel
 
