@@ -19,8 +19,7 @@ def test_controlled_boundaries_are_unique_and_frozen():
     }
 
     boundaries = {
-        (int(row.n), row.method): int(row.sustained_crossing)
-        for row in frame.itertuples()
+        (int(row.n), row.method): int(row.sustained_crossing) for row in frame.itertuples()
     }
     assert boundaries == {
         (750, "hybrid_curriculum"): 175,
@@ -55,9 +54,7 @@ def test_matched_budget_headline_is_fixed_and_ordered():
     assert (frame["pair_loss_steps"] == 100).all()
     assert frame["mean_universal_biological_score"].between(0, 1).all()
 
-    scores = frame.set_index("allocation")[
-        "mean_universal_biological_score"
-    ]
+    scores = frame.set_index("allocation")["mean_universal_biological_score"]
     assert scores["100x64"] > scores["50x128"]
     assert scores["200x32"] > scores["50x128"]
     assert abs(scores["200x32"] - scores["100x64"]) < 0.002
@@ -98,17 +95,14 @@ def test_joint_matched_budget_allocation_means_are_frozen():
         (12800, 200): 64,
     }
     realized = {
-        (int(row.budget), int(row.pair_count)):
-            int(row.anchor_repetitions_requested)
+        (int(row.budget), int(row.pair_count)): int(row.anchor_repetitions_requested)
         for row in frame.itertuples()
     }
     assert realized == expected_repetitions
 
 
 def test_seed_blocked_global_allocation_contrasts_are_complete():
-    frame = pd.read_csv(
-        EVIDENCE / "matched_budget_global_allocation_contrasts.csv"
-    )
+    frame = pd.read_csv(EVIDENCE / "matched_budget_global_allocation_contrasts.csv")
 
     assert len(frame) == 6
     assert not frame.duplicated(["budget", "comparison"]).any()

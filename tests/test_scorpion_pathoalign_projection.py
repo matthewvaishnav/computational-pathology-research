@@ -80,9 +80,7 @@ def test_contrastive_loss_rewards_same_region_alignment():
     random_representation = torch.randn_like(aligned)
 
     aligned_loss = supervised_contrastive_loss(aligned, region_labels, 0.1)
-    random_loss = supervised_contrastive_loss(
-        random_representation, region_labels, 0.1
-    )
+    random_loss = supervised_contrastive_loss(random_representation, region_labels, 0.1)
     assert aligned_loss < random_loss
 
 
@@ -122,9 +120,7 @@ def test_gradient_reversal_changes_biological_gradient_direction():
     loss.backward()
 
     gradients = [
-        parameter.grad
-        for parameter in model.biological.parameters()
-        if parameter.grad is not None
+        parameter.grad for parameter in model.biological.parameters() if parameter.grad is not None
     ]
     assert gradients
     assert all(torch.isfinite(gradient).all() for gradient in gradients)

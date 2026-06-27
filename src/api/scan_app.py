@@ -36,6 +36,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         return response
 
 

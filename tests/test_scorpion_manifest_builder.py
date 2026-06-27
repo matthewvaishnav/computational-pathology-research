@@ -61,9 +61,11 @@ def test_slide_folds_are_deterministic_balanced_and_leakage_safe(tmp_path: Path)
         seed=2026,
     )
     assert first == second
-    assert max(list(first.values()).count(fold) for fold in set(first.values())) - min(
-        list(first.values()).count(fold) for fold in set(first.values())
-    ) <= 1
+    assert (
+        max(list(first.values()).count(fold) for fold in set(first.values()))
+        - min(list(first.values()).count(fold) for fold in set(first.values()))
+        <= 1
+    )
 
     rows_with_folds = MODULE.with_folds(rows, first)
     split_rows = MODULE.rotating_split_rows(rows_with_folds, test_fold=0, n_folds=5)

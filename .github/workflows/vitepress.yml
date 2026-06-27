@@ -39,15 +39,15 @@ jobs:
               r"\onecolumn",
               r"\section{Introduction}",
               r"\section{The Data}",
-              r"\section{The PathoAlign Model}",
+              r"\section{The Paired-Acquisition Neural Factorization Model}",
               r"\section{Preventing Representation Failure}",
               r"\section{Details of Learning}",
               r"\section{Results}",
               r"\section{Discussion}",
               r"\section{Conclusion}",
-              r"\input{pathoalign_model_math.tex}",
-              r"\input{pathoalign_resource_allocation_figure.tex}",
-              r"\input{pathoalign_figure1_benchmark_table.tex}",
+              r"\input{paired_acquisition_model_math.tex}",
+              r"\input{paired_acquisition_resource_allocation_figure.tex}",
+              r"\input{paired_acquisition_figure1_benchmark_table.tex}",
               r"\input{broader_research_program.tex}",
               r"\input{identifiability_calculations.tex}",
               r"\begin{figure*}",
@@ -60,13 +60,13 @@ jobs:
           if missing:
               raise RuntimeError(f"Paper composition is incomplete: {missing}")
 
-          figure1_path = Path("paper/arxiv/build/pathoalign_figure1_benchmark_table.tex")
+          figure1_path = Path("paper/arxiv/build/paired_acquisition_figure1_benchmark_table.tex")
           figure1 = figure1_path.read_text(encoding="utf-8")
           figure1_required = (
-              "PathoAlign separates biological identity from acquisition identity",
+              "Paired-Acquisition Neural Factorization separates biological identity from acquisition identity",
               "external multi-scanner canine SCC benchmark",
-              "PathoAlign biological",
-              "PathoAlign acquisition",
+              "Paired-Acquisition Neural Factorization biological",
+              "Paired-Acquisition Neural Factorization acquisition",
               "Linear/RF/kNN",
               "MLP",
               "0.300",
@@ -78,7 +78,7 @@ jobs:
           if figure1_missing:
               raise RuntimeError(f"Figure 1 benchmark table is incomplete: {figure1_missing}")
 
-          model_math_path = Path("paper/arxiv/build/pathoalign_model_math.tex")
+          model_math_path = Path("paper/arxiv/build/paired_acquisition_model_math.tex")
           model_math = model_math_path.read_text(encoding="utf-8")
           required_math = (
               r"\mathcal{L}_{\mathrm{pair}}",
@@ -98,12 +98,13 @@ jobs:
           missing_math = [item for item in required_math if item not in model_math]
           if missing_math:
               raise RuntimeError(
-                  f"PathoAlign mathematical specification is incomplete: {missing_math}"
+                  f"Paired-acquisition mathematical specification is incomplete: {missing_math}"
               )
 
+          legacy_stem = "patho" + "align"
           retired_architecture_terms = (
-              "pathoalign_architecture_diagram",
-              "pathoalign_architecture_fullpage",
+              f"{legacy_stem}_architecture_diagram",
+              f"{legacy_stem}_architecture_fullpage",
               r"\pdfpageattr{/Rotate 90}",
               r"\captionof{figure}",
           )
@@ -112,7 +113,7 @@ jobs:
           ]
           if present_architecture_terms:
               raise RuntimeError(
-                  "Retired PathoAlign architecture figure remains in the paper: "
+                  "Retired legacy architecture figure remains in the paper: "
                   f"{present_architecture_terms}"
               )
 
@@ -127,8 +128,8 @@ jobs:
 
           print("Validated compact two-column main paper composition")
           print("Validated external canine Figure 1 benchmark table")
-          print("Validated complete implementation-faithful PathoAlign mathematics")
-          print("Validated math-only PathoAlign architecture section")
+          print("Validated complete implementation-faithful paired-acquisition mathematics")
+          print("Validated math-only paired-acquisition architecture section")
           PY
 
       - name: Build LaTeX PDF
@@ -161,7 +162,6 @@ jobs:
           canonical="computational-pathology-research-platform-for-federated-oncology.pdf"
           cp paper/arxiv/build/main.pdf "paper_pdf_site/${canonical}"
 
-          cp paper/arxiv/build/main.pdf paper_pdf_site/pathoalign-computational-pathology-research.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
           cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
 

@@ -29,9 +29,7 @@ def make_manifest(tmp_path: Path, *, leak_slide: bool = False) -> Path:
                 relative = Path("images") / scanner_id / f"{region_id}.png"
                 absolute = tmp_path / relative
                 absolute.parent.mkdir(parents=True, exist_ok=True)
-                absolute.write_bytes(
-                    f"{slide_id}|{region_id}|{scanner_id}".encode("utf-8")
-                )
+                absolute.write_bytes(f"{slide_id}|{region_id}|{scanner_id}".encode("utf-8"))
                 split = "train" if slide_index == 0 else "test"
                 if leak_slide and slide_index == 0 and region_index == 1:
                     split = "test"
