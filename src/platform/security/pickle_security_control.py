@@ -98,7 +98,7 @@ class PickleSecurityControl:
             trusted_paths: List of trusted directory paths for pickle files
             environment: Security environment (development/staging/production)
         """
-        self.trusted_paths = [Path(p).resolve() for p in (trusted_paths or [])]
+        self.trusted_paths = [Path(p) for p in (trusted_paths or [])]
 
         # Determine environment
         env_str = environment or os.getenv("ENVIRONMENT", "development")
@@ -133,9 +133,8 @@ class PickleSecurityControl:
             # Check if source is under any trusted path
             for trusted_path in self.trusted_paths:
                 try:
-                    # Check if source is relative to trusted path
-                    source.relative_to(trusted_path)
-                    return True
+                    if source.is_relative_to(trusted_path.resolve()):
+                        return True
                 except ValueError:
                     # Not relative to this trusted path, try next
                     continue
