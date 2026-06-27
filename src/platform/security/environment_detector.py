@@ -28,6 +28,8 @@ class SecurityEnvironmentDetector:
             raw_value = os.environ.get("DEPLOYMENT_ENV", "")
 
         normalized = raw_value.strip().lower()
+        if normalized == "test":
+            normalized = SecurityEnvironment.TESTING.value
 
         if not normalized:
             logger.warning("No environment specified; defaulting to DEVELOPMENT")

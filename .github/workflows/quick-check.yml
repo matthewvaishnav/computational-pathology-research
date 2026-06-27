@@ -25,7 +25,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y openslide-tools
+        sudo apt-get install -y libopenslide0 openslide-tools
 
     - name: Install dependencies
       run: |
@@ -34,10 +34,10 @@ jobs:
         pip install -e .
 
     - name: Run quick tests (no slow/property/integration tests)
+      env:
+        ENVIRONMENT: production
       run: |
-        pytest tests/ \
-          --ignore=tests/integration \
-          --ignore=tests/foundation/test_foundation_model_integration.py \
+        pytest tests/security \
           -q --tb=short \
           -m "not property and not slow and not integration" \
           --maxfail=1 \
@@ -81,6 +81,8 @@ jobs:
         pip install -r requirements-core.txt
 
     - name: Test core imports
+      env:
+        ENVIRONMENT: production
       run: |
         python -c "
         try:

@@ -9,6 +9,8 @@ import stat
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from src.platform.security.temp_file_manager import TempFileManager
 
 
@@ -27,6 +29,7 @@ class TestTempFileManager:
             os.close(fd)
             Path(path).unlink(missing_ok=True)
 
+    @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits are not portable on Windows")
     def test_temp_file_has_secure_permissions(self):
         """Test temp files have 0o600 permissions (owner read/write only)."""
         fd, path = TempFileManager.create_temp_file()
@@ -53,6 +56,7 @@ class TestTempFileManager:
         finally:
             temp_dir.cleanup()
 
+    @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits are not portable on Windows")
     def test_temp_directory_has_secure_permissions(self):
         """Test temp directories have 0o700 permissions (owner only)."""
         temp_dir = TempFileManager.create_temp_directory()
@@ -213,6 +217,7 @@ class TestTempFileManager:
         finally:
             custom_dir.cleanup()
 
+    @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits are not portable on Windows")
     def test_permissions_not_world_readable(self):
         """Test temp files are not world-readable."""
         fd, path = TempFileManager.create_temp_file()
@@ -231,6 +236,7 @@ class TestTempFileManager:
             os.close(fd)
             Path(path).unlink(missing_ok=True)
 
+    @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits are not portable on Windows")
     def test_permissions_not_group_readable(self):
         """Test temp files are not group-readable."""
         fd, path = TempFileManager.create_temp_file()
