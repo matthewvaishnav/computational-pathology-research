@@ -47,6 +47,7 @@ FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 AS gpu
 # Install Python
 RUN apt-get update && apt-get install -y \
     python3.9 \
+    python-is-python3 \
     python3-pip \
     libopenslide0 \
     libvips42 \
