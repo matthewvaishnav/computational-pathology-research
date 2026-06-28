@@ -35,13 +35,13 @@ from src.api.errors import (
     not_found_handler,
     validation_error_handler,
 )
+from src.api.middleware import security_headers_middleware
 from src.api.routers import admin, analysis, auth, monitoring
 from src.api.security import (
     limiter,
     log_security_event,
     validate_security_configuration,
 )
-from src.api.middleware import security_headers_middleware
 
 # Database and monitoring
 from src.platform.database import DatabaseManager, initialize_database
