@@ -152,7 +152,7 @@ jobs:
     name: Deploy to Development
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' || inputs.environment == 'dev'
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'dev' && needs.build.result == 'success'
     environment:
       name: development
       url: https://dev.histocore.example.com
@@ -211,8 +211,8 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [build, deploy-dev]
-    if: (github.ref == 'refs/heads/main' && needs.deploy-dev.result == 'success') || inputs.environment == 'staging'
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'staging' && needs.build.result == 'success'
     environment:
       name: staging
       url: https://staging.histocore.example.com
@@ -278,8 +278,8 @@ jobs:
   deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build, deploy-staging]
-    if: inputs.environment == 'prod'
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod' && needs.build.result == 'success'
     environment:
       name: production
       url: https://histocore.example.com
