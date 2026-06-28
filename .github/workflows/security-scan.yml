@@ -48,10 +48,13 @@ jobs:
       
       - name: Run OWASP ZAP Baseline Scan
         run: |
+          mkdir -p zap-work
+          cp .zap/rules.tsv zap-work/rules.tsv
+          chmod 777 zap-work
           docker pull ghcr.io/zaproxy/zaproxy:stable
           docker run --rm \
             --network=host \
-            -v "${{ github.workspace }}:/zap/wrk/:rw" \
+            -v "${{ github.workspace }}/zap-work:/zap/wrk/:rw" \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
               -t http://localhost:8000 \
@@ -61,7 +64,7 @@ jobs:
               -a \
               -j \
               -l WARN \
-              -c .zap/rules.tsv
+              -c rules.tsv
       
       - name: Upload ZAP Report
         if: always()
@@ -69,9 +72,9 @@ jobs:
         with:
           name: zap-scan-report
           path: |
-            report_html.html
-            report_json.json
-            report_md.md
+            zap-work/report_html.html
+            zap-work/report_json.json
+            zap-work/report_md.md
           retention-days: 30
   
   bandit-scan:
