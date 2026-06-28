@@ -59,8 +59,8 @@ function Copy-RequiredDirectory {
     if (!(Test-Path $source)) {
         throw "Required directory not found: $source"
     }
-    New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
-    Copy-Item $source $target -Recurse -Force
+    New-Item -ItemType Directory -Force $target | Out-Null
+    Get-ChildItem -LiteralPath $source -Force | Copy-Item -Destination $target -Recurse -Force
 }
 
 function Copy-OptionalDirectory {
@@ -71,8 +71,8 @@ function Copy-OptionalDirectory {
     $source = Join-Path $SourceRoot $RelativePath
     $target = Join-Path $DestinationRoot $TargetRelativePath
     if (Test-Path $source) {
-        New-Item -ItemType Directory -Force (Split-Path $target) | Out-Null
-        Copy-Item $source $target -Recurse -Force
+        New-Item -ItemType Directory -Force $target | Out-Null
+        Get-ChildItem -LiteralPath $source -Force | Copy-Item -Destination $target -Recurse -Force
     } else {
         Write-Warning "Skipping optional missing directory: $source"
     }
@@ -88,11 +88,61 @@ function New-TextFile {
     Set-Content -Path $target -Value $Content -Encoding UTF8
 }
 
+function Convert-LegacyPublicNames {
+    $textExtensions = @(
+        ".bib", ".cff", ".csv", ".gitignore", ".json", ".md", ".ps1", ".py", ".tex", ".txt", ".yml", ".yaml"
+    )
+    $literalTextFiles = @("LICENSE", "requirements.txt")
+    $replacements = @(
+        @("scorpion_pathoalign", "scorpion_paired_acquisition"),
+        @("run_pathoalign", "run_paired_acquisition"),
+        @("analyze_pathoalign", "analyze_paired_acquisition"),
+        @("pathoalign_dep", "paired_acquisition_dep"),
+        @("pathoalign_", "paired_acquisition_"),
+        @("https://github.com/matthewvaishnav/computational-pathology-research", "https://github.com/matthewvaishnav/paired-acquisition-factorization-scorpion"),
+        @("Repository target: \texttt{paired-acquisition-factorization-scorpion}", "\href{https://github.com/matthewvaishnav/paired-acquisition-factorization-scorpion}{repository}; \href{https://matthewvaishnav.github.io/paired-acquisition-factorization-scorpion/paired-acquisition-factorization-scorpion.pdf}{PDF}"),
+        @("PATHOALIGN", "PAIRED-ACQUISITION NEURAL FACTORIZATION"),
+        @("PathoAlign", "Paired-Acquisition Neural Factorization"),
+        @("pathoalign", "paired_acquisition")
+    )
+
+    Get-ChildItem -LiteralPath $DestinationRoot -Recurse -Force -File |
+        Where-Object {
+            $_.FullName -notmatch "\\.git\\" -and
+            ($textExtensions -contains $_.Extension -or $literalTextFiles -contains $_.Name)
+        } |
+        ForEach-Object {
+            $content = Get-Content -LiteralPath $_.FullName -Raw
+            $updated = $content
+            foreach ($entry in $replacements) {
+                $updated = $updated.Replace($entry[0], $entry[1])
+            }
+            if ($updated -ne $content) {
+                Set-Content -LiteralPath $_.FullName -Value $updated -Encoding UTF8
+            }
+        }
+
+    Get-ChildItem -LiteralPath $DestinationRoot -Recurse -Force |
+        Where-Object { $_.FullName -notmatch "\\.git\\" -and $_.Name -match "(?i)pathoalign" } |
+        Sort-Object { $_.FullName.Length } -Descending |
+        ForEach-Object {
+            $newName = $_.Name -replace "(?i)pathoalign", "paired_acquisition"
+            Rename-Item -LiteralPath $_.FullName -NewName $newName
+        }
+}
+
 if (!(Test-Path $SourceRoot)) {
     throw "SourceRoot does not exist: $SourceRoot"
 }
 
 New-Item -ItemType Directory -Force $DestinationRoot | Out-Null
+$resolvedDestination = (Resolve-Path $DestinationRoot).Path
+if ($resolvedDestination -ne "C:\Users\matth\paired-acquisition-factorization-scorpion") {
+    throw "Refusing to clean unexpected DestinationRoot: $resolvedDestination"
+}
+Get-ChildItem -LiteralPath $DestinationRoot -Force |
+    Where-Object { $_.Name -ne ".git" } |
+    Remove-Item -Recurse -Force
 
 # Core method code and experiment runners.
 Copy-RequiredDirectory "src\models" "src\models"
@@ -115,11 +165,16 @@ Copy-OptionalDirectory "results\scorpion\pathoalign_calibration" "results\calibr
 # Paper source snapshot. This keeps the exact public-program PDF source available
 # at split time. A later child-repo pass can trim the paper down to SCORPION only.
 Copy-RequiredFile "paper\arxiv\main.tex" "paper\arxiv\main.tex"
-Copy-RequiredFile "paper\arxiv\pathoalign_model_math.tex" "paper\arxiv\pathoalign_model_math.tex"
-Copy-RequiredFile "paper\arxiv\pathoalign_figure1_benchmark_table.tex" "paper\arxiv\pathoalign_figure1_benchmark_table.tex"
-Copy-RequiredFile "paper\arxiv\pathoalign_resource_allocation_figure.tex" "paper\arxiv\pathoalign_resource_allocation_figure.tex"
+Copy-RequiredFile "paper\arxiv\paired_acquisition_model_math.tex" "paper\arxiv\paired_acquisition_model_math.tex"
+Copy-RequiredFile "paper\arxiv\paired_acquisition_figure1_benchmark_table.tex" "paper\arxiv\paired_acquisition_figure1_benchmark_table.tex"
+Copy-RequiredFile "paper\arxiv\paired_acquisition_resource_allocation_figure.tex" "paper\arxiv\paired_acquisition_resource_allocation_figure.tex"
 Copy-RequiredFile "paper\arxiv\study_specific_packages.tex" "paper\arxiv\study_specific_packages.tex"
 Copy-RequiredFile "paper\arxiv\broader_research_program.tex" "paper\arxiv\broader_research_program.tex"
+Copy-RequiredFile "paper\arxiv\identifiability_calculations.tex" "paper\arxiv\identifiability_calculations.tex"
+Copy-RequiredFile "paper\arxiv\identifiability_calculations_part1.tex" "paper\arxiv\identifiability_calculations_part1.tex"
+Copy-RequiredFile "paper\arxiv\identifiability_calculations_part2a.tex" "paper\arxiv\identifiability_calculations_part2a.tex"
+Copy-RequiredFile "paper\arxiv\identifiability_calculations_part2b.tex" "paper\arxiv\identifiability_calculations_part2b.tex"
+Copy-RequiredFile "paper\arxiv\identifiability_calculations_part3a.tex" "paper\arxiv\identifiability_calculations_part3a.tex"
 Copy-RequiredFile "paper\arxiv\build_arxiv_package.py" "paper\arxiv\build_arxiv_package.py"
 Copy-OptionalFile "paper\arxiv\references.bib" "paper\arxiv\references.bib"
 
@@ -198,6 +253,13 @@ $gitignore = @"
 # Regenerable local outputs
 results/**/runs/
 results/**/fold_*/
+paper/paired-acquisition-factorization-scorpion.pdf
+paper/arxiv/*.aux
+paper/arxiv/*.bbl
+paper/arxiv/*.blg
+paper/arxiv/*.log
+paper/arxiv/*.out
+paper/arxiv/main.pdf
 paper/arxiv/build/
 paper/arxiv/*.zip
 
@@ -222,6 +284,19 @@ Pillow
 matplotlib
 "@
 New-TextFile "requirements.txt" $requirements
+
+$paperBuild = @'
+$ErrorActionPreference = "Stop"
+Set-Location (Join-Path $PSScriptRoot "arxiv")
+pdflatex -interaction=nonstopmode -halt-on-error main.tex
+bibtex main
+pdflatex -interaction=nonstopmode -halt-on-error main.tex
+pdflatex -interaction=nonstopmode -halt-on-error main.tex
+Copy-Item main.pdf ..\paired-acquisition-factorization-scorpion.pdf -Force
+Copy-Item main.pdf ..\..\paired-acquisition-factorization-scorpion.pdf -Force
+Write-Host "Built paired-acquisition-factorization-scorpion.pdf"
+'@
+New-TextFile "paper\build.ps1" $paperBuild
 
 $citation = @"
 cff-version: 1.2.0
@@ -267,13 +342,15 @@ Get-ChildItem $DestinationRoot -Recurse -Include *.npz,*.pt,*.pth,*.ckpt,*.safet
         Remove-Item $_.FullName -Force
     }
 
+Convert-LegacyPublicNames
+
 if ($InitializeGit) {
     Push-Location $DestinationRoot
     try {
         if (!(Test-Path ".git")) {
             git init | Out-Host
         }
-        git add README.md .gitignore requirements.txt CITATION.cff LICENSE docs paper scripts experiments src results | Out-Host
+        git add -A | Out-Host
         git status --short | Out-Host
     } finally {
         Pop-Location
