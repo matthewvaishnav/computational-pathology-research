@@ -54,6 +54,7 @@ jobs:
           cmd_options: '-a -j -l WARN'
           fail_action: true
           allow_issue_writing: false
+          artifact_name: zap-scan
       
       - name: Upload ZAP Report
         if: always()
