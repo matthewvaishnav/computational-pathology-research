@@ -47,14 +47,21 @@ jobs:
           ALLOWED_HOSTS: localhost
       
       - name: Run OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: 'http://localhost:8000'
-          rules_file_name: '.zap/rules.tsv'
-          cmd_options: '-a -j -l WARN'
-          fail_action: true
-          allow_issue_writing: false
-          artifact_name: zap-scan
+        run: |
+          docker pull ghcr.io/zaproxy/zaproxy:stable
+          docker run --rm \
+            --network=host \
+            -v "${{ github.workspace }}:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+              -t http://localhost:8000 \
+              -J report_json.json \
+              -w report_md.md \
+              -r report_html.html \
+              -a \
+              -j \
+              -l WARN \
+              -c .zap/rules.tsv
       
       - name: Upload ZAP Report
         if: always()
