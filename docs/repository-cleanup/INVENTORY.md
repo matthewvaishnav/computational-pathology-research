@@ -17,7 +17,7 @@ The classification is intentionally conservative. A path marked **review/relocat
   - `docs/VERIFIED_METRICS.json` (8.64 MiB);
   - `paper/arxiv/build/main.tex` (generated paper build output).
 - Generated coverage/result snapshots account for several of the largest duplicate files.
-- The frozen PathoAlign two-resource evidence chain is tracked and must remain reproducible.
+- The frozen Paired-Acquisition Neural Factorization two-resource evidence chain is tracked and must remain reproducible.
 
 ## Cleanup rules
 
@@ -26,7 +26,7 @@ The classification is intentionally conservative. A path marked **review/relocat
 3. Do not preserve generated output merely because it is already tracked. Generated artifacts need a documented reason to remain.
 4. Do not treat a skipped test as validation. Duplicate or obsolete tests must be consolidated or archived with an explanation.
 5. Do not weaken CI to hide failures. Split CI into fast core, optional subsystem, slow integration, and paper/reproducibility tiers.
-6. Do not make unconditional acquisition-component subtraction the default PathoAlign method; preserve the tumor-information leakage audits and the conditional low-rank direction.
+6. Do not make unconditional acquisition-component subtraction the default Paired-Acquisition Neural Factorization method; preserve the tumor-information leakage audits and the conditional low-rank direction.
 7. Preserve the canonical deployed PDF path `when-more-data-is-less-trustworthy.pdf`; keep `when-more-data-is-less-trustworthy-references-v2.pdf` only as a compatibility alias.
 
 ## Top-level directory classification
@@ -40,7 +40,7 @@ The classification is intentionally conservative. A path marked **review/relocat
 | `checkpoints/` | only `.gitkeep` | generated output | Remove the tracked placeholder if checkpoint paths are already ignored and documented. |
 | `cloud/` | 17 AWS/Azure/GCP deployment files | optional subsystem / likely historical archive | Verify whether any workflow exercises these files; do not present them as validated deployment infrastructure. |
 | `config/` | 3 production/PACS/model-revision files | optional subsystem | Distinguish production-era HistoCore configuration from active research configuration in `configs/`. |
-| `configs/` | 44 experiment/model/task configs | active research experiment | Preserve active Camelyon17, PANDA, federated, and PathoAlign configs; add ownership and entry-point mapping. |
+| `configs/` | 44 experiment/model/task configs | active research experiment | Preserve active Camelyon17, PANDA, federated, and Paired-Acquisition Neural Factorization configs; add ownership and entry-point mapping. |
 | `coverage_reports/` | 0.58 MiB generated JSON | generated output | Remove from tracking after confirming no documentation consumes it; keep coverage generation in CI artifacts. |
 | `data/` | 4 small manifest/placeholder files | active research data metadata | Preserve manifests and README; keep datasets and derived arrays untracked. |
 | `dataset_test_results/` | 13 dated summaries/results including duplicate coverage | generated output / historical evidence | Retain at most one compact, justified snapshot or move to archive; remove redundant timestamped copies. |
@@ -64,7 +64,7 @@ The classification is intentionally conservative. A path marked **review/relocat
 | `paper/` | 7 source/build files | paper/documentation | Preserve source, bibliography, calculations, build script, canonical filename, compatibility alias, and public URL; remove generated `build/main.tex` from tracking if reproducible. |
 | `patents/` | 1 file | historical archive or obsolete/removable | Remove from active scientific navigation unless there is a clear repository purpose. |
 | `results/` | 267 files, 9.67 MiB | reproducibility evidence mixed with generated output | Preserve compact frozen evidence chains; inventory every result family and remove raw predictions/repeated run outputs when summaries and manifests suffice. |
-| `scripts/` | 175 files | active research experiment mixed with historical tooling | Repair syntax first; group active data, training, Camelyon17, federated, and PathoAlign entry points; archive HistoCore administration/deployment scripts. |
+| `scripts/` | 175 files | active research experiment mixed with historical tooling | Repair syntax first; group active data, training, Camelyon17, federated, and Paired-Acquisition Neural Factorization entry points; archive HistoCore administration/deployment scripts. |
 | `src/` | 554 files, 6.46 MiB | active package source mixed with optional and legacy subsystems | Repair imports and cache truncation; identify the minimal active research package and isolate clinical/platform/streaming/deployment compatibility surfaces. |
 | `test_results/` | 3 generated files | generated output | Remove from tracking after confirming no active consumer; publish future outputs as CI artifacts. |
 | `tests/` | 391 files, 8.16 MiB | active tests mixed with obsolete/duplicate suites | Consolidate duplicate cache tests, separate optional dependencies, and make the smallest core suite authoritative. |

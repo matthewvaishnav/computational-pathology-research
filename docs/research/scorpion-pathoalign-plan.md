@@ -1,4 +1,4 @@
-# SCORPION paired-scanner PathoAlign plan
+# SCORPION paired-scanner Paired-Acquisition Neural Factorization plan
 
 **Status:** active next-dataset workstream  
 **Tracking:** GitHub issue #10  
@@ -31,7 +31,7 @@ The published SCORPION release is described as:
 
 ## Scientific mapping
 
-| PathoAlign concept | SCORPION variable |
+| Paired-Acquisition Neural Factorization concept | SCORPION variable |
 |---|---|
 | biological/content identity | aligned tissue region |
 | acquisition factor | scanner |
@@ -106,12 +106,12 @@ Use identical slide-grouped splits and seeds for:
 2. ordinary task baseline where labels permit;
 3. style augmentation only;
 4. SimCons-style prediction consistency;
-5. PathoAlign paired consistency;
-6. PathoAlign biological/scanner factor separation.
+5. Paired-Acquisition Neural Factorization paired consistency;
+6. Paired-Acquisition Neural Factorization biological/scanner factor separation.
 
 Do not tune against the final held-out slides.
 
-## PathoAlign objectives
+## Paired-Acquisition Neural Factorization objectives
 
 Let `x_{r,s}` be tissue region `r` scanned by scanner `s`. The model produces a biological/content representation `z_b` and an acquisition representation `z_a`.
 
@@ -128,7 +128,7 @@ Desired properties:
 
 Primary hypothesis:
 
-> PathoAlign factor separation improves worst scanner-pair biological/content agreement relative to an augmentation-only baseline.
+> Paired-Acquisition Neural Factorization factor separation improves worst scanner-pair biological/content agreement relative to an augmentation-only baseline.
 
 Independent block:
 
@@ -170,7 +170,7 @@ After the SCORPION method, hyperparameters, and analysis are frozen, CAMELYON17 
 - validated manifest and audit report;
 - frozen-feature paired analysis;
 - baseline comparison;
-- PathoAlign comparison;
+- Paired-Acquisition Neural Factorization comparison;
 - slide-block statistical analysis;
 - compact evidence tables;
 - paper-ready methods and results sections;

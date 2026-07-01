@@ -88,6 +88,42 @@ function New-TextFile {
     Set-Content -Path $target -Value $Content -Encoding UTF8
 }
 
+function Convert-LegacyPublicNames {
+    $textExtensions = @(
+        ".bib", ".cff", ".csv", ".gitignore", ".json", ".md", ".ps1", ".py", ".tex", ".txt", ".yml", ".yaml"
+    )
+    $literalTextFiles = @("LICENSE", "requirements.txt")
+    $replacements = @(
+        @("PATHOALIGN", "PAIRED-ACQUISITION NEURAL FACTORIZATION"),
+        @("PathoAlign", "Paired-Acquisition Neural Factorization"),
+        @("pathoalign", "paired_acquisition")
+    )
+
+    Get-ChildItem -LiteralPath $DestinationRoot -Recurse -Force -File |
+        Where-Object {
+            $_.FullName -notmatch "\\.git\\" -and
+            ($textExtensions -contains $_.Extension -or $literalTextFiles -contains $_.Name)
+        } |
+        ForEach-Object {
+            $content = Get-Content -LiteralPath $_.FullName -Raw
+            $updated = $content
+            foreach ($entry in $replacements) {
+                $updated = $updated.Replace($entry[0], $entry[1])
+            }
+            if ($updated -ne $content) {
+                Set-Content -LiteralPath $_.FullName -Value $updated -Encoding UTF8
+            }
+        }
+
+    Get-ChildItem -LiteralPath $DestinationRoot -Recurse -Force |
+        Where-Object { $_.FullName -notmatch "\\.git\\" -and $_.Name -match "(?i)pathoalign" } |
+        Sort-Object { $_.FullName.Length } -Descending |
+        ForEach-Object {
+            $newName = $_.Name -replace "(?i)pathoalign", "paired_acquisition"
+            Rename-Item -LiteralPath $_.FullName -NewName $newName
+        }
+}
+
 if (!(Test-Path $SourceRoot)) {
     throw "SourceRoot does not exist: $SourceRoot"
 }
@@ -98,7 +134,7 @@ New-Item -ItemType Directory -Force $DestinationRoot | Out-Null
 Copy-RequiredDirectory "scripts\external_multiscanner" "scripts\external_multiscanner"
 Copy-RequiredDirectory "experiments\external_multiscanner" "experiments\external_multiscanner"
 Copy-RequiredDirectory "src\models" "src\models"
-Copy-RequiredFile "experiments\scorpion\run_pathoalign_projection.py" "experiments\scorpion\run_pathoalign_projection.py"
+Copy-RequiredFile "experiments\scorpion\run_pathoalign_projection.py" "experiments\scorpion\run_paired_acquisition_projection.py"
 Copy-RequiredFile "scripts\scorpion\extract_scorpion_vit_features.py" "scripts\scorpion\extract_scorpion_vit_features.py"
 Copy-RequiredFile "scripts\scorpion\extract_scorpion_resnet50_features.py" "scripts\scorpion\extract_scorpion_resnet50_features.py"
 
@@ -111,7 +147,7 @@ Copy-RequiredDirectory "data\external_multiscanner_caninescc\patch_manifests" "d
 Copy-OptionalFile "data\external_multiscanner_caninescc\manifest.csv" "data\external_multiscanner_caninescc\manifest.csv"
 Copy-RequiredFile "results\external_multiscanner_caninescc\geometry_qualified\geometry_qualified_summary.json" "results\geometry_qualified_summary.json"
 Copy-RequiredFile "data\external_multiscanner_caninescc\patch_manifests\patch_extraction_summary.json" "results\patch_extraction_summary.json"
-Copy-RequiredDirectory "results\external_multiscanner_caninescc\pathoalign_dinov2_crossfold_analysis" "results\pathoalign_dinov2_crossfold_analysis"
+Copy-RequiredDirectory "results\external_multiscanner_caninescc\pathoalign_dinov2_crossfold_analysis" "results\paired_acquisition_dinov2_crossfold_analysis"
 Copy-OptionalDirectory "results\external_multiscanner_caninescc\frozen_dinov2_base_fold0_val" "results\frozen_encoder_baselines\dinov2_base_fold0_val"
 Copy-OptionalDirectory "results\external_multiscanner_caninescc\frozen_resnet50_fold0_val" "results\frozen_encoder_baselines\resnet50_fold0_val"
 Copy-OptionalDirectory "results\external_multiscanner_caninescc\frozen_phikon_fold0_val" "results\frozen_encoder_baselines\phikon_fold0_val"
@@ -160,8 +196,8 @@ are large or regenerable from the public dataset and scripts.
 2. Build or verify the geometry-qualified patch manifests.
 3. Extract orientation-normalized patches locally.
 4. Extract DINOv2 frozen features.
-5. Run `experiments/external_multiscanner/run_canine_pathoalign_crossfold.py`.
-6. Run `scripts/external_multiscanner/analyze_canine_pathoalign_crossfold.py`.
+5. Run `experiments/external_multiscanner/run_canine_paired_acquisition_crossfold.py`.
+6. Run `scripts/external_multiscanner/analyze_canine_paired_acquisition_crossfold.py`.
 
 See `docs/results.md` for the frozen result statement and claim boundary.
 
@@ -259,6 +295,8 @@ Get-ChildItem $DestinationRoot -Recurse -Include *.npz,*.pt,*.pth,*.ckpt,*.tif,*
         Write-Warning "Removing generated/heavy artifact from scaffold: $($_.FullName)"
         Remove-Item $_.FullName -Force
     }
+
+Convert-LegacyPublicNames
 
 if ($InitializeGit) {
     Push-Location $DestinationRoot

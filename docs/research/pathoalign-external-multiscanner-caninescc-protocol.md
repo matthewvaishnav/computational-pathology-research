@@ -1,9 +1,9 @@
-# PathoAlign external paired-scanner validation protocol
+# Paired-Acquisition Neural Factorization external paired-scanner validation protocol
 
 **Status:** preregistered before dataset-specific outcomes are inspected  
 **External benchmark:** Multi-Scanner Canine Cutaneous Squamous Cell Carcinoma Histopathology Dataset  
 **Reported release structure:** 44 tissue samples, each digitized on five whole-slide scanners, with local cross-scanner correspondences  
-**Primary purpose:** test whether the frozen SCORPION-developed PathoAlign objective transfers to a different laboratory, tissue collection, scanner set, image scale, and species
+**Primary purpose:** test whether the frozen SCORPION-developed Paired-Acquisition Neural Factorization objective transfers to a different laboratory, tissue collection, scanner set, image scale, and species
 
 ## Why this benchmark
 
@@ -15,7 +15,7 @@ It is not an external-human validation set. A successful result will support cro
 
 ## Frozen method
 
-No PathoAlign objective or optimization parameter may be tuned on this dataset.
+No Paired-Acquisition Neural Factorization objective or optimization parameter may be tuned on this dataset.
 
 ```text
 biological dimension                 256
@@ -106,7 +106,7 @@ Each backbone passes only if all conditions hold relative to paired consistency:
 4. The 95% lower bound for worst-pair retrieval change is at least `-0.02`.
 5. The 95% interval for mean paired-cosine change lies entirely above zero.
 6. The 95% interval for worst-pair cosine change lies entirely above zero.
-7. Every biological dimension retains nonzero test-fold variance in every PathoAlign run.
+7. Every biological dimension retains nonzero test-fold variance in every Paired-Acquisition Neural Factorization run.
 
 The external cross-dataset claim passes only if at least two of the three frozen backbones pass all seven criteria and the third preserves retrieval within the non-inferiority margin without collapse. Results for every backbone will still be reported.
 

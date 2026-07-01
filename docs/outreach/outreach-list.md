@@ -1,4 +1,4 @@
-﻿# Outreach strategy for the computational pathology research program
+# Outreach strategy for the computational pathology research program
 
 This document is the current outreach plan for research collaboration, external validation, supervision, funding, education, and employment.
 
@@ -29,15 +29,15 @@ Do not weaken the work by calling it only a student project, coding portfolio, o
 
 ### Short research positioning
 
-> My flagship work, PathoAlign, studies neural identifiability when biological morphology is entangled with staining, scanner, preparation, and institutional acquisition effects. The program moves beyond unconditional domain invariance by testing what information can safely be removed, what supervision is required to recover biological and acquisition factors, and how observational data and biology-preserving paired acquisitions trade off as distinct resources. The wider repository includes PANDA whole-slide MIL, Camelyon17 external-center validation, dominant-site federated stress tests, PCam validation, WSI processing, reproducibility tooling, and research prototypes for federated and clinical integration.
+> My flagship work, Paired-Acquisition Neural Factorization, studies neural identifiability when biological morphology is entangled with staining, scanner, preparation, and institutional acquisition effects. The program moves beyond unconditional domain invariance by testing what information can safely be removed, what supervision is required to recover biological and acquisition factors, and how observational data and biology-preserving paired acquisitions trade off as distinct resources. The wider repository includes PANDA whole-slide MIL, Camelyon17 external-center validation, dominant-site federated stress tests, PCam validation, WSI processing, reproducibility tooling, and research prototypes for federated and clinical integration.
 
 ### Technical positioning
 
-> PathoAlign treats ordinary observations and biology-preserving acquisition pairs as separately budgeted information resources. It evaluates task-only, adversarial, factorized, pair-consistency, learned-operator, and hybrid neural methods using task retention, site leakage, cross-factor leakage, paired biological invariance, counterfactual transport, canonical-correlation recovery, Procrustes recovery, and thresholded factor-separation metrics. The experimental program includes locked confirmation, falsified nuisance-removal hypotheses, failure/recovery phase maps, interval- and right-censored threshold analysis, and pair-repeat comparisons of unique paired-anchor diversity versus repetition.
+> Paired-Acquisition Neural Factorization treats ordinary observations and biology-preserving acquisition pairs as separately budgeted information resources. It evaluates task-only, adversarial, factorized, pair-consistency, learned-operator, and hybrid neural methods using task retention, site leakage, cross-factor leakage, paired biological invariance, counterfactual transport, canonical-correlation recovery, Procrustes recovery, and thresholded factor-separation metrics. The experimental program includes locked confirmation, falsified nuisance-removal hypotheses, failure/recovery phase maps, interval- and right-censored threshold analysis, and pair-repeat comparisons of unique paired-anchor diversity versus repetition.
 
 ### Full-program positioning
 
-> The repository is an independent computational pathology research laboratory encoded as software. It spans patch classification, whole-slide multiple-instance learning, pathology foundation-model features, spatial and topology-aware modeling, neural identifiability, federated aggregation, external-center shift, privacy and communication probes, WSI engineering, statistical validation, reproducibility, and experimental DICOM/PACS/FHIR integration. The strongest evidence is concentrated in PathoAlign, PANDA, Camelyon17, dominant-site federated validation, and PCam; other platform components are supporting or prototype infrastructure and should not be presented as equally validated.
+> The repository is an independent computational pathology research laboratory encoded as software. It spans patch classification, whole-slide multiple-instance learning, pathology foundation-model features, spatial and topology-aware modeling, neural identifiability, federated aggregation, external-center shift, privacy and communication probes, WSI engineering, statistical validation, reproducibility, and experimental DICOM/PACS/FHIR integration. The strongest evidence is concentrated in Paired-Acquisition Neural Factorization, PANDA, Camelyon17, dominant-site federated validation, and PCam; other platform components are supporting or prototype infrastructure and should not be presented as equally validated.
 
 ---
 
@@ -45,7 +45,7 @@ Do not weaken the work by calling it only a student project, coding portfolio, o
 
 Use only the part of this stack relevant to the recipient. Do not paste the entire list into a first-contact message.
 
-### PathoAlign: biological-acquisition identifiability
+### Paired-Acquisition Neural Factorization: biological-acquisition identifiability
 
 - A locked confirmatory experiment found no tumor-accuracy advantage for the adversarial model over the task-only baseline.
 - The adversarial model produced a small reproducible reduction in recoverable site information.
@@ -78,7 +78,7 @@ Use only the part of this stack relevant to the recipient. Do not paste the enti
 - Mean-pooled Phikon + MLP: QWK 0.7274.
 - Gated AttentionMIL: QWK 0.8100.
 - Repeated-seed TransnnMIL results: 0.8155, 0.8225, and 0.8086 QWK.
-- The stabilized learning-rate grid reached a best three-seed mean QWK of 0.8257 Â± 0.0169.
+- The stabilized learning-rate grid reached a best three-seed mean QWK of 0.8257 ± 0.0169.
 - The correct claim is that stabilized TransnnMIL is competitive with AttentionMIL in the current setup, not conclusively superior.
 
 ### PCam validation
@@ -106,7 +106,7 @@ Every message should have one concrete objective.
 
 Priority objectives:
 
-1. Obtain technically serious external criticism of PathoAlign.
+1. Obtain technically serious external criticism of Paired-Acquisition Neural Factorization.
 2. Find a collaborator with real paired-scanner, paired-stain, or otherwise biology-preserving acquisition data.
 3. Find a remote-first faculty supervisor or research host.
 4. Obtain independent reproduction of one flagship result.
@@ -234,7 +234,7 @@ Before writing:
 
 1. Read one relevant paper or project page.
 2. Identify one exact overlap with the recipient's work.
-3. Identify one exact way PathoAlign differs.
+3. Identify one exact way Paired-Acquisition Neural Factorization differs.
 4. Make one concrete request.
 5. Keep the first message under 250 words.
 
@@ -265,14 +265,14 @@ Lead with one scientific problem, one result, one reason the recipient is releva
 **Subject options**
 
 - Paired-acquisition identifiability in computational pathology
-- PathoAlign: biology-preserving pairs and acquisition-factor recovery
+- Paired-Acquisition Neural Factorization: biology-preserving pairs and acquisition-factor recovery
 - Request for technical critique: pathology representation identifiability
 
 **Template**
 
 Hi [Name],
 
-I am an independent computational pathology researcher based in Kitchener-Waterloo. I developed PathoAlign, a neural identifiability program studying when biological morphology can be separated from staining, scanner, preparation, and institutional acquisition effects without erasing diagnostically useful information.
+I am an independent computational pathology researcher based in Kitchener-Waterloo. I developed Paired-Acquisition Neural Factorization, a neural identifiability program studying when biological morphology can be separated from staining, scanner, preparation, and institutional acquisition effects without erasing diagnostically useful information.
 
 The work began with a negative result: reducing site leakage did not improve held-out tumor accuracy, and unconditional subtraction of a learned site component removed tumor-predictive signal. I then introduced biology-preserving paired acquisitions and treated ordinary observations, unique paired anchors, and repeated paired presentations as distinct resources. The current experiments include locked confirmation, failure/recovery phase maps, interval/right-censored recovery thresholds, and pair-repeat anchor-diversity comparisons.
 
@@ -342,7 +342,7 @@ Hi [Name],
 
 I am an independent computational pathology researcher and ML engineer. I built an end-to-end research repository covering WSI preprocessing, pathology feature pipelines, variable-length MIL, TransnnMIL, federated-learning experiments, external-center validation, neural representation auditing, statistical analysis, reproducibility tooling, and experimental clinical-integration infrastructure.
 
-The strongest current work includes PathoAlign biological-acquisition identifiability, PANDA whole-slide grading, Camelyon17 held-out-center analysis, dominant-site federated stress testing, and PCam validation. The project demonstrates that I can move from scientific question to implementation, controlled experiment, negative-result analysis, reproducible evidence, and technical communication.
+The strongest current work includes Paired-Acquisition Neural Factorization biological-acquisition identifiability, PANDA whole-slide grading, Camelyon17 held-out-center analysis, dominant-site federated stress testing, and PCam validation. The project demonstrates that I can move from scientific question to implementation, controlled experiment, negative-result analysis, reproducible evidence, and technical communication.
 
 I am looking for research software, applied ML, medical AI, or computational pathology work where those capabilities can be evaluated directly.
 

@@ -1,10 +1,10 @@
-# PathoAlign Measurement Validation Protocol v0
+# Paired-Acquisition Neural Factorization Measurement Validation Protocol v0
 
 ## Purpose
 
-The PathoAlign Oncology Identity Benchmark asks whether pathology representations have learned disease biology or institutional and acquisition shortcuts. This protocol defines how to decide whether those measurements are trustworthy.
+The Paired-Acquisition Neural Factorization Oncology Identity Benchmark asks whether pathology representations have learned disease biology or institutional and acquisition shortcuts. This protocol defines how to decide whether those measurements are trustworthy.
 
-A lower scanner, site, stain, or client probe is not sufficient by itself. A representation can make shortcut identity harder to decode by collapsing, discarding useful morphology, or destroying all task-relevant signal. A valid PathoAlign result must show shortcut suppression together with biological preservation and downstream utility.
+A lower scanner, site, stain, or client probe is not sufficient by itself. A representation can make shortcut identity harder to decode by collapsing, discarding useful morphology, or destroying all task-relevant signal. A valid Paired-Acquisition Neural Factorization result must show shortcut suppression together with biological preservation and downstream utility.
 
 ## Core counterfactual design
 
@@ -21,7 +21,7 @@ When paired acquisition is available, matched tissue regions or biological units
 
 ## Valid measurement rule
 
-A PathoAlign measurement should only support a representation-identifiability claim if all required conditions hold:
+A Paired-Acquisition Neural Factorization measurement should only support a representation-identifiability claim if all required conditions hold:
 
 1. Shortcut identity decreases in the biological representation.
 2. Biological preservation is maintained or improved.
@@ -30,7 +30,7 @@ A PathoAlign measurement should only support a representation-identifiability cl
 5. Positive and negative controls behave as expected.
 6. Collapse checks show that the representation remains informative.
 
-If shortcut probe accuracy decreases but biological preservation also collapses, the result is not valid evidence for PathoAlign. It is evidence of information destruction.
+If shortcut probe accuracy decreases but biological preservation also collapses, the result is not valid evidence for Paired-Acquisition Neural Factorization. It is evidence of information destruction.
 
 ## Required controls
 
@@ -58,7 +58,7 @@ Measurements must avoid patch-level leakage. The minimum acceptable split unit i
 | Federated client identity | Client, institution, or hospital. |
 | External validation | Held-out scanner, site, cohort, or client when possible. |
 
-For PathoAlign claims, confidence intervals and sign tests should be computed over independent biological units, not over patches alone.
+For Paired-Acquisition Neural Factorization claims, confidence intervals and sign tests should be computed over independent biological units, not over patches alone.
 
 ## Measurement bundle
 
@@ -113,16 +113,16 @@ For paired acquisition studies, the expected pattern is:
 | Space | Desired behavior |
 |---|---|
 | Raw feature space | Same biology may still separate by scanner, stain, or acquisition source. |
-| PathoAlign biological space | Same biology should move closer across acquisition conditions. |
-| PathoAlign biological space | Scanner, site, or stain probe should decrease. |
-| PathoAlign acquisition space | Scanner, site, or stain probe should remain recoverable. |
+| Paired-Acquisition Neural Factorization biological space | Same biology should move closer across acquisition conditions. |
+| Paired-Acquisition Neural Factorization biological space | Scanner, site, or stain probe should decrease. |
+| Paired-Acquisition Neural Factorization acquisition space | Scanner, site, or stain probe should remain recoverable. |
 | Biological retrieval | Same-region, same-sample, or same-tissue retrieval should be preserved or improved. |
 
 This pattern supports separation. A decrease in scanner probe without biological retrieval preservation does not.
 
 ## Federated-client validity test
 
-For federated oncology settings, each client may encode hospital, scanner, stain, cohort, annotation style, and label prevalence. A federated PathoAlign claim should test:
+For federated oncology settings, each client may encode hospital, scanner, stain, cohort, annotation style, and label prevalence. A federated Paired-Acquisition Neural Factorization claim should test:
 
 | Test | Desired behavior |
 |---|---|
@@ -130,13 +130,13 @@ For federated oncology settings, each client may encode hospital, scanner, stain
 | Held-client task performance | Preserved or improved. |
 | Calibration by client | Reduced shift or no degradation. |
 | Client-specific shortcut control | Randomized or permuted client labels should fall to chance. |
-| Personalization comparison | PathoAlign should be compared with standard FL and personalization baselines where possible. |
+| Personalization comparison | Paired-Acquisition Neural Factorization should be compared with standard FL and personalization baselines where possible. |
 
 Federated success means more than training without centralizing data. It means the learned representation is not dominated by client identity.
 
 ## Evidence standard
 
-A PathoAlign result should be labeled according to the evidence level it satisfies:
+A Paired-Acquisition Neural Factorization result should be labeled according to the evidence level it satisfies:
 
 | Level | Evidence standard |
 |---|---|
@@ -154,4 +154,4 @@ This protocol validates representation measurements. It does not establish clini
 
 ## Short validity rule
 
-A PathoAlign result is credible only when shortcut identity decreases, biology remains recoverable, task utility does not collapse, and controls prove the measurement is not leakage or representation destruction.
+A Paired-Acquisition Neural Factorization result is credible only when shortcut identity decreases, biology remains recoverable, task utility does not collapse, and controls prove the measurement is not leakage or representation destruction.

@@ -1,4 +1,4 @@
-# SCORPION frozen PathoAlign cross-backbone transfer
+# SCORPION frozen Paired-Acquisition Neural Factorization cross-backbone transfer
 
 **Status:** completed; all preregistered criteria passed  
 **Development backbone:** DINOv2-Base  
@@ -39,28 +39,28 @@ AdamW weight decay                  1e-4
 | Method | Mean cosine | Worst cosine | Mean retrieval | Worst retrieval | Biological scanner probe | Effective rank |
 |---|---:|---:|---:|---:|---:|---:|
 | Paired consistency | 0.847591 | 0.820211 | 0.999867 | 0.999111 | 0.782489 | 56.9326 |
-| PathoAlign | **0.878856** | **0.850166** | 0.999787 | 0.998733 | **0.398907** | 54.5017 |
+| Paired-Acquisition Neural Factorization | **0.878856** | **0.850166** | 0.999787 | 0.998733 | **0.398907** | 54.5017 |
 
 ### Phikon
 
 | Method | Mean cosine | Worst cosine | Mean retrieval | Worst retrieval | Biological scanner probe | Effective rank |
 |---|---:|---:|---:|---:|---:|---:|
 | Paired consistency | 0.773992 | 0.736356 | 0.999064 | 0.994044 | 0.954284 | 55.3623 |
-| PathoAlign | **0.864493** | **0.830021** | **0.999680** | **0.997444** | **0.520044** | 46.7507 |
+| Paired-Acquisition Neural Factorization | **0.864493** | **0.830021** | **0.999680** | **0.997444** | **0.520044** | 46.7507 |
 
 ### ResNet50
 
 | Method | Mean cosine | Worst cosine | Mean retrieval | Worst retrieval | Biological scanner probe | Effective rank |
 |---|---:|---:|---:|---:|---:|---:|
 | Paired consistency | 0.628590 | 0.571348 | 0.964467 | 0.935556 | 0.682791 | 87.6049 |
-| PathoAlign | **0.654441** | **0.597813** | **0.972620** | **0.945489** | **0.314462** | 85.0875 |
+| Paired-Acquisition Neural Factorization | **0.654441** | **0.597813** | **0.972620** | **0.945489** | **0.314462** | 85.0875 |
 
 ## Slide-blocked contrasts
 
 Difference definition:
 
 ```text
-PathoAlign minus paired consistency
+Paired-Acquisition Neural Factorization minus paired consistency
 ```
 
 | Backbone | Scanner probe | Mean cosine | Worst cosine | Mean retrieval | Worst retrieval |
@@ -105,7 +105,7 @@ Both transfer backbones independently passed all seven criteria, and the pooled 
 
 ## Supported conclusion
 
-The same frozen PathoAlign objective transfers across a general self-supervised vision transformer, a pathology-native transformer, and an ImageNet residual network on the SCORPION paired-scanner benchmark. Relative to paired consistency alone, it consistently reduces linearly recoverable scanner identity, improves same-tissue cross-scanner agreement, and preserves or improves cross-scanner tissue retrieval.
+The same frozen Paired-Acquisition Neural Factorization objective transfers across a general self-supervised vision transformer, a pathology-native transformer, and an ImageNet residual network on the SCORPION paired-scanner benchmark. Relative to paired consistency alone, it consistently reduces linearly recoverable scanner identity, improves same-tissue cross-scanner agreement, and preserves or improves cross-scanner tissue retrieval.
 
 The result is strongest as evidence against a DINOv2-specific explanation. It shows representation-family transfer on the same 48 original slides and five scanners.
 

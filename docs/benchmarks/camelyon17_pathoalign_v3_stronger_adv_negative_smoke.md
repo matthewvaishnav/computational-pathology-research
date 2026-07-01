@@ -1,10 +1,10 @@
-﻿# CAMELYON17 PathoAlign v3 stronger adversary smoke
+# CAMELYON17 Paired-Acquisition Neural Factorization v3 stronger adversary smoke
 
 Result: negative diagnostic.
 
 The nuisance-center loss wiring fix succeeded: nuisance representations became strongly center-decodable.
 
-However, the stronger adversary grid did not produce the desired PathoAlign separation pattern.
+However, the stronger adversary grid did not produce the desired Paired-Acquisition Neural Factorization separation pattern.
 
 Observed:
 - original center mean: about 0.917
