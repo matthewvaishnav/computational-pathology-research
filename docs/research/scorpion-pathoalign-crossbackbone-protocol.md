@@ -1,4 +1,4 @@
-# SCORPION PathoAlign cross-backbone transfer protocol
+# SCORPION Paired-Acquisition Neural Factorization cross-backbone transfer protocol
 
 **Status:** preregistered before Phikon or ResNet50 transfer results are inspected  
 **Development backbone:** DINOv2-Base  
@@ -60,7 +60,7 @@ A transfer backbone passes only if every condition below is met:
 4. The 95% lower bound for worst-pair tissue-retrieval change is at least `-0.02`.
 5. The 95% interval for mean paired-cosine change lies entirely above zero.
 6. The 95% interval for worst-pair paired-cosine change lies entirely above zero.
-7. Every biological dimension retains nonzero test-fold variance in every PathoAlign run.
+7. Every biological dimension retains nonzero test-fold variance in every Paired-Acquisition Neural Factorization run.
 
 The cross-backbone transfer claim passes only if both Phikon and ResNet50 satisfy all seven criteria without retuning.
 

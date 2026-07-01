@@ -1,12 +1,12 @@
-# PathoAlign Identity Audit CLI v0
+# Paired-Acquisition Neural Factorization Identity Audit CLI v0
 
 ## Purpose
 
-`pathoalign_identity_audit.py` is the first runnable version of the PathoAlign Oncology Identity Benchmark. It audits frozen pathology representations for the core question:
+`pathoalign_identity_audit.py` is the first runnable version of the Paired-Acquisition Neural Factorization Oncology Identity Benchmark. It audits frozen pathology representations for the core question:
 
 > Has the representation learned disease biology, or has it learned institutional and acquisition identity?
 
-The script does not train PathoAlign. It evaluates existing feature tables against the benchmark contract and the measurement validation protocol.
+The script does not train Paired-Acquisition Neural Factorization. It evaluates existing feature tables against the benchmark contract and the measurement validation protocol.
 
 ## Command
 
@@ -199,4 +199,4 @@ The audit is a measurement tool, not a clinical validation tool.
 
 ## Current limitation
 
-Version 0 audits frozen features and metadata. It does not yet train PathoAlign, run TransnnMIL, run federated training, or perform prospective clinical validation.
+Version 0 audits frozen features and metadata. It does not yet train Paired-Acquisition Neural Factorization, run TransnnMIL, run federated training, or perform prospective clinical validation.

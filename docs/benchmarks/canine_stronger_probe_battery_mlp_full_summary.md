@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This benchmark closes the nonlinear-probe gap in the canine PathoAlign branch-separation result by running a full MLP probe sweep across folds 0--4 and seeds 911--915.
+This benchmark closes the nonlinear-probe gap in the canine Paired-Acquisition Neural Factorization branch-separation result by running a full MLP probe sweep across folds 0--4 and seeds 911--915.
 
-The test asks whether a nonlinear MLP can recover scanner identity from the PathoAlign biological branch, and whether the acquisition branch remains scanner-decodable.
+The test asks whether a nonlinear MLP can recover scanner identity from the Paired-Acquisition Neural Factorization biological branch, and whether the acquisition branch remains scanner-decodable.
 
 ## Setup
 
@@ -12,8 +12,8 @@ Representations:
 
 - raw DINOv2 features;
 - paired-reference projected features;
-- PathoAlign biological features;
-- PathoAlign acquisition features.
+- Paired-Acquisition Neural Factorization biological features;
+- Paired-Acquisition Neural Factorization acquisition features.
 
 Targets:
 
@@ -32,20 +32,20 @@ Random-label refits were skipped in this full MLP sweep for speed. Random-label 
 |---|---|---:|---:|---:|---:|---:|
 | sample_id | Raw DINOv2 features | 1 | 0.939876 | NA | 0.932336 | 0.080745 |
 | sample_id | Paired-reference features | 25 | 0.976666 | 0.004133 | 0.973679 | 0.080745 |
-| sample_id | PathoAlign biological features | 25 | 0.986137 | 0.002750 | 0.983804 | 0.080745 |
-| sample_id | PathoAlign acquisition features | 25 | 0.325684 | 0.018723 | 0.303923 | 0.080745 |
+| sample_id | Paired-Acquisition Neural Factorization biological features | 25 | 0.986137 | 0.002750 | 0.983804 | 0.080745 |
+| sample_id | Paired-Acquisition Neural Factorization acquisition features | 25 | 0.325684 | 0.018723 | 0.303923 | 0.080745 |
 | scanner_id | Raw DINOv2 features | 1 | 0.832050 | NA | 0.832050 | 0.200000 |
 | scanner_id | Paired-reference features | 25 | 0.740184 | 0.008488 | 0.740184 | 0.200000 |
-| scanner_id | PathoAlign biological features | 25 | 0.206768 | 0.006741 | 0.206768 | 0.200000 |
-| scanner_id | PathoAlign acquisition features | 25 | 0.971538 | 0.005863 | 0.971538 | 0.200000 |
+| scanner_id | Paired-Acquisition Neural Factorization biological features | 25 | 0.206768 | 0.006741 | 0.206768 | 0.200000 |
+| scanner_id | Paired-Acquisition Neural Factorization acquisition features | 25 | 0.971538 | 0.005863 | 0.971538 | 0.200000 |
 
 ## Interpretation
 
-The MLP probe does not break the PathoAlign separation result.
+The MLP probe does not break the Paired-Acquisition Neural Factorization separation result.
 
-For scanner prediction under sample-blocked cross-validation, the MLP recovers scanner identity from raw DINOv2 features at 0.832050 and from paired-reference features at 0.740184. In contrast, scanner prediction from the PathoAlign biological branch is 0.206768, essentially at the five-class chance baseline of 0.200000. The same MLP predicts scanner identity from the PathoAlign acquisition branch at 0.971538.
+For scanner prediction under sample-blocked cross-validation, the MLP recovers scanner identity from raw DINOv2 features at 0.832050 and from paired-reference features at 0.740184. In contrast, scanner prediction from the Paired-Acquisition Neural Factorization biological branch is 0.206768, essentially at the five-class chance baseline of 0.200000. The same MLP predicts scanner identity from the Paired-Acquisition Neural Factorization acquisition branch at 0.971538.
 
-For biological sample prediction under scanner-blocked cross-validation, the PathoAlign biological branch remains strongly predictive at 0.986137, exceeding raw DINOv2 at 0.939876 and paired-reference features at 0.976666. The acquisition branch is much weaker at 0.325684.
+For biological sample prediction under scanner-blocked cross-validation, the Paired-Acquisition Neural Factorization biological branch remains strongly predictive at 0.986137, exceeding raw DINOv2 at 0.939876 and paired-reference features at 0.976666. The acquisition branch is much weaker at 0.325684.
 
 This gives the expected opposite-branch pattern:
 
@@ -54,7 +54,7 @@ This gives the expected opposite-branch pattern:
 
 ## Clean result statement
 
-Across five folds and five seeds, a nonlinear MLP probe cannot meaningfully recover scanner identity from PathoAlign biological features beyond chance, while it strongly recovers scanner identity from PathoAlign acquisition features. The same biological features preserve strong sample identity across scanner-blocked evaluation.
+Across five folds and five seeds, a nonlinear MLP probe cannot meaningfully recover scanner identity from Paired-Acquisition Neural Factorization biological features beyond chance, while it strongly recovers scanner identity from Paired-Acquisition Neural Factorization acquisition features. The same biological features preserve strong sample identity across scanner-blocked evaluation.
 
 ## Claim boundary
 

@@ -1,6 +1,6 @@
 # Research outreach package
 
-This directory provides short entry points into the broader PathoAlign computational-pathology research program for readers who do not want to begin with the full paper.
+This directory provides short entry points into the broader Paired-Acquisition Neural Factorization computational-pathology research program for readers who do not want to begin with the full paper.
 
 ## Read order
 
@@ -22,10 +22,10 @@ https://matthewvaishnav.github.io/computational-pathology-research/
 Canonical PDF path:
 
 ```text
-https://matthewvaishnav.github.io/computational-pathology-research/pathoalign-computational-pathology-research.pdf
+https://matthewvaishnav.github.io/computational-pathology-research/computational-pathology-research-platform-for-federated-oncology.pdf
 ```
 
-Older paper URLs remain deployed as compatibility aliases for links already shared.
+Older paper URLs may remain deployed as compatibility aliases for links already shared, but new public references should use the canonical path above.
 
 ## Claim boundary
 

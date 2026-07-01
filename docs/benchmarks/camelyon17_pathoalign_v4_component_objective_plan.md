@@ -1,4 +1,4 @@
-﻿# PathoAlign v4 hypothesis
+# Paired-Acquisition Neural Factorization v4 hypothesis
 
 v3 fixed the nuisance center-loss wiring, but stronger adversary smoke remained negative.
 

@@ -9,8 +9,8 @@ PR #7 remains draft until the cleanup branch satisfies all required checks on a 
 - CI lint gates pass with the project-declared Black range and isort.
 - Internal and standalone security scans pass.
 - Full test matrix and Docker build complete successfully.
-- PathoAlign reproducibility evidence remains present and unchanged except for mechanical formatting.
-- The paper builds and deploys to the canonical URL `pathoalign-computational-pathology-research.pdf`; the previous paper filenames remain available as compatibility aliases.
+- Paired-Acquisition Neural Factorization reproducibility evidence remains present and unchanged except for mechanical formatting.
+- The paper builds and deploys to the canonical URL `computational-pathology-research-platform-for-federated-oncology.pdf`; previous paper filenames may remain available only as compatibility aliases.
 
 ## Completed repairs
 

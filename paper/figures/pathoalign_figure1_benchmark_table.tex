@@ -1,30 +1,30 @@
-% PathoAlign Figure 1 benchmark table snippet.
+% Paired-Acquisition Neural Factorization Figure 1 benchmark table snippet.
 % This is a manuscript-ready table summarizing the external canine SCC
 % representation-identifiability evidence.
 
 \begin{table*}[t]
 \centering
 \small
-\caption{\textbf{PathoAlign separates biological identity from acquisition identity.}
+\caption{\textbf{Paired-Acquisition Neural Factorization separates biological identity from acquisition identity.}
 On an external multi-scanner canine SCC benchmark, raw DINOv2 features encode both scanner and biological identity.
-PathoAlign produces a biological branch with low scanner decodability and high biological recoverability, and an acquisition branch with high scanner decodability and low biological recoverability.
+Paired-Acquisition Neural Factorization produces a biological branch with low scanner decodability and high biological recoverability, and an acquisition branch with high scanner decodability and low biological recoverability.
 Projected representations are summarized over folds 0--4 and seeds 911--915.}
-\label{tab:pathoalign_figure1_benchmark}
+\label{tab:paired_acquisition_figure1_benchmark}
 \begin{tabular}{lrrrrrr}
 \toprule
 Representation & Runs & Scanner probe $\downarrow$ & Region R@1 $\uparrow$ & Sample R@1 $\uparrow$ & Eff. rank & Zero-var \\
 \midrule
 Raw DINOv2 & 1 & 0.878 & 0.873 & 0.986 & 442.802 & 0.000 \\
 Paired reference & 25 & 0.746 & 0.940 & 0.999 & 186.481 & 0.000 \\
-PathoAlign biological & 25 & \textbf{0.300} & \textbf{0.959} & \textbf{0.999} & 180.615 & 0.000 \\
-PathoAlign acquisition & 25 & \textbf{0.968} & 0.031 & 0.421 & 47.355 & 0.000 \\
+Paired-Acquisition Neural Factorization biological & 25 & \textbf{0.300} & \textbf{0.959} & \textbf{0.999} & 180.615 & 0.000 \\
+Paired-Acquisition Neural Factorization acquisition & 25 & \textbf{0.968} & 0.031 & 0.421 & 47.355 & 0.000 \\
 \bottomrule
 \end{tabular}
 \vspace{0.5em}
 
 \begin{tabular}{llrrrr}
 \toprule
-Probe battery & Target & Raw DINOv2 & Paired ref. & PathoAlign bio. & PathoAlign acq. \\
+Probe battery & Target & Raw DINOv2 & Paired ref. & Paired-Acquisition Neural Factorization bio. & Paired-Acquisition Neural Factorization acq. \\
 \midrule
 Linear/RF/kNN & scanner\_id $\downarrow$ & 0.662 & 0.573 & \textbf{0.255} & \textbf{0.971} \\
 Linear/RF/kNN & sample\_id $\uparrow$ & 0.942 & 0.983 & \textbf{0.989} & 0.236 \\

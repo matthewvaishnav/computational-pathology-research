@@ -1,4 +1,4 @@
-# PathoAlign Oncology Identity Benchmark v0
+# Paired-Acquisition Neural Factorization Oncology Identity Benchmark v0
 
 ## Core question
 
@@ -35,14 +35,14 @@ Each benchmark run should produce a compact evidence table with the following st
 |---|---:|---:|---:|---:|---:|---:|
 | Raw frozen encoder | TBD | TBD | TBD | TBD | TBD | TBD |
 | Baseline alignment method | TBD | TBD | TBD | TBD | TBD | TBD |
-| PathoAlign ablation | TBD | TBD | TBD | TBD | TBD | TBD |
-| PathoAlign full model | TBD | TBD | TBD | TBD | TBD | TBD |
+| Paired-Acquisition Neural Factorization ablation | TBD | TBD | TBD | TBD | TBD | TBD |
+| Paired-Acquisition Neural Factorization full model | TBD | TBD | TBD | TBD | TBD | TBD |
 
 The benchmark should also report confidence intervals, sample-blocked or client-blocked contrasts, and the number of biological units supporting each claim.
 
 ## Required baselines
 
-PathoAlign should be evaluated against simple and strong alternatives, including:
+Paired-Acquisition Neural Factorization should be evaluated against simple and strong alternatives, including:
 
 - Raw frozen encoder features
 - Stain normalization
@@ -51,14 +51,14 @@ PathoAlign should be evaluated against simple and strong alternatives, including
 - Domain-adversarial representation learning
 - Contrastive scanner, site, or acquisition invariance
 - Federated baselines such as FedAvg-style training where applicable
-- PathoAlign ablations
-- PathoAlign full model
+- Paired-Acquisition Neural Factorization ablations
+- Paired-Acquisition Neural Factorization full model
 
 The purpose is not only to improve downstream performance. The purpose is to test whether the representation has learned biological structure instead of institutional shortcuts.
 
 ## Initial evidence packages
 
-The first version of the benchmark is supported by focused PathoAlign evidence packages:
+The first version of the benchmark is supported by focused Paired-Acquisition Neural Factorization evidence packages:
 
 | Evidence package | Role |
 |---|---|
@@ -71,7 +71,7 @@ The first version of the benchmark is supported by focused PathoAlign evidence p
 
 | Pillar | Benchmark role |
 |---|---|
-| PathoAlign | Representation-identifiability and biological/acquisition separation layer. |
+| Paired-Acquisition Neural Factorization | Representation-identifiability and biological/acquisition separation layer. |
 | TransnnMIL | Whole-slide utility layer for biological representations. |
 | PathologyFL | Federated multi-site training layer under client and institution shift. |
 | Evidence infrastructure | Frozen tables, verification scripts, child repositories, confidence intervals, and claim boundaries. |
@@ -82,4 +82,4 @@ This benchmark evaluates whether pathology representations encode disease-releva
 
 ## Short benchmark thesis
 
-PathoAlign asks whether pathology AI has learned disease biology or merely learned the institution that produced the slide.
+Paired-Acquisition Neural Factorization asks whether pathology AI has learned disease biology or merely learned the institution that produced the slide.

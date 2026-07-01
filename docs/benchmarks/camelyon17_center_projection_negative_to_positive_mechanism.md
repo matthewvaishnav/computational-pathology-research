@@ -2,7 +2,7 @@
 
 Date: 2026-06-22
 
-This note records the current CAMELYON17 mechanism result for the PathoAlign branch. It should be treated as a representation-mechanism diagnostic, not as a deployable clinical model result.
+This note records the current CAMELYON17 mechanism result for the Paired-Acquisition Neural Factorization branch. It should be treated as a representation-mechanism diagnostic, not as a deployable clinical model result.
 
 ## Question
 
