@@ -36,7 +36,6 @@ jobs:
           required = (
               "Paired-Acquisition Neural Factorization",
               r"\twocolumn[",
-              r"\onecolumn",
               r"\section{Introduction}",
               r"\section{The Data}",
               r"\section{The Paired-Acquisition Neural Factorization Model}",
@@ -59,6 +58,8 @@ jobs:
           missing = [item for item in required if item not in text]
           if missing:
               raise RuntimeError(f"Paper composition is incomplete: {missing}")
+          if "\\clearpage\n\\onecolumn\n\\appendix" in text:
+              raise RuntimeError("Paper should not force a blank one-column appendix transition page")
 
           figure1_path = Path("paper/arxiv/build/paired_acquisition_figure1_benchmark_table.tex")
           figure1 = figure1_path.read_text(encoding="utf-8")
