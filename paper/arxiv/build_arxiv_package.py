@@ -178,8 +178,8 @@ def validate_and_normalize_main(path: Path) -> None:
 
     if not include_present(text, BROADER_BASENAME):
         raise RuntimeError("The broader research-program appendix include was not injected")
-    if r"\onecolumn" not in text:
-        raise RuntimeError("main.tex should switch to one-column layout before the appendix")
+    if r"\clearpage" + "\n" + r"\onecolumn" + "\n" + r"\appendix" in text:
+        raise RuntimeError("main.tex should not force a blank one-column appendix page")
 
     if r"\begin{figure*}" not in text or r"\begin{table*}" not in text:
         raise RuntimeError("Wide result floats must use two-column-spanning environments")
