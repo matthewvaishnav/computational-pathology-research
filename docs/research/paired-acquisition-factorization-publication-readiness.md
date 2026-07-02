@@ -1,6 +1,6 @@
 # Paired-Acquisition Neural Factorization Publication Readiness
 
-Audit date: 2026-07-01
+Audit date: 2026-07-02
 
 Scope: final publication-readiness verification for the main repository and the three public child repositories:
 
@@ -20,12 +20,12 @@ Scope: final publication-readiness verification for the main repository and the 
 - The main arXiv PDF builds locally and the live GitHub Pages PDF returns `200 application/pdf`.
 - The main repository has `CITATION.cff`, `LICENSE`, `CHANGELOG.md`, a clean top-level README, the arXiv source zip, and a manuscript PDF build path.
 - Public/semi-public old-name prose was cleaned from outreach docs, benchmark summaries, selected research notes, the Figure 1 table snippet, and the canine SCC scaffold script.
+- SCORPION pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. Broken-pair controls reduced scanner-probe accuracy similarly or more than true pairs, but degraded paired-tissue consistency and same-region retrieval, strengthening peer-review readiness without expanding clinical claims.
 
 ## Missing Blockers
 
 1. Allocation child repo still appears DOI-incomplete compared with canine SCC and SCORPION because the inspected local checkout does not contain root `CITATION.cff` or `LICENSE`.
 2. Zenodo archive scope is not finalized. The release should explicitly enumerate which evidence tables, PDFs, source zips, and child-package artifacts are included.
-3. Pair-integrity falsification exists only as an untracked script at `scripts/pathoalign_identifiability_v6/run_pair_integrity_falsification.py`; tracked outputs are not integrated into the paper or evidence package.
 
 ## Optional Improvements
 
@@ -33,7 +33,6 @@ Scope: final publication-readiness verification for the main repository and the 
 - Add `CITATION.cff` and `LICENSE` to the allocation child repository if it will receive a standalone DOI.
 - Repeat the child-repo DOI metadata check for canine SCC and SCORPION if those child packages will receive standalone DOI releases.
 - Curate a short evidence manifest for the main DOI release so reviewers can map claims to exact result tables and PDFs.
-- Run and record the pair-integrity falsification experiment if the preprint will make a stronger claim about paired-sample integrity under shuffled/noisy pair structure.
 - Consider a future documentation-file rename pass for old lower-case historical slugs in `docs/`, but do that separately because it can create link churn.
 
 ## Preprint-Ready Checklist
@@ -67,8 +66,8 @@ Scope: final publication-readiness verification for the main repository and the 
 - [x] Allocation study package is live.
 - [x] SCORPION core package is live.
 - [x] Public-facing naming cleanup is acceptable for arXiv/preprint.
-- [ ] Decide whether pair-integrity falsification should be run before submission or reserved for reviewer response/future work.
-- [ ] If run, track the script or a renamed public equivalent and integrate `raw_results.csv`, `summary.csv`, and `config.json` into the evidence package.
+- [x] Pair-integrity falsification completed and documented as a falsification control.
+- [x] Pair-integrity falsification integrated into the main manuscript and evidence documentation.
 
 ## Naming-scope cleanup result
 
@@ -86,17 +85,18 @@ Files changed in this cleanup pass:
 - Benchmark and research notes: `docs/benchmarks/*` files with old method prose; `docs/research/pathoalign-external-multiscanner-caninescc-protocol.md`; `docs/research/scorpion-pathoalign-crossbackbone-protocol.md`; `docs/research/scorpion-pathoalign-crossbackbone-results.md`; `docs/research/scorpion-pathoalign-plan.md`.
 - Paper/release artifacts: `paper/figures/pathoalign_figure1_benchmark_table.tex`; `scripts/release/build_paired_acquisition_factorization_caninescc_repo.ps1`.
 - Control document: `docs/research/paired-acquisition-factorization-publication-readiness.md`.
+- Pair-integrity integration: `docs/research/paired-acquisition-factorization-pair-integrity-falsification.md`, `experiments/scorpion/run_pair_integrity_falsification.py`, `paper/arxiv/main.tex`, and `paper/arxiv/study_specific_packages.tex`.
 
 ## Next 5 Actions In Exact Order
 
-1. Review and commit the naming-scope cleanup after confirming the diff is acceptable.
+1. Review and commit the naming-scope cleanup and pair-integrity integration after confirming the diff is acceptable.
 2. Add root `CITATION.cff` and `LICENSE` to `paired-acquisition-factorization-allocation` if that child package will be archived or cited independently.
 3. Create a concise evidence manifest for the main DOI release.
-4. Decide whether to run pair-integrity falsification now or reserve it for reviewer response/future work.
+4. Decide the exact evidence artifacts to archive, including the SCORPION pair-integrity result tables if they are in scope.
 5. Create the final release tag and Zenodo draft after the evidence manifest and child-repo metadata decision are complete.
 
 ## Bottom Line
 
 SCORPION is no longer the main remaining blocker: the repository exists, the PDF exists, GitHub Pages serves the PDF directly, and claim boundaries are present.
 
-Pair-integrity falsification is not necessary before arXiv for the current bounded claims, but it is a strong peer-review hardening item if the manuscript wants to defend pair-structure robustness more directly.
+Pair-integrity falsification is now completed and integrated. It strengthens peer-review readiness by showing that broken-pair controls can suppress scanner signal while damaging tissue preservation, but it does not expand the clinical or deployment claim boundary.
