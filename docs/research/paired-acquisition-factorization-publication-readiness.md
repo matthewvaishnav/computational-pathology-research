@@ -21,6 +21,7 @@ Scope: final publication-readiness verification for the main repository and the 
 - The main repository has `CITATION.cff`, `LICENSE`, `CHANGELOG.md`, a clean top-level README, the arXiv source zip, and a manuscript PDF build path.
 - Public/semi-public old-name prose was cleaned from outreach docs, benchmark summaries, selected research notes, the Figure 1 table snippet, and the canine SCC scaffold script.
 - SCORPION pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. Broken-pair controls reduced scanner-probe accuracy similarly or more than true pairs, but degraded paired-tissue consistency and same-region retrieval, strengthening peer-review readiness without expanding clinical claims.
+- External canine SCC pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. True pairs preserved tissue identity better than both shuffled controls; region-shuffled pairs reduced scanner-probe accuracy more than true pairs while damaging paired cosine and retrieval. This strengthens the external pair-integrity claim without expanding clinical claims.
 
 ## Missing Blockers
 
@@ -68,6 +69,7 @@ Scope: final publication-readiness verification for the main repository and the 
 - [x] Public-facing naming cleanup is acceptable for arXiv/preprint.
 - [x] Pair-integrity falsification completed and documented as a falsification control.
 - [x] Pair-integrity falsification integrated into the main manuscript and evidence documentation.
+- [x] External canine SCC pair-integrity falsification completed and integrated as a peer-review-hardening control.
 
 ## Naming-scope cleanup result
 
@@ -85,7 +87,7 @@ Files changed in this cleanup pass:
 - Benchmark and research notes: `docs/benchmarks/*` files with old method prose; `docs/research/pathoalign-external-multiscanner-caninescc-protocol.md`; `docs/research/scorpion-pathoalign-crossbackbone-protocol.md`; `docs/research/scorpion-pathoalign-crossbackbone-results.md`; `docs/research/scorpion-pathoalign-plan.md`.
 - Paper/release artifacts: `paper/figures/pathoalign_figure1_benchmark_table.tex`; `scripts/release/build_paired_acquisition_factorization_caninescc_repo.ps1`.
 - Control document: `docs/research/paired-acquisition-factorization-publication-readiness.md`.
-- Pair-integrity integration: `docs/research/paired-acquisition-factorization-pair-integrity-falsification.md`, `experiments/scorpion/run_pair_integrity_falsification.py`, `paper/arxiv/main.tex`, and `paper/arxiv/study_specific_packages.tex`.
+- Pair-integrity integration: `docs/research/paired-acquisition-factorization-pair-integrity-falsification.md`, `docs/research/paired-acquisition-factorization-caninescc-pair-integrity-falsification.md`, `experiments/scorpion/run_pair_integrity_falsification.py`, `experiments/canine/run_pair_integrity_falsification_caninescc.py`, `paper/arxiv/main.tex`, and `paper/arxiv/study_specific_packages.tex`.
 
 ## Next 5 Actions In Exact Order
 
@@ -99,4 +101,4 @@ Files changed in this cleanup pass:
 
 SCORPION is no longer the main remaining blocker: the repository exists, the PDF exists, GitHub Pages serves the PDF directly, and claim boundaries are present.
 
-Pair-integrity falsification is now completed and integrated. It strengthens peer-review readiness by showing that broken-pair controls can suppress scanner signal while damaging tissue preservation, but it does not expand the clinical or deployment claim boundary.
+SCORPION and external canine SCC pair-integrity falsification are now completed and integrated. Together they strengthen peer-review readiness by showing that broken-pair controls can suppress scanner signal while damaging tissue preservation, but they do not expand the clinical or deployment claim boundary.

@@ -208,6 +208,25 @@ Sample-shuffled & 0.3588 & 0.7668 & 0.7168 & 0.9792 & 0.9494 \\
 \subsection{External paired-scanner validation package}
 A companion external validation study applies the locked Paired-Acquisition Neural Factorization protocol to a public five-scanner canine squamous-cell-carcinoma dataset after geometry qualification. On 805 complete five-view regions from 44 biological samples, Paired-Acquisition Neural Factorization reduced sample-blocked scanner-probe accuracy from 0.7529 to 0.3614. The scanner-probe contrast was $-0.3803$ with bootstrap interval $[-0.3996,-0.3611]$, favorable in all 44 sample blocks, while same-region retrieval remained non-inferior. A later representation audit tested the branch-separation claim directly across folds 0--4 and seeds 911--915: scanner prediction fell from 0.878 in raw DINOv2 to 0.300 in the Paired-Acquisition Neural Factorization biological branch while same-region retrieval rose from 0.873 to 0.959; the acquisition branch retained scanner prediction at 0.968 while same-region retrieval fell to 0.031. Stronger linear, random-forest, kNN, and nonlinear MLP probes reproduced the same separation pattern. The exact dataset audit, P1000 orientation-normalization boundary, frozen encoder triage, five-fold result tables, and reproduction scripts are assigned to the companion \href{https://github.com/matthewvaishnav/paired-acquisition-factorization-caninescc}{repository} and \href{https://matthewvaishnav.github.io/paired-acquisition-factorization-caninescc/paired-acquisition-factorization-caninescc.pdf}{PDF}.
 
+External pair-integrity falsification repeated the same control on canine SCC. True same-region pairs preserved tissue identity better than both shuffled controls (Table~\ref{tab:canine_pair_integrity}). Region-shuffled pairs reduced scanner-probe accuracy more than true pairs, but degraded paired cosine and same-region retrieval. This separates scanner suppression from useful tissue preservation outside the primary SCORPION benchmark.
+
+\begin{table}[t]
+\centering
+\caption{External canine SCC DINOv2 pair-integrity falsification across five sample-blocked folds and five seeds. Lower scanner probe alone is not sufficient; higher cosine and retrieval indicate retained tissue identity.}
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Condition & Scanner & Mean cos. & Worst cos. & Mean ret. & Worst ret. \\
+\midrule
+True pairs & 0.3614 & 0.7300 & 0.6567 & 0.9334 & 0.8844 \\
+Region-shuffled & 0.3057 & 0.5422 & 0.4211 & 0.7293 & 0.5158 \\
+Sample-shuffled & 0.4093 & 0.5849 & 0.4971 & 0.7183 & 0.5650 \\
+\bottomrule
+\end{tabular}
+\label{tab:canine_pair_integrity}
+\end{table}
+
 \input{paired_acquisition_figure1_benchmark_table.tex}
 
 \subsection{Resource allocation under matched compute}
