@@ -1,0 +1,252 @@
+﻿# Paired-Acquisition Factorization Autonomous Research Run Log
+
+Start time: 2026-07-03T11:29:37.8557480-04:00
+Workspace: C:\Users\matth\computational-pathology-research
+
+Initial actions:
+- git switch main
+- git pull --ff-only
+- git status --short
+- create autonomous run directory and log
+
+Initial git status:
+?? pathoalign_fair_camelyon17_source_bundle.txt
+?? scripts/camelyon17/analyze_pathoalign_confirmatory.py
+?? scripts/camelyon17/pathoalign/
+?? scripts/camelyon17/run_pathoalign_conditional_audit_v01.py
+?? scripts/camelyon17/run_pathoalign_head_v0.py
+?? scripts/camelyon17/run_pathoalign_head_v01_sweep.py
+?? scripts/camelyon17/run_pathoalign_v1_factorized.py
+?? scripts/camelyon17/run_pathoalign_v1_factorized.py.pre_conditional_audit.bak
+?? scripts/camelyon17/run_pathoalign_v2_residual.py
+?? scripts/camelyon17/run_pathoalign_v2_residual.py.pre_conditional_audit.bak
+?? scripts/camelyon17/run_pathoalign_v3_conditional_audit.py
+?? scripts/camelyon17/run_pathoalign_v3_tumor_preserving.py.pre_conditional_audit.bak
+?? scripts/camelyon17/run_pathoalign_v4_component_audit.py
+?? scripts/camelyon17/run_pathoalign_v4_component_objective.py
+?? scripts/camelyon17/run_pathoalign_v5_cleaned_feature_adversary.py
+?? scripts/camelyon17/run_pathoalign_v5_cleaned_feature_audit.py
+?? scripts/camelyon17/run_pathoalign_weeks12.py
+?? scripts/camelyon17/verify_pathoalign_baselines.py
+?? scripts/experiments/run_pathoalign_fair_target_directed.py
+?? scripts/experiments/run_pathoalign_fair_three_client_stress.py
+?? scripts/federated/run_pathoalign_fair_camelyon17_contamination.py
+?? scripts/federated/run_pathoalign_fair_camelyon17_real_smoke.py
+?? scripts/pathoalign_identifiability/
+?? scripts/pathoalign_identifiability_v2/
+?? scripts/pathoalign_identifiability_v3/
+?? scripts/pathoalign_identifiability_v4/
+?? scripts/pathoalign_identifiability_v5/
+?? scripts/pathoalign_identifiability_v6/run_pair_integrity_falsification.py
+?? scripts/pathoalign_identifiability_v7/
+?? scripts/pathoalign_identifiability_v8/
+?? tests/test_pathoalign_decoupled_resource_control.py
+?? tests/test_pathoalign_decoupled_summary_fix.py
+?? tests/test_pathoalign_engineering.py
+?? tests/test_pathoalign_exact_anchor_repetition.py
+?? tests/test_pathoalign_fair_camelyon17_contamination.py
+?? tests/test_pathoalign_fair_camelyon17_real_smoke.py
+?? tests/test_pathoalign_fair_integration.py
+?? tests/test_pathoalign_fair_target_directed.py
+?? tests/test_pathoalign_fair_three_client_stress.py
+?? tests/test_pathoalign_identifiability_benchmark.py
+?? tests/test_pathoalign_identifiability_v2.py
+?? tests/test_pathoalign_monotone_bootstrap_boundaries.py
+?? tests/test_pathoalign_pair_anchor_scaling.py
+?? tests/test_pathoalign_pair_consistency_phase_diagram.py
+?? tests/test_pathoalign_two_resource_phase_map.py
+
+
+## Stage 0 - Baseline verification
+{
+  "datasets": {
+    "caninescc_dinov2": {
+      "contrast_files": [
+        "sample_blocked_contrasts.csv"
+      ],
+      "files": {
+        "condition_summary.csv": true,
+        "pair_integrity_falsification_summary.md": true,
+        "raw_run_metrics.csv": true,
+        "run_log.txt": true
+      },
+      "means": {
+        "shuffled_region_pairs": {
+          "biological_acquisition_cross_covariance": 0.08710586667060846,
+          "effective_rank": 54.513186314989355,
+          "mean_paired_cosine": 0.5421641668081283,
+          "mean_top1_retrieval": 0.7292739927663249,
+          "scanner_probe_accuracy": 0.3056734275269665,
+          "worst_paired_cosine": 0.42106312394142154,
+          "worst_top1_retrieval": 0.5158278809313291
+        },
+        "shuffled_sample_pairs": {
+          "biological_acquisition_cross_covariance": 0.09609713435173031,
+          "effective_rank": 45.327860174279955,
+          "mean_paired_cosine": 0.5848554930686951,
+          "mean_top1_retrieval": 0.718254163684336,
+          "scanner_probe_accuracy": 0.40930224647974195,
+          "worst_paired_cosine": 0.4971045935153961,
+          "worst_top1_retrieval": 0.565006107591407
+        },
+        "true_pairs": {
+          "biological_acquisition_cross_covariance": 0.08983064264059064,
+          "effective_rank": 74.04438520354552,
+          "mean_paired_cosine": 0.7299609289169311,
+          "mean_top1_retrieval": 0.9333924017603691,
+          "scanner_probe_accuracy": 0.36140764156190647,
+          "worst_paired_cosine": 0.6567361879348755,
+          "worst_top1_retrieval": 0.8844308029135616
+        }
+      },
+      "missing_metric_cells": 0,
+      "nonfinite_metric_cells": 0,
+      "path": "results\\paired_acquisition_factorization_pair_integrity_caninescc",
+      "raw_rows": 75
+    },
+    "scorpion_dinov2": {
+      "contrast_files": [
+        "slide_blocked_contrasts.csv",
+        "fold_blocked_contrasts.csv"
+      ],
+      "files": {
+        "condition_summary.csv": true,
+        "pair_integrity_falsification_summary.md": true,
+        "raw_run_metrics.csv": true,
+        "run_log.txt": true
+      },
+      "means": {
+        "shuffled_region_pairs": {
+          "biological_acquisition_cross_covariance": 0.1054430359601974,
+          "effective_rank": 39.07685841307836,
+          "mean_paired_cosine": 0.808928783416748,
+          "mean_top1_retrieval": 0.9953577777777778,
+          "scanner_probe_accuracy": 0.3735733333333333,
+          "worst_paired_cosine": 0.7631822729110718,
+          "worst_top1_retrieval": 0.9839333333333333
+        },
+        "shuffled_sample_pairs": {
+          "biological_acquisition_cross_covariance": 0.10289278984069819,
+          "effective_rank": 35.22585177852264,
+          "mean_paired_cosine": 0.7668202252388001,
+          "mean_top1_retrieval": 0.9792422222222222,
+          "scanner_probe_accuracy": 0.3588355555555555,
+          "worst_paired_cosine": 0.7168447351455689,
+          "worst_top1_retrieval": 0.9494
+        },
+        "true_pairs": {
+          "biological_acquisition_cross_covariance": 0.09170916527509684,
+          "effective_rank": 54.451411859351104,
+          "mean_paired_cosine": 0.8795768911838532,
+          "mean_top1_retrieval": 0.9999133333333333,
+          "scanner_probe_accuracy": 0.39977777777777773,
+          "worst_paired_cosine": 0.8502300453186035,
+          "worst_top1_retrieval": 0.9991333333333333
+        }
+      },
+      "missing_metric_cells": 0,
+      "nonfinite_metric_cells": 0,
+      "path": "results\\paired_acquisition_factorization_pair_integrity_scorpion",
+      "raw_rows": 75
+    }
+  },
+  "failures": [],
+  "passed": true,
+  "stage": "stage0_baseline_verification",
+  "time": "2026-07-03T11:30:03.589521"
+}
+
+## Stage 1 - Cross-backbone feasibility
+Time: 2026-07-03T11:30:45.296035
+- Inspected experiments/scorpion/run_pair_integrity_falsification.py.
+- Found DINOv2-specific feature shape and metadata checks in train_runs.
+- Decision: create minimal cross-backbone runner without modifying original DINOv2 runner.
+- Created experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py.
+- Next action: py_compile and CLI help smoke check.
+Time: 2026-07-03T11:31:59.906123
+
+## Stage 2 - Phikon smoke
+Time: 2026-07-03T11:32:36.670402
+Command: python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_phikon.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_phikon_smoke --backbone phikon --seeds 701 --folds 0 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 1 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+- Phikon smoke passed: 3/3 runs, output files present.
+
+## Stage 2 - Phikon full run
+Time: 2026-07-03T11:33:00.378609
+Command: python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_phikon.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_phikon --backbone phikon --seeds 701 702 703 704 705 --folds 0 1 2 3 4 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 75 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+- Phikon full completed: 75/75 rows, stderr empty, runtime 1068.0 seconds.
+                       scanner_probe_accuracy  mean_paired_cosine  worst_paired_cosine  mean_top1_retrieval  worst_top1_retrieval  effective_rank  biological_acquisition_cross_covariance
+condition                                                                                                                                                                                 
+true_pairs                           0.520044            0.864493             0.830021             0.999680              0.997444       46.750716                                 0.088867
+shuffled_region_pairs                0.434071            0.691315             0.602224             0.960316              0.899178       44.390345                                 0.111446
+shuffled_sample_pairs                0.408533            0.615847             0.474120             0.876287              0.675667       42.545296                                 0.112640
+
+## Stage 3 - ResNet50 feasibility and smoke
+Time: 2026-07-03T11:51:13.482603
+- ResNet50 feature archive exists at results/scorpion/features/fold_0_resnet50_imagenet.npz.
+- Same cross-backbone runner supports inferred feature_dim=2048 without large new code.
+- ResNet50 smoke passed: 3/3 runs, output files present.
+
+## Stage 3 - ResNet50 full run
+Time: 2026-07-03T11:51:38.702276
+Command: python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_resnet50_imagenet.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_resnet50 --backbone resnet50 --seeds 701 702 703 704 705 --folds 0 1 2 3 4 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 75 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+
+## Stage 4 and Stage 5 audits
+Time: 2026-07-03T12:13:01.972359
+- Wrote results/paired_acquisition_factorization_autonomous_research_run/pair_integrity_contrast_summary.csv with 8 rows.
+- Wrote results/paired_acquisition_factorization_autonomous_research_run/representation_collapse_audit.csv with 12 rows.
+
+## Stage 6 and Stage 7 report
+- Branch decision: A. Strong support.
+- Wrote results/paired_acquisition_factorization_autonomous_research_run/autonomous_research_report.md.
+
+## Final status check
+Time: 2026-07-03T12:13:37.405821
+Command: git status --short
+?? experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py
+?? pathoalign_fair_camelyon17_source_bundle.txt
+?? scripts/camelyon17/analyze_pathoalign_confirmatory.py
+?? scripts/camelyon17/pathoalign/
+?? scripts/camelyon17/run_pathoalign_conditional_audit_v01.py
+?? scripts/camelyon17/run_pathoalign_head_v0.py
+?? scripts/camelyon17/run_pathoalign_head_v01_sweep.py
+?? scripts/camelyon17/run_pathoalign_v1_factorized.py
+?? scripts/camelyon17/run_pathoalign_v1_factorized.py.pre_conditional_audit.bak
+?? scripts/camelyon17/run_pathoalign_v2_residual.py
+?? scripts/camelyon17/run_pathoalign_v2_residual.py.pre_conditional_audit.bak
+?? scripts/camelyon17/run_pathoalign_v3_conditional_audit.py
+?? scripts/camelyon17/run_pathoalign_v3_tumor_preserving.py.pre_conditional_audit.bak
+?? scripts/camelyon17/run_pathoalign_v4_component_audit.py
+?? scripts/camelyon17/run_pathoalign_v4_component_objective.py
+?? scripts/camelyon17/run_pathoalign_v5_cleaned_feature_adversary.py
+?? scripts/camelyon17/run_pathoalign_v5_cleaned_feature_audit.py
+?? scripts/camelyon17/run_pathoalign_weeks12.py
+?? scripts/camelyon17/verify_pathoalign_baselines.py
+?? scripts/experiments/run_pathoalign_fair_target_directed.py
+?? scripts/experiments/run_pathoalign_fair_three_client_stress.py
+?? scripts/federated/run_pathoalign_fair_camelyon17_contamination.py
+?? scripts/federated/run_pathoalign_fair_camelyon17_real_smoke.py
+?? scripts/pathoalign_identifiability/
+?? scripts/pathoalign_identifiability_v2/
+?? scripts/pathoalign_identifiability_v3/
+?? scripts/pathoalign_identifiability_v4/
+?? scripts/pathoalign_identifiability_v5/
+?? scripts/pathoalign_identifiability_v6/run_pair_integrity_falsification.py
+?? scripts/pathoalign_identifiability_v7/
+?? scripts/pathoalign_identifiability_v8/
+?? tests/test_pathoalign_decoupled_resource_control.py
+?? tests/test_pathoalign_decoupled_summary_fix.py
+?? tests/test_pathoalign_engineering.py
+?? tests/test_pathoalign_exact_anchor_repetition.py
+?? tests/test_pathoalign_fair_camelyon17_contamination.py
+?? tests/test_pathoalign_fair_camelyon17_real_smoke.py
+?? tests/test_pathoalign_fair_integration.py
+?? tests/test_pathoalign_fair_target_directed.py
+?? tests/test_pathoalign_fair_three_client_stress.py
+?? tests/test_pathoalign_identifiability_benchmark.py
+?? tests/test_pathoalign_identifiability_v2.py
+?? tests/test_pathoalign_monotone_bootstrap_boundaries.py
+?? tests/test_pathoalign_pair_anchor_scaling.py
+?? tests/test_pathoalign_pair_consistency_phase_diagram.py
+?? tests/test_pathoalign_two_resource_phase_map.py
+
+Note at 2026-07-03T12:13:44.959356: An initial final-status log append command had a PowerShell here-string terminator typo and exited before modifying files; the corrected command immediately followed and appended git status successfully.

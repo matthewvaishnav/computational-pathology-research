@@ -1,0 +1,458 @@
+
+=== cross-backbone pair-integrity run start 2026-07-03 11:51:42 ===
+command: python experiments\scorpion\run_pair_integrity_falsification_crossbackbone.py --base-features results\scorpion\features\fold_0_resnet50_imagenet.npz --manifests-dir data\scorpion\splits --out-dir results\paired_acquisition_factorization_pair_integrity_scorpion_resnet50 --backbone resnet50 --seeds 701 702 703 704 705 --folds 0 1 2 3 4 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 75 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+Command: python experiments\scorpion\run_pair_integrity_falsification_crossbackbone.py --base-features results\scorpion\features\fold_0_resnet50_imagenet.npz --manifests-dir data\scorpion\splits --out-dir results\paired_acquisition_factorization_pair_integrity_scorpion_resnet50 --backbone resnet50 --seeds 701 702 703 704 705 --folds 0 1 2 3 4 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 75 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+Training backbone=resnet50 fold=0 seed=701 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=5.036499
+pathoalign seed=701 epoch=0025/75 loss=2.870713
+pathoalign seed=701 epoch=0050/75 loss=2.705934
+pathoalign seed=701 epoch=0075/75 loss=2.635742
+Training backbone=resnet50 fold=0 seed=701 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=7.854162
+pathoalign seed=701 epoch=0025/75 loss=2.954277
+pathoalign seed=701 epoch=0050/75 loss=2.746216
+pathoalign seed=701 epoch=0075/75 loss=2.645205
+Training backbone=resnet50 fold=0 seed=701 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=701 epoch=0001/75 loss=8.387900
+pathoalign seed=701 epoch=0025/75 loss=2.940160
+pathoalign seed=701 epoch=0050/75 loss=2.743867
+pathoalign seed=701 epoch=0075/75 loss=2.649921
+Training backbone=resnet50 fold=0 seed=702 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=5.031704
+pathoalign seed=702 epoch=0025/75 loss=2.868968
+pathoalign seed=702 epoch=0050/75 loss=2.706458
+pathoalign seed=702 epoch=0075/75 loss=2.631871
+Training backbone=resnet50 fold=0 seed=702 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=7.845021
+pathoalign seed=702 epoch=0025/75 loss=2.963140
+pathoalign seed=702 epoch=0050/75 loss=2.742528
+pathoalign seed=702 epoch=0075/75 loss=2.650546
+Training backbone=resnet50 fold=0 seed=702 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=702 epoch=0001/75 loss=8.427784
+pathoalign seed=702 epoch=0025/75 loss=2.934626
+pathoalign seed=702 epoch=0050/75 loss=2.740075
+pathoalign seed=702 epoch=0075/75 loss=2.652952
+Training backbone=resnet50 fold=0 seed=703 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=5.025220
+pathoalign seed=703 epoch=0025/75 loss=2.867946
+pathoalign seed=703 epoch=0050/75 loss=2.704657
+pathoalign seed=703 epoch=0075/75 loss=2.632994
+Training backbone=resnet50 fold=0 seed=703 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=7.763684
+pathoalign seed=703 epoch=0025/75 loss=2.972475
+pathoalign seed=703 epoch=0050/75 loss=2.744089
+pathoalign seed=703 epoch=0075/75 loss=2.645329
+Training backbone=resnet50 fold=0 seed=703 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=703 epoch=0001/75 loss=8.367805
+pathoalign seed=703 epoch=0025/75 loss=2.934051
+pathoalign seed=703 epoch=0050/75 loss=2.738567
+pathoalign seed=703 epoch=0075/75 loss=2.651839
+Training backbone=resnet50 fold=0 seed=704 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=5.012543
+pathoalign seed=704 epoch=0025/75 loss=2.872015
+pathoalign seed=704 epoch=0050/75 loss=2.708548
+pathoalign seed=704 epoch=0075/75 loss=2.634733
+Training backbone=resnet50 fold=0 seed=704 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=7.732179
+pathoalign seed=704 epoch=0025/75 loss=2.961766
+pathoalign seed=704 epoch=0050/75 loss=2.748531
+pathoalign seed=704 epoch=0075/75 loss=2.648599
+Training backbone=resnet50 fold=0 seed=704 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=704 epoch=0001/75 loss=8.322885
+pathoalign seed=704 epoch=0025/75 loss=2.946608
+pathoalign seed=704 epoch=0050/75 loss=2.747699
+pathoalign seed=704 epoch=0075/75 loss=2.652498
+Training backbone=resnet50 fold=0 seed=705 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=5.022916
+pathoalign seed=705 epoch=0025/75 loss=2.867298
+pathoalign seed=705 epoch=0050/75 loss=2.711068
+pathoalign seed=705 epoch=0075/75 loss=2.634519
+Training backbone=resnet50 fold=0 seed=705 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=7.864559
+pathoalign seed=705 epoch=0025/75 loss=2.976265
+pathoalign seed=705 epoch=0050/75 loss=2.741639
+pathoalign seed=705 epoch=0075/75 loss=2.652411
+Training backbone=resnet50 fold=0 seed=705 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=705 epoch=0001/75 loss=8.358938
+pathoalign seed=705 epoch=0025/75 loss=2.947548
+pathoalign seed=705 epoch=0050/75 loss=2.743976
+pathoalign seed=705 epoch=0075/75 loss=2.651545
+Training backbone=resnet50 fold=1 seed=701 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=5.002411
+pathoalign seed=701 epoch=0025/75 loss=2.855903
+pathoalign seed=701 epoch=0050/75 loss=2.698935
+pathoalign seed=701 epoch=0075/75 loss=2.626610
+Training backbone=resnet50 fold=1 seed=701 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=7.851043
+pathoalign seed=701 epoch=0025/75 loss=2.946043
+pathoalign seed=701 epoch=0050/75 loss=2.736345
+pathoalign seed=701 epoch=0075/75 loss=2.644214
+Training backbone=resnet50 fold=1 seed=701 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=701 epoch=0001/75 loss=8.414641
+pathoalign seed=701 epoch=0025/75 loss=2.934913
+pathoalign seed=701 epoch=0050/75 loss=2.736670
+pathoalign seed=701 epoch=0075/75 loss=2.646864
+Training backbone=resnet50 fold=1 seed=702 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=4.991973
+pathoalign seed=702 epoch=0025/75 loss=2.855169
+pathoalign seed=702 epoch=0050/75 loss=2.694979
+pathoalign seed=702 epoch=0075/75 loss=2.627836
+Training backbone=resnet50 fold=1 seed=702 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=7.879021
+pathoalign seed=702 epoch=0025/75 loss=2.945253
+pathoalign seed=702 epoch=0050/75 loss=2.736762
+pathoalign seed=702 epoch=0075/75 loss=2.644163
+Training backbone=resnet50 fold=1 seed=702 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=702 epoch=0001/75 loss=8.418017
+pathoalign seed=702 epoch=0025/75 loss=2.930548
+pathoalign seed=702 epoch=0050/75 loss=2.736865
+pathoalign seed=702 epoch=0075/75 loss=2.647257
+Training backbone=resnet50 fold=1 seed=703 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=5.013982
+pathoalign seed=703 epoch=0025/75 loss=2.858687
+pathoalign seed=703 epoch=0050/75 loss=2.699214
+pathoalign seed=703 epoch=0075/75 loss=2.626895
+Training backbone=resnet50 fold=1 seed=703 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=7.763254
+pathoalign seed=703 epoch=0025/75 loss=2.960624
+pathoalign seed=703 epoch=0050/75 loss=2.736700
+pathoalign seed=703 epoch=0075/75 loss=2.639653
+Training backbone=resnet50 fold=1 seed=703 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=703 epoch=0001/75 loss=8.385273
+pathoalign seed=703 epoch=0025/75 loss=2.937885
+pathoalign seed=703 epoch=0050/75 loss=2.735641
+pathoalign seed=703 epoch=0075/75 loss=2.640901
+Training backbone=resnet50 fold=1 seed=704 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=5.009775
+pathoalign seed=704 epoch=0025/75 loss=2.863670
+pathoalign seed=704 epoch=0050/75 loss=2.698085
+pathoalign seed=704 epoch=0075/75 loss=2.625727
+Training backbone=resnet50 fold=1 seed=704 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=7.752089
+pathoalign seed=704 epoch=0025/75 loss=2.944317
+pathoalign seed=704 epoch=0050/75 loss=2.728582
+pathoalign seed=704 epoch=0075/75 loss=2.645546
+Training backbone=resnet50 fold=1 seed=704 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=704 epoch=0001/75 loss=8.360222
+pathoalign seed=704 epoch=0025/75 loss=2.941796
+pathoalign seed=704 epoch=0050/75 loss=2.736432
+pathoalign seed=704 epoch=0075/75 loss=2.645420
+Training backbone=resnet50 fold=1 seed=705 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=5.026262
+pathoalign seed=705 epoch=0025/75 loss=2.855111
+pathoalign seed=705 epoch=0050/75 loss=2.697659
+pathoalign seed=705 epoch=0075/75 loss=2.627487
+Training backbone=resnet50 fold=1 seed=705 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=7.843851
+pathoalign seed=705 epoch=0025/75 loss=2.974532
+pathoalign seed=705 epoch=0050/75 loss=2.735812
+pathoalign seed=705 epoch=0075/75 loss=2.641733
+Training backbone=resnet50 fold=1 seed=705 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=705 epoch=0001/75 loss=8.404709
+pathoalign seed=705 epoch=0025/75 loss=2.941407
+pathoalign seed=705 epoch=0050/75 loss=2.734320
+pathoalign seed=705 epoch=0075/75 loss=2.644223
+Training backbone=resnet50 fold=2 seed=701 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=5.029278
+pathoalign seed=701 epoch=0025/75 loss=2.868556
+pathoalign seed=701 epoch=0050/75 loss=2.708010
+pathoalign seed=701 epoch=0075/75 loss=2.634255
+Training backbone=resnet50 fold=2 seed=701 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=7.815343
+pathoalign seed=701 epoch=0025/75 loss=2.953915
+pathoalign seed=701 epoch=0050/75 loss=2.741244
+pathoalign seed=701 epoch=0075/75 loss=2.652258
+Training backbone=resnet50 fold=2 seed=701 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=701 epoch=0001/75 loss=8.413122
+pathoalign seed=701 epoch=0025/75 loss=2.941658
+pathoalign seed=701 epoch=0050/75 loss=2.738342
+pathoalign seed=701 epoch=0075/75 loss=2.647701
+Training backbone=resnet50 fold=2 seed=702 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=5.019501
+pathoalign seed=702 epoch=0025/75 loss=2.863593
+pathoalign seed=702 epoch=0050/75 loss=2.705191
+pathoalign seed=702 epoch=0075/75 loss=2.636042
+Training backbone=resnet50 fold=2 seed=702 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=7.933176
+pathoalign seed=702 epoch=0025/75 loss=2.947679
+pathoalign seed=702 epoch=0050/75 loss=2.750648
+pathoalign seed=702 epoch=0075/75 loss=2.647782
+Training backbone=resnet50 fold=2 seed=702 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=702 epoch=0001/75 loss=8.421548
+pathoalign seed=702 epoch=0025/75 loss=2.945460
+pathoalign seed=702 epoch=0050/75 loss=2.736069
+pathoalign seed=702 epoch=0075/75 loss=2.649979
+Training backbone=resnet50 fold=2 seed=703 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=5.017565
+pathoalign seed=703 epoch=0025/75 loss=2.868780
+pathoalign seed=703 epoch=0050/75 loss=2.709236
+pathoalign seed=703 epoch=0075/75 loss=2.630729
+Training backbone=resnet50 fold=2 seed=703 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=7.790252
+pathoalign seed=703 epoch=0025/75 loss=2.958097
+pathoalign seed=703 epoch=0050/75 loss=2.735260
+pathoalign seed=703 epoch=0075/75 loss=2.643894
+Training backbone=resnet50 fold=2 seed=703 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=703 epoch=0001/75 loss=8.381265
+pathoalign seed=703 epoch=0025/75 loss=2.939912
+pathoalign seed=703 epoch=0050/75 loss=2.740287
+pathoalign seed=703 epoch=0075/75 loss=2.647023
+Training backbone=resnet50 fold=2 seed=704 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=5.010356
+pathoalign seed=704 epoch=0025/75 loss=2.868465
+pathoalign seed=704 epoch=0050/75 loss=2.707834
+pathoalign seed=704 epoch=0075/75 loss=2.632611
+Training backbone=resnet50 fold=2 seed=704 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=7.768773
+pathoalign seed=704 epoch=0025/75 loss=2.974387
+pathoalign seed=704 epoch=0050/75 loss=2.735512
+pathoalign seed=704 epoch=0075/75 loss=2.645310
+Training backbone=resnet50 fold=2 seed=704 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=704 epoch=0001/75 loss=8.363697
+pathoalign seed=704 epoch=0025/75 loss=2.942974
+pathoalign seed=704 epoch=0050/75 loss=2.738997
+pathoalign seed=704 epoch=0075/75 loss=2.649080
+Training backbone=resnet50 fold=2 seed=705 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=5.044999
+pathoalign seed=705 epoch=0025/75 loss=2.864989
+pathoalign seed=705 epoch=0050/75 loss=2.704879
+pathoalign seed=705 epoch=0075/75 loss=2.633379
+Training backbone=resnet50 fold=2 seed=705 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=7.828896
+pathoalign seed=705 epoch=0025/75 loss=2.972828
+pathoalign seed=705 epoch=0050/75 loss=2.741024
+pathoalign seed=705 epoch=0075/75 loss=2.648816
+Training backbone=resnet50 fold=2 seed=705 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=705 epoch=0001/75 loss=8.439562
+pathoalign seed=705 epoch=0025/75 loss=2.941809
+pathoalign seed=705 epoch=0050/75 loss=2.737266
+pathoalign seed=705 epoch=0075/75 loss=2.649750
+Training backbone=resnet50 fold=3 seed=701 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=4.974908
+pathoalign seed=701 epoch=0025/75 loss=2.930263
+pathoalign seed=701 epoch=0050/75 loss=2.778483
+pathoalign seed=701 epoch=0075/75 loss=2.700986
+Training backbone=resnet50 fold=3 seed=701 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=7.827841
+pathoalign seed=701 epoch=0025/75 loss=3.025626
+pathoalign seed=701 epoch=0050/75 loss=2.807802
+pathoalign seed=701 epoch=0075/75 loss=2.717447
+Training backbone=resnet50 fold=3 seed=701 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=701 epoch=0001/75 loss=8.336971
+pathoalign seed=701 epoch=0025/75 loss=2.996870
+pathoalign seed=701 epoch=0050/75 loss=2.798749
+pathoalign seed=701 epoch=0075/75 loss=2.715342
+Training backbone=resnet50 fold=3 seed=702 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=4.969163
+pathoalign seed=702 epoch=0025/75 loss=2.938294
+pathoalign seed=702 epoch=0050/75 loss=2.755560
+pathoalign seed=702 epoch=0075/75 loss=2.690138
+Training backbone=resnet50 fold=3 seed=702 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=7.633705
+pathoalign seed=702 epoch=0025/75 loss=2.988478
+pathoalign seed=702 epoch=0050/75 loss=2.799749
+pathoalign seed=702 epoch=0075/75 loss=2.712840
+Training backbone=resnet50 fold=3 seed=702 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=702 epoch=0001/75 loss=8.255993
+pathoalign seed=702 epoch=0025/75 loss=2.998179
+pathoalign seed=702 epoch=0050/75 loss=2.792718
+pathoalign seed=702 epoch=0075/75 loss=2.712954
+Training backbone=resnet50 fold=3 seed=703 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=5.026552
+pathoalign seed=703 epoch=0025/75 loss=2.923992
+pathoalign seed=703 epoch=0050/75 loss=2.746694
+pathoalign seed=703 epoch=0075/75 loss=2.691771
+Training backbone=resnet50 fold=3 seed=703 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=7.675126
+pathoalign seed=703 epoch=0025/75 loss=3.012836
+pathoalign seed=703 epoch=0050/75 loss=2.798854
+pathoalign seed=703 epoch=0075/75 loss=2.712589
+Training backbone=resnet50 fold=3 seed=703 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=703 epoch=0001/75 loss=8.371563
+pathoalign seed=703 epoch=0025/75 loss=2.997663
+pathoalign seed=703 epoch=0050/75 loss=2.800577
+pathoalign seed=703 epoch=0075/75 loss=2.708202
+Training backbone=resnet50 fold=3 seed=704 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=4.976144
+pathoalign seed=704 epoch=0025/75 loss=2.928756
+pathoalign seed=704 epoch=0050/75 loss=2.792949
+pathoalign seed=704 epoch=0075/75 loss=2.686228
+Training backbone=resnet50 fold=3 seed=704 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=7.635450
+pathoalign seed=704 epoch=0025/75 loss=3.021419
+pathoalign seed=704 epoch=0050/75 loss=2.822364
+pathoalign seed=704 epoch=0075/75 loss=2.709555
+Training backbone=resnet50 fold=3 seed=704 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=704 epoch=0001/75 loss=8.253178
+pathoalign seed=704 epoch=0025/75 loss=2.985821
+pathoalign seed=704 epoch=0050/75 loss=2.811236
+pathoalign seed=704 epoch=0075/75 loss=2.710964
+Training backbone=resnet50 fold=3 seed=705 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=4.978582
+pathoalign seed=705 epoch=0025/75 loss=2.925929
+pathoalign seed=705 epoch=0050/75 loss=2.762647
+pathoalign seed=705 epoch=0075/75 loss=2.709051
+Training backbone=resnet50 fold=3 seed=705 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=7.656236
+pathoalign seed=705 epoch=0025/75 loss=3.002081
+pathoalign seed=705 epoch=0050/75 loss=2.801885
+pathoalign seed=705 epoch=0075/75 loss=2.720180
+Training backbone=resnet50 fold=3 seed=705 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=705 epoch=0001/75 loss=8.218973
+pathoalign seed=705 epoch=0025/75 loss=3.005013
+pathoalign seed=705 epoch=0050/75 loss=2.800842
+pathoalign seed=705 epoch=0075/75 loss=2.717475
+Training backbone=resnet50 fold=4 seed=701 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=5.023839
+pathoalign seed=701 epoch=0025/75 loss=2.929267
+pathoalign seed=701 epoch=0050/75 loss=2.764453
+pathoalign seed=701 epoch=0075/75 loss=2.705762
+Training backbone=resnet50 fold=4 seed=701 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/75 loss=7.743489
+pathoalign seed=701 epoch=0025/75 loss=3.026653
+pathoalign seed=701 epoch=0050/75 loss=2.800796
+pathoalign seed=701 epoch=0075/75 loss=2.726294
+Training backbone=resnet50 fold=4 seed=701 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=701 epoch=0001/75 loss=8.317627
+pathoalign seed=701 epoch=0025/75 loss=2.988882
+pathoalign seed=701 epoch=0050/75 loss=2.808463
+pathoalign seed=701 epoch=0075/75 loss=2.717024
+Training backbone=resnet50 fold=4 seed=702 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=4.961246
+pathoalign seed=702 epoch=0025/75 loss=2.943935
+pathoalign seed=702 epoch=0050/75 loss=2.763786
+pathoalign seed=702 epoch=0075/75 loss=2.691896
+Training backbone=resnet50 fold=4 seed=702 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=702 epoch=0001/75 loss=7.665617
+pathoalign seed=702 epoch=0025/75 loss=3.004046
+pathoalign seed=702 epoch=0050/75 loss=2.808068
+pathoalign seed=702 epoch=0075/75 loss=2.715769
+Training backbone=resnet50 fold=4 seed=702 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=702 epoch=0001/75 loss=8.297305
+pathoalign seed=702 epoch=0025/75 loss=3.004078
+pathoalign seed=702 epoch=0050/75 loss=2.802731
+pathoalign seed=702 epoch=0075/75 loss=2.714654
+Training backbone=resnet50 fold=4 seed=703 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=5.008019
+pathoalign seed=703 epoch=0025/75 loss=2.914155
+pathoalign seed=703 epoch=0050/75 loss=2.756470
+pathoalign seed=703 epoch=0075/75 loss=2.701833
+Training backbone=resnet50 fold=4 seed=703 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=703 epoch=0001/75 loss=7.664097
+pathoalign seed=703 epoch=0025/75 loss=3.005224
+pathoalign seed=703 epoch=0050/75 loss=2.799846
+pathoalign seed=703 epoch=0075/75 loss=2.712109
+Training backbone=resnet50 fold=4 seed=703 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=703 epoch=0001/75 loss=8.302537
+pathoalign seed=703 epoch=0025/75 loss=2.993289
+pathoalign seed=703 epoch=0050/75 loss=2.794724
+pathoalign seed=703 epoch=0075/75 loss=2.720202
+Training backbone=resnet50 fold=4 seed=704 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=5.020305
+pathoalign seed=704 epoch=0025/75 loss=2.946974
+pathoalign seed=704 epoch=0050/75 loss=2.784294
+pathoalign seed=704 epoch=0075/75 loss=2.691247
+Training backbone=resnet50 fold=4 seed=704 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=704 epoch=0001/75 loss=7.723447
+pathoalign seed=704 epoch=0025/75 loss=3.014344
+pathoalign seed=704 epoch=0050/75 loss=2.810912
+pathoalign seed=704 epoch=0075/75 loss=2.714395
+Training backbone=resnet50 fold=4 seed=704 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=704 epoch=0001/75 loss=8.301770
+pathoalign seed=704 epoch=0025/75 loss=3.013283
+pathoalign seed=704 epoch=0050/75 loss=2.813905
+pathoalign seed=704 epoch=0075/75 loss=2.711832
+Training backbone=resnet50 fold=4 seed=705 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=5.021900
+pathoalign seed=705 epoch=0025/75 loss=2.917934
+pathoalign seed=705 epoch=0050/75 loss=2.757568
+pathoalign seed=705 epoch=0075/75 loss=2.704462
+Training backbone=resnet50 fold=4 seed=705 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=705 epoch=0001/75 loss=7.634106
+pathoalign seed=705 epoch=0025/75 loss=3.020018
+pathoalign seed=705 epoch=0050/75 loss=2.798319
+pathoalign seed=705 epoch=0075/75 loss=2.723998
+Training backbone=resnet50 fold=4 seed=705 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=705 epoch=0001/75 loss=8.248228
+pathoalign seed=705 epoch=0025/75 loss=2.991670
+pathoalign seed=705 epoch=0050/75 loss=2.799970
+pathoalign seed=705 epoch=0075/75 loss=2.719680
+# SCORPION resnet50 Pair-Integrity Falsification Summary
+
+## Run Status
+
+- Dataset: SCORPION
+- Backbone: resnet50
+- Feature archive: `results/scorpion/features/fold_0_resnet50_imagenet.npz`
+- Seeds: 701, 702, 703, 704, 705
+- Folds: 0, 1, 2, 3, 4
+- Conditions: true_pairs, shuffled_region_pairs, shuffled_sample_pairs
+- Runtime seconds: 1138.5
+- Completed runs: 75 / 75
+- Smoke/full pass status for this command: True
+- Scanner-adversary-only condition: unavailable; no clean existing SCORPION implementation was found, so it was not added.
+
+## Main Result Table
+
+| Condition | Scanner probe | Mean paired cosine | Worst paired cosine | Mean top-1 retrieval | Worst top-1 retrieval | Effective rank | Bio/acq cross-cov RMS |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| true_pairs | 0.314462 | 0.654441 | 0.597813 | 0.972620 | 0.945489 | 85.087467 | 0.089567 |
+| shuffled_region_pairs | 0.304507 | 0.518814 | 0.448693 | 0.883944 | 0.798044 | 81.669536 | 0.085062 |
+| shuffled_sample_pairs | 0.306658 | 0.508324 | 0.443892 | 0.877482 | 0.800311 | 81.437735 | 0.084652 |
+
+## Pair-Integrity Falsification Logic
+
+Expected result: true pairs should preserve tissue identity metrics better than shuffled-pair controls.
+
+Falsification logic: if shuffled pairs suppress scanner signal but damage paired-tissue consistency/retrieval, that supports the interpretation that true same-tissue pairing matters. If shuffled pairs perform similarly to true pairs on tissue preservation, the paired-acquisition claim is weakened and should be reported honestly.
+
+## True-Pair Comparison
+
+- `shuffled_region_pairs`: true_better_all_tissue_metrics=True; scanner_probe_lower_than_true=True; tissue_damage_vs_true=True.
+- `shuffled_sample_pairs`: true_better_all_tissue_metrics=True; scanner_probe_lower_than_true=True; tissue_damage_vs_true=True.
+
+## Classification
+
+scanner suppression separated from useful tissue preservation.
+
+## Claim Boundary
+
+This is peer-review hardening only. It does not establish clinical validation, diagnostic performance, disease biology discovery, human clinical generalization, deployment readiness, complete scanner invariance, or perfect disentanglement.
+
+## Artifacts
+
+- raw_run_metrics.csv
+- condition_summary.csv
+- slide_blocked_contrasts.csv
+- fold_blocked_contrasts.csv
+- pair_integrity_falsification_summary.md
+- run_log.txt
+- pair_construction_audit.csv
+- experiment_design.json
+
+## Exact Retry Command
+
+```powershell
+python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_resnet50_imagenet.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_resnet50 --backbone resnet50 --seeds 701 702 703 704 705 --folds 0 1 2 3 4 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 75 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+```
+
+
+CONDITION SUMMARY
+            condition  n_runs  scanner_probe_accuracy_mean  scanner_probe_accuracy_std  scanner_probe_accuracy_min  scanner_probe_accuracy_max  mean_paired_cosine_mean  mean_paired_cosine_std  mean_paired_cosine_min  mean_paired_cosine_max  worst_paired_cosine_mean  worst_paired_cosine_std  worst_paired_cosine_min  worst_paired_cosine_max  mean_top1_retrieval_mean  mean_top1_retrieval_std  mean_top1_retrieval_min  mean_top1_retrieval_max  worst_top1_retrieval_mean  worst_top1_retrieval_std  worst_top1_retrieval_min  worst_top1_retrieval_max  effective_rank_mean  effective_rank_std  effective_rank_min  effective_rank_max  biological_acquisition_cross_covariance_mean  biological_acquisition_cross_covariance_std  biological_acquisition_cross_covariance_min  biological_acquisition_cross_covariance_max
+shuffled_region_pairs      25                     0.304507                    0.031842                       0.252                    0.360000                 0.518814                0.009768                0.499709                0.538301                  0.448693                 0.016777                 0.422243                 0.477970                  0.883944                 0.016203                 0.849444                 0.910000                   0.798044                  0.026111                  0.720000                  0.838889            81.669536            3.626968           76.668753           86.396584                                      0.085062                                     0.003680                                     0.078059                                     0.090163
+shuffled_sample_pairs      25                     0.306658                    0.033273                       0.250                    0.373333                 0.508324                0.008695                0.486819                0.526551                  0.443892                 0.013777                 0.413352                 0.476889                  0.877482                 0.014622                 0.841111                 0.898333                   0.800311                  0.020957                  0.755556                  0.833333            81.437735            3.444949           75.010378           86.436802                                      0.084652                                     0.003382                                     0.077304                                     0.089995
+           true_pairs      25                     0.314462                    0.043339                       0.252                    0.393333                 0.654441                0.008495                0.639183                0.668795                  0.597813                 0.015070                 0.570195                 0.621136                  0.972620                 0.006544                 0.960000                 0.985500                   0.945489                  0.012868                  0.915000                  0.966667            85.087467            6.001839           75.568273           93.005850                                      0.089567                                     0.003883                                     0.079569                                     0.094176
+
+SLIDE-BLOCKED CONTRASTS
+            condition                 metric                  difference_definition  n_slide_blocks  mean_difference  median_difference  fraction_blocks_above_true  fraction_blocks_favorable_vs_true
+shuffled_region_pairs scanner_probe_accuracy shuffled_region_pairs_minus_true_pairs              48        -0.009417          -0.006000                    0.375000                             0.5625
+shuffled_region_pairs     mean_paired_cosine shuffled_region_pairs_minus_true_pairs              48        -0.135281          -0.137519                    0.000000                             0.0000
+shuffled_region_pairs    worst_paired_cosine shuffled_region_pairs_minus_true_pairs              48        -0.156625          -0.154826                    0.000000                             0.0000
+shuffled_region_pairs    mean_top1_retrieval shuffled_region_pairs_minus_true_pairs              48        -0.088500          -0.086000                    0.000000                             0.0000
+shuffled_region_pairs   worst_top1_retrieval shuffled_region_pairs_minus_true_pairs              48        -0.186458          -0.170000                    0.000000                             0.0000
+shuffled_sample_pairs scanner_probe_accuracy shuffled_sample_pairs_minus_true_pairs              48        -0.007083          -0.002000                    0.395833                             0.5000
+shuffled_sample_pairs     mean_paired_cosine shuffled_sample_pairs_minus_true_pairs              48        -0.145618          -0.146288                    0.000000                             0.0000
+shuffled_sample_pairs    worst_paired_cosine shuffled_sample_pairs_minus_true_pairs              48        -0.166049          -0.164965                    0.000000                             0.0000
+shuffled_sample_pairs    mean_top1_retrieval shuffled_sample_pairs_minus_true_pairs              48        -0.094854          -0.079000                    0.000000                             0.0000
+shuffled_sample_pairs   worst_top1_retrieval shuffled_sample_pairs_minus_true_pairs              48        -0.192500          -0.185000                    0.000000                             0.0000
+Run completed in 1138.6 seconds

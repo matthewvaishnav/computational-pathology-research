@@ -1,0 +1,11 @@
+condition,metric,difference_definition,n_slide_blocks,mean_difference,median_difference,fraction_blocks_above_true,fraction_blocks_favorable_vs_true
+shuffled_region_pairs,scanner_probe_accuracy,shuffled_region_pairs_minus_true_pairs,48,-0.00941666666666667,-0.006000000000000005,0.375,0.5625
+shuffled_region_pairs,mean_paired_cosine,shuffled_region_pairs_minus_true_pairs,48,-0.13528092374830158,-0.13751918080472392,0.0,0.0
+shuffled_region_pairs,worst_paired_cosine,shuffled_region_pairs_minus_true_pairs,48,-0.15662513209749399,-0.1548260579258204,0.0,0.0
+shuffled_region_pairs,mean_top1_retrieval,shuffled_region_pairs_minus_true_pairs,48,-0.08849999999999998,-0.08600000000000008,0.0,0.0
+shuffled_region_pairs,worst_top1_retrieval,shuffled_region_pairs_minus_true_pairs,48,-0.1864583333333333,-0.16999999999999993,0.0,0.0
+shuffled_sample_pairs,scanner_probe_accuracy,shuffled_sample_pairs_minus_true_pairs,48,-0.0070833333333333364,-0.0020000000000000018,0.3958333333333333,0.5
+shuffled_sample_pairs,mean_paired_cosine,shuffled_sample_pairs_minus_true_pairs,48,-0.1456178790521141,-0.14628781696804793,0.0,0.0
+shuffled_sample_pairs,worst_paired_cosine,shuffled_sample_pairs_minus_true_pairs,48,-0.1660490194434533,-0.16496534276753663,0.0,0.0
+shuffled_sample_pairs,mean_top1_retrieval,shuffled_sample_pairs_minus_true_pairs,48,-0.09485416666666668,-0.07900000000000013,0.0,0.0
+shuffled_sample_pairs,worst_top1_retrieval,shuffled_sample_pairs_minus_true_pairs,48,-0.1925,-0.18499999999999994,0.0,0.0
