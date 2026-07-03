@@ -1,0 +1,89 @@
+
+=== cross-backbone pair-integrity run start 2026-07-03 11:51:16 ===
+command: python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_resnet50_imagenet.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_resnet50_smoke --backbone resnet50 --seeds 701 --folds 0 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 1 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+Command: python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_resnet50_imagenet.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_resnet50_smoke --backbone resnet50 --seeds 701 --folds 0 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 1 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+Training backbone=resnet50 fold=0 seed=701 condition=true_pairs mismatch=0.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/1 loss=5.036499
+Training backbone=resnet50 fold=0 seed=701 condition=shuffled_region_pairs mismatch=1.000 same_slide=1.000
+pathoalign seed=701 epoch=0001/1 loss=7.854162
+Training backbone=resnet50 fold=0 seed=701 condition=shuffled_sample_pairs mismatch=1.000 same_slide=0.000
+pathoalign seed=701 epoch=0001/1 loss=8.387900
+# SCORPION resnet50 Pair-Integrity Falsification Summary
+
+## Run Status
+
+- Dataset: SCORPION
+- Backbone: resnet50
+- Feature archive: `results/scorpion/features/fold_0_resnet50_imagenet.npz`
+- Seeds: 701
+- Folds: 0
+- Conditions: true_pairs, shuffled_region_pairs, shuffled_sample_pairs
+- Runtime seconds: 5.3
+- Completed runs: 3 / 3
+- Smoke/full pass status for this command: True
+- Scanner-adversary-only condition: unavailable; no clean existing SCORPION implementation was found, so it was not added.
+
+## Main Result Table
+
+| Condition | Scanner probe | Mean paired cosine | Worst paired cosine | Mean top-1 retrieval | Worst top-1 retrieval | Effective rank | Bio/acq cross-cov RMS |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| true_pairs | 0.500000 | 0.711655 | 0.671643 | 0.935000 | 0.890000 | 52.787655 | 0.199868 |
+| shuffled_region_pairs | 0.506000 | 0.630372 | 0.567226 | 0.909000 | 0.845000 | 75.018283 | 0.167442 |
+| shuffled_sample_pairs | 0.522000 | 0.592270 | 0.529732 | 0.919500 | 0.865000 | 90.590606 | 0.153378 |
+
+## Pair-Integrity Falsification Logic
+
+Expected result: true pairs should preserve tissue identity metrics better than shuffled-pair controls.
+
+Falsification logic: if shuffled pairs suppress scanner signal but damage paired-tissue consistency/retrieval, that supports the interpretation that true same-tissue pairing matters. If shuffled pairs perform similarly to true pairs on tissue preservation, the paired-acquisition claim is weakened and should be reported honestly.
+
+## True-Pair Comparison
+
+- `shuffled_region_pairs`: true_better_all_tissue_metrics=True; scanner_probe_lower_than_true=False; tissue_damage_vs_true=True.
+- `shuffled_sample_pairs`: true_better_all_tissue_metrics=True; scanner_probe_lower_than_true=False; tissue_damage_vs_true=True.
+
+## Classification
+
+supports pair-integrity mechanism.
+
+## Claim Boundary
+
+This is peer-review hardening only. It does not establish clinical validation, diagnostic performance, disease biology discovery, human clinical generalization, deployment readiness, complete scanner invariance, or perfect disentanglement.
+
+## Artifacts
+
+- raw_run_metrics.csv
+- condition_summary.csv
+- slide_blocked_contrasts.csv
+- fold_blocked_contrasts.csv
+- pair_integrity_falsification_summary.md
+- run_log.txt
+- pair_construction_audit.csv
+- experiment_design.json
+
+## Exact Retry Command
+
+```powershell
+python experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py --base-features results/scorpion/features/fold_0_resnet50_imagenet.npz --manifests-dir data/scorpion/splits --out-dir results/paired_acquisition_factorization_pair_integrity_scorpion_resnet50_smoke --backbone resnet50 --seeds 701 --folds 0 --conditions true_pairs shuffled_region_pairs shuffled_sample_pairs --epochs 1 --region-batch-size 32 --learning-rate 0.0003 --weight-decay 0.0001 --device cuda
+```
+
+
+CONDITION SUMMARY
+            condition  n_runs  scanner_probe_accuracy_mean  scanner_probe_accuracy_std  scanner_probe_accuracy_min  scanner_probe_accuracy_max  mean_paired_cosine_mean  mean_paired_cosine_std  mean_paired_cosine_min  mean_paired_cosine_max  worst_paired_cosine_mean  worst_paired_cosine_std  worst_paired_cosine_min  worst_paired_cosine_max  mean_top1_retrieval_mean  mean_top1_retrieval_std  mean_top1_retrieval_min  mean_top1_retrieval_max  worst_top1_retrieval_mean  worst_top1_retrieval_std  worst_top1_retrieval_min  worst_top1_retrieval_max  effective_rank_mean  effective_rank_std  effective_rank_min  effective_rank_max  biological_acquisition_cross_covariance_mean  biological_acquisition_cross_covariance_std  biological_acquisition_cross_covariance_min  biological_acquisition_cross_covariance_max
+shuffled_region_pairs       1                        0.506                         NaN                       0.506                       0.506                 0.630372                     NaN                0.630372                0.630372                  0.567226                      NaN                 0.567226                 0.567226                    0.9090                      NaN                   0.9090                   0.9090                      0.845                       NaN                     0.845                     0.845            75.018283                 NaN           75.018283           75.018283                                      0.167442                                          NaN                                     0.167442                                     0.167442
+shuffled_sample_pairs       1                        0.522                         NaN                       0.522                       0.522                 0.592270                     NaN                0.592270                0.592270                  0.529732                      NaN                 0.529732                 0.529732                    0.9195                      NaN                   0.9195                   0.9195                      0.865                       NaN                     0.865                     0.865            90.590606                 NaN           90.590606           90.590606                                      0.153378                                          NaN                                     0.153378                                     0.153378
+           true_pairs       1                        0.500                         NaN                       0.500                       0.500                 0.711655                     NaN                0.711655                0.711655                  0.671643                      NaN                 0.671643                 0.671643                    0.9350                      NaN                   0.9350                   0.9350                      0.890                       NaN                     0.890                     0.890            52.787655                 NaN           52.787655           52.787655                                      0.199868                                          NaN                                     0.199868                                     0.199868
+
+SLIDE-BLOCKED CONTRASTS
+            condition                 metric                  difference_definition  n_slide_blocks  mean_difference  median_difference  fraction_blocks_above_true  fraction_blocks_favorable_vs_true
+shuffled_region_pairs scanner_probe_accuracy shuffled_region_pairs_minus_true_pairs              10         0.006000       2.775558e-17                         0.5                                0.5
+shuffled_region_pairs     mean_paired_cosine shuffled_region_pairs_minus_true_pairs              10        -0.081282      -8.503956e-02                         0.0                                0.0
+shuffled_region_pairs    worst_paired_cosine shuffled_region_pairs_minus_true_pairs              10        -0.096177      -1.047431e-01                         0.0                                0.0
+shuffled_region_pairs    mean_top1_retrieval shuffled_region_pairs_minus_true_pairs              10        -0.026000      -2.500000e-02                         0.2                                0.2
+shuffled_region_pairs   worst_top1_retrieval shuffled_region_pairs_minus_true_pairs              10        -0.035000      -5.000000e-02                         0.1                                0.1
+shuffled_sample_pairs scanner_probe_accuracy shuffled_sample_pairs_minus_true_pairs              10         0.022000       6.000000e-02                         0.6                                0.3
+shuffled_sample_pairs     mean_paired_cosine shuffled_sample_pairs_minus_true_pairs              10        -0.119384      -1.189131e-01                         0.0                                0.0
+shuffled_sample_pairs    worst_paired_cosine shuffled_sample_pairs_minus_true_pairs              10        -0.137212      -1.396480e-01                         0.0                                0.0
+shuffled_sample_pairs    mean_top1_retrieval shuffled_sample_pairs_minus_true_pairs              10        -0.015500      -2.000000e-02                         0.3                                0.3
+shuffled_sample_pairs   worst_top1_retrieval shuffled_sample_pairs_minus_true_pairs              10        -0.020000       0.000000e+00                         0.1                                0.1
+Run completed in 5.3 seconds
