@@ -1,6 +1,6 @@
 # Paired-Acquisition Neural Factorization Publication Readiness
 
-Audit date: 2026-07-02
+Audit date: 2026-07-03
 
 Scope: final publication-readiness verification for the main repository and the three public child repositories:
 
@@ -21,6 +21,7 @@ Scope: final publication-readiness verification for the main repository and the 
 - The main repository has `CITATION.cff`, `LICENSE`, `CHANGELOG.md`, a clean top-level README, the arXiv source zip, and a manuscript PDF build path.
 - Public/semi-public old-name prose was cleaned from outreach docs, benchmark summaries, selected research notes, the Figure 1 table snippet, and the canine SCC scaffold script.
 - SCORPION pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. Broken-pair controls reduced scanner-probe accuracy similarly or more than true pairs, but degraded paired-tissue consistency and same-region retrieval, strengthening peer-review readiness without expanding clinical claims.
+- SCORPION cross-backbone pair-integrity falsification completed on Phikon and ImageNet ResNet50 across 5 seeds, 5 folds, and 3 pair-construction conditions per backbone. True same-tissue pairs preserved tissue identity substantially better than shuffled-pair controls in both feature families, even when shuffled controls achieved comparable or stronger scanner-probe suppression. This strengthens the pair-integrity mechanism as peer-review-hardening evidence without expanding clinical claims.
 - External canine SCC pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. True pairs preserved tissue identity better than both shuffled controls; region-shuffled pairs reduced scanner-probe accuracy more than true pairs while damaging paired cosine and retrieval. This strengthens the external pair-integrity claim without expanding clinical claims.
 
 ## Missing Blockers
@@ -69,6 +70,7 @@ Scope: final publication-readiness verification for the main repository and the 
 - [x] Public-facing naming cleanup is acceptable for arXiv/preprint.
 - [x] Pair-integrity falsification completed and documented as a falsification control.
 - [x] Pair-integrity falsification integrated into the main manuscript and evidence documentation.
+- [x] SCORPION cross-backbone pair-integrity falsification completed and integrated as peer-review-hardening evidence.
 - [x] External canine SCC pair-integrity falsification completed and integrated as a peer-review-hardening control.
 
 ## Naming-scope cleanup result
@@ -87,11 +89,11 @@ Files changed in this cleanup pass:
 - Benchmark and research notes: `docs/benchmarks/*` files with old method prose; `docs/research/pathoalign-external-multiscanner-caninescc-protocol.md`; `docs/research/scorpion-pathoalign-crossbackbone-protocol.md`; `docs/research/scorpion-pathoalign-crossbackbone-results.md`; `docs/research/scorpion-pathoalign-plan.md`.
 - Paper/release artifacts: `paper/figures/pathoalign_figure1_benchmark_table.tex`; `scripts/release/build_paired_acquisition_factorization_caninescc_repo.ps1`.
 - Control document: `docs/research/paired-acquisition-factorization-publication-readiness.md`.
-- Pair-integrity integration: `docs/research/paired-acquisition-factorization-pair-integrity-falsification.md`, `docs/research/paired-acquisition-factorization-caninescc-pair-integrity-falsification.md`, `experiments/scorpion/run_pair_integrity_falsification.py`, `experiments/canine/run_pair_integrity_falsification_caninescc.py`, `paper/arxiv/main.tex`, and `paper/arxiv/study_specific_packages.tex`.
+- Pair-integrity integration: `docs/research/paired-acquisition-factorization-pair-integrity-falsification.md`, `docs/research/paired-acquisition-factorization-scorpion-cross-backbone-pair-integrity.md`, `docs/research/paired-acquisition-factorization-caninescc-pair-integrity-falsification.md`, `experiments/scorpion/run_pair_integrity_falsification.py`, `experiments/scorpion/run_pair_integrity_falsification_crossbackbone.py`, `experiments/canine/run_pair_integrity_falsification_caninescc.py`, `paper/arxiv/main.tex`, and `paper/arxiv/study_specific_packages.tex`.
 
 ## Next 5 Actions In Exact Order
 
-1. Review and commit the naming-scope cleanup and pair-integrity integration after confirming the diff is acceptable.
+1. Review and commit the SCORPION cross-backbone pair-integrity documentation and arXiv integration after confirming the diff is acceptable.
 2. Add root `CITATION.cff` and `LICENSE` to `paired-acquisition-factorization-allocation` if that child package will be archived or cited independently.
 3. Create a concise evidence manifest for the main DOI release.
 4. Decide the exact evidence artifacts to archive, including the SCORPION pair-integrity result tables if they are in scope.
@@ -101,4 +103,4 @@ Files changed in this cleanup pass:
 
 SCORPION is no longer the main remaining blocker: the repository exists, the PDF exists, GitHub Pages serves the PDF directly, and claim boundaries are present.
 
-SCORPION and external canine SCC pair-integrity falsification are now completed and integrated. Together they strengthen peer-review readiness by showing that broken-pair controls can suppress scanner signal while damaging tissue preservation, but they do not expand the clinical or deployment claim boundary.
+SCORPION DINOv2, SCORPION Phikon, SCORPION ResNet50, and external canine SCC pair-integrity falsification are now completed and integrated. Together they strengthen peer-review readiness by showing that broken-pair controls can suppress scanner signal while damaging tissue preservation, but they do not expand the clinical or deployment claim boundary.
