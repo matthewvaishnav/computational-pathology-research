@@ -1,0 +1,42 @@
+
+================================================================================
+2026-07-03 13:37:41
+COMMAND experiments\baselines\run_pair_integrity_baseline_murder_test.py --datasets scorpion caninescc
+
+DATASET SCORPION DINOv2
+Frozen features: C:\Users\matth\computational-pathology-research\results\scorpion\features\fold_0_dinov2_base.npz
+Evaluating scorpion fold=0: fit_rows=1900 test_rows=500 test_slides=10
+
+================================================================================
+2026-07-03 14:33:53
+COMMAND experiments/baselines/run_pair_integrity_baseline_murder_test.py --datasets scorpion --folds 0
+
+DATASET SCORPION DINOv2
+Frozen features: C:\Users\matth\computational-pathology-research\results\scorpion\features\fold_0_dinov2_base.npz
+Evaluating scorpion fold=0: fit_rows=1900 test_rows=500 test_slides=10
+
+BASELINE MURDER TEST COMPLETE
+Datasets: scorpion
+Rows: 25
+Runtime seconds: 9.03
+scorpion: scanner suppression alone is insufficient; tissue-preserving factorization remains valuable.
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_baseline_murder_test\baseline_murder_test_report.md
+
+================================================================================
+2026-07-03 14:35:37
+COMMAND experiments/baselines/run_pair_integrity_baseline_murder_test.py --datasets scorpion --folds 0 1 2 3 4
+
+DATASET SCORPION DINOv2
+Frozen features: C:\Users\matth\computational-pathology-research\results\scorpion\features\fold_0_dinov2_base.npz
+Evaluating scorpion fold=0: fit_rows=1900 test_rows=500 test_slides=10
+Evaluating scorpion fold=1: fit_rows=1900 test_rows=500 test_slides=10
+Evaluating scorpion fold=2: fit_rows=1900 test_rows=500 test_slides=10
+Evaluating scorpion fold=3: fit_rows=1950 test_rows=450 test_slides=9
+Evaluating scorpion fold=4: fit_rows=1950 test_rows=450 test_slides=9
+
+BASELINE MURDER TEST COMPLETE
+Datasets: scorpion
+Rows: 125
+Runtime seconds: 51.15
+scorpion: scanner suppression alone is insufficient; tissue-preserving factorization remains valuable.
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_baseline_murder_test\baseline_murder_test_report.md
