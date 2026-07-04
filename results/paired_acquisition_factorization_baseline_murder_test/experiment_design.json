@@ -1,0 +1,41 @@
+{
+  "command": "experiments/baselines/run_pair_integrity_baseline_murder_test.py --datasets scorpion --folds 0 1 2 3 4",
+  "datasets": [
+    "scorpion"
+  ],
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "k_values": [
+    0,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "reference_baselines": [
+    "paired_consistency_reference",
+    "paired_acquisition_neural_factorization_reference"
+  ],
+  "required_metrics": [
+    "scanner_probe_accuracy",
+    "mean_paired_cosine",
+    "worst_paired_cosine",
+    "mean_top1_retrieval",
+    "worst_top1_retrieval",
+    "effective_rank",
+    "runtime_seconds"
+  ],
+  "simple_baselines": [
+    "linear_scanner_subspace_projection",
+    "original_frozen_features",
+    "pca_component_removal"
+  ],
+  "stage": "paired_acquisition_factorization_baseline_murder_test"
+}
