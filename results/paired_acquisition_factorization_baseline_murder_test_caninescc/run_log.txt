@@ -1,0 +1,34 @@
+
+================================================================================
+2026-07-03 14:45:19
+COMMAND experiments/baselines/run_pair_integrity_baseline_murder_test.py --out-dir results/paired_acquisition_factorization_baseline_murder_test_caninescc --datasets caninescc --folds 0
+
+DATASET External canine SCC DINOv2
+Frozen features: C:\Users\matth\computational-pathology-research\results\external_multiscanner_caninescc\features\fold_0_dinov2_base.npz
+Evaluating caninescc fold=0: fit_rows=3305 test_rows=720 test_samples=8
+
+BASELINE MURDER TEST COMPLETE
+Datasets: caninescc
+Rows: 25
+Runtime seconds: 19.19
+caninescc: scanner suppression alone is insufficient; tissue-preserving factorization remains valuable.
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_baseline_murder_test_caninescc\baseline_murder_test_report.md
+
+================================================================================
+2026-07-03 14:46:15
+COMMAND experiments/baselines/run_pair_integrity_baseline_murder_test.py --out-dir results/paired_acquisition_factorization_baseline_murder_test_caninescc --datasets caninescc --folds 0 1 2 3 4
+
+DATASET External canine SCC DINOv2
+Frozen features: C:\Users\matth\computational-pathology-research\results\external_multiscanner_caninescc\features\fold_0_dinov2_base.npz
+Evaluating caninescc fold=0: fit_rows=3305 test_rows=720 test_samples=8
+Evaluating caninescc fold=1: fit_rows=3080 test_rows=945 test_samples=9
+Evaluating caninescc fold=2: fit_rows=3300 test_rows=725 test_samples=9
+Evaluating caninescc fold=3: fit_rows=3245 test_rows=780 test_samples=9
+Evaluating caninescc fold=4: fit_rows=3170 test_rows=855 test_samples=9
+
+BASELINE MURDER TEST COMPLETE
+Datasets: caninescc
+Rows: 125
+Runtime seconds: 91.60
+caninescc: scanner suppression alone is insufficient; tissue-preserving factorization remains valuable.
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_baseline_murder_test_caninescc\baseline_murder_test_report.md
