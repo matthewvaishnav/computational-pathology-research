@@ -23,6 +23,8 @@ Scope: final publication-readiness verification for the main repository and the 
 - SCORPION pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. Broken-pair controls reduced scanner-probe accuracy similarly or more than true pairs, but degraded paired-tissue consistency and same-region retrieval, strengthening peer-review readiness without expanding clinical claims.
 - SCORPION cross-backbone pair-integrity falsification completed on Phikon and ImageNet ResNet50 across 5 seeds, 5 folds, and 3 pair-construction conditions per backbone. True same-tissue pairs preserved tissue identity substantially better than shuffled-pair controls in both feature families, even when shuffled controls achieved comparable or stronger scanner-probe suppression. This strengthens the pair-integrity mechanism as peer-review-hardening evidence without expanding clinical claims.
 - External canine SCC pair-integrity falsification completed across 5 seeds, 5 folds, and 3 pair-construction conditions. True pairs preserved tissue identity better than both shuffled controls; region-shuffled pairs reduced scanner-probe accuracy more than true pairs while damaging paired cosine and retrieval. This strengthens the external pair-integrity claim without expanding clinical claims.
+- SCORPION DINOv2 baseline murder test completed across 5 folds and 17 baselines (original frozen features, linear scanner-subspace projection k=0--32, PCA component removal k=0--32, paired-consistency reference, neural factorization reference). Linear projection preserved tissue (cosine 0.881) but left scanner signal highly recoverable (probe 0.724 vs neural 0.399). PCA suppressed scanner more (probe 0.560) but damaged tissue (cosine 0.806). No simple baseline matched the neural factorization tradeoff.
+- External canine SCC DINOv2 baseline murder test completed across 5 folds and 17 baselines. Linear projection preserved tissue (cosine 0.739) but weakly suppressed scanner (probe 0.707 vs neural 0.361). PCA suppressed scanner more (probe 0.641) but severely damaged tissue (cosine 0.598). The same failure pattern reproduced externally, weakening the baseline objection across datasets.
 
 ## Missing Blockers
 
@@ -72,6 +74,8 @@ Scope: final publication-readiness verification for the main repository and the 
 - [x] Pair-integrity falsification integrated into the main manuscript and evidence documentation.
 - [x] SCORPION cross-backbone pair-integrity falsification completed and integrated as peer-review-hardening evidence.
 - [x] External canine SCC pair-integrity falsification completed and integrated as a peer-review-hardening control.
+- [x] SCORPION baseline murder test completed and integrated.
+- [x] External canine SCC baseline murder test completed and integrated.
 
 ## Naming-scope cleanup result
 
@@ -103,4 +107,4 @@ Files changed in this cleanup pass:
 
 SCORPION is no longer the main remaining blocker: the repository exists, the PDF exists, GitHub Pages serves the PDF directly, and claim boundaries are present.
 
-SCORPION DINOv2, SCORPION Phikon, SCORPION ResNet50, and external canine SCC pair-integrity falsification are now completed and integrated. Together they strengthen peer-review readiness by showing that broken-pair controls can suppress scanner signal while damaging tissue preservation, but they do not expand the clinical or deployment claim boundary.
+SCORPION DINOv2, SCORPION Phikon, SCORPION ResNet50, and external canine SCC pair-integrity falsification are now completed and integrated. SCORPION and canine SCC baseline murder tests are completed and integrated. Together they strengthen peer-review readiness by showing that broken-pair controls and simple scanner-removal baselines can suppress scanner signal while damaging tissue preservation, but they do not expand the clinical or deployment claim boundary.
