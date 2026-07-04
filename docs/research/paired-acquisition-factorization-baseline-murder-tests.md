@@ -24,7 +24,7 @@ the fit split:
 | `linear_scanner_subspace_projection_k*` | Top-k logistic scanner-discriminative directions removed after standardization. Directions learned via balanced L2-penalized logistic regression on fit-scanner labels, then SVD-decomposed. |
 | `pca_component_removal_k*` | Top-k PCA directions removed after fit-mean centering and standardization. |
 | `paired_consistency_reference` | Existing locked paired-consistency projected features (five seeds per fold). |
-| `paired_acquisition_neural_factorization_reference` | Existing locked PathoAlign dep20 projected features (five seeds per fold) used as the method reference. |
+| `paired_acquisition_neural_factorization_reference` | Existing locked Paired-Acquisition Neural Factorization dep20 projected features (five seeds per fold) used as the method reference. |
 
 k values tested: 0, 1, 2, 4, 8, 16, 32.
 
