@@ -171,23 +171,9 @@ The clean false-switch rate was 6.7\%, while trigger rates increased strongly un
 \subsection{Fixed detector transfer to conservative ordinal threshold shift}
 A stronger transfer study froze one detector calibrated under dominant-site label noise and applied it without retuning to a systematic conservative ordinal threshold shift. The fixed rule used the 0.10 lower quantile, 0.80 upper quantile, at least three triggered diagnostic families, and no entropy diagnostic.
 
-\begin{table}[!htbp]
-\centering
-\caption{Fifteen-seed fixed-detector transfer to conservative ordinal threshold shift. Deltas are detector-switch minus the clean-strategy baseline.}
-\small
-\begin{tabular}{rrrrr}
-\toprule
-Shift & Trigger rate & Global QWK $\Delta$ & Macro-F1 $\Delta$ & Worst-site QWK $\Delta$ \\
-\midrule
-0\% & 13.3\% & $-0.00025$ & $+0.00009$ & $+0.00151$ \\
-25\% & 33.3\% & $+0.00129$ & $+0.00290$ & $+0.00353$ \\
-35\% & 60.0\% & $+0.00542$ & $+0.00838$ & $+0.00991$ \\
-45\% & 73.3\% & $+0.01053$ & $+0.01512$ & $+0.01290$ \\
-\bottomrule
-\end{tabular}
-\label{tab:detector_transfer}
-\end{table}
-\FloatBarrier
+The conservative ordinal threshold-shift detector-transfer results are reported in Table~\ref{tab:main_detector_transfer}. We do not duplicate the table here. The key pattern is that clean-regime triggering remains low, while trigger rates increase under stronger conservative shift and the detector-transfer deltas become positive for global QWK, macro-F1, and worst-site QWK in shifted regimes.
+
+At 25\%, 35\%, and 45\% conservative shift, the fixed detector increasingly switches away from FedAvg and yields positive deltas across the reported summary metrics, while the 0\% clean condition remains near neutral.
 
 At 35\% and 45\% shift, the bootstrap intervals for all three headline deltas were positive. The 25\% regime was directionally positive but inconclusive. The scientific value is transfer across stress mechanisms: the detector was calibrated under random label-noise stress and evaluated as frozen under systematic ordinal bias.
 
