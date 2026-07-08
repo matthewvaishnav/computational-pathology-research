@@ -295,6 +295,32 @@ Secondary weakness: nearest-neighbor scanner purity in acquisition space (0.880)
 
 ---
 
+## Hostile Reviewer Stress-Test Outcome
+
+A full adversarial review was conducted on 2026-07-08 (see `hostile_reviewer_stress_test.md`). Key findings:
+
+### All five main-paper claims survive hostile review
+Each claim has a primary table/figure, strongest baseline, one limitation sentence, and appendix trail. No claim makes clinical, diagnostic, or deployment assertions. No claim asserts perfect separation or best raw scanner removal.
+
+### The main-paper story is coherent without appendix detail
+Reading only the five claim summaries, the arc holds: pair structure matters → branch separation is measurable → but centroid/QR wins raw scanner removal → bottlenecking improves the separation tradeoff → swapping supports factor-like behavior. The appendix provides depth; the main text provides a self-contained story.
+
+### CLAIM_5 is the weakest claim
+Single-dataset, single-backbone evidence. Nearest-neighbor scanner purity (0.880) is notably weaker than category purity (0.980). Decoder was trained for reconstruction, not factor manipulation. These limitations are explicitly stated in the claim text and limitations section. The decoder-space results (scanner follow 0.901 for Type A swaps) are stronger and compensate partially. But a reviewer demanding cross-dataset swapping evidence would have a valid objection.
+
+### Three issues found and patched in manuscript skeleton
+
+1. **CLAIM_4 "frontier" language softened.** The full-scale comparison has 4 variants (8D/16D × default/stronger_xcov) — too sparse for "frontier sweep." Manuscript skeleton now uses "bottleneck comparison," "capacity-constrained separation audit," and "directional separation-frontier improvement."
+
+2. **CLAIM_3 answer moved to introduction.** The "if centroid/QR is better, why use your method?" question must be answered in the abstract and introduction, not deferred to Section 7. The manuscript skeleton now requires this upfront framing in both Section 1 (Abstract) and Section 2 (Introduction).
+
+3. **CLAIM_5 dual evidence required in main text.** The main-text figure for CLAIM_5 must show BOTH the strong decoder-space scanner follow (0.901) AND the weaker branch-space NN scanner purity (0.880) side by side. Hiding the mixed result in appendix would invite selective-reporting accusations.
+
+### Readiness
+The claim ledger is coherent and defensible. The three issues are presentational, not evidentiary. The patches to `manuscript_skeleton.md` and `wording_boundaries.md` lock these fixes in place for manuscript drafting.
+
+---
+
 ## Validation Checklist
 
 - [x] Every claim references at least one commit/result source
@@ -304,3 +330,5 @@ Secondary weakness: nearest-neighbor scanner purity in acquisition space (0.880)
 - [x] No previous result files modified
 - [x] Branch created from main: `experiment/claim-ledger-and-paper-skeleton`
 - [x] All five required files created in `paper/claim_ledger/`
+- [x] Hostile reviewer stress test completed (see `hostile_reviewer_stress_test.md`)
+- [x] Stress-test patches applied to manuscript skeleton and wording boundaries
