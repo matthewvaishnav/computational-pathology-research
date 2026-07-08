@@ -61,6 +61,21 @@
 - "Biological label transfer in SCORPION" (no labels)
 - Only allowed: "tissue/pair-retrieval," "same-region retrieval," "tissue-identity preservation via paired retrieval"
 
+#### Frontier / Bottleneck Language
+- "Frontier sweep" (unqualified — implies dense Pareto mapping; the full-scale comparison has 4 variants)
+- "Pareto front" or "Pareto optimal" (sparse data cannot support this)
+- "Mapped the separation frontier" (use "directional separation-frontier improvement")
+- "Dense frontier" or "continuous frontier" (only 2 dimensions × 2 regularization strengths tested at full scale)
+
+#### Acquisition Swapping Absolutism
+- "Perfect causal acquisition factor" (use "factor-like evidence")
+- "Proves factorization" (use "supports factor-like behavior")
+- "Scanner always follows acquisition" (follow rate is 0.855, not 1.0)
+- "Proves independence of biological and acquisition factors" (category preservation under swap is ~0.40)
+- "Scanner information is fully encoded in the acquisition branch" (bio_scanner_leakage remains 0.032–0.213)
+- "Works across all scanners and domains" (single dataset, 5 scanners)
+- "Enables acquisition factor editing for deployment" (research audit only; not deployment-ready)
+
 ---
 
 ### ALWAYS ALLOWED (safe vocabulary)
@@ -91,6 +106,22 @@
 - "In SCORPION [backbone]..."
 - "Research audit"
 - "Methodological contribution"
+
+#### Frontier / Bottleneck (allowed)
+- "Bottleneck comparison" (preferred term for the experiment)
+- "Capacity-constrained separation audit" (alternative experiment name)
+- "Directional separation-frontier improvement" (allowed with qualification)
+- "Dimensionality-constrained acquisition branch"
+- "Reduced-capacity acquisition branch"
+
+#### Acquisition Swapping (allowed)
+- "Factor-like evidence"
+- "Factor-like behavior"
+- "Probe-supported scanner following"
+- "Mixed nearest-neighbor scanner alignment"
+- "Decoder-based acquisition swapping"
+- "Scanner information follows the acquisition branch through recombination"
+- "Supports the interpretation of factor-like structure"
 - "Controlled multi-scanner setting"
 - "Feature-level evidence"
 

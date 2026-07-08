@@ -11,6 +11,8 @@
 ### Purpose
 State the problem (scanner/acquisition variation confounds biological signal in computational pathology), the method (paired-acquisition factorization with biological and acquisition branches), the contribution (structured separation, not best raw scanner removal), and the key evidence boundary (oldstyle centroid/QR wins raw scanner erasure; paired-acquisition provides an explicit acquisition branch whose biological leakage can be bottlenecked).
 
+**Required upfront answer:** "If centroid/QR is better at raw scanner removal, why use paired-acquisition?" Must be answered in the abstract. Answer: Centroid/QR is stronger for raw scanner erasure, but paired-acquisition solves a different problem — structured separation with an explicit scanner-bearing acquisition branch that can be bottlenecked, inspected, and swapped through the decoder. The contribution is not best raw erasure; it is an explicit acquisition representation.
+
 ### Required Figures/Tables
 None (abstract is text-only).
 
@@ -39,6 +41,8 @@ All five claims summarized. No new results.
 
 ### Purpose
 Motivate the problem: multi-scanner computational pathology datasets contain scanner-specific variation that confounds biological analysis. Existing scanner-removal methods (centroid projection, PCA, adversarial alignment) remove scanner signal but do not produce an explicit, inspectable acquisition representation. Paired-acquisition factorization addresses this gap by learning a structured decomposition from paired same-region cross-scanner samples. State the thesis: the contribution is structured separation, not best raw scanner removal.
+
+**Required upfront framing:** The introduction must explicitly answer: "If centroid/QR is better at raw scanner removal, why use paired-acquisition?" Centroid/QR is the stronger raw scanner-removal method (scanner probe 0.200 vs 0.361). Paired-acquisition solves a different problem: it produces an explicit scanner-bearing acquisition branch that can be bottlenecked to reduce biological leakage (Claim 4), swapped through a decoder to test factor-like behavior (Claim 5), and inspected to understand what scanner information the model has isolated. The two methods are complementary — centroid/QR for blind removal, paired-acquisition for structured separation. This answer must appear here, not deferred to the results section, because it is the first question any reviewer will ask.
 
 ### Required Figures/Tables
 - Conceptual diagram: paired-acquisition architecture (biological branch, acquisition branch, decoder).
@@ -95,12 +99,13 @@ Describe the ScorpionProjection architecture: frozen DINOv2 (or Phikon/ResNet50)
 
 ### Exact Result Commits
 - 30abcd39 (final paired-acquisition package audit) — architecture
-- a89bfb32 (acquisition bottleneck separation frontier sweep) — bottleneck variants
+- a89bfb32 (acquisition bottleneck comparison) — bottleneck variants
 
 ### Safe Wording
 - "The acquisition branch dimensionality controls capacity..."
 - "Cross-covariance regularization encourages branch independence..."
-- "We sweep acquisition dimension and regularization strength..."
+- "We compare bottleneck dimensions and regularization strengths..."
+- "Two bottleneck variants were selected for full-scale evaluation..."
 
 ### Forbidden Wording
 - "Optimal architecture"
@@ -193,31 +198,36 @@ Establish the oldstyle centroid/QR baseline as the strongest raw scanner-removal
 
 ---
 
-## 8. Main Result 4: Bottlenecked Frontier Improvement
+## 8. Main Result 4: Bottlenecked Capacity-Constrained Separation
 
 ### Purpose
-Present the bottleneck frontier: reducing acquisition capacity substantially reduces biological leakage while preserving scanner capture and downstream transfer. Cross-backbone validation in SCORPION confirms generalization for tissue-retrieval leakage reduction.
+Present the bottleneck comparison: reducing acquisition capacity from 64D to 8D or 16D (with stronger cross-covariance regularization) substantially reduces biological leakage while preserving scanner capture and downstream transfer. This is a directional improvement on the separation tradeoff — less biological leakage in the acquisition branch, same scanner capture. Cross-backbone validation in SCORPION confirms generalization for tissue-retrieval leakage reduction. Note: the full-scale comparison is sparse (4 variants × 2 backbones); it supports directional improvement, not a densely mapped Pareto frontier.
 
 ### Required Figures/Tables
-- **Figure:** Frontier plot — acquisition-branch category leakage vs scanner capture.
+- **Figure:** Bottleneck comparison plot — acquisition-branch category leakage vs scanner capture for true_pair (64D), acq_dim8_default, acq_dim16_stronger_xcov.
 - **Figure:** Three-panel cross-backbone SCORPION figure — tissue-retrieval leakage for DINOv2, Phikon, ResNet50.
 - **Table:** Bottleneck variant metrics — acq_dim8_default, acq_dim16_stronger_xcov vs true_pair.
 
 ### Exact Result Commits
-- a89bfb32 (acquisition bottleneck separation frontier sweep)
-- c29a038d (frontier-selected downstream validation)
-- 0e2af247 (frontier-selected cross-backbone validation)
+- a89bfb32 (acquisition bottleneck comparison)
+- c29a038d (bottleneck-selected downstream validation)
+- 0e2af247 (bottleneck-selected cross-backbone validation)
 
 ### Safe Wording
 - "Bottlenecking the acquisition branch reduces category leakage..."
 - "Scanner capture is preserved at bottleneck dimensions as low as 8..."
 - "Biological downstream transfer is maintained..."
 - "Cross-backbone validation confirms reduced tissue-retrieval leakage..."
+- "This is a directional separation-frontier improvement" (allowed with qualification)
+- "The bottleneck comparison shows..." (preferred over "frontier sweep")
+- "Capacity-constrained separation audit" (preferred for the experiment name)
 
 ### Forbidden Wording
 - "Bottlenecking eliminates biological leakage" (residual 0.160 remains)
-- "Dimension 8 is optimal" (sparse sweep)
+- "Dimension 8 is optimal" (sparse comparison; only 8 and 16 tested at full scale)
 - "SCORPION bottleneck reduces category leakage" (no category labels; tissue-retrieval leakage only)
+- "Frontier sweep" (unqualified — implies dense Pareto mapping; use "bottleneck comparison" or qualify as "directional separation-frontier improvement")
+- "Pareto front" or "Pareto optimal" (sparse data cannot support this)
 
 ---
 
@@ -230,6 +240,7 @@ Present the acquisition swapping evidence. When acquisition branches are swapped
 - **Figure:** Swap-type construction diagram (Types A, B, C, D).
 - **Figure:** Bar chart — scanner follow rate and category preservation rate by variant and swap type.
 - **Table:** Branch-space and decoder-space swap metrics.
+- **Critical requirement:** The main-text figure MUST show BOTH the strong decoder-space evidence AND the weaker/mixed branch-space nearest-neighbor scanner purity (0.880 vs bio-space category purity 0.980) side by side. Do not show only the decoder-space result and relegate the NN purity gap to appendix — a reviewer will find it and accuse selective reporting. The figure must make the asymmetry visible: biological category purity (0.980) is near-perfect, acquisition scanner purity (0.880) is decent but mixed.
 
 ### Exact Result Commits
 - aa8d0596 (acquisition factor swapping audit)
@@ -311,9 +322,9 @@ Organize appendix material: detailed tables, per-condition breakdowns, additiona
 - Oldstyle residual k=1,2,3,4 full metrics (3450ede2)
 - Logistic-SVD residual audit (ec2a509f)
 
-#### Appendix F: Bottleneck Frontier Detail
+#### Appendix F: Bottleneck Comparison Detail
 - Smoke and full variant metrics (a89bfb32)
-- Frontier-selected downstream per-scanner detail (c29a038d)
+- Bottleneck-selected downstream per-scanner detail (c29a038d)
 - Cross-backbone raw metrics — DINOv2, Phikon, ResNet50 (0e2af247)
 
 #### Appendix G: Acquisition Swapping Detail
