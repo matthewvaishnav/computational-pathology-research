@@ -25,7 +25,7 @@ Multi-scanner computational pathology datasets are increasingly common. Whole-sl
 
 Linear scanner-removal methods — projecting out scanner-centroid directions or removing principal components correlated with scanner identity — suppress scanner signal effectively. In our experiments, a simple centroid/QR linear projection (oldstyle_keep_k4) reduces a linear scanner probe to chance level (0.200, 5-class balanced) while preserving tissue-category accuracy (0.400). These methods are fast, simple, and strong at raw scanner erasure. But they are blind: they remove scanner-discriminative directions without producing an explicit representation of what was removed, cannot be inspected for residual biological content, and cannot be manipulated to test whether scanner information has been cleanly isolated.
 
-**Why not just use the linear baseline?** This question must be answered immediately. If raw scanner removal is the only goal, oldstyle centroid/QR is the stronger choice. Paired-acquisition factorization addresses a different problem: it produces an explicit scanner-bearing acquisition branch that can be inspected, bottlenecked to reduce biological leakage, and swapped through a decoder to test whether scanner information follows the acquisition factor through recombination. The two methods are complementary — centroid/QR for blind removal, paired-acquisition for structured separation.
+**Why not just use the linear baseline?** This question deserves an upfront answer. If raw scanner removal is the only goal, oldstyle centroid/QR is the stronger choice. Paired-acquisition factorization addresses a different problem: it produces an explicit scanner-bearing acquisition branch that can be inspected, bottlenecked to reduce biological leakage, and swapped through a decoder to test whether scanner information follows the acquisition factor through recombination. The two methods are complementary — centroid/QR for blind removal, paired-acquisition for structured separation.
 
 Paired-acquisition factorization exploits a specific data structure: same tissue region, imaged on two different scanners. This paired supervision provides a weak signal for separating scanner from biology: the biological content is shared across the pair, while scanner characteristics differ. By training a dual-branch architecture with reconstruction, adversarial, and independence losses, the model learns to route biological information through one branch and scanner information through the other.
 
@@ -133,7 +133,7 @@ True same-region pairs (L0) are the strongest condition for tissue-identity pres
 
 ### 4.3 Interpretation
 
-True same-region paired structure is required for the method to achieve its best tissue-identity preservation. The method does not require exactly same-region pairs — same-slide-different-region (L1) still preserves substantial tissue identity — but tissue preservation degrades as the pairing weakens. This bounds how paired acquisition data must be collected.
+True same-region paired structure is required for the method to achieve its best tissue-identity preservation. The method does not require exactly same-region pairs — same-slide-different-region (L1) still preserves substantial tissue identity — but tissue preservation degrades as the pairing weakens. This bounds the data requirements for paired-acquisition training.
 
 ---
 
@@ -159,7 +159,7 @@ We probed the biological and acquisition branches from true-pair training with l
 
 ### 5.3 Scanner-heldout transfer
 
-Under leave-one-scanner-out category classification, the biological branch nearly preserves cross-scanner transfer: balanced accuracy 0.827 vs frozen 0.845 (Δ = −0.018). It improves on the hardest held-out scanner (p1000: 0.755 vs 0.709, Δ = +0.045). The acquisition branch transfers poorly (0.517) as expected — it encodes scanner-specific features. Shuffled-sample biological transfer is substantially worse (0.608). The linear projection baseline (0.835) slightly exceeds the biological branch in mean accuracy, consistent with its stronger raw scanner removal.
+To test whether the biological branch preserves category information under scanner shift, we evaluate leave-one-scanner-out category classification. Under this protocol, the biological branch nearly preserves cross-scanner transfer: balanced accuracy 0.827 vs frozen 0.845 (Δ = −0.018). It improves on the hardest held-out scanner (p1000: 0.755 vs 0.709, Δ = +0.045). The acquisition branch transfers poorly (0.517) as expected — it encodes scanner-specific features. Shuffled-sample biological transfer is substantially worse (0.608). The linear projection baseline (0.835) slightly exceeds the biological branch in mean accuracy, consistent with its stronger raw scanner removal.
 
 ### 5.4 Interpretation
 
@@ -190,9 +190,7 @@ Oldstyle_removed_k4 (the removed component) carries scanner signal (scanner prob
 
 **Paired-acquisition is not the best raw scanner-removal method.** Oldstyle centroid/QR wins on raw scanner suppression and raw category preservation. Any claim that paired-acquisition outperforms all baselines on scanner removal is false.
 
-**The contribution is structured separation.** The oldstyle baseline removes scanner-centroid directions and produces a cleaned embedding. It does not produce an explicit acquisition branch, cannot be inspected for what scanner information was removed, cannot be bottlenecked to reduce biological leakage, and cannot be swapped to test factor-like behavior. Paired-acquisition solves a different problem: it produces an explicit, manipulable acquisition representation.
-
-If raw scanner removal is the only goal, use oldstyle_keep_k4. If an inspectable acquisition branch is needed, paired-acquisition provides complementary capability.
+**The contribution is structured separation.** This baseline boundary reframes every subsequent result: the bottleneck comparison (Section 7) shows improvement on structured separation, not on raw scanner removal; the swapping evidence (Section 8) tests whether the acquisition branch carries manipulable scanner information, not whether it captures scanner better than a linear projection. The oldstyle baseline is the reference, not the competitor.
 
 ---
 
@@ -200,7 +198,7 @@ If raw scanner removal is the only goal, use oldstyle_keep_k4. If an inspectable
 
 ### 7.1 Experiment
 
-We compared two bottlenecked acquisition branch variants against the baseline 64D acquisition branch:
+If the acquisition branch encodes both scanner and biological information at 64D, reducing its capacity should force it to prioritize scanner-discriminative information over biological information. We compared two bottlenecked acquisition branch variants against the baseline 64D acquisition branch:
 
 | Variant | Acq dim | Cross-cov weight | Full-scale runs |
 |---|---|---|---|
@@ -259,11 +257,11 @@ Evaluated on three variants (true_pair, acq_dim8_default, acq_dim16_stronger_xco
 
 **Scanner follows acquisition branch.** Scanner follow rate averages 0.855 across all variants and swap types. For same-sample/different-scanner swaps (Type A, the cleanest test), the rate is 0.871-0.876. Scanner information tracks the acquisition branch through recombination.
 
-**Category preservation is modest.** Category preservation rate averages ~0.40 across variants. Under swap, category structure is partially disrupted — the biological branch carries category information, but recombination through the decoder introduces interference.
+**Branch-space category preservation is modest.** Category preservation rate averages ~0.40 across variants in branch space. Under swap, category structure is partially disrupted — the biological branch carries category information, but recombination through the decoder introduces interference.
 
 **Bottleneck variants show improved separation under swap.** Bottlenecked variants have lower acquisition-branch category leakage under swap (acq_dim16_xcov 0.283, acq_dim8 0.287 vs true_pair 0.296) and comparable scanner follow rates.
 
-**Decoder-space evidence is stronger.** In decoder-reconstructed feature space, same-sample swaps (Type A) achieve scanner follow 0.901 and category preservation 0.978-0.992 for bottlenecked variants. The decoder-space results are stronger than branch-space results, consistent with the decoder having learned to combine the branches into coherent features.
+**Decoder-reconstructed space preserves category under swap.** In decoder-reconstructed feature space, same-sample swaps (Type A) achieve scanner follow 0.901 and category preservation 0.978-0.992 for bottlenecked variants. The decoder-space results are stronger than branch-space results, consistent with the decoder having learned to combine the branches into coherent features.
 
 **Nearest-neighbor evidence is mixed — and shown here explicitly.**
 
@@ -272,7 +270,7 @@ Evaluated on three variants (true_pair, acq_dim8_default, acq_dim16_stronger_xco
 | Bio-space K1 category purity | 0.980 | Near-perfect — biological neighbors preserve category |
 | Acq-space K1 scanner purity | 0.880 | Decent but mixed — scanner neighbors in acquisition space are less pure |
 | Decoder-space scanner follow (Type A) | 0.901 | Strong — scanner follows acquisition in clean swap |
-| Decoder-space category preservation | 0.978+ | Strong — category preserved in bottlenecked variants |
+| Decoder-space category preservation (bottlenecked) | 0.978+ | Strong — category preserved in bottlenecked variants |
 | Target-scanner NN rate (bottlenecked) | 0.135-0.152 | Weak — bottlenecking collapses scanner NN structure |
 | Source-category NN rate (bottlenecked) | 0.996 | Near-perfect — category NN structure preserved |
 
