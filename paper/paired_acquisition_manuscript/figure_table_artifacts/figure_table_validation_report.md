@@ -2,7 +2,8 @@
 
 **Branch:** paper/paired-acquisition-figure-table-assembly
 **Generated:** 2026-07-09
-**Validation performed by:** Automated validation (git diff, git status, forbidden wording search, commit tracing)
+**Last patched:** 2026-07-09 (audit patches: issue-1, issue-2, issue-3, issue-4)
+**Validation performed by:** Automated validation (git diff, git status, forbidden wording search, commit tracing) + manual patch verification
 
 ---
 
@@ -283,5 +284,11 @@ No forbidden terms appear in any data cell, caption text, or claim statement. Al
 | Ready to commit | ✓ YES |
 
 ### Overall: ALL CHECKS PASSED ✓
+
+**Post-audit patches applied (2026-07-09):**
+1. **Table 1 CSV — source_result_file column added.** 7 data rows: canine SCC row marked "N/A — meta row aggregating multiple experiments"; SCORPION rows reference boundary_summary.csv from e4819c42/d018c924; baseline rows reference oldstyle_residual_summary.csv and label_probe_summary.csv; swapping row references acquisition_swapping_summary.csv from aa8d0596.
+2. **Figure 1 caption — "monotonically" removed.** Replaced with: "Tissue preservation is strongest at L0 and degrades substantially for all non-true-pair conditions (L1–L4)." Notes the L1→L2 canine SCC reversal (0.542→0.585) explicitly. L3–L4 cluster described.
+3. **Figure 3 CSV — 3 std columns added.** scanner_heldout_balanced_acc_std, sample_disjoint_scanner_heldout_balanced_acc_std, scanner_confounded_balanced_acc_std populated from c29a038d frontier_downstream_summary.csv (neural/bottlenecked: 125/125/375 runs) and 535eea18 scanner_heldout_summary.csv (frozen/oldstyle: 5 runs, shuffled: 25 runs). N/A rows explicitly justified. std_source column traces each value to its source commit.
+4. **Figure 5 CSV — duplicated decoder values fixed.** decoder_scanner_follow_rate and decoder_category_preservation_rate set to N/A on all B/C/D rows (12→9 N/A cells). Decoder metrics retained on Type A rows only (per-variant: 0.901/0.970–0.992). aggregate_level, missingness_note, and value_source columns added to clarify metric granularity. Probe metrics (scanner_follow_rate_probe, category_preservation_rate_probe) verified correct from acquisition_swapping_summary.csv. Branch-space purity (0.980/0.880) and NN rates (0.558→0.135, 0.996) confirmed per-variant from manuscript/claim ledger.
 
 This branch (`paper/paired-acquisition-figure-table-assembly`) is ready for review and commit. All 14 artifact files have been created. All numbers are traced to specific commits and result files. No forbidden wording appears in any claim, caption, or data cell. The branch assembles and validates data only — it does not modify experiment results, change scientific claims, or redesign the science.

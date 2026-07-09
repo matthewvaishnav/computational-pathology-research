@@ -17,7 +17,8 @@
 | Claims supported | All (CLAIM_1 through CLAIM_5) — foundational scoping table |
 | Source commits | e4819c42, d018c924, bec06eb4, 3450ede2, aa8d0596 |
 | Source files | result_to_claim_map.csv, paired_acquisition_claim_ledger.md, manuscript_draft.md |
-| Validation status | PASS — all numbers traced to commits e4819c42, d018c924, bec06eb4, 3450ede2, aa8d0596 |
+| Validation status | PASS — all rows traced to source commits; source_result_file column added (patch: issue-1) |
+| Columns | 12 (including source_commit, source_result_file); 7 data rows |
 
 ### Figure 1 — Pairing Ladder
 
@@ -29,7 +30,7 @@
 | Source commits | e4819c42 (primary), d018c924 (cross-backbone) |
 | Source files | `results/paired_acquisition_factorization_pair_structure_boundary_test/boundary_summary.csv`; `results/paired_acquisition_factorization_pair_structure_boundary_crossbackbone/boundary_summary.csv` |
 | Rows | 20 (5 levels × 4 datasets/backbones) |
-| Validation status | PASS — 20 rows traced to e4819c42, d018c924 |
+| Validation status | PASS — 20 rows traced to e4819c42, d018c924; caption patched: "monotonically" removed, non-monotonic L1→L2 canine SCC reversal noted (patch: issue-2) |
 
 ### Figure 2 — Branch Separation
 
@@ -52,8 +53,9 @@
 | Claims supported | CLAIM_3_LINEAR_BASELINE_BOUNDARY |
 | Source commits | 1c527697, 535eea18, 0d7cdc92, b5a9886e, c29a038d, 3450ede2 |
 | Source files | `unified_separation_scoreboard_key_metrics.csv`, `scanner_heldout_summary.csv`, `frontier_downstream_summary.csv` |
-| Rows | 12 representations |
+| Rows | 12 representations + 1 header |
 | Validation status | PASS — 12 representations traced to 1c527697, 535eea18, 0d7cdc92, b5a9886e, c29a038d |
+| Columns | 22 (including scanner_heldout_balanced_acc_std, sample_disjoint_scanner_heldout_balanced_acc_std, scanner_confounded_balanced_acc_std, std_source — patch: issue-3) |
 
 ### Figure 4 — Bottleneck Comparison
 
@@ -76,8 +78,9 @@
 | Claims supported | CLAIM_5_FACTOR_LIKE_SWAPPING |
 | Source commits | aa8d0596 (sole source) |
 | Source files | `acquisition_swapping_summary.csv`, `acquisition_swapping_nearest_neighbor_metrics.csv`, `acquisition_swapping_probe_metrics.csv`, `acquisition_swapping_report.md` |
-| Rows | 13 (4 swap types × 3 variants + 1 aggregate) |
-| Validation status | PASS — 13 rows traced to aa8d0596 |
+| Rows | 13 (4 swap types × 3 variants + 1 global aggregate) |
+| Validation status | PASS — 13 rows traced to aa8d0596; decoder values fixed: B/C/D rows marked N/A with missingness note, Type A rows keep variant-level decoder metrics (patch: issue-4) |
+| Columns | 17 (including aggregate_level, missingness_note, value_source — patch: issue-4) |
 
 ---
 
