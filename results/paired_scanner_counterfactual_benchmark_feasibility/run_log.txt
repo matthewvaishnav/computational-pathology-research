@@ -1,0 +1,10 @@
+paired_scanner_counterfactual feasibility audit
+timestamp=2026-07-10T10:34:06
+repo_root=C:\Users\matth\computational-pathology-research
+output_dir=C:\Users\matth\computational-pathology-research\results\paired_scanner_counterfactual_benchmark_feasibility
+datasets=external_multiscanner_caninescc,scorpion
+mode=read_only_input_scan
+training_invoked=false
+result_files_modified=false
+external_multiscanner_caninescc: feature=yes decoder=yes pixel=candidate_requires_registration_qc_review
+scorpion: feature=yes decoder=yes pixel=future_only

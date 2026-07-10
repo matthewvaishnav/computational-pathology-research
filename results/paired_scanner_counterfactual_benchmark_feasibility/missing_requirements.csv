@@ -1,0 +1,6 @@
+dataset,layer,missing_requirement,status,why_it_matters
+external_multiscanner_caninescc,pixel,validated pixel reconstruction readiness,candidate_requires_registration_qc_review,"pixel metrics require explicit acceptance of paired image, coordinate, registration, and QC evidence"
+scorpion,pixel,patch coordinates,not_found,needed to align local regions
+scorpion,pixel,registration metadata,not_found,needed to justify pixel comparisons
+scorpion,pixel,registration confidence/QC,not_found,needed to reject misregistered patches
+scorpion,pixel,validated pixel reconstruction readiness,future_only,"pixel metrics require explicit acceptance of paired image, coordinate, registration, and QC evidence"
