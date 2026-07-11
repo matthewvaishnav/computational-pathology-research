@@ -304,6 +304,8 @@ This is **factor-like behavior**, not proof of perfect causal factorization. Sca
 
 9. **No clinical or diagnostic evidence.** This is a methodological research contribution. No patient-outcome, diagnostic-accuracy, or clinical-utility claims are made or should be inferred.
 
+The present manuscript provides feature-space and decoder-space evidence for structured separation. A natural next step is a paired scanner counterfactual benchmark that treats same-region multi-scanner acquisitions as observed counterfactuals: the biological tissue region is held fixed while the acquisition condition changes. The benchmark v0 specification in `benchmarks/paired_scanner_counterfactual/` separates what is feasible from existing artifacts -- feature-space and decoder-space audits -- from what remains future work: pixel-space scanner counterfactual reconstruction, which requires raw patch/WSI access, local correspondence, patch coordinates, registration metadata, registration confidence/QC, and validated reconstruction readiness.
+
 ---
 
 ## 10. Appendix Map
