@@ -90,6 +90,14 @@ The current neural biological branch is scanner-suppressed, not strictly invaria
 
 Association measured only among examples with the same recorded category, or after a category adjustment learned without test-row leakage. This means unexplained by the available coarse labels, not non-biological.
 
+### Candidate-discovery eligibility
+
+A held-out sample-category cell is candidate-discovery eligible when it has at least two distinct regions and the same fold/category contains a different sample with at least one region for matched negatives. The reported cell, region, and observation counts cover anchor-capable cells only; negative-only gallery rows are not included.
+
+### Replicated-anchor confirmatory eligibility
+
+A fold/category is replicated-anchor confirmatory eligible only when at least two independent samples are anchor-capable, meaning each sample-category cell has at least two distinct regions. Candidate-discovery support must not be presented as confirmatory support, and scanner views, seeds, or archives are not independent anchor replication.
+
 ### Candidate non-biological correlate
 
 Association with an explicit technical or provenance variable after excluding same-region and same-sample explanations where the design permits. Sample ID, slide ID, region ID, crop geometry, and annotation rank are not sufficient by themselves to establish non-biological origin.
@@ -101,7 +109,7 @@ Association with an explicit technical or provenance variable after excluding sa
 | G0: lineage | Dataset, backbone, representation, fold, seed, fit splits, vector key, code/commit, and checksum are explicit and internally consistent | `manual_review`; do not run confirmatory metrics |
 | G1: alignment | Feature rows join one-to-one to metadata on dataset-appropriate composite keys | `blocked` |
 | G2: scanner premise | Scanner suppression or invariance is evaluated out of fold and is not inferred from one weak probe | Interpret only as scanner-suppressed residual structure |
-| G3: biological control | Category labels exist and eligible strata contain independent samples and regions | Category-unexplained criterion is blocked |
+| G3: biological control | Category labels exist; discovery and replicated-anchor confirmatory eligibility are reported separately; confirmatory strata contain at least two anchor-capable samples | Category-unexplained criterion is blocked |
 | G4: leakage control | Exact region is excluded; query and comparison scanners differ; fold spaces are not pooled; scanner bundles remain atomic | Identity result is invalid |
 | G5: provenance attribution | Provenance labels repeat across independent biological units and are crossed with scanner/category/sample | Non-biological attribution is blocked |
 

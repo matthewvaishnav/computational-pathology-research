@@ -49,7 +49,8 @@ class FamilySpec:
     expected_count: int | None
     vector_key: str = "features"
     expected_dataset_token: str | None = None
-    expected_model_token: str | None = None
+    expected_backbone_token: str | None = None
+    require_explicit_backbone: bool = False
     require_five_by_five_grid: bool = True
     require_training_metadata: bool = True
 
@@ -84,7 +85,7 @@ FAMILIES = (
         "canine_scc",
         "results/external_multiscanner_caninescc/features/fold_0_dinov2_base.npz",
         1,
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
         require_five_by_five_grid=False,
         require_training_metadata=False,
     ),
@@ -97,7 +98,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_acq_dim8_biological",
@@ -109,7 +110,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_acq_dim16_biological",
@@ -121,7 +122,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_shuffled_region_control",
@@ -132,7 +133,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_shuffled_sample_control",
@@ -143,7 +144,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_same_category_different_sample_control",
@@ -155,7 +156,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_scanner_balanced_random_control",
@@ -167,7 +168,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "canine_fully_random_control",
@@ -179,7 +180,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="canine",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "scorpion_true_pair_biological",
@@ -190,7 +191,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "scorpion_phikon_true_pair_biological",
@@ -201,7 +202,8 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="phikon",
+        expected_backbone_token="phikon",
+        require_explicit_backbone=True,
     ),
     FamilySpec(
         "scorpion_resnet50_true_pair_biological",
@@ -212,7 +214,8 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="resnet50",
+        expected_backbone_token="resnet50",
+        require_explicit_backbone=True,
     ),
     FamilySpec(
         "scorpion_dinov2_acq_dim8_biological",
@@ -224,7 +227,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "scorpion_dinov2_acq_dim16_biological",
@@ -236,7 +239,7 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="dinov2",
+        expected_backbone_token="dinov2",
     ),
     FamilySpec(
         "scorpion_phikon_acq_dim8_biological",
@@ -248,7 +251,8 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="phikon",
+        expected_backbone_token="phikon",
+        require_explicit_backbone=True,
     ),
     FamilySpec(
         "scorpion_phikon_acq_dim16_biological",
@@ -260,7 +264,8 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="phikon",
+        expected_backbone_token="phikon",
+        require_explicit_backbone=True,
     ),
     FamilySpec(
         "scorpion_resnet50_acq_dim8_biological",
@@ -272,7 +277,8 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="resnet50",
+        expected_backbone_token="resnet50",
+        require_explicit_backbone=True,
     ),
     FamilySpec(
         "scorpion_resnet50_acq_dim16_biological",
@@ -284,7 +290,8 @@ FAMILIES = (
         ),
         25,
         expected_dataset_token="scorpion",
-        expected_model_token="resnet50",
+        expected_backbone_token="resnet50",
+        require_explicit_backbone=True,
     ),
     FamilySpec(
         "oldstyle_keep_k4_row_level",
@@ -469,9 +476,12 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
     )
 
     fold_eligibility: dict[str, dict[str, Any]] = {}
-    eligible_cells = 0
-    eligible_regions = 0
-    usable_category_union: set[str] = set()
+    discovery_cells = 0
+    discovery_regions = 0
+    confirmatory_cells = 0
+    confirmatory_regions = 0
+    discovery_category_union: set[str] = set()
+    confirmatory_category_union: set[str] = set()
     if spec.category_column and region_categories:
         fold_records: dict[str, list[tuple[str, str, str]]] = defaultdict(list)
         for (sample, region), category_values in region_categories.items():
@@ -482,6 +492,27 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
                 (sample, region, next(iter(category_values)))
             )
 
+        def summarize_support(
+            cell_counts: Counter[tuple[str, str]],
+            fold_categories: set[str],
+            usable_categories: set[str],
+        ) -> dict[str, Any]:
+            selected = [
+                count
+                for (_sample, category), count in cell_counts.items()
+                if category in usable_categories and count >= 2
+            ]
+            selected_regions = sum(selected)
+            return {
+                "eligible_sample_category_cells": len(selected),
+                "eligible_regions": selected_regions,
+                "eligible_observations": selected_regions * spec.expected_scanners,
+                "usable_categories": sorted(usable_categories),
+                "nonestimable_categories": sorted(
+                    fold_categories - usable_categories
+                ),
+            }
+
         for fold, records in sorted(fold_records.items(), key=lambda item: item[0]):
             cell_regions: Counter[tuple[str, str]] = Counter()
             category_samples: dict[str, set[str]] = defaultdict(set)
@@ -490,34 +521,76 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
                 cell_regions[(sample, category)] += 1
                 category_samples[category].add(sample)
                 fold_samples.add(sample)
-            usable_categories = {
+            anchor_capable_samples: dict[str, set[str]] = defaultdict(set)
+            for (sample, category), count in cell_regions.items():
+                if count >= 2:
+                    anchor_capable_samples[category].add(sample)
+
+            discovery_categories = {
                 category
                 for category, members in category_samples.items()
+                if len(members) >= 2 and anchor_capable_samples.get(category)
+            }
+            confirmatory_categories = {
+                category
+                for category, members in anchor_capable_samples.items()
                 if len(members) >= 2
             }
-            fold_cells = 0
-            fold_regions = 0
-            for (_sample, category), count in cell_regions.items():
-                if category in usable_categories and count >= 2:
-                    fold_cells += 1
-                    fold_regions += count
-            usable_category_union.update(usable_categories)
-            eligible_cells += fold_cells
-            eligible_regions += fold_regions
+            if not confirmatory_categories <= discovery_categories:
+                raise ValueError("confirmatory_eligibility_not_discovery_subset")
+
+            fold_categories = set(category_samples)
+            discovery_support = summarize_support(
+                cell_regions, fold_categories, discovery_categories
+            )
+            confirmatory_support = summarize_support(
+                cell_regions, fold_categories, confirmatory_categories
+            )
+            discovery_category_union.update(discovery_categories)
+            confirmatory_category_union.update(confirmatory_categories)
+            discovery_cells += discovery_support["eligible_sample_category_cells"]
+            discovery_regions += discovery_support["eligible_regions"]
+            confirmatory_cells += confirmatory_support[
+                "eligible_sample_category_cells"
+            ]
+            confirmatory_regions += confirmatory_support["eligible_regions"]
             fold_eligibility[fold] = {
                 "samples": len(fold_samples),
                 "categories": len(category_samples),
-                "eligible_sample_category_cells": fold_cells,
-                "eligible_regions": fold_regions,
-                "eligible_observations": fold_regions * spec.expected_scanners,
-                "usable_categories": sorted(usable_categories),
-                "nonestimable_categories": sorted(
-                    set(category_samples) - usable_categories
-                ),
+                "anchor_capable_samples_by_category": {
+                    category: len(anchor_capable_samples.get(category, set()))
+                    for category in sorted(category_samples)
+                },
+                "candidate_discovery": discovery_support,
+                "replicated_anchor_confirmatory": confirmatory_support,
             }
 
-    usable_categories = sorted(usable_category_union)
-    excluded_categories = sorted(categories - usable_category_union)
+    eligibility = {
+        "candidate_discovery": {
+            "definition": (
+                "anchor_sample_category_cell_has_at_least_two_regions_and_"
+                "fold_category_has_a_different_sample_for_negatives"
+            ),
+            "count_scope": "anchor_capable_cells_and_their_regions_only",
+            "eligible_sample_category_cells": discovery_cells,
+            "eligible_regions": discovery_regions,
+            "eligible_observations": discovery_regions * spec.expected_scanners,
+            "usable_categories": sorted(discovery_category_union),
+            "excluded_categories": sorted(categories - discovery_category_union),
+        },
+        "replicated_anchor_confirmatory": {
+            "definition": (
+                "fold_category_has_at_least_two_independently_anchor_capable_"
+                "samples_each_with_at_least_two_regions"
+            ),
+            "count_scope": "anchor_capable_cells_and_their_regions_only",
+            "eligible_sample_category_cells": confirmatory_cells,
+            "eligible_regions": confirmatory_regions,
+            "eligible_observations": confirmatory_regions * spec.expected_scanners,
+            "usable_categories": sorted(confirmatory_category_union),
+            "excluded_categories": sorted(categories - confirmatory_category_union),
+        },
+    }
 
     status = "available"
     reason_codes: list[str] = []
@@ -567,12 +640,8 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
         "category_values": sorted(categories),
         "category_conflicts": category_conflicts,
         "fold_conflicts": fold_conflicts,
-        "eligible_sample_category_cells": eligible_cells,
-        "eligible_regions": eligible_regions,
-        "eligible_observations": eligible_regions * spec.expected_scanners,
+        "eligibility": eligibility,
         "fold_eligibility": fold_eligibility,
-        "usable_categories": usable_categories,
-        "excluded_categories": excluded_categories,
         "_key_rows": key_rows,
         "_rows": rows,
     }
@@ -925,11 +994,13 @@ def inspect_archive(
             if isinstance(parsed, dict):
                 metadata = parsed
         source = str(metadata.get("source", ""))
+        backbone = str(metadata.get("backbone", ""))
         model = str(metadata.get("model", ""))
         condition = str(metadata.get("condition", ""))
         variant = str(metadata.get("variant", ""))
         path_labels = {value for value in (condition, variant) if value}
         result["metadata_source"] = source
+        result["metadata_backbone"] = backbone
         result["metadata_model"] = model
         result["metadata_condition"] = condition
         result["metadata_variant"] = variant
@@ -978,11 +1049,35 @@ def inspect_archive(
             result["warnings"].append("internal_source_missing")
         elif token and token.lower() not in source.lower():
             result["warnings"].append("internal_source_conflicts_with_expected_dataset")
-        model_token = family.expected_model_token
-        if model_token and not model:
+        backbone_token = family.expected_backbone_token
+        backbone_matches_expected: bool | None = None
+        if backbone_token and backbone:
+            backbone_matches_expected = (
+                backbone_token.lower() in backbone.lower()
+            )
+            if not backbone_matches_expected:
+                result["warnings"].append(
+                    "internal_backbone_conflicts_with_expected_family"
+                )
+        elif family.require_explicit_backbone:
+            result["warnings"].append("internal_backbone_missing")
+        result["metadata_backbone_matches_expected"] = backbone_matches_expected
+
+        if backbone_token and not model:
             result["warnings"].append("internal_model_missing")
-        elif model_token and model_token.lower() not in model.lower():
-            result["warnings"].append("internal_model_conflicts_with_expected_backbone")
+        elif backbone and backbone_matches_expected is True:
+            if backbone.lower() not in model.lower():
+                result["warnings"].append(
+                    "internal_backbone_model_label_conflict"
+                )
+        elif (
+            not backbone
+            and backbone_token
+            and backbone_token.lower() not in model.lower()
+        ):
+            result["warnings"].append(
+                "family_expected_backbone_model_label_conflict"
+            )
     except FileNotFoundError:
         result["status"] = "absent"
         result["reason_codes"].append("archive_absent")
@@ -1347,6 +1442,8 @@ def metric_assessments(
     true_pair = families["canine_true_pair_biological"]
     oldstyle = families["oldstyle_keep_k4_row_level"]
     scorpion = manifests["scorpion"]
+    discovery = canine["eligibility"]["candidate_discovery"]
+    confirmatory = canine["eligibility"]["replicated_anchor_confirmatory"]
 
     if canine["status"] != "available" or true_pair["status"] == "blocked":
         canine_m1_status = "blocked"
@@ -1359,14 +1456,14 @@ def metric_assessments(
             "strict_scanner_invariance_not_established",
             "representation_lineage_requires_manual_review",
         ]
-        canine_m1_rows = canine["eligible_observations"]
+        canine_m1_rows = discovery["eligible_observations"]
     else:
         canine_m1_status = "feasible"
         canine_m1_reasons = [
             "candidate_rows_and_category_matches_available",
             "strict_scanner_invariance_not_established",
         ]
-        canine_m1_rows = canine["eligible_observations"]
+        canine_m1_rows = discovery["eligible_observations"]
 
     provenance_metadata_present = (
         metadata["site_metadata_available"] or metadata["preparation_metadata_available"]
@@ -1395,7 +1492,7 @@ def metric_assessments(
     elif oldstyle["status"] in {"available", "manual_review"}:
         oldstyle_status = "partial"
         oldstyle_reasons = ["operational_scanner_equivalence_gate_still_required"]
-        oldstyle_rows = canine["eligible_observations"]
+        oldstyle_rows = discovery["eligible_observations"]
     else:
         oldstyle_status = oldstyle["status"]
         oldstyle_reasons = ["oldstyle_archive_integrity_incomplete"]
@@ -1406,8 +1503,16 @@ def metric_assessments(
             "id": "M1_canine_cross_scanner_sample_link_auc",
             "status": canine_m1_status,
             "reason_codes": canine_m1_reasons,
-            "eligible_rows": canine_m1_rows,
-            "eligible_sample_category_cells": canine["eligible_sample_category_cells"],
+            "candidate_discovery_eligible_rows": canine_m1_rows,
+            "candidate_discovery_eligible_sample_category_cells": discovery[
+                "eligible_sample_category_cells"
+            ],
+            "replicated_anchor_confirmatory_eligible_rows": confirmatory[
+                "eligible_observations"
+            ],
+            "replicated_anchor_confirmatory_eligible_sample_category_cells": (
+                confirmatory["eligible_sample_category_cells"]
+            ),
             "leakage_guard": "cross_scanner_same_category_exact_region_excluded_test_only",
             "interpretation_ceiling": "coarse_category_adjusted_sample_structure_only",
         },
@@ -1567,6 +1672,8 @@ def render_report(audit: dict[str, Any]) -> str:
     families = family_map(audit)
     scanner = audit["scanner_evidence"]
     metadata = audit["metadata"]
+    discovery = canine["eligibility"]["candidate_discovery"]
+    confirmatory = canine["eligibility"]["replicated_anchor_confirmatory"]
 
     def probe(name: str) -> str:
         value = scanner.get(name)
@@ -1588,20 +1695,39 @@ def render_report(audit: dict[str, Any]) -> str:
     scorpion_category_status = gates["category_adjustment_scorpion"]
     provenance_status = gates["site_preparation_attribution"]
     if canine["status"] == "available":
-        canine_support_sentence = (
+        discovery_support_sentence = (
             f"Canine composite keys are unique and its geometry-qualified manifest "
             f"contains rows for {canine['regions']} regions on {canine['scanners']} "
-            "scanners. The proposed different-region, same-category sample audit has "
-            f"{canine['eligible_sample_category_cells']} held-out-fold-eligible "
-            f"sample-category cells, {canine['eligible_regions']} eligible regions, and "
-            f"{canine['eligible_observations']} eligible scanner observations across "
-            f"{len(canine['usable_categories'])} categories. Excluded category: "
-            f"{', '.join(canine['excluded_categories']) or 'none'}."
+            "scanners. Candidate-discovery eligibility permits one anchor-capable "
+            "sample-category cell with at least two regions when a different "
+            "same-category sample can supply negatives. It has "
+            f"{discovery['eligible_sample_category_cells']} anchor cells, "
+            f"{discovery['eligible_regions']} anchor-positive regions, and "
+            f"{discovery['eligible_observations']:,} anchor-positive scanner "
+            f"observations across {len(discovery['usable_categories'])} categories. "
+            "Negative-only gallery rows are not included in these support counts. "
+            "Excluded category: "
+            f"{', '.join(discovery['excluded_categories']) or 'none'}."
+        )
+        confirmatory_support_sentence = (
+            "Replicated-anchor confirmatory eligibility additionally requires at "
+            "least two independently anchor-capable samples in the held-out "
+            "fold/category. It has "
+            f"{confirmatory['eligible_sample_category_cells']} anchor cells, "
+            f"{confirmatory['eligible_regions']} anchor-positive regions, and "
+            f"{confirmatory['eligible_observations']:,} anchor-positive scanner "
+            "observations. Fold-4 Bone is discovery-eligible but not "
+            "confirmatory-eligible because only one Bone sample is anchor-capable. "
+            "These are support counts only; they do not clear G0 or authorize a "
+            "confirmatory metric run."
         )
     else:
-        canine_support_sentence = (
+        discovery_support_sentence = (
             f"Canine manifest status is `{canine['status']}`; fold-aware category/sample "
-            "support is unavailable."
+            "candidate-discovery support is unavailable."
+        )
+        confirmatory_support_sentence = (
+            "Replicated-anchor confirmatory support is also unavailable."
         )
 
     lines = [
@@ -1640,16 +1766,43 @@ def render_report(audit: dict[str, Any]) -> str:
             f"{scorpion['scanners']} | {scorpion['categories']} | {scorpion_category_status} | {provenance_status} |"
         ),
         "",
-        canine_support_sentence,
+        "### Candidate-discovery eligibility",
         "",
-        "| Held-out fold | Eligible cells | Eligible regions | Eligible observations | Non-estimable categories |",
+        discovery_support_sentence,
+        "",
+        "| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |",
         "|---:|---:|---:|---:|---|",
     ]
     for fold, item in canine.get("fold_eligibility", {}).items():
-        nonestimable = ", ".join(item["nonestimable_categories"]) or "none"
+        support = item["candidate_discovery"]
+        nonestimable = ", ".join(support["nonestimable_categories"]) or "none"
         lines.append(
-            f"| {fold} | {item['eligible_sample_category_cells']} | {item['eligible_regions']} | {item['eligible_observations']} | {nonestimable} |"
+            f"| {fold} | {support['eligible_sample_category_cells']} | {support['eligible_regions']} | {support['eligible_observations']} | {nonestimable} |"
         )
+    lines.append(
+        f"| **Total** | **{discovery['eligible_sample_category_cells']}** | **{discovery['eligible_regions']}** | **{discovery['eligible_observations']}** | **{', '.join(discovery['excluded_categories']) or 'none'}** |"
+    )
+
+    lines.extend(
+        [
+            "",
+            "### Replicated-anchor confirmatory eligibility",
+            "",
+            confirmatory_support_sentence,
+            "",
+            "| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |",
+            "|---:|---:|---:|---:|---|",
+        ]
+    )
+    for fold, item in canine.get("fold_eligibility", {}).items():
+        support = item["replicated_anchor_confirmatory"]
+        nonestimable = ", ".join(support["nonestimable_categories"]) or "none"
+        lines.append(
+            f"| {fold} | {support['eligible_sample_category_cells']} | {support['eligible_regions']} | {support['eligible_observations']} | {nonestimable} |"
+        )
+    lines.append(
+        f"| **Total** | **{confirmatory['eligible_sample_category_cells']}** | **{confirmatory['eligible_regions']}** | **{confirmatory['eligible_observations']}** | **{', '.join(confirmatory['excluded_categories']) or 'none'}** |"
+    )
 
     lines.extend(
         [
@@ -1697,7 +1850,7 @@ def render_report(audit: dict[str, Any]) -> str:
     )
     model_conflicts = sum(
         item.get("warning_counts", {}).get(
-            "internal_model_conflicts_with_expected_backbone", 0
+            "internal_backbone_model_label_conflict", 0
         )
         for item in families.values()
     )
@@ -1721,8 +1874,9 @@ def render_report(audit: dict[str, Any]) -> str:
         crossbackbone_sentence = (
             "SCORPION has DINOv2, Phikon, and ResNet50 true-pair and bottleneck archives "
             "for cross-backbone sensitivity. It still cannot support category-adjusted "
-            "testing because category labels are absent, and Phikon/ResNet50 internal "
-            "model strings require lineage correction."
+            "testing because category labels are absent. In the 150 flagged "
+            "Phikon/ResNet50 archives, the explicit metadata backbone matches the "
+            "family/path expectation but the model label does not match that backbone."
         )
     else:
         crossbackbone_sentence = "No SCORPION cross-backbone row-level archives were found."
@@ -1753,8 +1907,12 @@ def render_report(audit: dict[str, Any]) -> str:
         lineage_summary_sentence = (
             f"Lineage review remains required: {source_conflicts} archives have an "
             f"internal dataset/source conflict and {model_conflicts} have an internal "
-            f"backbone/model conflict. All {source_conflicts} source conflicts occur in "
-            "the audited canine projected archives."
+            "metadata backbone/model-label conflict. For the latter count, the explicit "
+            "backbone first matches the family/path expectation and the model label then "
+            "fails to contain that backbone. All "
+            f"{source_conflicts} source conflicts occur in the audited canine projected "
+            "archives. These are metadata lineage conflicts requiring review; they do "
+            "not establish that a different dataset or backbone generated the features."
         )
     else:
         lineage_summary_sentence = "No row-level archives were available for lineage review."

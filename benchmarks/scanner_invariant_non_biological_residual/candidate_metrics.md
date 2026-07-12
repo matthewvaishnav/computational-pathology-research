@@ -57,8 +57,9 @@ Use deterministic all-pairs concordance within every eligible anchor/target-scan
 ### Eligibility
 
 - Use only `split == test` rows for the corresponding fold archive.
-- Each positive sample-category cell needs at least two distinct regions.
-- The category must contain at least two samples in the evaluated stratum.
+- A candidate-discovery anchor is eligible when its sample-category cell contains at least two distinct regions and the fold/category contains a different sample with at least one region for a matched negative.
+- Replicated-anchor confirmatory aggregation additionally requires at least two samples in the fold/category whose sample-category cells each contain at least two distinct regions; only anchors from those replicated cells enter confirmatory aggregation.
+- Cell, region, and observation support counts cover anchor-capable cells and exclude rows used only as negatives.
 - Both scanners in the directed pair must be present.
 - Exclude non-estimable category/fold/scanner-direction cells before observing results.
 

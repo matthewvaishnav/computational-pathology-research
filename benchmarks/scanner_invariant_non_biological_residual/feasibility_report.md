@@ -27,15 +27,31 @@ The general invariance blind spot is not itself a new result. The defensible fut
 | Canine SCC | 4025 | 805 | 44 | 5 | 7 | available | blocked |
 | SCORPION | 2400 | 480 | 48 | 5 | 0 | blocked | blocked |
 
-Canine composite keys are unique and its geometry-qualified manifest contains rows for 805 regions on 5 scanners. The proposed different-region, same-category sample audit has 112 held-out-fold-eligible sample-category cells, 759 eligible regions, and 3795 eligible scanner observations across 6 categories. Excluded category: Cartilage.
+### Candidate-discovery eligibility
 
-| Held-out fold | Eligible cells | Eligible regions | Eligible observations | Non-estimable categories |
+Canine composite keys are unique and its geometry-qualified manifest contains rows for 805 regions on 5 scanners. Candidate-discovery eligibility permits one anchor-capable sample-category cell with at least two regions when a different same-category sample can supply negatives. It has 112 anchor cells, 759 anchor-positive regions, and 3,795 anchor-positive scanner observations across 6 categories. Negative-only gallery rows are not included in these support counts. Excluded category: Cartilage.
+
+| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |
 |---:|---:|---:|---:|---|
 | 0 | 25 | 141 | 705 | none |
 | 1 | 26 | 183 | 915 | none |
 | 2 | 21 | 130 | 650 | Bone |
 | 3 | 20 | 148 | 740 | none |
 | 4 | 20 | 157 | 785 | Cartilage |
+| **Total** | **112** | **759** | **3795** | **Cartilage** |
+
+### Replicated-anchor confirmatory eligibility
+
+Replicated-anchor confirmatory eligibility additionally requires at least two independently anchor-capable samples in the held-out fold/category. It has 111 anchor cells, 757 anchor-positive regions, and 3,785 anchor-positive scanner observations. Fold-4 Bone is discovery-eligible but not confirmatory-eligible because only one Bone sample is anchor-capable. These are support counts only; they do not clear G0 or authorize a confirmatory metric run.
+
+| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |
+|---:|---:|---:|---:|---|
+| 0 | 25 | 141 | 705 | none |
+| 1 | 26 | 183 | 915 | none |
+| 2 | 21 | 130 | 650 | Bone |
+| 3 | 20 | 148 | 740 | none |
+| 4 | 19 | 155 | 775 | Bone, Cartilage |
+| **Total** | **111** | **757** | **3785** | **Cartilage** |
 
 ## Representation artifact inventory
 
@@ -63,7 +79,7 @@ Canine composite keys are unique and its geometry-qualified manifest contains ro
 
 All 17 expected five-fold by five-seed archive grids are complete. The audit checked all 426 discovered archives; 0 failed schema, alignment, fold, split, or training-metadata checks.
 
-Lineage review remains required: 200 archives have an internal dataset/source conflict and 150 have an internal backbone/model conflict. All 200 source conflicts occur in the audited canine projected archives.
+Lineage review remains required: 200 archives have an internal dataset/source conflict and 150 have an internal metadata backbone/model-label conflict. For the latter count, the explicit backbone first matches the family/path expectation and the model label then fails to contain that backbone. All 200 source conflicts occur in the audited canine projected archives. These are metadata lineage conflicts requiring review; they do not establish that a different dataset or backbone generated the features.
 
 The primary canine archive is `manual_review` for confirmatory use because its internal source string is inconsistent with its path, rows, fold, seed, and split evidence:
 
@@ -71,7 +87,7 @@ The primary canine archive is `manual_review` for confirmatory use because its i
 
 A frozen representation manifest and checksums are required before metric execution.
 
-SCORPION has DINOv2, Phikon, and ResNet50 true-pair and bottleneck archives for cross-backbone sensitivity. It still cannot support category-adjusted testing because category labels are absent, and Phikon/ResNet50 internal model strings require lineage correction.
+SCORPION has DINOv2, Phikon, and ResNet50 true-pair and bottleneck archives for cross-backbone sensitivity. It still cannot support category-adjusted testing because category labels are absent. In the 150 flagged Phikon/ResNet50 archives, the explicit metadata backbone matches the family/path expectation but the model label does not match that backbone.
 
 ## Scanner premise
 
@@ -146,6 +162,6 @@ Do not train a new representation. First fix representation provenance and acqui
 
 ## Deterministic evidence fingerprint
 
-`990d8e7c7a869e6a5fcaf17a85da97427fedd715438890bf7562f8dab126e290`
+`f18d49087cf30d2654a7a6aa2a473a4f8937c3a339ec7e7c02ae793acd0eba02`
 
 This fingerprint covers the audit's deterministic schema/count/status payload. It is not a checksum of the full feature payloads.

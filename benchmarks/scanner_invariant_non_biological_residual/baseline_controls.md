@@ -56,7 +56,7 @@ The positive and negative use the same target scanner, and the target scanner di
 
 ### C3. Exact category matching
 
-Positive and negative regions share the recorded category with the anchor. Cartilage and any fold/category cell without multiple eligible samples are excluded from confirmatory aggregation.
+Positive and negative regions share the recorded category with the anchor. Candidate discovery permits one sample-category cell with at least two regions plus a different same-category sample for negatives. Replicated-anchor confirmatory aggregation requires at least two samples in the fold/category whose sample-category cells each have at least two regions. Fold-4 Bone is therefore discovery-eligible but confirmatory-ineligible; Cartilage and fold-2 Bone are non-estimable even for discovery.
 
 ### C4. Fold isolation
 
