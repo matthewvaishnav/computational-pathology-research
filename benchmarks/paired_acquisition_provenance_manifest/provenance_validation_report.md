@@ -74,6 +74,9 @@ The 50 confirmed rows have complete current observed-metadata agreement with app
 
 - Archives with structured embedded configuration: 425
 - Archives with group/family evidence references: 425
+- Archives with reachable Git commit:path evidence references: 425
+- Unique reachable Git commit:path evidence objects: 22
+- Archives with local-untracked contextual references: 1
 - Archives with associated family-level run logs: 425
 - Archives with family-level source/result commit associations: 425
 - Conflict archives with compatible per-run text records: 275
@@ -84,7 +87,8 @@ The 50 confirmed rows have complete current observed-metadata agreement with app
 - Archives with current-state content hashes: 426
 - Archives with historical cryptographic output binding: 0
 
-None of the 426 source NPZ paths is Git-tracked. Their public availability is not established by this package. Deterministic checking requires a workspace where the same archives and referenced Git objects are separately available.
+None of the 426 source NPZ paths is Git-tracked. Their public availability is not established by this package. Deterministic checking requires a workspace where the same archives, referenced Git objects, and the separately supplied local-untracked context file are available.
+The one local-untracked reference is a repository-relative adjacent summary present in this audited workspace. It is not Git-tracked, is not a historical provenance object, and is used only as non-adjudicating context for a non-conflicting legacy-optional row; it does not establish a canonical backbone.
 
 ## Duplicate-content assessment
 
@@ -93,7 +97,7 @@ No duplicate-content groups were found.
 ## Deterministic fingerprints
 
 - Archive inventory fingerprint: `e68c1cf536b2ef8a843aea11f80547f05fb42891e1c2f7e15fbbd8472be1e7f5`
-- provenance_manifest.csv SHA-256: `7c2207fd2192976aaa4ba72b3d8e6d03844d317b4b3c9a6ec3498bc1628ab78e`
+- provenance_manifest.csv SHA-256: `93b9787f3c904141f4fa7693b36885b45d018f555b840708acd326c98722745d`
 - provenance_conflicts.csv SHA-256: `8a51f35836cd9eb16b227ba6debc5a772098fd97d9d15f924fa6b23a45e52a1e`
 
 ## Limitations

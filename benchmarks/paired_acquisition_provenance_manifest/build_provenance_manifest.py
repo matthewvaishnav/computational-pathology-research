@@ -45,6 +45,8 @@ EXPECTED_CONFLICT_OVERLAP = 0
 EXPECTED_OPTIONAL_BACKBONE_ABSENCES = 226
 EXPECTED_FALLBACK_CONFLICTS = 0
 EXPECTED_GROUP_EVIDENCE_ARCHIVES = 425
+EXPECTED_GIT_COMMIT_PATH_OBJECTS = 22
+EXPECTED_LOCAL_UNTRACKED_CONTEXT_REFERENCES = 1
 EXPECTED_CONFLICT_COMPATIBLE_PER_RUN_RECORDS = 275
 EXPECTED_CONFLICT_AGGREGATE_ONLY_RECORDS = 75
 EXPECTED_RESOLUTION_COUNTS = {
@@ -76,6 +78,22 @@ CORRECTION_EVIDENCE_TYPES = {
     "deterministic_internal_proof",
 }
 PROPOSED_CANONICAL_EVIDENCE_TYPE = "family_level_reconstructed_lineage_evidence"
+LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE = "local_untracked_context"
+LOCAL_UNTRACKED_CONTEXT_REFERENCE = (
+    "results/external_multiscanner_caninescc/features/"
+    "fold_0_dinov2_base.summary.json"
+)
+LOCAL_UNTRACKED_LEGACY_NOTES = (
+    "The referenced file exists in the present workspace, is not Git-tracked, "
+    "is not a historical provenance object, and is used only as non-adjudicating "
+    "contextual evidence for this non-conflicting legacy-optional row."
+)
+LOCAL_UNTRACKED_UNRESOLVED_NOTES = (
+    "The referenced file exists in the present workspace, is not Git-tracked, "
+    "is not a historical provenance object, and is used only as non-adjudicating "
+    "contextual evidence. Each populated conflicting canonical field remains a "
+    "proposed canonical value and is not adjudicated."
+)
 UNRESOLVED_ADJUDICATION_EVIDENCE_NEEDED = (
     "verified run manifest linking archive path, run ID, producing invocation, "
     "fold, seed, condition, variant, evaluation split, model, backbone, and "
@@ -1226,20 +1244,23 @@ def resolution_for(
             ),
         )
     if not observed_backbone and family.expected_backbone:
-        reference = (
-            family.evidence.references()
-            if family.evidence
-            else (
-                "results/external_multiscanner_caninescc/features/"
-                "fold_0_dinov2_base.summary.json"
+        if family.evidence:
+            evidence_type = "optional_field_absent_without_contradiction"
+            reference = family.evidence.references()
+            notes = (
+                "Optional explicit backbone metadata is absent without a "
+                "contradictory label."
             )
-        )
+        else:
+            evidence_type = LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE
+            reference = LOCAL_UNTRACKED_CONTEXT_REFERENCE
+            notes = LOCAL_UNTRACKED_LEGACY_NOTES
         return (
             "legacy-optional",
             "not_applicable",
-            "optional_field_absent_without_contradiction",
+            evidence_type,
             reference,
-            "Optional explicit backbone metadata is absent without a contradictory label.",
+            notes,
         )
     return (
         "confirmed",
@@ -1766,6 +1787,134 @@ def validate_archive_specific_correction_evidence(
         raise ManifestValidationError("historical_output_manifest_binding_mismatch")
 
 
+def validate_local_untracked_context(
+    row: dict[str, Any], repo_root: Path | None
+) -> None:
+    if (
+        str(row.get("resolution_evidence_type", ""))
+        != LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE
+    ):
+        return
+    status = str(row.get("canonical_resolution_status", ""))
+    if status not in {"unresolved", "legacy-optional"}:
+        raise ManifestValidationError(
+            f"local_untracked_context_status_forbidden:{status}"
+        )
+    if repo_root is None:
+        raise ManifestValidationError(
+            "local_untracked_context_repository_context_missing"
+        )
+    notes = str(row.get("resolution_notes", ""))
+    notes_lower = notes.lower()
+    historical_claim_markers = (
+        "historical hash proof",
+        "historical output proof",
+        "proves historical",
+        "establishes historical",
+        "verified historical origin",
+    )
+    if any(marker in notes_lower for marker in historical_claim_markers):
+        raise ManifestValidationError(
+            "local_untracked_context_historical_claim_forbidden"
+        )
+    local_only_false_fields = (
+        "_evidence_verified",
+        "_archive_specific_evidence_verified",
+        "_referenced_objects_available",
+        "_referenced_commit_available",
+        "_referenced_config_log_available",
+        "_historical_output_binding_verified",
+        "_deterministic_internal_proof_verified",
+    )
+    for field in local_only_false_fields:
+        if row.get(field) is not False:
+            raise ManifestValidationError(
+                f"local_untracked_context_internal_state_invalid:{field}"
+            )
+    evidence_candidate_count = row.get("_evidence_candidate_count")
+    if type(evidence_candidate_count) is not int or evidence_candidate_count != 0:
+        raise ManifestValidationError(
+            "local_untracked_context_internal_state_invalid:"
+            "_evidence_candidate_count"
+        )
+    archive_specific_evidence = row.get("_archive_specific_evidence")
+    if type(archive_specific_evidence) is not dict or archive_specific_evidence:
+        raise ManifestValidationError(
+            "local_untracked_context_internal_state_invalid:"
+            "_archive_specific_evidence"
+        )
+    if row.get("archive_hash_comparison_needed") != "true":
+        raise ManifestValidationError(
+            "local_untracked_context_internal_state_invalid:"
+            "archive_hash_comparison_needed"
+        )
+    expected_notes = (
+        LOCAL_UNTRACKED_UNRESOLVED_NOTES
+        if status == "unresolved"
+        else LOCAL_UNTRACKED_LEGACY_NOTES
+    )
+    if notes != expected_notes:
+        raise ManifestValidationError(
+            f"local_untracked_context_notes_mismatch:{status}"
+        )
+    reference = str(row.get("resolution_evidence_reference", ""))
+    if (
+        not reference
+        or reference.startswith(("/", "~"))
+        or "\\" in reference
+        or re.match(r"^[A-Za-z]:", reference)
+        or any(character in reference for character in ':*?"<>|\0')
+    ):
+        raise ManifestValidationError(
+            "local_untracked_context_reference_not_repository_relative"
+        )
+    reference_parts = reference.split("/")
+    if any(part in {"", ".", ".."} for part in reference_parts):
+        raise ManifestValidationError(
+            "local_untracked_context_reference_not_repository_relative"
+        )
+    root = repo_root.resolve(strict=True)
+    candidate = root.joinpath(*reference_parts)
+    if not candidate.exists():
+        raise ManifestValidationError("local_untracked_context_reference_missing")
+    if not candidate.is_file():
+        raise ManifestValidationError("local_untracked_context_reference_not_file")
+    resolved_candidate = candidate.resolve(strict=True)
+    try:
+        canonical_reference = resolved_candidate.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise ManifestValidationError(
+            "local_untracked_context_reference_not_repository_relative"
+        ) from exc
+    if canonical_reference != reference:
+        raise ManifestValidationError(
+            "local_untracked_context_reference_not_canonical"
+        )
+    repository_check = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if (
+        repository_check.returncode != 0
+        or repository_check.stdout.strip() != b"true"
+    ):
+        raise ManifestValidationError("local_untracked_context_git_query_failed")
+    tracked_check = subprocess.run(
+        ["git", "--literal-pathspecs", "ls-files", "-z", "--", reference],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if tracked_check.returncode != 0:
+        raise ManifestValidationError("local_untracked_context_git_query_failed")
+    if tracked_check.stdout:
+        raise ManifestValidationError(
+            "local_untracked_context_reference_is_git_tracked"
+        )
+
+
 def validate_resolution_row(
     row: dict[str, Any], repo_root: Path | None = None
 ) -> None:
@@ -1780,6 +1929,7 @@ def validate_resolution_row(
             f"invalid_resolution_status_confidence_pairing:{status}:{confidence}"
         )
     evidence_type = str(row.get("resolution_evidence_type", ""))
+    validate_local_untracked_context(row, repo_root)
     if status != "corrected" and evidence_type == "content_hash_verified_manifest":
         raise ManifestValidationError("current_state_hash_not_historical_output_proof")
     if status != "corrected" and evidence_type in CORRECTION_EVIDENCE_TYPES:
@@ -1830,10 +1980,10 @@ def validate_resolution_row(
             raise ManifestValidationError(
                 "legacy_optional_without_missing_optional_backbone"
             )
-        if (
-            str(row.get("resolution_evidence_type", ""))
-            != "optional_field_absent_without_contradiction"
-        ):
+        if evidence_type not in {
+            "optional_field_absent_without_contradiction",
+            LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE,
+        }:
             raise ManifestValidationError("legacy_optional_without_optional_evidence")
         expected_backbone = str(row.get("expected_backbone_from_path", ""))
         observed_model = str(row.get("observed_model", ""))
@@ -1845,7 +1995,10 @@ def validate_resolution_row(
     if status == "unresolved":
         if not lineage_classes:
             raise ManifestValidationError("unresolved_without_lineage_conflict")
-        if str(row.get("resolution_evidence_type", "")) != PROPOSED_CANONICAL_EVIDENCE_TYPE:
+        if evidence_type not in {
+            PROPOSED_CANONICAL_EVIDENCE_TYPE,
+            LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE,
+        }:
             raise ManifestValidationError("unresolved_without_proposed_evidence_type")
         notes = str(row.get("resolution_notes", "")).lower()
         if "proposed" not in notes or "not adjudicated" not in notes:
@@ -2228,6 +2381,18 @@ def render_report(
             f"{evidence['group_evidence_reference_archives']}"
         ),
         (
+            "- Archives with reachable Git commit:path evidence references: "
+            f"{evidence['archives_with_reachable_git_commit_path_references']}"
+        ),
+        (
+            "- Unique reachable Git commit:path evidence objects: "
+            f"{evidence['reachable_git_commit_path_evidence_objects']}"
+        ),
+        (
+            "- Archives with local-untracked contextual references: "
+            f"{evidence['local_untracked_context_references']}"
+        ),
+        (
             "- Archives with associated family-level run logs: "
             f"{evidence['associated_family_level_run_logs']}"
         ),
@@ -2267,7 +2432,14 @@ def render_report(
         (
             "None of the 426 source NPZ paths is Git-tracked. Their public availability is "
             "not established by this package. Deterministic checking requires a workspace "
-            "where the same archives and referenced Git objects are separately available."
+            "where the same archives, referenced Git objects, and the separately supplied "
+            "local-untracked context file are available."
+        ),
+        (
+            "The one local-untracked reference is a repository-relative adjacent summary "
+            "present in this audited workspace. It is not Git-tracked, is not a historical "
+            "provenance object, and is used only as non-adjudicating context for a "
+            "non-conflicting legacy-optional row; it does not establish a canonical backbone."
         ),
         "",
         "## Duplicate-content assessment",
@@ -2304,6 +2476,38 @@ def render_report(
         "",
     ]
     return "\n".join(lines)
+
+
+def evidence_reference_counts(
+    manifest_rows: Sequence[dict[str, Any]],
+) -> dict[str, int]:
+    git_objects: set[str] = set()
+    archives_with_git_references = 0
+    local_untracked_references = 0
+    for row in manifest_rows:
+        evidence_type = str(row.get("resolution_evidence_type", ""))
+        reference = str(row.get("resolution_evidence_reference", ""))
+        reference_parts = reference.split("|") if reference else []
+        git_references = [
+            item for item in reference_parts if item.startswith("git:")
+        ]
+        for git_reference in git_references:
+            if not re.fullmatch(r"git:[0-9a-f]{40}:[^|]+", git_reference):
+                raise ManifestValidationError(
+                    "invalid_git_commit_path_evidence_reference"
+                )
+            git_objects.add(git_reference)
+        if git_references:
+            archives_with_git_references += 1
+        if evidence_type == LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE:
+            local_untracked_references += 1
+    return {
+        "archives_with_reachable_git_commit_path_references": (
+            archives_with_git_references
+        ),
+        "reachable_git_commit_path_evidence_objects": len(git_objects),
+        "local_untracked_context_references": local_untracked_references,
+    }
 
 
 def build(repo_root: Path = DEFAULT_REPO_ROOT) -> BuildResult:
@@ -2347,6 +2551,7 @@ def build(repo_root: Path = DEFAULT_REPO_ROOT) -> BuildResult:
     archives_with_evidence = sum(
         observation.family.evidence is not None for observation in observations
     )
+    reference_counts = evidence_reference_counts(manifest_rows)
     lineage_conflict_rows = [
         row
         for row in manifest_rows
@@ -2379,6 +2584,7 @@ def build(repo_root: Path = DEFAULT_REPO_ROOT) -> BuildResult:
     )
     evidence_baselines = {
         "group_evidence_reference_archives": archives_with_evidence,
+        **reference_counts,
         "conflict_archives_with_compatible_per_run_records": (
             compatible_per_run_conflicts
         ),
@@ -2386,6 +2592,15 @@ def build(repo_root: Path = DEFAULT_REPO_ROOT) -> BuildResult:
     }
     expected_evidence_baselines = {
         "group_evidence_reference_archives": EXPECTED_GROUP_EVIDENCE_ARCHIVES,
+        "archives_with_reachable_git_commit_path_references": (
+            EXPECTED_GROUP_EVIDENCE_ARCHIVES
+        ),
+        "reachable_git_commit_path_evidence_objects": (
+            EXPECTED_GIT_COMMIT_PATH_OBJECTS
+        ),
+        "local_untracked_context_references": (
+            EXPECTED_LOCAL_UNTRACKED_CONTEXT_REFERENCES
+        ),
         "conflict_archives_with_compatible_per_run_records": (
             EXPECTED_CONFLICT_COMPATIBLE_PER_RUN_RECORDS
         ),
@@ -2772,6 +2987,12 @@ def run_self_tests() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="provenance-manifest-tests-") as directory:
         root = Path(directory)
         evidence_repo, evidence_binding = create_test_evidence_repository(root)
+        local_context_reference = "context/local-summary.json"
+        local_context_path = evidence_repo / local_context_reference
+        local_context_path.parent.mkdir(parents=True)
+        local_context_path.write_text(
+            '{"scope":"temporary local-untracked context"}\n', encoding="utf-8"
+        )
 
         def correction_row(**updates: Any) -> dict[str, Any]:
             binding_updates = dict(evidence_binding)
@@ -2779,6 +3000,180 @@ def run_self_tests() -> dict[str, Any]:
             return minimal_resolution_row(
                 _binding_updates=binding_updates, **updates
             )
+
+        def local_context_row(**updates: Any) -> dict[str, Any]:
+            row = minimal_resolution_row(
+                canonical_resolution_status="legacy-optional",
+                resolution_confidence="not_applicable",
+                resolution_evidence_type=LOCAL_UNTRACKED_CONTEXT_EVIDENCE_TYPE,
+                resolution_evidence_reference=local_context_reference,
+                resolution_notes=LOCAL_UNTRACKED_LEGACY_NOTES,
+                conflict_class="none",
+                conflict_evidence_basis="",
+                source_label_conflict="false",
+                model_backbone_label_conflict="false",
+                backbone_path_conflict="false",
+                dataset_path_conflict="false",
+                observed_model="phikon_pathoalign",
+                canonical_model="phikon_pathoalign",
+                observed_backbone="",
+                canonical_backbone="",
+                archive_hash_comparison_needed="true",
+                _evidence_verified=False,
+                _archive_specific_evidence_verified=False,
+                _referenced_objects_available=False,
+                _referenced_commit_available=False,
+                _referenced_config_log_available=False,
+                _historical_output_binding_verified=False,
+                _deterministic_internal_proof_verified=False,
+                _evidence_candidate_count=0,
+                _archive_specific_evidence={},
+            )
+            row.update(updates)
+            return row
+
+        local_absolute = load_test_json_fixture(
+            root,
+            "local_untracked_context_absolute_path",
+            local_context_row(
+                resolution_evidence_reference="C:/Users/example/local-summary.json"
+            ),
+        )
+        passed.append(
+            expect_validation_error(
+                "local_untracked_context_absolute_path",
+                "local_untracked_context_reference_not_repository_relative",
+                lambda: validate_resolution_row(local_absolute, evidence_repo),
+            )
+        )
+        local_missing = load_test_json_fixture(
+            root,
+            "local_untracked_context_missing_file",
+            local_context_row(
+                resolution_evidence_reference="context/missing-summary.json"
+            ),
+        )
+        passed.append(
+            expect_validation_error(
+                "local_untracked_context_missing_file",
+                "local_untracked_context_reference_missing",
+                lambda: validate_resolution_row(local_missing, evidence_repo),
+            )
+        )
+        local_tracked = load_test_json_fixture(
+            root,
+            "local_untracked_context_tracked_file",
+            local_context_row(resolution_evidence_reference="evidence/config.json"),
+        )
+        passed.append(
+            expect_validation_error(
+                "local_untracked_context_tracked_file",
+                "local_untracked_context_reference_is_git_tracked",
+                lambda: validate_resolution_row(local_tracked, evidence_repo),
+            )
+        )
+        local_corrected = load_test_json_fixture(
+            root,
+            "local_untracked_context_corrected_status",
+            local_context_row(
+                canonical_resolution_status="corrected",
+                resolution_confidence="medium",
+            ),
+        )
+        passed.append(
+            expect_validation_error(
+                "local_untracked_context_corrected_status",
+                "local_untracked_context_status_forbidden:corrected",
+                lambda: validate_resolution_row(local_corrected, evidence_repo),
+            )
+        )
+        local_historical_claim = load_test_json_fixture(
+            root,
+            "local_untracked_context_historical_hash_claim",
+            local_context_row(
+                resolution_notes=(
+                    "The local file provides historical hash proof for this archive."
+                )
+            ),
+        )
+        passed.append(
+            expect_validation_error(
+                "local_untracked_context_historical_hash_claim",
+                "local_untracked_context_historical_claim_forbidden",
+                lambda: validate_resolution_row(
+                    local_historical_claim, evidence_repo
+                ),
+            )
+        )
+        invalid_local_internal_states: tuple[
+            tuple[str, dict[str, Any]], ...
+        ] = (
+            ("evidence_verified_true", {"_evidence_verified": True}),
+            (
+                "archive_specific_verified_integer",
+                {"_archive_specific_evidence_verified": 1},
+            ),
+            (
+                "archive_specific_verified_text",
+                {"_archive_specific_evidence_verified": "true"},
+            ),
+            (
+                "referenced_objects_available",
+                {"_referenced_objects_available": True},
+            ),
+            (
+                "referenced_commit_available",
+                {"_referenced_commit_available": True},
+            ),
+            (
+                "referenced_config_log_available",
+                {"_referenced_config_log_available": True},
+            ),
+            (
+                "historical_binding_integer",
+                {"_historical_output_binding_verified": 1},
+            ),
+            (
+                "historical_binding_text",
+                {"_historical_output_binding_verified": "true"},
+            ),
+            (
+                "deterministic_proof_text",
+                {"_deterministic_internal_proof_verified": "true"},
+            ),
+            ("candidate_count_one", {"_evidence_candidate_count": 1}),
+            ("candidate_count_boolean", {"_evidence_candidate_count": False}),
+            ("binding_non_mapping", {"_archive_specific_evidence": []}),
+            (
+                "binding_nonempty",
+                {"_archive_specific_evidence": {"historical_output_sha256": "x"}},
+            ),
+            (
+                "archive_hash_comparison_disabled",
+                {"archive_hash_comparison_needed": "false"},
+            ),
+        )
+        for state_name, state_updates in invalid_local_internal_states:
+            invalid_state = load_test_json_fixture(
+                root,
+                f"local_untracked_context_{state_name}",
+                local_context_row(**state_updates),
+            )
+            expect_validation_error(
+                f"local_untracked_context_{state_name}",
+                "local_untracked_context_internal_state_invalid",
+                lambda invalid_state=invalid_state: validate_resolution_row(
+                    invalid_state, evidence_repo
+                ),
+            )
+        passed.append("local_untracked_context_internal_state_fail_closed")
+        valid_local_legacy = load_test_json_fixture(
+            root,
+            "valid_local_untracked_legacy_optional",
+            local_context_row(),
+        )
+        validate_resolution_row(valid_local_legacy, evidence_repo)
+        behavior_passed.append("valid_local_untracked_legacy_optional")
 
         duplicate_path_rows = [
             {"archive_id": "a", "canonical_path": "results/a.npz"},
@@ -3474,10 +3869,12 @@ def run_self_tests() -> dict[str, Any]:
             verified_families=set(),
             duplicate_groups=groups,
         )
+        for row in duplicate_manifest_rows:
+            row["resolution_evidence_reference"] = local_context_reference
         duplicate_conflict_rows = make_conflict_rows(duplicate_manifest_rows)
         validate_identity_rows(duplicate_manifest_rows)
         for row in duplicate_manifest_rows:
-            validate_resolution_row(row)
+            validate_resolution_row(row, evidence_repo)
         validate_cross_tables(duplicate_manifest_rows, duplicate_conflict_rows)
         if any(
             row["conflict_class"] != "duplicate_content"
@@ -3504,6 +3901,13 @@ def run_self_tests() -> dict[str, Any]:
         "unresolved_proposed_canonical_value_preserved",
         "unresolved_missing_adjudication_evidence_recorded",
         "current_hash_misrepresented_as_historical_proof",
+        "local_untracked_context_absolute_path",
+        "local_untracked_context_missing_file",
+        "local_untracked_context_tracked_file",
+        "local_untracked_context_corrected_status",
+        "local_untracked_context_historical_hash_claim",
+        "local_untracked_context_internal_state_fail_closed",
+        "valid_local_untracked_legacy_optional",
     )
     all_passed = passed + behavior_passed
     missing_required_tests = sorted(set(required_adversarial_tests) - set(all_passed))
@@ -3514,11 +3918,11 @@ def run_self_tests() -> dict[str, Any]:
     return {
         "status": "passed",
         "fail_closed_tests_passed": len(passed),
-        "fail_closed_tests_total": 39,
+        "fail_closed_tests_total": 45,
         "behavior_tests_passed": len(behavior_passed),
-        "behavior_tests_total": 4,
+        "behavior_tests_total": 5,
         "required_adversarial_tests_passed": len(required_adversarial_tests),
-        "required_adversarial_tests_total": 13,
+        "required_adversarial_tests_total": 20,
         "required_adversarial_tests": list(required_adversarial_tests),
         "tests": all_passed,
         "temporary_fixtures_removed": True,
