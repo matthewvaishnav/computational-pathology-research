@@ -16,6 +16,7 @@ import difflib
 import hashlib
 import json
 import math
+import os
 import re
 import struct
 import sys
@@ -27,6 +28,15 @@ from typing import Any, BinaryIO
 
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[2]
 CHECKED_REPORT = Path(__file__).with_name("feasibility_report.md")
+EXPECTED_FOLD_IDS = tuple(range(5))
+
+
+class AuditValidationError(ValueError):
+    """Fatal deterministic validation failure for audit-wide invariants."""
+
+
+class ArchiveDataError(ValueError):
+    """Expected malformed archive content with a specific parser diagnosis."""
 
 
 @dataclass(frozen=True)
@@ -417,10 +427,9 @@ def read_csv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
 
 def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str, Any]:
     header, rows = read_csv(path)
-    required = {spec.sample_column, spec.region_column, spec.scanner_column}
+    required = {spec.sample_column, spec.region_column, spec.scanner_column, "fold"}
     if spec.category_column:
         required.add(spec.category_column)
-        required.add("fold")
     missing = sorted(required - set(header))
 
     key_rows: set[tuple[str, str, str]] = set()
@@ -428,6 +437,9 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
     region_scanners: dict[tuple[str, str], set[str]] = defaultdict(set)
     region_categories: dict[tuple[str, str], set[str]] = defaultdict(set)
     region_folds: dict[tuple[str, str], set[str]] = defaultdict(set)
+    sample_folds: dict[str, set[str]] = defaultdict(set)
+    fold_observation_counts: Counter[str] = Counter()
+    fold_key_rows: dict[str, set[tuple[str, str, str]]] = defaultdict(set)
     blank_required_values: Counter[str] = Counter()
     samples: set[str] = set()
     scanners: set[str] = set()
@@ -462,15 +474,23 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
             if category.strip():
                 categories.add(category)
                 region_categories[(sample, region)].add(category)
-        fold = str(row.get("fold", ""))
-        if fold.strip():
+        fold = str(row.get("fold", "")).strip()
+        if fold:
             region_folds[(sample, region)].add(fold)
-        elif spec.category_column:
+            sample_folds[sample].add(fold)
+            fold_observation_counts[fold] += 1
+            fold_key_rows[fold].add(key)
+        else:
             blank_required_values["fold"] += 1
 
     scanner_count_distribution = Counter(len(value) for value in region_scanners.values())
     category_conflicts = sum(len(value) != 1 for value in region_categories.values())
     fold_conflicts = sum(len(value) != 1 for value in region_folds.values())
+    sample_fold_conflicts = sum(len(value) != 1 for value in sample_folds.values())
+    expected_fold_values = {str(value) for value in EXPECTED_FOLD_IDS}
+    observed_fold_values = set(fold_observation_counts)
+    missing_fold_values = sorted(expected_fold_values - observed_fold_values)
+    unexpected_fold_values = sorted(observed_fold_values - expected_fold_values)
     incomplete_regions = sum(
         len(value) != spec.expected_scanners for value in region_scanners.values()
     )
@@ -513,7 +533,8 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
                 ),
             }
 
-        for fold, records in sorted(fold_records.items(), key=lambda item: item[0]):
+        for fold in (str(value) for value in EXPECTED_FOLD_IDS):
+            records = fold_records.get(fold, [])
             cell_regions: Counter[tuple[str, str]] = Counter()
             category_samples: dict[str, set[str]] = defaultdict(set)
             fold_samples: set[str] = set()
@@ -612,6 +633,18 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
     if fold_conflicts:
         status = "alignment_blocked"
         reason_codes.append("fold_varies_within_region")
+    if path.is_file() and not missing and not rows:
+        status = "alignment_blocked"
+        reason_codes.append("manifest_empty")
+    if missing_fold_values:
+        status = "alignment_blocked"
+        reason_codes.append("expected_fold_missing_or_empty")
+    if unexpected_fold_values:
+        status = "alignment_blocked"
+        reason_codes.append("unexpected_fold_id")
+    if sample_fold_conflicts:
+        status = "alignment_blocked"
+        reason_codes.append("sample_crosses_geometry_folds")
     if incomplete_regions:
         status = "alignment_blocked"
         reason_codes.append("incomplete_scanner_bundles")
@@ -640,9 +673,18 @@ def inspect_manifest(path: Path, spec: DatasetSpec, repo_root: Path) -> dict[str
         "category_values": sorted(categories),
         "category_conflicts": category_conflicts,
         "fold_conflicts": fold_conflicts,
+        "fold_values": sorted(fold_observation_counts),
+        "missing_expected_folds": missing_fold_values,
+        "unexpected_folds": unexpected_fold_values,
+        "fold_observation_counts": {
+            key: fold_observation_counts[key] for key in sorted(fold_observation_counts)
+        },
+        "sample_fold_conflicts": sample_fold_conflicts,
         "eligibility": eligibility,
         "fold_eligibility": fold_eligibility,
         "_key_rows": key_rows,
+        "_fold_key_rows": dict(sorted(fold_key_rows.items())),
+        "_sample_folds": sample_folds,
         "_rows": rows,
     }
 
@@ -657,8 +699,14 @@ def inspect_split_manifests(
     overall_status = "available"
     reason_codes: list[str] = []
     dataset_keys = dataset_manifest.get("_key_rows", set())
+    expected_fold_values = {str(value) for value in EXPECTED_FOLD_IDS}
+    geometry_fold_keys = dataset_manifest.get("_fold_key_rows", {})
+    geometry_key_folds: dict[tuple[str, str, str], str] = {}
+    for fold, keys in geometry_fold_keys.items():
+        for key in keys:
+            geometry_key_folds[key] = fold
 
-    for fold in range(5):
+    for fold in EXPECTED_FOLD_IDS:
         relative = spec.split_manifest_pattern.format(fold=fold)
         path = repo_root / relative
         header, rows = read_csv(path)
@@ -666,26 +714,51 @@ def inspect_split_manifests(
             spec.sample_column,
             spec.region_column,
             spec.scanner_column,
+            "fold",
             "split",
         }
         missing_columns = sorted(required - set(header))
         mapping: dict[tuple[str, str, str], str] = {}
         duplicate_keys = 0
         blank_values = 0
+        split_counts: Counter[str] = Counter()
+        row_fold_values: set[str] = set()
+        fold_label_mismatches = 0
+        sample_splits: dict[str, set[str]] = defaultdict(set)
+        region_splits: dict[tuple[str, str], set[str]] = defaultdict(set)
         for row in rows:
             key = (
                 str(row.get(spec.sample_column, "")),
                 str(row.get(spec.region_column, "")),
                 str(row.get(spec.scanner_column, "")),
             )
-            split = str(row.get("split", ""))
-            if not all(value.strip() for value in key) or not split.strip():
+            split = str(row.get("split", "")).strip()
+            row_fold = str(row.get("fold", "")).strip()
+            if not all(value.strip() for value in key) or not split or not row_fold:
                 blank_values += 1
                 continue
             if key in mapping:
                 duplicate_keys += 1
             mapping[key] = split
+            split_counts[split] += 1
+            row_fold_values.add(row_fold)
+            sample_splits[key[0]].add(split)
+            region_splits[(key[0], key[1])].add(split)
+            if geometry_key_folds.get(key) != row_fold:
+                fold_label_mismatches += 1
         key_match = set(mapping) == dataset_keys
+        expected_test_keys = set(geometry_fold_keys.get(str(fold), set()))
+        observed_test_keys = {
+            key for key, split in mapping.items() if split == "test"
+        }
+        missing_test_keys = expected_test_keys - observed_test_keys
+        extra_test_keys = observed_test_keys - expected_test_keys
+        sample_split_conflicts = sum(
+            len(values) != 1 for values in sample_splits.values()
+        )
+        region_split_conflicts = sum(
+            len(values) != 1 for values in region_splits.values()
+        )
         fold_status = "available"
         fold_reasons: list[str] = []
         if not path.is_file():
@@ -694,6 +767,9 @@ def inspect_split_manifests(
         elif missing_columns:
             fold_status = "schema_mismatch"
             fold_reasons.append("split_manifest_columns_missing")
+        if path.is_file() and not missing_columns and not rows:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("split_manifest_empty")
         if duplicate_keys:
             fold_status = "alignment_blocked"
             fold_reasons.append("split_manifest_duplicate_keys")
@@ -703,6 +779,24 @@ def inspect_split_manifests(
         if dataset_keys and not key_match:
             fold_status = "alignment_blocked"
             fold_reasons.append("split_manifest_dataset_key_mismatch")
+        if set(split_counts) != {"train", "val", "test"}:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("split_manifest_missing_or_invalid_required_split")
+        if row_fold_values != expected_fold_values:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("split_manifest_fold_domain_mismatch")
+        if sample_split_conflicts:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("split_manifest_sample_isolation_failure")
+        if region_split_conflicts:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("split_manifest_region_isolation_failure")
+        if fold_label_mismatches:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("split_manifest_geometry_fold_label_mismatch")
+        if missing_test_keys or extra_test_keys:
+            fold_status = "alignment_blocked"
+            fold_reasons.append("test_split_geometry_fold_mismatch")
         if fold_status != "available":
             overall_status = "blocked"
             reason_codes.extend(f"fold_{fold}:{reason}" for reason in fold_reasons)
@@ -716,7 +810,18 @@ def inspect_split_manifests(
             "duplicate_keys": duplicate_keys,
             "blank_values": blank_values,
             "dataset_key_match": key_match,
-            "split_values": sorted(set(mapping.values())),
+            "split_values": sorted(split_counts),
+            "split_counts": {
+                key: split_counts[key] for key in sorted(split_counts)
+            },
+            "row_fold_values": sorted(row_fold_values),
+            "sample_split_conflicts": sample_split_conflicts,
+            "region_split_conflicts": region_split_conflicts,
+            "geometry_fold_label_mismatches": fold_label_mismatches,
+            "expected_test_keys": len(expected_test_keys),
+            "observed_test_keys": len(observed_test_keys),
+            "missing_test_keys": len(missing_test_keys),
+            "extra_test_keys": len(extra_test_keys),
         }
 
     return {
@@ -728,35 +833,91 @@ def inspect_split_manifests(
     }
 
 
+def require_valid_fold_assignments(
+    spec: DatasetSpec,
+    manifest: dict[str, Any],
+    split_manifests: dict[str, Any],
+) -> dict[str, Any]:
+    """Fail closed when held-out-fold support cannot be validated exactly."""
+
+    failures: list[str] = []
+    if manifest.get("status") != "available":
+        reasons = ",".join(manifest.get("reason_codes", [])) or "unknown"
+        failures.append(f"manifest={reasons}")
+    if split_manifests.get("status") != "available":
+        for fold in (str(value) for value in EXPECTED_FOLD_IDS):
+            summary = split_manifests.get("folds", {}).get(fold, {})
+            if summary.get("status") != "available":
+                reasons = ",".join(summary.get("reason_codes", [])) or "unknown"
+                failures.append(f"split_fold_{fold}={reasons}")
+    if failures:
+        raise AuditValidationError(
+            f"fold_validation_failed:{spec.dataset_id}:" + ";".join(failures)
+        )
+
+    fold_summaries = split_manifests["folds"]
+    return {
+        "status": "passed",
+        "expected_fold_ids": list(EXPECTED_FOLD_IDS),
+        "observed_geometry_fold_ids": [
+            int(value) for value in manifest.get("fold_values", [])
+        ],
+        "geometry_sample_fold_conflicts": manifest.get(
+            "sample_fold_conflicts", 0
+        ),
+        "split_sample_isolation_failures": sum(
+            summary.get("sample_split_conflicts", 0)
+            for summary in fold_summaries.values()
+        ),
+        "geometry_test_split_mismatches": sum(
+            summary.get("missing_test_keys", 0)
+            + summary.get("extra_test_keys", 0)
+            for summary in fold_summaries.values()
+        ),
+        "empty_test_folds": [
+            int(fold)
+            for fold, summary in sorted(fold_summaries.items())
+            if summary.get("split_counts", {}).get("test", 0) == 0
+        ],
+    }
+
+
 def read_npy_header(handle: BinaryIO) -> dict[str, Any]:
     magic = handle.read(6)
     if magic != b"\x93NUMPY":
-        raise ValueError("invalid_npy_magic")
+        raise ArchiveDataError("invalid_npy_magic")
     version_raw = handle.read(2)
     if len(version_raw) != 2:
-        raise ValueError("truncated_npy_version")
+        raise ArchiveDataError("truncated_npy_version")
     major, _minor = version_raw
     if major == 1:
         size_raw = handle.read(2)
         if len(size_raw) != 2:
-            raise ValueError("truncated_npy_header_length")
+            raise ArchiveDataError("truncated_npy_header_length")
         header_size = struct.unpack("<H", size_raw)[0]
     elif major in {2, 3}:
         size_raw = handle.read(4)
         if len(size_raw) != 4:
-            raise ValueError("truncated_npy_header_length")
+            raise ArchiveDataError("truncated_npy_header_length")
         header_size = struct.unpack("<I", size_raw)[0]
     else:
-        raise ValueError("unsupported_npy_version")
+        raise ArchiveDataError("unsupported_npy_version")
     if header_size > 1_000_000:
-        raise ValueError("oversized_npy_header")
+        raise ArchiveDataError("oversized_npy_header")
     header_raw = handle.read(header_size)
     if len(header_raw) != header_size:
-        raise ValueError("truncated_npy_header")
+        raise ArchiveDataError("truncated_npy_header")
     encoding = "utf-8" if major == 3 else "latin1"
-    header = ast.literal_eval(header_raw.decode(encoding).strip())
+    try:
+        decoded_header = header_raw.decode(encoding).strip()
+    except UnicodeError as exc:
+        raise ArchiveDataError("invalid_npy_header_encoding") from exc
+    try:
+        header = ast.literal_eval(decoded_header)
+    except (SyntaxError, TypeError, ValueError) as exc:
+        raise ArchiveDataError("invalid_npy_header_literal") from exc
     if not isinstance(header, dict):
-        raise ValueError("invalid_npy_header")
+        raise ArchiveDataError("invalid_npy_header")
     shape = header.get("shape")
     descriptor = header.get("descr")
     fortran_order = header.get("fortran_order")
@@ -764,11 +925,11 @@ def read_npy_header(handle: BinaryIO) -> dict[str, Any]:
         not isinstance(value, int) or isinstance(value, bool) or value < 0
         for value in shape
     ):
-        raise ValueError("invalid_npy_shape")
+        raise ArchiveDataError("invalid_npy_shape")
     if not isinstance(descriptor, str) or not descriptor:
-        raise ValueError("invalid_npy_descriptor")
+        raise ArchiveDataError("invalid_npy_descriptor")
     if not isinstance(fortran_order, bool):
-        raise ValueError("invalid_npy_fortran_order")
+        raise ArchiveDataError("invalid_npy_fortran_order")
     return header
 
 
@@ -780,9 +941,25 @@ def npz_members(path: Path) -> dict[str, str]:
             if name.endswith(".npy"):
                 key = name[:-4]
                 if key in members:
-                    raise ValueError(f"duplicate_npz_member_basename:{key}")
+                    raise ArchiveDataError(f"duplicate_npz_member_basename:{key}")
                 members[key] = member
         return members
+
+
+def open_npz_member(archive: zipfile.ZipFile, member: str) -> BinaryIO:
+    """Open one ZIP member, translating only known ZIP access failures."""
+
+    try:
+        return archive.open(member)
+    except NotImplementedError as exc:
+        raise ArchiveDataError("zip_access_error:unsupported_compression") from exc
+    except RecursionError:
+        raise
+    except RuntimeError as exc:
+        message = str(exc).lower()
+        if "password" in message or "encrypted" in message:
+            raise ArchiveDataError("zip_access_error:encrypted_member") from exc
+        raise
 
 
 def read_npz_header(path: Path, key: str) -> dict[str, Any]:
@@ -793,12 +970,12 @@ def read_npz_header(path: Path, key: str) -> dict[str, Any]:
                 continue
             basename = Path(name).name[:-4]
             if basename in members:
-                raise ValueError(f"duplicate_npz_member_basename:{basename}")
+                raise ArchiveDataError(f"duplicate_npz_member_basename:{basename}")
             members[basename] = name
         member = members.get(key)
         if not member:
-            raise KeyError(key)
-        with archive.open(member) as handle:
+            raise ArchiveDataError(f"npz_member_missing:{key}")
+        with open_npz_member(archive, member) as handle:
             return read_npy_header(handle)
 
 
@@ -814,19 +991,19 @@ def read_npz_text(path: Path, key: str, max_items: int = 20_000) -> list[str]:
                 continue
             basename = Path(name).name[:-4]
             if basename in members:
-                raise ValueError(f"duplicate_npz_member_basename:{basename}")
+                raise ArchiveDataError(f"duplicate_npz_member_basename:{basename}")
             members[basename] = name
         member = members.get(key)
         if not member:
-            raise KeyError(key)
+            raise ArchiveDataError(f"npz_member_missing:{key}")
         if archive.getinfo(member).file_size > 20_000_000:
-            raise ValueError("text_member_file_size_limit_exceeded")
-        with archive.open(member) as handle:
+            raise ArchiveDataError("text_member_file_size_limit_exceeded")
+        with open_npz_member(archive, member) as handle:
             header = read_npy_header(handle)
             shape = tuple(int(value) for value in header.get("shape", ()))
             count = _shape_count(shape)
             if len(shape) > 1 or count > max_items:
-                raise ValueError("text_array_shape_or_size_unsupported")
+                raise ArchiveDataError("text_array_shape_or_size_unsupported")
             descriptor = str(header.get("descr", ""))
             unicode_match = re.fullmatch(r"([<>=|])U(\d+)", descriptor)
             bytes_match = re.fullmatch(r"[|<>=]S(\d+)", descriptor)
@@ -838,16 +1015,20 @@ def read_npz_text(path: Path, key: str, max_items: int = 20_000) -> list[str]:
                 width = int(bytes_match.group(1))
                 encoding = "utf-8"
             else:
-                raise ValueError(f"unsupported_text_dtype:{descriptor}")
+                raise ArchiveDataError(f"unsupported_text_dtype:{descriptor}")
             if width > 65_536 or width * count > 16_000_000:
-                raise ValueError("text_array_byte_limit_exceeded")
+                raise ArchiveDataError("text_array_byte_limit_exceeded")
             raw = handle.read(width * count)
             if len(raw) != width * count:
-                raise ValueError("truncated_npy_data")
+                raise ArchiveDataError("truncated_npy_data")
             values = []
             for index in range(count):
                 item = raw[index * width : (index + 1) * width]
-                values.append(item.decode(encoding, errors="strict").rstrip("\x00"))
+                try:
+                    value = item.decode(encoding, errors="strict").rstrip("\x00")
+                except UnicodeError as exc:
+                    raise ArchiveDataError(f"text_decode_error:{key}") from exc
+                values.append(value)
             return values
 
 
@@ -901,33 +1082,58 @@ def inspect_archive(
         if not vector_valid:
             result["status"] = "schema_mismatch"
             result["reason_codes"].append("feature_array_not_positive_2d_numeric_c_order")
+            return result
         rows = vector_shape[0] if vector_shape else 0
         result["rows"] = rows
         result["vector_dtype"] = vector_descriptor
         mismatched = sorted(
             key
             for key in {"region_id", "scanner_id", "slide_id", "split"}
-            if not shapes[key] or shapes[key][0] != rows
+            if shapes[key] != [rows]
         )
         if mismatched:
             result["status"] = "schema_mismatch"
-            result["reason_codes"].append("array_first_dimension_mismatch")
+            result["reason_codes"].append("id_array_shape_mismatch")
             result["mismatched_arrays"] = mismatched
+            return result
+        metadata_shape = shapes["metadata_json"]
+        if len(metadata_shape) > 1 or _shape_count(tuple(metadata_shape)) != 1:
+            result["status"] = "schema_mismatch"
+            result["reason_codes"].append("metadata_json_not_exactly_one_record")
+            return result
 
         samples = read_npz_text(path, "slide_id")
         regions = read_npz_text(path, "region_id")
         scanners = read_npz_text(path, "scanner_id")
         splits = read_npz_text(path, "split")
-        archive_keys = set(zip(samples, regions, scanners))
+        decoded_lengths = {
+            "slide_id": len(samples),
+            "region_id": len(regions),
+            "scanner_id": len(scanners),
+            "split": len(splits),
+        }
+        invalid_lengths = sorted(
+            key for key, count in decoded_lengths.items() if count != rows
+        )
+        if invalid_lengths:
+            result["status"] = "schema_mismatch"
+            result["reason_codes"].append("decoded_id_array_length_mismatch")
+            result["mismatched_arrays"] = invalid_lengths
+            return result
+        archive_rows = list(zip(samples, regions, scanners, splits))
+        archive_keys = {
+            (sample, region, scanner)
+            for sample, region, scanner, _split in archive_rows
+        }
         sample_splits: dict[str, set[str]] = defaultdict(set)
         region_splits: dict[tuple[str, str], set[str]] = defaultdict(set)
-        for sample, region, split in zip(samples, regions, splits):
+        for sample, region, _scanner, split in archive_rows:
             sample_splits[sample].add(split)
             region_splits[(sample, region)].add(split)
         manifest_keys = manifest.get("_key_rows", set())
         overlap = archive_keys & manifest_keys
         result["unique_archive_keys"] = len(archive_keys)
-        result["duplicate_archive_keys"] = rows - len(archive_keys)
+        result["duplicate_archive_keys"] = len(archive_rows) - len(archive_keys)
         result["manifest_join_matches"] = len(overlap)
         result["manifest_join_total"] = len(archive_keys)
         result["manifest_join_fraction"] = (
@@ -975,7 +1181,10 @@ def inspect_archive(
                 result["status"] = "alignment_blocked"
                 result["reason_codes"].append("fold_split_manifest_unavailable")
             else:
-                observed_splits = dict(zip(zip(samples, regions, scanners), splits))
+                observed_splits = {
+                    (sample, region, scanner): split
+                    for sample, region, scanner, split in archive_rows
+                }
                 split_mismatches = sum(
                     expected_splits.get(key) != split
                     for key, split in observed_splits.items()
@@ -988,11 +1197,19 @@ def inspect_archive(
                     result["reason_codes"].append("archive_split_manifest_mismatch")
 
         metadata_values = read_npz_text(path, "metadata_json")
-        metadata: dict[str, Any] = {}
-        if metadata_values:
+        if len(metadata_values) != 1:
+            result["status"] = "schema_mismatch"
+            result["reason_codes"].append("metadata_json_not_exactly_one_record")
+            return result
+        try:
             parsed = json.loads(metadata_values[0])
-            if isinstance(parsed, dict):
-                metadata = parsed
+        except json.JSONDecodeError as exc:
+            raise ArchiveDataError("metadata_json_decode_error") from exc
+        if not isinstance(parsed, dict):
+            result["status"] = "schema_mismatch"
+            result["reason_codes"].append("metadata_json_not_object")
+            return result
+        metadata: dict[str, Any] = parsed
         source = str(metadata.get("source", ""))
         backbone = str(metadata.get("backbone", ""))
         model = str(metadata.get("model", ""))
@@ -1082,16 +1299,10 @@ def inspect_archive(
         result["status"] = "absent"
         result["reason_codes"].append("archive_absent")
     except (
+        ArchiveDataError,
         OSError,
-        KeyError,
-        MemoryError,
-        OverflowError,
-        SyntaxError,
-        TypeError,
-        UnicodeError,
-        ValueError,
-        json.JSONDecodeError,
         zipfile.BadZipFile,
+        zipfile.LargeZipFile,
     ) as exc:
         result["status"] = "corrupt_or_unreadable"
         result["reason_codes"].append(exc.__class__.__name__)
@@ -1099,13 +1310,55 @@ def inspect_archive(
     return result
 
 
+def discover_family_paths(family: FamilySpec, repo_root: Path) -> list[Path]:
+    return sorted(repo_root.glob(family.pattern), key=lambda value: value.as_posix())
+
+
+def require_unique_archive_paths(
+    paths_by_family: dict[str, list[Path]], repo_root: Path
+) -> dict[str, Any]:
+    """Reject overlapping family globs before archive or warning counts are formed."""
+
+    owners: dict[str, list[tuple[str, Path]]] = defaultdict(list)
+    occurrences = 0
+    for family_id in sorted(paths_by_family):
+        for path in paths_by_family[family_id]:
+            canonical = os.path.normcase(str(path.resolve(strict=True)))
+            owners[canonical].append((family_id, path))
+            occurrences += 1
+    duplicates = [values for values in owners.values() if len(values) > 1]
+    if duplicates:
+        details = []
+        for values in sorted(
+            duplicates,
+            key=lambda items: rel(items[0][1], repo_root),
+        ):
+            path = rel(values[0][1], repo_root)
+            families = ",".join(sorted(item[0] for item in values))
+            details.append(f"path={path},families={families}")
+        raise AuditValidationError(
+            "duplicate_archive_paths_across_families:" + ";".join(details)
+        )
+    return {
+        "status": "passed",
+        "discovered_path_occurrences": occurrences,
+        "unique_canonical_paths": len(owners),
+        "global_duplicate_archive_paths": 0,
+    }
+
+
 def inspect_family(
     family: FamilySpec,
     manifests: dict[str, dict[str, Any]],
     split_manifests: dict[str, dict[str, Any]],
     repo_root: Path,
+    discovered_paths: list[Path] | None = None,
 ) -> dict[str, Any]:
-    paths = sorted(repo_root.glob(family.pattern), key=lambda value: value.as_posix())
+    paths = (
+        discover_family_paths(family, repo_root)
+        if discovered_paths is None
+        else sorted(discovered_paths, key=lambda value: value.as_posix())
+    )
     result: dict[str, Any] = {
         **asdict(family),
         "count": len(paths),
@@ -1568,10 +1821,27 @@ def build_audit(repo_root: Path) -> dict[str, Any]:
         )
         for dataset_id, manifest in manifests_internal.items()
     }
+    fold_validation = {
+        dataset_id: require_valid_fold_assignments(
+            specs_by_id[dataset_id],
+            manifests_internal[dataset_id],
+            split_manifests_internal[dataset_id],
+        )
+        for dataset_id in sorted(manifests_internal)
+    }
 
+    paths_by_family = {
+        family.family_id: discover_family_paths(family, repo_root)
+        for family in FAMILIES
+    }
+    archive_path_validation = require_unique_archive_paths(paths_by_family, repo_root)
     family_list = [
         inspect_family(
-            family, manifests_internal, split_manifests_internal, repo_root
+            family,
+            manifests_internal,
+            split_manifests_internal,
+            repo_root,
+            paths_by_family[family.family_id],
         )
         for family in FAMILIES
     ]
@@ -1618,6 +1888,8 @@ def build_audit(repo_root: Path) -> dict[str, Any]:
             key: public_manifest(value)
             for key, value in split_manifests_internal.items()
         },
+        "fold_validation": fold_validation,
+        "archive_path_validation": archive_path_validation,
         "families": family_list,
         "metadata": metadata,
         "scanner_evidence": scanner_evidence,
@@ -1706,7 +1978,7 @@ def render_report(audit: dict[str, Any]) -> str:
             f"{discovery['eligible_observations']:,} anchor-positive scanner "
             f"observations across {len(discovery['usable_categories'])} categories. "
             "Negative-only gallery rows are not included in these support counts. "
-            "Excluded category: "
+            "Globally absent from candidate-discovery support: "
             f"{', '.join(discovery['excluded_categories']) or 'none'}."
         )
         confirmatory_support_sentence = (
@@ -1718,6 +1990,9 @@ def render_report(audit: dict[str, Any]) -> str:
             f"{confirmatory['eligible_observations']:,} anchor-positive scanner "
             "observations. Fold-4 Bone is discovery-eligible but not "
             "confirmatory-eligible because only one Bone sample is anchor-capable. "
+            "Bone remains confirmatory-eligible in other folds and is therefore not "
+            "globally absent. Globally absent from confirmatory support: "
+            f"{', '.join(confirmatory['excluded_categories']) or 'none'}. "
             "These are support counts only; they do not clear G0 or authorize a "
             "confirmatory metric run."
         )
@@ -1770,7 +2045,7 @@ def render_report(audit: dict[str, Any]) -> str:
         "",
         discovery_support_sentence,
         "",
-        "| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |",
+        "| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable in this fold |",
         "|---:|---:|---:|---:|---|",
     ]
     for fold, item in canine.get("fold_eligibility", {}).items():
@@ -1780,7 +2055,7 @@ def render_report(audit: dict[str, Any]) -> str:
             f"| {fold} | {support['eligible_sample_category_cells']} | {support['eligible_regions']} | {support['eligible_observations']} | {nonestimable} |"
         )
     lines.append(
-        f"| **Total** | **{discovery['eligible_sample_category_cells']}** | **{discovery['eligible_regions']}** | **{discovery['eligible_observations']}** | **{', '.join(discovery['excluded_categories']) or 'none'}** |"
+        f"| **Across-fold support total** | **{discovery['eligible_sample_category_cells']}** | **{discovery['eligible_regions']}** | **{discovery['eligible_observations']}** | **Globally absent: {', '.join(discovery['excluded_categories']) or 'none'}** |"
     )
 
     lines.extend(
@@ -1790,7 +2065,7 @@ def render_report(audit: dict[str, Any]) -> str:
             "",
             confirmatory_support_sentence,
             "",
-            "| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |",
+            "| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable in this fold |",
             "|---:|---:|---:|---:|---|",
         ]
     )
@@ -1801,7 +2076,13 @@ def render_report(audit: dict[str, Any]) -> str:
             f"| {fold} | {support['eligible_sample_category_cells']} | {support['eligible_regions']} | {support['eligible_observations']} | {nonestimable} |"
         )
     lines.append(
-        f"| **Total** | **{confirmatory['eligible_sample_category_cells']}** | **{confirmatory['eligible_regions']}** | **{confirmatory['eligible_observations']}** | **{', '.join(confirmatory['excluded_categories']) or 'none'}** |"
+        f"| **Across-fold support total** | **{confirmatory['eligible_sample_category_cells']}** | **{confirmatory['eligible_regions']}** | **{confirmatory['eligible_observations']}** | **Globally absent: {', '.join(confirmatory['excluded_categories']) or 'none'}** |"
+    )
+    lines.extend(
+        [
+            "",
+            "`Globally absent` means that a category has no eligible anchor cell in any held-out fold; it is not the union of fold-specific exclusions.",
+        ]
     )
 
     lines.extend(
@@ -1870,11 +2151,19 @@ def render_report(audit: dict[str, Any]) -> str:
         for family_id, item in families.items()
         if family_id.startswith("scorpion_")
     )
+    scorpion_gated_model_conflicts = sum(
+        item.get("warning_counts", {}).get(
+            "internal_backbone_model_label_conflict", 0
+        )
+        for item in families.values()
+        if item.get("dataset_id") == "scorpion"
+        and item.get("require_explicit_backbone")
+    )
     if scorpion_crossbackbone_count:
         crossbackbone_sentence = (
             "SCORPION has DINOv2, Phikon, and ResNet50 true-pair and bottleneck archives "
             "for cross-backbone sensitivity. It still cannot support category-adjusted "
-            "testing because category labels are absent. In the 150 flagged "
+            f"testing because category labels are absent. In the {scorpion_gated_model_conflicts} flagged "
             "Phikon/ResNet50 archives, the explicit metadata backbone matches the "
             "family/path expectation but the model label does not match that backbone."
         )
@@ -1984,10 +2273,20 @@ def render_report(audit: dict[str, Any]) -> str:
             f"Only {complete_grids} of {len(expected_grids)} expected archive grids are "
             "complete; incomplete grids require review."
         )
+    path_validation = audit["archive_path_validation"]
+    fold_validation = audit["fold_validation"]
+    integrity_gate_sentence = (
+        "Global cross-family duplicate archive paths: "
+        f"{path_validation['global_duplicate_archive_paths']}. Held-out fold validation "
+        f"passed for {len(fold_validation)} datasets; geometry/test-split mismatches: "
+        f"{sum(item['geometry_test_split_mismatches'] for item in fold_validation.values())}."
+    )
     lines.extend(
         [
             "",
             grid_sentence,
+            "",
+            integrity_gate_sentence,
             "",
             lineage_summary_sentence,
             "",
@@ -2080,11 +2379,15 @@ def render_report(audit: dict[str, Any]) -> str:
             "",
             next_step_sentence,
             "",
+            "## Reproducibility boundary",
+            "",
+            "This audit is reproducible against the present artifact workspace. The source NPZ archives are untracked inputs, so clean-clone reproducibility requires a frozen provenance manifest and checksum inventory for those source archives. This PR does not create or claim such a frozen manifest or clean-clone reproduction package.",
+            "",
             "## Deterministic evidence fingerprint",
             "",
             f"`{audit['evidence_schema_fingerprint_sha256']}`",
             "",
-            "This fingerprint covers the audit's deterministic schema/count/status payload. It is not a checksum of the full feature payloads.",
+            "This fingerprint covers the deterministic schema/count/status payload for the currently restored evidence set. It does not hash the full feature payloads, establish their immutability, or make a clean clone reproducible.",
             "",
         ]
     )
@@ -2135,7 +2438,11 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    audit = build_audit(repo_root)
+    try:
+        audit = build_audit(repo_root)
+    except AuditValidationError as exc:
+        print(f"AUDIT_VALIDATION_FAIL: {exc}", file=sys.stderr)
+        return 2
     rendered = render_report(audit)
     if args.check_report:
         return check_report(rendered)

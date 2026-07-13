@@ -85,7 +85,7 @@ Two independent units per level is only a bare algebraic minimum and is not adeq
 
 The preferred design crosses biology and preparation directly: repeated or serial material from the same specimen processed under different preparation conditions, plus multiple independent specimens within each preparation condition. Paired scanners alone do not create this crossing.
 
-## Current canine eligibility
+## Current canine held-out support
 
 The geometry-qualified canine anchor contains:
 
@@ -95,18 +95,37 @@ The geometry-qualified canine anchor contains:
 - seven recorded categories; and
 - five sample-disjoint folds.
 
-For the proposed different-region, same-category sample-link audit, eligibility must be evaluated inside each held-out fold. A sample-category cell needs at least two distinct regions, and the category needs at least two samples in that fold. Current fold-aware support is:
+Eligibility is evaluated inside each held-out fold at two distinct levels. All counts below include only anchor-capable sample-category cells and their regions. Rows used only as matched negatives are excluded from every cell, region, and observation support count.
 
-| Held-out fold | Eligible cells | Eligible regions | Eligible observations |
-|---:|---:|---:|---:|
-| 0 | 25 | 141 | 705 |
-| 1 | 26 | 183 | 915 |
-| 2 | 21 | 130 | 650 |
-| 3 | 20 | 148 | 740 |
-| 4 | 20 | 157 | 785 |
-| Total | 112 | 759 | 3,795 |
+### Candidate-discovery eligibility
 
-Bone is non-estimable in fold 2. Cartilage is non-estimable in fold 4 and has no eligible fold-level comparison. Per-scanner-direction support must still be checked before metric execution.
+A sample-category cell is candidate-discovery eligible when it contains at least two distinct regions and the same fold/category contains a different sample with at least one region for matched negatives.
+
+| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable in this fold |
+|---:|---:|---:|---:|---|
+| 0 | 25 | 141 | 705 | none |
+| 1 | 26 | 183 | 915 | none |
+| 2 | 21 | 130 | 650 | Bone |
+| 3 | 20 | 148 | 740 | none |
+| 4 | 20 | 157 | 785 | Cartilage |
+| **Across-fold support total** | **112** | **759** | **3,795** | **Globally absent: Cartilage** |
+
+### Replicated-anchor confirmatory eligibility
+
+A fold/category is replicated-anchor confirmatory eligible only when at least two independent samples are anchor-capable, meaning that each sample-category cell contains at least two distinct regions.
+
+| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable in this fold |
+|---:|---:|---:|---:|---|
+| 0 | 25 | 141 | 705 | none |
+| 1 | 26 | 183 | 915 | none |
+| 2 | 21 | 130 | 650 | Bone |
+| 3 | 20 | 148 | 740 | none |
+| 4 | 19 | 155 | 775 | Bone, Cartilage |
+| **Across-fold support total** | **111** | **757** | **3,785** | **Globally absent: Cartilage** |
+
+Fold-4 Bone is candidate-discovery eligible but confirmatory-ineligible because only one Bone sample is anchor-capable. Bone remains confirmatory-eligible in other folds and is not globally absent. `Globally absent` means that a category has no eligible anchor cell in any held-out fold; it is not the union of fold-specific exclusions.
+
+These are algebraic support counts only; they do not clear lineage, leakage, power, or precision gates. Per-scanner-direction support must still be checked before metric execution.
 
 ## Current technical proxies
 

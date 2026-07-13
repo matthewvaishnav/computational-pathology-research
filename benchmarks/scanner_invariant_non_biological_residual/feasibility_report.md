@@ -29,29 +29,31 @@ The general invariance blind spot is not itself a new result. The defensible fut
 
 ### Candidate-discovery eligibility
 
-Canine composite keys are unique and its geometry-qualified manifest contains rows for 805 regions on 5 scanners. Candidate-discovery eligibility permits one anchor-capable sample-category cell with at least two regions when a different same-category sample can supply negatives. It has 112 anchor cells, 759 anchor-positive regions, and 3,795 anchor-positive scanner observations across 6 categories. Negative-only gallery rows are not included in these support counts. Excluded category: Cartilage.
+Canine composite keys are unique and its geometry-qualified manifest contains rows for 805 regions on 5 scanners. Candidate-discovery eligibility permits one anchor-capable sample-category cell with at least two regions when a different same-category sample can supply negatives. It has 112 anchor cells, 759 anchor-positive regions, and 3,795 anchor-positive scanner observations across 6 categories. Negative-only gallery rows are not included in these support counts. Globally absent from candidate-discovery support: Cartilage.
 
-| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |
+| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable in this fold |
 |---:|---:|---:|---:|---|
 | 0 | 25 | 141 | 705 | none |
 | 1 | 26 | 183 | 915 | none |
 | 2 | 21 | 130 | 650 | Bone |
 | 3 | 20 | 148 | 740 | none |
 | 4 | 20 | 157 | 785 | Cartilage |
-| **Total** | **112** | **759** | **3795** | **Cartilage** |
+| **Across-fold support total** | **112** | **759** | **3795** | **Globally absent: Cartilage** |
 
 ### Replicated-anchor confirmatory eligibility
 
-Replicated-anchor confirmatory eligibility additionally requires at least two independently anchor-capable samples in the held-out fold/category. It has 111 anchor cells, 757 anchor-positive regions, and 3,785 anchor-positive scanner observations. Fold-4 Bone is discovery-eligible but not confirmatory-eligible because only one Bone sample is anchor-capable. These are support counts only; they do not clear G0 or authorize a confirmatory metric run.
+Replicated-anchor confirmatory eligibility additionally requires at least two independently anchor-capable samples in the held-out fold/category. It has 111 anchor cells, 757 anchor-positive regions, and 3,785 anchor-positive scanner observations. Fold-4 Bone is discovery-eligible but not confirmatory-eligible because only one Bone sample is anchor-capable. Bone remains confirmatory-eligible in other folds and is therefore not globally absent. Globally absent from confirmatory support: Cartilage. These are support counts only; they do not clear G0 or authorize a confirmatory metric run.
 
-| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable categories |
+| Held-out fold | Anchor cells | Anchor-positive regions | Anchor-positive observations | Non-estimable in this fold |
 |---:|---:|---:|---:|---|
 | 0 | 25 | 141 | 705 | none |
 | 1 | 26 | 183 | 915 | none |
 | 2 | 21 | 130 | 650 | Bone |
 | 3 | 20 | 148 | 740 | none |
 | 4 | 19 | 155 | 775 | Bone, Cartilage |
-| **Total** | **111** | **757** | **3785** | **Cartilage** |
+| **Across-fold support total** | **111** | **757** | **3785** | **Globally absent: Cartilage** |
+
+`Globally absent` means that a category has no eligible anchor cell in any held-out fold; it is not the union of fold-specific exclusions.
 
 ## Representation artifact inventory
 
@@ -78,6 +80,8 @@ Replicated-anchor confirmatory eligibility additionally requires at least two in
 | `oldstyle_keep_k4_row_level` | 0 | n/a | 0 | blocked | not available |
 
 All 17 expected five-fold by five-seed archive grids are complete. The audit checked all 426 discovered archives; 0 failed schema, alignment, fold, split, or training-metadata checks.
+
+Global cross-family duplicate archive paths: 0. Held-out fold validation passed for 2 datasets; geometry/test-split mismatches: 0.
 
 Lineage review remains required: 200 archives have an internal dataset/source conflict and 150 have an internal metadata backbone/model-label conflict. For the latter count, the explicit backbone first matches the family/path expectation and the model label then fails to contain that backbone. All 200 source conflicts occur in the audited canine projected archives. These are metadata lineage conflicts requiring review; they do not establish that a different dataset or backbone generated the features.
 
@@ -160,8 +164,12 @@ This feasibility audit supports no clinical, diagnostic, deployment, patient-car
 
 Do not train a new representation. First fix representation provenance and acquire or recover crossed preparation/site metadata. If the immediate goal is only candidate discovery, the next authorized artifact should be a no-training implementation of matched cross-scanner, different-region, same-category sample-link AUC on existing canine test embeddings with the listed controls.
 
+## Reproducibility boundary
+
+This audit is reproducible against the present artifact workspace. The source NPZ archives are untracked inputs, so clean-clone reproducibility requires a frozen provenance manifest and checksum inventory for those source archives. This PR does not create or claim such a frozen manifest or clean-clone reproduction package.
+
 ## Deterministic evidence fingerprint
 
-`f18d49087cf30d2654a7a6aa2a473a4f8937c3a339ec7e7c02ae793acd0eba02`
+`db88f028c716a54f43ab353868456cde4a13433a291f78a2cdd7ec049ddc5702`
 
-This fingerprint covers the audit's deterministic schema/count/status payload. It is not a checksum of the full feature payloads.
+This fingerprint covers the deterministic schema/count/status payload for the currently restored evidence set. It does not hash the full feature payloads, establish their immutability, or make a clean clone reproducible.
