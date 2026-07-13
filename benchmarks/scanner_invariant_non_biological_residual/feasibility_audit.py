@@ -841,21 +841,87 @@ def require_valid_fold_assignments(
     """Fail closed when held-out-fold support cannot be validated exactly."""
 
     failures: list[str] = []
+    expected_summary_folds = {str(value) for value in EXPECTED_FOLD_IDS}
+    expected_split_map_folds = set(EXPECTED_FOLD_IDS)
+    raw_fold_summaries = split_manifests.get("folds", {})
+    raw_split_maps = split_manifests.get("_maps", {})
+
+    if not isinstance(raw_fold_summaries, dict):
+        raw_fold_summaries = {}
+    if not isinstance(raw_split_maps, dict):
+        raw_split_maps = {}
+
+    fold_summaries = {
+        key: value
+        for key, value in raw_fold_summaries.items()
+        if type(key) is str and key in expected_summary_folds
+    }
+    split_maps = {
+        key: value
+        for key, value in raw_split_maps.items()
+        if type(key) is int and key in expected_split_map_folds
+    }
+    summary_folds = set(fold_summaries)
+    split_map_folds = set(split_maps)
+    missing_summary_folds = expected_summary_folds - summary_folds
+    unexpected_summary_folds = {
+        key
+        for key in raw_fold_summaries
+        if type(key) is not str or key not in expected_summary_folds
+    }
+    missing_split_map_folds = expected_split_map_folds - split_map_folds
+    unexpected_split_map_folds = {
+        key
+        for key in raw_split_maps
+        if type(key) is not int or key not in expected_split_map_folds
+    }
+
+    def format_fold_values(values: set[Any]) -> str:
+        return ",".join(sorted(str(value) for value in values))
+
     if manifest.get("status") != "available":
         reasons = ",".join(manifest.get("reason_codes", [])) or "unknown"
         failures.append(f"manifest={reasons}")
-    if split_manifests.get("status") != "available":
-        for fold in (str(value) for value in EXPECTED_FOLD_IDS):
-            summary = split_manifests.get("folds", {}).get(fold, {})
-            if summary.get("status") != "available":
-                reasons = ",".join(summary.get("reason_codes", [])) or "unknown"
-                failures.append(f"split_fold_{fold}={reasons}")
+    if missing_summary_folds:
+        failures.append(
+            "missing_fold_summary_folds="
+            + format_fold_values(missing_summary_folds)
+        )
+    if unexpected_summary_folds:
+        failures.append(
+            "unexpected_fold_summary_folds="
+            + format_fold_values(unexpected_summary_folds)
+        )
+    if missing_split_map_folds:
+        failures.append(
+            "missing_internal_split_map_folds="
+            + format_fold_values(missing_split_map_folds)
+        )
+    if unexpected_split_map_folds:
+        failures.append(
+            "unexpected_internal_split_map_folds="
+            + format_fold_values(unexpected_split_map_folds)
+        )
+    for fold in (str(value) for value in EXPECTED_FOLD_IDS):
+        if fold not in fold_summaries:
+            continue
+        summary = fold_summaries[fold]
+        if not isinstance(summary, dict):
+            failures.append(f"split_fold_{fold}=summary_not_mapping")
+            continue
+        if summary.get("status") != "available":
+            reasons = ",".join(summary.get("reason_codes", [])) or "unknown"
+            failures.append(f"split_fold_{fold}={reasons}")
+    for fold in EXPECTED_FOLD_IDS:
+        if fold not in split_maps:
+            continue
+        if not isinstance(split_maps[fold], dict):
+            failures.append(f"split_map_{fold}=not_mapping")
     if failures:
         raise AuditValidationError(
             f"fold_validation_failed:{spec.dataset_id}:" + ";".join(failures)
         )
 
-    fold_summaries = split_manifests["folds"]
     return {
         "status": "passed",
         "expected_fold_ids": list(EXPECTED_FOLD_IDS),
