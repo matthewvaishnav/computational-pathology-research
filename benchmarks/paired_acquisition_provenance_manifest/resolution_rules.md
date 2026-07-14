@@ -44,6 +44,26 @@ and has no metadata-lineage conflict. Optional absence is not itself a conflict
 and does not assert a canonical backbone. A duplicate-content equivalence, if
 present, is reported separately and does not by itself override this status.
 
+## Local-untracked context evidence
+
+`local_untracked_context` is allowed only for `unresolved` and
+`legacy-optional`. It is explicitly forbidden for `confirmed` and `corrected`.
+It records non-adjudicating present-workspace context and cannot establish a
+canonical correction, producing invocation, historical hash, historical
+origin, historical byte identity, or archive-specific adjudication. Historical
+origin remains unverified and archive-specific adjudication remains absent.
+
+The referenced file must use a canonical repository-relative path, be locally
+present as a regular file inside the repository, and be untracked by Git.
+Absolute or machine-specific paths, traversal, repository escapes, tracked
+files, directories, and missing files fail closed.
+
+The `canine_original_dinov2` archive remains `legacy-optional` because optional
+explicit backbone metadata is absent, no contradictory label exists, and its
+canonical backbone remains blank. Its adjacent summary is local-untracked
+context only; current-state availability does not make it historical or
+adjudicating evidence.
+
 ## Confidence values
 
 Allowed values are `high`, `medium`, `low`, and `not_applicable`.

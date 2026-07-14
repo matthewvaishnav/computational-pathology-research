@@ -53,10 +53,26 @@ Six reused family-level reference bundles are acceptable supporting context.
 They must be labeled reconstructed family-level lineage evidence and cannot be
 treated as archive-specific producing-invocation proof.
 
-The original canine DINOv2 archive has embedded extraction parameters and an
-adjacent summary JSON but no producing repository commit embedded in its
-metadata. It has no contradictory label and remains `legacy-optional` without
-asserting a canonical backbone.
+## Local-untracked contextual evidence
+
+The separately supplied file
+`results/external_multiscanner_caninescc/features/fold_0_dinov2_base.summary.json`
+is local-untracked context: local-only, untracked, non-adjudicating
+present-workspace context whose current-state availability is checked directly.
+Clean-clone availability is not assumed.
+
+This file supports only the bounded `legacy-optional` context for
+`canine_original_dinov2`. The archive has embedded extraction parameters, lacks
+optional explicit backbone metadata without contradiction, and does not assert
+a canonical backbone. The adjacent summary is insufficient for `confirmed`,
+`corrected`, historical origin, historical byte identity, a producing
+invocation, or archive-specific adjudication. Historical origin remains
+unverified and archive-specific adjudication is absent.
+
+Deterministic checking therefore requires all 426 source archives, every
+reachable Git commit:path reference, and this separately supplied
+local-untracked file. If the file is absent or no longer satisfies the bounded
+local-context rules, checking fails closed.
 
 ## Evidence inventory
 
@@ -91,7 +107,8 @@ that uniquely links:
 For a cryptographically closed lineage chain, all 426 source NPZs or immutable
 object locations must also be frozen. None of the 426 NPZ paths is Git-tracked,
 so this package does not establish public artifact availability or clean-clone
-execution without separately supplied archives and referenced Git objects.
+execution without separately supplied archives, reachable Git commit:path
+references, and the local-untracked context file named above.
 
 This package does not require or run new training. Crossed preparation, site,
 processing, and stain-batch evidence remains a separate future study-design

@@ -124,6 +124,33 @@ proposed or adjudicated. Nonconflicting canonical fields preserve the exact
 observed value rather than being silently normalized from family/path context.
 The source archive is never rewritten.
 
+### Local-untracked contextual evidence
+
+`resolution_evidence_type=local_untracked_context` identifies separately
+supplied local-untracked context whose current-state availability is validated
+in the present workspace. It is allowed only on `unresolved` and
+`legacy-optional` rows. It is forbidden on `confirmed` and `corrected` rows.
+
+Its `resolution_evidence_reference` must be a canonical repository-relative
+path written with forward slashes. Absolute paths, drive-letter paths, UNC
+paths, parent-directory traversal, and symlinks that resolve outside the
+repository are forbidden. The resolved target must exist, remain inside the
+repository, be a regular file, and be untracked by Git. A missing, tracked,
+non-file, noncanonical, or repository-escaping reference fails closed.
+
+Local-untracked context is non-adjudicating. It cannot establish historical
+origin, historical hash binding, a canonical correction, a producing
+invocation, or archive-specific adjudication. Historical origin remains
+unverified and archive-specific adjudication remains absent.
+
+For this evidence type, the evidence, reference-availability,
+archive-specific, historical-binding, and deterministic-proof flags must be
+exactly false. The evidence candidate count must be integer zero, the
+archive-specific evidence dictionary must be empty, and
+`archive_hash_comparison_needed` must be `true`. An `unresolved` use must also
+satisfy every existing proposed-value and missing-adjudication requirement for
+that status.
+
 ### Adjudication needs
 
 - `evidence_needed_for_adjudication`

@@ -78,5 +78,15 @@ identify a causal or biological provenance for representation signal.
 
 All 426 NPZs are locally accessible in the audited workspace, but none is
 Git-tracked by this repository. This package does not establish public artifact
-availability. Deterministic checking requires a workspace where the same
-archives and referenced Git objects are separately available.
+availability. Deterministic checking requires all three of:
+
+- all 426 source archives;
+- all reachable Git commit:path references recorded by the manifest; and
+- the separately supplied local-untracked file
+  `results/external_multiscanner_caninescc/features/fold_0_dinov2_base.summary.json`.
+
+That adjacent summary is local-untracked context and present-workspace context
+only. It is untracked and non-adjudicating; its current-state availability does
+not prove historical origin, which remains unverified, and archive-specific
+adjudication is absent. Full deterministic checking fails closed if this local
+context file is absent.
