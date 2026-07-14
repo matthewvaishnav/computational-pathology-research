@@ -29,7 +29,6 @@ REQUIRED_COLUMNS = (
     "raw_wsi_available", "patch_coordinates_available",
     "immutable_source_id_available", "metadata_source", "evidence_status", "notes",
 )
-
 AVAILABILITY_FIELDS = REQUIRED_COLUMNS[4:24]
 ALLOWED_AVAILABILITY = {"yes", "no", "partial", "unknown", "not_applicable"}
 ALLOWED_EVIDENCE = {
@@ -65,7 +64,6 @@ WORKFLOW_REQUIREMENTS = {
     "scan_batch_available": "missing_scan_batch",
     "paired_same_section_scans_available": "missing_same_section_scanner_pairing",
 }
-
 BOUNDARIES = (
     "This is a metadata feasibility result, not an experimental result.",
     "No candidate is confirmatory-ready unless every required field is explicit and verified.",
@@ -155,7 +153,6 @@ def analyze_row(row: dict[str, str]) -> dict[str, Any]:
     preparation = contrast_result(row, PREPARATION_REQUIREMENTS, "preparation")
     scanner = contrast_result(row, SCANNER_REQUIREMENTS, "scanner")
     workflow = contrast_result(row, WORKFLOW_REQUIREMENTS, "workflow")
-
     global_blockers: set[str] = set()
     if row["access_status"] != "yes" or row["license_status"] != "yes":
         global_blockers.add("access_or_license_unresolved")
@@ -163,12 +160,10 @@ def analyze_row(row: dict[str, str]) -> dict[str, Any]:
         global_blockers.add("metadata_inferred_not_verified")
     if "factor_nesting_unresolved" in row["notes"]:
         global_blockers.add("factor_nesting_unresolved")
-
     for result in (preparation, scanner, workflow):
         result["blocking_reasons"] = sorted(set(result["blocking_reasons"]) | global_blockers)
         if result["status"] == "confirmatory_design_candidate" and global_blockers:
             result["status"] = "candidate_discovery"
-
     statuses = {preparation["status"], scanner["status"], workflow["status"]}
     if "confirmatory_design_candidate" in statuses:
         tier = "confirmatory_design_candidate"
@@ -176,16 +171,12 @@ def analyze_row(row: dict[str, str]) -> dict[str, Any]:
         tier = "candidate_discovery"
     else:
         tier = "descriptive_inventory"
-
     blockers = sorted(
         global_blockers
         | set(preparation["blocking_reasons"])
         | set(scanner["blocking_reasons"])
         | set(workflow["blocking_reasons"])
     )
-    verified_fields = sorted(field for field in AVAILABILITY_FIELDS if row[field] == "yes")
-    inferred_fields = sorted(field for field in AVAILABILITY_FIELDS if row[field] == "partial")
-    unknown_fields = sorted(field for field in AVAILABILITY_FIELDS if row[field] == "unknown")
     return {
         "dataset_id": row["dataset_id"],
         "dataset_name": row["dataset_name"],
@@ -198,9 +189,9 @@ def analyze_row(row: dict[str, str]) -> dict[str, Any]:
             "metadata feasibility is not statistical power",
             "absence of metadata is not evidence that the factor was absent",
         ],
-        "verified_fields": verified_fields,
-        "inferred_fields": inferred_fields,
-        "unknown_fields": unknown_fields,
+        "verified_fields": sorted(field for field in AVAILABILITY_FIELDS if row[field] == "yes"),
+        "inferred_fields": sorted(field for field in AVAILABILITY_FIELDS if row[field] == "partial"),
+        "unknown_fields": sorted(field for field in AVAILABILITY_FIELDS if row[field] == "unknown"),
         "exact_evidence_source": row["metadata_source"],
         "evidence_status": row["evidence_status"],
         "recommended_next_action": (
@@ -290,7 +281,7 @@ def run_self_tests() -> dict[str, Any]:
     row = base_test_row(); row["block_id_available"] = "no"; row["matched_serial_sections_available"] = "no"; assert "missing_block_identity" in analyze_row(row)["preparation_contrast"]["blocking_reasons"]; passed.append("serial_sections_without_block_identity_block_preparation")
     row = base_test_row(); row["notes"] = "factor_nesting_unresolved"; assert "factor_nesting_unresolved" in analyze_row(row)["blocking_reasons"]; passed.append("preparation_nested_in_scanner_is_not_confirmatory")
     row = base_test_row(); row["license_status"] = "unknown"; assert "access_or_license_unresolved" in analyze_row(row)["blocking_reasons"]; passed.append("access_or_license_unknown_blocks_confirmatory")
-    row = base_test_row(); row["preparation_batch_available"] = "partial"; assert analyze_row(row)["descriptive_readiness_tier"] == "candidate_discovery"; passed.append("candidate_discovery_allows_partial_nonconfirmatory_metadata")
+    row = base_test_row(); row["preparation_batch_available"] = "partial"; assert analyze_row(row)["preparation_contrast"]["status"] == "candidate_discovery"; passed.append("candidate_discovery_allows_partial_nonconfirmatory_metadata")
     row = base_test_row(); digest = sha256_bytes(b"fixture"); assert stable_json(analyze_registry([row], digest, "fixture")) == stable_json(analyze_registry([row], digest, "fixture")); passed.append("deterministic_output")
     original = DEFAULT_REPORT.read_bytes() if DEFAULT_REPORT.exists() else b""
     with tempfile.TemporaryDirectory(prefix="metadata-readiness-custom-") as directory:
