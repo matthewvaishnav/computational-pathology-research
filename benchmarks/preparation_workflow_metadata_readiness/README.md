@@ -15,6 +15,7 @@ This is a metadata-feasibility audit, not an experimental result. It does not es
 - `readiness_rules.md`: tier and contrast-specific decision rules.
 - `audit_dataset_candidates.py`: deterministic standard-library audit.
 - `readiness_report.md`: checked report for the registry.
+- `public_dataset_discovery.md`: primary-source dataset search, candidate ranking, and bounded PLISM feasibility decision.
 - `acquisition_plan.md`: minimum prospective collection plan when no existing dataset is confirmatory-ready.
 
 ## Commands
@@ -31,6 +32,10 @@ Custom input does not overwrite the checked report:
 ```powershell
 python benchmarks\preparation_workflow_metadata_readiness\audit_dataset_candidates.py --input <registry.csv>
 ```
+
+## Current decision
+
+No inspected public dataset satisfies every confirmatory-readiness field. PLISM is the strongest feasibility candidate because it combines serial-section preparation variation, repeated scanner domains, original WSIs, and registered coordinates. It remains exploratory until missing batch, order, physical-device, section-hierarchy, and immutable source-event provenance is recovered.
 
 ## Boundaries
 
