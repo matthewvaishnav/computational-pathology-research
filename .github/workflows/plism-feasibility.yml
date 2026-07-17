@@ -1,0 +1,25 @@
+name: PLISM feasibility metadata audit
+
+on:
+  pull_request:
+    paths:
+      - "benchmarks/plism_feasibility/**"
+      - ".github/workflows/plism-feasibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  metadata-self-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test Figshare manifest normalization
+        run: python benchmarks/plism_feasibility/fetch_figshare_manifest.py --self-test
+      - name: Test crossing-matrix normalization
+        run: python benchmarks/plism_feasibility/build_crossing_matrix.py --self-test
