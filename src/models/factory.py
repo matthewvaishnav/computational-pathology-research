@@ -120,9 +120,10 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
 
             def forward(self, features, num_patches=None, return_attention=False):
                 if num_patches is not None:
-                    mask = torch.arange(
-                        features.size(1), device=features.device
-                    ).unsqueeze(0) < num_patches.unsqueeze(1)
+                    mask = (
+                        torch.arange(features.size(1), device=features.device).unsqueeze(0)
+                        < num_patches.unsqueeze(1)
+                    )
                 else:
                     mask = None
 
