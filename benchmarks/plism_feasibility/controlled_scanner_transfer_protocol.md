@@ -62,6 +62,16 @@ No single metric is designated as a universal robustness score before analysis.
 - Correct secondary pairwise comparisons using a declared false-discovery-rate procedure.
 - Treat effect sizes and uncertainty as primary; p-values are supporting evidence only.
 
+### Metric-multiplicity guardrail
+
+Recent perturbation benchmarks introduce additional aggregate robustness scores. These are useful external comparators but create a risk of choosing whichever metric produces the most favorable model ordering. Therefore:
+
+- compute every locked endpoint for every model before inspecting cross-benchmark correlations;
+- report endpoint-specific rank-transfer estimates rather than selecting a post-hoc preferred metric;
+- distinguish disagreement among valid robustness constructs from statistical noise using slide-cluster bootstrap intervals;
+- do not combine endpoints into a new scalar score unless its weighting is fixed before outcome analysis and a sensitivity analysis shows that conclusions do not depend on those weights;
+- treat synthetic perturbation robustness, heterogeneous-center robustness, and physically paired scanner robustness as separate validation axes.
+
 ## Leakage and preprocessing controls
 
 - Never split regions from the same physical slide across train and test folds.
@@ -78,9 +88,13 @@ This study must not claim novelty for establishing that:
 - pathology foundation models encode scanner or center information;
 - AUC can remain stable while calibration changes;
 - stain normalization or representation correction can improve robustness;
-- scanner-aware consistency training can improve scanner generalization.
+- scanner-aware consistency training can improve scanner generalization;
+- pathology foundation models outperform conventional CNN baselines under suites of synthetic image perturbations;
+- aggregate perturbation indices can rank models under controlled corruption sweeps.
 
-The proposed contribution is instead a validity study of robustness measurement: whether metrics and model rankings transfer from heterogeneous center variation to controlled paired scanner variation, and where they fail.
+The proposed contribution is instead a validity study of robustness measurement: whether metrics and model rankings transfer from heterogeneous center variation or synthetic perturbations to controlled, physically paired scanner variation, and where they fail.
+
+A synthetic perturbation is not assumed to reproduce a real scanner's joint optical, compression, color-response, focus, and acquisition pipeline. Agreement with a perturbation benchmark is therefore an empirical result, not a premise.
 
 ## Publication-ready minimum result
 
@@ -90,7 +104,8 @@ A publishable result requires at least one of the following with slide-clustered
 2. a reproducible rank reversal involving a commonly used accessible model;
 3. disagreement between scanner-identification, paired-distance, retrieval, and calibration metrics;
 4. a robustification method that improves one axis while harming biological-content retention;
-5. replication of the same ordering failure on PLISM's same-section scanner pairs.
+5. replication of the same ordering failure on PLISM's same-section scanner pairs;
+6. a reproducible divergence between synthetic-perturbation rankings and physically paired scanner rankings.
 
 A null result is still informative only if confidence intervals exclude practically important disagreement and the overlapping model set is sufficiently broad.
 
@@ -129,3 +144,4 @@ Every observation record must include:
 - Reliability of foundation models for image retrieval in histopathology, npj Imaging, published 27 May 2026: co-registered same-slide scanner analysis for retrieval.
 - SCORPION, 2025: five-scanner same-tissue benchmark and scanner-consistency framework.
 - Low-Rank Adaptations for increased Generalization in Foundation Model features, PMLR 2026: external robustness evaluation and adaptation overlap that narrows the novelty claim.
+- The Good, the Bad, and the Brittle, arXiv:2607.04401, submitted 5 July 2026: twelve-model benchmark across eleven controlled perturbations using an aggregate Perturbation Performance Index and non-redundant cross-validation.
