@@ -25,7 +25,7 @@ jobs:
       - name: Install targeted dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install torch pytest numpy torch-geometric black
+          python -m pip install torch pytest pytest-cov numpy torch-geometric black
       - name: Compile changed Python modules
         run: |
           python -m py_compile \
