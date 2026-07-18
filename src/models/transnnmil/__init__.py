@@ -1,4 +1,9 @@
-"""Public exports for the TransnnMIL model family."""
+"""Public exports for the TransnnMIL model family.
+
+Core TransnnMIL and fusion variants remain importable without optional graph
+packages. Topology-based v2 classes are exposed only when their dependencies are
+installed.
+"""
 
 from src.models.transnnmil.branch_token_fusion import (
     BranchAttentionFusion,
@@ -11,7 +16,6 @@ from src.models.transnnmil.transnnmil_branch_token import (
     TransnnMILConcatExperimental,
     TransnnMILGateExperimental,
 )
-from src.models.transnnmil.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
 
 __all__ = [
     "BranchAttentionFusion",
@@ -21,6 +25,11 @@ __all__ = [
     "TransnnMILBranchAttentionExperimental",
     "TransnnMILConcatExperimental",
     "TransnnMILGateExperimental",
-    "TransnnMILv2",
-    "TransnnMILv2TwoBranch",
 ]
+
+try:
+    from src.models.transnnmil.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
+except ImportError:
+    pass
+else:
+    __all__.extend(["TransnnMILv2", "TransnnMILv2TwoBranch"])
