@@ -160,5 +160,5 @@ class TransnnMILGateExperimental(_TransnnMILFusionExperimentalBase):
         return BranchGateFusion(embed_dim=512, dropout=self.dropout)
 
 
-# Temporary compatibility alias for the first PR draft. Do not use in new configs.
+# Compatibility alias for the first draft of PR #41 only.
 TransnnMILBranchToken = TransnnMILBranchAttentionExperimental
