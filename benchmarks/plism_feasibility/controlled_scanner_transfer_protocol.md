@@ -68,6 +68,18 @@ No single metric is designated as a universal robustness score before analysis.
 - Correct secondary pairwise comparisons using a declared false-discovery-rate procedure.
 - Treat effect sizes and uncertainty as primary; p-values are supporting evidence only.
 
+### Model-count and exact-inference guardrail
+
+The cluster bootstrap over slides quantifies uncertainty in each model's SCORPION score, but it does not increase the number of independent model-level observations available for cross-benchmark rank correlation. The overlapping checkpoint count therefore governs whether rank-transfer inference is possible.
+
+- Fewer than four reproducibly accessible overlapping models: stop the rank-transfer study.
+- Four to seven overlapping models: descriptive pilot only. Report model-wise effects, exact attainable rank configurations, bootstrap rank distributions, and rank reversals without confirmatory correlation claims.
+- Eight or more overlapping models: rank-transfer inference is permitted, using exact permutation p-values whenever computationally feasible and Monte Carlo permutation only with a prespecified error tolerance otherwise.
+- Always report leave-one-model-out influence analyses because a single checkpoint can dominate rank correlation in a small model set.
+- Do not treat slide-level resampling as increasing the model-level sample size.
+
+With four models there are only 24 rank permutations, so even perfect agreement or perfect reversal has a minimum exact two-sided p-value of 2/24 = 0.0833. A four-model analysis therefore cannot support a two-sided alpha = 0.05 rank-correlation claim.
+
 ### Metric-multiplicity guardrail
 
 Recent perturbation benchmarks introduce additional aggregate robustness scores. These are useful external comparators but create a risk of choosing whichever metric produces the most favorable model ordering. Therefore:
@@ -126,6 +138,8 @@ Do not escalate to full-image download or large-scale model extraction if:
 - scanner pairing cannot be verified from public metadata;
 - preprocessing differences across models cannot be standardized or transparently stratified;
 - the controlled benchmark duplicates a recently published experiment without a distinct endpoint.
+
+If only four to seven models overlap, cap the work at a descriptive feasibility pilot and do not present Spearman or Kendall significance as confirmatory evidence. Require at least eight overlapping models before the protocol's primary rank-transfer inference is activated.
 
 Do not run or report calibration analyses unless a separate cohort provides verifiable task labels, paired scanner views, and leakage-safe patient or slide grouping.
 
