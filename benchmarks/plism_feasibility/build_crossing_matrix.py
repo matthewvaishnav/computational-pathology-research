@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Normalize a PLISM image-list CSV and audit the executed stain x scanner crossing.
 
-The script is intentionally image-free. It consumes the public PLISM image-list CSV
-and writes deterministic metadata products before any embeddings are generated.
+The script is intentionally image-free. It consumes a provenance-enriched PLISM
+image-list CSV and writes deterministic metadata products before embeddings are
+generated. It fails closed unless a parent slide/section identifier is present.
 """
 
 from __future__ import annotations
@@ -22,10 +23,11 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 DEFAULT_NORMALIZED = PACKAGE_DIR / "normalized_observations.csv"
 DEFAULT_MATRIX = PACKAGE_DIR / "crossing_matrix.csv"
 DEFAULT_REPORT = PACKAGE_DIR / "crossing_report.md"
-SCHEMA_VERSION = "plism_crossing_matrix_v1"
+SCHEMA_VERSION = "plism_crossing_matrix_v2"
 
 CANONICAL_COLUMNS = (
     "observation_id",
+    "parent_id",
     "registered_group_id",
     "tissue_type",
     "stain_type",
@@ -36,6 +38,10 @@ CANONICAL_COLUMNS = (
 )
 
 HEADER_ALIASES = {
+    "parent_id": {
+        "parent id", "parent_id", "slide id", "slide_id", "section id",
+        "section_id", "wsi id", "wsi_id", "archive group id", "archive_group_id",
+    },
     "tissue_type": {"tissue type", "tissue_type", "tissue"},
     "stain_type": {"stain type", "stain_type", "stain"},
     "scanner_domain": {"device type", "device_type", "device", "scanner", "scanner type"},
@@ -123,11 +129,16 @@ def normalize_rows(text: str) -> list[dict[str, str]]:
     seen_identity: set[tuple[str, str, str]] = set()
 
     for row_number, raw in enumerate(reader, start=2):
+        parent_id = clean(raw.get(headers["parent_id"]), "parent_id", row_number)
         tissue = clean(raw.get(headers["tissue_type"]), "tissue_type", row_number)
         stain = clean(raw.get(headers["stain_type"]), "stain_type", row_number)
         scanner = clean(raw.get(headers["scanner_domain"]), "scanner_domain", row_number)
-        coordinate = canonical_coordinate(clean(raw.get(headers["coordinate"]), "coordinate", row_number))
-        image_path = clean(raw.get(headers["image_path"]), "image_path", row_number).replace("\\", "/")
+        coordinate = canonical_coordinate(
+            clean(raw.get(headers["coordinate"]), "coordinate", row_number)
+        )
+        image_path = clean(
+            raw.get(headers["image_path"]), "image_path", row_number
+        ).replace("\\", "/")
 
         parsed = parse_path(image_path)
         if parsed:
@@ -139,7 +150,7 @@ def normalize_rows(text: str) -> list[dict[str, str]]:
             if not coordinate.startswith(parsed_coord) and not parsed_coord.startswith(coordinate):
                 raise CrossingError(f"csv_path_coordinate_contradiction:row={row_number}")
 
-        registered_group_id = f"{tissue}|{coordinate}"
+        registered_group_id = f"{parent_id}|{coordinate}"
         identity = (registered_group_id, stain, scanner)
         if image_path in seen_paths:
             raise CrossingError(f"duplicate_image_path:{image_path}")
@@ -151,6 +162,7 @@ def normalize_rows(text: str) -> list[dict[str, str]]:
         observation_key = "|".join((*identity, image_path))
         rows.append({
             "observation_id": sha256_text(observation_key)[:20],
+            "parent_id": parent_id,
             "registered_group_id": registered_group_id,
             "tissue_type": tissue,
             "stain_type": stain,
@@ -162,19 +174,33 @@ def normalize_rows(text: str) -> list[dict[str, str]]:
 
     if not rows:
         raise CrossingError("empty_csv")
-    return sorted(rows, key=lambda r: (r["registered_group_id"], r["stain_type"], r["scanner_domain"], r["image_path"]))
+    return sorted(
+        rows,
+        key=lambda r: (
+            r["parent_id"],
+            r["registered_group_id"],
+            r["stain_type"],
+            r["scanner_domain"],
+            r["image_path"],
+        ),
+    )
 
 
 def build_matrix(rows: list[dict[str, str]]) -> tuple[list[dict[str, str]], dict[str, Any]]:
     stains = sorted({r["stain_type"] for r in rows})
     scanners = sorted({r["scanner_domain"] for r in rows})
     groups = sorted({r["registered_group_id"] for r in rows})
+    parents = sorted({r["parent_id"] for r in rows})
     tissues = sorted({r["tissue_type"] for r in rows})
 
-    counts: Counter[tuple[str, str]] = Counter((r["stain_type"], r["scanner_domain"]) for r in rows)
+    counts: Counter[tuple[str, str]] = Counter(
+        (r["stain_type"], r["scanner_domain"]) for r in rows
+    )
     group_cells: dict[str, set[tuple[str, str]]] = defaultdict(set)
     for row in rows:
-        group_cells[row["registered_group_id"]].add((row["stain_type"], row["scanner_domain"]))
+        group_cells[row["registered_group_id"]].add(
+            (row["stain_type"], row["scanner_domain"])
+        )
 
     matrix = [
         {
@@ -195,17 +221,18 @@ def build_matrix(rows: list[dict[str, str]]) -> tuple[list[dict[str, str]], dict
         if cells != expected_cells
     }
 
-    stain_scanner_pairs = sum(1 for value in counts.values() if value > 0)
+    observed_pairs = sum(1 for value in counts.values() if value > 0)
     summary: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "observation_count": len(rows),
+        "parent_count": len(parents),
         "registered_group_count": len(groups),
         "tissue_count": len(tissues),
         "stain_count": len(stains),
         "scanner_count": len(scanners),
-        "observed_stain_scanner_cells": stain_scanner_pairs,
+        "observed_stain_scanner_cells": observed_pairs,
         "possible_stain_scanner_cells": len(expected_cells),
-        "globally_complete_crossing": stain_scanner_pairs == len(expected_cells),
+        "globally_complete_crossing": observed_pairs == len(expected_cells),
         "fully_complete_registered_group_count": len(complete_groups),
         "fully_complete_registered_group_fraction": len(complete_groups) / len(groups),
         "stains": stains,
@@ -213,9 +240,10 @@ def build_matrix(rows: list[dict[str, str]]) -> tuple[list[dict[str, str]], dict
         "tissues": tissues,
         "missing_cells_by_registered_group": missing_by_group,
         "claim_boundaries": [
+            "parent_id must be a verified slide, section, WSI, or archive-group identifier",
             "scanner comparisons are same-section only within a fixed stain and registered group",
             "stain comparisons are serial-section correspondences rather than identical-section counterfactuals",
-            "registered groups must not cross train and test splits",
+            "parent and registered-group identifiers must not cross train and test splits",
             "scanner domain labels are not verified physical device identifiers",
         ],
     }
@@ -241,6 +269,7 @@ def render_report(summary: dict[str, Any]) -> str:
         "## Inventory",
         "",
         f"- Observations: **{summary['observation_count']}**",
+        f"- Provenance parents: **{summary['parent_count']}**",
         f"- Registered groups: **{total}**",
         f"- Tissues: **{summary['tissue_count']}**",
         f"- Stains: **{summary['stain_count']}**",
@@ -252,13 +281,22 @@ def render_report(summary: dict[str, Any]) -> str:
         "",
     ]
     if complete:
-        lines.append("At least one registered group has complete stain × scanner coverage and can enter the bounded crossed feasibility analysis after leakage-safe subset selection.")
+        lines.append(
+            "At least one provenance-bounded registered group has complete stain × "
+            "scanner coverage and can enter a leakage-safe feasibility analysis."
+        )
     else:
-        lines.append("No registered group has complete stain × scanner coverage. The experiment must use an explicitly declared restricted crossing rather than implying a full factorial design.")
+        lines.append(
+            "No provenance-bounded registered group has complete stain × scanner "
+            "coverage. Use a declared restricted crossing."
+        )
     lines.extend(["", "## Claim boundaries", ""])
     lines.extend(f"- {item}" for item in summary["claim_boundaries"])
     lines.extend(["", "## Missingness", ""])
-    lines.append(f"Registered groups with at least one missing cell: **{len(summary['missing_cells_by_registered_group'])}**")
+    lines.append(
+        "Registered groups with at least one missing cell: "
+        f"**{len(summary['missing_cells_by_registered_group'])}**"
+    )
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -267,27 +305,56 @@ def process(input_path: Path, output_dir: Path) -> dict[str, Any]:
     matrix, summary = build_matrix(rows)
     output_dir.mkdir(parents=True, exist_ok=True)
     write_csv(output_dir / DEFAULT_NORMALIZED.name, CANONICAL_COLUMNS, rows)
-    write_csv(output_dir / DEFAULT_MATRIX.name, ("stain_type", "scanner_domain", "observation_count", "cell_present"), matrix)
-    (output_dir / DEFAULT_REPORT.name).write_text(render_report(summary), encoding="utf-8")
-    (output_dir / "crossing_summary.json").write_text(stable_json(summary), encoding="utf-8")
+    write_csv(
+        output_dir / DEFAULT_MATRIX.name,
+        ("stain_type", "scanner_domain", "observation_count", "cell_present"),
+        matrix,
+    )
+    (output_dir / DEFAULT_REPORT.name).write_text(
+        render_report(summary), encoding="utf-8"
+    )
+    (output_dir / "crossing_summary.json").write_text(
+        stable_json(summary), encoding="utf-8"
+    )
     return summary
 
 
 def run_self_tests() -> dict[str, Any]:
-    fixture = """Tissue Type,Stain Type,Device Type,Coordinate,Image Path
-Liver,GV,S1,1000_500,GV_S1/GV_S1_1000_500.png
-Liver,GV,S2,1000_500,GV_S2/GV_S2_1000_500.png
-Liver,GMH,S1,1000_500,GMH_S1/GMH_S1_1000_500.png
-Liver,GMH,S2,1000_500,GMH_S2/GMH_S2_1000_500.png
+    fixture = """Slide ID,Tissue Type,Stain Type,Device Type,Coordinate,Image Path
+slide-a,Liver,GV,S1,1000_500,GV_S1/GV_S1_1000_500.png
+slide-a,Liver,GV,S2,1000_500,GV_S2/GV_S2_1000_500.png
+slide-a,Liver,GMH,S1,1000_500,GMH_S1/GMH_S1_1000_500.png
+slide-a,Liver,GMH,S2,1000_500,GMH_S2/GMH_S2_1000_500.png
 """
     rows = normalize_rows(fixture)
     _, summary = build_matrix(rows)
     assert summary["observation_count"] == 4
+    assert summary["parent_count"] == 1
     assert summary["stain_count"] == 2
     assert summary["scanner_count"] == 2
     assert summary["fully_complete_registered_group_count"] == 1
 
-    duplicate = fixture + "Liver,GV,S1,1000_500,copy.png\n"
+    missing_parent = fixture.replace("Slide ID,", "", 1)
+    missing_parent = "\n".join(
+        line.split(",", 1)[1] if "," in line else line
+        for line in missing_parent.splitlines()
+    )
+    try:
+        normalize_rows(missing_parent)
+    except CrossingError as exc:
+        assert "missing_or_ambiguous_header:parent_id" in str(exc)
+    else:
+        raise AssertionError("input without provenance parent was accepted")
+
+    adversarial = fixture + (
+        "slide-b,Liver,GV,S1,1000_500,other/GV_S1/GV_S1_1000_500.png\n"
+    )
+    adversarial_rows = normalize_rows(adversarial)
+    assert len({r["registered_group_id"] for r in adversarial_rows}) == 2
+
+    duplicate = fixture + (
+        "slide-a,Liver,GV,S1,1000_500,copy.png\n"
+    )
     try:
         normalize_rows(duplicate)
     except CrossingError as exc:
@@ -295,7 +362,9 @@ Liver,GMH,S2,1000_500,GMH_S2/GMH_S2_1000_500.png
     else:
         raise AssertionError("duplicate identity was accepted")
 
-    contradiction = fixture.replace("GV_S1/GV_S1_1000_500.png", "GV_S2/GV_S2_1000_500.png", 1)
+    contradiction = fixture.replace(
+        "GV_S1/GV_S1_1000_500.png", "GV_S2/GV_S2_1000_500.png", 1
+    )
     try:
         normalize_rows(contradiction)
     except CrossingError as exc:
@@ -310,12 +379,12 @@ Liver,GMH,S2,1000_500,GMH_S2/GMH_S2_1000_500.png
         assert generated["audit_fingerprint"]
         assert (Path(directory) / "out" / "crossing_report.md").exists()
 
-    return {"status": "passed", "tests": 4, "schema_version": SCHEMA_VERSION}
+    return {"status": "passed", "tests": 6, "schema_version": SCHEMA_VERSION}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, help="PLISM image-list CSV")
+    parser.add_argument("--input", type=Path, help="Provenance-enriched PLISM image-list CSV")
     parser.add_argument("--output-dir", type=Path, default=PACKAGE_DIR)
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
