@@ -22,6 +22,8 @@ Use the five-scanner, spatially aligned same-tissue images as the primary scanne
 
 All splitting, confidence intervals, permutation tests, and bootstrap resampling must operate at the physical-slide level. Region-level resampling is reported only as a pseudoreplication sensitivity analysis and must not support the main claims.
 
+The public SCORPION release is a paired-image consistency resource, not a documented clinical-outcome dataset. Unless the archive contains independently verifiable biological or diagnostic labels beyond slide/region/scanner identity, SCORPION supports embedding stability, retrieval, scanner-identification, and geometric-sensitivity analyses only. It does not by itself support Brier score, expected calibration error, label-flip rate, or claims about preserved clinical discrimination.
+
 ### PathoROB: external ranking source
 
 Reuse published model-level robustness results where definitions and model checkpoints are compatible. Do not rerun the complete benchmark merely to reproduce its primary finding. Treat its center factor as a mixture of staining, preparation, scanner, section thickness, and institution-specific effects rather than a scanner-only label.
@@ -30,6 +32,10 @@ Reuse published model-level robustness results where definitions and model check
 
 Use same-stain, same-section scanner comparisons only for scanner claims. Cross-stain comparisons remain preparation-plus-section comparisons because each staining condition is applied to a different serial section.
 
+### Labeled multi-scanner cohorts: supervised extension only
+
+Calibration and downstream prediction instability require a separate paired or rescanned cohort with valid task labels. FEATMAP's labeled UChicago rescans or another independently accessible same-section multi-scanner cohort may fill this role, but only after licensing, patient-level grouping, label provenance, and scanner pairing are verified. Supervised conclusions must be reported as a separate stage rather than inferred from SCORPION's unlabeled correspondence structure.
+
 ## Locked primary endpoints
 
 For each accessible overlapping encoder:
@@ -37,9 +43,9 @@ For each accessible overlapping encoder:
 1. Paired cosine distance between scanner views of the same region.
 2. Same-region retrieval accuracy across scanners.
 3. Scanner-identification accuracy from frozen embeddings.
-4. Biological-content retention using tissue or slide identity where labels permit.
+4. Slide/region identity retention as a correspondence endpoint, without relabeling identity as biological accuracy.
 5. Worst scanner-pair consistency across all ten scanner pairs.
-6. Downstream prediction instability, label-flip rate, Brier score, and calibration error when a valid supervised endpoint is available.
+6. Downstream prediction instability, label-flip rate, Brier score, and calibration error only on a separately verified labeled multi-scanner cohort.
 
 No single metric is designated as a universal robustness score before analysis.
 
@@ -49,7 +55,7 @@ No single metric is designated as a universal robustness score before analysis.
 - H2: At least one material rank reversal will occur between PathoROB and SCORPION.
 - H3: Average consistency will conceal a worse scanner-pair failure for at least one model.
 - H4: Scanner identifiability and paired embedding instability will not be interchangeable metrics.
-- H5: Post-hoc robustification may improve scanner invariance while reducing biological-content retention; both must be measured.
+- H5: Post-hoc robustification may improve scanner invariance while reducing correspondence retention or labeled-task information; both must be measured on datasets that support those endpoints.
 
 ## Statistical plan
 
@@ -70,7 +76,7 @@ Recent perturbation benchmarks introduce additional aggregate robustness scores.
 - report endpoint-specific rank-transfer estimates rather than selecting a post-hoc preferred metric;
 - distinguish disagreement among valid robustness constructs from statistical noise using slide-cluster bootstrap intervals;
 - do not combine endpoints into a new scalar score unless its weighting is fixed before outcome analysis and a sensitivity analysis shows that conclusions do not depend on those weights;
-- treat synthetic perturbation robustness, heterogeneous-center robustness, and physically paired scanner robustness as separate validation axes.
+- treat synthetic perturbation robustness, heterogeneous-center robustness, physically paired scanner consistency, and supervised calibration as separate validation axes.
 
 ## Leakage and preprocessing controls
 
@@ -80,6 +86,7 @@ Recent perturbation benchmarks introduce additional aggregate robustness scores.
 - Evaluate raw images and each normalization method as separate declared conditions.
 - Record interpolation, color conversion, crop policy, tissue masking, and scanner-specific missingness.
 - Do not infer native-resolution nuclear robustness from heavily downsampled public derivatives.
+- Do not manufacture pseudo-labels from slide or region identifiers and interpret them as clinical or biological endpoints.
 
 ## Novelty boundaries
 
@@ -102,10 +109,11 @@ A publishable result requires at least one of the following with slide-clustered
 
 1. weak or unstable rank agreement between PathoROB and SCORPION;
 2. a reproducible rank reversal involving a commonly used accessible model;
-3. disagreement between scanner-identification, paired-distance, retrieval, and calibration metrics;
-4. a robustification method that improves one axis while harming biological-content retention;
+3. disagreement between scanner-identification, paired-distance, and retrieval metrics;
+4. a robustification method that improves one axis while harming correspondence retention or independently labeled task performance;
 5. replication of the same ordering failure on PLISM's same-section scanner pairs;
-6. a reproducible divergence between synthetic-perturbation rankings and physically paired scanner rankings.
+6. a reproducible divergence between synthetic-perturbation rankings and physically paired scanner rankings;
+7. supervised calibration disagreement reproduced on a separate labeled same-section multi-scanner cohort.
 
 A null result is still informative only if confidence intervals exclude practically important disagreement and the overlapping model set is sufficiently broad.
 
@@ -119,6 +127,8 @@ Do not escalate to full-image download or large-scale model extraction if:
 - preprocessing differences across models cannot be standardized or transparently stratified;
 - the controlled benchmark duplicates a recently published experiment without a distinct endpoint.
 
+Do not run or report calibration analyses unless a separate cohort provides verifiable task labels, paired scanner views, and leakage-safe patient or slide grouping.
+
 ## Required manifest fields
 
 Every observation record must include:
@@ -128,7 +138,7 @@ Every observation record must include:
 - region_id;
 - scanner_id;
 - stain_id where applicable;
-- tissue or biological label where available;
+- tissue or biological label where available, with provenance and missingness explicit;
 - image path and checksum;
 - native and delivered microns-per-pixel;
 - crop dimensions;
@@ -142,6 +152,7 @@ Every observation record must include:
 - PathoROB, Nature Communications, published 11 June 2026: broad multi-center robustness benchmark across 20 foundation models.
 - Scanner-Induced Domain Shifts Undermine the Robustness of Pathology Foundation Models, 2026: scanner-specific embeddings and calibration changes can persist despite stable AUC.
 - Reliability of foundation models for image retrieval in histopathology, npj Imaging, published 27 May 2026: co-registered same-slide scanner analysis for retrieval.
-- SCORPION, 2025: five-scanner same-tissue benchmark and scanner-consistency framework.
+- SCORPION, 2025: five-scanner same-tissue benchmark and scanner-consistency framework; the public deposit documents paired images and scanner identities but does not advertise diagnostic outcome labels.
+- FEATMAP, bioRxiv, posted 2 July 2026: labeled same-section rescans across four scanners provide a possible supervised extension, subject to independent access and provenance verification.
 - Low-Rank Adaptations for increased Generalization in Foundation Model features, PMLR 2026: external robustness evaluation and adaptation overlap that narrows the novelty claim.
 - The Good, the Bad, and the Brittle, arXiv:2607.04401, submitted 5 July 2026: twelve-model benchmark across eleven controlled perturbations using an aggregate Perturbation Performance Index and non-redundant cross-validation.
