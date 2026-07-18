@@ -1,0 +1,37 @@
+name: TransnnMIL fusion CI
+
+on:
+  pull_request:
+    paths:
+      - "src/models/factory.py"
+      - "src/models/transnnmil/**"
+      - "scripts/training/train_panda_transnnmil_fusion_experiment.py"
+      - "tests/models/test_branch_token_fusion.py"
+      - ".github/workflows/transnnmil-fusion-ci.yml"
+  push:
+    branches:
+      - research/fix-transnnmil-branch-fusion
+
+jobs:
+  fusion-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install targeted dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch pytest numpy torch-geometric
+      - name: Compile changed Python modules
+        run: |
+          python -m py_compile \
+            src/models/factory.py \
+            src/models/transnnmil/branch_token_fusion.py \
+            src/models/transnnmil/transnnmil_branch_token.py \
+            scripts/training/train_panda_transnnmil_fusion_experiment.py
+      - name: Run fusion regression suite
+        run: python -m pytest tests/models/test_branch_token_fusion.py -q
