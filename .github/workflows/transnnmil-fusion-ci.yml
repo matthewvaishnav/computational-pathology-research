@@ -34,4 +34,20 @@ jobs:
             src/models/transnnmil/transnnmil_branch_token.py \
             scripts/training/train_panda_transnnmil_fusion_experiment.py
       - name: Run fusion regression suite
-        run: python -m pytest tests/models/test_branch_token_fusion.py -q
+        id: fusion-tests
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python -m pytest tests/models/test_branch_token_fusion.py -vv --tb=long \
+            --junitxml=fusion-pytest.xml 2>&1 | tee fusion-pytest.log
+      - name: Upload fusion diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transnnmil-fusion-pytest
+          path: |
+            fusion-pytest.log
+            fusion-pytest.xml
+      - name: Fail when regression suite failed
+        if: steps.fusion-tests.outcome == 'failure'
+        run: exit 1
