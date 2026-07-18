@@ -43,3 +43,7 @@ A useful fusion result must outperform both individual branches under the same p
 ## Current safety boundary
 
 Topology is disabled for all experimental variants until the historical unregistered forward-created topology projection is repaired and independently tested. Hierarchical mode is permitted only with coordinates and requires separate smoke coverage before use in a reported experiment.
+
+## Merge gate
+
+PR #41 remains a draft until its CI workflow passes and the targeted regression suite confirms historical query invariance, dual-branch gradient flow, factory construction, topology rejection, and checkpoint round-trip equivalence. Model-performance claims require the controlled experiment above and are not a merge prerequisite for retaining the defect regression and experimental code.
