@@ -120,7 +120,9 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
 
             def forward(self, features, num_patches=None, return_attention=False):
                 if num_patches is not None:
-                    mask = torch.arange(features.size(1), device=features.device).unsqueeze(0) < num_patches.unsqueeze(1)
+                    mask = torch.arange(
+                        features.size(1), device=features.device
+                    ).unsqueeze(0) < num_patches.unsqueeze(1)
                 else:
                     mask = None
 
@@ -129,19 +131,29 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                         pooled = features.mean(dim=1)
                     else:
                         float_mask = mask.unsqueeze(-1).to(features.dtype)
-                        pooled = (features * float_mask).sum(dim=1) / float_mask.sum(dim=1).clamp_min(1.0)
+                        pooled = (features * float_mask).sum(dim=1) / float_mask.sum(
+                            dim=1
+                        ).clamp_min(1.0)
                 else:
                     if mask is None:
                         pooled = features.max(dim=1).values
                     else:
-                        pooled = features.masked_fill(~mask.unsqueeze(-1), float("-inf")).max(dim=1).values
+                        pooled = (
+                            features.masked_fill(~mask.unsqueeze(-1), float("-inf"))
+                            .max(dim=1)
+                            .values
+                        )
 
                 logits = self.classifier(pooled)
                 if return_attention:
-                    attention = torch.ones(features.size(0), features.size(1), device=features.device)
+                    attention = torch.ones(
+                        features.size(0), features.size(1), device=features.device
+                    )
                     if mask is not None:
                         attention = attention.masked_fill(~mask, 0.0)
-                    attention = attention / attention.sum(dim=1, keepdim=True).clamp_min(1e-8)
+                    attention = attention / attention.sum(
+                        dim=1, keepdim=True
+                    ).clamp_min(1e-8)
                     return logits, attention
                 return logits
 
@@ -156,4 +168,6 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
         "mean",
         "max",
     ]
-    raise ValueError(f"Invalid model_type: {model_type}. Must be one of: {', '.join(allowed)}")
+    raise ValueError(
+        f"Invalid model_type: {model_type}. Must be one of: {', '.join(allowed)}"
+    )
