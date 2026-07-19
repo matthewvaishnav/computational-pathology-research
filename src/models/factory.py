@@ -58,6 +58,20 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
             instance_loss_weight=clam_config.get("instance_loss_weight", 0.3),
         )
 
+    if model_type == "nnmil":
+        from src.models.mil.nnmil import nnMIL
+
+        nnmil_config = config.get("nnmil", {})
+        return nnMIL(
+            feature_dim=feature_dim,
+            hidden_dim=hidden_dim,
+            num_classes=num_classes,
+            dropout=dropout,
+            multi_scale=nnmil_config.get("multi_scale", False),
+            num_scales=nnmil_config.get("num_scales", 1),
+            fusion_strategy=nnmil_config.get("fusion_strategy", "early"),
+        )
+
     if model_type == "transmil":
         from src.models.mil.transmil import TransMIL
 
@@ -160,6 +174,7 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
     allowed = [
         "attention_mil",
         "clam",
+        "nnmil",
         "transmil",
         "transnnmil",
         *TRANSNNMIL_EXPERIMENTAL_TYPES.keys(),
