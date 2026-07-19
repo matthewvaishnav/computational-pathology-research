@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import torch
 
+from scripts.data.build_panda_locked_split_manifest import _holdout_strata
 from scripts.training.train_panda_transnnmil_fusion_experiment import (
     MODEL_TYPES,
     load_locked_manifest,
@@ -62,6 +63,31 @@ def test_locked_manifest_rejects_unknown_partition(tmp_path: Path) -> None:
     _write_manifest(manifest_path, unknown_split=True)
     with pytest.raises(ValueError, match="Unknown split"):
         load_locked_manifest(manifest_path)
+
+
+def test_holdout_strata_falls_back_to_grade_when_joint_stratum_is_singleton() -> None:
+    frame = pd.DataFrame(
+        {
+            "isup_grade": [0, 0, 1, 1],
+            "data_provider": ["a", "b", "a", "a"],
+        }
+    )
+
+    strata = _holdout_strata(frame, "data_provider")
+
+    assert strata.tolist() == ["grade_0", "grade_0", "grade_1", "grade_1"]
+
+
+def test_holdout_strata_rejects_grade_singleton() -> None:
+    frame = pd.DataFrame(
+        {
+            "isup_grade": [0, 0, 1],
+            "data_provider": ["a", "b", "a"],
+        }
+    )
+
+    with pytest.raises(ValueError, match="fewer than two"):
+        _holdout_strata(frame, "data_provider")
 
 
 def test_runner_prespecifies_all_six_models() -> None:
