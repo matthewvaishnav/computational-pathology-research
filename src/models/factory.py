@@ -120,9 +120,9 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
 
             def forward(self, features, num_patches=None, return_attention=False):
                 if num_patches is not None:
-                    mask = torch.arange(
-                        features.size(1), device=features.device
-                    ).unsqueeze(0) < num_patches.unsqueeze(1)
+                    mask = torch.arange(features.size(1), device=features.device).unsqueeze(
+                        0
+                    ) < num_patches.unsqueeze(1)
                 else:
                     mask = None
 
@@ -151,9 +151,7 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
                     )
                     if mask is not None:
                         attention = attention.masked_fill(~mask, 0.0)
-                    attention = attention / attention.sum(
-                        dim=1, keepdim=True
-                    ).clamp_min(1e-8)
+                    attention = attention / attention.sum(dim=1, keepdim=True).clamp_min(1e-8)
                     return logits, attention
                 return logits
 
@@ -168,6 +166,4 @@ def create_attention_model(config: Dict, feature_dim: int = 1024) -> nn.Module:
         "mean",
         "max",
     ]
-    raise ValueError(
-        f"Invalid model_type: {model_type}. Must be one of: {', '.join(allowed)}"
-    )
+    raise ValueError(f"Invalid model_type: {model_type}. Must be one of: {', '.join(allowed)}")
