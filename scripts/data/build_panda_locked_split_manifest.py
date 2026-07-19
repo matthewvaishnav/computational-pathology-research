@@ -45,6 +45,10 @@ def _validate_fractions(selection_fraction: float, confirmation_fraction: float)
         raise ValueError("selection and confirmation fractions must sum to less than 1")
 
 
+def _grade_strata(frame: pd.DataFrame) -> pd.Series:
+    return "grade_" + frame["isup_grade"].astype(str)
+
+
 def _strata(frame: pd.DataFrame, provider_column: str) -> pd.Series:
     grade = frame["isup_grade"].astype(str)
     if provider_column in frame.columns and frame[provider_column].notna().all():
@@ -54,6 +58,30 @@ def _strata(frame: pd.DataFrame, provider_column: str) -> pd.Series:
         counts = joint.value_counts()
         return joint.where(joint.map(counts) >= 3, "grade_" + grade)
     return "grade_" + grade
+
+
+def _holdout_strata(frame: pd.DataFrame, provider_column: str) -> pd.Series:
+    """Return strata that are feasible for the selection/confirmation split.
+
+    The first split can leave only one holdout sample in a provider-grade
+    stratum even when the source stratum had at least three rows. In that case,
+    use grade-only stratification for the entire second split rather than
+    passing an invalid mixed-stratum vector to ``train_test_split``.
+    """
+
+    candidate = _strata(frame, provider_column)
+    if candidate.value_counts().min() >= 2:
+        return candidate
+
+    grade_only = _grade_strata(frame)
+    rare_grades = grade_only.value_counts()
+    rare_grades = rare_grades[rare_grades < 2]
+    if not rare_grades.empty:
+        raise ValueError(
+            "holdout cannot be stratified into selection and confirmation; "
+            f"grade strata with fewer than two rows: {rare_grades.to_dict()}"
+        )
+    return grade_only
 
 
 def _sha256(path: Path) -> str:
@@ -89,7 +117,7 @@ def main() -> None:
         stratify=strata,
     )
 
-    holdout_strata = _strata(holdout, args.provider_column)
+    holdout_strata = _holdout_strata(holdout, args.provider_column)
     confirmation_share = args.confirmation_fraction / holdout_fraction
     selection, confirmation = train_test_split(
         holdout,
@@ -121,6 +149,8 @@ def main() -> None:
         "selection_fraction": args.selection_fraction,
         "confirmation_fraction": args.confirmation_fraction,
         "provider_column": args.provider_column,
+        "split_unit": "image_id",
+        "patient_mapping_available": False,
         "counts": output["split"].value_counts().sort_index().to_dict(),
         "claim_boundary": "internal development-set evidence; not external validation",
     }
