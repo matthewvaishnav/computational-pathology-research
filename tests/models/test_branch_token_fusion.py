@@ -244,8 +244,8 @@ def test_full_model_backpropagates_through_both_projected_branches(model_class):
     logits = model(features, num_patches=torch.tensor([8, 6]))
     logits.square().mean().backward()
 
-    grad_a = model.proj_a.weight.grad
-    grad_b = model.proj_b.weight.grad
+    grad_a = model.proj_a[0].weight.grad
+    grad_b = model.proj_b[0].weight.grad
     assert grad_a is not None and torch.isfinite(grad_a).all() and grad_a.norm() > 0
     assert grad_b is not None and torch.isfinite(grad_b).all() and grad_b.norm() > 0
 
