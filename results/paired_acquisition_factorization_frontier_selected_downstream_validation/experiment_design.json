@@ -1,0 +1,134 @@
+{
+  "branch": "experiment/frontier-selected-downstream-validation",
+  "branch_audit_references": {
+    "acq_dim16_stronger_xcov_acquisition": {
+      "category_balanced_accuracy": 0.1689,
+      "scanner_balanced_accuracy": 0.8638
+    },
+    "acq_dim8_default_acquisition": {
+      "category_balanced_accuracy": 0.1598,
+      "scanner_balanced_accuracy": 0.8643
+    },
+    "oldstyle_keep_k4": {
+      "category_balanced_accuracy": 0.4004,
+      "scanner_balanced_accuracy": 0.2
+    },
+    "true_pair_acquisition": {
+      "category_balanced_accuracy": 0.3456,
+      "scanner_balanced_accuracy": 0.8651
+    }
+  },
+  "columns": {
+    "label": "category_name",
+    "region": "region_id",
+    "sample": "sample_id",
+    "scanner": "scanner_id"
+  },
+  "confounding_seeds": [
+    2001,
+    2002,
+    2003,
+    2004,
+    2005
+  ],
+  "confounding_strengths": [
+    "mild",
+    "moderate",
+    "severe"
+  ],
+  "dataset": "canine_cutaneous_scc_dinov2",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "held_out_scanners": [
+    "cs2",
+    "gt450",
+    "nz20",
+    "nz210",
+    "p1000"
+  ],
+  "input_frontier_dir": "results\\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier",
+  "input_true_pair_dir": "results\\paired_acquisition_factorization_pair_integrity_caninescc",
+  "neural_seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "outputs": [
+    "frontier_downstream_raw_metrics.csv",
+    "frontier_downstream_summary.csv",
+    "frontier_downstream_contrasts.csv",
+    "frontier_downstream_split_diagnostics.csv",
+    "frontier_downstream_per_class_recall.csv",
+    "frontier_downstream_per_scanner_errors.csv",
+    "frontier_selected_downstream_validation_report.md",
+    "experiment_design.json",
+    "run_log.txt"
+  ],
+  "probe_model": "StandardScaler + LogisticRegression(C=1.0, class_weight=balanced, max_iter=5000)",
+  "representations": [
+    {
+      "acquisition_dim": 64,
+      "branch": "biological",
+      "cross_covariance_weight": 0.05,
+      "representation": "true_pair_biological",
+      "source_family": "reference_true_pair",
+      "variant": "true_pair"
+    },
+    {
+      "acquisition_dim": 64,
+      "branch": "acquisition",
+      "cross_covariance_weight": 0.05,
+      "representation": "true_pair_acquisition",
+      "source_family": "reference_true_pair",
+      "variant": "true_pair"
+    },
+    {
+      "acquisition_dim": 8,
+      "branch": "biological",
+      "cross_covariance_weight": 0.05,
+      "representation": "acq_dim8_default_biological",
+      "source_family": "frontier_variant",
+      "variant": "acq_dim8_default"
+    },
+    {
+      "acquisition_dim": 8,
+      "branch": "acquisition",
+      "cross_covariance_weight": 0.05,
+      "representation": "acq_dim8_default_acquisition",
+      "source_family": "frontier_variant",
+      "variant": "acq_dim8_default"
+    },
+    {
+      "acquisition_dim": 16,
+      "branch": "biological",
+      "cross_covariance_weight": 0.2,
+      "representation": "acq_dim16_stronger_xcov_biological",
+      "source_family": "frontier_variant",
+      "variant": "acq_dim16_stronger_xcov"
+    },
+    {
+      "acquisition_dim": 16,
+      "branch": "acquisition",
+      "cross_covariance_weight": 0.2,
+      "representation": "acq_dim16_stronger_xcov_acquisition",
+      "source_family": "frontier_variant",
+      "variant": "acq_dim16_stronger_xcov"
+    }
+  ],
+  "sample_split_seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "smoke": false,
+  "stage": "frontier_selected_downstream_validation"
+}

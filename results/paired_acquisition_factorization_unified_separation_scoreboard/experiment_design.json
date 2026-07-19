@@ -1,0 +1,27 @@
+{
+  "command": "experiments/paired_acquisition/build_unified_separation_scoreboard.py",
+  "optional_rows": [
+    "shuffled_sample_biological",
+    "shuffled_sample_acquisition",
+    "pca_removal_k32"
+  ],
+  "scoreboard_rows": [
+    "original_frozen_features",
+    "oldstyle_keep_k4",
+    "oldstyle_removed_k4",
+    "true_pair_biological",
+    "true_pair_acquisition",
+    "acq_dim8_default_biological",
+    "acq_dim8_default_acquisition",
+    "acq_dim16_stronger_xcov_biological",
+    "acq_dim16_stronger_xcov_acquisition"
+  ],
+  "source_branches": [
+    "experiment/oldstyle-residual-branch-separation-audit",
+    "experiment/biological-label-preservation-audit",
+    "experiment/acquisition-bottleneck-separation-frontier",
+    "experiment/frontier-selected-downstream-validation",
+    "experiment/frontier-selected-crossbackbone-validation"
+  ],
+  "stage": "unified_separation_scoreboard"
+}

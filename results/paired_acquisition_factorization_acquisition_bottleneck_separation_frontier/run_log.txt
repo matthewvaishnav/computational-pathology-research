@@ -1,0 +1,442 @@
+
+================================================================================
+2026-07-07 16:07:26
+COMMAND experiments\paired_acquisition\run_acquisition_bottleneck_separation_frontier.py
+
+PHASE A SMOKE
+Smoke train/eval variant=acq_dim8_default acq_dim=8 xcov=0.05
+pathoalign seed=0 epoch=0001/75 loss=4.674941
+pathoalign seed=0 epoch=0025/75 loss=2.619121
+pathoalign seed=0 epoch=0050/75 loss=2.521099
+pathoalign seed=0 epoch=0075/75 loss=2.486445
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Smoke train/eval variant=acq_dim16_default acq_dim=16 xcov=0.05
+pathoalign seed=0 epoch=0001/75 loss=4.685161
+pathoalign seed=0 epoch=0025/75 loss=2.610215
+pathoalign seed=0 epoch=0050/75 loss=2.515092
+pathoalign seed=0 epoch=0075/75 loss=2.479191
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Smoke train/eval variant=acq_dim32_default acq_dim=32 xcov=0.05
+pathoalign seed=0 epoch=0001/75 loss=4.647496
+pathoalign seed=0 epoch=0025/75 loss=2.602105
+pathoalign seed=0 epoch=0050/75 loss=2.507869
+pathoalign seed=0 epoch=0075/75 loss=2.474086
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Smoke train/eval variant=acq_dim64_current acq_dim=64 xcov=0.05
+pathoalign seed=0 epoch=0001/75 loss=4.621708
+pathoalign seed=0 epoch=0025/75 loss=2.591666
+pathoalign seed=0 epoch=0050/75 loss=2.499862
+pathoalign seed=0 epoch=0075/75 loss=2.465304
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Smoke train/eval variant=acq_dim16_stronger_xcov acq_dim=16 xcov=0.2
+pathoalign seed=0 epoch=0001/75 loss=4.699676
+pathoalign seed=0 epoch=0025/75 loss=2.615889
+pathoalign seed=0 epoch=0050/75 loss=2.519412
+pathoalign seed=0 epoch=0075/75 loss=2.482569
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Smoke train/eval variant=acq_dim32_stronger_xcov acq_dim=32 xcov=0.2
+pathoalign seed=0 epoch=0001/75 loss=4.657623
+pathoalign seed=0 epoch=0025/75 loss=2.607024
+pathoalign seed=0 epoch=0050/75 loss=2.512436
+pathoalign seed=0 epoch=0075/75 loss=2.478069
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Selected full variants: acq_dim8_default, acq_dim16_stronger_xcov
+
+PHASE B FULL
+Full train/eval variant=acq_dim8_default fold=0 seed=911 acq_dim=8 xcov=0.05
+pathoalign seed=911 epoch=0001/75 loss=4.680939
+pathoalign seed=911 epoch=0025/75 loss=2.617897
+pathoalign seed=911 epoch=0050/75 loss=2.526121
+pathoalign seed=911 epoch=0075/75 loss=2.487531
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=0 seed=912 acq_dim=8 xcov=0.05
+pathoalign seed=912 epoch=0001/75 loss=4.697665
+pathoalign seed=912 epoch=0025/75 loss=2.617650
+pathoalign seed=912 epoch=0050/75 loss=2.523901
+pathoalign seed=912 epoch=0075/75 loss=2.484563
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=0 seed=913 acq_dim=8 xcov=0.05
+pathoalign seed=913 epoch=0001/75 loss=4.736783
+pathoalign seed=913 epoch=0025/75 loss=2.617933
+pathoalign seed=913 epoch=0050/75 loss=2.527381
+pathoalign seed=913 epoch=0075/75 loss=2.482400
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=0 seed=914 acq_dim=8 xcov=0.05
+pathoalign seed=914 epoch=0001/75 loss=4.692408
+pathoalign seed=914 epoch=0025/75 loss=2.612955
+pathoalign seed=914 epoch=0050/75 loss=2.525304
+pathoalign seed=914 epoch=0075/75 loss=2.483059
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=0 seed=915 acq_dim=8 xcov=0.05
+pathoalign seed=915 epoch=0001/75 loss=4.716372
+pathoalign seed=915 epoch=0025/75 loss=2.620025
+pathoalign seed=915 epoch=0050/75 loss=2.526570
+pathoalign seed=915 epoch=0075/75 loss=2.480327
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=1 seed=911 acq_dim=8 xcov=0.05
+pathoalign seed=911 epoch=0001/75 loss=4.688304
+pathoalign seed=911 epoch=0025/75 loss=2.639589
+pathoalign seed=911 epoch=0050/75 loss=2.543098
+pathoalign seed=911 epoch=0075/75 loss=2.506357
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=1 seed=912 acq_dim=8 xcov=0.05
+pathoalign seed=912 epoch=0001/75 loss=4.702605
+pathoalign seed=912 epoch=0025/75 loss=2.631955
+pathoalign seed=912 epoch=0050/75 loss=2.541870
+pathoalign seed=912 epoch=0075/75 loss=2.510436
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=1 seed=913 acq_dim=8 xcov=0.05
+pathoalign seed=913 epoch=0001/75 loss=4.701183
+pathoalign seed=913 epoch=0025/75 loss=2.633771
+pathoalign seed=913 epoch=0050/75 loss=2.543574
+pathoalign seed=913 epoch=0075/75 loss=2.503729
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=1 seed=914 acq_dim=8 xcov=0.05
+pathoalign seed=914 epoch=0001/75 loss=4.694696
+pathoalign seed=914 epoch=0025/75 loss=2.634275
+pathoalign seed=914 epoch=0050/75 loss=2.546562
+pathoalign seed=914 epoch=0075/75 loss=2.509243
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=1 seed=915 acq_dim=8 xcov=0.05
+pathoalign seed=915 epoch=0001/75 loss=4.718069
+pathoalign seed=915 epoch=0025/75 loss=2.635996
+pathoalign seed=915 epoch=0050/75 loss=2.542048
+pathoalign seed=915 epoch=0075/75 loss=2.504705
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=2 seed=911 acq_dim=8 xcov=0.05
+pathoalign seed=911 epoch=0001/75 loss=4.659049
+pathoalign seed=911 epoch=0025/75 loss=2.628409
+pathoalign seed=911 epoch=0050/75 loss=2.523767
+pathoalign seed=911 epoch=0075/75 loss=2.480643
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=2 seed=912 acq_dim=8 xcov=0.05
+pathoalign seed=912 epoch=0001/75 loss=4.693641
+pathoalign seed=912 epoch=0025/75 loss=2.623771
+pathoalign seed=912 epoch=0050/75 loss=2.522633
+pathoalign seed=912 epoch=0075/75 loss=2.483455
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=2 seed=913 acq_dim=8 xcov=0.05
+pathoalign seed=913 epoch=0001/75 loss=4.704590
+pathoalign seed=913 epoch=0025/75 loss=2.617474
+pathoalign seed=913 epoch=0050/75 loss=2.526081
+pathoalign seed=913 epoch=0075/75 loss=2.485855
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=2 seed=914 acq_dim=8 xcov=0.05
+pathoalign seed=914 epoch=0001/75 loss=4.673124
+pathoalign seed=914 epoch=0025/75 loss=2.612648
+pathoalign seed=914 epoch=0050/75 loss=2.519842
+pathoalign seed=914 epoch=0075/75 loss=2.488589
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=2 seed=915 acq_dim=8 xcov=0.05
+pathoalign seed=915 epoch=0001/75 loss=4.700614
+pathoalign seed=915 epoch=0025/75 loss=2.615463
+pathoalign seed=915 epoch=0050/75 loss=2.533335
+pathoalign seed=915 epoch=0075/75 loss=2.482835
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=3 seed=911 acq_dim=8 xcov=0.05
+pathoalign seed=911 epoch=0001/75 loss=4.665699
+pathoalign seed=911 epoch=0025/75 loss=2.642312
+pathoalign seed=911 epoch=0050/75 loss=2.535035
+pathoalign seed=911 epoch=0075/75 loss=2.497942
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=3 seed=912 acq_dim=8 xcov=0.05
+pathoalign seed=912 epoch=0001/75 loss=4.679546
+pathoalign seed=912 epoch=0025/75 loss=2.630697
+pathoalign seed=912 epoch=0050/75 loss=2.547496
+pathoalign seed=912 epoch=0075/75 loss=2.495852
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=3 seed=913 acq_dim=8 xcov=0.05
+pathoalign seed=913 epoch=0001/75 loss=4.690438
+pathoalign seed=913 epoch=0025/75 loss=2.640885
+pathoalign seed=913 epoch=0050/75 loss=2.534190
+pathoalign seed=913 epoch=0075/75 loss=2.495401
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=3 seed=914 acq_dim=8 xcov=0.05
+pathoalign seed=914 epoch=0001/75 loss=4.658500
+pathoalign seed=914 epoch=0025/75 loss=2.628601
+pathoalign seed=914 epoch=0050/75 loss=2.541662
+pathoalign seed=914 epoch=0075/75 loss=2.495697
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=3 seed=915 acq_dim=8 xcov=0.05
+pathoalign seed=915 epoch=0001/75 loss=4.678239
+pathoalign seed=915 epoch=0025/75 loss=2.623638
+pathoalign seed=915 epoch=0050/75 loss=2.540223
+pathoalign seed=915 epoch=0075/75 loss=2.498202
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim8_default fold=4 seed=911 acq_dim=8 xcov=0.05
+pathoalign seed=911 epoch=0001/75 loss=4.712530
+pathoalign seed=911 epoch=0025/75 loss=2.618031
+pathoalign seed=911 epoch=0050/75 loss=2.526127
+pathoalign seed=911 epoch=0075/75 loss=2.484333
+Full train/eval variant=acq_dim8_default fold=4 seed=912 acq_dim=8 xcov=0.05
+pathoalign seed=912 epoch=0001/75 loss=4.707710
+pathoalign seed=912 epoch=0025/75 loss=2.612485
+pathoalign seed=912 epoch=0050/75 loss=2.524471
+pathoalign seed=912 epoch=0075/75 loss=2.480644
+Full train/eval variant=acq_dim8_default fold=4 seed=913 acq_dim=8 xcov=0.05
+pathoalign seed=913 epoch=0001/75 loss=4.743883
+pathoalign seed=913 epoch=0025/75 loss=2.609947
+pathoalign seed=913 epoch=0050/75 loss=2.525840
+pathoalign seed=913 epoch=0075/75 loss=2.484015
+Full train/eval variant=acq_dim8_default fold=4 seed=914 acq_dim=8 xcov=0.05
+pathoalign seed=914 epoch=0001/75 loss=4.708996
+pathoalign seed=914 epoch=0025/75 loss=2.607449
+pathoalign seed=914 epoch=0050/75 loss=2.528342
+pathoalign seed=914 epoch=0075/75 loss=2.480983
+Full train/eval variant=acq_dim8_default fold=4 seed=915 acq_dim=8 xcov=0.05
+pathoalign seed=915 epoch=0001/75 loss=4.715549
+pathoalign seed=915 epoch=0025/75 loss=2.616544
+pathoalign seed=915 epoch=0050/75 loss=2.518221
+pathoalign seed=915 epoch=0075/75 loss=2.483888
+Full train/eval variant=acq_dim16_stronger_xcov fold=0 seed=911 acq_dim=16 xcov=0.2
+pathoalign seed=911 epoch=0001/75 loss=4.678170
+pathoalign seed=911 epoch=0025/75 loss=2.612729
+pathoalign seed=911 epoch=0050/75 loss=2.523551
+pathoalign seed=911 epoch=0075/75 loss=2.486625
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=0 seed=912 acq_dim=16 xcov=0.2
+pathoalign seed=912 epoch=0001/75 loss=4.665632
+pathoalign seed=912 epoch=0025/75 loss=2.612457
+pathoalign seed=912 epoch=0050/75 loss=2.524687
+pathoalign seed=912 epoch=0075/75 loss=2.482967
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=0 seed=913 acq_dim=16 xcov=0.2
+pathoalign seed=913 epoch=0001/75 loss=4.696039
+pathoalign seed=913 epoch=0025/75 loss=2.612443
+pathoalign seed=913 epoch=0050/75 loss=2.525190
+pathoalign seed=913 epoch=0075/75 loss=2.481131
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=0 seed=914 acq_dim=16 xcov=0.2
+pathoalign seed=914 epoch=0001/75 loss=4.649399
+pathoalign seed=914 epoch=0025/75 loss=2.610404
+pathoalign seed=914 epoch=0050/75 loss=2.520993
+pathoalign seed=914 epoch=0075/75 loss=2.479786
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=0 seed=915 acq_dim=16 xcov=0.2
+pathoalign seed=915 epoch=0001/75 loss=4.695404
+pathoalign seed=915 epoch=0025/75 loss=2.615569
+pathoalign seed=915 epoch=0050/75 loss=2.526319
+pathoalign seed=915 epoch=0075/75 loss=2.478115
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=1 seed=911 acq_dim=16 xcov=0.2
+pathoalign seed=911 epoch=0001/75 loss=4.674147
+pathoalign seed=911 epoch=0025/75 loss=2.634511
+pathoalign seed=911 epoch=0050/75 loss=2.540983
+pathoalign seed=911 epoch=0075/75 loss=2.501635
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=1 seed=912 acq_dim=16 xcov=0.2
+pathoalign seed=912 epoch=0001/75 loss=4.672495
+pathoalign seed=912 epoch=0025/75 loss=2.627988
+pathoalign seed=912 epoch=0050/75 loss=2.542370
+pathoalign seed=912 epoch=0075/75 loss=2.509281
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=1 seed=913 acq_dim=16 xcov=0.2
+pathoalign seed=913 epoch=0001/75 loss=4.664258
+pathoalign seed=913 epoch=0025/75 loss=2.632606
+pathoalign seed=913 epoch=0050/75 loss=2.539991
+pathoalign seed=913 epoch=0075/75 loss=2.502504
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=1 seed=914 acq_dim=16 xcov=0.2
+pathoalign seed=914 epoch=0001/75 loss=4.663360
+pathoalign seed=914 epoch=0025/75 loss=2.630476
+pathoalign seed=914 epoch=0050/75 loss=2.543228
+pathoalign seed=914 epoch=0075/75 loss=2.509701
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=1 seed=915 acq_dim=16 xcov=0.2
+pathoalign seed=915 epoch=0001/75 loss=4.692285
+pathoalign seed=915 epoch=0025/75 loss=2.632957
+pathoalign seed=915 epoch=0050/75 loss=2.540984
+pathoalign seed=915 epoch=0075/75 loss=2.502843
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=2 seed=911 acq_dim=16 xcov=0.2
+pathoalign seed=911 epoch=0001/75 loss=4.652647
+pathoalign seed=911 epoch=0025/75 loss=2.622341
+pathoalign seed=911 epoch=0050/75 loss=2.520287
+pathoalign seed=911 epoch=0075/75 loss=2.478992
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=2 seed=912 acq_dim=16 xcov=0.2
+pathoalign seed=912 epoch=0001/75 loss=4.663798
+pathoalign seed=912 epoch=0025/75 loss=2.620026
+pathoalign seed=912 epoch=0050/75 loss=2.521255
+pathoalign seed=912 epoch=0075/75 loss=2.479429
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=2 seed=913 acq_dim=16 xcov=0.2
+pathoalign seed=913 epoch=0001/75 loss=4.668818
+pathoalign seed=913 epoch=0025/75 loss=2.615062
+pathoalign seed=913 epoch=0050/75 loss=2.522711
+pathoalign seed=913 epoch=0075/75 loss=2.483698
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=2 seed=914 acq_dim=16 xcov=0.2
+pathoalign seed=914 epoch=0001/75 loss=4.642935
+pathoalign seed=914 epoch=0025/75 loss=2.609195
+pathoalign seed=914 epoch=0050/75 loss=2.517486
+pathoalign seed=914 epoch=0075/75 loss=2.486344
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=2 seed=915 acq_dim=16 xcov=0.2
+pathoalign seed=915 epoch=0001/75 loss=4.673553
+pathoalign seed=915 epoch=0025/75 loss=2.612472
+pathoalign seed=915 epoch=0050/75 loss=2.530550
+pathoalign seed=915 epoch=0075/75 loss=2.481897
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=3 seed=911 acq_dim=16 xcov=0.2
+pathoalign seed=911 epoch=0001/75 loss=4.661544
+pathoalign seed=911 epoch=0025/75 loss=2.636653
+pathoalign seed=911 epoch=0050/75 loss=2.534549
+pathoalign seed=911 epoch=0075/75 loss=2.497260
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=3 seed=912 acq_dim=16 xcov=0.2
+pathoalign seed=912 epoch=0001/75 loss=4.643655
+pathoalign seed=912 epoch=0025/75 loss=2.626902
+pathoalign seed=912 epoch=0050/75 loss=2.544958
+pathoalign seed=912 epoch=0075/75 loss=2.518252
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=3 seed=913 acq_dim=16 xcov=0.2
+pathoalign seed=913 epoch=0001/75 loss=4.651033
+pathoalign seed=913 epoch=0025/75 loss=2.638373
+pathoalign seed=913 epoch=0050/75 loss=2.532036
+pathoalign seed=913 epoch=0075/75 loss=2.492394
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=3 seed=914 acq_dim=16 xcov=0.2
+pathoalign seed=914 epoch=0001/75 loss=4.622190
+pathoalign seed=914 epoch=0025/75 loss=2.624132
+pathoalign seed=914 epoch=0050/75 loss=2.538095
+pathoalign seed=914 epoch=0075/75 loss=2.496264
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=3 seed=915 acq_dim=16 xcov=0.2
+pathoalign seed=915 epoch=0001/75 loss=4.652519
+pathoalign seed=915 epoch=0025/75 loss=2.621908
+pathoalign seed=915 epoch=0050/75 loss=2.540354
+pathoalign seed=915 epoch=0075/75 loss=2.496744
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+Full train/eval variant=acq_dim16_stronger_xcov fold=4 seed=911 acq_dim=16 xcov=0.2
+pathoalign seed=911 epoch=0001/75 loss=4.693921
+pathoalign seed=911 epoch=0025/75 loss=2.613481
+pathoalign seed=911 epoch=0050/75 loss=2.524115
+pathoalign seed=911 epoch=0075/75 loss=2.480385
+Full train/eval variant=acq_dim16_stronger_xcov fold=4 seed=912 acq_dim=16 xcov=0.2
+pathoalign seed=912 epoch=0001/75 loss=4.684507
+pathoalign seed=912 epoch=0025/75 loss=2.606715
+pathoalign seed=912 epoch=0050/75 loss=2.525360
+pathoalign seed=912 epoch=0075/75 loss=2.480098
+Full train/eval variant=acq_dim16_stronger_xcov fold=4 seed=913 acq_dim=16 xcov=0.2
+pathoalign seed=913 epoch=0001/75 loss=4.703082
+pathoalign seed=913 epoch=0025/75 loss=2.607017
+pathoalign seed=913 epoch=0050/75 loss=2.523482
+pathoalign seed=913 epoch=0075/75 loss=2.482798
+Full train/eval variant=acq_dim16_stronger_xcov fold=4 seed=914 acq_dim=16 xcov=0.2
+pathoalign seed=914 epoch=0001/75 loss=4.677252
+pathoalign seed=914 epoch=0025/75 loss=2.603854
+pathoalign seed=914 epoch=0050/75 loss=2.529378
+pathoalign seed=914 epoch=0075/75 loss=2.478617
+Full train/eval variant=acq_dim16_stronger_xcov fold=4 seed=915 acq_dim=16 xcov=0.2
+pathoalign seed=915 epoch=0001/75 loss=4.688542
+pathoalign seed=915 epoch=0025/75 loss=2.613335
+pathoalign seed=915 epoch=0050/75 loss=2.515796
+pathoalign seed=915 epoch=0075/75 loss=2.482970
+
+================================================================================
+ACQUISITION BOTTLENECK SEPARATION-FRONTIER SWEEP COMPLETE
+Smoke rows: 12
+Full rows: 100
+Selected: acq_dim8_default, acq_dim16_stronger_xcov
+Validation issues: 0
+Runtime: 1443.6s
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\acquisition_bottleneck_separation_frontier_report.md

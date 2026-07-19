@@ -1,0 +1,19 @@
+{
+  "command": "experiments/paired_acquisition/run_linear_baseline_consistency_audit.py",
+  "dataset": "canine_cutaneous_scc_dinov2",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "k_target": 4,
+  "stage": "linear_baseline_consistency_audit",
+  "variants": {
+    "new_style_keep_on_old_standardization": "new-style SVD directions on old-style (all-data) standardization",
+    "new_style_linear_keep_k4": "logistic regression coefficient SVD, StandardScaler on fit only (ec2a509f)",
+    "new_style_linear_removed_k4": "complement of new_style_linear_keep_k4",
+    "old_style_linear_projection_k4": "per-scanner mean vectors, QR orthonormalization, StandardScaler on all data (bec06eb4)"
+  }
+}

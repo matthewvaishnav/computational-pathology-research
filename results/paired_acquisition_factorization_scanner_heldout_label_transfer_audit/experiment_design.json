@@ -1,0 +1,62 @@
+{
+  "categories": [
+    "Epidermis",
+    "SCC",
+    "Subcutis",
+    "Dermis",
+    "Inflamm/Necrosis",
+    "Bone",
+    "Cartilage"
+  ],
+  "dataset": "canineSCC_DINOv2",
+  "fold": 0,
+  "held_out_scanners": [
+    "cs2",
+    "gt450",
+    "nz20",
+    "nz210",
+    "p1000"
+  ],
+  "manifest_fold": 0,
+  "pair_integrity_source": "results\\paired_acquisition_factorization_pair_integrity_caninescc",
+  "probe_model": "LogisticRegression(C=1.0, class_weight=balanced, max_iter=5000)",
+  "protocol": "leave-one-scanner-out category probe",
+  "representations_tested": [
+    "linear_projection_k0",
+    "linear_projection_k1",
+    "linear_projection_k16",
+    "linear_projection_k2",
+    "linear_projection_k32",
+    "linear_projection_k4",
+    "linear_projection_k8",
+    "original_frozen_features",
+    "pca_removal_k1",
+    "pca_removal_k16",
+    "pca_removal_k2",
+    "pca_removal_k32",
+    "pca_removal_k4",
+    "pca_removal_k8",
+    "shuffled_sample_acquisition",
+    "shuffled_sample_biological",
+    "true_pair_acquisition",
+    "true_pair_biological"
+  ],
+  "scanners": [
+    "cs2",
+    "gt450",
+    "nz20",
+    "nz210",
+    "p1000"
+  ],
+  "seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "smoke_test": false,
+  "stage": "scanner_heldout_label_transfer_audit",
+  "target_category_column": "category_name",
+  "target_scanner_column": "scanner_id"
+}

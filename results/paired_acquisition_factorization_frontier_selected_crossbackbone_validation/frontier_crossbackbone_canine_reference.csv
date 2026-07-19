@@ -1,0 +1,8 @@
+dataset,backbone,representation,variant,branch,scanner_balanced_accuracy,category_balanced_accuracy,label_metrics_available
+canine_scc,dinov2,true_pair_biological,true_pair_current,biological,0.3614,0.386,True
+canine_scc,dinov2,true_pair_acquisition,true_pair_current,acquisition,0.8651,0.3456,True
+canine_scc,dinov2,acq_dim8_default_biological,acq_dim8_default,biological,0.3691,0.3852,True
+canine_scc,dinov2,acq_dim8_default_acquisition,acq_dim8_default,acquisition,0.8643,0.1598,True
+canine_scc,dinov2,acq_dim16_stronger_xcov_biological,acq_dim16_stronger_xcov,biological,0.3593,0.3824,True
+canine_scc,dinov2,acq_dim16_stronger_xcov_acquisition,acq_dim16_stronger_xcov,acquisition,0.8638,0.1689,True
+canine_scc,dinov2,oldstyle_keep_k4,oldstyle_keep_k4,biological,0.2,0.4004,True

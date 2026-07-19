@@ -1,0 +1,841 @@
+
+================================================================================
+2026-07-08 10:13:30
+COMMAND experiments\paired_acquisition\run_frontier_selected_crossbackbone_validation.py
+
+BACKBONE dinov2
+Loaded results\scorpion\features\fold_0_dinov2_base.npz shape=(2400, 768) model=dinov2_base
+Eval/train backbone=dinov2 variant=true_pair_current fold=0 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=0 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.482170
+pathoalign seed=701 epoch=0025/75 loss=2.545726
+pathoalign seed=701 epoch=0050/75 loss=2.457897
+pathoalign seed=701 epoch=0075/75 loss=2.423735
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=0 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.520444
+pathoalign seed=701 epoch=0025/75 loss=2.543765
+pathoalign seed=701 epoch=0050/75 loss=2.458293
+pathoalign seed=701 epoch=0075/75 loss=2.424709
+Eval/train backbone=dinov2 variant=true_pair_current fold=0 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=0 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.504873
+pathoalign seed=702 epoch=0025/75 loss=2.544054
+pathoalign seed=702 epoch=0050/75 loss=2.456294
+pathoalign seed=702 epoch=0075/75 loss=2.423563
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=0 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.509323
+pathoalign seed=702 epoch=0025/75 loss=2.542015
+pathoalign seed=702 epoch=0050/75 loss=2.460149
+pathoalign seed=702 epoch=0075/75 loss=2.425699
+Eval/train backbone=dinov2 variant=true_pair_current fold=0 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=0 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.501473
+pathoalign seed=703 epoch=0025/75 loss=2.545421
+pathoalign seed=703 epoch=0050/75 loss=2.456132
+pathoalign seed=703 epoch=0075/75 loss=2.423352
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=0 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.524777
+pathoalign seed=703 epoch=0025/75 loss=2.544658
+pathoalign seed=703 epoch=0050/75 loss=2.456312
+pathoalign seed=703 epoch=0075/75 loss=2.424934
+Eval/train backbone=dinov2 variant=true_pair_current fold=0 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=0 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.483490
+pathoalign seed=704 epoch=0025/75 loss=2.540384
+pathoalign seed=704 epoch=0050/75 loss=2.457330
+pathoalign seed=704 epoch=0075/75 loss=2.424444
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=0 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.492717
+pathoalign seed=704 epoch=0025/75 loss=2.541160
+pathoalign seed=704 epoch=0050/75 loss=2.458806
+pathoalign seed=704 epoch=0075/75 loss=2.424178
+Eval/train backbone=dinov2 variant=true_pair_current fold=0 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=0 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.513200
+pathoalign seed=705 epoch=0025/75 loss=2.542175
+pathoalign seed=705 epoch=0050/75 loss=2.458627
+pathoalign seed=705 epoch=0075/75 loss=2.422800
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=0 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.512676
+pathoalign seed=705 epoch=0025/75 loss=2.543853
+pathoalign seed=705 epoch=0050/75 loss=2.458448
+pathoalign seed=705 epoch=0075/75 loss=2.423764
+Eval/train backbone=dinov2 variant=true_pair_current fold=1 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=1 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.473410
+pathoalign seed=701 epoch=0025/75 loss=2.547487
+pathoalign seed=701 epoch=0050/75 loss=2.458040
+pathoalign seed=701 epoch=0075/75 loss=2.422214
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=1 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.518394
+pathoalign seed=701 epoch=0025/75 loss=2.542661
+pathoalign seed=701 epoch=0050/75 loss=2.459112
+pathoalign seed=701 epoch=0075/75 loss=2.424628
+Eval/train backbone=dinov2 variant=true_pair_current fold=1 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=1 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.515113
+pathoalign seed=702 epoch=0025/75 loss=2.540197
+pathoalign seed=702 epoch=0050/75 loss=2.454679
+pathoalign seed=702 epoch=0075/75 loss=2.423669
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=1 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.509422
+pathoalign seed=702 epoch=0025/75 loss=2.541098
+pathoalign seed=702 epoch=0050/75 loss=2.454844
+pathoalign seed=702 epoch=0075/75 loss=2.425141
+Eval/train backbone=dinov2 variant=true_pair_current fold=1 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=1 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.484194
+pathoalign seed=703 epoch=0025/75 loss=2.547051
+pathoalign seed=703 epoch=0050/75 loss=2.452602
+pathoalign seed=703 epoch=0075/75 loss=2.420677
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=1 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.509551
+pathoalign seed=703 epoch=0025/75 loss=2.545857
+pathoalign seed=703 epoch=0050/75 loss=2.455050
+pathoalign seed=703 epoch=0075/75 loss=2.423290
+Eval/train backbone=dinov2 variant=true_pair_current fold=1 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=1 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.479622
+pathoalign seed=704 epoch=0025/75 loss=2.543562
+pathoalign seed=704 epoch=0050/75 loss=2.456062
+pathoalign seed=704 epoch=0075/75 loss=2.423176
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=1 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.494589
+pathoalign seed=704 epoch=0025/75 loss=2.544200
+pathoalign seed=704 epoch=0050/75 loss=2.455677
+pathoalign seed=704 epoch=0075/75 loss=2.422953
+Eval/train backbone=dinov2 variant=true_pair_current fold=1 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=1 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.519668
+pathoalign seed=705 epoch=0025/75 loss=2.545067
+pathoalign seed=705 epoch=0050/75 loss=2.457193
+pathoalign seed=705 epoch=0075/75 loss=2.421319
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=1 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.521727
+pathoalign seed=705 epoch=0025/75 loss=2.541773
+pathoalign seed=705 epoch=0050/75 loss=2.457533
+pathoalign seed=705 epoch=0075/75 loss=2.466890
+Eval/train backbone=dinov2 variant=true_pair_current fold=2 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=2 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.478462
+pathoalign seed=701 epoch=0025/75 loss=2.545768
+pathoalign seed=701 epoch=0050/75 loss=2.456503
+pathoalign seed=701 epoch=0075/75 loss=2.422299
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=2 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.517232
+pathoalign seed=701 epoch=0025/75 loss=2.543555
+pathoalign seed=701 epoch=0050/75 loss=2.459143
+pathoalign seed=701 epoch=0075/75 loss=2.424379
+Eval/train backbone=dinov2 variant=true_pair_current fold=2 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=2 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.506075
+pathoalign seed=702 epoch=0025/75 loss=2.538671
+pathoalign seed=702 epoch=0050/75 loss=2.456451
+pathoalign seed=702 epoch=0075/75 loss=2.421929
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=2 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.504186
+pathoalign seed=702 epoch=0025/75 loss=2.537360
+pathoalign seed=702 epoch=0050/75 loss=2.458025
+pathoalign seed=702 epoch=0075/75 loss=2.422122
+Eval/train backbone=dinov2 variant=true_pair_current fold=2 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=2 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.494548
+pathoalign seed=703 epoch=0025/75 loss=2.547619
+pathoalign seed=703 epoch=0050/75 loss=2.459731
+pathoalign seed=703 epoch=0075/75 loss=2.423507
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=2 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.515845
+pathoalign seed=703 epoch=0025/75 loss=2.545937
+pathoalign seed=703 epoch=0050/75 loss=2.461277
+pathoalign seed=703 epoch=0075/75 loss=2.424959
+Eval/train backbone=dinov2 variant=true_pair_current fold=2 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=2 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.478194
+pathoalign seed=704 epoch=0025/75 loss=2.542308
+pathoalign seed=704 epoch=0050/75 loss=2.458254
+pathoalign seed=704 epoch=0075/75 loss=2.428914
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=2 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.493341
+pathoalign seed=704 epoch=0025/75 loss=2.541834
+pathoalign seed=704 epoch=0050/75 loss=2.458661
+pathoalign seed=704 epoch=0075/75 loss=2.427850
+Eval/train backbone=dinov2 variant=true_pair_current fold=2 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=2 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.503307
+pathoalign seed=705 epoch=0025/75 loss=2.542864
+pathoalign seed=705 epoch=0050/75 loss=2.460754
+pathoalign seed=705 epoch=0075/75 loss=2.423910
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=2 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.506570
+pathoalign seed=705 epoch=0025/75 loss=2.544672
+pathoalign seed=705 epoch=0050/75 loss=2.457616
+pathoalign seed=705 epoch=0075/75 loss=2.422979
+Eval/train backbone=dinov2 variant=true_pair_current fold=3 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=3 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.453723
+pathoalign seed=701 epoch=0025/75 loss=2.601979
+pathoalign seed=701 epoch=0050/75 loss=2.545862
+pathoalign seed=701 epoch=0075/75 loss=2.483449
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=3 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.505887
+pathoalign seed=701 epoch=0025/75 loss=2.602638
+pathoalign seed=701 epoch=0050/75 loss=2.515587
+pathoalign seed=701 epoch=0075/75 loss=2.506724
+Eval/train backbone=dinov2 variant=true_pair_current fold=3 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=3 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.498255
+pathoalign seed=702 epoch=0025/75 loss=2.598457
+pathoalign seed=702 epoch=0050/75 loss=2.514343
+pathoalign seed=702 epoch=0075/75 loss=2.486379
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=3 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.499666
+pathoalign seed=702 epoch=0025/75 loss=2.599298
+pathoalign seed=702 epoch=0050/75 loss=2.514924
+pathoalign seed=702 epoch=0075/75 loss=2.489707
+Eval/train backbone=dinov2 variant=true_pair_current fold=3 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=3 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.471616
+pathoalign seed=703 epoch=0025/75 loss=2.603330
+pathoalign seed=703 epoch=0050/75 loss=2.512476
+pathoalign seed=703 epoch=0075/75 loss=2.478562
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=3 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.497078
+pathoalign seed=703 epoch=0025/75 loss=2.600691
+pathoalign seed=703 epoch=0050/75 loss=2.521583
+pathoalign seed=703 epoch=0075/75 loss=2.480203
+Eval/train backbone=dinov2 variant=true_pair_current fold=3 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=3 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.478472
+pathoalign seed=704 epoch=0025/75 loss=2.600443
+pathoalign seed=704 epoch=0050/75 loss=2.527454
+pathoalign seed=704 epoch=0075/75 loss=2.477544
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=3 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.496300
+pathoalign seed=704 epoch=0025/75 loss=2.598726
+pathoalign seed=704 epoch=0050/75 loss=2.558687
+pathoalign seed=704 epoch=0075/75 loss=2.475253
+Eval/train backbone=dinov2 variant=true_pair_current fold=3 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=3 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.514442
+pathoalign seed=705 epoch=0025/75 loss=2.596384
+pathoalign seed=705 epoch=0050/75 loss=2.516542
+pathoalign seed=705 epoch=0075/75 loss=2.478025
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=3 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.516714
+pathoalign seed=705 epoch=0025/75 loss=2.597375
+pathoalign seed=705 epoch=0050/75 loss=2.518843
+pathoalign seed=705 epoch=0075/75 loss=2.478614
+Eval/train backbone=dinov2 variant=true_pair_current fold=4 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=4 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.465665
+pathoalign seed=701 epoch=0025/75 loss=2.599991
+pathoalign seed=701 epoch=0050/75 loss=2.513535
+pathoalign seed=701 epoch=0075/75 loss=2.480971
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=4 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.514503
+pathoalign seed=701 epoch=0025/75 loss=2.601184
+pathoalign seed=701 epoch=0050/75 loss=2.515865
+pathoalign seed=701 epoch=0075/75 loss=2.480649
+Eval/train backbone=dinov2 variant=true_pair_current fold=4 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=4 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.505867
+pathoalign seed=702 epoch=0025/75 loss=2.594602
+pathoalign seed=702 epoch=0050/75 loss=2.513527
+pathoalign seed=702 epoch=0075/75 loss=2.482332
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=4 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.500551
+pathoalign seed=702 epoch=0025/75 loss=2.592472
+pathoalign seed=702 epoch=0050/75 loss=2.515083
+pathoalign seed=702 epoch=0075/75 loss=2.487369
+Eval/train backbone=dinov2 variant=true_pair_current fold=4 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=4 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.474896
+pathoalign seed=703 epoch=0025/75 loss=2.601757
+pathoalign seed=703 epoch=0050/75 loss=2.512992
+pathoalign seed=703 epoch=0075/75 loss=2.486095
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=4 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.496624
+pathoalign seed=703 epoch=0025/75 loss=2.601281
+pathoalign seed=703 epoch=0050/75 loss=2.515807
+pathoalign seed=703 epoch=0075/75 loss=2.506367
+Eval/train backbone=dinov2 variant=true_pair_current fold=4 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=4 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.486074
+pathoalign seed=704 epoch=0025/75 loss=2.602569
+pathoalign seed=704 epoch=0050/75 loss=2.519832
+pathoalign seed=704 epoch=0075/75 loss=2.479522
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=4 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.505026
+pathoalign seed=704 epoch=0025/75 loss=2.603805
+pathoalign seed=704 epoch=0050/75 loss=2.516223
+pathoalign seed=704 epoch=0075/75 loss=2.480323
+Eval/train backbone=dinov2 variant=true_pair_current fold=4 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=dinov2 variant=acq_dim8_default fold=4 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.526695
+pathoalign seed=705 epoch=0025/75 loss=2.599213
+pathoalign seed=705 epoch=0050/75 loss=2.536894
+pathoalign seed=705 epoch=0075/75 loss=2.480179
+Eval/train backbone=dinov2 variant=acq_dim16_stronger_xcov fold=4 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.527766
+pathoalign seed=705 epoch=0025/75 loss=2.601602
+pathoalign seed=705 epoch=0050/75 loss=2.519250
+pathoalign seed=705 epoch=0075/75 loss=2.481655
+
+BACKBONE phikon
+Loaded results\scorpion\features\fold_0_phikon.npz shape=(2400, 768) model=phikon
+Eval/train backbone=phikon variant=true_pair_current fold=0 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=0 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.761187
+pathoalign seed=701 epoch=0025/75 loss=2.603102
+pathoalign seed=701 epoch=0050/75 loss=2.502530
+pathoalign seed=701 epoch=0075/75 loss=2.455547
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=0 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.806538
+pathoalign seed=701 epoch=0025/75 loss=2.601264
+pathoalign seed=701 epoch=0050/75 loss=2.499319
+pathoalign seed=701 epoch=0075/75 loss=2.456108
+Eval/train backbone=phikon variant=true_pair_current fold=0 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=0 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.844729
+pathoalign seed=702 epoch=0025/75 loss=2.602305
+pathoalign seed=702 epoch=0050/75 loss=2.502077
+pathoalign seed=702 epoch=0075/75 loss=2.456163
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=0 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.814445
+pathoalign seed=702 epoch=0025/75 loss=2.602409
+pathoalign seed=702 epoch=0050/75 loss=2.498594
+pathoalign seed=702 epoch=0075/75 loss=2.455812
+Eval/train backbone=phikon variant=true_pair_current fold=0 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=0 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.770972
+pathoalign seed=703 epoch=0025/75 loss=2.598934
+pathoalign seed=703 epoch=0050/75 loss=2.501769
+pathoalign seed=703 epoch=0075/75 loss=2.452782
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=0 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.764048
+pathoalign seed=703 epoch=0025/75 loss=2.595857
+pathoalign seed=703 epoch=0050/75 loss=2.502789
+pathoalign seed=703 epoch=0075/75 loss=2.452447
+Eval/train backbone=phikon variant=true_pair_current fold=0 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=0 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.792409
+pathoalign seed=704 epoch=0025/75 loss=2.600714
+pathoalign seed=704 epoch=0050/75 loss=2.505681
+pathoalign seed=704 epoch=0075/75 loss=2.453927
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=0 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.791998
+pathoalign seed=704 epoch=0025/75 loss=2.602817
+pathoalign seed=704 epoch=0050/75 loss=2.500985
+pathoalign seed=704 epoch=0075/75 loss=2.455609
+Eval/train backbone=phikon variant=true_pair_current fold=0 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=0 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.730034
+pathoalign seed=705 epoch=0025/75 loss=2.601135
+pathoalign seed=705 epoch=0050/75 loss=2.502512
+pathoalign seed=705 epoch=0075/75 loss=2.451857
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=0 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.710891
+pathoalign seed=705 epoch=0025/75 loss=2.601324
+pathoalign seed=705 epoch=0050/75 loss=2.498309
+pathoalign seed=705 epoch=0075/75 loss=2.452335
+Eval/train backbone=phikon variant=true_pair_current fold=1 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=1 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.727633
+pathoalign seed=701 epoch=0025/75 loss=2.602644
+pathoalign seed=701 epoch=0050/75 loss=2.500379
+pathoalign seed=701 epoch=0075/75 loss=2.453374
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=1 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.782907
+pathoalign seed=701 epoch=0025/75 loss=2.602100
+pathoalign seed=701 epoch=0050/75 loss=2.500668
+pathoalign seed=701 epoch=0075/75 loss=2.452799
+Eval/train backbone=phikon variant=true_pair_current fold=1 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=1 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.844492
+pathoalign seed=702 epoch=0025/75 loss=2.598582
+pathoalign seed=702 epoch=0050/75 loss=2.499870
+pathoalign seed=702 epoch=0075/75 loss=2.456475
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=1 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.817272
+pathoalign seed=702 epoch=0025/75 loss=2.601483
+pathoalign seed=702 epoch=0050/75 loss=2.498220
+pathoalign seed=702 epoch=0075/75 loss=2.459194
+Eval/train backbone=phikon variant=true_pair_current fold=1 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=1 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.780495
+pathoalign seed=703 epoch=0025/75 loss=2.598561
+pathoalign seed=703 epoch=0050/75 loss=2.501597
+pathoalign seed=703 epoch=0075/75 loss=2.450238
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=1 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.769752
+pathoalign seed=703 epoch=0025/75 loss=2.595234
+pathoalign seed=703 epoch=0050/75 loss=2.502549
+pathoalign seed=703 epoch=0075/75 loss=2.453819
+Eval/train backbone=phikon variant=true_pair_current fold=1 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=1 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.771765
+pathoalign seed=704 epoch=0025/75 loss=2.598562
+pathoalign seed=704 epoch=0050/75 loss=2.501192
+pathoalign seed=704 epoch=0075/75 loss=2.449963
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=1 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.770716
+pathoalign seed=704 epoch=0025/75 loss=2.599908
+pathoalign seed=704 epoch=0050/75 loss=2.499562
+pathoalign seed=704 epoch=0075/75 loss=2.454790
+Eval/train backbone=phikon variant=true_pair_current fold=1 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=1 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.772155
+pathoalign seed=705 epoch=0025/75 loss=2.599932
+pathoalign seed=705 epoch=0050/75 loss=2.500673
+pathoalign seed=705 epoch=0075/75 loss=2.452737
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=1 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.753190
+pathoalign seed=705 epoch=0025/75 loss=2.599503
+pathoalign seed=705 epoch=0050/75 loss=2.496833
+pathoalign seed=705 epoch=0075/75 loss=2.452487
+Eval/train backbone=phikon variant=true_pair_current fold=2 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=2 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.713076
+pathoalign seed=701 epoch=0025/75 loss=2.593654
+pathoalign seed=701 epoch=0050/75 loss=2.498046
+pathoalign seed=701 epoch=0075/75 loss=2.453937
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=2 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.767619
+pathoalign seed=701 epoch=0025/75 loss=2.593602
+pathoalign seed=701 epoch=0050/75 loss=2.495652
+pathoalign seed=701 epoch=0075/75 loss=2.453428
+Eval/train backbone=phikon variant=true_pair_current fold=2 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=2 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.819176
+pathoalign seed=702 epoch=0025/75 loss=2.600385
+pathoalign seed=702 epoch=0050/75 loss=2.498190
+pathoalign seed=702 epoch=0075/75 loss=2.455447
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=2 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.797717
+pathoalign seed=702 epoch=0025/75 loss=2.600614
+pathoalign seed=702 epoch=0050/75 loss=2.498061
+pathoalign seed=702 epoch=0075/75 loss=2.456503
+Eval/train backbone=phikon variant=true_pair_current fold=2 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=2 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.770739
+pathoalign seed=703 epoch=0025/75 loss=2.603484
+pathoalign seed=703 epoch=0050/75 loss=2.498476
+pathoalign seed=703 epoch=0075/75 loss=2.455692
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=2 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.764805
+pathoalign seed=703 epoch=0025/75 loss=2.600533
+pathoalign seed=703 epoch=0050/75 loss=2.498764
+pathoalign seed=703 epoch=0075/75 loss=2.456930
+Eval/train backbone=phikon variant=true_pair_current fold=2 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=2 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.770664
+pathoalign seed=704 epoch=0025/75 loss=2.595466
+pathoalign seed=704 epoch=0050/75 loss=2.505442
+pathoalign seed=704 epoch=0075/75 loss=2.454138
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=2 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.767713
+pathoalign seed=704 epoch=0025/75 loss=2.598365
+pathoalign seed=704 epoch=0050/75 loss=2.504226
+pathoalign seed=704 epoch=0075/75 loss=2.455915
+Eval/train backbone=phikon variant=true_pair_current fold=2 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=2 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.738419
+pathoalign seed=705 epoch=0025/75 loss=2.605051
+pathoalign seed=705 epoch=0050/75 loss=2.502848
+pathoalign seed=705 epoch=0075/75 loss=2.460249
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=2 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.714381
+pathoalign seed=705 epoch=0025/75 loss=2.604605
+pathoalign seed=705 epoch=0050/75 loss=2.501425
+pathoalign seed=705 epoch=0075/75 loss=2.453698
+Eval/train backbone=phikon variant=true_pair_current fold=3 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=3 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.694227
+pathoalign seed=701 epoch=0025/75 loss=2.649452
+pathoalign seed=701 epoch=0050/75 loss=2.561974
+pathoalign seed=701 epoch=0075/75 loss=2.518908
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=3 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.752889
+pathoalign seed=701 epoch=0025/75 loss=2.649977
+pathoalign seed=701 epoch=0050/75 loss=2.560045
+pathoalign seed=701 epoch=0075/75 loss=2.517007
+Eval/train backbone=phikon variant=true_pair_current fold=3 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=3 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.818463
+pathoalign seed=702 epoch=0025/75 loss=2.634715
+pathoalign seed=702 epoch=0050/75 loss=2.553522
+pathoalign seed=702 epoch=0075/75 loss=2.513316
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=3 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.792254
+pathoalign seed=702 epoch=0025/75 loss=2.634727
+pathoalign seed=702 epoch=0050/75 loss=2.555438
+pathoalign seed=702 epoch=0075/75 loss=2.510480
+Eval/train backbone=phikon variant=true_pair_current fold=3 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=3 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.738076
+pathoalign seed=703 epoch=0025/75 loss=2.649420
+pathoalign seed=703 epoch=0050/75 loss=2.556662
+pathoalign seed=703 epoch=0075/75 loss=2.506597
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=3 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.734061
+pathoalign seed=703 epoch=0025/75 loss=2.648041
+pathoalign seed=703 epoch=0050/75 loss=2.554362
+pathoalign seed=703 epoch=0075/75 loss=2.507430
+Eval/train backbone=phikon variant=true_pair_current fold=3 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=3 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.731062
+pathoalign seed=704 epoch=0025/75 loss=2.654801
+pathoalign seed=704 epoch=0050/75 loss=2.559058
+pathoalign seed=704 epoch=0075/75 loss=2.507053
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=3 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.738905
+pathoalign seed=704 epoch=0025/75 loss=2.653523
+pathoalign seed=704 epoch=0050/75 loss=2.561067
+pathoalign seed=704 epoch=0075/75 loss=2.508694
+Eval/train backbone=phikon variant=true_pair_current fold=3 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=3 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.707065
+pathoalign seed=705 epoch=0025/75 loss=2.646694
+pathoalign seed=705 epoch=0050/75 loss=2.552693
+pathoalign seed=705 epoch=0075/75 loss=2.513636
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=3 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.690505
+pathoalign seed=705 epoch=0025/75 loss=2.650541
+pathoalign seed=705 epoch=0050/75 loss=2.549489
+pathoalign seed=705 epoch=0075/75 loss=2.513825
+Eval/train backbone=phikon variant=true_pair_current fold=4 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=4 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=4.680756
+pathoalign seed=701 epoch=0025/75 loss=2.647130
+pathoalign seed=701 epoch=0050/75 loss=2.559599
+pathoalign seed=701 epoch=0075/75 loss=2.511900
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=4 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=4.734472
+pathoalign seed=701 epoch=0025/75 loss=2.644051
+pathoalign seed=701 epoch=0050/75 loss=2.558109
+pathoalign seed=701 epoch=0075/75 loss=2.513569
+Eval/train backbone=phikon variant=true_pair_current fold=4 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=4 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.781355
+pathoalign seed=702 epoch=0025/75 loss=2.642088
+pathoalign seed=702 epoch=0050/75 loss=2.557746
+pathoalign seed=702 epoch=0075/75 loss=2.506237
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=4 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.755961
+pathoalign seed=702 epoch=0025/75 loss=2.643856
+pathoalign seed=702 epoch=0050/75 loss=2.555468
+pathoalign seed=702 epoch=0075/75 loss=2.507446
+Eval/train backbone=phikon variant=true_pair_current fold=4 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=4 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=4.721521
+pathoalign seed=703 epoch=0025/75 loss=2.642120
+pathoalign seed=703 epoch=0050/75 loss=2.552350
+pathoalign seed=703 epoch=0075/75 loss=2.513939
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=4 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=4.715668
+pathoalign seed=703 epoch=0025/75 loss=2.640166
+pathoalign seed=703 epoch=0050/75 loss=2.551086
+pathoalign seed=703 epoch=0075/75 loss=2.513600
+Eval/train backbone=phikon variant=true_pair_current fold=4 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=4 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.738342
+pathoalign seed=704 epoch=0025/75 loss=2.644329
+pathoalign seed=704 epoch=0050/75 loss=2.553968
+pathoalign seed=704 epoch=0075/75 loss=2.507279
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=4 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.742447
+pathoalign seed=704 epoch=0025/75 loss=2.649337
+pathoalign seed=704 epoch=0050/75 loss=2.550332
+pathoalign seed=704 epoch=0075/75 loss=2.509364
+Eval/train backbone=phikon variant=true_pair_current fold=4 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=phikon variant=acq_dim8_default fold=4 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=4.699889
+pathoalign seed=705 epoch=0025/75 loss=2.644460
+pathoalign seed=705 epoch=0050/75 loss=2.555497
+pathoalign seed=705 epoch=0075/75 loss=2.510820
+Eval/train backbone=phikon variant=acq_dim16_stronger_xcov fold=4 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=4.678995
+pathoalign seed=705 epoch=0025/75 loss=2.645366
+pathoalign seed=705 epoch=0050/75 loss=2.551502
+pathoalign seed=705 epoch=0075/75 loss=2.512391
+
+BACKBONE resnet50
+Loaded results\scorpion\features\fold_0_resnet50_imagenet.npz shape=(2400, 2048) model=resnet50_imagenet1k_v2
+Eval/train backbone=resnet50 variant=true_pair_current fold=0 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=0 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=5.075487
+pathoalign seed=701 epoch=0025/75 loss=2.897929
+pathoalign seed=701 epoch=0050/75 loss=2.732130
+pathoalign seed=701 epoch=0075/75 loss=2.656536
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=0 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=5.045966
+pathoalign seed=701 epoch=0025/75 loss=2.895401
+pathoalign seed=701 epoch=0050/75 loss=2.730014
+pathoalign seed=701 epoch=0075/75 loss=2.655355
+Eval/train backbone=resnet50 variant=true_pair_current fold=0 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=0 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=5.051006
+pathoalign seed=702 epoch=0025/75 loss=2.894031
+pathoalign seed=702 epoch=0050/75 loss=2.729352
+pathoalign seed=702 epoch=0075/75 loss=2.653778
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=0 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=5.039079
+pathoalign seed=702 epoch=0025/75 loss=2.897117
+pathoalign seed=702 epoch=0050/75 loss=2.727678
+pathoalign seed=702 epoch=0075/75 loss=2.651334
+Eval/train backbone=resnet50 variant=true_pair_current fold=0 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=0 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=5.065221
+pathoalign seed=703 epoch=0025/75 loss=2.900126
+pathoalign seed=703 epoch=0050/75 loss=2.729723
+pathoalign seed=703 epoch=0075/75 loss=2.654050
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=0 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=5.057496
+pathoalign seed=703 epoch=0025/75 loss=2.896210
+pathoalign seed=703 epoch=0050/75 loss=2.731684
+pathoalign seed=703 epoch=0075/75 loss=2.655276
+Eval/train backbone=resnet50 variant=true_pair_current fold=0 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=0 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=5.000951
+pathoalign seed=704 epoch=0025/75 loss=2.902162
+pathoalign seed=704 epoch=0050/75 loss=2.734514
+pathoalign seed=704 epoch=0075/75 loss=2.655830
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=0 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=5.039076
+pathoalign seed=704 epoch=0025/75 loss=2.898700
+pathoalign seed=704 epoch=0050/75 loss=2.732609
+pathoalign seed=704 epoch=0075/75 loss=2.653607
+Eval/train backbone=resnet50 variant=true_pair_current fold=0 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=0 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=5.063140
+pathoalign seed=705 epoch=0025/75 loss=2.894804
+pathoalign seed=705 epoch=0050/75 loss=2.736479
+pathoalign seed=705 epoch=0075/75 loss=2.656800
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=0 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=5.046283
+pathoalign seed=705 epoch=0025/75 loss=2.894052
+pathoalign seed=705 epoch=0050/75 loss=2.737098
+pathoalign seed=705 epoch=0075/75 loss=2.657147
+Eval/train backbone=resnet50 variant=true_pair_current fold=1 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=1 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=5.048470
+pathoalign seed=701 epoch=0025/75 loss=2.885673
+pathoalign seed=701 epoch=0050/75 loss=2.723157
+pathoalign seed=701 epoch=0075/75 loss=2.647393
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=1 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=5.008124
+pathoalign seed=701 epoch=0025/75 loss=2.884763
+pathoalign seed=701 epoch=0050/75 loss=2.722176
+pathoalign seed=701 epoch=0075/75 loss=2.648333
+Eval/train backbone=resnet50 variant=true_pair_current fold=1 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=1 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=5.008940
+pathoalign seed=702 epoch=0025/75 loss=2.882644
+pathoalign seed=702 epoch=0050/75 loss=2.721459
+pathoalign seed=702 epoch=0075/75 loss=2.648942
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=1 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=5.004140
+pathoalign seed=702 epoch=0025/75 loss=2.883076
+pathoalign seed=702 epoch=0050/75 loss=2.719879
+pathoalign seed=702 epoch=0075/75 loss=2.648064
+Eval/train backbone=resnet50 variant=true_pair_current fold=1 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=1 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=5.059964
+pathoalign seed=703 epoch=0025/75 loss=2.888372
+pathoalign seed=703 epoch=0050/75 loss=2.722602
+pathoalign seed=703 epoch=0075/75 loss=2.648787
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=1 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=5.046353
+pathoalign seed=703 epoch=0025/75 loss=2.887970
+pathoalign seed=703 epoch=0050/75 loss=2.724372
+pathoalign seed=703 epoch=0075/75 loss=2.647293
+Eval/train backbone=resnet50 variant=true_pair_current fold=1 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=1 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.994916
+pathoalign seed=704 epoch=0025/75 loss=2.896626
+pathoalign seed=704 epoch=0050/75 loss=2.720784
+pathoalign seed=704 epoch=0075/75 loss=2.646240
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=1 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=5.033141
+pathoalign seed=704 epoch=0025/75 loss=2.886051
+pathoalign seed=704 epoch=0050/75 loss=2.718745
+pathoalign seed=704 epoch=0075/75 loss=2.646289
+Eval/train backbone=resnet50 variant=true_pair_current fold=1 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=1 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=5.070267
+pathoalign seed=705 epoch=0025/75 loss=2.885324
+pathoalign seed=705 epoch=0050/75 loss=2.725389
+pathoalign seed=705 epoch=0075/75 loss=2.647732
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=1 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=5.051738
+pathoalign seed=705 epoch=0025/75 loss=2.885783
+pathoalign seed=705 epoch=0050/75 loss=2.720153
+pathoalign seed=705 epoch=0075/75 loss=2.649445
+Eval/train backbone=resnet50 variant=true_pair_current fold=2 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=2 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=5.063972
+pathoalign seed=701 epoch=0025/75 loss=2.895521
+pathoalign seed=701 epoch=0050/75 loss=2.731563
+pathoalign seed=701 epoch=0075/75 loss=2.655301
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=2 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=5.038043
+pathoalign seed=701 epoch=0025/75 loss=2.892946
+pathoalign seed=701 epoch=0050/75 loss=2.727659
+pathoalign seed=701 epoch=0075/75 loss=2.652373
+Eval/train backbone=resnet50 variant=true_pair_current fold=2 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=2 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=5.046246
+pathoalign seed=702 epoch=0025/75 loss=2.894971
+pathoalign seed=702 epoch=0050/75 loss=2.730050
+pathoalign seed=702 epoch=0075/75 loss=2.655618
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=2 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=5.028469
+pathoalign seed=702 epoch=0025/75 loss=2.894024
+pathoalign seed=702 epoch=0050/75 loss=2.729052
+pathoalign seed=702 epoch=0075/75 loss=2.653617
+Eval/train backbone=resnet50 variant=true_pair_current fold=2 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=2 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=5.065077
+pathoalign seed=703 epoch=0025/75 loss=2.898400
+pathoalign seed=703 epoch=0050/75 loss=2.732332
+pathoalign seed=703 epoch=0075/75 loss=2.652090
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=2 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=5.047925
+pathoalign seed=703 epoch=0025/75 loss=2.895945
+pathoalign seed=703 epoch=0050/75 loss=2.732997
+pathoalign seed=703 epoch=0075/75 loss=2.652159
+Eval/train backbone=resnet50 variant=true_pair_current fold=2 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=2 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.993971
+pathoalign seed=704 epoch=0025/75 loss=2.895121
+pathoalign seed=704 epoch=0050/75 loss=2.730750
+pathoalign seed=704 epoch=0075/75 loss=2.649884
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=2 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=5.034693
+pathoalign seed=704 epoch=0025/75 loss=2.898384
+pathoalign seed=704 epoch=0050/75 loss=2.731303
+pathoalign seed=704 epoch=0075/75 loss=2.650313
+Eval/train backbone=resnet50 variant=true_pair_current fold=2 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=2 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=5.074442
+pathoalign seed=705 epoch=0025/75 loss=2.892413
+pathoalign seed=705 epoch=0050/75 loss=2.731417
+pathoalign seed=705 epoch=0075/75 loss=2.655163
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=2 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=5.064533
+pathoalign seed=705 epoch=0025/75 loss=2.892207
+pathoalign seed=705 epoch=0050/75 loss=2.729895
+pathoalign seed=705 epoch=0075/75 loss=2.653876
+Eval/train backbone=resnet50 variant=true_pair_current fold=3 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=3 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=5.028889
+pathoalign seed=701 epoch=0025/75 loss=2.959029
+pathoalign seed=701 epoch=0050/75 loss=2.818639
+pathoalign seed=701 epoch=0075/75 loss=2.728562
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=3 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=5.002320
+pathoalign seed=701 epoch=0025/75 loss=2.958249
+pathoalign seed=701 epoch=0050/75 loss=2.814570
+pathoalign seed=701 epoch=0075/75 loss=2.726215
+Eval/train backbone=resnet50 variant=true_pair_current fold=3 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=3 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.986666
+pathoalign seed=702 epoch=0025/75 loss=2.977801
+pathoalign seed=702 epoch=0050/75 loss=2.778422
+pathoalign seed=702 epoch=0075/75 loss=2.714257
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=3 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.988877
+pathoalign seed=702 epoch=0025/75 loss=2.976288
+pathoalign seed=702 epoch=0050/75 loss=2.775764
+pathoalign seed=702 epoch=0075/75 loss=2.715256
+Eval/train backbone=resnet50 variant=true_pair_current fold=3 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=3 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=5.070476
+pathoalign seed=703 epoch=0025/75 loss=2.959052
+pathoalign seed=703 epoch=0050/75 loss=2.809399
+pathoalign seed=703 epoch=0075/75 loss=2.717802
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=3 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=5.058297
+pathoalign seed=703 epoch=0025/75 loss=2.958879
+pathoalign seed=703 epoch=0050/75 loss=2.772180
+pathoalign seed=703 epoch=0075/75 loss=2.717452
+Eval/train backbone=resnet50 variant=true_pair_current fold=3 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=3 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=4.974106
+pathoalign seed=704 epoch=0025/75 loss=2.956066
+pathoalign seed=704 epoch=0050/75 loss=2.823817
+pathoalign seed=704 epoch=0075/75 loss=2.705074
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=3 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=4.995808
+pathoalign seed=704 epoch=0025/75 loss=2.957115
+pathoalign seed=704 epoch=0050/75 loss=2.825080
+pathoalign seed=704 epoch=0075/75 loss=2.706204
+Eval/train backbone=resnet50 variant=true_pair_current fold=3 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=3 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=5.024881
+pathoalign seed=705 epoch=0025/75 loss=2.955707
+pathoalign seed=705 epoch=0050/75 loss=2.790315
+pathoalign seed=705 epoch=0075/75 loss=2.770553
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=3 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=5.000789
+pathoalign seed=705 epoch=0025/75 loss=2.958570
+pathoalign seed=705 epoch=0050/75 loss=2.789921
+pathoalign seed=705 epoch=0075/75 loss=2.735312
+Eval/train backbone=resnet50 variant=true_pair_current fold=4 seed=701 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=4 seed=701 acq_dim=8 xcov=0.05
+pathoalign seed=701 epoch=0001/75 loss=5.076014
+pathoalign seed=701 epoch=0025/75 loss=2.962588
+pathoalign seed=701 epoch=0050/75 loss=2.793768
+pathoalign seed=701 epoch=0075/75 loss=2.730373
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=4 seed=701 acq_dim=16 xcov=0.2
+pathoalign seed=701 epoch=0001/75 loss=5.050483
+pathoalign seed=701 epoch=0025/75 loss=2.959081
+pathoalign seed=701 epoch=0050/75 loss=2.798490
+pathoalign seed=701 epoch=0075/75 loss=2.728437
+Eval/train backbone=resnet50 variant=true_pair_current fold=4 seed=702 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=4 seed=702 acq_dim=8 xcov=0.05
+pathoalign seed=702 epoch=0001/75 loss=4.986243
+pathoalign seed=702 epoch=0025/75 loss=2.974596
+pathoalign seed=702 epoch=0050/75 loss=2.784750
+pathoalign seed=702 epoch=0075/75 loss=2.729269
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=4 seed=702 acq_dim=16 xcov=0.2
+pathoalign seed=702 epoch=0001/75 loss=4.979528
+pathoalign seed=702 epoch=0025/75 loss=2.976673
+pathoalign seed=702 epoch=0050/75 loss=2.787566
+pathoalign seed=702 epoch=0075/75 loss=2.714355
+Eval/train backbone=resnet50 variant=true_pair_current fold=4 seed=703 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=4 seed=703 acq_dim=8 xcov=0.05
+pathoalign seed=703 epoch=0001/75 loss=5.063725
+pathoalign seed=703 epoch=0025/75 loss=2.938998
+pathoalign seed=703 epoch=0050/75 loss=2.783312
+pathoalign seed=703 epoch=0075/75 loss=2.731377
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=4 seed=703 acq_dim=16 xcov=0.2
+pathoalign seed=703 epoch=0001/75 loss=5.043920
+pathoalign seed=703 epoch=0025/75 loss=2.941152
+pathoalign seed=703 epoch=0050/75 loss=2.784671
+pathoalign seed=703 epoch=0075/75 loss=2.725022
+Eval/train backbone=resnet50 variant=true_pair_current fold=4 seed=704 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=4 seed=704 acq_dim=8 xcov=0.05
+pathoalign seed=704 epoch=0001/75 loss=5.010785
+pathoalign seed=704 epoch=0025/75 loss=2.974263
+pathoalign seed=704 epoch=0050/75 loss=2.808240
+pathoalign seed=704 epoch=0075/75 loss=2.712043
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=4 seed=704 acq_dim=16 xcov=0.2
+pathoalign seed=704 epoch=0001/75 loss=5.043168
+pathoalign seed=704 epoch=0025/75 loss=2.974136
+pathoalign seed=704 epoch=0050/75 loss=2.808139
+pathoalign seed=704 epoch=0075/75 loss=2.711314
+Eval/train backbone=resnet50 variant=true_pair_current fold=4 seed=705 acq_dim=64 xcov=0.05
+Eval/train backbone=resnet50 variant=acq_dim8_default fold=4 seed=705 acq_dim=8 xcov=0.05
+pathoalign seed=705 epoch=0001/75 loss=5.075286
+pathoalign seed=705 epoch=0025/75 loss=2.944534
+pathoalign seed=705 epoch=0050/75 loss=2.780946
+pathoalign seed=705 epoch=0075/75 loss=2.755576
+Eval/train backbone=resnet50 variant=acq_dim16_stronger_xcov fold=4 seed=705 acq_dim=16 xcov=0.2
+pathoalign seed=705 epoch=0001/75 loss=5.053259
+pathoalign seed=705 epoch=0025/75 loss=2.957066
+pathoalign seed=705 epoch=0050/75 loss=2.783251
+pathoalign seed=705 epoch=0075/75 loss=2.734667
+
+Completed raw_rows=450 summary_rows=18 contrast_rows=12
+Validation checks passed.

@@ -1,0 +1,184 @@
+
+================================================================================
+2026-07-07 15:37:58
+COMMAND experiments\paired_acquisition\run_oldstyle_residual_branch_separation_audit.py
+
+Fold 0: fit=3305 test=720 samples=44 categories=7
+  Old-style scanner-centroid rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=1: keep scanner=0.7139 cat=0.3417; removed scanner=0.2375 cat=0.1666
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=2: keep scanner=0.5778 cat=0.3410; removed scanner=0.3514 cat=0.1753
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=3: keep scanner=0.4472 cat=0.3434; removed scanner=0.4514 cat=0.1801
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=4: keep scanner=0.2000 cat=0.3454; removed scanner=0.5014 cat=0.1793
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 1: fit=3080 test=945 samples=44 categories=7
+  Old-style scanner-centroid rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=1: keep scanner=0.7566 cat=0.3930; removed scanner=0.2931 cat=0.1414
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=2: keep scanner=0.6085 cat=0.3902; removed scanner=0.3503 cat=0.1407
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=3: keep scanner=0.4540 cat=0.3891; removed scanner=0.4603 cat=0.1968
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=4: keep scanner=0.2000 cat=0.3878; removed scanner=0.5291 cat=0.2037
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 2: fit=3300 test=725 samples=44 categories=7
+  Old-style scanner-centroid rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=1: keep scanner=0.7752 cat=0.4846; removed scanner=0.2828 cat=0.1868
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=2: keep scanner=0.5779 cat=0.4737; removed scanner=0.4000 cat=0.2517
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=3: keep scanner=0.4690 cat=0.4790; removed scanner=0.4593 cat=0.2910
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=4: keep scanner=0.2000 cat=0.4848; removed scanner=0.5228 cat=0.2912
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 3: fit=3245 test=780 samples=44 categories=7
+  Old-style scanner-centroid rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=1: keep scanner=0.8090 cat=0.4104; removed scanner=0.3090 cat=0.1568
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=2: keep scanner=0.6372 cat=0.4112; removed scanner=0.4051 cat=0.2264
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=3: keep scanner=0.4897 cat=0.4140; removed scanner=0.4731 cat=0.2743
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  oldstyle k=4: keep scanner=0.2000 cat=0.4163; removed scanner=0.5167 cat=0.2804
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 4: fit=3170 test=855 samples=44 categories=7
+  Old-style scanner-centroid rank: 4
+  oldstyle k=1: keep scanner=0.7813 cat=0.3690; removed scanner=0.2889 cat=0.1716
+  oldstyle k=2: keep scanner=0.6164 cat=0.3681; removed scanner=0.4304 cat=0.2507
+  oldstyle k=3: keep scanner=0.4760 cat=0.3678; removed scanner=0.5497 cat=0.2568
+  oldstyle k=4: keep scanner=0.2000 cat=0.3677; removed scanner=0.6222 cat=0.2558
+
+================================================================================
+OLD-STYLE RESIDUAL BRANCH-SEPARATION AUDIT COMPLETE
+Rows: 145
+Runtime: 159.6s
+Validation issues: 0
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_oldstyle_residual_branch_separation_audit\oldstyle_residual_branch_separation_report.md
+true_pair_biological: scanner=0.3614 category=0.3860
+true_pair_acquisition: scanner=0.8651 category=0.3456
+oldstyle_keep_k4: scanner=0.2000 category=0.4004
+oldstyle_removed_k4: scanner=0.5384 category=0.2421
