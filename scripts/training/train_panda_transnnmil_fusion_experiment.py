@@ -43,9 +43,7 @@ MODEL_TYPES = (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-type", choices=MODEL_TYPES, required=True)
-    parser.add_argument(
-        "--manifest", default="results/panda_manifest/panda_phikon_manifest.csv"
-    )
+    parser.add_argument("--manifest", default="results/panda_manifest/panda_phikon_manifest.csv")
     parser.add_argument("--out-dir", default="results/panda_transnnmil_fusion")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=8)
@@ -58,9 +56,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--val-fraction", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num-workers", type=int, default=0)
-    parser.add_argument(
-        "--device", default="cuda" if torch.cuda.is_available() else "cpu"
-    )
+    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--max-patches", type=int)
     parser.add_argument("--verify-read", action="store_true")
@@ -116,9 +112,7 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss(
         weight=class_weights(train_df["isup_grade"].tolist()).to(device)
     )
-    optimizer = torch.optim.AdamW(
-        model.parameters(), lr=args.lr, weight_decay=args.weight_decay
-    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     best_qwk = float("-inf")
     best_state = None
@@ -142,8 +136,7 @@ def main() -> None:
         if val_metrics["qwk"] > best_qwk:
             best_qwk = val_metrics["qwk"]
             best_state = {
-                name: tensor.detach().cpu()
-                for name, tensor in model.state_dict().items()
+                name: tensor.detach().cpu() for name, tensor in model.state_dict().items()
             }
 
     if best_state is None:
