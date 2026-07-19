@@ -1,0 +1,110 @@
+
+================================================================================
+2026-07-08 11:43:23
+BUILD UNIFIED SEPARATION SCOREBOARD
+  WARNING acquisition_bottleneck_frontier: Cannot read origin/experiment/acquisition-bottleneck-separation-frontier:results/paired_acquisition_factorization_acquisition_bottleneck_separation_frontier/bottleneck_frontier_summary.csv or a89bfb32:results/paired_acquisition_factorization_acquisition_bottleneck_separation_frontier/bottleneck_frontier_summary.csv: fatal: path 'results/paired_acquisition_factorization_acquisition_bottleneck_separation_frontier/bottleneck_frontier_summary.csv' does not exist in 'a89bfb32'
+  WARNING frontier_crossbackbone: 'representation'
+
+Scoreboard rows: 8
+Source entries: 10
+Validation issues: 9
+  - Missing core representation: acq_dim8_default_biological
+  - Missing core representation: acq_dim8_default_acquisition
+  - Missing core representation: acq_dim16_stronger_xcov_biological
+  - Missing core representation: acq_dim16_stronger_xcov_acquisition
+  - category_weighted_f1: 1 nonfinite values
+  - biological_scanner_leakage: 5 nonfinite values
+  - biological_category_preservation: 5 nonfinite values
+  - acquisition_scanner_capture: 5 nonfinite values
+  - acquisition_category_leakage: 5 nonfinite values
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Runtime: 0.2s
+
+================================================================================
+2026-07-08 11:46:01
+BUILD UNIFIED SEPARATION SCOREBOARD
+  oldstyle_residual: 7 rows
+  biological_label_preservation: pca_removal_k32 added
+  bottleneck_frontier: 4 rows
+  frontier_downstream: merged downstream metrics
+  WARNING frontier_crossbackbone: 'representation'
+
+Scoreboard rows: 12
+Source entries: 18
+Validation issues: 8
+  - category_weighted_f1: 1 nonfinite
+  - category_purity_k1: 1 nonfinite
+  - category_purity_k5: 1 nonfinite
+  - category_purity_k10: 1 nonfinite
+  - acquisition_scanner_capture: 7 nonfinite
+  - acquisition_category_leakage: 7 nonfinite
+  - biological_scanner_leakage: 7 nonfinite
+  - biological_category_preservation: 7 nonfinite
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Runtime: 0.1s
+
+================================================================================
+2026-07-08 11:47:24
+BUILD UNIFIED SEPARATION SCOREBOARD
+  oldstyle_residual: 7 rows
+  biological_label_preservation: pca_removal_k32 added
+  bottleneck_frontier: 4 rows
+  frontier_downstream: merged downstream metrics
+  frontier_crossbackbone: merged cross-backbone metrics
+
+Scoreboard rows: 12
+Source entries: 24
+Validation issues: 20
+  - category_weighted_f1: 1 nonfinite
+  - category_purity_k1: 1 nonfinite
+  - category_purity_k5: 1 nonfinite
+  - category_purity_k10: 1 nonfinite
+  - acquisition_scanner_capture: 7 nonfinite
+  - acquisition_category_leakage: 7 nonfinite
+  - biological_scanner_leakage: 6 nonfinite
+  - biological_category_preservation: 6 nonfinite
+  - scanner_heldout_balanced_acc: 6 nonfinite
+  - scanner_heldout_macro_f1: 6 nonfinite
+  - sample_disjoint_scanner_heldout_balanced_acc: 6 nonfinite
+  - sample_disjoint_scanner_heldout_macro_f1: 6 nonfinite
+  - scanner_confounded_balanced_acc: 6 nonfinite
+  - scanner_confounded_macro_f1: 6 nonfinite
+  - scorpion_dinov2_acquisition_pair_retrieval_leakage: 9 nonfinite
+  - scorpion_dinov2_acquisition_scanner_capture: 9 nonfinite
+  - scorpion_phikon_acquisition_pair_retrieval_leakage: 9 nonfinite
+  - scorpion_phikon_acquisition_scanner_capture: 9 nonfinite
+  - scorpion_resnet50_acquisition_pair_retrieval_leakage: 9 nonfinite
+  - scorpion_resnet50_acquisition_scanner_capture: 9 nonfinite
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Runtime: 0.2s
+
+================================================================================
+2026-07-08 11:47:55
+BUILD UNIFIED SEPARATION SCOREBOARD
+  oldstyle_residual: 7 rows
+  biological_label_preservation: pca_removal_k32 added
+  bottleneck_frontier: 4 rows
+  frontier_downstream: merged downstream metrics
+  frontier_crossbackbone: merged cross-backbone metrics
+
+Scoreboard rows: 12
+Source entries: 24
+Validation issues: 1
+  - category_weighted_f1: 1 nonfinite (unexpected)
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Runtime: 0.2s
+
+================================================================================
+2026-07-08 11:48:08
+BUILD UNIFIED SEPARATION SCOREBOARD
+  oldstyle_residual: 7 rows
+  biological_label_preservation: pca_removal_k32 added
+  bottleneck_frontier: 4 rows
+  frontier_downstream: merged downstream metrics
+  frontier_crossbackbone: merged cross-backbone metrics
+
+Scoreboard rows: 12
+Source entries: 24
+Validation issues: 0
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Runtime: 0.2s

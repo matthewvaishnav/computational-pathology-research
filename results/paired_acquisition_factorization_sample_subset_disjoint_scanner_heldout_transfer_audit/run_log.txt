@@ -1,0 +1,58 @@
+[2026-07-07 12:44:30] Sample-subset-disjoint scanner-heldout transfer audit started
+[2026-07-07 12:44:30]   smoke=False, skip_baselines=False
+[2026-07-07 12:44:30] Loaded fold-0 manifest: 4025 rows, 7 categories, 44 samples
+[2026-07-07 12:44:30] Held-out scanners: ['cs2', 'gt450', 'nz20', 'nz210', 'p1000']
+[2026-07-07 12:44:30] Seeds: [911, 912, 913, 914, 915], train_frac: 0.7
+[2026-07-07 12:44:30]   original_frozen_features held_out=cs2 seed=911 acc=0.3511 f1=0.3270 n_test=271
+[2026-07-07 12:44:31]   original_frozen_features held_out=cs2 seed=912 acc=0.4262 f1=0.3955 n_test=222
+[2026-07-07 12:44:31]   original_frozen_features held_out=cs2 seed=913 acc=0.3722 f1=0.3381 n_test=275
+[2026-07-07 12:44:31]   original_frozen_features held_out=cs2 seed=914 acc=0.2214 f1=0.2267 n_test=341
+[2026-07-07 12:44:32]   original_frozen_features held_out=cs2 seed=915 acc=0.3891 f1=0.3969 n_test=222
+[2026-07-07 12:44:33]   original_frozen_features held_out=gt450 seed=911 acc=0.3646 f1=0.3159 n_test=271
+[2026-07-07 12:44:33]   original_frozen_features held_out=gt450 seed=912 acc=0.3659 f1=0.3435 n_test=222
+[2026-07-07 12:44:34]   original_frozen_features held_out=gt450 seed=913 acc=0.3885 f1=0.3129 n_test=275
+[2026-07-07 12:44:34]   original_frozen_features held_out=gt450 seed=914 acc=0.2396 f1=0.2086 n_test=341
+[2026-07-07 12:44:35]   original_frozen_features held_out=gt450 seed=915 acc=0.3880 f1=0.3283 n_test=222
+[2026-07-07 12:44:35]   original_frozen_features held_out=nz20 seed=911 acc=0.3979 f1=0.3316 n_test=271
+[2026-07-07 12:44:36]   original_frozen_features held_out=nz20 seed=912 acc=0.4169 f1=0.3710 n_test=222
+[2026-07-07 12:44:36]   original_frozen_features held_out=nz20 seed=913 acc=0.4285 f1=0.4067 n_test=275
+[2026-07-07 12:44:36]   original_frozen_features held_out=nz20 seed=914 acc=0.2600 f1=0.2530 n_test=341
+[2026-07-07 12:44:37]   original_frozen_features held_out=nz20 seed=915 acc=0.4084 f1=0.4106 n_test=222
+[2026-07-07 12:44:37]   original_frozen_features held_out=nz210 seed=911 acc=0.3663 f1=0.3650 n_test=271
+[2026-07-07 12:44:38]   original_frozen_features held_out=nz210 seed=912 acc=0.3832 f1=0.3689 n_test=222
+[2026-07-07 12:44:38]   original_frozen_features held_out=nz210 seed=913 acc=0.4493 f1=0.4396 n_test=275
+[2026-07-07 12:44:39]   original_frozen_features held_out=nz210 seed=914 acc=0.2176 f1=0.2250 n_test=341
+[2026-07-07 12:44:39]   original_frozen_features held_out=nz210 seed=915 acc=0.3959 f1=0.4012 n_test=222
+[2026-07-07 12:44:39]   original_frozen_features held_out=p1000 seed=911 acc=0.3761 f1=0.3656 n_test=271
+[2026-07-07 12:44:41]   original_frozen_features held_out=p1000 seed=912 acc=0.3931 f1=0.3632 n_test=222
+[2026-07-07 12:44:41]   original_frozen_features held_out=p1000 seed=913 acc=0.3877 f1=0.3888 n_test=275
+[2026-07-07 12:44:41]   original_frozen_features held_out=p1000 seed=914 acc=0.2038 f1=0.2074 n_test=341
+[2026-07-07 12:44:42]   original_frozen_features held_out=p1000 seed=915 acc=0.3646 f1=0.3631 n_test=222
+[2026-07-07 12:44:42]   true_pair_biological held_out=cs2 mean_acc=0.3225 mean_f1=0.3013
+[2026-07-07 12:44:43]   true_pair_biological held_out=gt450 mean_acc=0.3302 mean_f1=0.3175
+[2026-07-07 12:44:44]   true_pair_biological held_out=nz20 mean_acc=0.3142 mean_f1=0.3060
+[2026-07-07 12:44:45]   true_pair_biological held_out=nz210 mean_acc=0.3180 mean_f1=0.2863
+[2026-07-07 12:44:45]   true_pair_biological held_out=p1000 mean_acc=0.3109 mean_f1=0.2991
+[2026-07-07 12:44:46]   true_pair_acquisition held_out=cs2 mean_acc=0.2675 mean_f1=0.2156
+[2026-07-07 12:44:47]   true_pair_acquisition held_out=gt450 mean_acc=0.2173 mean_f1=0.1680
+[2026-07-07 12:44:48]   true_pair_acquisition held_out=nz20 mean_acc=0.2890 mean_f1=0.2423
+[2026-07-07 12:44:48]   true_pair_acquisition held_out=nz210 mean_acc=0.2881 mean_f1=0.2319
+[2026-07-07 12:44:49]   true_pair_acquisition held_out=p1000 mean_acc=0.2509 mean_f1=0.2039
+[2026-07-07 12:44:51]   shuffled_sample_biological held_out=cs2 mean_acc=0.1829 mean_f1=0.1700
+[2026-07-07 12:44:52]   shuffled_sample_biological held_out=gt450 mean_acc=0.2317 mean_f1=0.2172
+[2026-07-07 12:44:53]   shuffled_sample_biological held_out=nz20 mean_acc=0.2544 mean_f1=0.2346
+[2026-07-07 12:44:55]   shuffled_sample_biological held_out=nz210 mean_acc=0.2287 mean_f1=0.2251
+[2026-07-07 12:44:56]   shuffled_sample_biological held_out=p1000 mean_acc=0.2311 mean_f1=0.2299
+[2026-07-07 12:44:57]   shuffled_sample_acquisition held_out=cs2 mean_acc=0.3335 mean_f1=0.2825
+[2026-07-07 12:44:57]   shuffled_sample_acquisition held_out=gt450 mean_acc=0.3096 mean_f1=0.2349
+[2026-07-07 12:44:58]   shuffled_sample_acquisition held_out=nz20 mean_acc=0.3521 mean_f1=0.2812
+[2026-07-07 12:44:59]   shuffled_sample_acquisition held_out=nz210 mean_acc=0.3451 mean_f1=0.3117
+[2026-07-07 12:44:59]   shuffled_sample_acquisition held_out=p1000 mean_acc=0.3143 mean_f1=0.2790
+[2026-07-07 12:45:26]   baselines done for held_out=cs2
+[2026-07-07 12:45:55]   baselines done for held_out=gt450
+[2026-07-07 12:46:24]   baselines done for held_out=nz20
+[2026-07-07 12:46:52]   baselines done for held_out=nz210
+[2026-07-07 12:47:11]   baselines done for held_out=p1000
+[2026-07-07 12:47:11] Total rows: 450
+[2026-07-07 12:47:11] Valid (non-empty) rows: 450
+[2026-07-07 12:47:12] Done in 161.6 s

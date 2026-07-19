@@ -1,0 +1,56 @@
+{
+  "architecture_note": "ScorpionProjection has a decoder (decoder.0, decoder.2) that maps concat(biological, acquisition) -> original feature space. Decoder weights are available in all checkpoints. We use both decoder-based feature-space reconstruction AND branch-space probe metrics for the swap audit.",
+  "backbone": "DINOv2-Base",
+  "branch": "experiment/acquisition-factor-swapping-audit",
+  "dataset": "external_multiscanner_caninescc",
+  "device": "cpu",
+  "experiment": "acquisition_factor_swapping_audit",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "max_swaps_per_type": 150,
+  "metrics": {
+    "acquisition_category_leakage": "fraction of swaps where category prediction matches acq source category",
+    "biological_scanner_leakage": "fraction of swaps where scanner prediction matches bio source scanner",
+    "category_preservation_rate": "fraction of swaps where category prediction matches bio source category",
+    "scanner_follow_rate": "fraction of swaps where scanner prediction matches acq source scanner"
+  },
+  "seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "swap_types": {
+    "A_same_sample_diff_scanner": "bio and acq from same sample/region, different scanners",
+    "B_same_category_diff_sample": "bio and acq from same category, different samples, different scanners",
+    "C_diff_category_diff_scanner": "bio and acq from different categories, different scanners",
+    "D_random_acquisition": "bio source fixed, acq source random"
+  },
+  "timestamp": "2026-07-08 13:48:22",
+  "variants": [
+    {
+      "acquisition_dim": 64,
+      "cross_covariance_weight": 0.05,
+      "name": "true_pair",
+      "source": "pair_integrity"
+    },
+    {
+      "acquisition_dim": 8,
+      "cross_covariance_weight": 0.05,
+      "name": "acq_dim8_default",
+      "source": "frontier"
+    },
+    {
+      "acquisition_dim": 16,
+      "cross_covariance_weight": 0.2,
+      "name": "acq_dim16_stronger_xcov",
+      "source": "frontier"
+    }
+  ]
+}

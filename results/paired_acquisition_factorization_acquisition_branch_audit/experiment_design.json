@@ -1,0 +1,25 @@
+{
+  "datasets": [
+    "SCORPION_DINOv2",
+    "canineSCC_DINOv2",
+    "SCORPION_Phikon",
+    "SCORPION_ResNet50"
+  ],
+  "metric_definitions": {
+    "biological_acquisition_cross_covariance": "RMS of cross-covariance matrix between branches",
+    "effective_rank": "exp(entropy) of SVD singular-value distribution",
+    "mean_paired_cosine": "mean cosine similarity between same-tissue cross-scanner region pairs",
+    "mean_top1_retrieval": "same-slide nearest-neighbor retrieval accuracy",
+    "scanner_probe_accuracy": "balanced accuracy of linear logistic regression predicting scanner_id"
+  },
+  "retraining_performed": false,
+  "reused_embeddings": true,
+  "smoke_test": false,
+  "source_result_dirs": [
+    "C:\\Users\\matth\\computational-pathology-research\\results\\paired_acquisition_factorization_pair_integrity_scorpion",
+    "C:\\Users\\matth\\computational-pathology-research\\results\\paired_acquisition_factorization_pair_integrity_caninescc",
+    "C:\\Users\\matth\\computational-pathology-research\\results\\paired_acquisition_factorization_pair_integrity_scorpion_phikon",
+    "C:\\Users\\matth\\computational-pathology-research\\results\\paired_acquisition_factorization_pair_integrity_scorpion_resnet50"
+  ],
+  "stage": "acquisition_branch_audit"
+}

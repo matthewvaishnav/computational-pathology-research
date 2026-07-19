@@ -1,0 +1,67 @@
+{
+  "branch": "experiment/oldstyle-residual-branch-separation-audit",
+  "columns": {
+    "label": "category_name",
+    "region": "region_id",
+    "sample": "sample_id",
+    "scanner": "scanner_id"
+  },
+  "command": "experiments\\paired_acquisition\\run_oldstyle_residual_branch_separation_audit.py",
+  "dataset": "canine_cutaneous_scc_dinov2",
+  "feature_path": "results\\external_multiscanner_caninescc\\features\\fold_0_dinov2_base.npz",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "k_values": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "neighborhood_k_values": [
+    1,
+    5,
+    10
+  ],
+  "oldstyle_split_formula": {
+    "basis": "Q_k = first k QR-orthonormalized scanner-centroid directions",
+    "centroid_direction": "mean(X_fit[scanner_id == s]) - mean(X_fit)",
+    "keep": "oldstyle_keep_k = X - oldstyle_removed_k",
+    "removed": "oldstyle_removed_k = X @ Q_k.T @ Q_k",
+    "standardization": "StandardScaler fit on all aligned frozen features, matching old linear_projection_k4 convention"
+  },
+  "pair_integrity_seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "representations": [
+    "original_frozen_features",
+    "true_pair_biological",
+    "true_pair_acquisition",
+    "shuffled_sample_biological",
+    "shuffled_sample_acquisition",
+    "oldstyle_keep_k1",
+    "oldstyle_removed_k1",
+    "oldstyle_keep_k2",
+    "oldstyle_removed_k2",
+    "oldstyle_keep_k3",
+    "oldstyle_removed_k3",
+    "oldstyle_keep_k4",
+    "oldstyle_removed_k4"
+  ],
+  "scanners": [
+    "cs2",
+    "gt450",
+    "nz20",
+    "nz210",
+    "p1000"
+  ],
+  "stage": "paired_acquisition_factorization_oldstyle_residual_branch_separation_audit"
+}

@@ -1,0 +1,15 @@
+[2026-07-04 16:09:42] Pair-structure boundary test started (smoke=False)
+[2026-07-04 16:09:42] Datasets: ['SCORPION_DINOv2', 'canineSCC_DINOv2']
+[2026-07-04 16:09:42] [SCORPION_DINOv2] Loading existing results from results\paired_acquisition_factorization_pair_integrity_scorpion
+[2026-07-04 16:09:57] [SCORPION_DINOv2]   Loaded 75 existing runs
+[2026-07-04 16:09:57] [SCORPION_DINOv2] Training new conditions: ['scanner_balanced_random_pairs', 'fully_random_pairs']
+[2026-07-04 16:09:58] [SCORPION_DINOv2]   Trained 50 new runs
+[2026-07-04 16:10:09] [SCORPION_DINOv2]   Evaluated 50 new runs
+[2026-07-04 16:10:09] [canineSCC_DINOv2] Loading existing results from results\paired_acquisition_factorization_pair_integrity_caninescc
+[2026-07-04 16:10:30] [canineSCC_DINOv2]   Loaded 75 existing runs
+[2026-07-04 16:10:30] [canineSCC_DINOv2] Category metadata available — adding ['same_category_different_sample_pairs']
+[2026-07-04 16:10:30] [canineSCC_DINOv2] Training new conditions: ['scanner_balanced_random_pairs', 'fully_random_pairs', 'same_category_different_sample_pairs']
+[2026-07-04 16:39:26] [canineSCC_DINOv2]   Trained 75 new runs
+[2026-07-04 16:39:47] [canineSCC_DINOv2]   Evaluated 75 new runs
+[2026-07-04 16:39:47] Total rows: 275
+[2026-07-04 16:39:47] Done in 1805.6 s

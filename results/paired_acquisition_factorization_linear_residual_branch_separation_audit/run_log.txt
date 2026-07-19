@@ -1,0 +1,210 @@
+
+================================================================================
+2026-07-07 14:03:33
+COMMAND experiments/paired_acquisition/run_linear_residual_branch_separation_audit.py --folds 0 --neural-seeds 911 --k-values 1 2 4
+
+Fold 0: fit=3305 test=720 categories=['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+  Scanner subspace rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+================================================================================
+LINEAR RESIDUAL BRANCH-SEPARATION AUDIT COMPLETE
+Rows: 11
+Runtime: 9.8s
+Validation issues: 0
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_linear_residual_branch_separation_audit\linear_residual_branch_separation_report.md
+
+true_pair_bio: scanner=0.3653 cat=0.3527
+true_pair_acq: scanner=0.8472 cat=0.3289
+linear_keep_k4: scanner=0.6583 cat=0.3471
+linear_removed_k4: scanner=0.8375 cat=0.1036
+
+================================================================================
+2026-07-07 14:03:57
+COMMAND experiments/paired_acquisition/run_linear_residual_branch_separation_audit.py
+
+Fold 0: fit=3305 test=720 categories=['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+  Scanner subspace rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 1: fit=3080 test=945 categories=['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+  Scanner subspace rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 2: fit=3300 test=725 categories=['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+  Scanner subspace rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 3: fit=3245 test=780 categories=['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+  Scanner subspace rank: 4
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+
+Fold 4: fit=3170 test=855 categories=['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+  Scanner subspace rank: 4
+
+================================================================================
+LINEAR RESIDUAL BRANCH-SEPARATION AUDIT COMPLETE
+Rows: 165
+Runtime: 130.6s
+Validation issues: 0
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_linear_residual_branch_separation_audit\linear_residual_branch_separation_report.md
+
+true_pair_bio: scanner=0.3614 cat=0.3860
+true_pair_acq: scanner=0.8651 cat=0.3456
+linear_keep_k4: scanner=0.7071 cat=0.4005
+linear_removed_k4: scanner=0.8574 cat=0.1366

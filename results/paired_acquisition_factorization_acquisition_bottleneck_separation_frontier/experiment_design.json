@@ -1,0 +1,184 @@
+{
+  "baseline_references": {
+    "oldstyle_keep_k4": {
+      "category_balanced_accuracy": 0.4004,
+      "scanner_balanced_accuracy": 0.2
+    },
+    "oldstyle_removed_k4": {
+      "category_balanced_accuracy": 0.2421,
+      "scanner_balanced_accuracy": 0.5384
+    },
+    "true_pair_acquisition": {
+      "category_balanced_accuracy": 0.3456,
+      "scanner_balanced_accuracy": 0.8651
+    },
+    "true_pair_biological": {
+      "category_balanced_accuracy": 0.386,
+      "scanner_balanced_accuracy": 0.3614
+    }
+  },
+  "branch": "experiment/acquisition-bottleneck-separation-frontier",
+  "columns": {
+    "label": "category_name",
+    "region": "region_id",
+    "sample": "sample_id",
+    "scanner": "scanner_id"
+  },
+  "command": "experiments\\paired_acquisition\\run_acquisition_bottleneck_separation_frontier.py",
+  "controllable_parameters": [
+    "acquisition_dim",
+    "biological_dim",
+    "hidden_dim",
+    "reconstruction_weight",
+    "variance_weight",
+    "covariance_weight",
+    "scanner_adversary_weight",
+    "scanner_acquisition_weight",
+    "scanner_dependence_weight",
+    "cross_covariance_weight",
+    "gradient_reversal_strength",
+    "fold",
+    "seed"
+  ],
+  "dataset": "canine_cutaneous_scc_dinov2",
+  "device": "cuda",
+  "epochs": 75,
+  "feature_path": "results\\external_multiscanner_caninescc\\features\\fold_0_dinov2_base.npz",
+  "full": {
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      911,
+      912,
+      913,
+      914,
+      915
+    ],
+    "variant_count": 2
+  },
+  "learning_rate": 0.0003,
+  "region_batch_size": 32,
+  "reuse_current_baseline": true,
+  "smoke": {
+    "fold": 0,
+    "seed": 0,
+    "variants": [
+      {
+        "acquisition_dim": 8,
+        "biological_dim": 256,
+        "covariance_weight": 0.01,
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "hidden_dim": 512,
+        "reconstruction_weight": 1.0,
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0,
+        "temperature": 0.1,
+        "variance_weight": 1.0,
+        "variant": "acq_dim8_default",
+        "variant_family": "acquisition_bottleneck"
+      },
+      {
+        "acquisition_dim": 16,
+        "biological_dim": 256,
+        "covariance_weight": 0.01,
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "hidden_dim": 512,
+        "reconstruction_weight": 1.0,
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0,
+        "temperature": 0.1,
+        "variance_weight": 1.0,
+        "variant": "acq_dim16_default",
+        "variant_family": "acquisition_bottleneck"
+      },
+      {
+        "acquisition_dim": 32,
+        "biological_dim": 256,
+        "covariance_weight": 0.01,
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "hidden_dim": 512,
+        "reconstruction_weight": 1.0,
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0,
+        "temperature": 0.1,
+        "variance_weight": 1.0,
+        "variant": "acq_dim32_default",
+        "variant_family": "acquisition_bottleneck"
+      },
+      {
+        "acquisition_dim": 64,
+        "biological_dim": 256,
+        "covariance_weight": 0.01,
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "hidden_dim": 512,
+        "reconstruction_weight": 1.0,
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0,
+        "temperature": 0.1,
+        "variance_weight": 1.0,
+        "variant": "acq_dim64_current",
+        "variant_family": "acquisition_bottleneck"
+      },
+      {
+        "acquisition_dim": 16,
+        "biological_dim": 256,
+        "covariance_weight": 0.01,
+        "cross_covariance_weight": 0.2,
+        "gradient_reversal_strength": 1.0,
+        "hidden_dim": 512,
+        "reconstruction_weight": 1.0,
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0,
+        "temperature": 0.1,
+        "variance_weight": 1.0,
+        "variant": "acq_dim16_stronger_xcov",
+        "variant_family": "acquisition_bottleneck_stronger_separation"
+      },
+      {
+        "acquisition_dim": 32,
+        "biological_dim": 256,
+        "covariance_weight": 0.01,
+        "cross_covariance_weight": 0.2,
+        "gradient_reversal_strength": 1.0,
+        "hidden_dim": 512,
+        "reconstruction_weight": 1.0,
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0,
+        "temperature": 0.1,
+        "variance_weight": 1.0,
+        "variant": "acq_dim32_stronger_xcov",
+        "variant_family": "acquisition_bottleneck_stronger_separation"
+      }
+    ]
+  },
+  "source_metadata": {
+    "amp": true,
+    "batch_size": 32,
+    "data_root": "C:\\Users\\matth\\computational-pathology-research\\data\\external_multiscanner_caninescc\\patches",
+    "device": "cuda",
+    "feature_dim": 768,
+    "manifest": "C:\\Users\\matth\\computational-pathology-research\\data\\external_multiscanner_caninescc\\patch_manifests\\splits\\fold_0_patch_manifest.csv",
+    "model": "dinov2_base",
+    "model_revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+    "model_source": "facebook/dinov2-base",
+    "n_images": 4025,
+    "torch_version": "2.5.1+cu121"
+  },
+  "stage": "acquisition_bottleneck_separation_frontier",
+  "weight_decay": 0.0001
+}
