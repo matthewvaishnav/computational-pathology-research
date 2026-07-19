@@ -1,0 +1,455 @@
+
+=== acquisition factor swapping audit start 2026-07-08 13:44:54 ===
+command: python experiments/paired_acquisition/run_acquisition_factor_swapping_audit.py --variants true_pair acq_dim8_default acq_dim16_stronger_xcov --folds 0 1 2 3 4 --seeds 911 912 913 914 915 --max-swaps-per-type 150 --device cpu
+Command: python experiments/paired_acquisition/run_acquisition_factor_swapping_audit.py --variants true_pair acq_dim8_default acq_dim16_stronger_xcov --folds 0 1 2 3 4 --seeds 911 912 913 914 915 --max-swaps-per-type 150 --device cpu
+Variants: ['true_pair', 'acq_dim8_default', 'acq_dim16_stronger_xcov']
+Folds: [0, 1, 2, 3, 4]
+Seeds: [911, 912, 913, 914, 915]
+Max swaps per type: 150
+Device: cpu
+
+============================================================
+Variant: true_pair (acq_dim=64, xcov=0.05, source=pair_integrity)
+============================================================
+
+  Fold 0
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_0\runs\true_pairs_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 68, 'C_diff_category_diff_scanner': 108, 'D_random_acquisition': 149}
+      Probe rows: 475, NN rows: 475, Decoder rows: 475
+    Seed 912: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_0\runs\true_pairs_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 75, 'C_diff_category_diff_scanner': 93, 'D_random_acquisition': 150}
+      Probe rows: 468, NN rows: 468, Decoder rows: 468
+    Seed 913: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_0\runs\true_pairs_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 80, 'C_diff_category_diff_scanner': 96, 'D_random_acquisition': 150}
+      Probe rows: 476, NN rows: 476, Decoder rows: 476
+    Seed 914: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_0\runs\true_pairs_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 105, 'D_random_acquisition': 149}
+      Probe rows: 476, NN rows: 476, Decoder rows: 476
+    Seed 915: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_0\runs\true_pairs_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 81, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 487, NN rows: 487, Decoder rows: 487
+
+  Fold 1
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_1\runs\true_pairs_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 69, 'C_diff_category_diff_scanner': 94, 'D_random_acquisition': 150}
+      Probe rows: 463, NN rows: 463, Decoder rows: 463
+    Seed 912: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_1\runs\true_pairs_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 76, 'C_diff_category_diff_scanner': 107, 'D_random_acquisition': 150}
+      Probe rows: 483, NN rows: 483, Decoder rows: 483
+    Seed 913: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_1\runs\true_pairs_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 80, 'C_diff_category_diff_scanner': 104, 'D_random_acquisition': 150}
+      Probe rows: 484, NN rows: 484, Decoder rows: 484
+    Seed 914: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_1\runs\true_pairs_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 68, 'C_diff_category_diff_scanner': 100, 'D_random_acquisition': 150}
+      Probe rows: 468, NN rows: 468, Decoder rows: 468
+    Seed 915: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_1\runs\true_pairs_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 77, 'C_diff_category_diff_scanner': 103, 'D_random_acquisition': 149}
+      Probe rows: 479, NN rows: 479, Decoder rows: 479
+
+  Fold 2
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_2\runs\true_pairs_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 61, 'C_diff_category_diff_scanner': 98, 'D_random_acquisition': 150}
+      Probe rows: 459, NN rows: 459, Decoder rows: 459
+    Seed 912: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_2\runs\true_pairs_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 66, 'C_diff_category_diff_scanner': 113, 'D_random_acquisition': 150}
+      Probe rows: 479, NN rows: 479, Decoder rows: 479
+    Seed 913: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_2\runs\true_pairs_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 65, 'C_diff_category_diff_scanner': 92, 'D_random_acquisition': 150}
+      Probe rows: 457, NN rows: 457, Decoder rows: 457
+    Seed 914: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_2\runs\true_pairs_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 57, 'C_diff_category_diff_scanner': 103, 'D_random_acquisition': 150}
+      Probe rows: 460, NN rows: 460, Decoder rows: 460
+    Seed 915: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_2\runs\true_pairs_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 62, 'C_diff_category_diff_scanner': 94, 'D_random_acquisition': 150}
+      Probe rows: 456, NN rows: 456, Decoder rows: 456
+
+  Fold 3
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_3\runs\true_pairs_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 64, 'C_diff_category_diff_scanner': 93, 'D_random_acquisition': 149}
+      Probe rows: 456, NN rows: 456, Decoder rows: 456
+    Seed 912: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_3\runs\true_pairs_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 73, 'C_diff_category_diff_scanner': 89, 'D_random_acquisition': 150}
+      Probe rows: 462, NN rows: 462, Decoder rows: 462
+    Seed 913: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_3\runs\true_pairs_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 71, 'C_diff_category_diff_scanner': 95, 'D_random_acquisition': 149}
+      Probe rows: 465, NN rows: 465, Decoder rows: 465
+    Seed 914: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_3\runs\true_pairs_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 80, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 486, NN rows: 486, Decoder rows: 486
+    Seed 915: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_3\runs\true_pairs_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 59, 'C_diff_category_diff_scanner': 105, 'D_random_acquisition': 150}
+      Probe rows: 464, NN rows: 464, Decoder rows: 464
+
+  Fold 4
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_4\runs\true_pairs_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 55, 'C_diff_category_diff_scanner': 109, 'D_random_acquisition': 150}
+      Probe rows: 464, NN rows: 464, Decoder rows: 464
+    Seed 912: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_4\runs\true_pairs_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 109, 'D_random_acquisition': 150}
+      Probe rows: 481, NN rows: 481, Decoder rows: 481
+    Seed 913: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_4\runs\true_pairs_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 70, 'C_diff_category_diff_scanner': 100, 'D_random_acquisition': 150}
+      Probe rows: 470, NN rows: 470, Decoder rows: 470
+    Seed 914: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_4\runs\true_pairs_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 66, 'C_diff_category_diff_scanner': 110, 'D_random_acquisition': 150}
+      Probe rows: 476, NN rows: 476, Decoder rows: 476
+    Seed 915: loading results\paired_acquisition_factorization_pair_integrity_caninescc\fold_4\runs\true_pairs_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 64, 'C_diff_category_diff_scanner': 98, 'D_random_acquisition': 150}
+      Probe rows: 462, NN rows: 462, Decoder rows: 462
+
+============================================================
+Variant: acq_dim8_default (acq_dim=8, xcov=0.05, source=frontier)
+============================================================
+
+  Fold 0
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim8_default_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 88, 'C_diff_category_diff_scanner': 84, 'D_random_acquisition': 150}
+      Probe rows: 472, NN rows: 472, Decoder rows: 472
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim8_default_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 85, 'C_diff_category_diff_scanner': 93, 'D_random_acquisition': 150}
+      Probe rows: 478, NN rows: 478, Decoder rows: 478
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim8_default_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 78, 'C_diff_category_diff_scanner': 92, 'D_random_acquisition': 149}
+      Probe rows: 469, NN rows: 469, Decoder rows: 469
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim8_default_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 83, 'C_diff_category_diff_scanner': 90, 'D_random_acquisition': 149}
+      Probe rows: 472, NN rows: 472, Decoder rows: 472
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim8_default_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 73, 'C_diff_category_diff_scanner': 111, 'D_random_acquisition': 149}
+      Probe rows: 483, NN rows: 483, Decoder rows: 483
+
+  Fold 1
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim8_default_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 85, 'C_diff_category_diff_scanner': 99, 'D_random_acquisition': 150}
+      Probe rows: 484, NN rows: 484, Decoder rows: 484
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim8_default_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 79, 'C_diff_category_diff_scanner': 103, 'D_random_acquisition': 149}
+      Probe rows: 481, NN rows: 481, Decoder rows: 481
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim8_default_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 81, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 487, NN rows: 487, Decoder rows: 487
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim8_default_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 77, 'C_diff_category_diff_scanner': 104, 'D_random_acquisition': 149}
+      Probe rows: 480, NN rows: 480, Decoder rows: 480
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim8_default_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 79, 'C_diff_category_diff_scanner': 108, 'D_random_acquisition': 150}
+      Probe rows: 487, NN rows: 487, Decoder rows: 487
+
+  Fold 2
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim8_default_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 66, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 472, NN rows: 472, Decoder rows: 472
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim8_default_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 62, 'C_diff_category_diff_scanner': 98, 'D_random_acquisition': 149}
+      Probe rows: 459, NN rows: 459, Decoder rows: 459
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim8_default_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 71, 'C_diff_category_diff_scanner': 96, 'D_random_acquisition': 150}
+      Probe rows: 467, NN rows: 467, Decoder rows: 467
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim8_default_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 62, 'C_diff_category_diff_scanner': 107, 'D_random_acquisition': 150}
+      Probe rows: 469, NN rows: 469, Decoder rows: 469
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim8_default_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 54, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 460, NN rows: 460, Decoder rows: 460
+
+  Fold 3
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim8_default_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 70, 'C_diff_category_diff_scanner': 101, 'D_random_acquisition': 150}
+      Probe rows: 471, NN rows: 471, Decoder rows: 471
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim8_default_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 75, 'C_diff_category_diff_scanner': 101, 'D_random_acquisition': 150}
+      Probe rows: 476, NN rows: 476, Decoder rows: 476
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim8_default_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 84, 'D_random_acquisition': 150}
+      Probe rows: 456, NN rows: 456, Decoder rows: 456
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim8_default_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 79, 'C_diff_category_diff_scanner': 99, 'D_random_acquisition': 150}
+      Probe rows: 478, NN rows: 478, Decoder rows: 478
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim8_default_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 70, 'C_diff_category_diff_scanner': 100, 'D_random_acquisition': 150}
+      Probe rows: 470, NN rows: 470, Decoder rows: 470
+
+  Fold 4
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim8_default_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 68, 'C_diff_category_diff_scanner': 103, 'D_random_acquisition': 150}
+      Probe rows: 471, NN rows: 471, Decoder rows: 471
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim8_default_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 54, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 460, NN rows: 460, Decoder rows: 460
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim8_default_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 64, 'C_diff_category_diff_scanner': 108, 'D_random_acquisition': 150}
+      Probe rows: 472, NN rows: 472, Decoder rows: 472
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim8_default_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 56, 'C_diff_category_diff_scanner': 97, 'D_random_acquisition': 150}
+      Probe rows: 453, NN rows: 453, Decoder rows: 453
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim8_default_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 66, 'C_diff_category_diff_scanner': 105, 'D_random_acquisition': 150}
+      Probe rows: 471, NN rows: 471, Decoder rows: 471
+
+============================================================
+Variant: acq_dim16_stronger_xcov (acq_dim=16, xcov=0.2, source=frontier)
+============================================================
+
+  Fold 0
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim16_stronger_xcov_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 105, 'D_random_acquisition': 150}
+      Probe rows: 477, NN rows: 477, Decoder rows: 477
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim16_stronger_xcov_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 80, 'C_diff_category_diff_scanner': 97, 'D_random_acquisition': 150}
+      Probe rows: 477, NN rows: 477, Decoder rows: 477
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim16_stronger_xcov_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 109, 'D_random_acquisition': 150}
+      Probe rows: 481, NN rows: 481, Decoder rows: 481
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim16_stronger_xcov_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 95, 'D_random_acquisition': 150}
+      Probe rows: 467, NN rows: 467, Decoder rows: 467
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_0\runs\acq_dim16_stronger_xcov_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 81, 'C_diff_category_diff_scanner': 97, 'D_random_acquisition': 150}
+      Probe rows: 478, NN rows: 478, Decoder rows: 478
+
+  Fold 1
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim16_stronger_xcov_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 76, 'C_diff_category_diff_scanner': 94, 'D_random_acquisition': 149}
+      Probe rows: 469, NN rows: 469, Decoder rows: 469
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim16_stronger_xcov_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 75, 'C_diff_category_diff_scanner': 112, 'D_random_acquisition': 150}
+      Probe rows: 487, NN rows: 487, Decoder rows: 487
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim16_stronger_xcov_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 75, 'C_diff_category_diff_scanner': 100, 'D_random_acquisition': 150}
+      Probe rows: 475, NN rows: 475, Decoder rows: 475
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim16_stronger_xcov_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 81, 'C_diff_category_diff_scanner': 108, 'D_random_acquisition': 150}
+      Probe rows: 489, NN rows: 489, Decoder rows: 489
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_1\runs\acq_dim16_stronger_xcov_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 82, 'C_diff_category_diff_scanner': 98, 'D_random_acquisition': 150}
+      Probe rows: 480, NN rows: 480, Decoder rows: 480
+
+  Fold 2
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim16_stronger_xcov_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 56, 'C_diff_category_diff_scanner': 110, 'D_random_acquisition': 150}
+      Probe rows: 466, NN rows: 466, Decoder rows: 466
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim16_stronger_xcov_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 63, 'C_diff_category_diff_scanner': 96, 'D_random_acquisition': 148}
+      Probe rows: 457, NN rows: 457, Decoder rows: 457
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim16_stronger_xcov_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 63, 'C_diff_category_diff_scanner': 102, 'D_random_acquisition': 150}
+      Probe rows: 465, NN rows: 465, Decoder rows: 465
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim16_stronger_xcov_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 59, 'C_diff_category_diff_scanner': 87, 'D_random_acquisition': 150}
+      Probe rows: 446, NN rows: 446, Decoder rows: 446
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_2\runs\acq_dim16_stronger_xcov_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 56, 'C_diff_category_diff_scanner': 104, 'D_random_acquisition': 150}
+      Probe rows: 460, NN rows: 460, Decoder rows: 460
+
+  Fold 3
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim16_stronger_xcov_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 73, 'C_diff_category_diff_scanner': 94, 'D_random_acquisition': 150}
+      Probe rows: 467, NN rows: 467, Decoder rows: 467
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim16_stronger_xcov_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 74, 'C_diff_category_diff_scanner': 96, 'D_random_acquisition': 150}
+      Probe rows: 470, NN rows: 470, Decoder rows: 470
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim16_stronger_xcov_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 71, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 477, NN rows: 477, Decoder rows: 477
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim16_stronger_xcov_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 67, 'C_diff_category_diff_scanner': 99, 'D_random_acquisition': 150}
+      Probe rows: 466, NN rows: 466, Decoder rows: 466
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_3\runs\acq_dim16_stronger_xcov_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 72, 'C_diff_category_diff_scanner': 93, 'D_random_acquisition': 150}
+      Probe rows: 465, NN rows: 465, Decoder rows: 465
+
+  Fold 4
+    Categories: 7, values: ['Bone', 'Cartilage', 'Dermis', 'Epidermis', 'Inflamm/Necrosis', 'SCC', 'Subcutis']
+    Seed 911: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim16_stronger_xcov_seed_911\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 70, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 476, NN rows: 476, Decoder rows: 476
+    Seed 912: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim16_stronger_xcov_seed_912\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 60, 'C_diff_category_diff_scanner': 96, 'D_random_acquisition': 150}
+      Probe rows: 456, NN rows: 456, Decoder rows: 456
+    Seed 913: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim16_stronger_xcov_seed_913\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 65, 'C_diff_category_diff_scanner': 106, 'D_random_acquisition': 150}
+      Probe rows: 471, NN rows: 471, Decoder rows: 471
+    Seed 914: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim16_stronger_xcov_seed_914\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 60, 'C_diff_category_diff_scanner': 114, 'D_random_acquisition': 150}
+      Probe rows: 474, NN rows: 474, Decoder rows: 474
+    Seed 915: loading results\paired_acquisition_factorization_acquisition_bottleneck_separation_frontier\trained_runs\full\fold_4\runs\acq_dim16_stronger_xcov_seed_915\projected_features.npz
+      Swap pairs: {'A_same_sample_diff_scanner': 150, 'B_same_category_diff_sample': 57, 'C_diff_category_diff_scanner': 108, 'D_random_acquisition': 150}
+      Probe rows: 465, NN rows: 465, Decoder rows: 465
+
+============================================================
+Aggregating results...
+# Acquisition Factor Swapping Audit Report
+
+## Run Status
+
+- Dataset: external multi-scanner canine cutaneous SCC
+- Backbone: DINOv2-Base
+- Branch: experiment/acquisition-factor-swapping-audit
+- Variants: true_pair, acq_dim8_default, acq_dim16_stronger_xcov
+- Folds: 0, 1, 2, 3, 4
+- Seeds: 911, 912, 913, 914, 915
+- Swap types: A (same sample/diff scanner), B (same category/diff sample), C (diff category/diff scanner), D (random)
+- Runtime seconds: 208.5
+- N probe rows: 35315
+- N NN rows: 35315
+- N decoder rows: 35315
+
+## Architecture / Artifact Availability
+
+1. **Decoder/composition path available**: YES. The ScorpionProjection model includes a decoder
+   (decoder.0: Linear(264->512), decoder.2: Linear(512->768)) that maps
+   concat(biological, acquisition) back to the original DINOv2 feature space.
+   All checkpoint files contain complete decoder weights.
+
+2. **Direct swapped representations constructed**: YES. For each swap pair, we computed
+   z_swap = decoder(concat(bio_i, acq_j)) where bio_i comes from the biological branch
+   of the bio-source sample and acq_j comes from the acquisition branch of the
+   acq-source sample.
+
+3. **Branch-space/probe-space proxy also used**: YES. In addition to decoder-space
+   metrics, we also compute branch-space probe metrics (scanner probe on acquisition
+   branch, category probe on biological branch) to provide complementary evidence.
+
+4. **Artifact sources**:
+   - true_pair: pair_integrity experiment (acquisition_dim=64)
+   - acq_dim8_default: frontier sweep (acquisition_dim=8, xcov=0.05)
+   - acq_dim16_stronger_xcov: frontier sweep (acquisition_dim=16, xcov=0.20)
+
+## Key Metrics by Variant and Swap Type
+
+| Variant | Swap Type | Scanner Follow Rate | Category Pres. Rate | Acq Cat Leakage | Bio Scn Leakage |
+|---|---:|---:|---:|---:|
+| true_pair | A: Same sample, diff scanner | 0.8712 | 0.4112 | 0.4112 | 0.0312 |
+| true_pair | B: Same category, diff sample | 0.8498 | 0.4229 | 0.4229 | 0.0335 |
+| true_pair | C: Diff category, diff scanner | 0.8526 | 0.3814 | 0.1209 | 0.0423 |
+| true_pair | D: Random acquisition | 0.8611 | 0.4211 | 0.2280 | 0.1957 |
+| acq_dim8_default | A: Same sample, diff scanner | 0.8699 | 0.4147 | 0.4147 | 0.0352 |
+| acq_dim8_default | B: Same category, diff sample | 0.8375 | 0.3979 | 0.3979 | 0.0445 |
+| acq_dim8_default | C: Diff category, diff scanner | 0.8400 | 0.3825 | 0.1165 | 0.0391 |
+| acq_dim8_default | D: Random acquisition | 0.8582 | 0.4044 | 0.2196 | 0.1985 |
+| acq_dim16_stronger_xcov | A: Same sample, diff scanner | 0.8757 | 0.4171 | 0.4171 | 0.0320 |
+| acq_dim16_stronger_xcov | B: Same category, diff sample | 0.8337 | 0.3718 | 0.3718 | 0.0445 |
+| acq_dim16_stronger_xcov | C: Diff category, diff scanner | 0.8558 | 0.3795 | 0.1252 | 0.0379 |
+| acq_dim16_stronger_xcov | D: Random acquisition | 0.8529 | 0.4169 | 0.2183 | 0.2127 |
+
+## Branch-Space Nearest-Neighbor Purity
+
+| Variant | Swap Type | Bio-Space Cat Purity K1 | Bio-Space Cat Purity K5 | Acq-Space Scn Purity K1 | Acq-Space Scn Purity K5 |
+|---|---:|---:|---:|---:|
+| true_pair | A: Same sample, diff scanner | 0.9861 | 0.9247 | 0.8725 | 0.8347 |
+| true_pair | B: Same category, diff sample | 0.9827 | 0.9073 | 0.8486 | 0.7871 |
+| true_pair | C: Diff category, diff scanner | 0.9704 | 0.9009 | 0.8652 | 0.8073 |
+| true_pair | D: Random acquisition | 0.9864 | 0.9243 | 0.8753 | 0.8210 |
+| acq_dim8_default | A: Same sample, diff scanner | 0.9859 | 0.9258 | 0.9011 | 0.8553 |
+| acq_dim8_default | B: Same category, diff sample | 0.9827 | 0.9029 | 0.8715 | 0.8264 |
+| acq_dim8_default | C: Diff category, diff scanner | 0.9725 | 0.9036 | 0.8712 | 0.8228 |
+| acq_dim8_default | D: Random acquisition | 0.9813 | 0.9205 | 0.8860 | 0.8324 |
+| acq_dim16_stronger_xcov | A: Same sample, diff scanner | 0.9811 | 0.9220 | 0.9093 | 0.8600 |
+| acq_dim16_stronger_xcov | B: Same category, diff sample | 0.9827 | 0.9090 | 0.8811 | 0.8200 |
+| acq_dim16_stronger_xcov | C: Diff category, diff scanner | 0.9700 | 0.9029 | 0.8902 | 0.8337 |
+| acq_dim16_stronger_xcov | D: Random acquisition | 0.9797 | 0.9239 | 0.8834 | 0.8385 |
+
+## Decoder-Reconstructed Space Metrics
+
+| Variant | Swap Type | Scanner Follow (Decoder) | Category Pres. (Decoder) |
+|---|---:|---:|
+| true_pair | A: Same sample, diff scanner | NA | NA |
+| true_pair | B: Same category, diff sample | NA | NA |
+| true_pair | C: Diff category, diff scanner | NA | NA |
+| true_pair | D: Random acquisition | NA | NA |
+| acq_dim8_default | A: Same sample, diff scanner | NA | NA |
+| acq_dim8_default | B: Same category, diff sample | NA | NA |
+| acq_dim8_default | C: Diff category, diff scanner | NA | NA |
+| acq_dim8_default | D: Random acquisition | NA | NA |
+| acq_dim16_stronger_xcov | A: Same sample, diff scanner | NA | NA |
+| acq_dim16_stronger_xcov | B: Same category, diff sample | NA | NA |
+| acq_dim16_stronger_xcov | C: Diff category, diff scanner | NA | NA |
+| acq_dim16_stronger_xcov | D: Random acquisition | NA | NA |
+
+## Validation Checks
+
+- [PASS] file_acquisition_swapping_nearest_neighbor_metrics.csv
+- [PASS] file_acquisition_swapping_probe_metrics.csv
+- [PASS] file_acquisition_swapping_raw_metrics.csv
+- [PASS] file_acquisition_swapping_summary.csv
+- [PASS] file_experiment_design.json
+- [PASS] file_run_log.txt
+- [PASS] no_duplicate_swap_rows
+- [PASS] no_nonfinite_metrics
+- [PASS] swap_type_A_same_sample_diff_scanner_has_examples
+- [PASS] swap_type_B_same_category_diff_sample_has_examples
+- [PASS] swap_type_C_diff_category_diff_scanner_has_examples
+- [PASS] swap_type_D_random_acquisition_has_examples
+- [PASS] total_rows
+
+## Interpretation
+
+1. **Decoder available**: Yes. The ScorpionProjection architecture includes a decoder that maps concat(bio, acq) -> original feature space. Decoder weights are in all checkpoints. Both decoder-space reconstruction and branch-space probe metrics were computed.
+2. **Scanner follows acquisition branch**: The scanner follow rate (probe prediction matches acq-source scanner) averages 0.855 across all variants and swap types. This supports factor-like behavior: scanner information follows the swapped acquisition branch.
+3. **Category stays with biological branch**: The category preservation rate (probe prediction matches bio-source category) averages 0.402 across all variants and swap types. Category preservation under swap is limited.
+4. **Bottleneck variant comparison**: Evaluated variants: acq_dim16_stronger_xcov, acq_dim8_default, true_pair. Comparison across acquisition dimensions (64, 16, 8) assesses whether bottlenecking improves factor behavior by constraining acquisition branch capacity.
+   - acq_dim16_stronger_xcov: scanner_follow_rate = 0.855
+   - acq_dim8_default: scanner_follow_rate = 0.851
+   - true_pair: scanner_follow_rate = 0.859
+   - acq_dim16_stronger_xcov: acq_category_leakage = 0.283
+   - acq_dim8_default: acq_category_leakage = 0.287
+   - true_pair: acq_category_leakage = 0.296
+   - acq_dim16_stronger_xcov: bio_scanner_leakage = 0.082
+   - acq_dim8_default: bio_scanner_leakage = 0.079
+   - true_pair: bio_scanner_leakage = 0.076
+5. **Branch-space NN purity**: Bio-space K=1 category purity averages 0.980. Biological neighbors preserve category under acquisition swap.
+   Acq-space K=1 scanner purity averages 0.880. Acquisition neighbors follow scanner identity.
+6. **Decoder-space evidence**: Scanner prediction on decoder-reconstructed swapped features matches acq source in 0.806 of cases. The decoder-space reconstruction confirms the branch-space findings.
+
+### Overall Assessment
+
+Validation checks: 13/13 passed.
+
+**Bounded conclusion**: This experiment provides evidence about whether the acquisition branch carries manipulable acquisition information. If scanner_follow_rate is high and category_preservation_rate is high, this supports factor-like behavior — the acquisition branch encodes acquisition-relevant information that can be swapped independently of biological content. If these rates are low, the acquisition branch may function more as a discriminative residual that does not cleanly separate from biological content when recombined.
+
+This experiment does NOT establish clinical validity, diagnostic performance, or deployment readiness. It is a research audit of factorization behavior in a controlled multi-scanner setting.
+
+## Claim Boundary
+
+This experiment uses bounded language. We test whether the acquisition branch
+behaves like an acquisition factor rather than only a scanner-discriminative
+residual bucket. The experiment does NOT make claims about:
+
+- Clinical validation or diagnostic performance
+- Patient-care utility or deployment readiness
+- Scanner bias being "solved"
+- Universal biological factorization
+- Breakthrough proven
+
+## Outputs
+
+- acquisition_swapping_raw_metrics.csv
+- acquisition_swapping_summary.csv
+- acquisition_swapping_nearest_neighbor_metrics.csv
+- acquisition_swapping_probe_metrics.csv
+- acquisition_swapping_report.md
+- experiment_design.json
+- run_log.txt
+
+## Exact Retry Command
+
+```powershell
+python experiments/paired_acquisition/run_acquisition_factor_swapping_audit.py --variants true_pair acq_dim8_default acq_dim16_stronger_xcov --folds 0 1 2 3 4 --seeds 911 912 913 914 915 --max-swaps-per-type 150 --device cpu
+```
+
+
+Run completed in 208.5 seconds

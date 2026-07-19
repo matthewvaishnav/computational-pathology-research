@@ -1,0 +1,68 @@
+{
+  "command": "experiments/paired_acquisition/run_linear_residual_branch_separation_audit.py",
+  "dataset": "canine_cutaneous_scc_dinov2",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "k_values": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "linear_representations": [
+    "linear_keep_k1",
+    "linear_keep_k2",
+    "linear_keep_k4",
+    "linear_keep_k8",
+    "linear_keep_k16",
+    "linear_keep_k32",
+    "linear_removed_k1",
+    "linear_removed_k2",
+    "linear_removed_k4",
+    "linear_removed_k8",
+    "linear_removed_k16",
+    "linear_removed_k32"
+  ],
+  "linear_split_formula": {
+    "basis": "SVD of centered logistic regression coefficient matrix",
+    "keep": "features - features @ basis[:N].T @ basis[:N]",
+    "removed": "features @ basis[:N].T @ basis[:N]"
+  },
+  "neighborhood_k_values": [
+    1,
+    5,
+    10
+  ],
+  "neural_representations": [
+    "true_pair_biological",
+    "true_pair_acquisition",
+    "shuffled_sample_biological",
+    "shuffled_sample_acquisition"
+  ],
+  "simple_representations": [
+    "original_frozen_features"
+  ],
+  "neighborhood_purity_storage": "Collocated in linear_residual_raw_metrics.csv and linear_residual_summary.csv. No separate linear_residual_neighborhood_purity.csv file exists.",
+  "pair_integrity_seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "scanners": [
+    "cs2",
+    "gt450",
+    "nz20",
+    "nz210",
+    "p1000"
+  ],
+  "stage": "paired_acquisition_factorization_linear_residual_branch_separation_audit"
+}

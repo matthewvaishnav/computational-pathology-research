@@ -1,0 +1,14 @@
+[2026-07-05 12:34:10] Pair-structure boundary test started (smoke=False)
+[2026-07-05 12:34:10] Datasets: ['SCORPION_Phikon', 'SCORPION_ResNet50']
+[2026-07-05 12:34:10] [SCORPION_Phikon] Loading existing results from results\paired_acquisition_factorization_pair_integrity_scorpion_phikon
+[2026-07-05 12:34:23] [SCORPION_Phikon]   Loaded 75 existing runs
+[2026-07-05 12:34:23] [SCORPION_Phikon] Training new conditions: ['scanner_balanced_random_pairs', 'fully_random_pairs']
+[2026-07-05 12:45:58] [SCORPION_Phikon]   Trained 50 new runs
+[2026-07-05 12:46:07] [SCORPION_Phikon]   Evaluated 50 new runs
+[2026-07-05 12:46:07] [SCORPION_ResNet50] Loading existing results from results\paired_acquisition_factorization_pair_integrity_scorpion_resnet50
+[2026-07-05 12:46:17] [SCORPION_ResNet50]   Loaded 75 existing runs
+[2026-07-05 12:46:17] [SCORPION_ResNet50] Training new conditions: ['scanner_balanced_random_pairs', 'fully_random_pairs']
+[2026-07-05 12:58:24] [SCORPION_ResNet50]   Trained 50 new runs
+[2026-07-05 12:58:32] [SCORPION_ResNet50]   Evaluated 50 new runs
+[2026-07-05 12:58:32] Total rows: 250
+[2026-07-05 12:58:32] Done in 1462.9 s

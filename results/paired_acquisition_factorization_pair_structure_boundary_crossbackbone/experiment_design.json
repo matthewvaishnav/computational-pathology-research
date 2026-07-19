@@ -1,0 +1,28 @@
+{
+  "conditions_tested": [
+    "fully_random_pairs",
+    "same_slide_different_region_pairs",
+    "scanner_balanced_random_pairs",
+    "shuffled_sample_pairs",
+    "true_same_region_pairs"
+  ],
+  "datasets": [
+    "SCORPION_Phikon",
+    "SCORPION_ResNet50"
+  ],
+  "existing_conditions_reused": true,
+  "ladder_definition": {
+    "fully_random_pairs": 4,
+    "same_category_different_sample_pairs": 2,
+    "same_slide_different_region_pairs": 1,
+    "scanner_balanced_random_pairs": 3,
+    "shuffled_sample_pairs": 2,
+    "true_same_region_pairs": 0
+  },
+  "new_conditions_trained": [
+    "fully_random_pairs",
+    "scanner_balanced_random_pairs"
+  ],
+  "smoke_test": false,
+  "stage": "pair_structure_boundary_test"
+}

@@ -1,0 +1,77 @@
+{
+  "command": "experiments/paired_acquisition/run_scanner_confounded_label_robustness_audit.py",
+  "confounding_retain_fractions": {
+    "mild": 0.6,
+    "moderate": 0.8,
+    "severe": 0.95
+  },
+  "confounding_seeds": [
+    2001,
+    2002,
+    2003,
+    2004,
+    2005
+  ],
+  "confounding_strengths": [
+    "mild",
+    "moderate",
+    "severe"
+  ],
+  "dataset": "canine_cutaneous_scc_dinov2",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "k_values": [
+    0,
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "pair_integrity_seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "representations": {
+    "neural": [
+      "true_pair_biological",
+      "true_pair_acquisition",
+      "shuffled_sample_biological",
+      "shuffled_sample_acquisition"
+    ],
+    "simple": [
+      "original_frozen_features",
+      "pca_removal_k0",
+      "pca_removal_k1",
+      "pca_removal_k2",
+      "pca_removal_k4",
+      "pca_removal_k8",
+      "pca_removal_k16",
+      "pca_removal_k32",
+      "linear_projection_k0",
+      "linear_projection_k1",
+      "linear_projection_k2",
+      "linear_projection_k4",
+      "linear_projection_k8",
+      "linear_projection_k16",
+      "linear_projection_k32"
+    ]
+  },
+  "scanners": [
+    "cs2",
+    "gt450",
+    "nz20",
+    "nz210",
+    "p1000"
+  ],
+  "stage": "paired_acquisition_factorization_scanner_confounded_label_robustness_audit"
+}

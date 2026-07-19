@@ -1,0 +1,59 @@
+
+================================================================================
+2026-07-07 14:53:29
+COMMAND experiments/paired_acquisition/run_linear_baseline_consistency_audit.py
+
+Fold 0: fit=3305 test=720
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  old_k4:        scanner=0.2000  cat=0.3403
+  new_keep_k4:   scanner=0.6583  cat=0.3492
+  old vs new cos_sim: 0.934557
+  old vs new L2 diff: 9.1731
+
+Fold 1: fit=3080 test=945
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  old_k4:        scanner=0.2000  cat=0.3996
+  new_keep_k4:   scanner=0.7196  cat=0.3872
+  old vs new cos_sim: 0.937544
+  old vs new L2 diff: 8.8346
+
+Fold 2: fit=3300 test=725
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  old_k4:        scanner=0.2000  cat=0.4829
+  new_keep_k4:   scanner=0.6772  cat=0.4866
+  old vs new cos_sim: 0.936783
+  old vs new L2 diff: 8.8378
+
+Fold 3: fit=3245 test=780
+C:\Users\matth\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\sklearn\metrics\_classification.py:2924: UserWarning: y_pred contains classes not in y_true
+  warnings.warn("y_pred contains classes not in y_true")
+  old_k4:        scanner=0.2000  cat=0.4214
+  new_keep_k4:   scanner=0.7154  cat=0.4155
+  old vs new cos_sim: 0.936782
+  old vs new L2 diff: 8.8473
+
+Fold 4: fit=3170 test=855
+  old_k4:        scanner=0.2000  cat=0.3633
+  new_keep_k4:   scanner=0.7649  cat=0.3671
+  old vs new cos_sim: 0.938187
+  old vs new L2 diff: 8.7513
+
+================================================================================
+LINEAR BASELINE CONSISTENCY AUDIT COMPLETE
+old scanner acc: 0.2000
+new scanner acc: 0.7071
+Match: False
+Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_linear_baseline_consistency_audit\linear_baseline_consistency_report.md

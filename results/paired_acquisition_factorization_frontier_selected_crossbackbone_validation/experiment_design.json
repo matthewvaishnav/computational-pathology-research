@@ -1,0 +1,133 @@
+{
+  "backbones": [
+    {
+      "backbone": "dinov2",
+      "dataset": "SCORPION",
+      "expected_feature_dim": 768,
+      "feature_path": "results\\scorpion\\features\\fold_0_dinov2_base.npz",
+      "reference_dir": "results\\paired_acquisition_factorization_pair_integrity_scorpion"
+    },
+    {
+      "backbone": "phikon",
+      "dataset": "SCORPION",
+      "expected_feature_dim": 768,
+      "feature_path": "results\\scorpion\\features\\fold_0_phikon.npz",
+      "reference_dir": "results\\paired_acquisition_factorization_pair_integrity_scorpion_phikon"
+    },
+    {
+      "backbone": "resnet50",
+      "dataset": "SCORPION",
+      "expected_feature_dim": 2048,
+      "feature_path": "results\\scorpion\\features\\fold_0_resnet50_imagenet.npz",
+      "reference_dir": "results\\paired_acquisition_factorization_pair_integrity_scorpion_resnet50"
+    }
+  ],
+  "branch": "experiment/frontier-selected-crossbackbone-validation",
+  "canine_reference": {
+    "acq_dim16_stronger_xcov_acquisition": {
+      "category_balanced_accuracy": 0.1689,
+      "scanner_balanced_accuracy": 0.8638
+    },
+    "acq_dim16_stronger_xcov_biological": {
+      "category_balanced_accuracy": 0.3824,
+      "scanner_balanced_accuracy": 0.3593
+    },
+    "acq_dim8_default_acquisition": {
+      "category_balanced_accuracy": 0.1598,
+      "scanner_balanced_accuracy": 0.8643
+    },
+    "acq_dim8_default_biological": {
+      "category_balanced_accuracy": 0.3852,
+      "scanner_balanced_accuracy": 0.3691
+    },
+    "backbone": "dinov2",
+    "dataset": "canine_scc",
+    "label_metrics_available": true,
+    "oldstyle_keep_k4": {
+      "category_balanced_accuracy": 0.4004,
+      "scanner_balanced_accuracy": 0.2
+    },
+    "true_pair_acquisition": {
+      "category_balanced_accuracy": 0.3456,
+      "scanner_balanced_accuracy": 0.8651
+    },
+    "true_pair_biological": {
+      "category_balanced_accuracy": 0.386,
+      "scanner_balanced_accuracy": 0.3614
+    }
+  },
+  "command": "experiments\\paired_acquisition\\run_frontier_selected_crossbackbone_validation.py",
+  "device": "cuda",
+  "epochs": 75,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "learning_rate": 0.0003,
+  "metric_boundary": "SCORPION has no biological labels in the frozen archives; use scanner probes and pair/tissue retrieval metrics there. Canine SCC DINOv2 is included as a fixed labeled reference from the preceding audits.",
+  "question": "Do acq_dim8_default and acq_dim16_stronger_xcov preserve the separation-frontier improvement outside canine SCC DINOv2?",
+  "region_batch_size": 32,
+  "seeds": [
+    701,
+    702,
+    703,
+    704,
+    705
+  ],
+  "smoke": false,
+  "stage": "frontier_selected_crossbackbone_validation",
+  "variants": [
+    {
+      "acquisition_dim": 64,
+      "biological_dim": 256,
+      "covariance_weight": 0.01,
+      "cross_covariance_weight": 0.05,
+      "gradient_reversal_strength": 1.0,
+      "hidden_dim": 512,
+      "reconstruction_weight": 1.0,
+      "scanner_acquisition_weight": 0.5,
+      "scanner_adversary_weight": 0.5,
+      "scanner_dependence_weight": 20.0,
+      "source_family": "existing_scorpion_true_pair_reference",
+      "temperature": 0.1,
+      "variance_weight": 1.0,
+      "variant": "true_pair_current"
+    },
+    {
+      "acquisition_dim": 8,
+      "biological_dim": 256,
+      "covariance_weight": 0.01,
+      "cross_covariance_weight": 0.05,
+      "gradient_reversal_strength": 1.0,
+      "hidden_dim": 512,
+      "reconstruction_weight": 1.0,
+      "scanner_acquisition_weight": 0.5,
+      "scanner_adversary_weight": 0.5,
+      "scanner_dependence_weight": 20.0,
+      "source_family": "frontier_bottleneck",
+      "temperature": 0.1,
+      "variance_weight": 1.0,
+      "variant": "acq_dim8_default"
+    },
+    {
+      "acquisition_dim": 16,
+      "biological_dim": 256,
+      "covariance_weight": 0.01,
+      "cross_covariance_weight": 0.2,
+      "gradient_reversal_strength": 1.0,
+      "hidden_dim": 512,
+      "reconstruction_weight": 1.0,
+      "scanner_acquisition_weight": 0.5,
+      "scanner_adversary_weight": 0.5,
+      "scanner_dependence_weight": 20.0,
+      "source_family": "frontier_bottleneck_stronger_separation",
+      "temperature": 0.1,
+      "variance_weight": 1.0,
+      "variant": "acq_dim16_stronger_xcov"
+    }
+  ],
+  "weight_decay": 0.0001
+}
