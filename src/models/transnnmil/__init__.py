@@ -1,17 +1,35 @@
-"""TransnnMIL v2.0 - 3-branch MIL architecture."""
+"""Public exports for the TransnnMIL model family.
 
-from src.models.transnnmil.adaptive_pruning import *
-from src.models.transnnmil.graph_cache import *
-from src.models.transnnmil.hierarchical_pooling import *
-from src.models.transnnmil.topology_branch import *
-from src.models.transnnmil.transnnmil import *
-from src.models.transnnmil.transnnmil_v2 import *
+Core TransnnMIL and fusion variants remain importable without optional graph
+packages. Topology-based v2 classes are exposed only when their dependencies are
+installed.
+"""
+
+from src.models.transnnmil.branch_token_fusion import (
+    BranchAttentionFusion,
+    BranchConcatFusion,
+    BranchGateFusion,
+)
+from src.models.transnnmil.transnnmil import TransnnMIL
+from src.models.transnnmil.transnnmil_branch_token import (
+    TransnnMILBranchAttentionExperimental,
+    TransnnMILConcatExperimental,
+    TransnnMILGateExperimental,
+)
 
 __all__ = [
-    "adaptive_pruning",
-    "graph_cache",
-    "hierarchical_pooling",
-    "topology_branch",
-    "transnnmil",
-    "transnnmil_v2",
+    "BranchAttentionFusion",
+    "BranchConcatFusion",
+    "BranchGateFusion",
+    "TransnnMIL",
+    "TransnnMILBranchAttentionExperimental",
+    "TransnnMILConcatExperimental",
+    "TransnnMILGateExperimental",
 ]
+
+try:
+    from src.models.transnnmil.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
+except ImportError:
+    pass
+else:
+    __all__.extend(["TransnnMILv2", "TransnnMILv2TwoBranch"])

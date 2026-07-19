@@ -1,0 +1,64 @@
+name: TransnnMIL fusion CI
+
+on:
+  pull_request:
+    paths:
+      - "src/models/factory.py"
+      - "src/models/transnnmil/**"
+      - "scripts/training/train_panda_transnnmil_fusion_experiment.py"
+      - "tests/models/test_branch_token_fusion.py"
+      - ".github/workflows/transnnmil-fusion-ci.yml"
+  push:
+    branches:
+      - research/fix-transnnmil-branch-fusion
+
+jobs:
+  fusion-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install targeted dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision scikit-learn pytest pytest-cov numpy torch-geometric black
+      - name: Compile changed Python modules
+        run: |
+          python -m py_compile \
+            src/models/factory.py \
+            src/models/transnnmil/branch_token_fusion.py \
+            src/models/transnnmil/transnnmil_branch_token.py \
+            scripts/training/train_panda_transnnmil_fusion_experiment.py
+      - name: Capture Black diff
+        continue-on-error: true
+        run: |
+          python -m black --diff \
+            src/models/factory.py \
+            src/models/transnnmil/__init__.py \
+            src/models/transnnmil/branch_token_fusion.py \
+            src/models/transnnmil/transnnmil_branch_token.py \
+            scripts/training/train_panda_transnnmil_fusion_experiment.py \
+            tests/models/test_branch_token_fusion.py > black.diff
+      - name: Run fusion regression suite
+        id: fusion-tests
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python -m pytest tests/models/test_branch_token_fusion.py -vv --tb=long \
+            --junitxml=fusion-pytest.xml 2>&1 | tee fusion-pytest.log
+      - name: Upload fusion diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transnnmil-fusion-diagnostics
+          path: |
+            fusion-pytest.log
+            fusion-pytest.xml
+            black.diff
+      - name: Fail when regression suite failed
+        if: steps.fusion-tests.outcome == 'failure'
+        run: exit 1
