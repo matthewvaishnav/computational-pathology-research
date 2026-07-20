@@ -21,8 +21,10 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Sequence
 
 from src.paired_acquisition_provenance import (
+    ALLOWED_ARTIFACT_KINDS,
     COMMIT_RE,
     RELEASE_SCHEMA_VERSION,
+    REQUIRED_ARTIFACT_ROLES,
     RUN_SCHEMA_VERSION,
     ProvenanceValidationError,
     compute_release_id,
@@ -49,7 +51,9 @@ def _json_safe(value: Any) -> Any:
     item = getattr(value, "item", None)
     if callable(item):
         return _json_safe(item())
-    return str(value)
+    raise ProvenanceValidationError(
+        f"unsupported value in provenance JSON: {type(value).__name__}"
+    )
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -71,6 +75,15 @@ def _require_regular_input(path: Path, label: str) -> Path:
 def _artifact_name(stem: str, source: Path) -> str:
     suffixes = "".join(source.suffixes)
     return f"{stem}{suffixes or '.bin'}"
+
+
+def _validate_destination_name(value: Any, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ProvenanceValidationError(f"{label} must be a non-empty string")
+    path = Path(value)
+    if path.name != value or value in {".", ".."} or "\\" in value:
+        raise ProvenanceValidationError(f"{label} must be a plain file name")
+    return value
 
 
 def current_git_commit(repo_root: Optional[Path] = None) -> str:
@@ -118,6 +131,7 @@ def write_single_run_release(
     run_log_payload: Mapping[str, Any],
     feature_metadata: Optional[Mapping[str, Any]] = None,
     checkpoint: Optional[Path] = None,
+    additional_artifacts: Optional[Sequence[Mapping[str, Any]]] = None,
     parents: Optional[Sequence[Mapping[str, str]]] = None,
     created_at: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -125,8 +139,8 @@ def write_single_run_release(
 
     The destination must not already exist. Inputs and outputs are copied into the
     release so validation never depends on mutable files outside the declared run
-    directory. When supplied, the model checkpoint is also copied, hashed, declared
-    as an output artifact, and cross-referenced from feature metadata.
+    directory. Optional additional artifacts must use unique roles and plain file
+    names; they are copied and checksum-bound in the run record.
     """
 
     output_dir = Path(output_dir)
@@ -146,6 +160,42 @@ def write_single_run_release(
     features = _require_regular_input(features, "features")
     if checkpoint is not None:
         checkpoint = _require_regular_input(checkpoint, "checkpoint")
+
+    prepared_additional = []
+    reserved_roles = set(REQUIRED_ARTIFACT_ROLES) | {"checkpoint"}
+    seen_roles = set()
+    seen_names = set()
+    for index, item in enumerate(additional_artifacts or []):
+        if not isinstance(item, Mapping):
+            raise ProvenanceValidationError(f"additional_artifacts[{index}] must be an object")
+        role = item.get("role")
+        if not isinstance(role, str) or not role:
+            raise ProvenanceValidationError(
+                f"additional_artifacts[{index}].role must be a non-empty string"
+            )
+        if role in reserved_roles or role in seen_roles:
+            raise ProvenanceValidationError(f"duplicate or reserved additional artifact role: {role}")
+        kind = item.get("kind")
+        if kind not in ALLOWED_ARTIFACT_KINDS:
+            raise ProvenanceValidationError(
+                f"additional artifact {role} has invalid kind: {kind}"
+            )
+        source = _require_regular_input(
+            Path(item.get("source", "")), f"additional artifact {role} source"
+        )
+        destination = _validate_destination_name(
+            item.get("path") or _artifact_name(role, source),
+            f"additional artifact {role} path",
+        )
+        if destination in seen_names:
+            raise ProvenanceValidationError(
+                f"duplicate additional artifact destination: {destination}"
+            )
+        seen_roles.add(role)
+        seen_names.add(destination)
+        prepared_additional.append(
+            {"role": role, "kind": kind, "source": source, "path": destination}
+        )
 
     safe_config = _json_safe(config_payload)
     safe_environment = _json_safe(environment_payload)
@@ -180,6 +230,26 @@ def write_single_run_release(
         source_name = _artifact_name("dataset_source", dataset_source)
         split_name = _artifact_name("split_manifest", split_manifest)
         feature_name = _artifact_name("features", features)
+        standard_names = {
+            source_name,
+            split_name,
+            feature_name,
+            "config.json",
+            "dataset_manifest.json",
+            "environment.json",
+            "feature_metadata.json",
+            "metrics.json",
+            "run_log.json",
+            "run_record.json",
+        }
+        if checkpoint is not None:
+            standard_names.add(_artifact_name("checkpoint", checkpoint))
+        collisions = sorted(standard_names & seen_names)
+        if collisions:
+            raise ProvenanceValidationError(
+                f"additional artifact paths collide with required files: {collisions}"
+            )
+
         shutil.copyfile(dataset_source, run_dir / source_name)
         shutil.copyfile(split_manifest, run_dir / split_name)
         shutil.copyfile(features, run_dir / feature_name)
@@ -190,6 +260,9 @@ def write_single_run_release(
             checkpoint_name = _artifact_name("checkpoint", checkpoint)
             shutil.copyfile(checkpoint, run_dir / checkpoint_name)
             checkpoint_sha256 = sha256_file(run_dir / checkpoint_name)
+
+        for artifact in prepared_additional:
+            shutil.copyfile(artifact["source"], run_dir / artifact["path"])
 
         copied_feature_sha256 = sha256_file(run_dir / feature_name)
         feature_payload = {
@@ -237,6 +310,10 @@ def write_single_run_release(
         ]
         if checkpoint_name is not None:
             artifact_spec.append(("checkpoint", checkpoint_name, "output"))
+        artifact_spec.extend(
+            (artifact["role"], artifact["path"], artifact["kind"])
+            for artifact in prepared_additional
+        )
         artifacts = [
             {
                 "kind": kind,
