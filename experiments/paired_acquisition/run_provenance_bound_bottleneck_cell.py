@@ -47,9 +47,7 @@ from src.paired_acquisition_release_writer import (  # noqa: E402
 
 
 def utc_now() -> str:
-    return (
-        datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def resolve_repo_path(path: Path) -> Path:
@@ -79,15 +77,12 @@ def require_clean_checkout() -> None:
             text=True,
         )
     except (FileNotFoundError, subprocess.CalledProcessError) as exc:
-        raise ProvenanceValidationError(
-            "unable to verify the producer working tree"
-        ) from exc
+        raise ProvenanceValidationError("unable to verify the producer working tree") from exc
     if result.stdout.strip():
         changed = result.stdout.strip().splitlines()
         preview = ", ".join(changed[:5])
         raise ProvenanceValidationError(
-            "producer checkout is not clean; commit or remove changes before running: "
-            + preview
+            "producer checkout is not clean; commit or remove changes before running: " + preview
         )
 
 
@@ -134,9 +129,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--region-batch-size", type=int, default=32)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
-    parser.add_argument(
-        "--device", default="cuda" if torch.cuda.is_available() else "cpu"
-    )
+    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--feature-path", type=Path, default=frontier.FEATURE_PATH)
     parser.add_argument("--manifests-dir", type=Path, default=frontier.MANIFESTS_DIR)
     parser.add_argument(
@@ -166,14 +159,10 @@ def main() -> None:
     if not feature_path.is_file():
         raise ProvenanceValidationError(f"missing real feature archive: {feature_path}")
     if not split_manifest.is_file():
-        raise ProvenanceValidationError(
-            f"missing real split manifest: {split_manifest}"
-        )
+        raise ProvenanceValidationError(f"missing real split manifest: {split_manifest}")
 
     frontier.canine_cross.patch_scanner_namespace()
-    base_features, base_frame, source_metadata = frontier.projection.load_archive(
-        feature_path
-    )
+    base_features, base_frame, source_metadata = frontier.projection.load_archive(feature_path)
     base_frame["scanner_id"] = base_frame["scanner_id"].astype(str).str.lower()
     if base_features.shape != (4025, 768):
         raise ProvenanceValidationError(
@@ -204,9 +193,7 @@ def main() -> None:
 
     started_at = utc_now()
     started = time.perf_counter()
-    with tempfile.TemporaryDirectory(
-        prefix="paired-acquisition-real-cell-"
-    ) as temporary:
+    with tempfile.TemporaryDirectory(prefix="paired-acquisition-real-cell-") as temporary:
         work_dir = Path(temporary)
         rows = frontier.run_single_variant(
             out_dir=work_dir,
@@ -242,13 +229,10 @@ def main() -> None:
             "training history": training_history_path,
             "pair assignments": pair_assignments_path,
         }
-        missing_outputs = [
-            label for label, path in required_outputs.items() if not path.is_file()
-        ]
+        missing_outputs = [label for label, path in required_outputs.items() if not path.is_file()]
         if missing_outputs:
             raise ProvenanceValidationError(
-                "real producer completed without required outputs: "
-                + ", ".join(missing_outputs)
+                "real producer completed without required outputs: " + ", ".join(missing_outputs)
             )
 
         biological, acquisition, projected_frame, projected_metadata = (
@@ -321,9 +305,7 @@ def main() -> None:
             "acquisition_shape": list(acquisition.shape),
             "projected_row_count": len(projected_frame),
             "columns": list(projected_frame.columns),
-            "contains_test_rows": bool(
-                projected_metadata.get("contains_test_rows", False)
-            ),
+            "contains_test_rows": bool(projected_metadata.get("contains_test_rows", False)),
             "fold": args.fold,
             "variant": variant.name,
         }
