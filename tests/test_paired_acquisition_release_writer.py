@@ -73,15 +73,17 @@ def build_release(tmp_path: Path) -> Path:
     return release_dir
 
 
-def test_real_producer_release_is_self_contained_and_checkpoint_bound(tmp_path: Path) -> None:
+def test_real_producer_release_is_self_contained_and_checkpoint_bound(
+    tmp_path: Path,
+) -> None:
     release_dir = build_release(tmp_path)
     summary = validate_release(release_dir / "release_manifest.json")
     run_id = summary["run_ids"][0]
     run_dir = release_dir / "runs" / run_id
 
-    feature_metadata = json.loads((run_dir / "feature_metadata.json").read_text(encoding="utf-8"))[
-        "payload"
-    ]
+    feature_metadata = json.loads(
+        (run_dir / "feature_metadata.json").read_text(encoding="utf-8")
+    )["payload"]
     assert feature_metadata["artifact_path"] == "features.npz"
     assert feature_metadata["checkpoint_path"] == "checkpoint.pt"
     assert feature_metadata["artifact_sha256"] != "0" * 64
@@ -108,7 +110,9 @@ def test_real_producer_release_is_self_contained_and_checkpoint_bound(tmp_path: 
 
 def test_real_producer_release_fails_after_artifact_corruption(tmp_path: Path) -> None:
     release_dir = build_release(tmp_path)
-    manifest = json.loads((release_dir / "release_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (release_dir / "release_manifest.json").read_text(encoding="utf-8")
+    )
     run_id = manifest["runs"][0]["run_id"]
     metrics_path = release_dir / "runs" / run_id / "metrics.json"
     metrics_path.write_text("{}\n", encoding="utf-8")
