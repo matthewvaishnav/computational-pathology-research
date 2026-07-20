@@ -247,8 +247,7 @@ def validate_full_run_records(rows: Sequence[Mapping[str, Any]]) -> list[dict[st
         target = expected[key]
         _exact_float(row.get("cross_covariance_weight"), target["cross_covariance_weight"], key)
         if any(
-            row.get(name) != target[name]
-            for name in ("acquisition_dim", "fold", "seed", "epochs")
+            row.get(name) != target[name] for name in ("acquisition_dim", "fold", "seed", "epochs")
         ):
             raise Error(f"locked full-factorial cell mismatch for {key}")
         observed[key] = row
@@ -408,8 +407,7 @@ def validate_full_factorial_release(manifest_path: Path) -> dict[str, Any]:
         raise Error(f"full-factorial release must contain {EXPECTED_FULL_RUN_COUNT} runs")
     root = manifest_path.parent
     inspected = [
-        _inspect_full_run_dir(root / "runs" / run_id, run_id)
-        for run_id in summary["run_ids"]
+        _inspect_full_run_dir(root / "runs" / run_id, run_id) for run_id in summary["run_ids"]
     ]
     rows = validate_full_run_records(inspected)
 
