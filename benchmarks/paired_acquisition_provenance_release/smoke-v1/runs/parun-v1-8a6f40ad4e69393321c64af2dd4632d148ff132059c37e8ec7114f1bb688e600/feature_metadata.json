@@ -1,0 +1,13 @@
+{
+  "payload": {
+    "artifact_path": "features.csv",
+    "artifact_sha256": "0f0e662d69799d07b81754fb3948c7d5678f1e29dcc0b9704a3673c3a5084d40",
+    "columns": [
+      "sample_id",
+      "bio_0",
+      "acq_0"
+    ],
+    "format": "csv"
+  },
+  "run_id": "parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600"
+}

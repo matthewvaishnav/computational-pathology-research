@@ -1,0 +1,14 @@
+{
+  "payload": {
+    "dataset_name": "paired-acquisition-synthetic-smoke",
+    "source": {
+      "path": "dataset_source.txt",
+      "sha256": "701da2098d4fd8777395e9be550142f1e1798751b1a8050e570e01b6b41d2d95"
+    },
+    "split_manifest": {
+      "path": "split_manifest.csv",
+      "sha256": "3dcfca8da2b0222665aee537c51c8ead5d51c6920b3be511b557ed62f4bd080d"
+    }
+  },
+  "run_id": "parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600"
+}

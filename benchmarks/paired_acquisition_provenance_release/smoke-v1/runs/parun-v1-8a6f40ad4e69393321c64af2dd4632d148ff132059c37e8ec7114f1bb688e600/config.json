@@ -1,0 +1,8 @@
+{
+  "payload": {
+    "bottleneck_dimension": 2,
+    "cross_covariance_weight": 0.1,
+    "epochs": 1
+  },
+  "run_id": "parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600"
+}

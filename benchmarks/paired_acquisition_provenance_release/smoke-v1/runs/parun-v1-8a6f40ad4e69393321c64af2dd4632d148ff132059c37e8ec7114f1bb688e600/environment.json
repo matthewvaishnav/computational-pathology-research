@@ -1,0 +1,8 @@
+{
+  "payload": {
+    "implementation": "CPython",
+    "platform": "synthetic-smoke",
+    "python": "3.10"
+  },
+  "run_id": "parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600"
+}
