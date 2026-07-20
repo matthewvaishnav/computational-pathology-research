@@ -16,7 +16,7 @@ projections, and refuses to publish a release unless:
   are present;
 - training emits both biological and acquisition branches;
 - every required metric is finite;
-- projected features and the checkpoint both exist;
+- projected features, checkpoint, pair assignments, and training history exist;
 - the completed release passes the fail-closed validator.
 
 ## Bound inputs and outputs
@@ -25,12 +25,13 @@ Each successful release copies and hashes:
 
 - the source DINOv2 feature archive;
 - the fold-specific patch/split manifest;
-- the exact configuration payload;
+- the exact generated pair-assignment table used by the cell;
+- the exact configuration payload, including the pair-assignment SHA-256;
 - Python, platform, NumPy, pandas, scikit-learn, PyTorch, CUDA, and device
   metadata;
 - the producer command, seed, and exact 40-character Git commit;
 - projected biological/acquisition features;
-- the model checkpoint;
+- the model checkpoint and training-history table;
 - branch-level metrics and the producer run log.
 
 The release writer derives one immutable `parun-v1-*` identifier, writes all
