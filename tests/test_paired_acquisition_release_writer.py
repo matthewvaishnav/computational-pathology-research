@@ -17,10 +17,14 @@ def build_release(tmp_path: Path) -> Path:
     split_manifest = tmp_path / "fold_0_patch_manifest.csv"
     projected_features = tmp_path / "projected_features.npz"
     checkpoint = tmp_path / "checkpoint.pt"
+    pair_assignments = tmp_path / "pair_assignments.csv"
+    training_history = tmp_path / "training_history.csv"
     dataset_source.write_bytes(b"source-feature-archive\n")
     split_manifest.write_text("sample_id,split\ns1,train\ns2,test\n", encoding="utf-8")
     projected_features.write_bytes(b"projected-feature-archive\n")
     checkpoint.write_bytes(b"model-checkpoint\n")
+    pair_assignments.write_text("sample_id,pair_id\ns1,p1\ns2,p1\n", encoding="utf-8")
+    training_history.write_text("epoch,loss\n1,0.5\n", encoding="utf-8")
 
     release_dir = tmp_path / "release"
     summary = write_single_run_release(
@@ -39,6 +43,20 @@ def build_release(tmp_path: Path) -> Path:
         environment_payload={"python": "3.10", "torch": "fixture"},
         features=projected_features,
         checkpoint=checkpoint,
+        additional_artifacts=[
+            {
+                "role": "pair_assignments",
+                "kind": "metadata",
+                "source": pair_assignments,
+                "path": "pair_assignments.csv",
+            },
+            {
+                "role": "training_history",
+                "kind": "output",
+                "source": training_history,
+                "path": "training_history.csv",
+            },
+        ],
         metrics_payload={"biological_scanner_accuracy": 0.2},
         run_log_payload={"events": [{"event": "complete"}]},
         feature_metadata={
@@ -70,8 +88,10 @@ def test_real_producer_release_is_self_contained_and_checkpoint_bound(tmp_path: 
 
     record = json.loads((run_dir / "run_record.json").read_text(encoding="utf-8"))
     roles = {artifact["role"] for artifact in record["artifacts"]}
-    assert "checkpoint" in roles
     assert {
+        "checkpoint",
+        "pair_assignments",
+        "training_history",
         "config",
         "dataset_manifest",
         "dataset_source",
@@ -82,6 +102,8 @@ def test_real_producer_release_is_self_contained_and_checkpoint_bound(tmp_path: 
         "run_log",
         "split_manifest",
     }.issubset(roles)
+    assert (run_dir / "pair_assignments.csv").is_file()
+    assert (run_dir / "training_history.csv").is_file()
 
 
 def test_real_producer_release_fails_after_artifact_corruption(tmp_path: Path) -> None:
