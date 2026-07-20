@@ -11,11 +11,15 @@ on:
       - "docs/research/paired-acquisition-factorial-preregistration.md"
       - "experiments/paired_acquisition/run_provenance_bound_bottleneck_cell.py"
       - "experiments/paired_acquisition/run_provenance_bound_factorial_smoke.py"
+      - "experiments/paired_acquisition/run_provenance_bound_factorial_full.py"
+      - "results/paired_acquisition_factorial/.gitignore"
       - "scripts/provenance/**"
       - "src/paired_acquisition_factorial.py"
+      - "src/paired_acquisition_factorial_full.py"
       - "src/paired_acquisition_provenance.py"
       - "src/paired_acquisition_release_writer.py"
       - "tests/test_paired_acquisition_factorial.py"
+      - "tests/test_paired_acquisition_factorial_full.py"
       - "tests/test_paired_acquisition_provenance.py"
       - "tests/test_paired_acquisition_release_writer.py"
   push:
@@ -28,11 +32,15 @@ on:
       - "docs/research/paired-acquisition-factorial-preregistration.md"
       - "experiments/paired_acquisition/run_provenance_bound_bottleneck_cell.py"
       - "experiments/paired_acquisition/run_provenance_bound_factorial_smoke.py"
+      - "experiments/paired_acquisition/run_provenance_bound_factorial_full.py"
+      - "results/paired_acquisition_factorial/.gitignore"
       - "scripts/provenance/**"
       - "src/paired_acquisition_factorial.py"
+      - "src/paired_acquisition_factorial_full.py"
       - "src/paired_acquisition_provenance.py"
       - "src/paired_acquisition_release_writer.py"
       - "tests/test_paired_acquisition_factorial.py"
+      - "tests/test_paired_acquisition_factorial_full.py"
       - "tests/test_paired_acquisition_provenance.py"
       - "tests/test_paired_acquisition_release_writer.py"
 
@@ -57,12 +65,16 @@ jobs:
           python -m py_compile
           src/paired_acquisition_release_writer.py
           src/paired_acquisition_factorial.py
+          src/paired_acquisition_factorial_full.py
           experiments/paired_acquisition/run_provenance_bound_bottleneck_cell.py
           experiments/paired_acquisition/run_provenance_bound_factorial_smoke.py
+          experiments/paired_acquisition/run_provenance_bound_factorial_full.py
           scripts/provenance/validate_paired_acquisition_factorial_release.py
+          scripts/provenance/validate_paired_acquisition_factorial_full_release.py
       - name: Run fail-closed contract tests
         run: >-
           pytest -q -o addopts=''
           tests/test_paired_acquisition_provenance.py
           tests/test_paired_acquisition_release_writer.py
           tests/test_paired_acquisition_factorial.py
+          tests/test_paired_acquisition_factorial_full.py
