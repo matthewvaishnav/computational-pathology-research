@@ -117,6 +117,7 @@ def write_single_run_release(
     metrics_payload: Mapping[str, Any],
     run_log_payload: Mapping[str, Any],
     feature_metadata: Optional[Mapping[str, Any]] = None,
+    checkpoint: Optional[Path] = None,
     parents: Optional[Sequence[Mapping[str, str]]] = None,
     created_at: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -124,7 +125,8 @@ def write_single_run_release(
 
     The destination must not already exist. Inputs and outputs are copied into the
     release so validation never depends on mutable files outside the declared run
-    directory.
+    directory. When supplied, the model checkpoint is also copied, hashed, declared
+    as an output artifact, and cross-referenced from feature metadata.
     """
 
     output_dir = Path(output_dir)
@@ -142,6 +144,8 @@ def write_single_run_release(
     dataset_source = _require_regular_input(dataset_source, "dataset_source")
     split_manifest = _require_regular_input(split_manifest, "split_manifest")
     features = _require_regular_input(features, "features")
+    if checkpoint is not None:
+        checkpoint = _require_regular_input(checkpoint, "checkpoint")
 
     safe_config = _json_safe(config_payload)
     safe_environment = _json_safe(environment_payload)
@@ -180,7 +184,28 @@ def write_single_run_release(
         shutil.copyfile(split_manifest, run_dir / split_name)
         shutil.copyfile(features, run_dir / feature_name)
 
+        checkpoint_name = None
+        checkpoint_sha256 = None
+        if checkpoint is not None:
+            checkpoint_name = _artifact_name("checkpoint", checkpoint)
+            shutil.copyfile(checkpoint, run_dir / checkpoint_name)
+            checkpoint_sha256 = sha256_file(run_dir / checkpoint_name)
+
         copied_feature_sha256 = sha256_file(run_dir / feature_name)
+        feature_payload = {
+            **_json_safe(dict(feature_metadata or {})),
+            "artifact_path": feature_name,
+            "artifact_sha256": copied_feature_sha256,
+            "format": features.suffix.lstrip(".") or "binary",
+        }
+        if checkpoint_name is not None:
+            feature_payload.update(
+                {
+                    "checkpoint_path": checkpoint_name,
+                    "checkpoint_sha256": checkpoint_sha256,
+                }
+            )
+
         documents = {
             "config.json": {"run_id": run_id, "payload": safe_config},
             "dataset_manifest.json": {
@@ -192,15 +217,7 @@ def write_single_run_release(
                 },
             },
             "environment.json": {"run_id": run_id, "payload": safe_environment},
-            "feature_metadata.json": {
-                "run_id": run_id,
-                "payload": {
-                    "artifact_path": feature_name,
-                    "artifact_sha256": copied_feature_sha256,
-                    "format": features.suffix.lstrip(".") or "binary",
-                    **_json_safe(dict(feature_metadata or {})),
-                },
-            },
+            "feature_metadata.json": {"run_id": run_id, "payload": feature_payload},
             "metrics.json": {"run_id": run_id, "payload": _json_safe(metrics_payload)},
             "run_log.json": {"run_id": run_id, "payload": _json_safe(run_log_payload)},
         }
@@ -218,6 +235,8 @@ def write_single_run_release(
             ("run_log", "run_log.json", "output"),
             ("split_manifest", split_name, "input"),
         ]
+        if checkpoint_name is not None:
+            artifact_spec.append(("checkpoint", checkpoint_name, "output"))
         artifacts = [
             {
                 "kind": kind,
