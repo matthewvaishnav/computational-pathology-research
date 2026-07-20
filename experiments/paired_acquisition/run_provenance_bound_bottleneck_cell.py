@@ -14,6 +14,7 @@ import argparse
 import json
 import math
 import os
+import subprocess
 import sys
 import tempfile
 import time
@@ -50,6 +51,31 @@ def utc_now() -> str:
 
 def resolve_repo_path(path: Path) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
+
+
+def display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
+
+def require_clean_checkout() -> None:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "status", "--porcelain", "--untracked-files=all"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        raise ProvenanceValidationError("unable to verify the producer working tree") from exc
+    if result.stdout.strip():
+        changed = result.stdout.strip().splitlines()
+        preview = ", ".join(changed[:5])
+        raise ProvenanceValidationError(
+            "producer checkout is not clean; commit or remove changes before running: " + preview
+        )
 
 
 def validate_args(args: argparse.Namespace) -> None:
@@ -98,13 +124,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--feature-path", type=Path, default=frontier.FEATURE_PATH)
     parser.add_argument("--manifests-dir", type=Path, default=frontier.MANIFESTS_DIR)
-    parser.add_argument("--code-commit", help="Exact producing commit; defaults to HEAD")
+    parser.add_argument(
+        "--code-commit",
+        help="Optional assertion for HEAD; the producer refuses a different commit",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     validate_args(args)
+    require_clean_checkout()
+    code_commit = current_git_commit(REPO_ROOT)
+    if args.code_commit is not None and args.code_commit != code_commit:
+        raise ProvenanceValidationError(
+            f"--code-commit {args.code_commit} does not match checked-out HEAD {code_commit}"
+        )
 
     release_dir = resolve_repo_path(args.release_dir)
     feature_path = resolve_repo_path(args.feature_path)
@@ -200,8 +235,8 @@ def main() -> None:
             "device": str(device),
             "reuse_existing_artifacts": False,
             "source_feature_shape": list(base_features.shape),
-            "source_feature_path": str(feature_path.relative_to(REPO_ROOT)),
-            "split_manifest_path": str(split_manifest.relative_to(REPO_ROOT)),
+            "source_feature_path": display_path(feature_path),
+            "split_manifest_path": display_path(split_manifest),
         }
         environment_payload = {
             **base_environment_payload(),
@@ -240,9 +275,12 @@ def main() -> None:
             "variant": variant.name,
         }
 
+        require_clean_checkout()
+        if current_git_commit(REPO_ROOT) != code_commit:
+            raise ProvenanceValidationError("producer HEAD changed while the experiment was running")
         summary = write_single_run_release(
             output_dir=release_dir,
-            code_commit=args.code_commit or current_git_commit(REPO_ROOT),
+            code_commit=code_commit,
             producer_command=[sys.executable, *sys.argv],
             seed=args.seed,
             dataset_name="canine_cutaneous_scc_dinov2_paired_acquisition",
