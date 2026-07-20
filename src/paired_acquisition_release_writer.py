@@ -51,9 +51,7 @@ def _json_safe(value: Any) -> Any:
     item = getattr(value, "item", None)
     if callable(item):
         return _json_safe(item())
-    raise ProvenanceValidationError(
-        f"unsupported value in provenance JSON: {type(value).__name__}"
-    )
+    raise ProvenanceValidationError(f"unsupported value in provenance JSON: {type(value).__name__}")
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -68,9 +66,7 @@ def _require_regular_input(path: Path, label: str) -> Path:
     if path.is_symlink():
         raise ProvenanceValidationError(f"{label} may not be a symlink: {path}")
     if not path.is_file():
-        raise ProvenanceValidationError(
-            f"{label} is missing or not a regular file: {path}"
-        )
+        raise ProvenanceValidationError(f"{label} is missing or not a regular file: {path}")
     return path
 
 
@@ -98,14 +94,10 @@ def current_git_commit(repo_root: Optional[Path] = None) -> str:
     try:
         result = subprocess.run(command, check=True, capture_output=True, text=True)
     except (FileNotFoundError, subprocess.CalledProcessError) as exc:
-        raise ProvenanceValidationError(
-            "unable to resolve the current Git commit"
-        ) from exc
+        raise ProvenanceValidationError("unable to resolve the current Git commit") from exc
     commit = result.stdout.strip()
     if COMMIT_RE.fullmatch(commit) is None:
-        raise ProvenanceValidationError(
-            "resolved Git commit is not a lowercase 40-character SHA"
-        )
+        raise ProvenanceValidationError("resolved Git commit is not a lowercase 40-character SHA")
     return commit
 
 
@@ -151,19 +143,11 @@ def write_single_run_release(
 
     output_dir = Path(output_dir)
     if output_dir.exists():
-        raise ProvenanceValidationError(
-            f"refusing to overwrite existing output path: {output_dir}"
-        )
+        raise ProvenanceValidationError(f"refusing to overwrite existing output path: {output_dir}")
     if COMMIT_RE.fullmatch(code_commit) is None:
-        raise ProvenanceValidationError(
-            "code_commit must be a lowercase 40-character Git SHA"
-        )
-    if not producer_command or not all(
-        isinstance(item, str) and item for item in producer_command
-    ):
-        raise ProvenanceValidationError(
-            "producer_command must be a non-empty string sequence"
-        )
+        raise ProvenanceValidationError("code_commit must be a lowercase 40-character Git SHA")
+    if not producer_command or not all(isinstance(item, str) and item for item in producer_command):
+        raise ProvenanceValidationError("producer_command must be a non-empty string sequence")
     if not isinstance(seed, int) or isinstance(seed, bool):
         raise ProvenanceValidationError("seed must be an integer")
     if not isinstance(dataset_name, str) or not dataset_name:
@@ -181,9 +165,7 @@ def write_single_run_release(
     seen_names = set()
     for index, item in enumerate(additional_artifacts or []):
         if not isinstance(item, Mapping):
-            raise ProvenanceValidationError(
-                f"additional_artifacts[{index}] must be an object"
-            )
+            raise ProvenanceValidationError(f"additional_artifacts[{index}] must be an object")
         role = item.get("role")
         if not isinstance(role, str) or not role:
             raise ProvenanceValidationError(
@@ -195,9 +177,7 @@ def write_single_run_release(
             )
         kind = item.get("kind")
         if kind not in ALLOWED_ARTIFACT_KINDS:
-            raise ProvenanceValidationError(
-                f"additional artifact {role} has invalid kind: {kind}"
-            )
+            raise ProvenanceValidationError(f"additional artifact {role} has invalid kind: {kind}")
         source = _require_regular_input(
             Path(item.get("source", "")), f"additional artifact {role} source"
         )
@@ -341,9 +321,9 @@ def write_single_run_release(
             }
             for role, path, kind in artifact_spec
         ]
-        timestamp = created_at or datetime.now(timezone.utc).isoformat(
-            timespec="seconds"
-        ).replace("+00:00", "Z")
+        timestamp = created_at or datetime.now(timezone.utc).isoformat(timespec="seconds").replace(
+            "+00:00", "Z"
+        )
         record = {
             **identity,
             "run_id": run_id,
