@@ -99,6 +99,8 @@ models/*.ckpt
 
 # TensorBoard / experiment trackers
 runs/
+!benchmarks/paired_acquisition_provenance_release/smoke-v1/runs/
+!benchmarks/paired_acquisition_provenance_release/smoke-v1/runs/**
 logs/
 tensorboard/
 wandb/

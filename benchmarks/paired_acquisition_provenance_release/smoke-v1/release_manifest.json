@@ -1,0 +1,12 @@
+{
+  "claim_boundary": "This forward-valid smoke release does not establish provenance for historical or unresolved artifacts.",
+  "release_id": "parelease-v1-f38a4fad844224a79c137cacc8ad65c7ceb9ce6ab35fb44df84ac81cdd6bf5f1",
+  "runs": [
+    {
+      "record_path": "runs/parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600/run_record.json",
+      "record_sha256": "5d8392aa4799e21d2bd5feb89e76c39452929ed1dbc53fef245bf1eac8c51033",
+      "run_id": "parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600"
+    }
+  ],
+  "schema_version": "paired-acquisition-release/v1"
+}

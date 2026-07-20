@@ -1,0 +1,76 @@
+{
+  "artifacts": [
+    {
+      "kind": "metadata",
+      "path": "config.json",
+      "role": "config",
+      "sha256": "bc5d571b9a67805d39966f3301039bc919c04f851ac0436a71dfbad3bd95bb6e"
+    },
+    {
+      "kind": "metadata",
+      "path": "dataset_manifest.json",
+      "role": "dataset_manifest",
+      "sha256": "c5ac6c29e9d6f18f6912667c89a587a624226c90c82e6d03ac0a103bb28c85bf"
+    },
+    {
+      "kind": "input",
+      "path": "dataset_source.txt",
+      "role": "dataset_source",
+      "sha256": "701da2098d4fd8777395e9be550142f1e1798751b1a8050e570e01b6b41d2d95"
+    },
+    {
+      "kind": "metadata",
+      "path": "environment.json",
+      "role": "environment",
+      "sha256": "889e4657c978007e392aaa398edbd147ca3a5da658ced3ec1f47a8524edce5e9"
+    },
+    {
+      "kind": "metadata",
+      "path": "feature_metadata.json",
+      "role": "feature_metadata",
+      "sha256": "3a58bb9e62554f6fe6f174b5b886b00f3273db8e01dd5fb78fa5377b166b6346"
+    },
+    {
+      "kind": "output",
+      "path": "features.csv",
+      "role": "features",
+      "sha256": "0f0e662d69799d07b81754fb3948c7d5678f1e29dcc0b9704a3673c3a5084d40"
+    },
+    {
+      "kind": "output",
+      "path": "metrics.json",
+      "role": "metrics",
+      "sha256": "7fd4dd27490bdecdc4823c1f1a5a309b330f30d73a24b7a13a7f0397f5f576ad"
+    },
+    {
+      "kind": "output",
+      "path": "run_log.json",
+      "role": "run_log",
+      "sha256": "3fdf2955a54f74a68a814a5ae0d5d8f190c8f42a36ffedf757fbe1f0e42a0953"
+    },
+    {
+      "kind": "input",
+      "path": "split_manifest.csv",
+      "role": "split_manifest",
+      "sha256": "3dcfca8da2b0222665aee537c51c8ead5d51c6920b3be511b557ed62f4bd080d"
+    }
+  ],
+  "code_commit": "4441c64c85e7c62213d71139473cb592310ed126",
+  "config_sha256": "b22afed2c57961cfde95ac947a23e803aa8310ca58e674d9844b3ef92e3137ea",
+  "created_at": "2026-07-20T16:00:00Z",
+  "dataset": {
+    "name": "paired-acquisition-synthetic-smoke",
+    "source_sha256": "701da2098d4fd8777395e9be550142f1e1798751b1a8050e570e01b6b41d2d95",
+    "split_manifest_sha256": "3dcfca8da2b0222665aee537c51c8ead5d51c6920b3be511b557ed62f4bd080d"
+  },
+  "environment_sha256": "3e6bbf72ff56080de7bfd4720689e91d7642784dd16c3d7055b16cab91448057",
+  "parents": [],
+  "producer_command": [
+    "python",
+    "scripts/provenance/create_paired_acquisition_smoke_release.py"
+  ],
+  "run_id": "parun-v1-8a6f40ad4e69393321c64af2dd4632d148ff132059c37e8ec7114f1bb688e600",
+  "schema_version": "paired-acquisition-run/v1",
+  "seed": 911,
+  "status": "completed"
+}
