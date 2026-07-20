@@ -32,9 +32,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from experiments.paired_acquisition import (  # noqa: E402
+from experiments.paired_acquisition import (
     run_acquisition_bottleneck_separation_frontier as frontier,
-)
+)  # noqa: E402
 from src.paired_acquisition_provenance import (  # noqa: E402
     ProvenanceValidationError,
     sha256_file,
@@ -59,6 +59,47 @@ def display_path(path: Path) -> str:
         return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
     except ValueError:
         return str(path.resolve())
+
+
+def semantic_producer_command(
+    *,
+    args: argparse.Namespace,
+    feature_path: Path,
+    manifests_dir: Path,
+    code_commit: str,
+) -> list[str]:
+    """Return the stable, output-location-independent producer identity."""
+
+    return [
+        "python",
+        "experiments/paired_acquisition/run_provenance_bound_bottleneck_cell.py",
+        "--release-dir",
+        "<provenance-release-dir>",
+        "--acquisition-dim",
+        str(args.acquisition_dim),
+        "--cross-covariance-weight",
+        str(args.cross_covariance_weight),
+        "--fold",
+        str(args.fold),
+        "--seed",
+        str(args.seed),
+        "--epochs",
+        str(args.epochs),
+        "--region-batch-size",
+        str(args.region_batch_size),
+        "--learning-rate",
+        str(args.learning_rate),
+        "--weight-decay",
+        str(args.weight_decay),
+        "--device",
+        str(args.device),
+        "--feature-path",
+        display_path(feature_path),
+        "--manifests-dir",
+        display_path(manifests_dir),
+        "--code-commit",
+        code_commit,
+    ]
 
 
 def require_clean_checkout() -> None:
@@ -318,7 +359,12 @@ def main() -> None:
         summary = write_single_run_release(
             output_dir=release_dir,
             code_commit=code_commit,
-            producer_command=[sys.executable, *sys.argv],
+            producer_command=semantic_producer_command(
+                args=args,
+                feature_path=feature_path,
+                manifests_dir=manifests_dir,
+                code_commit=code_commit,
+            ),
             seed=args.seed,
             dataset_name="canine_cutaneous_scc_dinov2_paired_acquisition",
             dataset_source=feature_path,
