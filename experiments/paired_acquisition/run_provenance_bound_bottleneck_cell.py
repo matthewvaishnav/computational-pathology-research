@@ -37,6 +37,7 @@ from experiments.paired_acquisition import (  # noqa: E402
 )
 from src.paired_acquisition_provenance import (  # noqa: E402
     ProvenanceValidationError,
+    sha256_file,
 )
 from src.paired_acquisition_release_writer import (  # noqa: E402
     base_environment_payload,
@@ -209,9 +210,22 @@ def main() -> None:
         )
         checkpoint_path = projected_path.parent / "checkpoint.pt"
         training_history_path = projected_path.parent / "training_history.csv"
-        if not projected_path.is_file() or not checkpoint_path.is_file():
+        pair_assignments_path = (
+            work_dir
+            / "pair_assignments"
+            / "provenance"
+            / f"fold_{args.fold}_{variant.name}_seed_{args.seed}.csv"
+        )
+        required_outputs = {
+            "projected features": projected_path,
+            "checkpoint": checkpoint_path,
+            "training history": training_history_path,
+            "pair assignments": pair_assignments_path,
+        }
+        missing_outputs = [label for label, path in required_outputs.items() if not path.is_file()]
+        if missing_outputs:
             raise ProvenanceValidationError(
-                "real producer completed without projected features and checkpoint"
+                "real producer completed without required outputs: " + ", ".join(missing_outputs)
             )
 
         biological, acquisition, projected_frame, projected_metadata = (
@@ -220,6 +234,8 @@ def main() -> None:
         if acquisition is None:
             raise ProvenanceValidationError("paired-acquisition producer emitted no acquisition branch")
 
+        pair_assignments_sha256 = sha256_file(pair_assignments_path)
+        training_history_sha256 = sha256_file(training_history_path)
         runtime_seconds = time.perf_counter() - started
         config_payload = {
             "producer": "acquisition_bottleneck_separation_frontier_single_cell",
@@ -228,6 +244,7 @@ def main() -> None:
             "fold": args.fold,
             "seed": args.seed,
             "pair_condition": "true_pairs",
+            "pair_assignments_sha256": pair_assignments_sha256,
             "epochs": args.epochs,
             "region_batch_size": args.region_batch_size,
             "learning_rate": args.learning_rate,
@@ -262,7 +279,16 @@ def main() -> None:
             "runtime_seconds": runtime_seconds,
             "source_metadata": source_metadata,
             "projected_metadata": projected_metadata,
-            "training_history_present": training_history_path.is_file(),
+            "pair_assignments": {
+                "artifact_role": "pair_assignments",
+                "path": "pair_assignments.csv",
+                "sha256": pair_assignments_sha256,
+            },
+            "training_history": {
+                "artifact_role": "training_history",
+                "path": "training_history.csv",
+                "sha256": training_history_sha256,
+            },
             "command": [sys.executable, *sys.argv],
         }
         feature_metadata = {
@@ -290,6 +316,20 @@ def main() -> None:
             environment_payload=environment_payload,
             features=projected_path,
             checkpoint=checkpoint_path,
+            additional_artifacts=[
+                {
+                    "role": "pair_assignments",
+                    "kind": "metadata",
+                    "source": pair_assignments_path,
+                    "path": "pair_assignments.csv",
+                },
+                {
+                    "role": "training_history",
+                    "kind": "output",
+                    "source": training_history_path,
+                    "path": "training_history.csv",
+                },
+            ],
             metrics_payload=metrics_payload,
             run_log_payload=run_log_payload,
             feature_metadata=feature_metadata,
