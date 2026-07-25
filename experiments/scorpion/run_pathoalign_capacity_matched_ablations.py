@@ -24,7 +24,6 @@ import torch
 from experiments.scorpion import run_pathoalign_crossfold as crossfold
 from experiments.scorpion.run_pathoalign_projection import ExperimentError
 
-
 SEEDS = tuple(range(801, 806))
 
 ABLATIONS = {
