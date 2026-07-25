@@ -1,8 +1,10 @@
-"""Experimental, non-degenerate TransnnMIL fusion variants.
+"""Controlled non-degenerate TransnnMIL fusion variants.
 
-The historical ``TransnnMIL`` class remains untouched for checkpoint and result
-reproducibility. These classes share its two trained branches and projections but
-replace only the final branch-fusion operator.
+The canonical ``TransnnMIL`` implementation now uses genuine branch-token
+self-attention. These variants remain useful as matched fusion controls: learned
+branch attention, concatenation plus projection, and a sample-specific gate.
+They share the canonical branches and projections and replace only the final
+branch-fusion operator.
 """
 
 from __future__ import annotations
@@ -20,15 +22,15 @@ from src.models.transnnmil.transnnmil import TransnnMIL
 
 
 class _TransnnMILFusionExperimentalBase(TransnnMIL):
-    """Common execution path for experimental two-branch fusion variants."""
+    """Common execution path for controlled two-branch fusion variants."""
 
     fusion_name = "experimental"
 
     def __init__(self, *args, **kwargs) -> None:
         if kwargs.get("enable_topology", False):
             raise ValueError(
-                "Experimental fusion variants disable enable_topology=True because "
-                "the historical parent creates an unregistered topology projection in forward()."
+                "Controlled two-branch fusion variants require enable_topology=False; "
+                "topology must be evaluated as a separate preregistered branch ablation."
             )
         super().__init__(*args, **kwargs)
         self.enable_topology = False

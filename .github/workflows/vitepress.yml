@@ -59,9 +59,13 @@ jobs:
           if missing:
               raise RuntimeError(f"Paper composition is incomplete: {missing}")
           if "\\clearpage\n\\onecolumn\n\\appendix" in text:
-              raise RuntimeError("Paper should not force a blank one-column appendix transition page")
+              raise RuntimeError(
+                  "Paper should not force a blank one-column appendix transition page"
+              )
 
-          figure1_path = Path("paper/arxiv/build/paired_acquisition_figure1_benchmark_table.tex")
+          figure1_path = Path(
+              "paper/arxiv/build/paired_acquisition_figure1_benchmark_table.tex"
+          )
           figure1 = figure1_path.read_text(encoding="utf-8")
           figure1_required = (
               "Paired-Acquisition Neural Factorization separates biological identity from acquisition identity",
@@ -77,9 +81,13 @@ jobs:
           )
           figure1_missing = [item for item in figure1_required if item not in figure1]
           if figure1_missing:
-              raise RuntimeError(f"Figure 1 benchmark table is incomplete: {figure1_missing}")
+              raise RuntimeError(
+                  f"Figure 1 benchmark table is incomplete: {figure1_missing}"
+              )
 
-          model_math_path = Path("paper/arxiv/build/paired_acquisition_model_math.tex")
+          model_math_path = Path(
+              "paper/arxiv/build/paired_acquisition_model_math.tex"
+          )
           model_math = model_math_path.read_text(encoding="utf-8")
           required_math = (
               r"\mathcal{L}_{\mathrm{pair}}",
@@ -99,7 +107,8 @@ jobs:
           missing_math = [item for item in required_math if item not in model_math]
           if missing_math:
               raise RuntimeError(
-                  f"Paired-acquisition mathematical specification is incomplete: {missing_math}"
+                  "Paired-acquisition mathematical specification is incomplete: "
+                  f"{missing_math}"
               )
 
           legacy_stem = "patho" + "align"
@@ -131,6 +140,7 @@ jobs:
           print("Validated external canine Figure 1 benchmark table")
           print("Validated complete implementation-faithful paired-acquisition mathematics")
           print("Validated math-only paired-acquisition architecture section")
+          print("Public publication remains disabled by the scientific-audit hold")
           PY
 
       - name: Build LaTeX PDF
@@ -149,23 +159,17 @@ jobs:
           echo "Rendered bibliography entries: ${reference_count}"
           test "${reference_count}" -ge 10
 
-      - name: Upload reviewable PDF
+      - name: Upload audit-only review PDF
         uses: actions/upload-artifact@v4
         with:
-          name: paper-pdf
+          name: paper-pdf-audit-only
           path: paper/arxiv/build/main.pdf
           retention-days: 14
 
-      - name: Create PDF-only site
+      - name: Create scientific-audit hold site
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p paper_pdf_site
-          canonical="computational-pathology-research-platform-for-federated-oncology.pdf"
-          cp paper/arxiv/build/main.pdf "paper_pdf_site/${canonical}"
-
-          cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy.pdf
-          cp paper/arxiv/build/main.pdf paper_pdf_site/when-more-data-is-less-trustworthy-references-v2.pdf
-
           touch paper_pdf_site/.nojekyll
           cat > paper_pdf_site/index.html <<'EOF'
           <!doctype html>
@@ -173,16 +177,24 @@ jobs:
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta http-equiv="refresh" content="0; url=./computational-pathology-research-platform-for-federated-oncology.pdf">
-            <title>Computational Pathology Research Platform</title>
+            <title>Scientific audit hold</title>
+            <style>
+              body { max-width: 760px; margin: 4rem auto; padding: 0 1.25rem; font: 18px/1.55 system-ui, sans-serif; }
+              h1 { line-height: 1.15; }
+              code { background: #f3f3f3; padding: 0.12rem 0.3rem; }
+            </style>
           </head>
           <body>
-            <p><a href="./computational-pathology-research-platform-for-federated-oncology.pdf">Open the computational pathology research PDF</a></p>
+            <h1>Paper temporarily withdrawn for scientific audit</h1>
+            <p>The previously published computational-pathology PDF contained claims and secondary analyses that are being corrected. It is not currently available as an authoritative research paper.</p>
+            <p>The active public claim boundary is maintained in <code>CLAIM_BOUNDARY.md</code> in the main repository. New PDF publication will resume only after the corrected audits and required reruns are complete.</p>
+            <p><a href="https://github.com/matthewvaishnav/computational-pathology-research/blob/main/CLAIM_BOUNDARY.md">Read the current claim boundary</a></p>
+            <p><a href="https://github.com/matthewvaishnav/computational-pathology-research/blob/main/docs/research/scientific-audit-remediation-20260725.md">Read the remediation ledger</a></p>
           </body>
           </html>
           EOF
 
-      - name: Deploy PDF site to gh-pages
+      - name: Deploy audit-hold site to gh-pages
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
