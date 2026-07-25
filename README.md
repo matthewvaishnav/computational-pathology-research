@@ -2,8 +2,6 @@
 
 Independent research on **Paired-Acquisition Neural Factorization** for computational pathology representation identifiability.
 
-> **Faculty, institutional, or funding review:** start with the [Conestoga research sponsorship package](docs/outreach/conestoga-research-sponsorship/README.md).
-
 ## Central framing
 
 I use **Paired-Acquisition Neural Factorization** as the logical method name. It is not a brand name. The method uses paired acquisitions of the same underlying tissue to factor frozen pathology embeddings into:
@@ -38,7 +36,6 @@ Verified child-package repositories and PDFs are linked from the public view.
 
 ## Start here
 
-- [Faculty and research sponsorship review package](docs/outreach/conestoga-research-sponsorship/README.md)
 - [Paired-Acquisition Neural Factorization positioning](docs/research/paired-acquisition-neural-factorization-positioning.md)
 - [SCORPION core paired-acquisition factorization results](docs/research/paired-acquisition-factorization-scorpion-results.md)
 - [External canine SCC validation results](docs/research/paired-acquisition-factorization-caninescc-results.md)
