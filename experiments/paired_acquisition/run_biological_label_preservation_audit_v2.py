@@ -118,10 +118,7 @@ def cluster_bootstrap_ci(
     if len(unique_samples) < 2:
         raise AuditError("cluster bootstrap requires at least two test samples")
 
-    rows_by_sample = {
-        sample: np.flatnonzero(sample_ids == sample)
-        for sample in unique_samples
-    }
+    rows_by_sample = {sample: np.flatnonzero(sample_ids == sample) for sample in unique_samples}
     rng = np.random.default_rng(seed)
     values = np.empty(draws, dtype=float)
     for draw in range(draws):
@@ -187,9 +184,7 @@ def linear_removal_fit_only(
     """Scanner-centroid subspace removal with fit-only standardization."""
     del fold
     features, frame = legacy.load_base_features()
-    metadata = manifest[
-        ["region_id", "scanner_id", "split", "sample_id", "category_name"]
-    ].copy()
+    metadata = manifest[["region_id", "scanner_id", "split", "sample_id", "category_name"]].copy()
     metadata["region_id"] = metadata["region_id"].astype(str)
     metadata["scanner_id"] = metadata["scanner_id"].astype(str)
     frame["region_id"] = frame["region_id"].astype(str)
@@ -365,8 +360,7 @@ def main() -> None:
         "--out-dir",
         type=Path,
         default=Path(
-            "results/paired_acquisition_factorization_"
-            "biological_label_preservation_audit_v2"
+            "results/paired_acquisition_factorization_" "biological_label_preservation_audit_v2"
         ),
     )
     parser.add_argument("--bootstrap-draws", type=int, default=2000)
