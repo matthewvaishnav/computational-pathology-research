@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """Leakage-safe biological-label preservation audit (v2).
 
-This runner supersedes ``run_biological_label_preservation_audit.py`` for new
-claim evidence. It corrects four scientific problems in the historical audit:
+This runner supersedes the historical audit for all new claim evidence. It
+corrects fit/test preprocessing leakage, makes probe scaling comparable across
+representations, excludes paired identity from category-neighbour retrieval,
+and reports biological-sample-clustered uncertainty.
 
-1. every representation is standardized using fit rows only before probing;
-2. the linear scanner-subspace baseline fits its scaler on fit rows only;
-3. category nearest-neighbour purity searches only the fit pool and excludes
-   candidates from the same region or biological sample;
-4. category support is validated fail-closed for every fold.
-
-Uncertainty is reported with a biological-sample cluster bootstrap. No metric
-from the historical audit is automatically promoted into this v2 release.
+Historical result files are not imported as evidence. Representations are loaded
+from their saved feature artifacts and evaluated again under this protocol.
 """
 
 from __future__ import annotations
@@ -56,16 +52,16 @@ def validate_category_support(
     fit: np.ndarray,
     test: np.ndarray,
 ) -> dict[str, dict[str, int]]:
-    summary: dict[str, dict[str, int]] = {}
-    fit_labels = set(frame.iloc[fit]["category_name"].astype(str))
-    test_labels = set(frame.iloc[test]["category_name"].astype(str))
+    fit_rows = frame.iloc[fit]
+    test_rows = frame.iloc[test]
+    fit_labels = set(fit_rows["category_name"].astype(str))
+    test_labels = set(test_rows["category_name"].astype(str))
     missing = sorted(test_labels - fit_labels)
     if missing:
         raise AuditError(f"test categories absent from fit split: {missing}")
 
-    for label in sorted(fit_labels | test_labels):
-        fit_rows = frame.iloc[fit]
-        test_rows = frame.iloc[test]
+    summary: dict[str, dict[str, int]] = {}
+    for label in sorted(test_labels):
         summary[label] = {
             "fit_rows": int((fit_rows["category_name"].astype(str) == label).sum()),
             "test_rows": int((test_rows["category_name"].astype(str) == label).sum()),
@@ -93,6 +89,7 @@ def fit_probe(
     fit: np.ndarray,
     test: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Fit a scale-comparable linear probe using fit rows only."""
     model = make_pipeline(
         StandardScaler(),
         LogisticRegression(
@@ -115,19 +112,21 @@ def cluster_bootstrap_ci(
     seed: int,
     draws: int,
 ) -> tuple[float, float]:
-    unique_samples = np.asarray(sorted(set(sample_ids.astype(str))))
+    """Percentile interval from resampling whole biological samples."""
+    sample_ids = sample_ids.astype(str)
+    unique_samples = np.asarray(sorted(set(sample_ids)))
     if len(unique_samples) < 2:
         raise AuditError("cluster bootstrap requires at least two test samples")
 
-    row_groups = {
-        sample: np.flatnonzero(sample_ids.astype(str) == sample)
+    rows_by_sample = {
+        sample: np.flatnonzero(sample_ids == sample)
         for sample in unique_samples
     }
     rng = np.random.default_rng(seed)
     values = np.empty(draws, dtype=float)
     for draw in range(draws):
         selected = rng.choice(unique_samples, size=len(unique_samples), replace=True)
-        rows = np.concatenate([row_groups[str(sample)] for sample in selected])
+        rows = np.concatenate([rows_by_sample[str(sample)] for sample in selected])
         values[draw] = metric(truth[rows], prediction[rows])
     return float(np.quantile(values, 0.025)), float(np.quantile(values, 0.975))
 
@@ -146,25 +145,25 @@ def category_purity_fit_pool(
     test: np.ndarray,
     ks: tuple[int, ...] = (1, 5, 10),
 ) -> dict[str, float]:
+    """Category purity against fit rows, excluding same region and sample."""
     normalized = normalize(features)
-    fit_features = normalized[fit]
-    test_features = normalized[test]
-    similarity = test_features @ fit_features.T
+    similarity = normalized[test] @ normalized[fit].T
 
-    fit_regions = frame.iloc[fit]["region_id"].astype(str).to_numpy()
-    test_regions = frame.iloc[test]["region_id"].astype(str).to_numpy()
-    fit_samples = frame.iloc[fit]["sample_id"].astype(str).to_numpy()
-    test_samples = frame.iloc[test]["sample_id"].astype(str).to_numpy()
-    fit_labels = frame.iloc[fit]["category_name"].astype(str).to_numpy()
-    test_labels = frame.iloc[test]["category_name"].astype(str).to_numpy()
+    fit_frame = frame.iloc[fit]
+    test_frame = frame.iloc[test]
+    fit_regions = fit_frame["region_id"].astype(str).to_numpy()
+    test_regions = test_frame["region_id"].astype(str).to_numpy()
+    fit_samples = fit_frame["sample_id"].astype(str).to_numpy()
+    test_samples = test_frame["sample_id"].astype(str).to_numpy()
+    fit_labels = fit_frame["category_name"].astype(str).to_numpy()
+    test_labels = test_frame["category_name"].astype(str).to_numpy()
 
     for row in range(len(test)):
         forbidden = (fit_regions == test_regions[row]) | (fit_samples == test_samples[row])
         similarity[row, forbidden] = -np.inf
 
-    valid_counts = np.isfinite(similarity).sum(axis=1)
-    if np.any(valid_counts < max(ks)):
-        raise AuditError("insufficient leakage-safe neighbours for requested k")
+    if np.any(np.isfinite(similarity).sum(axis=1) < max(ks)):
+        raise AuditError("insufficient leakage-safe neighbours")
 
     result: dict[str, float] = {}
     for k in ks:
@@ -185,29 +184,41 @@ def linear_removal_fit_only(
     k: int,
     manifest: pd.DataFrame,
 ) -> tuple[np.ndarray, pd.DataFrame]:
+    """Scanner-centroid subspace removal with fit-only standardization."""
+    del fold
     features, frame = legacy.load_base_features()
-    columns = manifest[
+    metadata = manifest[
         ["region_id", "scanner_id", "split", "sample_id", "category_name"]
     ].copy()
-    columns["region_id"] = columns["region_id"].astype(str)
-    columns["scanner_id"] = columns["scanner_id"].astype(str)
+    metadata["region_id"] = metadata["region_id"].astype(str)
+    metadata["scanner_id"] = metadata["scanner_id"].astype(str)
     frame["region_id"] = frame["region_id"].astype(str)
     frame["scanner_id"] = frame["scanner_id"].astype(str)
     frame = frame.drop(columns=["split"], errors="ignore")
     frame = frame.merge(
-        columns,
+        metadata,
         on=["region_id", "scanner_id"],
         how="left",
         validate="one_to_one",
     )
+
     fit, _ = split_indices(frame)
     scaler = StandardScaler().fit(features[fit])
     transformed = scaler.transform(features)
     directions = legacy._fit_scanner_directions(transformed, frame, fit)
-    cleaned, effective_k = legacy._remove_directions(transformed, directions, k)
-    frame = frame.copy()
-    frame["effective_k"] = effective_k
+    cleaned, _ = legacy._remove_directions(transformed, directions, k)
     return cleaned.astype(np.float32), frame
+
+
+def effective_rank(features: np.ndarray) -> float:
+    centered = features - features.mean(axis=0, keepdims=True)
+    singular = np.linalg.svd(centered, compute_uv=False, full_matrices=False)
+    energy = singular**2
+    if float(energy.sum()) <= 0:
+        return 0.0
+    probabilities = energy / energy.sum()
+    probabilities = probabilities[probabilities > 0]
+    return float(math.exp(-np.sum(probabilities * np.log(probabilities))))
 
 
 def evaluate(
@@ -220,57 +231,46 @@ def evaluate(
     details: dict[str, object],
     bootstrap_draws: int,
 ) -> tuple[dict[str, object], dict[str, dict[str, int]]]:
+    required = ["sample_id", "region_id", "category_name", "scanner_id", "split"]
     if len(features) != len(frame) or not np.isfinite(features).all():
         raise AuditError("invalid or misaligned representation")
-    if frame[["sample_id", "region_id", "category_name", "scanner_id", "split"]].isna().any().any():
+    if frame[required].isna().any().any():
         raise AuditError("missing audit metadata")
 
     fit, test = split_indices(frame)
     support = validate_category_support(frame, fit, test)
     test_samples = frame.iloc[test]["sample_id"].astype(str).to_numpy()
 
-    scanner_truth, scanner_pred = fit_probe(
+    scanner_truth, scanner_prediction = fit_probe(
         features,
         frame["scanner_id"].astype(str).to_numpy(),
         fit,
         test,
     )
-    category_truth, category_pred = fit_probe(
+    category_truth, category_prediction = fit_probe(
         features,
         frame["category_name"].astype(str).to_numpy(),
         fit,
         test,
     )
 
-    scanner_acc = float(balanced_accuracy_score(scanner_truth, scanner_pred))
-    category_acc = float(balanced_accuracy_score(category_truth, category_pred))
-    category_f1 = float(f1_score(category_truth, category_pred, average="macro"))
-
+    scanner_metric = lambda y, p: float(balanced_accuracy_score(y, p))
+    category_metric = lambda y, p: float(balanced_accuracy_score(y, p))
     scanner_ci = cluster_bootstrap_ci(
         scanner_truth,
-        scanner_pred,
+        scanner_prediction,
         test_samples,
-        balanced_accuracy_score,
+        scanner_metric,
         seed=10000 + fold * 100 + seed,
         draws=bootstrap_draws,
     )
     category_ci = cluster_bootstrap_ci(
         category_truth,
-        category_pred,
+        category_prediction,
         test_samples,
-        balanced_accuracy_score,
+        category_metric,
         seed=20000 + fold * 100 + seed,
         draws=bootstrap_draws,
-    )
-
-    centered = features[test] - features[test].mean(axis=0, keepdims=True)
-    singular = np.linalg.svd(centered, compute_uv=False, full_matrices=False)
-    energy = singular**2
-    probabilities = energy / energy.sum() if float(energy.sum()) > 0 else np.asarray([])
-    effective_rank = (
-        float(math.exp(-np.sum(probabilities[probabilities > 0] * np.log(probabilities[probabilities > 0]))))
-        if len(probabilities)
-        else 0.0
     )
 
     row: dict[str, object] = {
@@ -281,18 +281,82 @@ def evaluate(
         "n_test_rows": int(len(test)),
         "n_test_samples": int(len(set(test_samples))),
         "feature_dim": int(features.shape[1]),
-        "scanner_probe_balanced_accuracy": scanner_acc,
+        "scanner_probe_balanced_accuracy": scanner_metric(scanner_truth, scanner_prediction),
         "scanner_probe_cluster_ci_025": scanner_ci[0],
         "scanner_probe_cluster_ci_975": scanner_ci[1],
-        "category_probe_balanced_accuracy": category_acc,
+        "category_probe_balanced_accuracy": category_metric(category_truth, category_prediction),
         "category_probe_cluster_ci_025": category_ci[0],
         "category_probe_cluster_ci_975": category_ci[1],
-        "category_probe_macro_f1": category_f1,
-        "effective_rank_test": effective_rank,
+        "category_probe_macro_f1": float(
+            f1_score(category_truth, category_prediction, average="macro")
+        ),
+        "effective_rank_test": effective_rank(features[test]),
         **category_purity_fit_pool(features, frame, fit, test),
         **details,
     }
     return row, support
+
+
+def loader_plan(
+    fold: int,
+    manifest: pd.DataFrame,
+    seeds: list[int],
+) -> list[tuple[str, int, Callable[[], tuple[np.ndarray, pd.DataFrame]], dict[str, object]]]:
+    plan: list[
+        tuple[str, int, Callable[[], tuple[np.ndarray, pd.DataFrame]], dict[str, object]]
+    ] = [
+        (
+            "original_frozen_features",
+            0,
+            lambda: legacy.load_representation_frozen(fold, 0, manifest),
+            {"family": "original_frozen"},
+        )
+    ]
+
+    for condition, label in [
+        ("true_pairs", "true_pair"),
+        ("shuffled_sample_pairs", "shuffled_sample"),
+    ]:
+        for branch in ("biological", "acquisition"):
+            for seed in seeds:
+                plan.append(
+                    (
+                        f"{label}_{branch}",
+                        seed,
+                        lambda condition=condition, branch=branch, seed=seed: legacy.load_representation_pair_integrity(
+                            fold,
+                            seed,
+                            condition,
+                            branch,
+                            manifest,
+                        ),
+                        {
+                            "family": "pair_integrity",
+                            "condition": condition,
+                            "branch": branch,
+                        },
+                    )
+                )
+
+    for k in legacy.PCA_K_VALUES:
+        plan.append(
+            (
+                f"pca_removal_k{k}",
+                0,
+                lambda k=k: legacy.load_representation_pca_removal(fold, k, manifest),
+                {"family": "pca_removal", "k": k},
+            )
+        )
+    for k in legacy.LINEAR_K_VALUES:
+        plan.append(
+            (
+                f"linear_projection_k{k}",
+                0,
+                lambda k=k: linear_removal_fit_only(fold, k, manifest),
+                {"family": "linear_scanner_subspace", "k": k},
+            )
+        )
+    return plan
 
 
 def main() -> None:
@@ -300,7 +364,10 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("results/paired_acquisition_factorization_biological_label_preservation_audit_v2"),
+        default=Path(
+            "results/paired_acquisition_factorization_"
+            "biological_label_preservation_audit_v2"
+        ),
     )
     parser.add_argument("--bootstrap-draws", type=int, default=2000)
     parser.add_argument("--smoke", action="store_true")
@@ -311,63 +378,13 @@ def main() -> None:
     folds = legacy.FOLDS[:1] if args.smoke else legacy.FOLDS
     seeds = legacy.SEEDS[:1] if args.smoke else legacy.SEEDS
     args.out_dir.mkdir(parents=True, exist_ok=True)
-
-    rows: list[dict[str, object]] = []
-    support_records: list[dict[str, object]] = []
     started = time.time()
 
+    rows: list[dict[str, object]] = []
+    supports: list[dict[str, object]] = []
     for fold in folds:
         manifest = legacy.load_manifest(fold)
-        loaders: list[tuple[str, int, Callable[[], tuple[np.ndarray, pd.DataFrame]], dict[str, object]]] = []
-
-        loaders.append(
-            (
-                "original_frozen_features",
-                0,
-                lambda fold=fold, manifest=manifest: legacy.load_representation_frozen(fold, 0, manifest),
-                {"family": "original_frozen"},
-            )
-        )
-        for condition, label in [
-            ("true_pairs", "true_pair"),
-            ("shuffled_sample_pairs", "shuffled_sample"),
-        ]:
-            for branch in ("biological", "acquisition"):
-                for seed in seeds:
-                    loaders.append(
-                        (
-                            f"{label}_{branch}",
-                            seed,
-                            lambda fold=fold, seed=seed, condition=condition, branch=branch, manifest=manifest: legacy.load_representation_pair_integrity(
-                                fold,
-                                seed,
-                                condition,
-                                branch,
-                                manifest,
-                            ),
-                            {"family": "pair_integrity", "condition": condition, "branch": branch},
-                        )
-                    )
-        for k in legacy.PCA_K_VALUES:
-            loaders.append(
-                (
-                    f"pca_removal_k{k}",
-                    0,
-                    lambda fold=fold, k=k, manifest=manifest: legacy.load_representation_pca_removal(fold, k, manifest),
-                    {"family": "pca_removal", "k": k},
-                )
-            )
-        for k in legacy.LINEAR_K_VALUES:
-            loaders.append(
-                (
-                    f"linear_projection_k{k}",
-                    0,
-                    lambda fold=fold, k=k, manifest=manifest: linear_removal_fit_only(fold, k, manifest),
-                    {"family": "linear_scanner_subspace", "k": k},
-                )
-            )
-
-        for representation, seed, loader, details in loaders:
+        for representation, seed, loader, details in loader_plan(fold, manifest, seeds):
             features, frame = loader()
             row, support = evaluate(
                 features,
@@ -380,7 +397,7 @@ def main() -> None:
             )
             rows.append(row)
             for category, counts in support.items():
-                support_records.append(
+                supports.append(
                     {
                         "fold": fold,
                         "representation": representation,
@@ -391,20 +408,28 @@ def main() -> None:
                 )
 
     raw = pd.DataFrame(rows).sort_values(["representation", "fold", "seed"])
-    if raw.empty or raw.select_dtypes(include=[np.number]).isna().any().any():
+    required_metrics = [
+        "scanner_probe_balanced_accuracy",
+        "scanner_probe_cluster_ci_025",
+        "scanner_probe_cluster_ci_975",
+        "category_probe_balanced_accuracy",
+        "category_probe_cluster_ci_025",
+        "category_probe_cluster_ci_975",
+        "category_probe_macro_f1",
+        "purity_fit_pool_k1",
+        "purity_fit_pool_k5",
+        "purity_fit_pool_k10",
+        "effective_rank_test",
+    ]
+    if raw.empty or raw[required_metrics].isna().any().any():
         raise AuditError("refusing to publish incomplete v2 metrics")
+
     raw.to_csv(args.out_dir / "raw_metrics.csv", index=False)
-    pd.DataFrame(support_records).to_csv(
+    pd.DataFrame(supports).to_csv(
         args.out_dir / "category_support_by_fold.csv",
         index=False,
     )
-
-    numeric = [
-        column
-        for column in raw.select_dtypes(include=[np.number]).columns
-        if column not in {"fold", "seed"}
-    ]
-    raw.groupby("representation", as_index=False)[numeric].mean().to_csv(
+    raw.groupby("representation", as_index=False)[required_metrics].mean().to_csv(
         args.out_dir / "descriptive_summary.csv",
         index=False,
     )
@@ -416,6 +441,7 @@ def main() -> None:
         "historical_results_promoted": False,
         "fit_only_probe_standardization": True,
         "fit_only_linear_baseline_standardization": True,
+        "probe_C": 1.0,
         "neighbour_reference_pool": "fit_only",
         "same_region_candidates_excluded": True,
         "same_sample_candidates_excluded": True,
