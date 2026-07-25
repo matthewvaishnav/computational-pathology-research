@@ -22,8 +22,8 @@ from src.models.mil.transmil import TransMIL
 from src.models.transnnmil.hierarchical_pooling import (
     HierarchicalPooling,
     RegionAttentionPooling,
-    RegionMeanPooling,
     RegionMaxPooling,
+    RegionMeanPooling,
     RegionTransformer,
 )
 
