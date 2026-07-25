@@ -1,4 +1,4 @@
-"""Scientific regression tests for biological-label audit v2."""
+"""Scientific regression tests for corrected biological-label audits."""
 
 from __future__ import annotations
 
@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from experiments.paired_acquisition import (
+    run_biological_label_preservation_fixed_estimand as fixed,
+)
 from experiments.paired_acquisition.run_biological_label_preservation_audit_v2 import (
     AuditError,
     category_purity_fit_pool,
@@ -64,3 +67,55 @@ def test_category_purity_cannot_retrieve_another_test_view() -> None:
     # An all-row search would retrieve the alternate test scanner view and score
     # 1.0. The leakage-safe fit pool retrieves category B and therefore scores 0.
     assert purity["purity_fit_pool_k1"] == 0.0
+
+
+def test_fixed_balanced_accuracy_uses_declared_categories() -> None:
+    truth = np.asarray(["A", "A", "B", "B"])
+    prediction = np.asarray(["A", "B", "B", "B"])
+    assert fixed.fixed_balanced_accuracy(truth, prediction, ["A", "B"]) == 0.75
+
+
+def test_fixed_estimand_excludes_under_supported_category(monkeypatch) -> None:
+    manifests = {}
+    for fold in (0, 1):
+        manifests[fold] = pd.DataFrame(
+            {
+                "category_name": ["A", "A", "A", "A", "B", "B", "B", "B", "C", "C"],
+                "sample_id": [
+                    f"a_fit_1_{fold}",
+                    f"a_fit_2_{fold}",
+                    f"a_test_1_{fold}",
+                    f"a_test_2_{fold}",
+                    f"b_fit_1_{fold}",
+                    f"b_fit_2_{fold}",
+                    f"b_test_1_{fold}",
+                    f"b_test_2_{fold}",
+                    f"c_fit_{fold}",
+                    f"c_test_{fold}",
+                ],
+                "split": [
+                    "train",
+                    "val",
+                    "test",
+                    "test",
+                    "train",
+                    "val",
+                    "test",
+                    "test",
+                    "train",
+                    "test",
+                ],
+            }
+        )
+
+    monkeypatch.setattr(fixed.legacy, "load_manifest", lambda fold: manifests[fold])
+    categories, support = fixed.derive_fixed_categories(
+        [0, 1],
+        minimum_fit_samples=2,
+        minimum_test_samples=2,
+    )
+
+    assert categories == ["A", "B"]
+    assert not support.loc[
+        support["category"] == "C", "retained_in_fixed_estimand"
+    ].any()
