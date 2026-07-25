@@ -19,7 +19,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 METRICS = (
     "scanner_probe_accuracy",
     "pair_cosine_average",
