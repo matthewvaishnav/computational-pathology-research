@@ -72,9 +72,7 @@ def derive_fixed_categories(
         for fold in folds:
             manifest = manifests[fold]
             fit_support = category_sample_support(
-                manifest.assign(
-                    split=np.where(manifest["split"].eq("test"), "test", "fit")
-                ),
+                manifest.assign(split=np.where(manifest["split"].eq("test"), "test", "fit")),
                 "fit",
             ).get(category, 0)
             test_support = category_sample_support(manifest, "test").get(category, 0)
@@ -88,17 +86,13 @@ def derive_fixed_categories(
                     "minimum_test_samples": minimum_test_samples,
                 }
             )
-            eligible &= (
-                fit_support >= minimum_fit_samples and test_support >= minimum_test_samples
-            )
+            eligible &= fit_support >= minimum_fit_samples and test_support >= minimum_test_samples
         if eligible:
             retained.append(category)
 
     support = pd.DataFrame(rows)
     if len(retained) < 2:
-        raise AuditError(
-            "fewer than two categories satisfy the fixed sample-support estimand"
-        )
+        raise AuditError("fewer than two categories satisfy the fixed sample-support estimand")
     support["retained_in_fixed_estimand"] = support["category"].isin(retained)
     return retained, support
 
@@ -151,9 +145,7 @@ def effective_rank(features: np.ndarray) -> float:
 
 def merge_base_manifest(manifest: pd.DataFrame) -> tuple[np.ndarray, pd.DataFrame]:
     features, frame = legacy.load_base_features()
-    metadata = manifest[
-        ["region_id", "scanner_id", "split", "sample_id", "category_name"]
-    ].copy()
+    metadata = manifest[["region_id", "scanner_id", "split", "sample_id", "category_name"]].copy()
     metadata["region_id"] = metadata["region_id"].astype(str)
     metadata["scanner_id"] = metadata["scanner_id"].astype(str)
     frame["region_id"] = frame["region_id"].astype(str)
@@ -199,9 +191,7 @@ def representation_plan(
     fold: int,
     manifest: pd.DataFrame,
     seeds: list[int],
-) -> list[
-    tuple[str, int, Callable[[], tuple[np.ndarray, pd.DataFrame]], dict[str, object]]
-]:
+) -> list[tuple[str, int, Callable[[], tuple[np.ndarray, pd.DataFrame]], dict[str, object]]]:
     plan = v2.loader_plan(fold, manifest, seeds)
     for k in range(1, 5):
         for branch in ("keep", "removed"):
@@ -260,18 +250,14 @@ def evaluate_representation(
     category_features = features[category_mask]
     category_frame = frame.loc[category_mask].reset_index(drop=True)
     category_fit, category_test = v2.split_indices(category_frame)
-    observed_test_categories = set(
-        category_frame.iloc[category_test]["category_name"].astype(str)
-    )
+    observed_test_categories = set(category_frame.iloc[category_test]["category_name"].astype(str))
     if observed_test_categories != set(fixed_categories):
         raise AuditError(
             f"fold {fold} does not contain the fixed category estimand: "
             f"observed={sorted(observed_test_categories)}"
         )
 
-    category_truth = (
-        category_frame.iloc[category_test]["category_name"].astype(str).to_numpy()
-    )
+    category_truth = category_frame.iloc[category_test]["category_name"].astype(str).to_numpy()
     category_prediction = fit_probe(
         category_features,
         category_frame["category_name"].astype(str).to_numpy(),
@@ -405,9 +391,7 @@ def main() -> None:
         "status": "completed",
         "protocol": "biological_label_preservation_fixed_estimand_v1",
         "fixed_categories": fixed_categories,
-        "excluded_categories": sorted(
-            set(support["category"].astype(str)) - set(fixed_categories)
-        ),
+        "excluded_categories": sorted(set(support["category"].astype(str)) - set(fixed_categories)),
         "minimum_fit_samples_per_category_per_fold": args.minimum_fit_samples,
         "minimum_test_samples_per_category_per_fold": args.minimum_test_samples,
         "fit_only_probe_standardization": True,
