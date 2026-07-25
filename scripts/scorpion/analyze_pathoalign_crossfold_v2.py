@@ -43,16 +43,15 @@ def load_contrasts(path: Path) -> pd.DataFrame:
     if frame.duplicated(["fold", "variant", "seed", "slide_id"]).any():
         raise AnalysisError("duplicate fold/variant/seed/slide rows")
 
-    seed_averaged = (
-        frame.groupby(["fold", "variant", "slide_id"], as_index=False)[list(METRICS)]
-        .mean()
+    seed_averaged = frame.groupby(["fold", "variant", "slide_id"], as_index=False)[
+        list(METRICS)
+    ].mean()
+    paired = seed_averaged[seed_averaged["variant"] == "paired_reference"].set_index(
+        ["fold", "slide_id"]
     )
-    paired = seed_averaged[
-        seed_averaged["variant"] == "paired_reference"
-    ].set_index(["fold", "slide_id"])
-    factorized = seed_averaged[
-        seed_averaged["variant"] == "pathoalign_dep20"
-    ].set_index(["fold", "slide_id"])
+    factorized = seed_averaged[seed_averaged["variant"] == "pathoalign_dep20"].set_index(
+        ["fold", "slide_id"]
+    )
     if set(paired.index) != set(factorized.index):
         raise AnalysisError("methods do not share identical fold/slide blocks")
     if len(paired) != 48 or paired.index.get_level_values("fold").nunique() != 5:
@@ -63,8 +62,7 @@ def load_contrasts(path: Path) -> pd.DataFrame:
         row = {"fold": int(fold), "slide_id": str(slide_id)}
         for metric in METRICS:
             row[metric] = float(
-                factorized.loc[(fold, slide_id), metric]
-                - paired.loc[(fold, slide_id), metric]
+                factorized.loc[(fold, slide_id), metric] - paired.loc[(fold, slide_id), metric]
             )
         rows.append(row)
     return pd.DataFrame(rows).sort_values(["fold", "slide_id"])
