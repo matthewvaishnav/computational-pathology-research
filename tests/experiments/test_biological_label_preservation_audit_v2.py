@@ -6,9 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from experiments.paired_acquisition import (
-    run_biological_label_preservation_fixed_estimand as fixed,
-)
+from experiments.paired_acquisition import run_biological_label_preservation_fixed_estimand as fixed
 from experiments.paired_acquisition.run_biological_label_preservation_audit_v2 import (
     AuditError,
     category_purity_fit_pool,
@@ -116,6 +114,4 @@ def test_fixed_estimand_excludes_under_supported_category(monkeypatch) -> None:
     )
 
     assert categories == ["A", "B"]
-    assert not support.loc[
-        support["category"] == "C", "retained_in_fixed_estimand"
-    ].any()
+    assert not support.loc[support["category"] == "C", "retained_in_fixed_estimand"].any()
