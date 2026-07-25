@@ -1,145 +1,111 @@
-# Paired-Acquisition Neural Factorization Baseline Murder Tests
+# Historical simple-baseline audit — superseded interpretation
 
-Status: completed on 2026-07-03
+**Original run date:** 2026-07-03  
+**Current status:** descriptive historical results only
 
-## Question
+The numerical tables produced by the original baseline runner are retained for
+auditability. The former conclusion that Paired-Acquisition Neural Factorization
+achieved the best scanner-suppression/tissue-preservation trade-off is withdrawn.
 
-Can simple post-hoc scanner-removal operations on frozen DINOv2 embeddings match
-the scanner-suppression/tissue-preservation tradeoff achieved by Paired-Acquisition
-Neural Factorization, or does the learned factorization add value beyond what linear
-scanner-subspace projection and PCA component removal can achieve?
+## Why the interpretation was withdrawn
 
-This is a peer-review-hardening baseline test. It strengthens the claim that
-paired-acquisition supervision is necessary for the observed tradeoff.
+### Representation geometry was not a biological endpoint
 
-## Design
+The historical report interpreted lower cross-scanner cosine after PCA removal
+as "tissue damage." That conclusion is not supported. Cosine values can change
+under centering, standardization, dimensionality reduction, and learned nonlinear
+projections without establishing loss of biological information.
 
-All baselines operate on frozen DINOv2-base features without trainable parameters,
-using only fold-fit standardization and linear algebraic operations computed from
-the fit split:
+The problem is visible in the k=0 control: applying no scanner-direction removal
+still changed cosine and retrieval relative to the original frozen features
+because the baseline pipeline changed the feature geometry through
+standardization. Consequently, cosine values from those differently transformed
+representations cannot serve as a direct measure of retained biology.
 
-| Baseline | Description |
-|---|---|
-| `original_frozen_features` | Frozen DINOv2 embeddings evaluated directly after fold alignment. |
-| `linear_scanner_subspace_projection_k*` | Top-k logistic scanner-discriminative directions removed after standardization. Directions learned via balanced L2-penalized logistic regression on fit-scanner labels, then SVD-decomposed. |
-| `pca_component_removal_k*` | Top-k PCA directions removed after fit-mean centering and standardization. |
-| `paired_consistency_reference` | Existing locked paired-consistency projected features (five seeds per fold). |
-| `paired_acquisition_neural_factorization_reference` | Existing locked Paired-Acquisition Neural Factorization dep20 projected features (five seeds per fold) used as the method reference. |
+### The baseline set did not include the strongest known linear removal result
 
-k values tested: 0, 1, 2, 4, 8, 16, 32.
+The historical runner used a standardized logistic/scanner-direction baseline.
+A separate oldstyle centroid/QR audit later reached substantially lower raw
+scanner-probe accuracy. Therefore, this report cannot support the statement that
+no simple baseline approached the neural method on scanner removal.
 
-Both linear scanner-subspace projection and PCA were computed per fold using only
-the fit split. Evaluation used the held-out test split with original-slide blocking
-(SCORPION) or sample blocking (canine SCC).
+### The paired baseline and factorization were not capacity matched
 
-Three baselines were skipped:
+The paired-consistency reference used one latent branch, while the factorization
+used biological and acquisition branches and reconstructed from both. The old
+comparison did not isolate whether scanner suppression came from paired
+identification, additional branch capacity, reconstruction routing, scanner
+supervision, or individual regularizers.
 
-- **random_pair_training**: no safe existing baseline mode was available without new
-  pair-training semantics beyond the completed shuffled-pair falsification controls.
-- **optional ablations** (adversarial_only, no_acquisition_branch, no_covariance_penalty):
-  not available as clean locked runners.
+A frozen capacity-matched ablation runner now exists at:
 
-## SCORPION DINOv2 Results
+`experiments/scorpion/run_pathoalign_capacity_matched_ablations.py`
 
-125 rows across 5 folds (0--4), 17 baselines, 5 reference seeds.
-Runtime: 51 seconds.
+New conclusions require those 175 fits and their preregistered analysis.
 
-| Baseline | Scanner Probe ↓ | Mean Cosine ↑ | Worst Cosine ↑ | Mean Top1 ↑ | Eff. Rank |
-|---|---|---|---|---|---|
-| **Neural Factorization** | **0.399** | **0.879** | **0.850** | **0.9998** | 54.5 |
-| Paired Consistency Ref | 0.782 | 0.848 | 0.820 | 0.9999 | 56.9 |
-| Original Frozen Features | 0.865 | 0.987 | 0.982 | 0.9986 | 30.0 |
-| Linear Scanner k=0 | 0.866 | 0.867 | 0.821 | 0.9999 | 34.0 |
-| Linear Scanner k=1 | 0.816 | 0.869 | 0.829 | 0.9999 | 33.9 |
-| Linear Scanner k=2 | 0.786 | 0.872 | 0.834 | 0.9999 | 33.8 |
-| **Linear Scanner k≥4 (best)** | **0.724** | **0.881** | **0.850** | **0.9999** | 33.4 |
-| PCA k=1 | 0.868 | 0.849 | 0.796 | 0.9992 | 41.3 |
-| PCA k=8 | 0.816 | 0.807 | 0.747 | 0.9998 | 63.7 |
-| PCA k=16 | 0.634 | 0.818 | 0.765 | 1.0000 | 74.5 |
-| **PCA k=32** | **0.560** | **0.806** | **0.765** | **1.0000** | 84.3 |
+## What the historical tables still show
 
-## External Canine SCC DINOv2 Results
+Under the exact original protocols:
 
-125 rows across 5 folds (0--4), 17 baselines, 5 reference seeds.
-Runtime: 92 seconds.
+- the factorized biological branch had lower linear scanner-probe accuracy than
+  the paired-consistency reference;
+- PCA and the tested standardized scanner-direction removals changed scanner
+  recoverability and representation geometry;
+- same-region top-1 retrieval was nearly saturated for many SCORPION
+  representations;
+- the tested metrics did not establish a biological-preservation ranking.
 
-| Baseline | Scanner Probe ↓ | Mean Cosine ↑ | Worst Cosine ↑ | Mean Top1 ↑ | Eff. Rank |
-|---|---|---|---|---|---|
-| **Neural Factorization** | **0.361** | **0.730** | **0.657** | **0.933** | 74.0 |
-| Paired Consistency Ref | 0.753 | 0.696 | 0.627 | 0.931 | 79.8 |
-| Original Frozen Features | 0.863 | 0.919 | 0.891 | 0.833 | 46.4 |
-| Linear Scanner k=0 | 0.864 | 0.733 | 0.657 | 0.873 | 53.7 |
-| Linear Scanner k=1 | 0.807 | 0.734 | 0.657 | 0.872 | 53.6 |
-| Linear Scanner k=2 | 0.766 | 0.735 | 0.659 | 0.873 | 53.5 |
-| **Linear Scanner k≥4 (best)** | **0.707** | **0.739** | **0.665** | **0.874** | 53.3 |
-| PCA k=1 | 0.865 | 0.701 | 0.616 | 0.884 | 71.0 |
-| PCA k=8 | 0.818 | 0.650 | 0.540 | 0.917 | 107.0 |
-| PCA k=16 | 0.728 | 0.629 | 0.526 | 0.931 | 126.8 |
-| **PCA k=32** | **0.641** | **0.598** | **0.481** | **0.935** | 149.3 |
+These are descriptive observations, not proof that one representation preserved
+more biological information than another.
 
-## Cross-Dataset Pattern
+## Current permitted comparison language
 
-| Metric | SCORPION | Canine SCC |
-|---|---|---|
-| Neural scanner probe | 0.399 | 0.361 |
-| Neural mean cosine | 0.879 | 0.730 |
-| Best linear scanner probe | 0.724 | 0.707 |
-| Best linear mean cosine | 0.881 | 0.739 |
-| Best PCA scanner probe | 0.560 | 0.641 |
-| Best PCA mean cosine | 0.806 | 0.598 |
-| Original scanner probe | 0.865 | 0.863 |
-| Original mean cosine | 0.987 | 0.919 |
+Safe:
 
-## Interpretation
+> Under the historical protocol, Paired-Acquisition Neural Factorization reduced
+> linearly recoverable scanner identity more than the paired-consistency reference
+> and the particular standardized post-hoc baselines tested in that runner.
 
-Linear scanner-subspace projection preserves tissue structure (cosine 0.881
-SCORPION, 0.739 canine) but saturates quickly at the learned scanner-subspace
-rank (k≥4), leaving substantial recoverable scanner signal (probe 0.724 SCORPION,
-0.707 canine). The scanner subspace appears to capture only a fraction of the
-acquisition variation that neural factorization can separate.
+Safe:
 
-PCA component removal suppresses scanner further (probe 0.560 SCORPION,
-0.641 canine) but causes substantial tissue damage: mean cosine drops from 0.987
-to 0.806 (SCORPION) and from 0.919 to 0.598 (canine SCC). The dominant-variance
-directions carry both scanner and tissue information, so removing them deletes
-useful biology.
+> The oldstyle centroid/QR baseline is the strongest historical raw
+> scanner-removal result, but its category-preservation comparison must be
+> regenerated under the corrected biological-label audit v2.
 
-Paired-Acquisition Neural Factorization achieves scanner probe 0.399
-(SCORPION) and 0.361 (canine SCC) while preserving mean cosine at 0.879 and
-0.730 respectively. No simple baseline comes within 0.03 scanner probe of the
-neural reference on either dataset.
+Not safe:
 
-## Decision
+> PCA caused tissue damage.
 
-**Scanner suppression alone is insufficient; tissue-preserving factorization
-remains valuable.** Across both SCORPION and external canine SCC, simple
-scanner-removal baselines cannot reproduce the scanner-suppression/tissue-preservation
-tradeoff achieved by Paired-Acquisition Neural Factorization.
+Not safe:
 
-Linear projection preserves tissue but barely suppresses scanner. PCA suppresses
-scanner more but damages tissue. Neural factorization achieves substantially
-stronger scanner suppression while preserving tissue structure.
+> Neural factorization achieved the best tissue-preserving trade-off.
 
-The baseline objection is externally weakened.
+Not safe:
 
-## Claim Boundary
+> No simple baseline came close to the neural method.
 
-This is peer-review-hardening evidence only. It does not claim clinical validation,
-diagnostic performance, disease biology discovery, human clinical generalization,
-complete scanner invariance, or deployment readiness.
+Not safe:
 
-## Reproduction
+> Cosine agreement proves biological preservation.
 
-```powershell
-# SCORPION:
-python -u experiments/baselines/run_pair_integrity_baseline_murder_test.py --datasets scorpion --folds 0 1 2 3 4
+## Required replacement evidence
 
-# Canine SCC:
-python -u experiments/baselines/run_pair_integrity_baseline_murder_test.py --out-dir results/paired_acquisition_factorization_baseline_murder_test_caninescc --datasets caninescc --folds 0 1 2 3 4
-```
+1. Run the capacity-matched SCORPION objective ablations.
+2. Run the canine biological-label audit v2 with the oldstyle centroid/QR
+   baseline included under fit-only, sample-blocked evaluation.
+3. Evaluate downstream labels or hard retrieval outcomes that exclude same-region
+   and same-sample shortcuts.
+4. Report scanner suppression, representation agreement, downstream retention,
+   rank, and acquisition capture as separate outcomes rather than one informal
+   trade-off score.
+5. Publish new outputs through the forward-valid provenance contract.
 
-## Output Files
+## Historical artifacts
 
-- `results/paired_acquisition_factorization_baseline_murder_test/` — SCORPION results
-- `results/paired_acquisition_factorization_baseline_murder_test_caninescc/` — Canine SCC results
-- `experiments/baselines/run_pair_integrity_baseline_murder_test.py` — Runner script
+The original result directories remain available:
+
+- `results/paired_acquisition_factorization_baseline_murder_test/`
+- `results/paired_acquisition_factorization_baseline_murder_test_caninescc/`
+
+They are not current authority for biological preservation or baseline supremacy.
+The repository-wide authority is `CLAIM_BOUNDARY.md`.
