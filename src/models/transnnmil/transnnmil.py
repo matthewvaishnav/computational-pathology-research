@@ -280,9 +280,7 @@ class TransnnMIL(nn.Module):
                 return_attention=True,
             )
 
-        logits = self.fusion_classifier(
-            self._fused_features(features, num_patches, coordinates)
-        )
+        logits = self.fusion_classifier(self._fused_features(features, num_patches, coordinates))
         if return_attention:
             return logits, attention_a
         return logits
