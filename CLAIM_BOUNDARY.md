@@ -60,10 +60,10 @@ The following results are not current claim evidence:
    contribution. Repaired models require new matched reruns.
 2. **Historical canine biological-category audit.** Category-probe,
    category-purity, category/scanner-ratio, and derived bottleneck category
-   conclusions are withdrawn pending the v2 audit. The old audit contained
-   test-set preprocessing leakage in one baseline, scale-incomparable probes,
-   same-region nearest-neighbour leakage, and a changing rare-class estimand
-   across folds.
+   conclusions are withdrawn pending the fixed-estimand audit. The old audit
+   contained test-set preprocessing leakage in one baseline, scale-incomparable
+   probes, same-region nearest-neighbour leakage, and a changing rare-class
+   estimand across folds.
 3. **Unified separation scoreboard rankings.** Cross-dataset and cross-protocol
    values are an evidence inventory, not a controlled leaderboard.
 4. **PCam clinical or superiority claims.** No statement about diagnoses saved,
@@ -110,7 +110,7 @@ Not safe:
 
 The strongest historical raw scanner-removal result is the oldstyle centroid/QR
 projection. Any future comparison with it must be rerun under the corrected,
-matched v2 protocol before category-preservation numbers are promoted.
+fixed-estimand protocol before category-preservation numbers are promoted.
 
 ## Whole-slide modeling boundary
 
@@ -180,7 +180,7 @@ Not safe:
 
 New promoted claims require:
 
-- the canine biological-label audit v2;
+- the fixed-estimand canine biological-label audit;
 - fold-aware SCORPION inference;
 - capacity-matched SCORPION objective ablations;
 - repaired TransnnMIL controlled reruns;
