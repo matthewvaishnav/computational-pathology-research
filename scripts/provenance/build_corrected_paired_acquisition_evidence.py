@@ -32,6 +32,7 @@ CANINE_SOURCE = REPO_ROOT / (
     "results/paired_acquisition_factorization_" "biological_label_preservation_fixed_estimand"
 )
 SCORPION_SOURCE = REPO_ROOT / "results/paired_acquisition_factorization_scorpion_fold_aware_v2"
+SCORPION_RAW_INPUT = "results/scorpion/pathoalign_dinov2_crossfold_analysis/raw_slide_metrics.csv"
 
 
 def write_json(path: Path, value: dict[str, Any]) -> None:
@@ -92,6 +93,20 @@ def copy_promoted(source: Path, relative_destination: str) -> Path:
     canonical = content.replace("\r\n", "\n").replace("\r", "\n")
     with destination.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write(canonical)
+    return destination
+
+
+def publish_scorpion_design(source: Path, relative_destination: str) -> Path:
+    design = json.loads(source.read_text(encoding="utf-8"))
+    source_input = design.get("input")
+    if not isinstance(source_input, str):
+        raise RuntimeError("SCORPION design input must be a path string")
+    if Path(source_input).resolve() != (REPO_ROOT / SCORPION_RAW_INPUT).resolve():
+        raise RuntimeError("SCORPION design input does not match the expected source")
+    design["input"] = SCORPION_RAW_INPUT
+    destination = PACKAGE_ROOT / relative_destination
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    write_json(destination, design)
     return destination
 
 
@@ -218,7 +233,7 @@ def main() -> None:
         ),
     }
     scorpion_promoted_paths = {
-        "analysis_design": copy_promoted(
+        "analysis_design": publish_scorpion_design(
             SCORPION_SOURCE / "analysis_design.json",
             "scorpion/analysis_design.json",
         ),

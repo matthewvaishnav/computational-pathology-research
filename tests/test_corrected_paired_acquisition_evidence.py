@@ -28,6 +28,16 @@ def test_tracked_corrected_evidence_is_current():
     assert summary["external_inputs_revalidated"] is False
 
 
+def test_tracked_scorpion_design_uses_repository_relative_input():
+    design_path = TRACKED_MANIFEST.parent / "scorpion" / "analysis_design.json"
+    design = json.loads(design_path.read_text(encoding="utf-8"))
+
+    assert (
+        design["input"] == "results/scorpion/pathoalign_dinov2_crossfold_analysis/"
+        "raw_slide_metrics.csv"
+    )
+
+
 def test_promoted_artifact_tampering_fails_closed(tmp_path):
     package = tmp_path / "corrected-evidence"
     shutil.copytree(TRACKED_MANIFEST.parent, package)

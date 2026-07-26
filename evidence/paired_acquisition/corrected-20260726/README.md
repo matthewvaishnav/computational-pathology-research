@@ -21,6 +21,8 @@ row counts where applicable, and SHA-256 hashes are recorded in
 Tracked text artifacts use canonical LF line endings. The release manifest
 separately binds the untouched source-output bytes, so this publication
 normalization does not replace or rewrite the external result directories.
+Machine-local source paths are canonicalized to repository-relative paths in
+the promoted design records.
 
 ## Evidence boundary
 

@@ -577,8 +577,8 @@
         {
           "path": "scorpion/analysis_design.json",
           "role": "analysis_design",
-          "sha256": "4034f1cc6cda22f34a8dda13b9e244415417c193f7729322b958005700b784d3",
-          "size_bytes": 639
+          "sha256": "204cf8af523754587def3e65cf83bfe800cd98cf64367cd7c394086063aab866",
+          "size_bytes": 584
         },
         {
           "path": "scorpion/fold_aware_contrasts.csv",
@@ -607,7 +607,7 @@
     ]
   },
   "publication": {
-    "created_at_utc": "2026-07-26T15:58:17+00:00",
+    "created_at_utc": "2026-07-26T16:44:42+00:00",
     "raw_outputs_committed": false,
     "repository": "https://github.com/matthewvaishnav/computational-pathology-research",
     "tracked_content": "validated summaries, design records, support table, environment, hash bindings, claim-boundary snapshot, and release metadata"
@@ -622,14 +622,14 @@
     {
       "path": "environment.json",
       "role": "environment",
-      "sha256": "c44b833c748a7e105c467aa27b983e68274e89cd95d0c3395b981715d5695b04",
+      "sha256": "e883f22468ffae97c1f3cc643ba511dc71527aee8c53be0a0d2331b479ed0eec",
       "size_bytes": 604
     },
     {
       "path": "README.md",
       "role": "readme",
-      "sha256": "773ce211c8fe742fd859cbf525541fe5317dc4d6efc16118db3ee89b8ac850ed",
-      "size_bytes": 2005
+      "sha256": "7cf9a9c0b61c3e47534cff2d361b447092db1d04f68ca735e36d6a824e810cae",
+      "size_bytes": 2111
     }
   ],
   "schema_version": "corrected-paired-acquisition-evidence/v1",

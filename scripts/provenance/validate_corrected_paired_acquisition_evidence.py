@@ -17,6 +17,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = Path("evidence/paired_acquisition/corrected-20260726/release_manifest.json")
 SCHEMA_VERSION = "corrected-paired-acquisition-evidence/v1"
+SCORPION_RAW_INPUT = "results/scorpion/pathoalign_dinov2_crossfold_analysis/raw_slide_metrics.csv"
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
 
@@ -343,6 +344,7 @@ def validate_scorpion(
         or design.get("analysis_version") != 2
         or design.get("n_folds") != 5
         or design.get("bootstrap_draws") != 100000
+        or design.get("input") != SCORPION_RAW_INPUT
         or design.get("sign_flip_p_values") != "not reported"
         or design.get("seed_averaging") != "within fold/slide/method before contrast"
         or design.get("bootstrap") != "resample folds, then slides within sampled folds"
