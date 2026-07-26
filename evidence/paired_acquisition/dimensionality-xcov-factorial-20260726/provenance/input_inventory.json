@@ -1,0 +1,47 @@
+{
+  "feature_archive": {
+    "bytes": 11556453,
+    "path": "results/external_multiscanner_caninescc/features/fold_0_dinov2_base.npz",
+    "sha256": "5db383771614a9018a72d57ba8dd45c8f89adb4cb665103133aa8188496e3e80"
+  },
+  "frozen_plan_payload_sha256": "15337b8c8c033e877e817672e4a8fe1d192d8f18b0fd07a7e5b6be363a152a3d",
+  "locked_execution_state_sha256": "d58280fa5588958ae0544bf005b4f2fd33d712a6bb5e0a1ba0588d2195ad7803",
+  "schema_version": "paired-acquisition-factorial-input-inventory/v1",
+  "smoke_authorization_manifest": {
+    "bytes": 6043,
+    "path": "results/paired_acquisition_factorial/smoke-gate-v1/release_manifest.json",
+    "sha256": "fb37998fd92f04ab99f05a5fc161f69e7eb377a996c94c5fbfe18ee9a98f0732"
+  },
+  "split_manifests": [
+    {
+      "bytes": 527586,
+      "fold": 0,
+      "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_0_patch_manifest.csv",
+      "sha256": "19306704f6dc919790d13d0f77bfe2b6975b0fbf34388553f0a31aced97a7081"
+    },
+    {
+      "bytes": 527801,
+      "fold": 1,
+      "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_1_patch_manifest.csv",
+      "sha256": "96501c9be1258f74c119d9f88a61c6945cf51f8c56ab53147b6c0b10792b3212"
+    },
+    {
+      "bytes": 527911,
+      "fold": 2,
+      "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_2_patch_manifest.csv",
+      "sha256": "6d6c2bc39de24244e414816dd4386fd0a61c94fc2e7d66f6e88aef61f66e1f3e"
+    },
+    {
+      "bytes": 527706,
+      "fold": 3,
+      "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_3_patch_manifest.csv",
+      "sha256": "3396e0fb34d92af27dbd982bd5cea16fbeae7cc3b4d3bb64ee9f04ca959cdaf7"
+    },
+    {
+      "bytes": 527901,
+      "fold": 4,
+      "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_4_patch_manifest.csv",
+      "sha256": "a382ed29bc8bd74178282183fcbb9d2a3f66665391a4be234acdb6f3eac995f6"
+    }
+  ]
+}

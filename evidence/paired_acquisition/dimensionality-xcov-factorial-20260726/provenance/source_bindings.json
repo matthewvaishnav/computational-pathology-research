@@ -1,0 +1,26 @@
+{
+  "analysis_source": {
+    "commit": "7cc1ce85db45930f9e413dea6175636e587f5a9c",
+    "pull_request": 66,
+    "relationship": "analysis_implementation_pr_head",
+    "tree": "f6a60923d0681b34820b5b8fa250192f31b31f01",
+    "url": "https://github.com/matthewvaishnav/computational-pathology-research/pull/66"
+  },
+  "evidence_builder_source": {
+    "commit": "d4c2a34412afeabe127ba6cbc28aca5b508ca193",
+    "tree": "8b8af4865062ec4a811b1a757fb0c65e4483e54b"
+  },
+  "execution_source": {
+    "commit": "ebead9009ee83816f5ac1ad5ca37e0cb8e7950fa",
+    "repository": "matthewvaishnav/computational-pathology-research",
+    "tree": "ed489cf11517cf189364c956056c384985feb5bc"
+  },
+  "reviewed_execution_source": {
+    "commit": "ebead9009ee83816f5ac1ad5ca37e0cb8e7950fa",
+    "pull_request": 57,
+    "relationship": "reviewed_merge_commit_identical_to_execution_source",
+    "tree": "ed489cf11517cf189364c956056c384985feb5bc",
+    "url": "https://github.com/matthewvaishnav/computational-pathology-research/pull/57"
+  },
+  "schema_version": "paired-acquisition-factorial-source-bindings/v1"
+}

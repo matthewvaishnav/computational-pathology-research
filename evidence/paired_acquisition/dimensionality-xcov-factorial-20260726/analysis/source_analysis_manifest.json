@@ -1,0 +1,75 @@
+{
+  "analysis_commit": "7cc1ce85db45930f9e413dea6175636e587f5a9c",
+  "analysis_spec": "experiments/paired_acquisition/factorial_analysis_spec.json",
+  "analysis_spec_sha256": "374d8a8bfbf8f48d15174e3974533f6624c6a3c77a149a4a642b78f3b96688c1",
+  "artifacts": [
+    {
+      "bytes": 732514,
+      "path": "slide_metrics.csv",
+      "sha256": "da5edf986d2eff801ea8d04208443f4f5b77d3a5ba714e9027051ad210dfcbd7"
+    },
+    {
+      "bytes": 130963,
+      "path": "seed_averaged_slide_metrics.csv",
+      "sha256": "cf29d60ac76ad99f610269ea03168017b8a2af9c0cf221b6758292ab82c79650"
+    },
+    {
+      "bytes": 23376,
+      "path": "condition_summary.csv",
+      "sha256": "a0b7de94ce76a0e0cb425614adc01513de2081375018e307a034270458d66605"
+    },
+    {
+      "bytes": 190973,
+      "path": "slide_level_contrasts.csv",
+      "sha256": "0c6ef49ffa95c8fdc2c9f8587815ef4ab6042fdc44a107e633cfc8570f80a2ef"
+    },
+    {
+      "bytes": 90737,
+      "path": "fold_level_contrasts.csv",
+      "sha256": "600641097308d19da7f362b8bd397a3b586a986a0fa24fba50345b9267f0d8be"
+    },
+    {
+      "bytes": 25429,
+      "path": "fold_aware_contrasts.csv",
+      "sha256": "788d5e33945d5e21512be5efe1edcb567ec06df737d67b8ec2d9d384d6f507fb"
+    },
+    {
+      "bytes": 16277,
+      "path": "seed_fold_contrast_consistency.csv",
+      "sha256": "8fc08cbea97c90660a5239811aaee5265845ae05ebf92bf0ef62d9e42712219f"
+    },
+    {
+      "bytes": 534,
+      "path": "pareto_stability.csv",
+      "sha256": "104d3d7a5fc3ba020d232038bdd9e6dc47b655e062d1e50636528dfac4dd224f"
+    },
+    {
+      "bytes": 1073,
+      "path": "suppression_retention_association.csv",
+      "sha256": "84b3d96d934e69d1f337b2bd9ac75b3a0f5d274cb348888abc2808fa0e5023bc"
+    },
+    {
+      "bytes": 1409,
+      "path": "analysis_report.md",
+      "sha256": "15862bfd0816f5d7d279e84880deb715d2060cb9dc76eba335fe7a0c7b12ce89"
+    }
+  ],
+  "bootstrap_draws": 50000,
+  "claim_boundaries": [
+    "Cosine similarity alone does not establish biological or task preservation.",
+    "A near-zero retrieval contrast is not described as an improvement.",
+    "No slide-independent sign-flip p-values are reported.",
+    "Condition associations do not establish that scanner suppression causes retention changes.",
+    "No cell is called universally optimal; the stable operating region is a parameter-free intersection of fold-specific Pareto sets.",
+    "Results apply only to the registered canine SCC DINOv2 paired-acquisition protocol.",
+    "The analysis cannot establish pure biological factors, complete scanner invariance, information-theoretic independence, clinical utility, causality, or universal capacity or regularization laws."
+  ],
+  "schema_version": "paired-acquisition-factorial-analysis-manifest/v1",
+  "seed_averaging": "average seeds within fold, dimension, cross-covariance weight, and biological sample before inferential summaries",
+  "source_release_id": "parelease-v1-9d52c3db0ce9583fb428c37bf540bb253dd2a1f92fbbfb1d132a0212f8bb6916",
+  "source_release_manifest": "results/paired_acquisition_factorial/full-gate-v1/release_manifest.json",
+  "source_release_manifest_sha256": "0273804715cd0748718f12474fbd3e3aee0a5c3755fb80f50abe7943f2dfc005",
+  "source_run_count": 450,
+  "statistical_unit": "held-out biological sample nested in trained fold",
+  "status": "valid"
+}
