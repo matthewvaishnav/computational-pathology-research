@@ -19,6 +19,7 @@ if str(REPO_ROOT) not in sys.path:
 from experiments.scorpion import run_pathoalign_capacity_matched_ablations as runner
 from scripts.provenance.validate_scorpion_capacity_matched_evidence import (
     SCHEMA_VERSION,
+    canonical_artifact_bytes,
     sha256_bytes,
     sha256_file,
     validate_evidence,
@@ -74,11 +75,12 @@ def path_record(
     include_row_count: bool = False,
 ) -> dict[str, Any]:
     resolved = path.resolve()
+    content = canonical_artifact_bytes(resolved)
     record: dict[str, Any] = {
         "path": resolved.relative_to(base.resolve()).as_posix(),
         "role": role,
-        "sha256": sha256_file(resolved),
-        "size_bytes": resolved.stat().st_size,
+        "sha256": sha256_bytes(content),
+        "size_bytes": len(content),
     }
     if include_row_count:
         record["row_count"] = csv_row_count(resolved)

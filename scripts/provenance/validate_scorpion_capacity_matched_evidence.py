@@ -25,6 +25,7 @@ EXPECTED_REVIEWED_MERGE_COMMIT = "307784999348868d8887f270757bde7529da225f"
 TREE_EQUIVALENCE_RELATIONSHIP = "squash_merge_whole_tree_equivalent_to_execution_source"
 COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 SHA_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+CANONICAL_TEXT_SUFFIXES = {".csv", ".json", ".jsonl", ".md", ".py", ".txt"}
 EXPECTED_VARIANTS = (
     "paired_reference",
     "two_branch_no_scanner_objectives",
@@ -69,6 +70,13 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def canonical_artifact_bytes(path: Path) -> bytes:
+    content = path.read_bytes()
+    if path.suffix.lower() in CANONICAL_TEXT_SUFFIXES:
+        return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return content
 
 
 def read_json(path: Path) -> Any:
@@ -132,7 +140,8 @@ def resolve_record(
     if require_file:
         if not resolved.is_file() or resolved.is_symlink():
             raise EvidenceValidationError(f"{label} is missing: {resolved}")
-        if resolved.stat().st_size != size or sha256_file(resolved) != digest:
+        content = canonical_artifact_bytes(resolved)
+        if len(content) != size or sha256_bytes(content) != digest:
             raise EvidenceValidationError(f"{label} hash or size mismatch: {resolved}")
         if "row_count" in record:
             if resolved.suffix != ".csv":
@@ -664,7 +673,7 @@ def validate_evidence(
         for role, record in promoted.items()
     }
     for role, path in promoted_paths.items():
-        if path.stat().st_size > 5_000_000:
+        if len(canonical_artifact_bytes(path)) > 5_000_000:
             raise EvidenceValidationError(f"Promoted artifact is unexpectedly large: {role}")
         if path.suffix.lower() in {".pt", ".pth", ".ckpt", ".npz", ".npy"}:
             raise EvidenceValidationError(f"Large/raw artifact type was promoted: {role}")

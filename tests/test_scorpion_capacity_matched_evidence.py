@@ -37,15 +37,28 @@ def test_record_map_rejects_duplicate_roles_and_paths():
 def test_resolve_record_detects_hash_tampering(tmp_path: Path):
     path = tmp_path / "artifact.json"
     path.write_text("{}\n", encoding="utf-8")
+    content = evidence.canonical_artifact_bytes(path)
     record = {
         "path": "artifact.json",
-        "sha256": evidence.sha256_file(path),
-        "size_bytes": path.stat().st_size,
+        "sha256": evidence.sha256_bytes(content),
+        "size_bytes": len(content),
     }
     evidence.resolve_record(record, base=tmp_path, label="test", require_file=True)
     path.write_text('{"changed": true}\n', encoding="utf-8")
     with pytest.raises(evidence.EvidenceValidationError):
         evidence.resolve_record(record, base=tmp_path, label="test", require_file=True)
+
+
+def test_resolve_record_canonicalizes_text_line_endings(tmp_path: Path):
+    path = tmp_path / "artifact.csv"
+    path.write_bytes(b"field\r\nvalue\r\n")
+    canonical = b"field\nvalue\n"
+    record = {
+        "path": "artifact.csv",
+        "sha256": evidence.sha256_bytes(canonical),
+        "size_bytes": len(canonical),
+    }
+    evidence.resolve_record(record, base=tmp_path, label="test", require_file=True)
 
 
 def test_reviewed_execution_relationship_requires_whole_tree_equivalence():
