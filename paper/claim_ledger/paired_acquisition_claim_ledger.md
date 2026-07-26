@@ -1,6 +1,7 @@
 # Paired-Acquisition Neural Factorization — audit-aware claim ledger
 
-**Status:** revised after scientific audit on 2026-07-25  
+**Status:** corrected evidence promoted on 2026-07-26
+
 **Authority:** subordinate to `CLAIM_BOUNDARY.md`
 
 This ledger replaces the previous numerical claim ledger. Historical details
@@ -19,8 +20,11 @@ Under the tested paired-scanner protocols:
 - the tissue-oriented branch contains substantially less linearly recoverable
   scanner identity than paired-consistency references;
 - an explicit acquisition branch retains strong scanner information;
-- same-region retrieval and cross-scanner agreement are largely preserved;
-- true biological correspondence in the training pairs improves same-region
+- corrected canine tissue-category balanced accuracy and fit-pool category
+  purity remain close to the frozen representation;
+- same-region retrieval is largely preserved and SCORPION cross-view cosine
+  agreement improves geometrically;
+- true same-region correspondence in the training pairs improves same-region
   identity preservation relative to weakened or shuffled pair controls.
 
 The contribution is **partial structured separation**, not complete
@@ -66,13 +70,22 @@ must be complemented by harder outcomes.
 - Pair-integrity and acquisition-swapping mechanism audits under their explicit
   boundaries.
 
-### Pending evidence
+### Corrected canine evidence
 
-Canine biological-category probe, category-purity, and category/scanner-ratio
-numbers from the historical audit are withdrawn. They may return only after the
-corrected audit defines a fixed sample-supported category estimand, uses fit-only
-preprocessing, excludes same-region and same-sample neighbours, and reports
-sample-aware uncertainty.
+The active replacement uses one fixed five-category estimand in all five
+biological-sample-blocked folds, fit-only probe standardization, fit-pool
+neighbours, same-region and same-sample exclusions, and seed averaging within
+fold. Exact five-fold means are:
+
+| Representation | Scanner probe balanced accuracy | Category probe balanced accuracy | Fit-pool purity k=5 |
+|---|---:|---:|---:|
+| Original frozen features | 0.8628184955462632 | 0.44086590895818567 | 0.42409036761242336 |
+| True-pair tissue-oriented | 0.3614076415619065 | 0.4353482507842298 | 0.429310749459204 |
+| True-pair acquisition | 0.865097576168538 | 0.39818864063789994 | 0.3063124063151831 |
+| Linear centroid/QR k=4 | 0.2 | 0.44245014748183487 | 0.4377408893348 |
+
+These are descriptive representation metrics. Historical canine category
+metrics remain withdrawn and are not combined with the corrected values.
 
 ### Forbidden wording
 
@@ -85,14 +98,15 @@ sample-aware uncertainty.
 
 ### Active wording
 
-> Historical oldstyle centroid/QR projection produced the strongest raw linear
-> scanner-removal result. Paired-Acquisition Neural Factorization therefore must
-> not be presented as the best scanner-erasure method.
+> Under the corrected fixed-estimand canine audit, the linear centroid/QR
+> baseline removes linearly recoverable scanner information more aggressively
+> than the neural tissue-oriented branch while retaining similar descriptive
+> category structure. The neural method additionally retains an explicit
+> acquisition branch with strong scanner information.
 
-### Pending comparison
-
-The historical category-preservation comparison against oldstyle projection is
-not active evidence until it is regenerated under the corrected category audit.
+The corrected k=4 linear projection has scanner balanced accuracy `0.2`,
+category balanced accuracy `0.44245014748183487`, and fit-pool purity k=5
+`0.4377408893348`. It must not be converted into a claim of biological purity.
 Cosine differences across differently transformed feature spaces must not be
 called biological preservation or tissue damage.
 
@@ -115,12 +129,15 @@ called biological preservation or tissue damage.
 SCORPION cross-backbone same-region retrieval leakage may be reported by
 backbone, provided it is not relabelled as category leakage.
 
-### Pending evidence
+### Boundary
 
-Historical canine acquisition-branch category-leakage numbers are withdrawn
-pending the corrected category audit. No acquisition dimension may be described
-as optimal. The locked dimension-by-cross-covariance factorial remains the
-appropriate confirmatory experiment.
+The corrected true-pair acquisition branch retains strong scanner information
+(`0.865097576168538` scanner balanced accuracy). Its descriptive category
+balanced accuracy (`0.39818864063789994`) and fit-pool purity k=5
+(`0.3063124063151831`) do not establish category absence or biological purity.
+Historical bottleneck category-leakage numbers remain withdrawn. No acquisition
+dimension may be described as optimal; the locked dimension-by-cross-covariance
+factorial remains the appropriate confirmatory experiment.
 
 ## CLAIM 5 — Acquisition swapping is factor-like evidence
 
@@ -138,12 +155,12 @@ pixel-level realism, or deployment-ready editing.
 ## Required controls before stronger promotion
 
 1. Capacity-matched SCORPION objective ablations.
-2. Corrected canine biological-label audit with a fixed category estimand.
-3. Fold-aware SCORPION inference.
-4. Repaired TransnnMIL matched reruns.
-5. Harder retention tests that exclude same-region and same-sample shortcuts.
-6. Forward-valid provenance releases.
-7. A second labeled multi-scanner dataset and stronger independent human-tissue
+2. Completion and preregistered aggregate analysis of the locked
+   dimension-by-cross-covariance factorial.
+3. Repaired TransnnMIL matched reruns.
+4. Harder retention tests beyond near-saturated same-region retrieval.
+5. Forward-valid provenance releases for every additional numerical claim.
+6. A second labeled multi-scanner dataset and stronger independent human-tissue
    validation.
 
 ## TransnnMIL boundary
@@ -158,10 +175,22 @@ controls.
 ## Statistical boundary
 
 The historical 48-slide SCORPION bootstrap and sign-flip p-values treated slide
-summaries as more independent than the five-fold training design supports.
-Current inference must use fold-aware analysis and retain the limitation that
-five training clusters are few. Large descriptive effects may be reported
-separately from formal inferential precision.
+summaries as more independent than the five-fold training design supports and
+remain withdrawn. Current fold-aware contrasts for
+`pathoalign_dep20_minus_paired_reference` are:
+
+| Metric | Mean difference | 95% fold/slide bootstrap interval |
+|---|---:|---:|
+| Scanner probe accuracy | -0.38541666666666674 | [-0.42064000000000007, -0.34643478260869565] |
+| Pair cosine average | 0.031035241278509318 | [0.026858407069387497, 0.035674580187052544] |
+| Pair cosine worst | 0.03109579056501389 | [0.025433909586680174, 0.03806131886798837] |
+| Retrieval top-1 average | -0.0000833333333333311 | [-0.0003829787234042509, 0.00020833333333334278] |
+| Retrieval top-1 worst | -0.0004166666666666624 | [-0.002083333333333321, 0.0014893617021276633] |
+
+The scanner and cosine contrasts support substantial scanner-recoverability
+reduction and improved representation geometry. Both retrieval intervals include
+zero, so same-region retrieval is effectively unchanged and retrieval
+improvement is not supported. Five training clusters remain a small number.
 
 ## Clinical boundary
 

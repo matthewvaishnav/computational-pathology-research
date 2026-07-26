@@ -1,0 +1,11 @@
+{
+  "analysis_version": 2,
+  "bootstrap": "resample folds, then slides within sampled folds",
+  "bootstrap_draws": 100000,
+  "claim_boundary": "Intervals describe uncertainty under the observed five-fold design. Five folds remain a small number of training clusters, and repeated independent fold assignments would provide stronger confirmation.",
+  "input": "C:\\Users\\matth\\computational-pathology-research\\results\\scorpion\\pathoalign_dinov2_crossfold_analysis\\raw_slide_metrics.csv",
+  "n_folds": 5,
+  "seed_averaging": "within fold/slide/method before contrast",
+  "sign_flip_p_values": "not reported",
+  "status": "completed"
+}
