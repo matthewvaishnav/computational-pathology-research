@@ -1,0 +1,22 @@
+{
+  "analysis_code": "scripts/scorpion/analyze_pathoalign_capacity_matched_ablations.py",
+  "analysis_code_sha256": "2c7fad991999a8bf0527617adf1662f9f3d5179c8ba4e0873a631a992e5ff286",
+  "analysis_specification": "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json",
+  "analysis_specification_sha256": "5350a1ab988e95beef0d87edf260d817e928573208f6042fb2c03025ad84f819",
+  "bootstrap": "resample the five trained folds, then slides within each sampled fold",
+  "bootstrap_draws": 100000,
+  "campaign_hash": "59ba04450adf738aa2983dc40ecb4ff09ffa495f13d43c56edde5ec57707a2e1",
+  "claim_boundaries": [
+    "Cosine similarity alone does not establish biological preservation.",
+    "No slide-independent sign-flip p-values are reported.",
+    "Results apply only to the registered paired-acquisition dataset and protocol.",
+    "The analysis cannot establish pure biological factors, complete scanner invariance, information-theoretic independence, clinical utility, or universal objective necessity."
+  ],
+  "experiment_directory": "results/scorpion/pathoalign_capacity_matched_ablations_v1",
+  "schema_version": "scorpion-capacity-matched-analysis/v1",
+  "seed_averaging": "average the five seeds within fold, variant, and slide before any contrast",
+  "sign_flip_p_values_reported": false,
+  "source_commit": "0adea50f1ef22865969109f1834a3c175e3f8b43",
+  "status": "valid",
+  "tissue_or_task_retention_metrics": "not available in the registered output schema and therefore not inferred"
+}
