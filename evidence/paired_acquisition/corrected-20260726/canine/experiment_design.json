@@ -1,0 +1,40 @@
+{
+  "category_neighbour_pool": "fit_only",
+  "claim_boundary": "Tissue-category representation audit only; not diagnosis, clinical utility, complete factorization, or patient-level evidence.",
+  "excluded_categories": [
+    "Bone",
+    "Cartilage"
+  ],
+  "fit_only_probe_standardization": true,
+  "fixed_categories": [
+    "Dermis",
+    "Epidermis",
+    "Inflamm/Necrosis",
+    "SCC",
+    "Subcutis"
+  ],
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "historical_category_metrics_promoted": false,
+  "minimum_fit_samples_per_category_per_fold": 2,
+  "minimum_test_samples_per_category_per_fold": 2,
+  "oldstyle_centroid_qr_included": true,
+  "protocol": "biological_label_preservation_fixed_estimand_v1",
+  "runtime_seconds": 313.99742579460144,
+  "same_region_neighbours_excluded": true,
+  "same_sample_neighbours_excluded": true,
+  "seeds": [
+    911,
+    912,
+    913,
+    914,
+    915
+  ],
+  "status": "completed",
+  "uncertainty": "five fold mean and range after seed averaging; no p-values"
+}

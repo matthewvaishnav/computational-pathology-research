@@ -1,0 +1,670 @@
+{
+  "claim_boundary": {
+    "authoritative_repository_path": "CLAIM_BOUNDARY.md",
+    "central_claim": "Under corrected biological-sample-blocked and fold-aware evaluation, Paired-Acquisition Neural Factorization substantially reduces linearly recoverable scanner identity in its tissue-oriented representation while preserving descriptive tissue-category structure and same-region retrieval. The acquisition branch retains strong scanner information. These results support partial structured separation under the tested conditions, not pure biological factors, complete independence, or clinical utility.",
+    "publication_sha256": "cb06886a6050a66f6471b2468d9f8586be993d5d45f9f8c3b27259404c5bc91b",
+    "snapshot_sha256": "cb06886a6050a66f6471b2468d9f8586be993d5d45f9f8c3b27259404c5bc91b"
+  },
+  "evidence_families": [
+    {
+      "claim_scope": [
+        "lower linearly recoverable scanner identity in the tissue-oriented branch",
+        "descriptive category structure close to frozen features",
+        "linear centroid/QR removes scanner information more aggressively",
+        "explicit acquisition branch retains strong scanner information"
+      ],
+      "command": [
+        "python",
+        "experiments/paired_acquisition/run_biological_label_preservation_fixed_estimand.py"
+      ],
+      "configuration": {
+        "category_neighbour_pool": "fit_only",
+        "excluded_categories": [
+          "Bone",
+          "Cartilage"
+        ],
+        "fit_only_probe_standardization": true,
+        "fixed_categories": [
+          "Dermis",
+          "Epidermis",
+          "Inflamm/Necrosis",
+          "SCC",
+          "Subcutis"
+        ],
+        "folds": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "minimum_fit_samples_per_category_per_fold": 2,
+        "minimum_test_samples_per_category_per_fold": 2,
+        "same_region_neighbours_excluded": true,
+        "same_sample_neighbours_excluded": true,
+        "seeds": [
+          911,
+          912,
+          913,
+          914,
+          915
+        ]
+      },
+      "evidence_status": "current_corrected",
+      "external_inputs": [
+        {
+          "path": "results/external_multiscanner_caninescc/features/fold_0_dinov2_base.npz",
+          "role": "base_feature_archive",
+          "sha256": "5db383771614a9018a72d57ba8dd45c8f89adb4cb665103133aa8188496e3e80",
+          "size_bytes": 11556453
+        },
+        {
+          "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_0_patch_manifest.csv",
+          "role": "fold_0_split_manifest",
+          "row_count": 4025,
+          "sha256": "19306704f6dc919790d13d0f77bfe2b6975b0fbf34388553f0a31aced97a7081",
+          "size_bytes": 527586
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/true_pairs_seed_911/projected_features.npz",
+          "role": "fold_0_true_pairs_seed_911_projected_features",
+          "sha256": "d20e56442412cde461ba7bc648db826d9c6960e977463814c332337bc4b5cabf",
+          "size_bytes": 4829444
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/true_pairs_seed_912/projected_features.npz",
+          "role": "fold_0_true_pairs_seed_912_projected_features",
+          "sha256": "0c3a14814511f239a09d99056f54141dfec17eb65de9a8cc756a29e576373c8e",
+          "size_bytes": 4829900
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/true_pairs_seed_913/projected_features.npz",
+          "role": "fold_0_true_pairs_seed_913_projected_features",
+          "sha256": "c059d46beeea72860f0511b00708174204da340338d123e9662abb7abc825578",
+          "size_bytes": 4829542
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/true_pairs_seed_914/projected_features.npz",
+          "role": "fold_0_true_pairs_seed_914_projected_features",
+          "sha256": "2e823da2ee66b41964f19e07876eedcc4e1ca09a99cca71b44c96d704469b646",
+          "size_bytes": 4829281
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/true_pairs_seed_915/projected_features.npz",
+          "role": "fold_0_true_pairs_seed_915_projected_features",
+          "sha256": "0f9d5f89ca791a243b42928bb67015480f174abd414aa26e9bc72f591229d865",
+          "size_bytes": 4828788
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/shuffled_sample_pairs_seed_911/projected_features.npz",
+          "role": "fold_0_shuffled_sample_pairs_seed_911_projected_features",
+          "sha256": "8ee91f0322bdd1828ef3ed4c1834e8a8729bafae49a4cb590a8827590ee2c9c8",
+          "size_bytes": 4836370
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/shuffled_sample_pairs_seed_912/projected_features.npz",
+          "role": "fold_0_shuffled_sample_pairs_seed_912_projected_features",
+          "sha256": "ddd281b30136dbea88d752f45d922b9fe052a5f3cfc593fe1c0532baa3c512c4",
+          "size_bytes": 4835805
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/shuffled_sample_pairs_seed_913/projected_features.npz",
+          "role": "fold_0_shuffled_sample_pairs_seed_913_projected_features",
+          "sha256": "bf38d13a6ef3f0533f9801bbfeab35134564809e7f259ca0b484a55e1781257f",
+          "size_bytes": 4836232
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/shuffled_sample_pairs_seed_914/projected_features.npz",
+          "role": "fold_0_shuffled_sample_pairs_seed_914_projected_features",
+          "sha256": "bbd6231f0197d7fd5aeade4042f529ba1b58fa6cb5c722949bca39f1e1eba43c",
+          "size_bytes": 4835346
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_0/runs/shuffled_sample_pairs_seed_915/projected_features.npz",
+          "role": "fold_0_shuffled_sample_pairs_seed_915_projected_features",
+          "sha256": "1e6b9ce20ede5884d1caed6de1458b370c0f6cfaaaa9e42b9f800975aaa8dde6",
+          "size_bytes": 4836627
+        },
+        {
+          "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_1_patch_manifest.csv",
+          "role": "fold_1_split_manifest",
+          "row_count": 4025,
+          "sha256": "96501c9be1258f74c119d9f88a61c6945cf51f8c56ab53147b6c0b10792b3212",
+          "size_bytes": 527801
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/true_pairs_seed_911/projected_features.npz",
+          "role": "fold_1_true_pairs_seed_911_projected_features",
+          "sha256": "d4cd183e82565be6e634e86f9f4072202e3a54a01495bccb6effb0e21a66f72a",
+          "size_bytes": 4829472
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/true_pairs_seed_912/projected_features.npz",
+          "role": "fold_1_true_pairs_seed_912_projected_features",
+          "sha256": "549d2a409725a05a9c815403d4fd4f969c85abad9bac64acabff62aaa275b881",
+          "size_bytes": 4829950
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/true_pairs_seed_913/projected_features.npz",
+          "role": "fold_1_true_pairs_seed_913_projected_features",
+          "sha256": "d47bd261baa391a4862833afaaed6282979c197dedcac9fbc7e141f7f3e57811",
+          "size_bytes": 4829457
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/true_pairs_seed_914/projected_features.npz",
+          "role": "fold_1_true_pairs_seed_914_projected_features",
+          "sha256": "85f1edadcb0f91ec07487791753cf177f178114a496a93abeb845384092ae408",
+          "size_bytes": 4830020
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/true_pairs_seed_915/projected_features.npz",
+          "role": "fold_1_true_pairs_seed_915_projected_features",
+          "sha256": "4e9742f4d9e2281fa7576d6ce0ed1b583bd7b556ac98285b78cd29e40fb35d91",
+          "size_bytes": 4829595
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/shuffled_sample_pairs_seed_911/projected_features.npz",
+          "role": "fold_1_shuffled_sample_pairs_seed_911_projected_features",
+          "sha256": "1e580437a5045daa24941cb67c848ca60e9c3977ba6d1c6bd1135075ad9cbf7d",
+          "size_bytes": 4835859
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/shuffled_sample_pairs_seed_912/projected_features.npz",
+          "role": "fold_1_shuffled_sample_pairs_seed_912_projected_features",
+          "sha256": "a52dc43e2f46410a3970abea8fda4aa62beb3dbd1cb6794d9bcab2698fc7a21a",
+          "size_bytes": 4836065
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/shuffled_sample_pairs_seed_913/projected_features.npz",
+          "role": "fold_1_shuffled_sample_pairs_seed_913_projected_features",
+          "sha256": "6515ff477109cf3ea16c4af141536e6d90f46e0f2942b02c3234291eecc9d5d0",
+          "size_bytes": 4836417
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/shuffled_sample_pairs_seed_914/projected_features.npz",
+          "role": "fold_1_shuffled_sample_pairs_seed_914_projected_features",
+          "sha256": "e5e2a946f0ec75565dcc2d3669d75271945ae1c4a333d28cd362db1c8de3b0a5",
+          "size_bytes": 4835409
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_1/runs/shuffled_sample_pairs_seed_915/projected_features.npz",
+          "role": "fold_1_shuffled_sample_pairs_seed_915_projected_features",
+          "sha256": "d72bc97599e766b0b6bbdd7ec48b3d662eccc1ea8124451a4fd6455c6dd0d61b",
+          "size_bytes": 4835693
+        },
+        {
+          "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_2_patch_manifest.csv",
+          "role": "fold_2_split_manifest",
+          "row_count": 4025,
+          "sha256": "6d6c2bc39de24244e414816dd4386fd0a61c94fc2e7d66f6e88aef61f66e1f3e",
+          "size_bytes": 527911
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/true_pairs_seed_911/projected_features.npz",
+          "role": "fold_2_true_pairs_seed_911_projected_features",
+          "sha256": "89fff4b243776e828a4216c022418ed6b355d7844a8373b3e69fec58cb1fa38c",
+          "size_bytes": 4829115
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/true_pairs_seed_912/projected_features.npz",
+          "role": "fold_2_true_pairs_seed_912_projected_features",
+          "sha256": "ffd53ddd217bcb8b40c8d1ed4c4730b46434264c0537b56d62dabcad2c4b3f24",
+          "size_bytes": 4829318
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/true_pairs_seed_913/projected_features.npz",
+          "role": "fold_2_true_pairs_seed_913_projected_features",
+          "sha256": "27f6be62b6db4c079efdeae7f4ad83f20dba9bcb8e55a5679a23d09b943868bc",
+          "size_bytes": 4829510
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/true_pairs_seed_914/projected_features.npz",
+          "role": "fold_2_true_pairs_seed_914_projected_features",
+          "sha256": "d8da1ff81472b8195967683d644970069057fea39534b0816066ee5ecf5fb32e",
+          "size_bytes": 4829515
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/true_pairs_seed_915/projected_features.npz",
+          "role": "fold_2_true_pairs_seed_915_projected_features",
+          "sha256": "e0f37e91479bf110a30e0a28069bd3c79c62bdbe88e679f8c6f736a917515cbb",
+          "size_bytes": 4829505
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/shuffled_sample_pairs_seed_911/projected_features.npz",
+          "role": "fold_2_shuffled_sample_pairs_seed_911_projected_features",
+          "sha256": "cb2c7f92dc8290c6ca8a0f55386ef6475b2cb72730e3b167fe6a2cdf0b858628",
+          "size_bytes": 4836510
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/shuffled_sample_pairs_seed_912/projected_features.npz",
+          "role": "fold_2_shuffled_sample_pairs_seed_912_projected_features",
+          "sha256": "21a3de5edb3c86659e86d1471d739e52e7be975baa01a69c76b89b0cfc9daf6e",
+          "size_bytes": 4836287
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/shuffled_sample_pairs_seed_913/projected_features.npz",
+          "role": "fold_2_shuffled_sample_pairs_seed_913_projected_features",
+          "sha256": "945b8198fe89453b93c918b5ca0bbd9867f4ff49faac90c1f8fbe28847510b26",
+          "size_bytes": 4836015
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/shuffled_sample_pairs_seed_914/projected_features.npz",
+          "role": "fold_2_shuffled_sample_pairs_seed_914_projected_features",
+          "sha256": "8bc91b18d842c3f8c459e14fce667c992fbe4949f99836d42f9873fa6d6c1a08",
+          "size_bytes": 4835878
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_2/runs/shuffled_sample_pairs_seed_915/projected_features.npz",
+          "role": "fold_2_shuffled_sample_pairs_seed_915_projected_features",
+          "sha256": "4d63321975bc9e214c8f9eabc06fbc270f13eb1c6b470a32b50e51007540a166",
+          "size_bytes": 4836431
+        },
+        {
+          "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_3_patch_manifest.csv",
+          "role": "fold_3_split_manifest",
+          "row_count": 4025,
+          "sha256": "3396e0fb34d92af27dbd982bd5cea16fbeae7cc3b4d3bb64ee9f04ca959cdaf7",
+          "size_bytes": 527706
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/true_pairs_seed_911/projected_features.npz",
+          "role": "fold_3_true_pairs_seed_911_projected_features",
+          "sha256": "173840f03b8c7edc10afef5b1aec3bfc6afd162305f46691f9fa8fbb0935754b",
+          "size_bytes": 4829173
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/true_pairs_seed_912/projected_features.npz",
+          "role": "fold_3_true_pairs_seed_912_projected_features",
+          "sha256": "7c5463b5dfb04756d8dbd1294559b319d5abd6b8c6833bc3de029cdbbc09d435",
+          "size_bytes": 4829680
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/true_pairs_seed_913/projected_features.npz",
+          "role": "fold_3_true_pairs_seed_913_projected_features",
+          "sha256": "26698dc09f193b7a46ca46bac5ebb4158ded55abc8370c294f6ef24cc820c743",
+          "size_bytes": 4829926
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/true_pairs_seed_914/projected_features.npz",
+          "role": "fold_3_true_pairs_seed_914_projected_features",
+          "sha256": "d3ccd6f2cb251052f9a13f90a5af12206fdd333d100fec468aefad224a2b8095",
+          "size_bytes": 4828611
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/true_pairs_seed_915/projected_features.npz",
+          "role": "fold_3_true_pairs_seed_915_projected_features",
+          "sha256": "1f33df24693cc5200f5da206aae5f676268ece334827d06d020b8b50d0a1e3ce",
+          "size_bytes": 4828831
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/shuffled_sample_pairs_seed_911/projected_features.npz",
+          "role": "fold_3_shuffled_sample_pairs_seed_911_projected_features",
+          "sha256": "50cca8e6d5e962ccabf2f41185473b9617b82d56efec529ff77be282b066b148",
+          "size_bytes": 4836153
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/shuffled_sample_pairs_seed_912/projected_features.npz",
+          "role": "fold_3_shuffled_sample_pairs_seed_912_projected_features",
+          "sha256": "68ae0a8aafed7e163aa4f3b3e432ad3ecb65be487103c493398374392b9416d4",
+          "size_bytes": 4835534
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/shuffled_sample_pairs_seed_913/projected_features.npz",
+          "role": "fold_3_shuffled_sample_pairs_seed_913_projected_features",
+          "sha256": "f0158524eee8c4a48b0776dd3d06eac6ae1a790bc0d159c5fdbe2bd3f5e679ae",
+          "size_bytes": 4836254
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/shuffled_sample_pairs_seed_914/projected_features.npz",
+          "role": "fold_3_shuffled_sample_pairs_seed_914_projected_features",
+          "sha256": "b7dd79e3da97263b724f8c5eef714747225720634b975c0659b7a69a0efb3f8e",
+          "size_bytes": 4835577
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_3/runs/shuffled_sample_pairs_seed_915/projected_features.npz",
+          "role": "fold_3_shuffled_sample_pairs_seed_915_projected_features",
+          "sha256": "2cb599d900a994f5441c773dce9b0b4b9ebeac0a5049a09ac63bbac3a8bb4592",
+          "size_bytes": 4835657
+        },
+        {
+          "path": "data/external_multiscanner_caninescc/patch_manifests/splits/fold_4_patch_manifest.csv",
+          "role": "fold_4_split_manifest",
+          "row_count": 4025,
+          "sha256": "a382ed29bc8bd74178282183fcbb9d2a3f66665391a4be234acdb6f3eac995f6",
+          "size_bytes": 527901
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/true_pairs_seed_911/projected_features.npz",
+          "role": "fold_4_true_pairs_seed_911_projected_features",
+          "sha256": "2cb928116f82b2c619f4b3c4eabb3a7fd2ec8d174b2203af17e740699673e921",
+          "size_bytes": 4829711
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/true_pairs_seed_912/projected_features.npz",
+          "role": "fold_4_true_pairs_seed_912_projected_features",
+          "sha256": "fca1dd572788f06cf283af52c41e8cea90cab0273f3b33a0ea16c8c5bc16f1b6",
+          "size_bytes": 4829965
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/true_pairs_seed_913/projected_features.npz",
+          "role": "fold_4_true_pairs_seed_913_projected_features",
+          "sha256": "e75c621fc875bf27a6fe3b3fcfebcdc3a2dab7708b6f08535b665af32349eaba",
+          "size_bytes": 4829308
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/true_pairs_seed_914/projected_features.npz",
+          "role": "fold_4_true_pairs_seed_914_projected_features",
+          "sha256": "4238e9e59b9244c855924bea5a52eddd57962d3d25aa9ca21413e7a36bf536c7",
+          "size_bytes": 4830023
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/true_pairs_seed_915/projected_features.npz",
+          "role": "fold_4_true_pairs_seed_915_projected_features",
+          "sha256": "39ecc5f0640cb3410cf0d2176ffd0f638952f64259f2a27ce772c2f98c7e5115",
+          "size_bytes": 4829551
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/shuffled_sample_pairs_seed_911/projected_features.npz",
+          "role": "fold_4_shuffled_sample_pairs_seed_911_projected_features",
+          "sha256": "f28d3767e7a92d1339b2d1fb987c6d2ada90ec2c77e66342ddb6108db2fc55f8",
+          "size_bytes": 4836271
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/shuffled_sample_pairs_seed_912/projected_features.npz",
+          "role": "fold_4_shuffled_sample_pairs_seed_912_projected_features",
+          "sha256": "779dc0ccda8808873d61f085a035ee0fd7e02243b36dd5c36e1fe5ec3789b997",
+          "size_bytes": 4835565
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/shuffled_sample_pairs_seed_913/projected_features.npz",
+          "role": "fold_4_shuffled_sample_pairs_seed_913_projected_features",
+          "sha256": "0fe5bf38e6a4a1a5e90fa2ff725ac118213c903baaeb5e6d4778fca205c7c486",
+          "size_bytes": 4836721
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/shuffled_sample_pairs_seed_914/projected_features.npz",
+          "role": "fold_4_shuffled_sample_pairs_seed_914_projected_features",
+          "sha256": "28737635ad9b877f7f51d6b4f688629cb271d9b6083c845d84a734361de8acd9",
+          "size_bytes": 4836067
+        },
+        {
+          "path": "results/paired_acquisition_factorization_pair_integrity_caninescc/fold_4/runs/shuffled_sample_pairs_seed_915/projected_features.npz",
+          "role": "fold_4_shuffled_sample_pairs_seed_915_projected_features",
+          "sha256": "757b0b7c1e41e0efb9105f3346c8516aa44e31b6e0fbacb2e9fc7b32af31e6d1",
+          "size_bytes": 4836093
+        }
+      ],
+      "external_outputs": [
+        {
+          "path": "results/paired_acquisition_factorization_biological_label_preservation_fixed_estimand/experiment_design.json",
+          "role": "experiment_design",
+          "sha256": "a5fb133c751168186b737878d64df45b1490a0ca27e5dd2efb79922b1a3991d2",
+          "size_bytes": 1047
+        },
+        {
+          "path": "results/paired_acquisition_factorization_biological_label_preservation_fixed_estimand/five_fold_descriptive_summary.csv",
+          "role": "five_fold_descriptive_summary",
+          "row_count": 26,
+          "sha256": "a90570d956319f398faa25b799096527ab9de2bd46ff720386fd52c8ad9d8b8d",
+          "size_bytes": 11450
+        },
+        {
+          "path": "results/paired_acquisition_factorization_biological_label_preservation_fixed_estimand/fixed_category_support.csv",
+          "role": "fixed_category_support",
+          "row_count": 35,
+          "sha256": "d42f927da115759484af9631cb72816fd07fe0764ec1190df86c553fcf82cde1",
+          "size_bytes": 1017
+        },
+        {
+          "path": "results/paired_acquisition_factorization_biological_label_preservation_fixed_estimand/fold_seed_averaged_metrics.csv",
+          "role": "fold_seed_averaged_metrics",
+          "row_count": 130,
+          "sha256": "1cc678ce31c4aef02188252d09f8ab4c267bb809cde5355bc0dfcc9db2f8d639",
+          "size_bytes": 20092
+        },
+        {
+          "path": "results/paired_acquisition_factorization_biological_label_preservation_fixed_estimand/raw_metrics.csv",
+          "role": "raw_metrics",
+          "row_count": 210,
+          "sha256": "2e796c872be1ccfd23cc9aeb48fad07f8b7fc971c3d039a779eadcc6c699166f",
+          "size_bytes": 57652
+        }
+      ],
+      "family_id": "canine_fixed_estimand_v1",
+      "fold_design": "Five biological-sample-blocked folds; one fixed category estimand supported by at least two fit and two test biological samples per category in every fold; optimization seeds averaged within fold before five-fold descriptive summaries.",
+      "historical_boundary": "Supersedes but does not modify or delete historical contaminated canine category metrics, which remain withdrawn.",
+      "key_metrics": {
+        "linear_projection_k4": {
+          "category_probe_balanced_accuracy": 0.44245014748183487,
+          "purity_fit_pool_k5": 0.4377408893348,
+          "scanner_probe_balanced_accuracy": 0.2
+        },
+        "original_frozen_features": {
+          "category_probe_balanced_accuracy": 0.44086590895818567,
+          "purity_fit_pool_k5": 0.42409036761242336,
+          "scanner_probe_balanced_accuracy": 0.8628184955462632
+        },
+        "true_pair_acquisition": {
+          "category_probe_balanced_accuracy": 0.39818864063789994,
+          "purity_fit_pool_k5": 0.3063124063151831,
+          "scanner_probe_balanced_accuracy": 0.865097576168538
+        },
+        "true_pair_biological": {
+          "category_probe_balanced_accuracy": 0.4353482507842298,
+          "purity_fit_pool_k5": 0.429310749459204,
+          "scanner_probe_balanced_accuracy": 0.3614076415619065
+        }
+      },
+      "promoted_artifacts": [
+        {
+          "path": "canine/experiment_design.json",
+          "role": "experiment_design",
+          "sha256": "8158fc2d660f3cda9dc76126abaab58a20e36df270d16b6bc3c23d062ef6ddf1",
+          "size_bytes": 1007
+        },
+        {
+          "path": "canine/five_fold_descriptive_summary.csv",
+          "role": "five_fold_descriptive_summary",
+          "row_count": 26,
+          "sha256": "388a1772a89df139bbc095883751c622b87884b75385491636e58be67fde4a36",
+          "size_bytes": 11423
+        },
+        {
+          "path": "canine/fixed_category_support.csv",
+          "role": "fixed_category_support",
+          "row_count": 35,
+          "sha256": "00ca704b69cfc690c91e5693ede5160186058d10289d5ac62903ec8bcaf5cfd2",
+          "size_bytes": 981
+        },
+        {
+          "path": "canine/fold_seed_averaged_metrics.csv",
+          "role": "fold_seed_averaged_metrics",
+          "row_count": 130,
+          "sha256": "1ab1fd6920b0e1143418bd6689fe7fa85fc11584c28e1f26e692c8668100f61d",
+          "size_bytes": 19961
+        }
+      ]
+    },
+    {
+      "claim_scope": [
+        "substantial reduction in linearly recoverable scanner identity",
+        "improved cross-view cosine geometry",
+        "same-region retrieval effectively unchanged",
+        "retrieval improvement is not supported"
+      ],
+      "command": [
+        "python",
+        "scripts/scorpion/analyze_pathoalign_crossfold_v2.py",
+        "--raw-slide-metrics",
+        "results/scorpion/pathoalign_dinov2_crossfold_analysis/raw_slide_metrics.csv",
+        "--out-dir",
+        "results/paired_acquisition_factorization_scorpion_fold_aware_v2",
+        "--bootstrap-draws",
+        "100000"
+      ],
+      "configuration": {
+        "bootstrap": "resample folds, then slides within sampled folds",
+        "bootstrap_draws": 100000,
+        "difference": "pathoalign_dep20_minus_paired_reference",
+        "folds": 5,
+        "seed_averaging": "within fold/slide/method before contrast",
+        "sign_flip_p_values": "not reported",
+        "slides": 48
+      },
+      "evidence_status": "current_corrected",
+      "external_inputs": [
+        {
+          "path": "results/scorpion/pathoalign_dinov2_crossfold_analysis/raw_slide_metrics.csv",
+          "role": "raw_slide_metrics",
+          "row_count": 480,
+          "sha256": "517c204d90dcc4a932964f19340cbe0b41b602e760591fa02566407d121ec5d7",
+          "size_bytes": 40168
+        }
+      ],
+      "external_outputs": [
+        {
+          "path": "results/paired_acquisition_factorization_scorpion_fold_aware_v2/analysis_design.json",
+          "role": "analysis_design",
+          "sha256": "275094621b60bd34f3a4a9c2dbe50e496c5683be1f96235fc2202229805fb755",
+          "size_bytes": 650
+        },
+        {
+          "path": "results/paired_acquisition_factorization_scorpion_fold_aware_v2/fold_aware_contrasts.csv",
+          "role": "fold_aware_contrasts",
+          "row_count": 5,
+          "sha256": "a43de4af6406f017f0a8fa09f2b3ecf5867b65f3a1d0491ac9ea4997def89332",
+          "size_bytes": 1266
+        },
+        {
+          "path": "results/paired_acquisition_factorization_scorpion_fold_aware_v2/slide_seed_averaged_contrasts.csv",
+          "role": "slide_seed_averaged_contrasts",
+          "row_count": 48,
+          "sha256": "39ead9dc63be06ffb963622cdb46b71ef98361c7eef12611f3a8d1bfc1b7d644",
+          "size_bytes": 3897
+        }
+      ],
+      "family_id": "scorpion_fold_aware_v2",
+      "fold_design": "Seed average within fold/slide/method, followed by paired pathoalign_dep20 minus paired_reference contrasts and a two-stage bootstrap that resamples folds then slides.",
+      "historical_boundary": "Supersedes but does not modify or delete historical slide-independent sign-flip p-values, which remain withdrawn.",
+      "key_metrics": {
+        "pair_cosine_average": {
+          "cluster_bootstrap_ci_025": 0.026858407069387497,
+          "cluster_bootstrap_ci_975": 0.035674580187052544,
+          "mean_difference": 0.031035241278509318
+        },
+        "pair_cosine_worst": {
+          "cluster_bootstrap_ci_025": 0.025433909586680174,
+          "cluster_bootstrap_ci_975": 0.03806131886798837,
+          "mean_difference": 0.03109579056501389
+        },
+        "retrieval_top1_average": {
+          "cluster_bootstrap_ci_025": -0.0003829787234042509,
+          "cluster_bootstrap_ci_975": 0.00020833333333334278,
+          "mean_difference": -8.33333333333311e-05
+        },
+        "retrieval_top1_worst": {
+          "cluster_bootstrap_ci_025": -0.002083333333333321,
+          "cluster_bootstrap_ci_975": 0.0014893617021276633,
+          "mean_difference": -0.0004166666666666624
+        },
+        "scanner_probe_accuracy": {
+          "cluster_bootstrap_ci_025": -0.42064000000000007,
+          "cluster_bootstrap_ci_975": -0.34643478260869565,
+          "mean_difference": -0.38541666666666674
+        }
+      },
+      "promoted_artifacts": [
+        {
+          "path": "scorpion/analysis_design.json",
+          "role": "analysis_design",
+          "sha256": "204cf8af523754587def3e65cf83bfe800cd98cf64367cd7c394086063aab866",
+          "size_bytes": 584
+        },
+        {
+          "path": "scorpion/fold_aware_contrasts.csv",
+          "role": "fold_aware_contrasts",
+          "row_count": 5,
+          "sha256": "2f2975afd12a014a2097e8bb4df2e7851cbb1abffbd5219c16cf45bc5eec3fb9",
+          "size_bytes": 1260
+        }
+      ]
+    }
+  ],
+  "historical_evidence": {
+    "files_modified_or_deleted": false,
+    "status": "withdrawn_and_preserved",
+    "withdrawn_claims": [
+      "biological purity or pure biological factors",
+      "causal identification beyond the paired design",
+      "information-theoretic independence",
+      "complete disentanglement or complete scanner invariance",
+      "diagnostic, clinical, patient-benefit, or deployment claims",
+      "historical canine category metrics",
+      "historical slide-independent sign-flip p-values",
+      "historical TransnnMIL fusion and topology claims",
+      "unified-scoreboard rankings",
+      "claims that cosine proves biological preservation or destruction"
+    ]
+  },
+  "publication": {
+    "created_at_utc": "2026-07-26T16:44:42+00:00",
+    "raw_outputs_committed": false,
+    "repository": "https://github.com/matthewvaishnav/computational-pathology-research",
+    "tracked_content": "validated summaries, design records, support table, environment, hash bindings, claim-boundary snapshot, and release metadata"
+  },
+  "release_artifacts": [
+    {
+      "path": "claim_boundary_snapshot.md",
+      "role": "claim_boundary_snapshot",
+      "sha256": "cb06886a6050a66f6471b2468d9f8586be993d5d45f9f8c3b27259404c5bc91b",
+      "size_bytes": 8317
+    },
+    {
+      "path": "environment.json",
+      "role": "environment",
+      "sha256": "e883f22468ffae97c1f3cc643ba511dc71527aee8c53be0a0d2331b479ed0eec",
+      "size_bytes": 604
+    },
+    {
+      "path": "README.md",
+      "role": "readme",
+      "sha256": "7cf9a9c0b61c3e47534cff2d361b447092db1d04f68ca735e36d6a824e810cae",
+      "size_bytes": 2111
+    }
+  ],
+  "schema_version": "corrected-paired-acquisition-evidence/v1",
+  "source_code": {
+    "commit": "ad03723b7967b7d08f2d43f3814bf36d69187587",
+    "equivalent_execution_commit": "1c6e3197216fd29f4f0fa3db4daf4ae124f2f6f6",
+    "repository": "https://github.com/matthewvaishnav/computational-pathology-research",
+    "scripts": [
+      {
+        "path": "experiments/paired_acquisition/run_biological_label_preservation_fixed_estimand.py",
+        "role": "canine_fixed_estimand_runner",
+        "sha256": "aa0e0d798c9331647e206282f115847035f3c7dfc30e64f5c0825f57f41d29a2",
+        "size_bytes": 15867
+      },
+      {
+        "path": "experiments/paired_acquisition/run_biological_label_preservation_audit_v2.py",
+        "role": "canine_audit_v2",
+        "sha256": "8e78409415d915b17b351b9d5cd18e70eeac018c9e454f6f09d608f99c850b80",
+        "size_bytes": 16411
+      },
+      {
+        "path": "experiments/paired_acquisition/run_biological_label_preservation_audit.py",
+        "role": "canine_legacy_loaders",
+        "sha256": "1899045247f302f5134e19ab82b9658acc78f5138a54a7be3752b38298ab639f",
+        "size_bytes": 35929
+      },
+      {
+        "path": "scripts/scorpion/analyze_pathoalign_crossfold_v2.py",
+        "role": "scorpion_fold_aware_analyzer",
+        "sha256": "ad3970f73035b1c65370e587d0a9818d8f77ab842bd5cc4fb68de4daee5e9863",
+        "size_bytes": 6217
+      }
+    ],
+    "tree": "aba7cdb85874ef7a779f3f163027323ae4ef5d86",
+    "tree_equivalence_note": "The corrected artifacts were generated from the exact tree committed as 1c6e319; squash merge ad03723 has the same tree. The direct-execution bootstrap changed no scientific calculation."
+  },
+  "status": "completed"
+}

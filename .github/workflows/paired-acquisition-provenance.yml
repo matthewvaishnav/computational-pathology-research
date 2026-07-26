@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/paired-acquisition-provenance.yml"
       - "benchmarks/paired_acquisition_provenance_release/**"
+      - "evidence/paired_acquisition/corrected-20260726/**"
       - "docs/research/paired-acquisition-provenance-v1.md"
       - "docs/research/paired-acquisition-real-producer-adoption.md"
       - "docs/research/paired-acquisition-factorial-preregistration.md"
@@ -21,12 +22,14 @@ on:
       - "tests/test_paired_acquisition_factorial.py"
       - "tests/test_paired_acquisition_factorial_full.py"
       - "tests/test_paired_acquisition_provenance.py"
+      - "tests/test_corrected_paired_acquisition_evidence.py"
       - "tests/test_paired_acquisition_release_writer.py"
   push:
     branches: [main]
     paths:
       - ".github/workflows/paired-acquisition-provenance.yml"
       - "benchmarks/paired_acquisition_provenance_release/**"
+      - "evidence/paired_acquisition/corrected-20260726/**"
       - "docs/research/paired-acquisition-provenance-v1.md"
       - "docs/research/paired-acquisition-real-producer-adoption.md"
       - "docs/research/paired-acquisition-factorial-preregistration.md"
@@ -42,6 +45,7 @@ on:
       - "tests/test_paired_acquisition_factorial.py"
       - "tests/test_paired_acquisition_factorial_full.py"
       - "tests/test_paired_acquisition_provenance.py"
+      - "tests/test_corrected_paired_acquisition_evidence.py"
       - "tests/test_paired_acquisition_release_writer.py"
 
 permissions:
@@ -53,6 +57,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -60,6 +66,10 @@ jobs:
         run: python -m pip install "pytest>=7.3,<8"
       - name: Validate tracked release
         run: python scripts/provenance/validate_paired_acquisition_release.py
+      - name: Validate corrected evidence release
+        run: >-
+          python
+          scripts/provenance/validate_corrected_paired_acquisition_evidence.py
       - name: Compile real producer and factorial gates
         run: >-
           python -m py_compile
@@ -71,6 +81,7 @@ jobs:
           experiments/paired_acquisition/run_provenance_bound_factorial_full.py
           scripts/provenance/validate_paired_acquisition_factorial_release.py
           scripts/provenance/validate_paired_acquisition_factorial_full_release.py
+          scripts/provenance/validate_corrected_paired_acquisition_evidence.py
       - name: Run fail-closed contract tests
         run: >-
           pytest -q -o addopts=''
@@ -78,3 +89,4 @@ jobs:
           tests/test_paired_acquisition_release_writer.py
           tests/test_paired_acquisition_factorial.py
           tests/test_paired_acquisition_factorial_full.py
+          tests/test_corrected_paired_acquisition_evidence.py
