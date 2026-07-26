@@ -13,6 +13,7 @@ from scripts.scorpion.analyze_paired_acquisition_factorial import (
     build_slide_contrasts,
     interval_classification,
     pareto_stability,
+    promote_directory,
     split_indices,
     two_stage_cluster_bootstrap,
     validate_spec,
@@ -145,3 +146,44 @@ def test_split_indices_rejects_biological_sample_overlap() -> None:
     )
     with pytest.raises(AnalysisError, match="slide_id leakage"):
         split_indices(frame)
+
+
+def test_atomic_promotion_retries_transient_windows_lock(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    destination = tmp_path / "destination"
+    source.mkdir()
+    (source / "manifest.json").write_text("{}\n", encoding="utf-8")
+    original_replace = Path.replace
+    attempts = 0
+
+    def transient_replace(path: Path, target: Path) -> Path:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise PermissionError(5, "transient Windows directory lock", str(path))
+        return original_replace(path, target)
+
+    monkeypatch.setattr(Path, "replace", transient_replace)
+    monkeypatch.setattr(
+        "scripts.scorpion.analyze_paired_acquisition_factorial.time.sleep",
+        lambda _: None,
+    )
+
+    promote_directory(source, destination)
+
+    assert attempts == 2
+    assert not source.exists()
+    assert (destination / "manifest.json").read_text(encoding="utf-8") == "{}\n"
+
+
+def test_atomic_promotion_refuses_existing_destination(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    destination = tmp_path / "destination"
+    source.mkdir()
+    destination.mkdir()
+
+    with pytest.raises(AnalysisError, match="refusing to overwrite"):
+        promote_directory(source, destination)

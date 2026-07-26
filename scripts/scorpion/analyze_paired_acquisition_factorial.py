@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -79,10 +80,29 @@ OUTPUT_FILES = (
     "suppression_retention_association.csv",
     "analysis_report.md",
 )
+ATOMIC_PROMOTION_ATTEMPTS = 12
+ATOMIC_PROMOTION_INITIAL_DELAY_SECONDS = 0.1
+ATOMIC_PROMOTION_MAX_DELAY_SECONDS = 2.0
 
 
 class AnalysisError(ProvenanceValidationError):
     """Raised when the preregistered analysis cannot validate its inputs or outputs."""
+
+
+def promote_directory(source: Path, destination: Path) -> None:
+    """Atomically publish a directory, tolerating bounded transient Windows locks."""
+    if destination.exists():
+        raise AnalysisError(f"refusing to overwrite analysis output: {destination}")
+    delay = ATOMIC_PROMOTION_INITIAL_DELAY_SECONDS
+    for attempt in range(1, ATOMIC_PROMOTION_ATTEMPTS + 1):
+        try:
+            source.replace(destination)
+            return
+        except PermissionError:
+            if destination.exists() or attempt == ATOMIC_PROMOTION_ATTEMPTS:
+                raise
+            time.sleep(delay)
+            delay = min(delay * 2, ATOMIC_PROMOTION_MAX_DELAY_SECONDS)
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -1165,7 +1185,7 @@ def run_analysis(
             encoding="utf-8",
             newline="\n",
         )
-        temporary.replace(output_dir)
+        promote_directory(temporary, output_dir)
     except Exception:
         shutil.rmtree(temporary, ignore_errors=True)
         raise
