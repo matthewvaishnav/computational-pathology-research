@@ -1,6 +1,6 @@
 {
   "accelerator": "not used by these analysis scripts",
-  "captured_at_utc": "2026-07-26T15:54:47+00:00",
+  "captured_at_utc": "2026-07-26T15:58:17+00:00",
   "environment_scope": "Artifact-validation and publication environment. The completed analyses did not emit a separate immutable pre-run environment record.",
   "git": "git version 2.54.0.windows.1",
   "packages": {

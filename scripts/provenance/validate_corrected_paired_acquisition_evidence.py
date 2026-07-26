@@ -37,6 +37,12 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_canonical_text(path: Path) -> str:
+    content = path.read_text(encoding="utf-8")
+    canonical = content.replace("\r\n", "\n").replace("\r", "\n")
+    return sha256_bytes(canonical.encode("utf-8"))
+
+
 def read_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -469,7 +475,7 @@ def validate_evidence(
         claim.get("authoritative_repository_path"),
         label="claim_boundary.authoritative_repository_path",
     )
-    if sha256_file(current_claim) != claim.get("publication_sha256"):
+    if sha256_canonical_text(current_claim) != claim.get("publication_sha256"):
         raise EvidenceValidationError("authoritative claim boundary checksum mismatch")
 
     family_records = manifest.get("evidence_families")

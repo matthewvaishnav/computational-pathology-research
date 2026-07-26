@@ -20,6 +20,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.provenance.validate_corrected_paired_acquisition_evidence import (
     SCHEMA_VERSION,
     sha256_bytes,
+    sha256_canonical_text,
     sha256_file,
     validate_evidence,
 )
@@ -282,7 +283,7 @@ def main() -> None:
         )
         for role, path in scorpion_promoted_paths.items()
     ]
-    claim_hash = sha256_file(REPO_ROOT / "CLAIM_BOUNDARY.md")
+    claim_hash = sha256_canonical_text(REPO_ROOT / "CLAIM_BOUNDARY.md")
 
     manifest = {
         "claim_boundary": {

@@ -2,7 +2,7 @@
   "claim_boundary": {
     "authoritative_repository_path": "CLAIM_BOUNDARY.md",
     "central_claim": "Under corrected biological-sample-blocked and fold-aware evaluation, Paired-Acquisition Neural Factorization substantially reduces linearly recoverable scanner identity in its tissue-oriented representation while preserving descriptive tissue-category structure and same-region retrieval. The acquisition branch retains strong scanner information. These results support partial structured separation under the tested conditions, not pure biological factors, complete independence, or clinical utility.",
-    "publication_sha256": "b59a801ca78b646fd3a4d0065a43174bbeb7c95ecd92217f3e968086a0161eee",
+    "publication_sha256": "cb06886a6050a66f6471b2468d9f8586be993d5d45f9f8c3b27259404c5bc91b",
     "snapshot_sha256": "cb06886a6050a66f6471b2468d9f8586be993d5d45f9f8c3b27259404c5bc91b"
   },
   "evidence_families": [
@@ -607,7 +607,7 @@
     ]
   },
   "publication": {
-    "created_at_utc": "2026-07-26T15:54:47+00:00",
+    "created_at_utc": "2026-07-26T15:58:17+00:00",
     "raw_outputs_committed": false,
     "repository": "https://github.com/matthewvaishnav/computational-pathology-research",
     "tracked_content": "validated summaries, design records, support table, environment, hash bindings, claim-boundary snapshot, and release metadata"
@@ -622,7 +622,7 @@
     {
       "path": "environment.json",
       "role": "environment",
-      "sha256": "0eb93ef6623047c9c795e9f52fdee2b6faedc6ceff46803bd8f4a2d87ee86df0",
+      "sha256": "c44b833c748a7e105c467aa27b983e68274e89cd95d0c3395b981715d5695b04",
       "size_bytes": 604
     },
     {

@@ -8,6 +8,7 @@ import pytest
 
 from scripts.provenance.validate_corrected_paired_acquisition_evidence import (
     EvidenceValidationError,
+    sha256_canonical_text,
     sha256_file,
     validate_evidence,
 )
@@ -70,3 +71,12 @@ def test_external_hash_binding_detects_modified_copy(tmp_path):
     copied.write_text(copied.read_text(encoding="utf-8") + " ", encoding="utf-8")
 
     assert sha256_file(copied) != before
+
+
+def test_claim_boundary_hash_is_line_ending_independent(tmp_path):
+    lf = tmp_path / "lf.md"
+    crlf = tmp_path / "crlf.md"
+    lf.write_bytes(b"# Claim boundary\n\nBounded claim.\n")
+    crlf.write_bytes(b"# Claim boundary\r\n\r\nBounded claim.\r\n")
+
+    assert sha256_canonical_text(lf) == sha256_canonical_text(crlf)
