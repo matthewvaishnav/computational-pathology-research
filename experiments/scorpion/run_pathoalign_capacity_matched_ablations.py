@@ -276,9 +276,11 @@ def source_state(root: Path) -> dict[str, Any]:
 
 def source_file_hashes(root: Path) -> dict[str, str]:
     paths = (
+        "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json",
         "experiments/scorpion/run_pathoalign_capacity_matched_ablations.py",
         "experiments/scorpion/run_pathoalign_crossfold.py",
         "experiments/scorpion/run_pathoalign_projection.py",
+        "scripts/scorpion/analyze_pathoalign_capacity_matched_ablations.py",
         "scripts/scorpion/analyze_pathoalign_crossfold.py",
         "src/models/scorpion_pathoalign.py",
     )

@@ -1,0 +1,129 @@
+{
+  "analysis_version": 1,
+  "bootstrap": {
+    "confidence_interval": [
+      0.025,
+      0.975
+    ],
+    "default_draws": 100000,
+    "method": "resample the five trained folds, then slides within each sampled fold",
+    "minimum_draws": 1000,
+    "seed_base": 20260726
+  },
+  "claim_boundaries": [
+    "Cosine similarity alone does not establish biological preservation.",
+    "No slide-independent sign-flip p-values are reported.",
+    "Results apply only to the registered paired-acquisition dataset and protocol.",
+    "The analysis cannot establish pure biological factors, complete scanner invariance, information-theoretic independence, clinical utility, or universal objective necessity."
+  ],
+  "comparisons": [
+    {
+      "comparator": "two_branch_no_scanner_objectives",
+      "comparison_id": "full_minus_capacity_matched_no_scanner_objectives",
+      "comparison_role": "primary_capacity_matched",
+      "difference_definition": "pathoalign_dep20 minus two_branch_no_scanner_objectives"
+    },
+    {
+      "comparator": "paired_reference",
+      "comparison_id": "full_minus_historical_paired_reference",
+      "comparison_role": "secondary_architecture_unmatched",
+      "difference_definition": "pathoalign_dep20 minus paired_reference"
+    },
+    {
+      "comparator": "no_adversary",
+      "comparison_id": "full_minus_no_adversary",
+      "comparison_role": "registered_objective_ablation",
+      "difference_definition": "pathoalign_dep20 minus no_adversary"
+    },
+    {
+      "comparator": "no_acquisition_classifier",
+      "comparison_id": "full_minus_no_acquisition_classifier",
+      "comparison_role": "registered_objective_ablation",
+      "difference_definition": "pathoalign_dep20 minus no_acquisition_classifier"
+    },
+    {
+      "comparator": "no_scanner_dependence",
+      "comparison_id": "full_minus_no_scanner_dependence",
+      "comparison_role": "registered_objective_ablation",
+      "difference_definition": "pathoalign_dep20 minus no_scanner_dependence"
+    },
+    {
+      "comparator": "no_cross_covariance",
+      "comparison_id": "full_minus_no_cross_covariance",
+      "comparison_role": "registered_objective_ablation",
+      "difference_definition": "pathoalign_dep20 minus no_cross_covariance"
+    }
+  ],
+  "completeness_requirement": {
+    "expected_fits": 175,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      801,
+      802,
+      803,
+      804,
+      805
+    ],
+    "variants": [
+      "paired_reference",
+      "two_branch_no_scanner_objectives",
+      "pathoalign_dep20",
+      "no_adversary",
+      "no_acquisition_classifier",
+      "no_scanner_dependence",
+      "no_cross_covariance"
+    ]
+  },
+  "metrics": [
+    {
+      "column": "scanner_probe_accuracy",
+      "direction": "lower_is_favorable",
+      "interpretation": "linear scanner recoverability in the biological branch"
+    },
+    {
+      "column": "pair_cosine_average",
+      "direction": "higher_is_favorable",
+      "interpretation": "average paired-view cosine; not proof of biological preservation"
+    },
+    {
+      "column": "pair_cosine_worst",
+      "direction": "higher_is_favorable",
+      "interpretation": "worst scanner-pair cosine; not proof of biological preservation"
+    },
+    {
+      "column": "retrieval_top1_average",
+      "direction": "higher_is_favorable",
+      "interpretation": "average same-region top-1 retrieval",
+      "preservation_noninferiority_margin": 0.02
+    },
+    {
+      "column": "retrieval_top1_worst",
+      "direction": "higher_is_favorable",
+      "interpretation": "worst scanner-pair same-region top-1 retrieval",
+      "preservation_noninferiority_margin": 0.02
+    },
+    {
+      "column": "acquisition_scanner_probe_accuracy",
+      "direction": "higher_is_favorable",
+      "interpretation": "linear scanner recoverability in the acquisition branch"
+    }
+  ],
+  "point_estimate": "mean slide-level contrast after averaging seeds within fold, variant, and slide",
+  "schema_version": "scorpion-capacity-matched-analysis-spec/v1",
+  "seed_averaging": "average the five seeds within fold, variant, and slide before any contrast",
+  "standalone_tests": [
+    {
+      "comparison_id": "full_acquisition_branch_minus_chance",
+      "difference_definition": "pathoalign_dep20 acquisition_scanner_probe_accuracy minus 0.2",
+      "reference_value": 0.2
+    }
+  ],
+  "status": "preregistered_before_evidence_eligible_full_fit",
+  "tissue_or_task_retention_metrics": "not available in the registered output schema and therefore not inferred"
+}
