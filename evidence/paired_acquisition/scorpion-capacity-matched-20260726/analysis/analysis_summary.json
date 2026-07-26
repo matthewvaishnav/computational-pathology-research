@@ -1,0 +1,21 @@
+{
+  "aggregate_contrast_rows": 36,
+  "analysis_directory": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1",
+  "campaign_hash": "59ba04450adf738aa2983dc40ecb4ff09ffa495f13d43c56edde5ec57707a2e1",
+  "contrast_slide_rows": 336,
+  "expected_cells": 175,
+  "failed_cells": 0,
+  "folds": 5,
+  "invalid_cells": 0,
+  "mixed_configurations": 0,
+  "mixed_source_commits": 0,
+  "non_finite_biological_metrics": 0,
+  "schema_version": "scorpion-capacity-matched-analysis/v1",
+  "seed_averaged_slide_rows": 336,
+  "seeds_per_fold": 5,
+  "smoke_cells_included": 0,
+  "status": "valid",
+  "unique_run_identities": 175,
+  "validated_cells": 175,
+  "variants": 7
+}
