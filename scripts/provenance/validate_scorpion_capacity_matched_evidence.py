@@ -20,6 +20,9 @@ DEFAULT_MANIFEST = REPO_ROOT / (
     "evidence/paired_acquisition/scorpion-capacity-matched-20260726/" "release_manifest.json"
 )
 SCHEMA_VERSION = "scorpion-capacity-matched-evidence/v1"
+EXPECTED_EXECUTION_COMMIT = "0adea50f1ef22865969109f1834a3c175e3f8b43"
+EXPECTED_REVIEWED_MERGE_COMMIT = "307784999348868d8887f270757bde7529da225f"
+TREE_EQUIVALENCE_RELATIONSHIP = "squash_merge_whole_tree_equivalent_to_execution_source"
 COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 SHA_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 EXPECTED_VARIANTS = (
@@ -213,6 +216,37 @@ def validate_git_binding(
         ):
             raise EvidenceValidationError(f"{label} file binding mismatch: {path}")
     return scripts
+
+
+def validate_reviewed_execution_relationship(
+    execution_binding: Any,
+    reviewed_binding: Any,
+    *,
+    execution_files: dict[str, dict[str, Any]],
+    reviewed_files: dict[str, dict[str, Any]],
+) -> None:
+    if not isinstance(execution_binding, dict) or not isinstance(reviewed_binding, dict):
+        raise EvidenceValidationError("Execution source relationship must use objects")
+    if execution_binding.get("commit") != EXPECTED_EXECUTION_COMMIT:
+        raise EvidenceValidationError("Actual execution source commit changed")
+    if reviewed_binding.get("commit") != EXPECTED_REVIEWED_MERGE_COMMIT:
+        raise EvidenceValidationError("Reviewed implementation merge commit changed")
+    if reviewed_binding.get("relationship") != TREE_EQUIVALENCE_RELATIONSHIP:
+        raise EvidenceValidationError("Reviewed execution relationship is invalid")
+    if execution_binding.get("tree") != reviewed_binding.get("tree"):
+        raise EvidenceValidationError(
+            "Reviewed implementation merge is not whole-tree equivalent "
+            "to the actual execution source"
+        )
+    if set(execution_files) != set(reviewed_files):
+        raise EvidenceValidationError("Reviewed and execution source roles differ")
+    for role, execution_record in execution_files.items():
+        reviewed_record = reviewed_files[role]
+        for field in ("path", "sha256", "size_bytes"):
+            if execution_record.get(field) != reviewed_record.get(field):
+                raise EvidenceValidationError(
+                    f"Reviewed and execution source file bindings differ: {role}"
+                )
 
 
 def validate_campaign_artifacts(paths: dict[str, Path]) -> dict[str, Any]:
@@ -575,10 +609,21 @@ def validate_evidence(
         repo_root=repo_root,
         label="execution_source",
     )
+    reviewed_files = validate_git_binding(
+        manifest.get("reviewed_execution_source"),
+        repo_root=repo_root,
+        label="reviewed_execution_source",
+    )
     publication_files = validate_git_binding(
         manifest.get("publication_tooling"),
         repo_root=repo_root,
         label="publication_tooling",
+    )
+    validate_reviewed_execution_relationship(
+        manifest.get("execution_source"),
+        manifest.get("reviewed_execution_source"),
+        execution_files=execution_files,
+        reviewed_files=reviewed_files,
     )
     if (
         "aggregate_analysis" not in execution_files
@@ -706,14 +751,17 @@ def validate_evidence(
     return {
         "aggregate_contrast_count": 36,
         "execution_commit": campaign["execution_commit"],
+        "execution_tree": manifest["execution_source"]["tree"],
         "external_artifacts_revalidated": require_external_artifacts,
         "external_input_count": len(external_inputs),
         "external_output_count": len(external_outputs),
         "family_id": manifest["family_id"],
         "promoted_artifact_count": len(promoted),
         "run_identity_count": len(campaign["run_ids"]),
+        "reviewed_merge_commit": manifest["reviewed_execution_source"]["commit"],
         "schema_version": SCHEMA_VERSION,
         "status": "valid",
+        "tree_equivalent_to_reviewed_merge": True,
     }
 
 

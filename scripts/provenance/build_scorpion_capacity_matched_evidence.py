@@ -33,6 +33,8 @@ CORRECTED_MANIFEST = REPO_ROOT / (
 ANALYSIS_SPEC = REPO_ROOT / ("experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json")
 BUILDER_PATH = "scripts/provenance/build_scorpion_capacity_matched_evidence.py"
 VALIDATOR_PATH = "scripts/provenance/validate_scorpion_capacity_matched_evidence.py"
+REVIEWED_IMPLEMENTATION_COMMIT = "307784999348868d8887f270757bde7529da225f"
+TREE_EQUIVALENCE_RELATIONSHIP = "squash_merge_whole_tree_equivalent_to_execution_source"
 
 
 def git_output(*arguments: str) -> str:
@@ -637,6 +639,13 @@ def build(captures_dir: Path) -> dict[str, Any]:
             external_record(path, role) for role, path in sorted(external_source_paths.items())
         ]
         publication_commit = git_output("rev-parse", "HEAD")
+        execution_tree = git_output("rev-parse", f"{execution_commit}^{{tree}}")
+        reviewed_tree = git_output("rev-parse", f"{REVIEWED_IMPLEMENTATION_COMMIT}^{{tree}}")
+        if execution_tree != reviewed_tree:
+            raise RuntimeError(
+                "Reviewed implementation merge is not whole-tree equivalent "
+                "to the actual execution source"
+            )
         execution_roles = {
             "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json": (
                 "analysis_specification"
@@ -658,9 +667,18 @@ def build(captures_dir: Path) -> dict[str, Any]:
             "family_id": "scorpion_capacity_matched_v1",
             "execution_source": {
                 "commit": execution_commit,
-                "tree": git_output("rev-parse", f"{execution_commit}^{{tree}}"),
+                "tree": execution_tree,
                 "files": [
                     git_file_record(execution_commit, path, role)
+                    for path, role in execution_roles.items()
+                ],
+            },
+            "reviewed_execution_source": {
+                "commit": REVIEWED_IMPLEMENTATION_COMMIT,
+                "tree": reviewed_tree,
+                "relationship": TREE_EQUIVALENCE_RELATIONSHIP,
+                "files": [
+                    git_file_record(REVIEWED_IMPLEMENTATION_COMMIT, path, role)
                     for path, role in execution_roles.items()
                 ],
             },

@@ -48,6 +48,37 @@ def test_resolve_record_detects_hash_tampering(tmp_path: Path):
         evidence.resolve_record(record, base=tmp_path, label="test", require_file=True)
 
 
+def test_reviewed_execution_relationship_requires_whole_tree_equivalence():
+    record = {
+        "path": "experiments/scorpion/example.py",
+        "sha256": "a" * 64,
+        "size_bytes": 10,
+    }
+    execution = {
+        "commit": evidence.EXPECTED_EXECUTION_COMMIT,
+        "tree": "b" * 40,
+    }
+    reviewed = {
+        "commit": evidence.EXPECTED_REVIEWED_MERGE_COMMIT,
+        "tree": "b" * 40,
+        "relationship": evidence.TREE_EQUIVALENCE_RELATIONSHIP,
+    }
+    evidence.validate_reviewed_execution_relationship(
+        execution,
+        reviewed,
+        execution_files={"runner": record},
+        reviewed_files={"runner": dict(record)},
+    )
+    reviewed["tree"] = "c" * 40
+    with pytest.raises(evidence.EvidenceValidationError, match="whole-tree equivalent"):
+        evidence.validate_reviewed_execution_relationship(
+            execution,
+            reviewed,
+            execution_files={"runner": record},
+            reviewed_files={"runner": dict(record)},
+        )
+
+
 def test_committed_release_validates_when_present():
     if not evidence.DEFAULT_MANIFEST.is_file():
         pytest.skip("Evidence package has not been generated on this commit.")
