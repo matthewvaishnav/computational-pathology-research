@@ -1,0 +1,141 @@
+{
+  "analysis_version": 1,
+  "bootstrap": {
+    "confidence_interval": [
+      0.025,
+      0.975
+    ],
+    "default_draws": 50000,
+    "method": "resample the five trained folds, then biological samples within each sampled fold",
+    "minimum_draws": 1000,
+    "seed_base": 20260726
+  },
+  "claim_boundaries": [
+    "Cosine similarity alone does not establish biological or task preservation.",
+    "A near-zero retrieval contrast is not described as an improvement.",
+    "No slide-independent sign-flip p-values are reported.",
+    "Condition associations do not establish that scanner suppression causes retention changes.",
+    "No cell is called universally optimal; the stable operating region is a parameter-free intersection of fold-specific Pareto sets.",
+    "Results apply only to the registered canine SCC DINOv2 paired-acquisition protocol.",
+    "The analysis cannot establish pure biological factors, complete scanner invariance, information-theoretic independence, clinical utility, causality, or universal capacity or regularization laws."
+  ],
+  "completeness_requirement": {
+    "acquisition_dimensions": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "cross_covariance_weights": [
+      0.0,
+      0.05,
+      0.2
+    ],
+    "epochs": 75,
+    "expected_fits": 450,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      911,
+      912,
+      913,
+      914,
+      915
+    ]
+  },
+  "condition_effects": {
+    "dimension_contrasts": "each dimension minus the 64-dimensional reference, marginal over all three registered cross-covariance weights",
+    "interaction_contrasts": "difference-in-differences: (dimension minus 64) at weight 0.05 or 0.20 minus the same dimension contrast at weight 0.0",
+    "weight_contrasts": "weight 0.05 or 0.20 minus weight 0.0, marginal over all six registered dimensions"
+  },
+  "fold_stability": {
+    "objectives": [
+      {
+        "column": "biological_scanner_probe_accuracy",
+        "direction": "lower_is_favorable"
+      },
+      {
+        "column": "biological_category_probe_accuracy",
+        "direction": "higher_is_favorable"
+      },
+      {
+        "column": "biological_retrieval_top1_average",
+        "direction": "higher_is_favorable"
+      }
+    ],
+    "stable_operating_region": "intersection of the non-dominated condition sets computed independently in all five folds; no tolerance or post hoc score weights"
+  },
+  "metrics": [
+    {
+      "column": "biological_scanner_probe_accuracy",
+      "direction": "lower_is_favorable",
+      "interpretation": "linear scanner recoverability in the biological branch"
+    },
+    {
+      "column": "acquisition_scanner_probe_accuracy",
+      "direction": "higher_is_favorable",
+      "interpretation": "linear scanner recoverability in the acquisition branch"
+    },
+    {
+      "column": "biological_category_probe_accuracy",
+      "direction": "higher_is_favorable",
+      "interpretation": "held-out canine tissue-category probe accuracy in the biological branch"
+    },
+    {
+      "column": "acquisition_category_probe_accuracy",
+      "direction": "lower_is_favorable",
+      "interpretation": "held-out canine tissue-category recoverability in the acquisition branch"
+    },
+    {
+      "column": "biological_pair_cosine_average",
+      "direction": "descriptive_only",
+      "interpretation": "average paired-view cosine; never evidence of biological preservation by itself"
+    },
+    {
+      "column": "biological_pair_cosine_worst",
+      "direction": "descriptive_only",
+      "interpretation": "worst scanner-pair cosine; never evidence of biological preservation by itself"
+    },
+    {
+      "column": "biological_retrieval_top1_average",
+      "direction": "higher_is_favorable",
+      "interpretation": "average held-out same-region top-1 retrieval across scanner pairs"
+    },
+    {
+      "column": "biological_retrieval_top1_worst",
+      "direction": "higher_is_favorable",
+      "interpretation": "worst scanner-pair held-out same-region top-1 retrieval"
+    },
+    {
+      "column": "branch_cross_covariance_rms",
+      "direction": "lower_is_favorable",
+      "interpretation": "descriptive held-out RMS standardized cross-covariance between branches; not independence"
+    }
+  ],
+  "point_estimate": "mean biological-sample value after averaging the five optimization seeds within fold, condition, and sample",
+  "probe_protocol": {
+    "checkpoint": "final epoch only; no test-based checkpoint selection",
+    "fit_rows": "all non-test rows in the registered fold",
+    "preprocessing": "StandardScaler fitted only on non-test probe rows",
+    "sample_metric": "mean row-level correctness within the held-out biological sample"
+  },
+  "schema_version": "paired-acquisition-factorial-analysis-spec/v1",
+  "seed_averaging": "average seeds within fold, dimension, cross-covariance weight, and biological sample before inferential summaries",
+  "status": "preregistered_before_result_inspection",
+  "suppression_retention_association": {
+    "method": "within each fold, Spearman association across the 18 seed-averaged condition means",
+    "outcomes": [
+      "biological_category_probe_accuracy",
+      "biological_retrieval_top1_average"
+    ],
+    "statement_boundary": "descriptive association only; no causal wording or p-value"
+  },
+  "tissue_or_task_retention_metrics": "canine tissue-category probe accuracy and same-region retrieval are available; clinical, diagnostic, patient-outcome, and external human-task metrics are unavailable and are not inferred"
+}

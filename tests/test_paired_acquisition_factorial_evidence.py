@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pytest
@@ -12,9 +13,11 @@ from scripts.provenance.build_paired_acquisition_factorial_evidence import (
 from scripts.provenance.validate_paired_acquisition_factorial_evidence import (
     FORBIDDEN_NAMES,
     RELEASE_PREFIX,
+    REPO_ROOT,
     EvidenceValidationError,
     canonical_json,
     expected_cells,
+    validate_package,
     validate_plan,
     validate_release_identity,
 )
@@ -65,6 +68,36 @@ def test_registered_factorial_plan_uses_frozen_full_run_axes(tmp_path: Path) -> 
     plan = tmp_path / "factorial_plan.json"
     plan.write_text(canonical_json(factorial_plan()), encoding="utf-8")
     validate_plan(plan)
+
+
+def test_published_factorial_evidence_package_validates() -> None:
+    package_root = (
+        REPO_ROOT / "evidence" / "paired_acquisition" / "dimensionality-xcov-factorial-20260726"
+    )
+    summary = validate_package(package_root)
+
+    assert summary["status"] == "valid"
+    assert summary["cell_count"] == 450
+    assert summary["condition_count"] == 18
+    assert summary["contrast_count"] == 17
+
+
+def test_published_factorial_evidence_hash_mutation_fails_closed(
+    tmp_path: Path,
+) -> None:
+    package_root = (
+        REPO_ROOT / "evidence" / "paired_acquisition" / "dimensionality-xcov-factorial-20260726"
+    )
+    mutated_package = tmp_path / "mutated-package"
+    shutil.copytree(package_root, mutated_package)
+    claim_boundary = mutated_package / "claim_boundary_snapshot.md"
+    claim_boundary.write_text(
+        claim_boundary.read_text(encoding="utf-8") + "\nmutation\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(EvidenceValidationError, match="artifact hash or size mismatch"):
+        validate_package(mutated_package)
 
 
 def test_evidence_atomic_promotion_retries_transient_lock(

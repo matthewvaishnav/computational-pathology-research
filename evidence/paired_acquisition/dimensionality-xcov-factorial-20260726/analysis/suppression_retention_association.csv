@@ -1,0 +1,11 @@
+fold,outcome,spearman_rho,condition_count,interpretation_boundary
+0,biological_category_probe_accuracy,0.15789473684210525,18,descriptive association only; not causal
+0,biological_retrieval_top1_average,-0.17647058823529413,18,descriptive association only; not causal
+1,biological_category_probe_accuracy,0.5376676986584108,18,descriptive association only; not causal
+1,biological_retrieval_top1_average,-0.49226006191950467,18,descriptive association only; not causal
+2,biological_category_probe_accuracy,-0.06914344685242517,18,descriptive association only; not causal
+2,biological_retrieval_top1_average,0.11867905056759545,18,descriptive association only; not causal
+3,biological_category_probe_accuracy,-0.07739938080495357,18,descriptive association only; not causal
+3,biological_retrieval_top1_average,-0.04231166150670795,18,descriptive association only; not causal
+4,biological_category_probe_accuracy,0.1867905056759546,18,descriptive association only; not causal
+4,biological_retrieval_top1_average,0.5190918472652218,18,descriptive association only; not causal

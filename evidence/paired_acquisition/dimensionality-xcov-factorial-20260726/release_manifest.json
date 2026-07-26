@@ -1,0 +1,163 @@
+{
+  "analysis": {
+    "analysis_commit": "7cc1ce85db45930f9e413dea6175636e587f5a9c",
+    "analysis_spec_sha256": "374d8a8bfbf8f48d15174e3974533f6624c6a3c77a149a4a642b78f3b96688c1",
+    "bootstrap_draws": 50000,
+    "condition_count": 18,
+    "contrast_count": 17,
+    "source_analysis_manifest_sha256": "a3e2a5fc37192caa3c4101b139fdfbb2ade85a57259480f1f911357a8eaa8d1f",
+    "source_release_id": "parelease-v1-9d52c3db0ce9583fb428c37bf540bb253dd2a1f92fbbfb1d132a0212f8bb6916",
+    "status": "valid"
+  },
+  "artifacts": [
+    {
+      "bytes": 764,
+      "path": "README.md",
+      "role": "readme",
+      "sha256": "94968fea9bfdf88a6d4d80f949c4f2c1e39325161d9a34f02a8236936fb83b81"
+    },
+    {
+      "bytes": 1409,
+      "path": "analysis/analysis_report.md",
+      "role": "analysis_report",
+      "sha256": "15862bfd0816f5d7d279e84880deb715d2060cb9dc76eba335fe7a0c7b12ce89"
+    },
+    {
+      "bytes": 5564,
+      "path": "analysis/analysis_spec.json",
+      "role": "analysis_specification",
+      "sha256": "374d8a8bfbf8f48d15174e3974533f6624c6a3c77a149a4a642b78f3b96688c1"
+    },
+    {
+      "bytes": 23376,
+      "path": "analysis/condition_summary.csv",
+      "role": "condition_summary",
+      "sha256": "a0b7de94ce76a0e0cb425614adc01513de2081375018e307a034270458d66605"
+    },
+    {
+      "bytes": 25429,
+      "path": "analysis/fold_aware_contrasts.csv",
+      "role": "fold_aware_contrasts",
+      "sha256": "788d5e33945d5e21512be5efe1edcb567ec06df737d67b8ec2d9d384d6f507fb"
+    },
+    {
+      "bytes": 90737,
+      "path": "analysis/fold_level_contrasts.csv",
+      "role": "fold_level_contrasts",
+      "sha256": "600641097308d19da7f362b8bd397a3b586a986a0fa24fba50345b9267f0d8be"
+    },
+    {
+      "bytes": 534,
+      "path": "analysis/pareto_stability.csv",
+      "role": "pareto_stability",
+      "sha256": "104d3d7a5fc3ba020d232038bdd9e6dc47b655e062d1e50636528dfac4dd224f"
+    },
+    {
+      "bytes": 16277,
+      "path": "analysis/seed_fold_contrast_consistency.csv",
+      "role": "seed_fold_consistency",
+      "sha256": "8fc08cbea97c90660a5239811aaee5265845ae05ebf92bf0ef62d9e42712219f"
+    },
+    {
+      "bytes": 3322,
+      "path": "analysis/source_analysis_manifest.json",
+      "role": "source_analysis_manifest",
+      "sha256": "a3e2a5fc37192caa3c4101b139fdfbb2ade85a57259480f1f911357a8eaa8d1f"
+    },
+    {
+      "bytes": 1073,
+      "path": "analysis/suppression_retention_association.csv",
+      "role": "suppression_retention_association",
+      "sha256": "84b3d96d934e69d1f337b2bd9ac75b3a0f5d274cb348888abc2808fa0e5023bc"
+    },
+    {
+      "bytes": 347215,
+      "path": "campaign/cell_table.csv",
+      "role": "cell_table",
+      "sha256": "d2a13a5811f81d39305908fdc1c6f5f459924bb7680c02e70ffafc6f2ac83f25"
+    },
+    {
+      "bytes": 226101,
+      "path": "campaign/completeness_matrix.csv",
+      "role": "completeness_matrix",
+      "sha256": "ad6c8be2ffcdb0ab774f06633807290f54601a54544e75259c25a30545f6d8fb"
+    },
+    {
+      "bytes": 1681,
+      "path": "campaign/factorial_plan.json",
+      "role": "factorial_plan",
+      "sha256": "4d8c131375a4f8c41596aec00971e8462ae741a8afac6bee1c807a0fc2029d4b"
+    },
+    {
+      "bytes": 37514,
+      "path": "campaign/full_gate.json",
+      "role": "factorial_full_gate",
+      "sha256": "d895fc5f7a629ef571291c69a8f0f98f2c43f223e98bd801db9fd9011bd0d974"
+    },
+    {
+      "bytes": 636,
+      "path": "campaign/smoke_authorization.json",
+      "role": "smoke_authorization",
+      "sha256": "f44b1ccd698132a9db633bdfe4136f6f39b75999116535add044105af165e2db"
+    },
+    {
+      "bytes": 1965,
+      "path": "claim_boundary_snapshot.md",
+      "role": "claim_boundary_snapshot",
+      "sha256": "a79dd9da469567571d7af027e5a946bd89b6ba27690c35db02c586c5e057a485"
+    },
+    {
+      "bytes": 3857,
+      "path": "commands.json",
+      "role": "commands",
+      "sha256": "64161126813b5f9006c7ca17cd945fb41aedb3ad8f99ce3b487dd78440844388"
+    },
+    {
+      "bytes": 534,
+      "path": "provenance/environment.json",
+      "role": "environment",
+      "sha256": "d1d96e0efed9bdbc85eda01a6c09ada203170814e3fcb54fccaa96d2c22260e4"
+    },
+    {
+      "bytes": 1947,
+      "path": "provenance/input_inventory.json",
+      "role": "input_inventory",
+      "sha256": "c726070266a78e132684a44a8274b5e0bcc68a84c7718fc1e275fec599133d50"
+    },
+    {
+      "bytes": 1085,
+      "path": "provenance/source_bindings.json",
+      "role": "source_bindings",
+      "sha256": "f6a0e8785d1d1df16474ba404b64831ce1ca1a8608712b58094ce053c93fa9f4"
+    }
+  ],
+  "campaign": {
+    "cell_table_sha256": "d2a13a5811f81d39305908fdc1c6f5f459924bb7680c02e70ffafc6f2ac83f25",
+    "expected_cell_count": 450,
+    "gate_status": "passed",
+    "ledger_line_count": 1361,
+    "ledger_sha256": "aef186d16c39ce703e287c9ab9095bd5bdf82e089d2d066f7d46693a16f5b8cf",
+    "plan_sha256": "4d8c131375a4f8c41596aec00971e8462ae741a8afac6bee1c807a0fc2029d4b",
+    "source_commit": "ebead9009ee83816f5ac1ad5ca37e0cb8e7950fa",
+    "source_release_id": "parelease-v1-9d52c3db0ce9583fb428c37bf540bb253dd2a1f92fbbfb1d132a0212f8bb6916",
+    "source_release_manifest_sha256": "0273804715cd0748718f12474fbd3e3aee0a5c3755fb80f50abe7943f2dfc005",
+    "status": "valid",
+    "valid_cell_count": 450
+  },
+  "claim_boundary_snapshot_sha256": "a79dd9da469567571d7af027e5a946bd89b6ba27690c35db02c586c5e057a485",
+  "inputs": {
+    "feature_sha256": "5db383771614a9018a72d57ba8dd45c8f89adb4cb665103133aa8188496e3e80",
+    "smoke_manifest_sha256": "fb37998fd92f04ab99f05a5fc161f69e7eb377a996c94c5fbfe18ee9a98f0732",
+    "split_manifest_sha256_by_fold": {
+      "0": "19306704f6dc919790d13d0f77bfe2b6975b0fbf34388553f0a31aced97a7081",
+      "1": "96501c9be1258f74c119d9f88a61c6945cf51f8c56ab53147b6c0b10792b3212",
+      "2": "6d6c2bc39de24244e414816dd4386fd0a61c94fc2e7d66f6e88aef61f66e1f3e",
+      "3": "3396e0fb34d92af27dbd982bd5cea16fbeae7cc3b4d3bb64ee9f04ca959cdaf7",
+      "4": "a382ed29bc8bd74178282183fcbb9d2a3f66665391a4be234acdb6f3eac995f6"
+    }
+  },
+  "release_id": "pafactorial-evidence-v1-c5bcd7faa43056ac26a888faa25c9a43afdce8b357902a127c9061baf042fdf9",
+  "schema_version": "paired-acquisition-factorial-evidence/v1",
+  "source_bindings_sha256": "f6a0e8785d1d1df16474ba404b64831ce1ca1a8608712b58094ce053c93fa9f4",
+  "status": "valid"
+}
