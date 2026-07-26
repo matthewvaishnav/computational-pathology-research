@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,6 +17,26 @@ from experiments.paired_acquisition.run_biological_label_preservation_audit_v2 i
     split_indices,
     validate_category_support,
 )
+
+
+def test_fixed_estimand_script_supports_documented_direct_execution() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    script = (
+        repo_root
+        / "experiments"
+        / "paired_acquisition"
+        / "run_biological_label_preservation_fixed_estimand.py"
+    )
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_split_indices_rejects_biological_sample_overlap() -> None:
