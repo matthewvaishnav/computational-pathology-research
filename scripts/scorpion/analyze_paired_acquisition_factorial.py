@@ -119,6 +119,12 @@ def canonical_json(value: Mapping[str, Any]) -> str:
     return json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
 
 
+def canonical_text_sha256(path: Path) -> str:
+    """Hash text with platform-independent line endings."""
+    content = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(content).hexdigest()
+
+
 def display_path(path: Path) -> str:
     try:
         return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
@@ -1050,7 +1056,7 @@ def validate_analysis(
         raise AnalysisError("factorial analysis status is not valid")
     if manifest.get("source_release_manifest_sha256") != sha256_file(release_manifest):
         raise AnalysisError("analysis binds another full release")
-    if manifest.get("analysis_spec_sha256") != sha256_file(spec_path):
+    if manifest.get("analysis_spec_sha256") != canonical_text_sha256(spec_path):
         raise AnalysisError("analysis specification hash changed")
     artifacts = manifest.get("artifacts")
     if not isinstance(artifacts, list):
@@ -1169,7 +1175,7 @@ def run_analysis(
             "status": "valid",
             "analysis_commit": current_git_commit(),
             "analysis_spec": display_path(spec_path),
-            "analysis_spec_sha256": sha256_file(spec_path),
+            "analysis_spec_sha256": canonical_text_sha256(spec_path),
             "source_release_manifest": display_path(release_manifest),
             "source_release_manifest_sha256": sha256_file(release_manifest),
             "source_release_id": release_summary["release_id"],

@@ -11,6 +11,7 @@ from scripts.scorpion.analyze_paired_acquisition_factorial import (
     METRICS,
     AnalysisError,
     build_slide_contrasts,
+    canonical_text_sha256,
     interval_classification,
     pareto_stability,
     promote_directory,
@@ -62,6 +63,17 @@ def test_analysis_spec_locks_design_and_claim_boundaries() -> None:
     assert any(
         "No slide-independent sign-flip" in boundary for boundary in spec["claim_boundaries"]
     )
+
+
+def test_analysis_spec_hash_is_independent_of_platform_line_endings(
+    tmp_path: Path,
+) -> None:
+    unix = tmp_path / "unix.json"
+    windows = tmp_path / "windows.json"
+    unix.write_bytes(b'{\n  "status": "preregistered"\n}\n')
+    windows.write_bytes(b'{\r\n  "status": "preregistered"\r\n}\r\n')
+
+    assert canonical_text_sha256(unix) == canonical_text_sha256(windows)
 
 
 def test_two_stage_bootstrap_is_deterministic_and_fold_aware() -> None:
