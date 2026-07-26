@@ -28,7 +28,6 @@ from src.models.scorpion_pathoalign import (
     projection_loss,
 )
 
-
 SCANNERS = ("AT2", "GT450", "DP200", "P1000", "B300")
 SCANNER_TO_INDEX = {name: index for index, name in enumerate(SCANNERS)}
 DEFAULT_SEEDS = tuple(range(401, 411))
@@ -38,7 +37,7 @@ class ExperimentError(ValueError):
     pass
 
 
-def set_seed(seed: int) -> None:
+def set_seed(seed: int, *, strict_determinism: bool = False) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -46,7 +45,7 @@ def set_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    torch.use_deterministic_algorithms(True, warn_only=True)
+    torch.use_deterministic_algorithms(True, warn_only=not strict_determinism)
 
 
 def load_archive(path: Path):
@@ -89,9 +88,9 @@ def region_groups(frame: pd.DataFrame, train_indices: np.ndarray) -> list[np.nda
     for _, group in subset.groupby("region_id", sort=True):
         if len(group) != 5 or set(group["scanner_id"]) != set(SCANNERS):
             raise ExperimentError("Every training region must contain all five scanners.")
-        ordered = group.assign(
-            scanner_order=group["scanner_id"].map(SCANNER_TO_INDEX)
-        ).sort_values("scanner_order")
+        ordered = group.assign(scanner_order=group["scanner_id"].map(SCANNER_TO_INDEX)).sort_values(
+            "scanner_order"
+        )
         groups.append(ordered.index.to_numpy(dtype=np.int64))
     return groups
 
@@ -118,9 +117,7 @@ def project(model, features, indices, device, batch_size=512):
             if output["acquisition"] is not None:
                 acquisition.append(output["acquisition"].cpu().numpy())
     biological_array = np.concatenate(biological).astype(np.float32)
-    acquisition_array = (
-        np.concatenate(acquisition).astype(np.float32) if acquisition else None
-    )
+    acquisition_array = np.concatenate(acquisition).astype(np.float32) if acquisition else None
     return biological_array, acquisition_array
 
 
@@ -157,22 +154,22 @@ def train_one(
     learning_rate: float,
     weight_decay: float,
     run_dir: Path,
+    strict_determinism: bool = False,
 ):
-    set_seed(seed)
+    set_seed(seed, strict_determinism=strict_determinism)
     model = ScorpionProjection(method, config).to(device)
-    optimizer = torch.optim.AdamW(
-        model.parameters(), lr=learning_rate, weight_decay=weight_decay
-    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     scanner_labels = np.asarray(
         [SCANNER_TO_INDEX[value] for value in frame["scanner_id"]], dtype=np.int64
     )
     generator = np.random.default_rng(seed)
     history = []
+    max_preclip_gradient_norm = 0.0
 
     for epoch in range(1, epochs + 1):
         model.train()
         order = generator.permutation(len(groups))
-        epoch_totals = []
+        epoch_parts: dict[str, list[float]] = {}
         for start in range(0, len(order), region_batch_size):
             selected = order[start : start + region_batch_size]
             batch_groups = [groups[index] for index in selected]
@@ -183,29 +180,41 @@ def train_one(
             region_tensor = torch.from_numpy(region_labels.astype(np.int64)).to(device)
 
             optimizer.zero_grad(set_to_none=True)
-            loss, parts = projection_loss(
-                model, inputs, scanner_tensor, region_tensor
-            )
+            loss, parts = projection_loss(model, inputs, scanner_tensor, region_tensor)
             if not torch.isfinite(loss):
                 raise ExperimentError(
                     f"Non-finite loss: method={method}, seed={seed}, epoch={epoch}"
                 )
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            for name, parameter in model.named_parameters():
+                if parameter.grad is not None and not torch.isfinite(parameter.grad).all():
+                    raise ExperimentError(
+                        "Non-finite gradient: "
+                        f"method={method}, seed={seed}, epoch={epoch}, parameter={name}"
+                    )
+            gradient_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            if not torch.isfinite(gradient_norm):
+                raise ExperimentError(
+                    f"Non-finite gradient norm: method={method}, seed={seed}, epoch={epoch}"
+                )
+            max_preclip_gradient_norm = max(
+                max_preclip_gradient_norm,
+                float(gradient_norm.detach().cpu()),
+            )
             optimizer.step()
-            epoch_totals.append(parts["total"])
+            for name, value in parts.items():
+                epoch_parts.setdefault(name, []).append(float(value))
 
         if epoch == 1 or epoch % 25 == 0 or epoch == epochs:
-            mean_total = float(np.mean(epoch_totals))
-            history.append({"epoch": epoch, "mean_total_loss": mean_total})
-            print(
-                f"{method} seed={seed} epoch={epoch:04d}/{epochs} "
-                f"loss={mean_total:.6f}"
-            )
+            means = {
+                f"mean_{name}_loss": float(np.mean(values))
+                for name, values in sorted(epoch_parts.items())
+            }
+            mean_total = means["mean_total_loss"]
+            history.append({"epoch": epoch, **means})
+            print(f"{method} seed={seed} epoch={epoch:04d}/{epochs} " f"loss={mean_total:.6f}")
 
-    biological, acquisition = project(
-        model, features, development_indices, device
-    )
+    biological, acquisition = project(model, features, development_indices, device)
     if not np.isfinite(biological).all() or biological.var(axis=0).mean() <= 0:
         raise ExperimentError("Projected biological representation failed validation.")
 
@@ -218,6 +227,7 @@ def train_one(
             "seed": seed,
             "config": asdict(config),
             "epochs": epochs,
+            "strict_determinism": strict_determinism,
         },
         run_dir / "checkpoint.pt",
     )
@@ -254,6 +264,8 @@ def train_one(
         "projected_feature_dim": config.biological_dim,
         "projected_feature_variance_mean": float(biological.var(axis=0).mean()),
         "run_dir": str(run_dir.resolve()),
+        "finite_gradients": True,
+        "max_preclip_gradient_norm": max_preclip_gradient_norm,
     }
 
 
@@ -285,9 +297,7 @@ def main() -> None:
     parser.add_argument("--scanner-adversary-weight", type=float, default=0.50)
     parser.add_argument("--scanner-acquisition-weight", type=float, default=0.50)
     parser.add_argument("--cross-covariance-weight", type=float, default=0.05)
-    parser.add_argument(
-        "--device", default="cuda" if torch.cuda.is_available() else "cpu"
-    )
+    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
 
     if args.epochs <= 0 or args.region_batch_size <= 1:
