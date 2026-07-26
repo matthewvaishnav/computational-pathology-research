@@ -2,6 +2,8 @@
 
 **Original draft:** 2026-07-08  
 **Audit hold applied:** 2026-07-25  
+**Corrected evidence record:** 2026-07-26
+
 **Submission status:** not submission-ready
 
 The previous manuscript draft has been withdrawn from current claim use. It
@@ -32,13 +34,12 @@ current `CLAIM_BOUNDARY.md`.
 
 The next manuscript may presently defend this bounded result:
 
-> Paired-Acquisition Neural Factorization uses matched acquisitions of the same
-> tissue to learn a tissue-oriented branch and an explicit acquisition branch.
-> Across the tested SCORPION and canine paired-scanner protocols, the
-> tissue-oriented branch contains substantially less linearly recoverable scanner
-> identity, the acquisition branch retains strong scanner information, and
-> same-region tissue retrieval is largely preserved. These findings support
-> partial structured separation under the tested conditions.
+> Under corrected biological-sample-blocked and fold-aware evaluation,
+> Paired-Acquisition Neural Factorization substantially reduces linearly
+> recoverable scanner identity in its tissue-oriented representation while
+> preserving descriptive tissue-category structure and same-region retrieval.
+> The acquisition branch retains strong scanner information. These findings
+> support partial structured separation under the tested conditions.
 
 The manuscript must not call either branch biologically pure, claim complete
 factorization, infer disease biology, or claim best scanner removal.
@@ -55,13 +56,19 @@ factorization, infer disease biology, or claim best scanner removal.
 - reduced held-out linear scanner recoverability in the tissue-oriented branch;
 - strong scanner capture in the acquisition branch;
 - same-region retrieval and cross-scanner agreement reported as representation
-  metrics, not biological endpoints.
+  metrics, not biological endpoints;
+- fold-aware `pathoalign_dep20_minus_paired_reference` scanner-probe contrast
+  `-0.38541666666666674`, with 95% fold/slide bootstrap interval
+  `[-0.42064000000000007, -0.34643478260869565]`;
+- positive cross-view cosine contrasts, alongside retrieval contrasts whose
+  intervals include zero and therefore do not support retrieval improvement.
 
-Formal uncertainty should be regenerated with the fold-aware v2 analyzer.
+The fold-aware v2 analysis is the current inference record. Historical
+slide-independent sign-flip p-values remain withdrawn.
 
 ### External canine SCC
 
-Permitted evidence is restricted to:
+Permitted evidence includes:
 
 - five-scanner matched-acquisition geometry;
 - biological-sample-blocked folds;
@@ -70,9 +77,21 @@ Permitted evidence is restricted to:
 - same-region retrieval;
 - pair-integrity controls;
 - acquisition-branch scanner capture;
+- the corrected fixed five-category estimand with fit-only probe
+  standardization and leakage-safe fit-pool neighbours;
 - explicit resolution and geometry limitations.
 
-Biological-category numbers are pending the corrected audit.
+For the original frozen, true-pair tissue-oriented, true-pair acquisition, and
+linear centroid/QR k=4 representations, the exact
+scanner/category/purity-k=5 five-fold means are respectively:
+
+- `0.8628184955462632 / 0.44086590895818567 / 0.42409036761242336`;
+- `0.3614076415619065 / 0.4353482507842298 / 0.429310749459204`;
+- `0.865097576168538 / 0.39818864063789994 / 0.3063124063151831`;
+- `0.2 / 0.44245014748183487 / 0.4377408893348`.
+
+These are descriptive tissue-category representation metrics, not diagnostic,
+clinical, patient-level, causal, or biological-purity evidence.
 
 ### Synthetic studies
 
@@ -82,14 +101,18 @@ identifiability, and external-validity limitations.
 
 ## Required evidence before reconstruction
 
-1. Run `run_biological_label_preservation_audit_v2.py` after finalizing a fixed,
-   sample-supported category estimand and including the strongest oldstyle
-   baseline.
-2. Run the 175-fit capacity-matched SCORPION objective-ablation study.
-3. Generate fold-aware SCORPION intervals.
-4. Complete the locked dimension-by-cross-covariance factorial.
-5. Publish new outputs with forward-valid provenance.
-6. Rebuild every table and figure from the corrected result directories.
+1. Run the 175-fit capacity-matched SCORPION objective-ablation study.
+2. Complete and aggregate the locked dimension-by-cross-covariance factorial.
+3. Run repaired TransnnMIL matched controls before restoring any historical
+   fusion or topology statement.
+4. Obtain stronger independent human-tissue and second labeled multi-scanner
+   confirmation before broader biological claims.
+5. Rebuild every table and figure from corrected, provenance-bound result
+   directories.
+
+The fixed-estimand canine audit, fold-aware SCORPION intervals, and their
+forward-valid corrected-evidence record are complete. The public PDF remains on
+audit hold.
 
 ## Required manuscript structure
 

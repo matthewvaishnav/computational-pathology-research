@@ -1,0 +1,16 @@
+{
+  "accelerator": "not used by these analysis scripts",
+  "captured_at_utc": "2026-07-26T16:44:42+00:00",
+  "environment_scope": "Artifact-validation and publication environment. The completed analyses did not emit a separate immutable pre-run environment record.",
+  "git": "git version 2.54.0.windows.1",
+  "packages": {
+    "numpy": "2.4.6",
+    "pandas": "2.2.3",
+    "scikit-learn": "1.8.0",
+    "scipy": "1.17.1"
+  },
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python_implementation": "CPython",
+  "python_version": "3.11.9",
+  "schema_version": "corrected-paired-acquisition-environment/v1"
+}

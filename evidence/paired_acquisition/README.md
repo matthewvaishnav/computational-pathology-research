@@ -1,7 +1,23 @@
 # Paired-acquisition evidence archive
 
-This directory indexes the text evidence consolidated from the 15 historical
-commits used by the Paired-Acquisition Neural Factorization claim ledger.
+This directory contains the historical evidence archive and separately
+versioned forward-valid corrected evidence for Paired-Acquisition Neural
+Factorization.
+
+## Corrected evidence
+
+`corrected-20260726/` is the current corrected-evidence release for the
+fixed-estimand canine SCC audit and fold-aware SCORPION inference. It contains
+only validated summaries, design and environment records, hashes, and release
+metadata. Raw and large artifacts remain external and are bound by SHA-256.
+
+The corrected release does not overwrite or reactivate historical evidence.
+Its claim boundary is subordinate to `CLAIM_BOUNDARY.md`.
+
+## Historical archive
+
+The files at this directory level index the text evidence consolidated from the
+15 historical commits used by the claim ledger.
 
 ## Scope
 
