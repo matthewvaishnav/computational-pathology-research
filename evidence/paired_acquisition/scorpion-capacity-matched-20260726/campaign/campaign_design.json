@@ -1,0 +1,201 @@
+{
+  "base_features": "results/scorpion/features/fold_0_dinov2_base.npz",
+  "campaign_hash": "59ba04450adf738aa2983dc40ecb4ff09ffa495f13d43c56edde5ec57707a2e1",
+  "campaign_mode": "full",
+  "checkpoint_selection": "none; fixed final epoch only",
+  "claim_boundary": "This campaign may support objective-level evidence under the registered SCORPION protocol. It cannot establish pure biological factors, complete scanner invariance, universal objective necessity, or clinical utility.",
+  "device": "cuda",
+  "evidence_eligible": true,
+  "executed_design": {
+    "epochs": 75,
+    "expected_fit_count": 175,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      801,
+      802,
+      803,
+      804,
+      805
+    ],
+    "variants": [
+      "paired_reference",
+      "two_branch_no_scanner_objectives",
+      "pathoalign_dep20",
+      "no_adversary",
+      "no_acquisition_classifier",
+      "no_scanner_dependence",
+      "no_cross_covariance"
+    ]
+  },
+  "frozen_full_design": {
+    "epochs": 75,
+    "expected_fit_count": 175,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "learning_rate": 0.0003,
+    "region_batch_size": 32,
+    "seeds": [
+      801,
+      802,
+      803,
+      804,
+      805
+    ],
+    "variants": {
+      "no_acquisition_classifier": {
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "method": "pathoalign",
+        "scanner_acquisition_weight": 0.0,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0
+      },
+      "no_adversary": {
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 0.0,
+        "method": "pathoalign",
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.0,
+        "scanner_dependence_weight": 20.0
+      },
+      "no_cross_covariance": {
+        "cross_covariance_weight": 0.0,
+        "gradient_reversal_strength": 1.0,
+        "method": "pathoalign",
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0
+      },
+      "no_scanner_dependence": {
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "method": "pathoalign",
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 0.0
+      },
+      "paired_reference": {
+        "cross_covariance_weight": 0.0,
+        "gradient_reversal_strength": 0.0,
+        "method": "paired_consistency",
+        "scanner_acquisition_weight": 0.0,
+        "scanner_adversary_weight": 0.0,
+        "scanner_dependence_weight": 0.0
+      },
+      "pathoalign_dep20": {
+        "cross_covariance_weight": 0.05,
+        "gradient_reversal_strength": 1.0,
+        "method": "pathoalign",
+        "scanner_acquisition_weight": 0.5,
+        "scanner_adversary_weight": 0.5,
+        "scanner_dependence_weight": 20.0
+      },
+      "two_branch_no_scanner_objectives": {
+        "cross_covariance_weight": 0.0,
+        "gradient_reversal_strength": 0.0,
+        "method": "pathoalign",
+        "scanner_acquisition_weight": 0.0,
+        "scanner_adversary_weight": 0.0,
+        "scanner_dependence_weight": 0.0
+      }
+    },
+    "weight_decay": 0.0001
+  },
+  "historical_metrics_imported": false,
+  "inputs": {
+    "data/scorpion/splits/fold_0_manifest.csv": "4ba23cd72346fb2e55766ad0aac8bc0c1cdcfcbbbfc0274fb2e6556ef114743c",
+    "data/scorpion/splits/fold_1_manifest.csv": "3624c2024650444da8a27ce2a2d95833bdbe46b9bf4acc759db9acd82e68822b",
+    "data/scorpion/splits/fold_2_manifest.csv": "a55374e7eb88c19c532d1f8ab1ccfd9f25cfa8a3ab076e02a20963b85f64a0ea",
+    "data/scorpion/splits/fold_3_manifest.csv": "fdfcfa3d1d37685958e3ba1339cf117fd5707df13f404c27c92594037a975411",
+    "data/scorpion/splits/fold_4_manifest.csv": "5231379f03e2510c5d851dd09c8d4d5ab3af21a3defe35dbe0371d655a9a79ae",
+    "results/scorpion/features/fold_0_dinov2_base.npz": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71"
+  },
+  "manifests_directory": "data/scorpion/splits",
+  "parameter_inventory": [
+    {
+      "capacity_matched_to_pathoalign_dep20": false,
+      "intended_removed_objective_or_branch": "Historical one-branch paired-consistency comparator. It is intentionally not capacity matched; capacity claims must use two_branch_no_scanner_objectives.",
+      "parameter_count_difference_from_pathoalign_dep20": -498378,
+      "total_parameter_count": 1051648,
+      "trainable_parameter_count": 1051648,
+      "variant": "paired_reference"
+    },
+    {
+      "capacity_matched_to_pathoalign_dep20": true,
+      "intended_removed_objective_or_branch": "Two-branch capacity control with scanner adversary, acquisition classifier, scanner-dependence penalty, cross-covariance penalty, and gradient reversal disabled.",
+      "parameter_count_difference_from_pathoalign_dep20": 0,
+      "total_parameter_count": 1550026,
+      "trainable_parameter_count": 1550026,
+      "variant": "two_branch_no_scanner_objectives"
+    },
+    {
+      "capacity_matched_to_pathoalign_dep20": true,
+      "intended_removed_objective_or_branch": "Full registered two-branch factorization objective.",
+      "parameter_count_difference_from_pathoalign_dep20": 0,
+      "total_parameter_count": 1550026,
+      "trainable_parameter_count": 1550026,
+      "variant": "pathoalign_dep20"
+    },
+    {
+      "capacity_matched_to_pathoalign_dep20": true,
+      "intended_removed_objective_or_branch": "Scanner adversary and gradient reversal disabled.",
+      "parameter_count_difference_from_pathoalign_dep20": 0,
+      "total_parameter_count": 1550026,
+      "trainable_parameter_count": 1550026,
+      "variant": "no_adversary"
+    },
+    {
+      "capacity_matched_to_pathoalign_dep20": true,
+      "intended_removed_objective_or_branch": "Acquisition-branch scanner-classification loss disabled.",
+      "parameter_count_difference_from_pathoalign_dep20": 0,
+      "total_parameter_count": 1550026,
+      "trainable_parameter_count": 1550026,
+      "variant": "no_acquisition_classifier"
+    },
+    {
+      "capacity_matched_to_pathoalign_dep20": true,
+      "intended_removed_objective_or_branch": "Direct scanner-dependence penalty disabled.",
+      "parameter_count_difference_from_pathoalign_dep20": 0,
+      "total_parameter_count": 1550026,
+      "trainable_parameter_count": 1550026,
+      "variant": "no_scanner_dependence"
+    },
+    {
+      "capacity_matched_to_pathoalign_dep20": true,
+      "intended_removed_objective_or_branch": "Biological/acquisition cross-covariance penalty disabled.",
+      "parameter_count_difference_from_pathoalign_dep20": 0,
+      "total_parameter_count": 1550026,
+      "trainable_parameter_count": 1550026,
+      "variant": "no_cross_covariance"
+    }
+  ],
+  "preprocessing_fit_scope": "all non-test slides in the registered fold",
+  "schema_version": "scorpion-capacity-matched-ablations/v1",
+  "smoke_outputs_must_not_be_promoted": false,
+  "source": {
+    "commit": "0adea50f1ef22865969109f1834a3c175e3f8b43",
+    "files": {
+      "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json": "5350a1ab988e95beef0d87edf260d817e928573208f6042fb2c03025ad84f819",
+      "experiments/scorpion/run_pathoalign_capacity_matched_ablations.py": "241fab11fc4491471f748c594d86d53e6d737ec32038cf8ef9f819ef7e236112",
+      "experiments/scorpion/run_pathoalign_crossfold.py": "f87a5020db47f11fcc8bffacb3c0d2b78295c53968486ff33030180dcf2a04e0",
+      "experiments/scorpion/run_pathoalign_projection.py": "6d61d531626ab3086c30bdcc8f816702b3a723657b525c62e16bbefca66e4585",
+      "scripts/scorpion/analyze_pathoalign_capacity_matched_ablations.py": "2c7fad991999a8bf0527617adf1662f9f3d5179c8ba4e0873a631a992e5ff286",
+      "scripts/scorpion/analyze_pathoalign_crossfold.py": "e1dc9c86ba7223c3ff7f2a6f334b3d0e2cb41fb0ba63bc24bd8d23e96a9fce5b",
+      "src/models/scorpion_pathoalign.py": "36855b70b38fc03ea4a798b58c85e08bd6ab7041e30f069b0837cd49fd168d65"
+    },
+    "tracked_worktree_clean": true,
+    "tree": "6a28a2e6d60168c115da814db21fb8ceb35d1014"
+  },
+  "test_labels_used_during_training_or_model_selection": false
+}

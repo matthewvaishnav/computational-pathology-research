@@ -1,0 +1,527 @@
+{
+  "analysis": {
+    "bootstrap_draws": 100000,
+    "fold_aware": true,
+    "seed_averaging": "within fold/variant/slide before contrast",
+    "sign_flip_p_values_reported": false
+  },
+  "campaign": {
+    "attempt_2_cells": 0,
+    "campaign_hash": "59ba04450adf738aa2983dc40ecb4ff09ffa495f13d43c56edde5ec57707a2e1",
+    "completed_run_count": 175,
+    "device": "cuda",
+    "failed_cells": 0,
+    "folds": 5,
+    "invalid_cells": 0,
+    "seeds_per_fold": 5,
+    "variants": 7
+  },
+  "claim_boundary": {
+    "permitted_scope": [
+      "partial structured separation under the tested paired-acquisition protocol",
+      "reduced linear scanner recoverability relative to the equal-parameter two-branch control",
+      "same-region retrieval preserved within the registered noninferiority margin",
+      "retention of scanner information in the explicit acquisition branch",
+      "objective-level ablation evidence on this dataset and configuration"
+    ],
+    "prohibited_claims": [
+      "pure biological factors",
+      "complete scanner invariance",
+      "complete disentanglement",
+      "information-theoretic independence",
+      "causality beyond the paired intervention",
+      "clinical utility",
+      "diagnostic improvement",
+      "patient benefit",
+      "deployment readiness",
+      "universal necessity of any objective",
+      "claims that cosine proves biological preservation",
+      "retrieval improvement from a near-zero favorable sign"
+    ],
+    "public_paper_restored": false,
+    "snapshot_sha256": "c4f335430b05b2f31120de926848c32a033e9ccd8b768f09df37c6bc3cbb6d1f"
+  },
+  "execution_source": {
+    "commit": "0adea50f1ef22865969109f1834a3c175e3f8b43",
+    "files": [
+      {
+        "path": "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json",
+        "role": "analysis_specification",
+        "sha256": "5350a1ab988e95beef0d87edf260d817e928573208f6042fb2c03025ad84f819",
+        "size_bytes": 4554
+      },
+      {
+        "path": "experiments/scorpion/run_pathoalign_capacity_matched_ablations.py",
+        "role": "campaign_runner",
+        "sha256": "241fab11fc4491471f748c594d86d53e6d737ec32038cf8ef9f819ef7e236112",
+        "size_bytes": 56969
+      },
+      {
+        "path": "experiments/scorpion/run_pathoalign_crossfold.py",
+        "role": "crossfold_support",
+        "sha256": "ad1afc9e88bcdf2a368f4ccc348491b439b079ff637b45d76c0c775d23434c46",
+        "size_bytes": 11005
+      },
+      {
+        "path": "experiments/scorpion/run_pathoalign_projection.py",
+        "role": "training_runner",
+        "sha256": "67d3d609af5537946beb10e9f99dc655245f94b31cc50f58b86b68e62e939ab8",
+        "size_bytes": 15987
+      },
+      {
+        "path": "scripts/scorpion/analyze_pathoalign_capacity_matched_ablations.py",
+        "role": "aggregate_analysis",
+        "sha256": "2c7fad991999a8bf0527617adf1662f9f3d5179c8ba4e0873a631a992e5ff286",
+        "size_bytes": 22011
+      },
+      {
+        "path": "scripts/scorpion/analyze_pathoalign_crossfold.py",
+        "role": "metric_extractor",
+        "sha256": "2551093976e2bee0241be7b89b5b6ffd412bb2d5c8d51d88a9b32e5bbca1028d",
+        "size_bytes": 17549
+      },
+      {
+        "path": "src/models/scorpion_pathoalign.py",
+        "role": "model_definition",
+        "sha256": "528b653459bbdb759c5ca414cf434cf0ad54fba1ef6cbc98e6968c235a3c799f",
+        "size_bytes": 8554
+      }
+    ],
+    "tree": "6a28a2e6d60168c115da814db21fb8ceb35d1014"
+  },
+  "external_inputs": [
+    {
+      "path": "results/scorpion/features/fold_0_dinov2_base.npz",
+      "role": "base_feature_archive",
+      "sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+      "size_bytes": 6869432
+    },
+    {
+      "path": "data/scorpion/splits/fold_0_manifest.csv",
+      "role": "fold_0_split_manifest",
+      "row_count": 2400,
+      "sha256": "af8ba0111297978078dfdad6bb5d696bfd06609ea9ebcb6cc3d89ac1c9db30bd",
+      "size_bytes": 200069
+    },
+    {
+      "path": "data/scorpion/splits/fold_1_manifest.csv",
+      "role": "fold_1_split_manifest",
+      "row_count": 2400,
+      "sha256": "b8bbeaf8e54c7b76b7281fadfcf28b0202edde191db63f92f1202ee189217eb3",
+      "size_bytes": 200069
+    },
+    {
+      "path": "data/scorpion/splits/fold_2_manifest.csv",
+      "role": "fold_2_split_manifest",
+      "row_count": 2400,
+      "sha256": "f580fab2388f8850fffc6e0a15f1d6433f52b422ad17e45104d5938f1e3dbbef",
+      "size_bytes": 200169
+    },
+    {
+      "path": "data/scorpion/splits/fold_3_manifest.csv",
+      "role": "fold_3_split_manifest",
+      "row_count": 2400,
+      "sha256": "74ca19d31e31526cc345f4f8e37a8f30af0008aa053e1fa9b31a9f6b170489db",
+      "size_bytes": 200219
+    },
+    {
+      "path": "data/scorpion/splits/fold_4_manifest.csv",
+      "role": "fold_4_split_manifest",
+      "row_count": 2400,
+      "sha256": "ccecf74a52e109ce79eea0258ade0b0d99196e265339615de44a2b3731d8a60c",
+      "size_bytes": 200119
+    }
+  ],
+  "external_outputs": [
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/analysis_completeness.json",
+      "role": "raw_analysis_completeness",
+      "sha256": "fcc9366f420c46c5e7f67e9e88a7aac5450d39d7242ed996a657e491ef2a6e00",
+      "size_bytes": 488
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/analysis_design.json",
+      "role": "raw_analysis_design",
+      "sha256": "cf8f285f85c63849f30de31441a6290f7dd2b61165de3d5940a33f43dedbedb1",
+      "size_bytes": 1503
+    },
+    {
+      "path": "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json",
+      "role": "raw_analysis_specification",
+      "sha256": "5350a1ab988e95beef0d87edf260d817e928573208f6042fb2c03025ad84f819",
+      "size_bytes": 4554
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/analysis_summary.json",
+      "role": "raw_analysis_summary",
+      "sha256": "710e78bd2cc43c5d90c74e35554e8c62a1f0a9f1c2bbf2b5718dad8beffd0f95",
+      "size_bytes": 669
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/campaign_design.json",
+      "role": "raw_campaign_design",
+      "sha256": "bfa3152861ad0672a7b3e5c0c8ede3b23eae6070255e26500783fb4fa66d33f9",
+      "size_bytes": 8181
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/campaign_summary.json",
+      "role": "raw_campaign_summary",
+      "sha256": "2f9db1aac5b369e88a0aa3259bb9ab631f168fc2629c30dc6faa9d753e969cdf",
+      "size_bytes": 497
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/completeness_matrix.csv",
+      "role": "raw_completeness_matrix",
+      "row_count": 175,
+      "sha256": "6eeda218cf391a675a3bf4cb3cc79b44d9856ad7168c72b266eceaf2653083d3",
+      "size_bytes": 15657
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/environment.json",
+      "role": "raw_execution_environment",
+      "sha256": "3819fd514346d1fea9261ba5b292432214a3ea95b0c588af12ce343cd64db576",
+      "size_bytes": 6264
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/fold_aware_contrasts.csv",
+      "role": "raw_fold_aware_contrasts",
+      "row_count": 36,
+      "sha256": "fba133fcc843288831b07b4b26e29dfce98e142332566f668d028e3d23eef3cb",
+      "size_bytes": 12242
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/fold_level_contrasts.csv",
+      "role": "raw_fold_level_contrasts",
+      "row_count": 180,
+      "sha256": "076738104650bd0f0ba8a03201d3f005e080ff2268c6eee6e452495a36a3cce3",
+      "size_bytes": 19844
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/input_inventory.json",
+      "role": "raw_input_inventory",
+      "sha256": "e40b2f6749bcf3db49d3e5250dd5bc66ee50a1643adb63fa3792b622797e7bba",
+      "size_bytes": 5577
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/run_ledger.jsonl",
+      "role": "raw_run_ledger",
+      "sha256": "1cbcb37eeb3707b6d1e21512af0b3b4a5ebd1e8f1ae05cbb29887fdbc41cfa83",
+      "size_bytes": 741739
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_v1/run_metrics.csv",
+      "role": "raw_run_metrics",
+      "row_count": 175,
+      "sha256": "638d4ce59a6061c5ce4b9df49df93ce8cc194e9d93b5eccb8a42e539b2fc965d",
+      "size_bytes": 40993
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/seed_averaged_slide_metrics.csv",
+      "role": "raw_seed_averaged_slide_metrics",
+      "row_count": 336,
+      "sha256": "259a31c474f913bb59e1954eef9a0b22277bfc09c48eeb749e8e7e30d90f2ad7",
+      "size_bytes": 32761
+    },
+    {
+      "path": "results/scorpion/pathoalign_capacity_matched_ablations_analysis_v1/slide_level_contrasts.csv",
+      "role": "raw_slide_level_contrasts",
+      "row_count": 336,
+      "sha256": "1156775f0201dd8b19ebc59f02b569f442db09cd062b1f5e2a91f278a6fbe6e5",
+      "size_bytes": 67148
+    }
+  ],
+  "family_id": "scorpion_capacity_matched_v1",
+  "historical_evidence": {
+    "existing_corrected_manifest": "evidence/paired_acquisition/corrected-20260726/release_manifest.json",
+    "existing_corrected_manifest_sha256": "a7a7e34d1df24f7003ee8ccacc58e8885f5ebe60ed0b167f71c9f28767fadf4d",
+    "existing_corrected_package_modified": false,
+    "relationship": "separate new evidence family; does not overwrite, reinterpret, or automatically restore the corrected public evidence"
+  },
+  "key_results": {
+    "acquisition_classifier_ablation_acquisition_branch": {
+      "ci_025": 0.0523553623188406,
+      "ci_975": 0.08244897959183675,
+      "comparison_id": "full_minus_no_acquisition_classifier",
+      "fold_mean_max": 0.08040000000000001,
+      "fold_mean_min": 0.05999999999999998,
+      "interpretation_class": "interval_supported_favorable_change",
+      "mean_difference": 0.06700000000000002,
+      "metric": "acquisition_scanner_probe_accuracy"
+    },
+    "acquisition_classifier_ablation_biological_branch": {
+      "ci_025": -0.012000000000000002,
+      "ci_975": 0.008510638297872325,
+      "comparison_id": "full_minus_no_acquisition_classifier",
+      "fold_mean_max": 0.0043999999999999925,
+      "fold_mean_min": -0.01022222222222222,
+      "interpretation_class": "descriptively_favorable_but_uncertain",
+      "mean_difference": -0.0016666666666666715,
+      "metric": "scanner_probe_accuracy"
+    },
+    "adversary_ablation": {
+      "ci_025": 0.08391836734693878,
+      "ci_975": 0.11706666666666668,
+      "comparison_id": "full_minus_no_adversary",
+      "fold_mean_max": 0.12755555555555556,
+      "fold_mean_min": 0.082,
+      "interpretation_class": "interval_supported_regression",
+      "mean_difference": 0.09941666666666667,
+      "metric": "scanner_probe_accuracy"
+    },
+    "cross_covariance_ablation": {
+      "ci_025": -0.011404255319148949,
+      "ci_975": 0.00784,
+      "comparison_id": "full_minus_no_cross_covariance",
+      "fold_mean_max": 0.0031999999999999863,
+      "fold_mean_min": -0.015111111111111124,
+      "interpretation_class": "descriptively_favorable_but_uncertain",
+      "mean_difference": -0.0014166666666666737,
+      "metric": "scanner_probe_accuracy"
+    },
+    "full_acquisition_recoverability_above_chance": {
+      "ci_025": 0.6239183673469387,
+      "ci_975": 0.6872004347826086,
+      "comparison_id": "full_acquisition_branch_minus_chance",
+      "fold_mean_max": 0.7000000000000001,
+      "fold_mean_min": 0.6342222222222222,
+      "interpretation_class": "interval_supported_favorable_change",
+      "mean_difference": 0.6565,
+      "metric": "acquisition_scanner_probe_accuracy"
+    },
+    "historical_paired_scanner_suppression": {
+      "ci_025": -0.4096326530612245,
+      "ci_975": -0.35556521739130437,
+      "comparison_id": "full_minus_historical_paired_reference",
+      "fold_mean_max": -0.34755555555555556,
+      "fold_mean_min": -0.40800000000000003,
+      "interpretation_class": "interval_supported_favorable_change",
+      "mean_difference": -0.3831666666666667,
+      "metric": "scanner_probe_accuracy"
+    },
+    "primary_average_retrieval": {
+      "ci_025": -8.510638297872348e-05,
+      "ci_975": 0.0002553191489361799,
+      "comparison_id": "full_minus_capacity_matched_no_scanner_objectives",
+      "fold_mean_max": 0.00033333333333334595,
+      "fold_mean_min": -0.00011111111111111121,
+      "interpretation_class": "interval_supported_preserved_within_noninferiority_margin",
+      "mean_difference": 4.166666666666902e-05,
+      "metric": "retrieval_top1_average"
+    },
+    "primary_capacity_matched_scanner_suppression": {
+      "ci_025": -0.3346122448979592,
+      "ci_975": -0.2857872340425532,
+      "comparison_id": "full_minus_capacity_matched_no_scanner_objectives",
+      "fold_mean_max": -0.2746666666666666,
+      "fold_mean_min": -0.3324,
+      "interpretation_class": "interval_supported_favorable_change",
+      "mean_difference": -0.3108333333333333,
+      "metric": "scanner_probe_accuracy"
+    },
+    "primary_worst_retrieval": {
+      "ci_025": -0.0008510638297872254,
+      "ci_975": 0.0008510638297872348,
+      "comparison_id": "full_minus_capacity_matched_no_scanner_objectives",
+      "fold_mean_max": 0.0011111111111111122,
+      "fold_mean_min": -0.0011111111111110998,
+      "interpretation_class": "interval_supported_preserved_within_noninferiority_margin",
+      "mean_difference": 2.3129646346357427e-18,
+      "metric": "retrieval_top1_worst"
+    },
+    "scanner_dependence_ablation": {
+      "ci_025": -0.33927999999999997,
+      "ci_975": -0.2927826086956522,
+      "comparison_id": "full_minus_no_scanner_dependence",
+      "fold_mean_max": -0.29244444444444445,
+      "fold_mean_min": -0.3408,
+      "interpretation_class": "interval_supported_favorable_change",
+      "mean_difference": -0.3164166666666666,
+      "metric": "scanner_probe_accuracy"
+    }
+  },
+  "promoted_artifacts": [
+    {
+      "path": "analysis/analysis_completeness.json",
+      "role": "analysis_completeness",
+      "sha256": "fcc9366f420c46c5e7f67e9e88a7aac5450d39d7242ed996a657e491ef2a6e00",
+      "size_bytes": 488
+    },
+    {
+      "path": "analysis/analysis_design.json",
+      "role": "analysis_design",
+      "sha256": "cf8f285f85c63849f30de31441a6290f7dd2b61165de3d5940a33f43dedbedb1",
+      "size_bytes": 1503
+    },
+    {
+      "path": "analysis/analysis_specification.json",
+      "role": "analysis_specification",
+      "sha256": "5350a1ab988e95beef0d87edf260d817e928573208f6042fb2c03025ad84f819",
+      "size_bytes": 4554
+    },
+    {
+      "path": "analysis/analysis_summary.json",
+      "role": "analysis_summary",
+      "sha256": "710e78bd2cc43c5d90c74e35554e8c62a1f0a9f1c2bbf2b5718dad8beffd0f95",
+      "size_bytes": 669
+    },
+    {
+      "path": "campaign/campaign_design.json",
+      "role": "campaign_design",
+      "sha256": "bfa3152861ad0672a7b3e5c0c8ede3b23eae6070255e26500783fb4fa66d33f9",
+      "size_bytes": 8181
+    },
+    {
+      "path": "campaign/campaign_summary.json",
+      "role": "campaign_summary",
+      "sha256": "2f9db1aac5b369e88a0aa3259bb9ab631f168fc2629c30dc6faa9d753e969cdf",
+      "size_bytes": 497
+    },
+    {
+      "path": "campaign/cell_artifact_index.csv",
+      "role": "cell_artifact_index",
+      "row_count": 175,
+      "sha256": "7787705a977dcb3d73152bfcc433b59850c4d6eed0b726fc46bba56d92c805c7",
+      "size_bytes": 311782
+    },
+    {
+      "path": "claim_boundary_snapshot.md",
+      "role": "claim_boundary_snapshot",
+      "sha256": "c4f335430b05b2f31120de926848c32a033e9ccd8b768f09df37c6bc3cbb6d1f",
+      "size_bytes": 2618
+    },
+    {
+      "path": "commands.json",
+      "role": "commands",
+      "sha256": "4e16d4589f6b36aff43fe981e7ac3662f57181e3d4c6c3fac9551f914cd4b79a",
+      "size_bytes": 13364
+    },
+    {
+      "path": "campaign/completeness_matrix.csv",
+      "role": "completeness_matrix",
+      "row_count": 175,
+      "sha256": "6eeda218cf391a675a3bf4cb3cc79b44d9856ad7168c72b266eceaf2653083d3",
+      "size_bytes": 15657
+    },
+    {
+      "path": "campaign/environment.json",
+      "role": "execution_environment",
+      "sha256": "3819fd514346d1fea9261ba5b292432214a3ea95b0c588af12ce343cd64db576",
+      "size_bytes": 6264
+    },
+    {
+      "path": "analysis/fold_aware_contrasts.csv",
+      "role": "fold_aware_contrasts",
+      "row_count": 36,
+      "sha256": "fba133fcc843288831b07b4b26e29dfce98e142332566f668d028e3d23eef3cb",
+      "size_bytes": 12242
+    },
+    {
+      "path": "analysis/fold_level_contrasts.csv",
+      "role": "fold_level_contrasts",
+      "row_count": 180,
+      "sha256": "076738104650bd0f0ba8a03201d3f005e080ff2268c6eee6e452495a36a3cce3",
+      "size_bytes": 19844
+    },
+    {
+      "path": "campaign/input_inventory.json",
+      "role": "input_inventory",
+      "sha256": "e40b2f6749bcf3db49d3e5250dd5bc66ee50a1643adb63fa3792b622797e7bba",
+      "size_bytes": 5577
+    },
+    {
+      "path": "README.md",
+      "role": "readme",
+      "sha256": "a3babb71499b841763d2589d9ea2485bdb6e66478d689188120b14707049c17f",
+      "size_bytes": 1092
+    },
+    {
+      "path": "campaign/run_ledger.jsonl",
+      "role": "run_ledger",
+      "sha256": "1cbcb37eeb3707b6d1e21512af0b3b4a5ebd1e8f1ae05cbb29887fdbc41cfa83",
+      "size_bytes": 741739
+    },
+    {
+      "path": "campaign/run_metrics.csv",
+      "role": "run_metrics",
+      "row_count": 175,
+      "sha256": "638d4ce59a6061c5ce4b9df49df93ce8cc194e9d93b5eccb8a42e539b2fc965d",
+      "size_bytes": 40993
+    }
+  ],
+  "publication": {
+    "durable_terminal_logs_committed": false,
+    "large_checkpoints_committed": false,
+    "per_slide_outputs_committed": false,
+    "projected_features_committed": false,
+    "raw_feature_archives_committed": false
+  },
+  "publication_tooling": {
+    "commit": "691ea2971df5ca20c03103f758f1908b47fb7bf4",
+    "files": [
+      {
+        "path": "scripts/provenance/build_scorpion_capacity_matched_evidence.py",
+        "role": "builder",
+        "sha256": "1395ddcf6e30ae97fe492e3d6f590362cbceafa91c16bc5382eec674022511b9",
+        "size_bytes": 32123
+      },
+      {
+        "path": "scripts/provenance/validate_scorpion_capacity_matched_evidence.py",
+        "role": "validator",
+        "sha256": "6c40e7ba53de224b022680919ceafd0f2fd0954b660f5e1ab9c13a4283b87189",
+        "size_bytes": 32853
+      }
+    ],
+    "tree": "cc51dd071db95551cd507e109662c2ffb7c1eb09"
+  },
+  "reviewed_execution_source": {
+    "commit": "307784999348868d8887f270757bde7529da225f",
+    "files": [
+      {
+        "path": "experiments/scorpion/pathoalign_capacity_matched_analysis_spec.json",
+        "role": "analysis_specification",
+        "sha256": "5350a1ab988e95beef0d87edf260d817e928573208f6042fb2c03025ad84f819",
+        "size_bytes": 4554
+      },
+      {
+        "path": "experiments/scorpion/run_pathoalign_capacity_matched_ablations.py",
+        "role": "campaign_runner",
+        "sha256": "241fab11fc4491471f748c594d86d53e6d737ec32038cf8ef9f819ef7e236112",
+        "size_bytes": 56969
+      },
+      {
+        "path": "experiments/scorpion/run_pathoalign_crossfold.py",
+        "role": "crossfold_support",
+        "sha256": "ad1afc9e88bcdf2a368f4ccc348491b439b079ff637b45d76c0c775d23434c46",
+        "size_bytes": 11005
+      },
+      {
+        "path": "experiments/scorpion/run_pathoalign_projection.py",
+        "role": "training_runner",
+        "sha256": "67d3d609af5537946beb10e9f99dc655245f94b31cc50f58b86b68e62e939ab8",
+        "size_bytes": 15987
+      },
+      {
+        "path": "scripts/scorpion/analyze_pathoalign_capacity_matched_ablations.py",
+        "role": "aggregate_analysis",
+        "sha256": "2c7fad991999a8bf0527617adf1662f9f3d5179c8ba4e0873a631a992e5ff286",
+        "size_bytes": 22011
+      },
+      {
+        "path": "scripts/scorpion/analyze_pathoalign_crossfold.py",
+        "role": "metric_extractor",
+        "sha256": "2551093976e2bee0241be7b89b5b6ffd412bb2d5c8d51d88a9b32e5bbca1028d",
+        "size_bytes": 17549
+      },
+      {
+        "path": "src/models/scorpion_pathoalign.py",
+        "role": "model_definition",
+        "sha256": "528b653459bbdb759c5ca414cf434cf0ad54fba1ef6cbc98e6968c235a3c799f",
+        "size_bytes": 8554
+      }
+    ],
+    "relationship": "squash_merge_whole_tree_equivalent_to_execution_source",
+    "tree": "6a28a2e6d60168c115da814db21fb8ceb35d1014"
+  },
+  "schema_version": "scorpion-capacity-matched-evidence/v1",
+  "status": "completed"
+}

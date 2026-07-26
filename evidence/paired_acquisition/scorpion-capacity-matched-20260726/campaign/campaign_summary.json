@@ -1,0 +1,15 @@
+{
+  "campaign_hash": "59ba04450adf738aa2983dc40ecb4ff09ffa495f13d43c56edde5ec57707a2e1",
+  "campaign_mode": "full",
+  "completed_run_count": 175,
+  "evidence_eligible": true,
+  "expected_run_count": 175,
+  "next_cell": null,
+  "schema_version": "scorpion-capacity-matched-ablations/v1",
+  "source_commit": "0adea50f1ef22865969109f1834a3c175e3f8b43",
+  "status": "complete",
+  "status_counts": {
+    "completed": 175
+  },
+  "work_dir": "results/scorpion/pathoalign_capacity_matched_ablations_v1"
+}

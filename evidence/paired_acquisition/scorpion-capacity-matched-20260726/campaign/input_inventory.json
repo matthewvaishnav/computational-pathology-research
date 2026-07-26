@@ -1,0 +1,184 @@
+{
+  "checks": {
+    "canine_evidence_used": false,
+    "duplicate_sample_identities": 0,
+    "feature_dimensions_consistent": true,
+    "historical_result_tables_used": false,
+    "machine_local_paths_used_for_training": false,
+    "missing_scanner_labels": 0,
+    "non_finite_feature_values": 0,
+    "test_slides_covered_exactly_once": true,
+    "train_test_slide_overlap": 0
+  },
+  "inputs": [
+    {
+      "biological_sample_coverage": 48,
+      "biological_sample_definition": "original slide_id",
+      "feature_dimension": 768,
+      "fold_coverage": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "intentionally_external": true,
+      "originating_experiment_or_commit": "0ab4ca0413fee44e83a2bf280554134691dd39a4",
+      "repository_relative_path": "results/scorpion/features/fold_0_dinov2_base.npz",
+      "role": "base_feature_archive",
+      "sample_count": 2400,
+      "scanner_coverage": [
+        "AT2",
+        "B300",
+        "DP200",
+        "GT450",
+        "P1000"
+      ],
+      "sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+      "size_bytes": 6869432,
+      "slide_coverage": 48,
+      "tracked": false
+    },
+    {
+      "biological_sample_coverage": 48,
+      "biological_sample_definition": "original slide_id",
+      "feature_dimension": 768,
+      "fit_slide_count": 38,
+      "fold_coverage": [
+        0
+      ],
+      "intentionally_external": true,
+      "originating_experiment_or_commit": "426274d398a5830ec79c676d64d145c58edc758f",
+      "repository_relative_path": "data/scorpion/splits/fold_0_manifest.csv",
+      "role": "fold_0_split_manifest",
+      "sample_count": 2400,
+      "scanner_coverage": [
+        "AT2",
+        "B300",
+        "DP200",
+        "GT450",
+        "P1000"
+      ],
+      "sha256": "4ba23cd72346fb2e55766ad0aac8bc0c1cdcfcbbbfc0274fb2e6556ef114743c",
+      "size_bytes": 202470,
+      "slide_coverage": 48,
+      "test_slide_count": 10,
+      "tracked": false
+    },
+    {
+      "biological_sample_coverage": 48,
+      "biological_sample_definition": "original slide_id",
+      "feature_dimension": 768,
+      "fit_slide_count": 38,
+      "fold_coverage": [
+        1
+      ],
+      "intentionally_external": true,
+      "originating_experiment_or_commit": "426274d398a5830ec79c676d64d145c58edc758f",
+      "repository_relative_path": "data/scorpion/splits/fold_1_manifest.csv",
+      "role": "fold_1_split_manifest",
+      "sample_count": 2400,
+      "scanner_coverage": [
+        "AT2",
+        "B300",
+        "DP200",
+        "GT450",
+        "P1000"
+      ],
+      "sha256": "3624c2024650444da8a27ce2a2d95833bdbe46b9bf4acc759db9acd82e68822b",
+      "size_bytes": 202470,
+      "slide_coverage": 48,
+      "test_slide_count": 10,
+      "tracked": false
+    },
+    {
+      "biological_sample_coverage": 48,
+      "biological_sample_definition": "original slide_id",
+      "feature_dimension": 768,
+      "fit_slide_count": 38,
+      "fold_coverage": [
+        2
+      ],
+      "intentionally_external": true,
+      "originating_experiment_or_commit": "426274d398a5830ec79c676d64d145c58edc758f",
+      "repository_relative_path": "data/scorpion/splits/fold_2_manifest.csv",
+      "role": "fold_2_split_manifest",
+      "sample_count": 2400,
+      "scanner_coverage": [
+        "AT2",
+        "B300",
+        "DP200",
+        "GT450",
+        "P1000"
+      ],
+      "sha256": "a55374e7eb88c19c532d1f8ab1ccfd9f25cfa8a3ab076e02a20963b85f64a0ea",
+      "size_bytes": 202570,
+      "slide_coverage": 48,
+      "test_slide_count": 10,
+      "tracked": false
+    },
+    {
+      "biological_sample_coverage": 48,
+      "biological_sample_definition": "original slide_id",
+      "feature_dimension": 768,
+      "fit_slide_count": 39,
+      "fold_coverage": [
+        3
+      ],
+      "intentionally_external": true,
+      "originating_experiment_or_commit": "426274d398a5830ec79c676d64d145c58edc758f",
+      "repository_relative_path": "data/scorpion/splits/fold_3_manifest.csv",
+      "role": "fold_3_split_manifest",
+      "sample_count": 2400,
+      "scanner_coverage": [
+        "AT2",
+        "B300",
+        "DP200",
+        "GT450",
+        "P1000"
+      ],
+      "sha256": "fdfcfa3d1d37685958e3ba1339cf117fd5707df13f404c27c92594037a975411",
+      "size_bytes": 202620,
+      "slide_coverage": 48,
+      "test_slide_count": 9,
+      "tracked": false
+    },
+    {
+      "biological_sample_coverage": 48,
+      "biological_sample_definition": "original slide_id",
+      "feature_dimension": 768,
+      "fit_slide_count": 39,
+      "fold_coverage": [
+        4
+      ],
+      "intentionally_external": true,
+      "originating_experiment_or_commit": "426274d398a5830ec79c676d64d145c58edc758f",
+      "repository_relative_path": "data/scorpion/splits/fold_4_manifest.csv",
+      "role": "fold_4_split_manifest",
+      "sample_count": 2400,
+      "scanner_coverage": [
+        "AT2",
+        "B300",
+        "DP200",
+        "GT450",
+        "P1000"
+      ],
+      "sha256": "5231379f03e2510c5d851dd09c8d4d5ab3af21a3defe35dbe0371d655a9a79ae",
+      "size_bytes": 202520,
+      "slide_coverage": 48,
+      "test_slide_count": 9,
+      "tracked": false
+    }
+  ],
+  "schema_version": "scorpion-capacity-matched-ablations/v1",
+  "source_metadata": {
+    "absolute_extraction_paths_copied_to_new_records": false,
+    "extraction_torch_version": "2.5.1+cu121",
+    "feature_dim": 768,
+    "model": "dinov2_base",
+    "model_revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+    "model_source": "facebook/dinov2-base",
+    "n_images": 2400
+  },
+  "status": "valid"
+}
