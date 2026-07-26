@@ -521,8 +521,17 @@ def build(captures_dir: Path) -> dict[str, Any]:
     execution_commit = str(design["source"]["commit"])
     if execution_commit != "0adea50f1ef22865969109f1834a3c175e3f8b43":
         raise RuntimeError(f"Unexpected execution commit: {execution_commit}")
-    if runner.source_file_hashes(REPO_ROOT) != design["source"]["files"]:
-        raise RuntimeError("Current execution files differ from the frozen design")
+    execution_tree = git_output("rev-parse", f"{execution_commit}^{{tree}}")
+    if design["source"]["tree"] != execution_tree:
+        raise RuntimeError("Frozen design and execution commit tree differ")
+    source_paths = tuple(design["source"]["files"])
+    source_diff = subprocess.run(
+        ["git", "diff", "--quiet", execution_commit, "--", *source_paths],
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if source_diff.returncode != 0:
+        raise RuntimeError("Current execution files differ from the execution commit")
     cells = runner.cells_for_design(design)
     if len(cells) != 175:
         raise RuntimeError("Frozen design is not 175 cells")
@@ -639,7 +648,6 @@ def build(captures_dir: Path) -> dict[str, Any]:
             external_record(path, role) for role, path in sorted(external_source_paths.items())
         ]
         publication_commit = git_output("rev-parse", "HEAD")
-        execution_tree = git_output("rev-parse", f"{execution_commit}^{{tree}}")
         reviewed_tree = git_output("rev-parse", f"{REVIEWED_IMPLEMENTATION_COMMIT}^{{tree}}")
         if execution_tree != reviewed_tree:
             raise RuntimeError(
