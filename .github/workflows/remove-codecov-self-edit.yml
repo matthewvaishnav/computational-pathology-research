@@ -1,0 +1,125 @@
+name: Remove Codecov Integration
+
+on:
+  push:
+    branches: [cleanup/remove-codecov]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  remove-codecov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cleanup/remove-codecov
+          fetch-depth: 0
+
+      - name: Remove Codecov uploads and live references
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('.')
+          workflow_files = [
+              root / '.github/workflows/ci.yml',
+              root / '.github/workflows/security.yml',
+              root / '.github/workflows/cd.yml',
+              root / '.github/workflows/comprehensive-test.yml',
+          ]
+
+          upload_block = re.compile(
+              r'\n    - name: (?:Upload coverage to Codecov|Upload test coverage|Upload coverage)\n'
+              r'      uses: codecov/codecov-action@v4\n'
+              r'      with:\n'
+              r'(?:        .+\n)+?',
+              re.MULTILINE,
+          )
+
+          for path in workflow_files:
+              text = path.read_text(encoding='utf-8')
+              text, count = upload_block.subn('\n', text)
+              if count != 1:
+                  raise SystemExit(f'Expected one Codecov upload block in {path}, removed {count}')
+              text = text.replace('--cov-report=xml --cov-report=term', '--cov-report=term')
+              text = text.replace('--cov-report=xml', '--cov-report=term')
+              path.write_text(text, encoding='utf-8', newline='\n')
+
+          live_docs = [
+              root / 'docs/TESTING.md',
+              root / 'docs/ABOUT.md',
+              root / 'docs/TESTING_SUMMARY.md',
+              root / 'docs/COMPREHENSIVE_DATASET_TESTING.md',
+              root / 'docs/engineering/testing-status.md',
+              root / 'website/docs/TESTING.md',
+              root / 'tests/dataset_testing/README.md',
+              root / '.github/workflows/README.md',
+          ]
+
+          for path in live_docs:
+              if not path.exists():
+                  continue
+              lines = path.read_text(encoding='utf-8').splitlines()
+              cleaned = []
+              for line in lines:
+                  if 'codecov.io/' in line:
+                      # Remove stale Codecov badges/links rather than redirecting them.
+                      continue
+                  line = line.replace('Coverage reporting (Codecov)', 'Coverage reporting (GitHub Actions artifacts)')
+                  line = line.replace('Upload to Codecov', 'Upload coverage as a GitHub Actions artifact')
+                  line = line.replace('Codecov integration', 'GitHub Actions coverage artifacts')
+                  line = line.replace('Codecov', 'GitHub Actions coverage artifacts')
+                  line = line.replace('codecov', 'coverage')
+                  cleaned.append(line)
+              path.write_text('\n'.join(cleaned) + '\n', encoding='utf-8', newline='\n')
+
+          for config in (root / 'codecov.yml', root / '.codecov.yml'):
+              if config.exists():
+                  config.unlink()
+
+          active_hits = []
+          for path in root.rglob('*'):
+              if not path.is_file():
+                  continue
+              rel = path.as_posix()
+              if rel.startswith('.git/') or rel.startswith('docs/archive/'):
+                  continue
+              if rel == '.github/workflows/remove-codecov-self-edit.yml':
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              if 'codecov' in text.lower():
+                  active_hits.append(rel)
+
+          if active_hits:
+              raise SystemExit('Active Codecov references remain: ' + ', '.join(active_hits))
+          PY
+
+      - name: Validate workflow YAML
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          for path in Path('.github/workflows').glob('*.yml'):
+              yaml.safe_load(path.read_text(encoding='utf-8'))
+              print(f'valid: {path}')
+          PY
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No cleanup changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows docs website/docs tests/dataset_testing
+          git commit -m 'Remove Codecov integration'
+          git push origin HEAD:cleanup/remove-codecov
