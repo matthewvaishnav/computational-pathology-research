@@ -1,0 +1,11 @@
+{
+  "cell_table_sha256": "05bd0ac527af3f2ab7f35f1611c427a2d809dad17ae9d1a01194818e4c187794",
+  "claim_boundary": "Gate 1 authorizes execution only; it is not scientific evidence.",
+  "plan_sha256": "4d8c131375a4f8c41596aec00971e8462ae741a8afac6bee1c807a0fc2029d4b",
+  "schema_version": "paired-acquisition-factorial-smoke-authorization/v1",
+  "smoke_gate_status": "passed",
+  "smoke_release_id": "parelease-v1-49d5fce02b8c033e2b100ae5db522b240d8172b22024ac25e9305fbdfa58fba5",
+  "smoke_run_count": 18,
+  "source_manifest_sha256": "fb37998fd92f04ab99f05a5fc161f69e7eb377a996c94c5fbfe18ee9a98f0732",
+  "status": "authorized"
+}

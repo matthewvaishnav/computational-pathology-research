@@ -1,0 +1,76 @@
+{
+  "campaign_ledger": {
+    "bytes": 941548,
+    "event_counts": {
+      "aggregate_release_published": 1,
+      "attempt_failed": 5,
+      "attempt_finished": 450,
+      "attempt_started": 455,
+      "cell_validated": 450
+    },
+    "historical_nonzero_attempt_count": 5,
+    "line_count": 1361,
+    "path": "results/paired_acquisition_factorial/full-gate-v1-work/execution_ledger.jsonl",
+    "sha256": "aef186d16c39ce703e287c9ab9095bd5bdf82e089d2d066f7d46693a16f5b8cf",
+    "unresolved_failure_count": 0
+  },
+  "commands": [
+    {
+      "command": "python experiments\\paired_acquisition\\run_provenance_bound_factorial_full.py --work-dir results\\paired_acquisition_factorial\\full-gate-v1-work --release-dir results\\paired_acquisition_factorial\\full-gate-v1 --smoke-manifest results\\paired_acquisition_factorial\\smoke-gate-v1\\release_manifest.json --device cuda --max-new-runs 4",
+      "stage": "locked_execution",
+      "stderr": {
+        "bytes": 0,
+        "name": "factorial-final-446-to-450-rerun.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storage": "external_durable_capture_not_promoted"
+      },
+      "stdout": {
+        "bytes": 131630,
+        "name": "factorial-final-446-to-450-rerun.stdout.log",
+        "sha256": "66d49521734105bb26bea7e171a4359674f97dddec32b57fe226862229695445",
+        "storage": "external_durable_capture_not_promoted"
+      },
+      "working_tree_commit": "ebead9009ee83816f5ac1ad5ca37e0cb8e7950fa"
+    },
+    {
+      "command": "python scripts\\provenance\\validate_paired_acquisition_factorial_full_release.py results\\paired_acquisition_factorial\\full-gate-v1\\release_manifest.json",
+      "stage": "full_release_validation",
+      "working_tree_commit": "ebead9009ee83816f5ac1ad5ca37e0cb8e7950fa"
+    },
+    {
+      "command": "python scripts\\scorpion\\analyze_paired_acquisition_factorial.py results\\paired_acquisition_factorial\\full-gate-v1\\release_manifest.json --output-dir results\\paired_acquisition_factorial\\analysis-v1 --bootstrap-draws 50000",
+      "stage": "aggregate_analysis",
+      "stderr": {
+        "bytes": 113061,
+        "name": "factorial-analysis-v1-rerun.stderr.log",
+        "sha256": "ec0b95ad9eda1cd35769ced30f3eba4a7356ceeefdf9b7bcd3d4cd51df78f401",
+        "storage": "external_durable_capture_not_promoted"
+      },
+      "stdout": {
+        "bytes": 1602,
+        "name": "factorial-analysis-v1-rerun.stdout.log",
+        "sha256": "2f3b72d72c8d93250ca380cc34a5afadf933480a546ffde7842341b9e7108e1e",
+        "storage": "external_durable_capture_not_promoted"
+      },
+      "working_tree_commit": "7cc1ce85db45930f9e413dea6175636e587f5a9c"
+    },
+    {
+      "command": "python scripts\\scorpion\\analyze_paired_acquisition_factorial.py results\\paired_acquisition_factorial\\full-gate-v1\\release_manifest.json --output-dir results\\paired_acquisition_factorial\\analysis-v1 --validate-only",
+      "stage": "analysis_validation_only",
+      "stderr": {
+        "bytes": 0,
+        "name": "factorial-analysis-v1-validation-only.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "storage": "external_durable_capture_not_promoted"
+      },
+      "stdout": {
+        "bytes": 1064,
+        "name": "factorial-analysis-v1-validation-only.stdout.log",
+        "sha256": "0e6482d0de2a47bc6d20ae06e915e020ce7595314d0302b6b701a6e28bcc3f24",
+        "storage": "external_durable_capture_not_promoted"
+      },
+      "working_tree_commit": "7cc1ce85db45930f9e413dea6175636e587f5a9c"
+    }
+  ],
+  "schema_version": "paired-acquisition-factorial-command-record/v1"
+}

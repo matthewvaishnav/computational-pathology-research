@@ -1,0 +1,72 @@
+{
+  "bottleneck_dimensions": [
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+  ],
+  "claim_boundary": "Gate 1 checks execution/provenance only; it is not a scientific result and historical provenance remains unresolved.",
+  "cross_covariance_weights": [
+    0.0,
+    0.05,
+    0.2
+  ],
+  "fixed_training": {
+    "learning_rate": 0.0003,
+    "optimizer_family": "existing PathoAlign projection producer",
+    "pair_condition": "true_pairs",
+    "region_batch_size": 32,
+    "reuse_existing_artifacts": false,
+    "weight_decay": 0.0001
+  },
+  "fixed_variant_parameters": {
+    "biological_dim": 256,
+    "covariance_weight": 0.01,
+    "gradient_reversal_strength": 1.0,
+    "hidden_dim": 512,
+    "reconstruction_weight": 1.0,
+    "scanner_acquisition_weight": 0.5,
+    "scanner_adversary_weight": 0.5,
+    "scanner_dependence_weight": 20.0,
+    "temperature": 0.1,
+    "variance_weight": 1.0
+  },
+  "locked_full_run": {
+    "epochs": 75,
+    "expected_run_count": 450,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "may_start_only_after_smoke_gate": true,
+    "seeds": [
+      911,
+      912,
+      913,
+      914,
+      915
+    ]
+  },
+  "question": "Bottleneck-capacity by cross-covariance interaction in paired acquisition.",
+  "schema_version": "paired-acquisition-factorial/v1",
+  "smoke_gate": {
+    "epochs": 1,
+    "expected_cell_count": 18,
+    "folds": [
+      0
+    ],
+    "seeds": [
+      911
+    ]
+  },
+  "weight_rationale": {
+    "0.0": "no-cross-covariance control",
+    "0.05": "existing frontier default",
+    "0.2": "existing frontier stronger-separation setting"
+  }
+}
