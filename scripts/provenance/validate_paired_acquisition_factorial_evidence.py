@@ -8,6 +8,7 @@ import csv
 import hashlib
 import json
 import math
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -60,6 +61,7 @@ FORBIDDEN_NAMES = {
     "seed_averaged_slide_metrics.csv",
     "slide_level_contrasts.csv",
 }
+CANONICAL_TEXT_SUFFIXES = {".csv", ".json", ".jsonl", ".md", ".py", ".txt"}
 REQUIRED_CLAIM_BOUNDARIES = (
     "cosine",
     "near-zero retrieval",
@@ -69,6 +71,7 @@ REQUIRED_CLAIM_BOUNDARIES = (
     "pure",
     "universal",
 )
+WINDOWS_ABSOLUTE_PATH = re.compile(r"^[A-Za-z]:[\\/]")
 
 
 class EvidenceValidationError(RuntimeError):
@@ -97,6 +100,40 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_bytes(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def canonical_artifact_bytes(path: Path) -> bytes:
+    content = path.read_bytes()
+    if path.suffix.lower() in CANONICAL_TEXT_SUFFIXES:
+        return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return content
+
+
+def artifact_byte_variants(path: Path) -> set[bytes]:
+    content = path.read_bytes()
+    variants = {content}
+    if path.suffix.lower() in CANONICAL_TEXT_SUFFIXES:
+        canonical = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        variants.add(canonical)
+        variants.add(canonical.replace(b"\n", b"\r\n"))
+    return variants
+
+
+def artifact_matches(
+    path: Path,
+    *,
+    expected_sha256: str,
+    expected_bytes: int | None = None,
+) -> bool:
+    return any(
+        (expected_bytes is None or len(content) == expected_bytes)
+        and sha256_bytes(content) == expected_sha256
+        for content in artifact_byte_variants(path)
+    )
+
+
 def csv_rows(path: Path) -> list[dict[str, str]]:
     try:
         with path.open(newline="", encoding="utf-8") as handle:
@@ -109,6 +146,22 @@ def require_keys(value: Mapping[str, Any], keys: Iterable[str], label: str) -> N
     missing = set(keys) - set(value)
     if missing:
         raise EvidenceValidationError(f"{label} is missing keys: {sorted(missing)}")
+
+
+def iter_strings(value: Any) -> Iterable[str]:
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, Mapping):
+        for item in value.values():
+            yield from iter_strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from iter_strings(item)
+
+
+def reject_machine_local_paths(value: Any, label: str) -> None:
+    if any(WINDOWS_ABSOLUTE_PATH.match(item) for item in iter_strings(value)):
+        raise EvidenceValidationError(f"{label} contains a machine-local absolute path")
 
 
 def finite_csv(path: Path, expected_rows: int) -> list[dict[str, str]]:
@@ -161,7 +214,11 @@ def validate_artifacts(root: Path, manifest: Mapping[str, Any]) -> dict[str, Pat
             raise EvidenceValidationError(f"missing artifact: {normalized}")
         if path.suffix.lower() in FORBIDDEN_SUFFIXES or path.name in FORBIDDEN_NAMES:
             raise EvidenceValidationError(f"forbidden evidence artifact: {normalized}")
-        if path.stat().st_size != int(item["bytes"]) or sha256_file(path) != item["sha256"]:
+        if not artifact_matches(
+            path,
+            expected_sha256=str(item["sha256"]),
+            expected_bytes=int(item["bytes"]),
+        ):
             raise EvidenceValidationError(f"artifact hash or size mismatch: {normalized}")
         observed[normalized] = path
         observed_roles[normalized] = str(item["role"])
@@ -279,12 +336,16 @@ def validate_analysis(root: Path, manifest: Mapping[str, Any]) -> None:
     analysis = manifest.get("analysis")
     if not isinstance(analysis, dict):
         raise EvidenceValidationError("analysis binding is missing")
+    source_manifest_hash = analysis.get("source_analysis_manifest_sha256")
     if (
         analysis.get("status") != "valid"
         or analysis.get("analysis_commit") != source.get("analysis_commit")
         or analysis.get("source_release_id") != source.get("source_release_id")
-        or analysis.get("source_analysis_manifest_sha256")
-        != sha256_file(root / "analysis/source_analysis_manifest.json")
+        or not isinstance(source_manifest_hash, str)
+        or not artifact_matches(
+            root / "analysis/source_analysis_manifest.json",
+            expected_sha256=source_manifest_hash,
+        )
     ):
         raise EvidenceValidationError("analysis bindings differ from the source analysis")
     source_artifacts = {
@@ -305,7 +366,11 @@ def validate_analysis(root: Path, manifest: Mapping[str, Any]) -> None:
         )
     }
     for name in promoted:
-        if source_artifacts.get(name) != sha256_file(root / "analysis" / name):
+        digest = source_artifacts.get(name)
+        if not isinstance(digest, str) or not artifact_matches(
+            root / "analysis" / name,
+            expected_sha256=digest,
+        ):
             raise EvidenceValidationError(f"promoted analysis hash differs from source: {name}")
     finite_csv(root / "analysis/condition_summary.csv", 18)
     finite_csv(root / "analysis/fold_aware_contrasts.csv", 17)
@@ -318,7 +383,11 @@ def validate_analysis(root: Path, manifest: Mapping[str, Any]) -> None:
     if {int(row["fold"]) for row in associations} != set(FULL_FOLDS):
         raise EvidenceValidationError("suppression-retention associations omit a fold")
     packaged_spec = load_json(root / "analysis/analysis_spec.json")
-    if sha256_file(root / "analysis/analysis_spec.json") != source.get("analysis_spec_sha256"):
+    analysis_spec_hash = source.get("analysis_spec_sha256")
+    if not isinstance(analysis_spec_hash, str) or not artifact_matches(
+        root / "analysis/analysis_spec.json",
+        expected_sha256=analysis_spec_hash,
+    ):
         raise EvidenceValidationError(
             "analysis specification hash differs from its preregistration"
         )
@@ -332,6 +401,7 @@ def validate_analysis(root: Path, manifest: Mapping[str, Any]) -> None:
 
 def validate_provenance(root: Path, manifest: Mapping[str, Any]) -> None:
     bindings = load_json(root / "provenance/source_bindings.json")
+    reject_machine_local_paths(bindings, "source bindings")
     execution = bindings.get("execution_source")
     reviewed = bindings.get("reviewed_execution_source")
     analysis = bindings.get("analysis_source")
@@ -347,6 +417,7 @@ def validate_provenance(root: Path, manifest: Mapping[str, Any]) -> None:
     ):
         raise EvidenceValidationError("execution/review/analysis source bindings are inconsistent")
     inventory = load_json(root / "provenance/input_inventory.json")
+    reject_machine_local_paths(inventory, "input inventory")
     if (
         inventory.get("feature_archive", {}).get("sha256")
         != manifest.get("inputs", {}).get("feature_sha256")
@@ -356,8 +427,19 @@ def validate_provenance(root: Path, manifest: Mapping[str, Any]) -> None:
     ):
         raise EvidenceValidationError("input inventory differs from the release bindings")
     commands = load_json(root / "commands.json")
+    reject_machine_local_paths(commands, "command provenance")
     if not isinstance(commands.get("commands"), list) or len(commands["commands"]) < 4:
         raise EvidenceValidationError("command provenance is incomplete")
+    ledger = commands.get("campaign_ledger")
+    if (
+        not isinstance(ledger, dict)
+        or ledger.get("historical_nonzero_attempt_count") != 5
+        or ledger.get("unresolved_failure_count") != 0
+        or ledger.get("event_counts", {}).get("attempt_failed") != 5
+    ):
+        raise EvidenceValidationError("campaign failure history is incomplete")
+    environment = load_json(root / "provenance/environment.json")
+    reject_machine_local_paths(environment, "environment provenance")
     snapshot = (root / "claim_boundary_snapshot.md").read_text(encoding="utf-8").lower()
     if any(token.lower() not in snapshot for token in REQUIRED_CLAIM_BOUNDARIES):
         raise EvidenceValidationError("claim-boundary snapshot is incomplete")

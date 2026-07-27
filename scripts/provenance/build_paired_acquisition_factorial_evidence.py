@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 from collections import Counter
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any, Mapping
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -25,6 +25,7 @@ from scripts.provenance.validate_paired_acquisition_factorial_evidence import ( 
     EXPECTED_ARTIFACTS,
     RELEASE_PREFIX,
     SCHEMA_VERSION,
+    canonical_artifact_bytes,
     canonical_json,
     load_json,
     sha256_file,
@@ -85,9 +86,17 @@ def write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.write_text(canonical_json(value), encoding="utf-8", newline="\n")
 
 
-def copy_file(source: Path, destination: Path) -> None:
+def copy_file(
+    source: Path,
+    destination: Path,
+    *,
+    canonicalize_text: bool = False,
+) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, destination)
+    if canonicalize_text:
+        destination.write_bytes(canonical_artifact_bytes(source))
+    else:
+        shutil.copyfile(source, destination)
 
 
 def artifact_record(root: Path, relative: str) -> dict[str, Any]:
@@ -182,10 +191,23 @@ def write_completeness_matrix(
 
 def file_binding(path: Path) -> dict[str, Any]:
     return {
-        "path": str(path.resolve()),
+        "name": path.name,
+        "storage": "external_durable_capture_not_promoted",
         "sha256": sha256_file(path),
         "bytes": path.stat().st_size,
     }
+
+
+def portable_environment(path: Path) -> dict[str, Any]:
+    environment = load_json(path)
+    payload = environment.get("payload")
+    if not isinstance(payload, dict):
+        raise RuntimeError("execution environment has no payload")
+    executable = payload.get("executable")
+    if isinstance(executable, str):
+        payload["executable"] = PureWindowsPath(executable).name
+    environment["source_environment_sha256"] = sha256_file(path)
+    return environment
 
 
 def input_inventory(work_dir: Path) -> dict[str, Any]:
@@ -237,18 +259,23 @@ def ledger_summary(work_dir: Path) -> dict[str, Any]:
         json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     counts = Counter(str(row.get("event")) for row in rows)
-    nonzero = [
+    failed = [
         row
         for row in rows
-        if row.get("event") == "attempt_finished" and int(row.get("return_code", 0)) != 0
+        if row.get("event") == "attempt_failed"
+        or (row.get("event") == "attempt_finished" and int(row.get("return_code", 0)) != 0)
     ]
+    try:
+        ledger_path = ledger.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        ledger_path = ledger.name
     return {
-        "path": str(ledger.resolve()),
+        "path": ledger_path,
         "sha256": sha256_file(ledger),
         "bytes": ledger.stat().st_size,
         "line_count": len(rows),
         "event_counts": dict(sorted(counts.items())),
-        "historical_nonzero_attempt_count": len(nonzero),
+        "historical_nonzero_attempt_count": len(failed),
         "unresolved_failure_count": 0,
     }
 
@@ -364,7 +391,10 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             artifacts["factorial_full_cell_table"],
             full_manifest,
         )
-        copy_file(artifacts["environment"], temporary / "provenance/environment.json")
+        write_json(
+            temporary / "provenance/environment.json",
+            portable_environment(artifacts["environment"]),
+        )
         write_json(temporary / "provenance/input_inventory.json", inventory)
         source_bindings = {
             "schema_version": "paired-acquisition-factorial-source-bindings/v1",
@@ -397,7 +427,11 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             },
         }
         write_json(temporary / "provenance/source_bindings.json", source_bindings)
-        copy_file(analysis_spec, temporary / "analysis/analysis_spec.json")
+        copy_file(
+            analysis_spec,
+            temporary / "analysis/analysis_spec.json",
+            canonicalize_text=True,
+        )
         copy_file(
             analysis_dir / "analysis_manifest.json",
             temporary / "analysis/source_analysis_manifest.json",
