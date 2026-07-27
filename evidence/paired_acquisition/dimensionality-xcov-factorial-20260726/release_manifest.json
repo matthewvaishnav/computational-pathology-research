@@ -107,16 +107,16 @@
       "sha256": "a79dd9da469567571d7af027e5a946bd89b6ba27690c35db02c586c5e057a485"
     },
     {
-      "bytes": 3857,
+      "bytes": 3670,
       "path": "commands.json",
       "role": "commands",
-      "sha256": "64161126813b5f9006c7ca17cd945fb41aedb3ad8f99ce3b487dd78440844388"
+      "sha256": "12174b107b75982ce13af4753136bbf7da0a22d3d871bbb606ea644e96793f66"
     },
     {
-      "bytes": 534,
+      "bytes": 545,
       "path": "provenance/environment.json",
       "role": "environment",
-      "sha256": "d1d96e0efed9bdbc85eda01a6c09ada203170814e3fcb54fccaa96d2c22260e4"
+      "sha256": "e71615b16a51c39a5d440d5ea34876fbc1082db4d8cf477eefb85baf2139bc35"
     },
     {
       "bytes": 1947,
@@ -128,7 +128,7 @@
       "bytes": 1085,
       "path": "provenance/source_bindings.json",
       "role": "source_bindings",
-      "sha256": "f6a0e8785d1d1df16474ba404b64831ce1ca1a8608712b58094ce053c93fa9f4"
+      "sha256": "ef5a7ad7d161b11fe31bf78d12deeaf74b9352a716a748ea2d3faede8d12647e"
     }
   ],
   "campaign": {
@@ -156,8 +156,8 @@
       "4": "a382ed29bc8bd74178282183fcbb9d2a3f66665391a4be234acdb6f3eac995f6"
     }
   },
-  "release_id": "pafactorial-evidence-v1-c5bcd7faa43056ac26a888faa25c9a43afdce8b357902a127c9061baf042fdf9",
+  "release_id": "pafactorial-evidence-v1-79d0115f9ebb3fecd12478a966a56b120cfad588145275efc43f23b61abe5285",
   "schema_version": "paired-acquisition-factorial-evidence/v1",
-  "source_bindings_sha256": "f6a0e8785d1d1df16474ba404b64831ce1ca1a8608712b58094ce053c93fa9f4",
+  "source_bindings_sha256": "ef5a7ad7d161b11fe31bf78d12deeaf74b9352a716a748ea2d3faede8d12647e",
   "status": "valid"
 }
