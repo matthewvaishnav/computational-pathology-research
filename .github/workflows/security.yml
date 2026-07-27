@@ -164,7 +164,7 @@ jobs:
       env:
         ENVIRONMENT: production
       run: |
-        pytest tests/security/ -v --cov=src/security --cov-report=xml --cov-report=term
+        pytest tests/security/ -v --cov=src/security --cov-report=term
     
     - name: Run security property tests
       env:
@@ -172,14 +172,6 @@ jobs:
       run: |
         pytest tests/security/ -v -m property --hypothesis-show-statistics
       continue-on-error: true
-    
-    - name: Upload test coverage
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: security-tests
-        name: security-test-coverage
-        fail_ci_if_error: false
 
   dependency-review:
     name: Dependency Security Review
