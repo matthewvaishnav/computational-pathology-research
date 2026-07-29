@@ -289,6 +289,11 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         root,
     )
     source = frozen.source_state(root)
+    if not source["tracked_worktree_clean"]:
+        raise BaselineError(
+            "Refusing evidence execution from a tracked dirty worktree. "
+            "Commit the reviewed comparison implementation first."
+        )
     design = {
         "schema_version": SCHEMA_VERSION,
         "status": "prospective_comparison_execution",
