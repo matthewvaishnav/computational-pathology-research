@@ -31,6 +31,11 @@ The following result families remain within the current claim boundary:
 - SCORPION experiments on 48 original H&E slides, 480 aligned regions, five
   scanners, and 2,400 image patches, using original-slide-blocked folds and the
   current fold-aware two-stage fold/slide bootstrap.
+- The separately versioned 175-fit SCORPION capacity-matched campaign, including
+  its equal-capacity two-branch control and registered objective ablations.
+- The separately versioned 450-fit canine SCC dimensionality × cross-covariance
+  factorial, including its negative result: no stable fold-intersection Pareto
+  condition and no universal dimensionality or regularization law.
 - Frozen transfer of the SCORPION objective across DINOv2-Base, Phikon, and
   ImageNet ResNet50 representations without backbone-specific tuning.
 - External canine SCC paired-scanner evidence under biological-sample-blocked
@@ -193,16 +198,17 @@ Not safe:
 
 New promoted claims require:
 
-- capacity-matched SCORPION objective ablations;
+- execution and forward-valid promotion of the prospective paired affine and
+  orthogonal-Procrustes comparison before any claim against FEATMAP-style
+  harmonization;
 - repaired TransnnMIL controlled reruns;
-- completion and aggregate analysis of the locked 450-run factorial before any
-  general dimensionality or cross-covariance law;
 - forward-valid provenance releases for every additional numerical claim;
 - stronger external human-tissue validation for broader biological claims.
 
-The corrected canine fixed-estimand audit and fold-aware SCORPION inference are
-complete and promoted only within the boundaries above. The public PDF remains
-on audit hold.
+The corrected canine fixed-estimand audit, fold-aware SCORPION inference,
+175-fit capacity-matched campaign, and 450-fit factorial are complete and
+promoted only within the boundaries above. The public PDF remains on audit
+hold.
 
 The detailed remediation ledger is
 `docs/research/scientific-audit-remediation-20260725.md`.
