@@ -3,7 +3,7 @@
 Independent research on **Paired-Acquisition Neural Factorization** and related
 computational-pathology neural-network studies.
 
-> **Scientific audit hold — 2026-07-25:** several secondary analyses,
+> **Scientific audit hold — updated 2026-07-29:** several secondary analyses,
 > architectural interpretations, and public claims were withdrawn or corrected.
 > Start with the [current claim boundary](CLAIM_BOUNDARY.md) and the
 > [remediation ledger](docs/research/scientific-audit-remediation-20260725.md).
@@ -23,12 +23,29 @@ structured separation while preserving same-region tissue identity. The work
 does not claim pure biological factors, complete disentanglement, disease
 biology, diagnostic improvement, clinical utility, or deployment readiness.
 
+## Current headline evidence
+
+The separately versioned SCORPION capacity-matched campaign completed all
+**175/175 registered fits**: seven variants, five original-slide-blocked folds,
+and five seeds. Against the equal-capacity two-branch control, the full model:
+
+- reduced biological-branch scanner balanced accuracy by `0.3108`
+  (fold-aware 95% interval `[-0.3346, -0.2858]`);
+- preserved average and worst same-region retrieval within the registered
+  `0.02` noninferiority margin;
+- retained strong acquisition-branch scanner information
+  (`0.8565` accuracy; `+0.6565` above chance).
+
+These results support partial structured separation under the tested protocol.
+They do not prove biological purity or clinical value. See the
+[versioned evidence package](evidence/paired_acquisition/scorpion-capacity-matched-20260726/README.md).
+
 ## Research program
 
 | Research line | Dataset | Current status |
 |---|---|---|
-| **Paired-Acquisition Neural Factorization** | SCORPION | Slide-blocked paired-scanner and frozen cross-backbone evidence remains active; fold-aware inference and capacity-matched ablations are pending |
-| **External paired-acquisition validation** | Multi-Scanner Canine SCC | Sample-blocked scanner, agreement, retrieval, and pair-integrity evidence remains active; historical category metrics are withdrawn pending the fixed-estimand audit |
+| **Paired-Acquisition Neural Factorization** | SCORPION | Corrected fold-aware and 175-fit capacity-matched evidence is promoted; a prospective FEATMAP-style affine/Procrustes comparison is specified for execution |
+| **External paired-acquisition validation** | Multi-Scanner Canine SCC | Corrected fixed-estimand evidence and the complete 450-fit dimensionality × cross-covariance factorial are promoted within their documented boundaries |
 | **Pair-repeat allocation** | Controlled latent-factor experiments | Matched-budget allocation evidence remains active under its synthetic-data boundary |
 | **TransnnMIL** | PANDA | Canonical fusion and topology code were repaired; historical QWK values do not validate genuine branch fusion and require matched reruns |
 | **Institutional weighting** | PANDA and CAMELYON17/WILDS | PANDA stress tests remain simulated institutional experiments; CAMELYON17 weighted logistic models are centralized source-weighting proxies on one held-out center, not full federated-learning validation |
@@ -39,8 +56,7 @@ biology, diagnostic improvement, clinical utility, or deployment readiness.
 Do not use the following as current claim evidence:
 
 - historical TransnnMIL fusion or topology interpretations;
-- historical canine category probe, neighbourhood purity, or category/scanner
-  trade-off numbers;
+- withdrawn canine analyses that predate the corrected fixed-estimand audit;
 - unified cross-protocol scoreboard rankings;
 - claims that cosine differences prove biological preservation or tissue damage;
 - historical slide-independent SCORPION p-values as exact inference;
@@ -60,19 +76,19 @@ not authoritative when they conflict with this repository's claim boundary.
 ## Start here
 
 - [Current claim boundary](CLAIM_BOUNDARY.md)
+- [Research-engineering brief](docs/research/paired-acquisition-research-engineering-brief.md)
+- [Prospective FEATMAP-style comparison](docs/research/featmap-affine-comparison-protocol.md)
 - [Scientific audit remediation ledger](docs/research/scientific-audit-remediation-20260725.md)
 - [Paired-Acquisition Neural Factorization positioning](docs/research/paired-acquisition-neural-factorization-positioning.md)
 - [SCORPION core paired-acquisition results](docs/research/paired-acquisition-factorization-scorpion-results.md)
 - [External canine SCC paired-scanner results](docs/research/paired-acquisition-factorization-caninescc-results.md)
 
-## Required reruns
+## Required next evidence
 
-- fixed-estimand canine biological-label audit;
-- fold-aware SCORPION inference;
-- 175-fit capacity-matched SCORPION objective ablations;
+- execute and promote the prospective paired affine/Procrustes comparison;
 - repaired TransnnMIL controlled PANDA comparisons;
-- locked dimension-by-cross-covariance factorial;
-- forward-valid releases for all newly promoted claims.
+- forward-valid releases for every newly promoted numerical claim;
+- stronger external human-tissue validation for broader biological claims.
 
 ## Reproducibility
 
