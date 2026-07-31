@@ -3,7 +3,7 @@
 Independent research on **Paired-Acquisition Neural Factorization** and related
 computational-pathology neural-network studies.
 
-> **Scientific audit hold — updated 2026-07-29:** several secondary analyses,
+> **Scientific audit hold — updated 2026-07-31:** several secondary analyses,
 > architectural interpretations, and public claims were withdrawn or corrected.
 > Start with the [current claim boundary](CLAIM_BOUNDARY.md) and the
 > [remediation ledger](docs/research/scientific-audit-remediation-20260725.md).
@@ -44,7 +44,7 @@ They do not prove biological purity or clinical value. See the
 
 | Research line | Dataset | Current status |
 |---|---|---|
-| **Paired-Acquisition Neural Factorization** | SCORPION | Corrected fold-aware and 175-fit capacity-matched evidence is promoted; a prospective FEATMAP-style affine/Procrustes comparison is specified for execution |
+| **Paired-Acquisition Neural Factorization** | SCORPION | Corrected fold-aware and 175-fit capacity-matched evidence is promoted; a prospective FEATMAP-style affine/Procrustes comparison is specified; a PathoROB/encoder-robustification competitor analysis is complete and the released-weight audit is pending |
 | **External paired-acquisition validation** | Multi-Scanner Canine SCC | Corrected fixed-estimand evidence and the complete 450-fit dimensionality × cross-covariance factorial are promoted within their documented boundaries |
 | **Pair-repeat allocation** | Controlled latent-factor experiments | Matched-budget allocation evidence remains active under its synthetic-data boundary |
 | **TransnnMIL** | PANDA | Canonical fusion and topology code were repaired; historical QWK values do not validate genuine branch fusion and require matched reruns |
@@ -78,6 +78,7 @@ not authoritative when they conflict with this repository's claim boundary.
 - [Current claim boundary](CLAIM_BOUNDARY.md)
 - [Research-engineering brief](docs/research/paired-acquisition-research-engineering-brief.md)
 - [Prospective FEATMAP-style comparison](docs/research/featmap-affine-comparison-protocol.md)
+- [PathoROB and encoder-robustification competitor analysis](docs/research/pathorob-encoder-robustification-competitor-analysis.md)
 - [Scientific audit remediation ledger](docs/research/scientific-audit-remediation-20260725.md)
 - [Paired-Acquisition Neural Factorization positioning](docs/research/paired-acquisition-neural-factorization-positioning.md)
 - [SCORPION core paired-acquisition results](docs/research/paired-acquisition-factorization-scorpion-results.md)
@@ -86,6 +87,7 @@ not authoritative when they conflict with this repository's claim boundary.
 ## Required next evidence
 
 - execute and promote the prospective paired affine/Procrustes comparison;
+- audit the released Phaet and Mascaret encoders on the frozen SCORPION protocol;
 - repaired TransnnMIL controlled PANDA comparisons;
 - forward-valid releases for every newly promoted numerical claim;
 - stronger external human-tissue validation for broader biological claims.
