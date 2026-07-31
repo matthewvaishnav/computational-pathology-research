@@ -44,7 +44,7 @@ They do not prove biological purity or clinical value. See the
 
 | Research line | Dataset | Current status |
 |---|---|---|
-| **Paired-Acquisition Neural Factorization** | SCORPION | Corrected fold-aware and 175-fit capacity-matched evidence is promoted; a prospective FEATMAP-style affine/Procrustes comparison is specified; a PathoROB/encoder-robustification competitor analysis is complete and the released-weight audit is pending |
+| **Paired-Acquisition Neural Factorization** | SCORPION | Corrected fold-aware and 175-fit capacity-matched evidence is promoted; a prospective FEATMAP-style affine/Procrustes comparison is specified; PathoROB and encoder robustification are positioned as related evolving work, with a released-weight integration audit pending |
 | **External paired-acquisition validation** | Multi-Scanner Canine SCC | Corrected fixed-estimand evidence and the complete 450-fit dimensionality × cross-covariance factorial are promoted within their documented boundaries |
 | **Pair-repeat allocation** | Controlled latent-factor experiments | Matched-budget allocation evidence remains active under its synthetic-data boundary |
 | **TransnnMIL** | PANDA | Canonical fusion and topology code were repaired; historical QWK values do not validate genuine branch fusion and require matched reruns |
@@ -78,7 +78,7 @@ not authoritative when they conflict with this repository's claim boundary.
 - [Current claim boundary](CLAIM_BOUNDARY.md)
 - [Research-engineering brief](docs/research/paired-acquisition-research-engineering-brief.md)
 - [Prospective FEATMAP-style comparison](docs/research/featmap-affine-comparison-protocol.md)
-- [PathoROB and encoder-robustification competitor analysis](docs/research/pathorob-encoder-robustification-competitor-analysis.md)
+- [PathoROB and encoder-robustification related-work positioning](docs/research/pathorob-encoder-robustification-related-work.md)
 - [Scientific audit remediation ledger](docs/research/scientific-audit-remediation-20260725.md)
 - [Paired-Acquisition Neural Factorization positioning](docs/research/paired-acquisition-neural-factorization-positioning.md)
 - [SCORPION core paired-acquisition results](docs/research/paired-acquisition-factorization-scorpion-results.md)
