@@ -179,6 +179,23 @@ def atomic_csv(
         temporary.unlink(missing_ok=True)
 
 
+def summary_csv_fieldnames(
+    rows: Sequence[Mapping[str, Any]],
+) -> List[str]:
+    """Return the deterministic union of heterogeneous summary columns."""
+    fieldnames: List[str] = []
+    seen = set()
+
+    for row in rows:
+        for raw_key in row:
+            key = str(raw_key)
+            if key not in seen:
+                seen.add(key)
+                fieldnames.append(key)
+
+    return fieldnames
+
+
 def to_base_config(config: ExperimentConfig) -> base.ExperimentConfig:
     return base.ExperimentConfig(
         identities=config.identities,
@@ -1126,7 +1143,7 @@ def run_experiment(
     if csv_rows:
         atomic_csv(
             output_root / "crossed_target_prototype_summary.csv",
-            list(csv_rows[0].keys()),
+            summary_csv_fieldnames(csv_rows),
             csv_rows,
         )
     return result

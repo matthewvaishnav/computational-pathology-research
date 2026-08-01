@@ -104,3 +104,31 @@ def test_path_gate_closes_when_proposed_model_fails() -> None:
     ]
     result = experiment.validate_controls(runs)
     assert result["path_forward_gate_open"] is False
+
+
+def test_summary_csv_supports_heterogeneous_model_metrics(tmp_path) -> None:
+    rows = [
+        {
+            "renderer": "linear",
+            "shared_metric_mean": 1.0,
+        },
+        {
+            "renderer": "nonlinear",
+            "shared_metric_mean": 2.0,
+            "counterfactual_delta_mean": 3.0,
+        },
+    ]
+
+    fieldnames = experiment.summary_csv_fieldnames(rows)
+
+    assert fieldnames == [
+        "renderer",
+        "shared_metric_mean",
+        "counterfactual_delta_mean",
+    ]
+
+    output = tmp_path / "summary.csv"
+    experiment.atomic_csv(output, fieldnames, rows)
+
+    header = output.read_text(encoding="utf-8").splitlines()[0]
+    assert header == ",".join(fieldnames)
