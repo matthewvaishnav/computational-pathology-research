@@ -1,0 +1,41 @@
+name: Refresh public documentation
+
+on:
+  push:
+    branches:
+      - cleanup/current-public-status-20260802
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: cleanup/current-public-status-20260802
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Regenerate curated website documentation
+        run: node website/scripts/sync-docs.mjs
+
+      - name: Commit generated documentation and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/refresh-public-docs.yml
+          git add website/docs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Refresh curated public documentation"
+          git push origin HEAD:cleanup/current-public-status-20260802
