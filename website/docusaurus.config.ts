@@ -3,8 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Computational Pathology Research Platform',
-  tagline: 'Production-Grade Framework for Clinical AI Deployment',
+  title: 'Computational Pathology Research',
+  tagline: 'Paired-acquisition neural research and reproducible evidence auditing',
   favicon: 'img/favicon.svg',
   future: {
     v4: true,
@@ -72,10 +72,7 @@ const config: Config = {
           path: 'docs',
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
-          exclude: [
-            '**/_config.yml',
-            '**/.gitkeep',
-          ],
+          exclude: ['**/_config.yml', '**/.gitkeep'],
           showLastUpdateTime: true,
           editUrl:
             'https://github.com/matthewvaishnav/computational-pathology-research/tree/main/',
@@ -101,11 +98,15 @@ const config: Config = {
       hideOnScroll: false,
       title: 'Computational Pathology Research',
       items: [
-        {to: '/docs/GETTING_STARTED', label: 'Documentation', position: 'left'},
-        {to: '/docs/FOUNDATION_MODELS', label: 'Models', position: 'left'},
-        {to: '/docs/DEPLOYMENT', label: 'Deployment', position: 'left'},
-        {to: '/docs/BENCHMARK_SYSTEM', label: 'Benchmarks', position: 'left'},
+        {to: '/docs/CURRENT_STATUS', label: 'Current Status', position: 'left'},
+        {to: '/docs/DOCS_INDEX', label: 'Documentation', position: 'left'},
+        {to: '/docs/PORTFOLIO_SUMMARY', label: 'Portfolio', position: 'left'},
         {type: 'search', position: 'right'},
+        {
+          href: 'https://github.com/matthewvaishnav/computational-pathology-research/blob/main/CLAIM_BOUNDARY.md',
+          label: 'Claim Boundary',
+          position: 'right',
+        },
         {
           href: 'https://github.com/matthewvaishnav/computational-pathology-research',
           label: 'GitHub',
@@ -114,45 +115,49 @@ const config: Config = {
       ],
     },
     announcementBar: {
-      id: 'research-platform',
+      id: 'scientific-audit-20260802',
       content:
-        '📚 Research Platform - Comprehensive computational pathology framework for clinical AI deployment',
-      backgroundColor: '#e3f2fd',
-      textColor: '#0d47a1',
+        'Scientific audit active: the claim boundary and current-status page override older platform, benchmark, manuscript, and deployment language.',
+      backgroundColor: '#fff3cd',
+      textColor: '#664d03',
       isCloseable: true,
     },
     footer: {
       style: 'dark',
       links: [
         {
-          title: 'Documentation',
+          title: 'Current Record',
           items: [
-            {label: 'Getting Started', to: '/docs/GETTING_STARTED'},
-            {label: 'Architecture', to: '/docs/ARCHITECTURE'},
-            {label: 'API Reference', to: '/docs/API_REFERENCE'},
-            {label: 'Troubleshooting', to: '/docs/TROUBLESHOOTING'},
+            {label: 'Current Status', to: '/docs/CURRENT_STATUS'},
+            {label: 'Documentation Index', to: '/docs/DOCS_INDEX'},
+            {label: 'Repository Overview', to: '/docs/PLATFORM_OVERVIEW'},
+            {label: 'Portfolio Summary', to: '/docs/PORTFOLIO_SUMMARY'},
           ],
         },
         {
-          title: 'Platform',
+          title: 'Research & Evidence',
           items: [
-            {label: 'Foundation Models', to: '/docs/FOUNDATION_MODELS'},
-            {label: 'Inference', to: '/docs/INFERENCE_OPTIMIZATION'},
-            {label: 'Deployment', to: '/docs/DEPLOYMENT'},
-            {label: 'Security', to: '/docs/SECURITY_HARDENING'},
-          ],
-        },
-        {
-          title: 'Resources',
-          items: [
-            {label: 'Benchmarks', to: '/docs/BENCHMARK_SYSTEM'},
+            {label: 'Presentation Abstract', to: '/docs/PRESENTATION_ABSTRACT'},
+            {label: 'Data Provenance', to: '/docs/DATA_PROVENANCE'},
+            {label: 'PCam Record', to: '/docs/PCAM_REAL_RESULTS'},
             {label: 'Testing', to: '/docs/TESTING'},
-            {label: 'Clinical Validation', to: '/docs/CLINICAL_VALIDATION'},
-            {label: 'GitHub', href: 'https://github.com/matthewvaishnav/computational-pathology-research'},
+          ],
+        },
+        {
+          title: 'External',
+          items: [
+            {
+              label: 'Claim Boundary',
+              href: 'https://github.com/matthewvaishnav/computational-pathology-research/blob/main/CLAIM_BOUNDARY.md',
+            },
+            {
+              label: 'GitHub',
+              href: 'https://github.com/matthewvaishnav/computational-pathology-research',
+            },
           ],
         },
       ],
-      copyright: `© ${new Date().getFullYear()} Computational Pathology Research Platform. Built for computational pathology research.`,
+      copyright: `© ${new Date().getFullYear()} Computational Pathology Research. Research use only; no clinical or deployment claim.`,
     },
     prism: {
       theme: prismThemes.github,
@@ -169,12 +174,12 @@ const config: Config = {
       {
         name: 'keywords',
         content:
-          'computational pathology, pytorch, histopathology, WSI, foundation models, clinical AI, PACS, federated learning',
+          'computational pathology, neural networks, paired acquisition, histopathology, representation learning, reproducibility, WSI',
       },
       {
         name: 'description',
         content:
-          'Computational Pathology Research Platform is a production-grade framework with foundation model integration, security compliance, and clinical deployment capabilities. Features PathologyFL and DMI for multi-institutional collaboration.',
+          'Independent computational pathology research on paired acquisition, representation auditing, whole-slide neural models, and reproducible experiment engineering.',
       },
     ],
   } satisfies Preset.ThemeConfig,

@@ -77,6 +77,11 @@ docs/_build/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
 
+# Generated website documentation
+# Source documents live in docs/ and are synchronized before website start/build.
+website/docs/*.md
+!website/docs/intro.md
+
 # Node.js
 node_modules/
 npm-debug.log*

@@ -1,49 +1,50 @@
-# Computational Pathology Research Platform: Production-Grade Framework for Clinical AI Deployment
+# Paired-Acquisition Neural Factorization: A Research-Engineering Audit of Scanner Structure in Pathology Embeddings
 
 ## Abstract
 
-This platform provides a comprehensive computational pathology framework designed for clinical-scale deployment with integrated foundation models, security compliance, and production-ready inference capabilities. The system addresses critical challenges in digital pathology including whole slide image (WSI) processing, model interpretability, federated learning, and regulatory compliance.
+Digital-pathology representations can encode scanner optics, colour response,
+compression, staining, and workflow effects in addition to tissue-associated
+structure. This project studies whether matched acquisitions of the same tissue
+region can support a more interpretable separation of these signals in frozen
+pathology embeddings.
 
-Key achievements include **93.94% AUC** on PCam (327K patches, #1 vs 10 published baselines), **85.26% accuracy** on 32,768-sample test set, and **5,071+ automated tests** with comprehensive coverage. The platform features a hybrid architecture with clean separation of concerns, HIPAA-compliant deployment with clinical PACS integration, and seamless foundation model support (UNI, Phikon, CONCH, GigaPath).
+Paired-Acquisition Neural Factorization maps each embedding into a tissue-oriented
+branch and an explicit acquisition branch, then reconstructs the original
+embedding from both. Training uses matched scanner views, scanner-suppression and
+scanner-retention objectives, pair agreement, variance controls, covariance
+regularization, and capacity-matched controls. Evaluation is blocked by the
+biological sampling unit rather than by patch.
 
-The platform features advanced federated learning with pathology-specific aggregation strategies (PathologyFL) and a novel Distributed Medical Intelligence (DMI) system enabling multi-institutional collaboration without compromising patient privacy. The framework achieves **8-12x faster training** (2-3 hours vs 20-40 hours baseline) on consumer hardware (RTX 4070) through systematic optimization including torch.compile, mixed precision (AMP), and advanced GPU utilization strategies.
+On SCORPION, the promoted capacity-matched campaign completed 175 registered
+fits across seven variants, five original-slide-blocked folds, and five seeds.
+Relative to an equal-capacity two-branch control, the full model reduced
+linearly recoverable scanner identity in the tissue-oriented branch while
+preserving same-region retrieval within a preregistered noninferiority margin.
+The acquisition branch retained strong scanner information. A separate 450-cell
+canine SCC factorial found no universal bottleneck dimension or
+cross-covariance setting, preventing a single configuration from being presented
+as generally optimal.
 
-## Key Performance Metrics
+The project also documents negative results and corrections: simpler linear
+baselines can remove scanner information more aggressively, several historical
+estimands contained leakage or pseudoreplication, and repaired whole-slide
+fusion models require new matched reruns. Current paired-affine and crossed-target
+synthetic studies remain prospective or exploratory and are not promoted
+pathology-domain evidence.
 
-- **PCam AUC**: 93.94% (full dataset, 327K patches) - #1 vs 10 published baselines
-- **Test Accuracy**: 85.26% on 32,768-sample test set
-- **Training Time**: 2-3 hours on RTX 4070 (8-12x faster than baseline)
-- **Inference Latency**: 12.3ms per patch (optimized)
-- **Test Coverage**: 5,071+ automated tests with property-based testing
-- **GPU Utilization**: 85% (up from 17% baseline)
-- **Architecture**: Hybrid (core + features + platform)
+The bounded contribution is a reproducible research-engineering framework for
+studying partial structured separation under paired acquisition. The work does
+not establish pure biological factors, complete disentanglement, novelty or
+priority, diagnostic improvement, clinical utility, regulatory compliance, or
+deployment readiness.
 
-## Clinical Deployment Features
+## Current presentation boundary
 
-- **PACS Integration**: Multi-vendor support (GE, Philips, Siemens, Agfa)
-- **DICOM/FHIR Compliance**: Full medical standards integration
-- **HIPAA Compliance**: Audit logging, encryption, access controls
-- **Real-time Inference**: <5 second processing for clinical workflows
-- **Federated Learning**: ε ≤ 1.0 differential privacy with secure aggregation
-- **DMI System**: Multi-institutional collaboration with privacy preservation
+Any presentation using this abstract should also link to:
 
-## Technical Innovations
+- the repository-root `CLAIM_BOUNDARY.md`;
+- `docs/CURRENT_STATUS.md`; and
+- `docs/research/scientific-audit-remediation-20260725.md`.
 
-1. **Hybrid Architecture**: Core layers (data, models, training, inference) + domain features (federated, clinical, interpretability, research, advanced) + platform services
-2. **TransnnMIL v2.0**: 3-branch architecture (TransMIL + Hierarchical + Topology) with adaptive pruning
-3. **Foundation Model Integration**: UNI, Phikon, CONCH, GigaPath support for superior feature representations
-4. **PathologyFL**: Domain-specific federated learning with expertise weighting and cancer-type specific strategies
-5. **DMI System**: Distributed Medical Intelligence for multi-institutional collaboration
-6. **8-12x Training Optimization**: torch.compile, mixed precision, channels_last memory format
-7. **Property-Based Testing**: 100+ correctness properties validated with Hypothesis
-8. **Production-Ready Infrastructure**: Docker/Kubernetes deployment, monitoring, security hardening (39 security commits)
-
-## Research Impact
-
-This platform enables reproducible computational pathology research with production-grade infrastructure, validated performance on real-world benchmarks (#1 on PCam vs 10 published baselines), and comprehensive clinical deployment capabilities. The hybrid architecture supports rapid experimentation (2-3 hour training cycles) while maintaining clinical-grade reliability, regulatory compliance, and clean separation of concerns for microservice extraction.
-
-**Version**: 2.0 | **Year**: 2026 | **Tests**: 5,071+ | **Security**: 0 HIGH/MEDIUM issues
-
----
-
-_For technical details, see the full documentation at [https://matthewvaishnav.github.io/computational-pathology-research/](https://matthewvaishnav.github.io/computational-pathology-research/)_
+Older production-platform, clinical-deployment, benchmark-superiority, and
+HIPAA-compliance descriptions are obsolete.
