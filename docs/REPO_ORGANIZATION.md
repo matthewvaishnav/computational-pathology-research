@@ -72,6 +72,6 @@ Archiving preserves provenance; it does not validate historical claims.
 3. Keep raw datasets, checkpoints, large feature archives, logs, and generated run directories outside Git.
 4. Keep compact summaries and manifests only when they support a reproducible claim.
 5. Keep Paired-Acquisition Neural Factorization/SCORPION, TransnnMIL/PANDA, and PathologyFL/CAMELYON17 visible as separate research lines.
-6. Archive obsolete deployment, enterprise, patent, and marketing material instead of presenting it as active research infrastructure.
+6. Archive obsolete deployment, enterprise, and marketing material instead of presenting it as active research infrastructure.
 
 Active Docker entry points remain at the root because CI and existing workflows reference them.
