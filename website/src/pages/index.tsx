@@ -5,21 +5,25 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
+const repositoryUrl =
+  'https://github.com/matthewvaishnav/computational-pathology-research';
+
 export default function Home(): ReactNode {
   return (
     <Layout
-      title="Computational Pathology Research Platform"
-      description="A comprehensive computational pathology research platform with foundation model integration, clinical deployment capabilities, and rigorous benchmarking systems.">
-
+      title="Computational Pathology Research"
+      description="Independent neural-network research on paired acquisition, representation auditing, and reproducible computational pathology experiments.">
       <main className={styles.main}>
         <div className={styles.paperContainer}>
           <header className={styles.paperHeader}>
             <Heading as="h1" className={styles.paperTitle}>
-              Computational Pathology Research Platform
+              Computational Pathology Research
             </Heading>
 
             <p className={styles.heroLead}>
-              Production-grade research framework for multiple-instance learning, whole-slide pathology AI, and privacy-preserving federated learning.
+              Independent neural-network research on paired acquisition,
+              scanner-associated representation structure, and reproducible
+              computational pathology experiments.
             </p>
 
             <div className={styles.authors}>
@@ -27,146 +31,144 @@ export default function Home(): ReactNode {
             </div>
 
             <div className={styles.paperMeta}>
-              <span className={styles.metaItem}>Research Platform</span>
+              <span className={styles.metaItem}>Research Engineering</span>
               <span className={styles.metaItem}>•</span>
-              <span className={styles.metaItem}>Version 2.0</span>
+              <span className={styles.metaItem}>Audited Evidence</span>
               <span className={styles.metaItem}>•</span>
-              <span className={styles.metaItem}>2026</span>
+              <span className={styles.metaItem}>Updated August 2026</span>
             </div>
           </header>
 
           <section className={styles.quickNav}>
-            <Link to="/docs/PERFORMANCE_COMPARISON" className={styles.quickNavCard}>
-              <strong>Results</strong>
-              <span>Performance comparisons, benchmark context, and model metrics</span>
+            <Link to="/docs/CURRENT_STATUS" className={styles.quickNavCard}>
+              <strong>Current Status</strong>
+              <span>Promoted evidence, exploratory work, and next steps</span>
             </Link>
-            <Link to="/docs/FAIR_WEIGHTS_HYBRID_PROTOCOL" className={styles.quickNavCard}>
-              <strong>FAIR-WEIGHTS-H</strong>
-              <span>Hybrid institutional weighting protocol and validation plan</span>
+            <Link
+              to={`${repositoryUrl}/blob/main/CLAIM_BOUNDARY.md`}
+              className={styles.quickNavCard}>
+              <strong>Claim Boundary</strong>
+              <span>Authoritative public interpretation and explicit non-claims</span>
             </Link>
-            <Link to="/docs/GETTING_STARTED" className={styles.quickNavCard}>
-              <strong>Start Here</strong>
-              <span>Install, run, and explore the platform</span>
+            <Link to="/docs/PORTFOLIO_SUMMARY" className={styles.quickNavCard}>
+              <strong>Research Portfolio</strong>
+              <span>Neural methods, experiment design, and reproducibility engineering</span>
             </Link>
-            <Link to="https://github.com/matthewvaishnav/computational-pathology-research" className={styles.quickNavCard}>
+            <Link to={repositoryUrl} className={styles.quickNavCard}>
               <strong>Source Code</strong>
-              <span>Repository, tests, experiments, and implementation</span>
+              <span>Repository, experiments, tests, and evidence packages</span>
             </Link>
           </section>
 
           <section className={styles.abstract}>
             <h2 className={styles.sectionTitle}>What this is</h2>
             <p className={styles.abstractText}>
-              This repository combines computational pathology model development, WSI processing, MIL architectures,
-              federated learning infrastructure, clinical-integration adapters, and benchmark tooling. Key results
-              include 93.94% AUC on PCam, 85.26% accuracy on the PCam test set, and 5,071+ automated tests. The
-              platform includes PathologyFL for domain-specific federated learning and FAIR-WEIGHTS-H for auditable,
-              evidence-based institutional weighting research.
+              The central research line is Paired-Acquisition Neural
+              Factorization: a study of whether matched scans of the same tissue
+              regions can support partial separation of tissue-associated and
+              scanner-associated information in frozen pathology embeddings.
+              The repository also documents whole-slide modeling, source-effect
+              studies, provenance audits, and experiment infrastructure.
             </p>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Project Map</h2>
-            <div className={styles.linksGrid}>
-              <Link to="/docs/FRAMEWORK_OVERVIEW" className={styles.docLink}>
-                <h3>Framework Overview</h3>
-                <p>High-level map of the platform, modules, and research direction.</p>
-              </Link>
-              <Link to="/docs/ARCHITECTURE" className={styles.docLink}>
-                <h3>Architecture</h3>
-                <p>System architecture, pipeline structure, and major components.</p>
-              </Link>
-              <Link to="/docs/PERFORMANCE_COMPARISON" className={styles.docLink}>
-                <h3>Performance</h3>
-                <p>Benchmark results, model metrics, and comparative evaluation context.</p>
-              </Link>
-              <Link to="/docs/FAIR_WEIGHTS_HYBRID_PROTOCOL" className={styles.docLink}>
-                <h3>FAIR-WEIGHTS-H</h3>
-                <p>Hybrid institutional weighting with contribution, useful uniqueness, and subgroup constraints.</p>
-              </Link>
-              <Link to="/docs/BENCHMARK_SYSTEM" className={styles.docLink}>
-                <h3>Benchmarking</h3>
-                <p>Evaluation infrastructure, statistical validation, and experiment design.</p>
-              </Link>
-              <Link to="/docs/SECURITY_HARDENING" className={styles.docLink}>
-                <h3>Security</h3>
-                <p>Privacy, audit logging, hardening, and compliance-oriented infrastructure.</p>
-              </Link>
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Verified Results & Infrastructure</h2>
+            <h2 className={styles.sectionTitle}>Current Promoted Evidence</h2>
             <div className={styles.metricsGrid}>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>5,071+</div>
-                <div className={styles.metricLabel}>Automated Tests</div>
+                <div className={styles.metricValue}>175/175</div>
+                <div className={styles.metricLabel}>SCORPION Capacity Fits</div>
               </div>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>93.94%</div>
-                <div className={styles.metricLabel}>PCam AUC</div>
+                <div className={styles.metricValue}>450/450</div>
+                <div className={styles.metricLabel}>Canine Factorial Cells</div>
               </div>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>85.26%</div>
-                <div className={styles.metricLabel}>PCam Accuracy</div>
+                <div className={styles.metricValue}>48</div>
+                <div className={styles.metricLabel}>SCORPION Slide Blocks</div>
               </div>
               <div className={styles.metric}>
-                <div className={styles.metricValue}>12.2M</div>
-                <div className={styles.metricLabel}>Model Parameters</div>
+                <div className={styles.metricValue}>5</div>
+                <div className={styles.metricLabel}>Matched Scanner Views</div>
               </div>
             </div>
+            <p className={styles.sectionText}>
+              The bounded result is partial structured separation under the
+              tested protocols: lower linearly recoverable scanner identity in a
+              tissue-oriented branch, preserved same-region retrieval, and strong
+              scanner information in an explicit acquisition branch. This does
+              not prove pure biological factors, complete disentanglement, or
+              clinical value.
+            </p>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Core Research Threads</h2>
+            <h2 className={styles.sectionTitle}>Research Threads</h2>
             <div className={styles.researchGrid}>
               <div className={styles.researchCard}>
-                <h3>MIL & WSI Modeling</h3>
-                <p>AttentionMIL, CLAM, TransMIL/TransnnMIL-style modeling, feature extraction, and whole-slide processing.</p>
+                <h3>Paired Acquisition</h3>
+                <p>
+                  Same-region multi-scanner representation learning, capacity
+                  controls, leakage audits, retrieval, and explicit acquisition
+                  modeling.
+                </p>
               </div>
               <div className={styles.researchCard}>
-                <h3>PathologyFL</h3>
-                <p>Federated learning infrastructure for multi-site pathology training without sharing patient-level data.</p>
+                <h3>Whole-Slide Modeling</h3>
+                <p>
+                  TransnnMIL repair and controlled evaluation. Historical fusion
+                  and topology scores remain withdrawn pending matched reruns.
+                </p>
               </div>
               <div className={styles.researchCard}>
-                <h3>FAIR-WEIGHTS-H</h3>
-                <p>Hybrid institutional weighting replacing fixed prestige multipliers with contribution, quality, useful uniqueness, uncertainty, and subgroup-safety constraints.</p>
+                <h3>Reproducibility</h3>
+                <p>
+                  Deterministic run identities, frozen hashes, append-only
+                  ledgers, fail-closed resume, and forward-valid evidence
+                  releases.
+                </p>
               </div>
               <div className={styles.researchCard}>
-                <h3>Clinical Infrastructure</h3>
-                <p>PACS/DICOM, FHIR adapters, audit logging, privacy infrastructure, and deployment-oriented APIs.</p>
+                <h3>Scientific Audit</h3>
+                <p>
+                  Leakage, pseudoreplication, confounding, capacity mismatch,
+                  provenance, and claim-boundary review with negative results
+                  retained.
+                </p>
               </div>
             </div>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>FAIR-WEIGHTS-H Institutional Weighting</h2>
-            <p className={styles.sectionText}>
-              DMI no longer needs to rely on fixed hospital-type prestige multipliers. FAIR-WEIGHTS-H models
-              institutional influence as a constrained optimization problem over contribution, quality, useful
-              uniqueness, uncertainty, and subgroup safety.
-            </p>
-            <div className={styles.equationBox}>
-              <code>
-                w_t = argmax Σᵢ wᵢ(φᵢ^Owen + λ_D Dᵢ^useful + λ_F Fᵢ + λ_Q Qᵢ − λ_S Sᵢ)
-              </code>
-            </div>
+            <h2 className={styles.sectionTitle}>Active but Unpromoted</h2>
             <ul className={styles.architectureList}>
-              <li><strong>Counterfactual contribution:</strong> grouped/Owen-style marginal utility estimates.</li>
-              <li><strong>Useful uniqueness:</strong> distributional difference only helps when paired with quality and subgroup utility.</li>
-              <li><strong>Subgroup constraints:</strong> representation and performance constraints are treated as binding validation requirements.</li>
-              <li><strong>Implemented scaffold:</strong> weighting engine, explicit weighted aggregator, synthetic federation benchmark, perturbation suite, and markdown report generation.</li>
+              <li>
+                <strong>Paired affine comparison:</strong> prospective translation,
+                Procrustes, affine, and ridge-affine evaluation.
+              </li>
+              <li>
+                <strong>Crossed-target diagnostics:</strong> synthetic scanner-prototype
+                and identity-disjoint intervention studies.
+              </li>
+              <li>
+                <strong>TransnnMIL reruns:</strong> matched comparisons of repaired
+                fusion against standalone and controlled baselines.
+              </li>
             </ul>
+            <p className={styles.sectionText}>
+              Draft PRs and smoke runs are engineering or exploratory records,
+              not promoted pathology-domain evidence.
+            </p>
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Federated Learning & Privacy</h2>
+            <h2 className={styles.sectionTitle}>Explicit Boundaries</h2>
             <ul className={styles.architectureList}>
-              <li><strong>Pathology-aware aggregation:</strong> cancer-type strategies, slide quality weighting, and attention-aware aggregation.</li>
-              <li><strong>Explicit weighted aggregation:</strong> modular adapter for externally computed institutional weights.</li>
-              <li><strong>Differential privacy:</strong> gradient clipping, calibrated noise, and privacy budget tracking.</li>
-              <li><strong>Secure aggregation:</strong> encrypted gradient aggregation infrastructure.</li>
-              <li><strong>Byzantine robustness:</strong> malicious-client detection via robust aggregation methods.</li>
+              <li>No novelty, priority, or patentability claim.</li>
+              <li>No pure-biological-factor or complete-invariance claim.</li>
+              <li>No clinical, regulatory, hospital, PACS, privacy, or deployment validation.</li>
+              <li>No state-of-the-art or universal-superiority claim.</li>
+              <li>No promotion of unvalidated smoke, draft-PR, or historical results.</li>
             </ul>
           </section>
         </div>
