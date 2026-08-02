@@ -15,157 +15,90 @@ const curatedDocs = [
     source: 'DOCS_INDEX.md',
     title: 'Documentation Index',
     description:
-      'Navigation guide for HistoCore platform, modeling, deployment, and validation documentation.',
+      'Navigation guide for the current audited computational pathology research record.',
   },
   {
-    source: 'GETTING_STARTED.md',
-    title: 'Getting Started',
+    source: 'CURRENT_STATUS.md',
+    title: 'Current Status',
     description:
-      'Installation, environment setup, and first-run guidance for the HistoCore platform.',
-  },
-  {
-    source: 'REPOSITORY_OVERVIEW.md',
-    title: 'Repository Overview',
-    description:
-      'Project structure, organization, and navigation guide for the computational pathology research repository.',
+      'Promoted evidence, active exploratory studies, explicit non-claims, and next steps.',
   },
   {
     source: 'PLATFORM_OVERVIEW.md',
-    title: 'Platform Overview',
+    title: 'Repository Overview',
     description:
-      'System architecture, capabilities, and core components of the HistoCore computational pathology platform.',
+      'Research scope and the boundary between validated evidence, exploratory work, and historical software modules.',
   },
   {
-    source: 'FRAMEWORK_OVERVIEW.md',
-    title: 'Framework Overview',
+    source: 'PORTFOLIO_SUMMARY.md',
+    title: 'Research Engineering Portfolio',
     description:
-      'High-level orientation to the HistoCore platform architecture and major workflows.',
+      'Neural methods, experimental design, reproducibility engineering, scientific corrections, and limitations.',
   },
   {
-    source: 'ARCHITECTURE.md',
-    title: 'Architecture',
+    source: 'PRESENTATION_ABSTRACT.md',
+    title: 'Presentation Abstract',
     description:
-      'Detailed system architecture for the computational pathology platform and pipeline.',
+      'Bounded abstract for Paired-Acquisition Neural Factorization and its audited evidence.',
   },
   {
-    source: 'API_REFERENCE.md',
-    title: 'API Reference',
+    source: 'DATA_PROVENANCE.md',
+    title: 'Data Provenance',
     description:
-      'Reference guide for the primary APIs, modules, and commands exposed by HistoCore.',
+      'Canonical dataset provenance and the separation between scientific data and software-test fixtures.',
+  },
+  {
+    source: 'REPOSITORY_OVERVIEW.md',
+    title: 'Repository Structure',
+    description:
+      'Project organization and navigation guide for the computational pathology research repository.',
   },
   {
     source: 'PCAM_REAL_RESULTS.md',
-    title: 'PCam Real Results',
+    title: 'PCam Result Record',
     description:
-      'Validated benchmark results on PatchCamelyon dataset with 0.9394 AUC and 85.26% accuracy.',
-  },
-  {
-    source: 'CURRENT_STATUS_2026-05-14.md',
-    title: 'Current Status (May 2026)',
-    description:
-      'Project status update with completed work, ongoing experiments, and next steps.',
-  },
-  {
-    source: 'FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS.md',
-    title: 'FAIR-WEIGHTS-H Implementation Status',
-    description:
-      'Implementation details, usage guide, and limitations for the FAIR-WEIGHTS-H weighting system.',
-  },
-  {
-    source: 'FAIR_WEIGHTS_H_SYNTHETIC_REPORT.md',
-    title: 'FAIR-WEIGHTS-H Synthetic Report',
-    description:
-      'Synthetic perturbation experiment results for FAIR-WEIGHTS-H (engineering check only).',
-  },
-  {
-    source: 'ROADMAP_TO_REAL_DATASETS.md',
-    title: 'Roadmap to Real Datasets',
-    description:
-      'Multi-institutional validation plan for federated learning on real pathology datasets.',
-  },
-  {
-    source: 'FOUNDATION_MODELS.md',
-    title: 'Foundation Models',
-    description:
-      'Guide to foundation-model support, tradeoffs, and integration patterns inside HistoCore.',
-  },
-  {
-    source: 'MODEL_INTERPRETABILITY.md',
-    title: 'Model Interpretability',
-    description:
-      'Grad-CAM, attention visualization, and explainability tools for computational pathology models.',
-  },
-  {
-    source: 'INFERENCE_OPTIMIZATION.md',
-    title: 'Inference Optimization',
-    description:
-      'Production inference guidance covering TorchScript, batching, and large-bag workflows.',
-  },
-  {
-    source: 'BENCHMARK_SYSTEM.md',
-    title: 'Benchmark System',
-    description:
-      'Benchmarking workflow, performance measurement, and comparison methodology for HistoCore.',
-  },
-  {
-    source: 'PERFORMANCE_COMPARISON.md',
-    title: 'Performance Comparison',
-    description:
-      'Comparative performance positioning for the platform and key optimization layers.',
-  },
-  {
-    source: 'CLINICAL_WORKFLOW_INTEGRATION.md',
-    title: 'Clinical Workflow Integration',
-    description:
-      'Clinical deployment guide for integrating HistoCore into pathology workflows.',
-  },
-  {
-    source: 'PACS_INTEGRATION.md',
-    title: 'PACS Integration',
-    description:
-      'DICOM and FHIR integration guide for connecting HistoCore to clinical PACS systems.',
-  },
-  {
-    source: 'DEPLOYMENT.md',
-    title: 'Deployment',
-    description:
-      'Deployment guide for packaging, serving, and operating HistoCore in production-style environments.',
-  },
-  {
-    source: 'SECURITY_HARDENING.md',
-    title: 'Security Hardening',
-    description:
-      'Operational hardening guidance for deploying the platform with stronger security posture.',
-  },
-  {
-    source: 'CLINICAL_VALIDATION.md',
-    title: 'Clinical Validation',
-    description:
-      'Validation framing, evidence expectations, and clinical-readiness guidance for HistoCore.',
+      'Single-split PatchCamelyon engineering result with its current public claim boundary.',
   },
   {
     source: 'TESTING.md',
     title: 'Testing',
     description:
-      'Testing strategy, suite organization, and quality assurance workflows for HistoCore.',
+      'Testing strategy, suite organization, and quality-assurance workflows.',
+  },
+  {
+    source: 'FOUNDATION_MODELS.md',
+    title: 'Foundation Models',
+    description:
+      'Foundation-model integration references and implementation boundaries.',
+  },
+  {
+    source: 'MODEL_INTERPRETABILITY.md',
+    title: 'Model Interpretability',
+    description:
+      'Grad-CAM, attention visualization, and explainability tooling references.',
   },
   {
     source: 'QUICK_REFERENCE.md',
     title: 'Quick Reference',
     description:
-      'Fast command and workflow reference for common HistoCore development and operations tasks.',
+      'Fast command and workflow reference for repository development tasks.',
   },
   {
     source: 'TROUBLESHOOTING.md',
     title: 'Troubleshooting',
     description:
-      'Troubleshooting guide for common install, runtime, and workflow issues across the platform.',
+      'Troubleshooting guide for installation, runtime, and development workflows.',
   },
 ];
 
 const curatedDocIds = new Set(
   curatedDocs.map(({source}) => path.basename(source, path.extname(source))),
 );
+
+const retainedOutputFiles = new Set([
+  'intro.md',
+  ...curatedDocs.map(({source}) => source.replace(/\\/g, '/')),
+]);
 
 function stripFrontmatter(content) {
   if (!content.startsWith('---')) {
@@ -186,7 +119,10 @@ function toGithubBlobUrl(relativePath) {
 }
 
 function toGithubTreeUrl(relativePath) {
-  const normalized = relativePath.replace(/\\/g, '/').replace(/^\.\.\//, '').replace(/\/$/, '');
+  const normalized = relativePath
+    .replace(/\\/g, '/')
+    .replace(/^\.\.\//, '')
+    .replace(/\/$/, '');
   return `https://github.com/matthewvaishnav/computational-pathology-research/tree/main/${normalized}`;
 }
 
@@ -302,7 +238,7 @@ function sanitizeNonFenceLine(line, sourceDir) {
         .then(() => line)
         .catch(
           () =>
-            `> Note: An image referenced in the source docs is omitted from the live site build because the asset is not packaged with the website.`,
+            '> Note: An image referenced in the source docs is omitted from the live site build because the asset is not packaged with the website.',
         );
     }
   }
@@ -354,11 +290,29 @@ async function writeDoc(doc) {
     `description: ${doc.description}\n` +
     `---\n\n`;
 
+  await fs.mkdir(path.dirname(outputPath), {recursive: true});
   await fs.writeFile(outputPath, frontmatter + sanitized, 'utf8');
+}
+
+async function removeStaleGeneratedDocs() {
+  const entries = await fs.readdir(outputDocsRoot, {withFileTypes: true});
+
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) {
+      continue;
+    }
+
+    if (retainedOutputFiles.has(entry.name)) {
+      continue;
+    }
+
+    await fs.rm(path.join(outputDocsRoot, entry.name));
+  }
 }
 
 async function main() {
   await fs.mkdir(outputDocsRoot, {recursive: true});
+  await removeStaleGeneratedDocs();
 
   for (const doc of curatedDocs) {
     await writeDoc(doc);
