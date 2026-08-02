@@ -51,7 +51,7 @@ except ImportError as exc:  # pragma: no cover
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "docs" / "public" / "computational_pathology_research_complete_technical_report.pdf"
 
-# Order matters. This is the dossier order used for the public PDF.
+# Order matters. This is the document order used for the public PDF.
 SOURCE_DOCS = [
     ("Repository README", "README.md"),
     ("Website / public landing page", "docs/index.md"),
