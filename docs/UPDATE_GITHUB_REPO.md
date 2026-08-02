@@ -1,125 +1,61 @@
-# How to Update GitHub Repository Description
+# Current GitHub Repository Description Guidance
 
-## Repository "About" Section
+**Updated:** August 2, 2026
 
-**New Description:**
-```
-Production-grade PyTorch framework for computational pathology research. Features attention-based MIL models, foundation model integration (Phikon/UNI/CONCH), clinical PACS integration, and comprehensive testing (5,071+ tests). Validated on PCam (85.26% accuracy, 93.94% AUC). Built for research and clinical deployment.
-```
+The former instructions on this page recommended a production-grade clinical
+platform description. That wording is obsolete and must not be reused.
 
-**Character count:** 297 characters (within GitHub's 350 character limit)
+## Recommended repository description
 
----
-
-## Steps to Update on GitHub
-
-### Option 1: Via GitHub Web Interface
-
-1. Go to your repository: `https://github.com/matthewvaishnav/computational-pathology-research`
-2. Click the **⚙️ Settings** icon (gear icon) next to "About" on the right sidebar
-3. In the "Description" field, paste:
-   ```
-   Production-grade PyTorch framework for computational pathology research. Features attention-based MIL models, foundation model integration (Phikon/UNI/CONCH), clinical PACS integration, and comprehensive testing (5,071+ tests). Validated on PCam (85.26% accuracy, 93.94% AUC). Built for research and clinical deployment.
-   ```
-4. Optionally add **Topics** (tags):
-   - `computational-pathology`
-   - `deep-learning`
-   - `pytorch`
-   - `medical-imaging`
-   - `federated-learning`
-   - `multiple-instance-learning`
-   - `digital-pathology`
-   - `whole-slide-imaging`
-   - `pacs-integration`
-   - `clinical-ai`
-5. Click **Save changes**
-
-### Option 2: Via GitHub CLI
-
-```bash
-gh repo edit matthewvaishnav/computational-pathology-research \
-  --description "Production-grade PyTorch framework for computational pathology research. Features attention-based MIL models, foundation model integration (Phikon/UNI/CONCH), clinical PACS integration, and comprehensive testing (5,071+ tests). Validated on PCam (85.26% accuracy, 93.94% AUC). Built for research and clinical deployment."
+```text
+Independent computational pathology neural-network research on paired acquisition, representation auditing, whole-slide models, and reproducible experiment engineering.
 ```
 
----
+This description intentionally does not claim:
 
-## Recommended Topics (Tags)
+- clinical deployment or hospital readiness;
+- PACS or FHIR validation;
+- HIPAA, FDA, CE, or regulatory compliance;
+- fixed test counts or coverage figures;
+- state-of-the-art or benchmark superiority;
+- novelty, priority, or patentability; or
+- complete federated-learning or privacy validation.
 
-Add these topics to improve discoverability:
+## Recommended topics
 
-**Primary:**
+Use research- and implementation-oriented topics:
+
 - `computational-pathology`
-- `deep-learning`
-- `pytorch`
-- `medical-imaging`
-
-**Secondary:**
-- `federated-learning`
+- `histopathology`
+- `neural-networks`
+- `representation-learning`
+- `paired-data`
 - `multiple-instance-learning`
-- `mil`
-- `digital-pathology`
 - `whole-slide-imaging`
-- `wsi`
+- `pytorch`
+- `reproducible-research`
+- `machine-learning`
 
-**Technical:**
-- `pacs-integration`
-- `dicom`
-- `fhir`
-- `clinical-ai`
-- `healthcare-ai`
+Avoid product or validation topics such as `clinical-ai`, `hipaa-compliant`,
+`fda-ready`, `production-ready`, or `pacs-integration` unless a future public
+record independently validates those claims.
 
-**Models:**
-- `attention-mechanism`
-- `transformer`
-- `foundation-models`
+## Repository website
 
----
+The GitHub Pages website should present the current audited research record and
+link prominently to:
 
-## Website URL
+- `CLAIM_BOUNDARY.md`;
+- `docs/CURRENT_STATUS.md`; and
+- `docs/DOCS_INDEX.md`.
 
-If you have GitHub Pages enabled, add:
-```
-https://matthewvaishnav.github.io/computational-pathology-research/
-```
+## Social-preview guidance
 
----
+A social-preview image may use the repository title and neutral research terms.
+Do not include stale test counts, clinical branding, superiority language,
+regulatory icons, patent language, or unpromoted result numbers.
 
-## Social Preview Image (Optional)
+## Maintenance rule
 
-Create a social preview image (1280x640px) showing:
-- Repository name
-- Key metrics (93.94% AUC, 85.26% accuracy)
-- Architecture diagram
-- "PathologyFL + DMI" branding
-
-Upload via: **Settings → Social preview → Upload an image**
-
----
-
-## README Badge Updates
-
-The README already has badges. Consider adding:
-
-```markdown
-![PCam AUC](https://img.shields.io/badge/PCam%20AUC-93.94%25-brightgreen)
-![PCam Accuracy](https://img.shields.io/badge/PCam%20Accuracy-85.26%25-blue)
-![Tests](https://img.shields.io/badge/tests-5071%2B-green)
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c)
-![License](https://img.shields.io/badge/license-MIT-yellow)
-```
-
----
-
-## Verification
-
-After updating, verify:
-- ✅ Description appears on repository homepage
-- ✅ Topics are visible and clickable
-- ✅ Website URL is linked (if added)
-- ✅ Social preview displays correctly (if added)
-
----
-
-**Status:** Ready to update  
-**Priority:** Medium (improves discoverability and professionalism)
+Whenever the repository description, topics, website metadata, or social preview
+is changed, verify it against the current repository-root `CLAIM_BOUNDARY.md`.
