@@ -5,316 +5,107 @@ title: Documentation Index
 
 # Documentation Index
 
+**Last updated:** August 2, 2026
 
-> **Data provenance correction:** Scientific evaluations on PCam, PANDA, and CAMELYON17/WILDS use public datasets derived from real human histopathology. Generated tensors or mock manifests are isolated software-test fixtures only and are not the source of reported benchmark results. See [Data provenance](DATA_PROVENANCE.md).
+This index prioritizes the current audited research record. Historical documents
+may remain for software provenance, but they are not authoritative when they
+conflict with the repository-root claim boundary.
 
-- **[Data provenance](DATA_PROVENANCE.md)** — canonical dataset provenance and test-fixture boundary
+## Start here
 
-Comprehensive documentation for the platform - the production-grade computational pathology framework.
+1. [Current claim boundary](../CLAIM_BOUNDARY.md) — authoritative public wording,
+   active evidence, withdrawals, and non-claims.
+2. [Current status](CURRENT_STATUS.md) — promoted evidence, active exploratory
+   work, and next steps.
+3. [Repository overview](PLATFORM_OVERVIEW.md) — research scope and the boundary
+   between experiment code and historical platform modules.
+4. [Research-engineering portfolio summary](PORTFOLIO_SUMMARY.md) — skills and
+   evidence demonstrated without clinical or novelty overstatement.
+5. [Presentation abstract](PRESENTATION_ABSTRACT.md) — current bounded summary of
+   the paired-acquisition work.
 
----
+## Paired-acquisition research
 
-## Project Status
+- [Research-engineering brief](research/paired-acquisition-research-engineering-brief.md)
+- [SCORPION results](research/paired-acquisition-factorization-scorpion-results.md)
+- [External canine SCC results](research/paired-acquisition-factorization-caninescc-results.md)
+- [Prospective paired affine protocol](research/paired-affine-comparison-protocol.md)
+- [Scientific-audit remediation ledger](research/scientific-audit-remediation-20260725.md)
+- [Claim positioning](research/paired-acquisition-neural-factorization-positioning.md)
 
-- [**Current Status (May 2026)**](CURRENT_STATUS.html) - Latest development progress, benchmarks, and roadmap
+Numerical claims should be traced to their versioned evidence packages. Draft
+PRs and smoke runs are not promoted evidence.
 
-## Getting Started
+## Evidence and provenance
 
-### Installation and Setup
-- [Getting Started Guide](GETTING_STARTED.html) - Complete installation and setup guide
-- [System Requirements](GETTING_STARTED.html#system-requirements) - Hardware and software prerequisites
-- [Installation](GETTING_STARTED.html#installation) - Step-by-step installation instructions
+- [Data provenance](DATA_PROVENANCE.md)
+- [Repository organization](REPO_ORGANIZATION.md)
+- [Testing](TESTING.md)
+- [Reproducibility and evidence packages](../evidence/paired_acquisition/)
+- [Preparation/workflow metadata readiness](../research/preparation-workflow-metadata-readiness/)
+- [Paired-acquisition provenance manifest](../research/paired-acquisition-provenance-manifest/)
 
-### Tutorials
-- [Your First Model](GETTING_STARTED.html#your-first-model) - Step-by-step PCam tutorial
-- [Working with Real Data](GETTING_STARTED.html#working-with-real-data) - PatchCamelyon and CAMELYON16 workflows
-- [API Reference](API_REFERENCE.html) - Complete API documentation
+## Secondary research lines
 
----
+### Whole-slide modeling
 
-## Training and Evaluation
+- [TransnnMIL implementation](TRANSNNMIL_IMPLEMENTATION.md)
+- Historical TransnnMIL numerical interpretations are withdrawn until matched
+  reruns of repaired models are completed.
 
-### PatchCamelyon (PCam)
-- [PCAM_REAL_RESULTS.md](PCAM_REAL_RESULTS.html) - **Real dataset results**: 85.26% accuracy, 0.9394 AUC with bootstrap CIs
-- [PCAM_FAILURE_ANALYSIS.md](PCAM_FAILURE_ANALYSIS.html) - **Failure analysis**: 26.11% false negative rate, clinical implications
-- [THRESHOLD_OPTIMIZATION.md](THRESHOLD_OPTIMIZATION.html) - **Clinical optimization**: 90% sensitivity for cancer screening
-- [PCAM_CROSS_VALIDATION.md](PCAM_CROSS_VALIDATION.html) - **Cross-validation**: K-fold validation for robustness assessment
-- [PCAM_BENCHMARK_RESULTS.md](PCAM_BENCHMARK_RESULTS.html) - Synthetic benchmark results and analysis
-- [PCAM_COMPARISON_GUIDE.md](PCAM_COMPARISON_GUIDE.html) - Comparing model architectures
-- **Topics**: Patch-level classification, data augmentation, baseline comparisons, clinical deployment, robustness validation
+### Institutional weighting and center effects
 
-### CAMELYON16 Slide-Level
-- [CAMELYON_TRAINING_STATUS.md](CAMELYON_TRAINING_STATUS.html) - Training guide and best practices
-- [CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.md](CAMELYON_SLIDE_LEVEL_IMPLEMENTATION.html) - Implementation details
-- **Topics**: Slide-level aggregation, attention mechanisms, feature extraction
+- PANDA stress studies are simulated-institution experiments.
+- Current CAMELYON17 weighting work is a centralized frozen-feature proxy on one
+  held-out center.
+- These studies do not establish complete federated-learning, fairness, privacy,
+  or clinical validation.
 
-### WSI Processing Pipeline
-- [WSI_PROCESSING_PIPELINE.md](WSI_PROCESSING_PIPELINE.html) - **Complete WSI processing pipeline**: OpenSlide integration, CLI tools, production deployment
-- **Topics**: Multi-format WSI support (.svs, .tiff, .ndpi, DICOM), streaming processing, CNN feature extraction, HDF5 caching, clinical deployment
+### PCam
 
-### Advanced Features
-- [Model Interpretability Guide](MODEL_INTERPRETABILITY.html) - Grad-CAM, attention visualization, failure analysis
-- [Clinical Workflow Integration](CLINICAL_WORKFLOW_INTEGRATION.html) - Multi-class classification, DICOM/FHIR support
-- [Comprehensive Dataset Testing](COMPREHENSIVE_DATASET_TESTING.html) - 3,171 tests with property-based testing
-- [Inference Optimization](INFERENCE_OPTIMIZATION.html) - Sliding-window inference, TorchScript, uncertainty-aware aggregation
-- [Foundation Models](FOUNDATION_MODELS.html) - UNI, CONCH, Phikon, GigaPath, ResNet50 compatibility
+- [PCam result record](PCAM_REAL_RESULTS.md)
+- PCam is a single official patch-level test-split engineering benchmark.
+- Cross-paper superiority, clinical-threshold, diagnoses-saved, and deployment
+  claims remain withdrawn.
 
-### Evaluation Metrics
-- Model performance analysis with bootstrap confidence intervals
-- ROC curves and confusion matrices
-- CSV export for downstream analysis
-- Attention weight visualization and heatmap generation
+## Software and engineering references
 
----
+The repository contains substantial historical engineering code for WSI
+processing, APIs, model serving, security utilities, PACS/FHIR adapters,
+deployment, and federated-learning scaffolds. These modules may be useful as code
+references, but their existence does not establish:
 
-## Architecture and Design
+- production readiness;
+- operation in a live hospital environment;
+- regulatory or HIPAA compliance;
+- validated privacy guarantees; or
+- clinical utility.
 
-### System Overview
-- [ARCHITECTURE.md](ARCHITECTURE.html) - Complete system architecture
-- **Components**: Data loaders, model architectures, training loops, evaluation pipelines
+Relevant engineering pages include:
 
-### Model Architectures
-- **Attention-Based MIL Models**: AttentionMIL, CLAM, TransMIL with attention weight visualization
-- **Multimodal Fusion**: Cross-modal attention for WSI, genomic, and clinical text integration
-- **Temporal Models**: Disease progression prediction with positional encoding
-- **Baseline Models**: ResNet, DenseNet, EfficientNet with pretrained weights
-- **Slide Classifiers**: Attention-based aggregation, pooling strategies
-- **Pretrained Integration**: torchvision and timm model loading (1000+ architectures)
+- [Repository structure](REPOSITORY_OVERVIEW.md)
+- [Architecture](ARCHITECTURE.md)
+- [Foundation models](FOUNDATION_MODELS.md)
+- [Model interpretability](MODEL_INTERPRETABILITY.md)
+- [Testing](TESTING.md)
+- [Quick reference](QUICK_REFERENCE.md)
+- [Troubleshooting](TROUBLESHOOTING.md)
 
-### Data Pipeline
-- **WSI Processing Pipeline**: Complete production-ready pipeline with OpenSlide integration
-- **PCam Dataset**: Patch extraction and preprocessing
-- **CAMELYON Dataset**: HDF5 feature storage, slide-level batching
-- **Augmentation**: Standard transforms, normalization
+## Archived and superseded material
 
----
+The former May 14 status report has been replaced by an explicit archival notice:
+[Archived status notice](CURRENT_STATUS_2026-05-14.md).
 
-## Deployment
+Older manuscripts, PDFs, benchmark comparison pages, clinical deployment guides,
+marketing-style summaries, and generated website copies are historical unless
+the current claim boundary explicitly reaffirms them.
 
-### Docker Deployment
-- [DOCKER.md](DOCKER.html) - Complete Docker guide
-- **Topics**: Container setup, GPU support, production deployment
+## Public wording policy
 
-### REST API
-- [deploy/README.md](../deploy/README.html) - API deployment instructions
-- **Endpoints**: Model inference, batch processing, health checks
-
-### Model Export
-- **ONNX Export**: Cross-platform deployment
-- **TorchScript**: Production optimization
-- **Quantization**: Model compression
+The current public repository does not claim:
 
----
-
-## Development
-
-### Contributing
-- [CONTRIBUTING.md](../CONTRIBUTING.html) - Contribution guidelines
-- **Topics**: Code style, pull requests, issue reporting
-
-### Testing
-- [TESTING.md](TESTING.html) - **Comprehensive testing documentation**: 3,171 tests, 55% coverage, CI/CD pipeline
-- [TESTING_SUMMARY.md](TESTING_SUMMARY.html) - Historical test suite documentation
-- **Coverage**: Unit tests, integration tests, property-based testing, clinical validation
-- **Topics**: Test execution, coverage reports, benchmarks, quality assurance, reproducibility, nnMIL migration properties, sliding-window inference validation, foundation-model compatibility
-
-### Build System
-- [MAKEFILE.md](MAKEFILE.html) - Makefile usage guide
-- **Commands**: Build, test, lint, format, clean
-
----
-
-## Performance and Optimization
-
-### Performance Analysis
-- [PERFORMANCE.md](PERFORMANCE) - Optimization guide
-- [PERFORMANCE_COMPARISON.md](PERFORMANCE_COMPARISON) - **8-12x speedup**: Benchmark vs PathML, CLAM
-- [INFERENCE_OPTIMIZATION.md](INFERENCE_OPTIMIZATION) - **2-3x faster inference**: TorchScript, quantization
-- **Topics**: Profiling, bottleneck analysis, GPU utilization, training optimization
-
-### Model Optimization
-- [QUANTIZATION.md](QUANTIZATION.html) - **INT8/FP16 quantization**: 4x compression, 2-3x speedup
-- [MULTI_GPU_TRAINING.md](MULTI_GPU_TRAINING.html) - **DistributedDataParallel**: Linear GPU scaling
-- [FOUNDATION_MODELS.md](FOUNDATION_MODELS.html) - **Pretrained models**: UNI, Phikon, CONCH
-- [INFERENCE_OPTIMIZATION.md](INFERENCE_OPTIMIZATION.html) - **Sliding-window inference**: large-bag support, attention compatibility, uncertainty aggregation
-- **Topics**: Model compression, distributed training, transfer learning, large-slide inference
-
-### Model Profiling
-- Inference latency measurement
-- Memory usage analysis
-- Throughput optimization
-
----
-
-## Results and Analysis
-
-### Benchmark Results
-- [DEMO_RESULTS.md](DEMO_RESULTS.html) - Demo training results
-- **Metrics**: Accuracy, AUC, training time, convergence analysis
-
-### Project Portfolio
-- [PORTFOLIO_SUMMARY.md](PORTFOLIO_SUMMARY.html) - Complete project overview
-- **Status**: Current capabilities, limitations, future work
-
-### Roadmap
-- [ROADMAP_TO_REAL_DATASETS.md](ROADMAP_TO_REAL_DATASETS.html) - Real dataset integration plan
-- **Timeline**: Short-term goals, long-term vision
-
----
-
-## API Reference
-
-### Core Modules
-
-#### Data Loading
-```python
-from src.data import PatchCamelyonDataset, CAMELYONSlideDataset
-from src.data.wsi_pipeline import BatchProcessor, ProcessingConfig
-```
-- `PatchCamelyonDataset`: Patch-level image loading
-- `CAMELYONSlideDataset`: Slide-level feature loading
-- `collate_slide_bags`: Variable-length batch collation
-- `BatchProcessor`: WSI processing pipeline orchestration
-- `ProcessingConfig`: WSI pipeline configuration management
-
-#### Models
-```python
-from src.models import SimpleClassifier, SimpleSlideClassifier
-from src.models.pretrained import load_pretrained_encoder
-```
-- `SimpleClassifier`: Patch-level classifier
-- `SimpleSlideClassifier`: Slide-level aggregation
-- `load_pretrained_encoder`: Pretrained model loading
-
-#### Training
-```python
-from src.training import train_epoch, evaluate
-```
-- `train_epoch`: Single epoch training loop
-- `evaluate`: Model evaluation with metrics
-
-#### Utilities
-```python
-from src.utils import set_seed, save_checkpoint, load_checkpoint
-```
-- `set_seed`: Reproducibility utilities
-- `save_checkpoint`: Model checkpointing
-- `load_checkpoint`: Checkpoint loading
-
----
-
-## Quick Reference
-
-### Common Commands
-
-#### WSI Processing
-```bash
-# Process WSI files
-python -m src.data.wsi_pipeline.cli process slide.svs --output-dir ./features
-
-# Batch processing
-python -m src.data.wsi_pipeline.cli process *.svs --config config.yaml
-
-# Validate installation
-python -m src.data.wsi_pipeline.cli validate
-
-# Performance benchmarks
-python -m src.data.wsi_pipeline.cli benchmark --quick
-```
-
-#### Training
-```bash
-# PCam training
-python experiments/train_pcam.py --config experiments/configs/pcam.yaml
-
-# CAMELYON training
-python experiments/train_camelyon.py --config experiments/configs/camelyon.yaml
-```
-
-#### Evaluation
-```bash
-# PCam evaluation
-python experiments/evaluate_pcam.py \
-  --checkpoint checkpoints/pcam/best_model.pth \
-  --data-root data/pcam
-
-# CAMELYON evaluation with CSV export
-python experiments/evaluate_camelyon.py \
-  --checkpoint checkpoints/camelyon/best_model.pth \
-  --save-predictions-csv
-```
-
-#### Testing
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run with coverage
-pytest tests/ --cov=src --cov-report=html
-```
-
-#### Model Profiling
-```bash
-# Profile inference time
-python scripts/model_profiler.py \
-  --checkpoint models/best_model.pth \
-  --profile-type time
-
-# Export to ONNX
-python scripts/export_onnx.py \
-  --checkpoint models/best_model.pth \
-  --output models/model.onnx
-```
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### CUDA Out of Memory
-- Reduce batch size in config file
-- Use gradient accumulation
-- Enable mixed precision training
-
-#### Slow Training
-- Check GPU utilization with `nvidia-smi`
-- Increase number of data loader workers
-- Use faster data augmentation
-
-#### Poor Model Performance
-- Verify data preprocessing
-- Check learning rate schedule
-- Increase training epochs
-- Try different architectures
-
----
-
-## Additional Resources
-
-### External Documentation
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [torchvision Models](https://pytorch.org/vision/stable/models.html)
-- [timm Documentation](https://huggingface.co/docs/timm/)
-
-### Research Papers
-- **PatchCamelyon**: Veeling et al. (2018) - "Rotation Equivariant CNNs for Digital Pathology"
-- **CAMELYON16**: Bejnordi et al. (2017) - "Diagnostic Assessment of Deep Learning Algorithms"
-
-### Community
-- [GitHub Issues](https://github.com/matthewvaishnav/the platform/issues)
-- [Discussions](https://github.com/matthewvaishnav/the platform/discussions)
-
----
-
-## Archived Documentation
-
-Historical documentation and implementation notes are available in [archive/](archive/).
-
----
-
-<div class="footer-note">
-  <p><strong>📊 Current Status:</strong> Week 7 of 12 for TransnnMIL v2.0 development. See <a href="CURRENT_STATUS">Current Status</a> for detailed progress.</p>
-  <p><em>Last updated: May 14, 2026</em></p>
-  <p>For questions or suggestions, please <a href="https://github.com/matthewvaishnav/the platform/issues">open an issue</a>.</p>
-</div>
+- novelty, priority, or patentability;
+- pure biological factors or complete disentanglement;
+- clinical, regulatory, PACS, FHIR, privacy, or hospital readiness;
+- state-of-the-art or universal superiority; or
+- that unpromoted exploratory results are established findings.
