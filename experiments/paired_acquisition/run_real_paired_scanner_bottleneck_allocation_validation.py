@@ -844,13 +844,17 @@ def paired_permutation_labels(frame: pd.DataFrame, indices: np.ndarray, seed: in
 
 def _probabilities(model: Any, features: np.ndarray, class_count: int) -> np.ndarray:
     if hasattr(model, "predict_proba"):
-        return np.asarray(model.predict_proba(features))
-    decision = np.asarray(model.decision_function(features))
-    if decision.ndim == 1:
-        decision = np.column_stack([-decision, decision])
-    probabilities = softmax(decision, axis=1)
-    if probabilities.shape[1] != class_count:
-        raise ExperimentError("Probe probability shape mismatch.")
+        observed = np.asarray(model.predict_proba(features))
+    else:
+        decision = np.asarray(model.decision_function(features))
+        if decision.ndim == 1:
+            decision = np.column_stack([-decision, decision])
+        observed = softmax(decision, axis=1)
+    model_classes = np.asarray(model.classes_, dtype=int)
+    if observed.shape[1] != len(model_classes):
+        raise ExperimentError("Probe probability/model-class shape mismatch.")
+    probabilities = np.zeros((len(features), class_count), dtype=float)
+    probabilities[:, model_classes] = observed
     return probabilities
 
 
@@ -861,7 +865,7 @@ def classification_metrics(
     classes: Sequence[str],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
-        "balanced_accuracy": float(balanced_accuracy_score(truth, prediction)),
+        "balanced_accuracy": safe_balanced_accuracy(truth, prediction),
         "macro_f1": float(f1_score(truth, prediction, average="macro", zero_division=0)),
         "per_class_recall": {},
     }
@@ -877,6 +881,12 @@ def classification_metrics(
     return result
 
 
+def safe_balanced_accuracy(truth: np.ndarray, prediction: np.ndarray) -> float:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        return float(balanced_accuracy_score(truth, prediction))
+
+
 def probe(
     features: np.ndarray,
     labels: Sequence[Any],
@@ -886,8 +896,16 @@ def probe(
     nonlinear: bool,
     seeds: Sequence[int],
 ) -> dict[str, Any]:
-    encoder = LabelEncoder().fit(np.asarray(labels, dtype=str)[train])
+    # The global class vocabulary is used only to score held-out categories.
+    # Model fitting still sees training rows and training labels exclusively.
+    encoder = LabelEncoder().fit(np.asarray(labels, dtype=str))
     all_labels = encoder.transform(np.asarray(labels, dtype=str))
+    training_classes = sorted(set(all_labels[train].tolist()))
+    absent_training_classes = [
+        str(encoder.classes_[index])
+        for index in range(len(encoder.classes_))
+        if index not in training_classes
+    ]
     rows = []
     for seed in seeds:
         scaler = StandardScaler().fit(features[train])
@@ -940,6 +958,8 @@ def probe(
         ],
         "macro_f1_median": float(np.median([row["macro_f1"] for row in rows])),
         "fit_split": "train",
+        "class_vocabulary_source": "metadata only; no held-out features used",
+        "classes_absent_from_training": absent_training_classes,
     }
 
 
@@ -959,8 +979,8 @@ def scanner_probe_battery(
     slide_scores = {}
     for slide in sorted(set(test_slides)):
         mask = test_slides == slide
-        slide_scores[slide] = float(
-            balanced_accuracy_score(primary_truth[mask], primary_prediction[mask])
+        slide_scores[slide] = safe_balanced_accuracy(
+            primary_truth[mask], primary_prediction[mask]
         )
     null_rows = []
     for seed in PROBE_SEEDS:
@@ -1009,15 +1029,17 @@ def category_probe_battery(
     scanner = frame.iloc[test]["scanner_id"].astype(str).to_numpy()
     slide = frame.iloc[test]["slide_id"].astype(str).to_numpy()
     scanner_scores = {
-        name: float(balanced_accuracy_score(truth[scanner == name], prediction[scanner == name]))
+        name: safe_balanced_accuracy(
+            truth[scanner == name], prediction[scanner == name]
+        )
         for name in sorted(set(scanner))
     }
     slide_scores: dict[str, float] = {}
     for name in sorted(set(slide)):
         mask = slide == name
         if len(set(truth[mask])) > 1:
-            slide_scores[name] = float(
-                balanced_accuracy_score(truth[mask], prediction[mask])
+            slide_scores[name] = safe_balanced_accuracy(
+                truth[mask], prediction[mask]
             )
     return {
         "available": True,

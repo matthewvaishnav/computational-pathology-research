@@ -153,6 +153,22 @@ def test_category_claims_require_labels():
     assert not result["available"]
 
 
+def test_held_out_category_absent_from_training_is_scored_not_fitted():
+    rng = np.random.default_rng(14)
+    features = rng.normal(size=(12, 4))
+    labels = np.asarray(["a"] * 5 + ["b"] * 5 + ["c"] * 2)
+    result = audit.probe(
+        features,
+        labels,
+        np.arange(10),
+        np.arange(10, 12),
+        nonlinear=False,
+        seeds=(8401,),
+    )
+    assert result["classes_absent_from_training"] == ["c"]
+    assert result["runs"][0]["per_class_recall"]["c"] == 0.0
+
+
 def test_decoder_evaluation_requires_verified_swap_artifacts(readiness):
     assert all(not item["layer2_ready"] for item in readiness["datasets"].values())
     assert all(item["layer2_unavailable_reasons"] for item in readiness["datasets"].values())
