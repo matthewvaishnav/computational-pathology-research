@@ -207,10 +207,21 @@ def test_identity_permutation_is_identity_level(dataset_and_split: tuple) -> Non
     features = np.column_stack((dataset.identity_ids, dataset.scanner_ids)).astype(np.float32)
     permuted, manifest = benchmark.identity_permuted_features(features, dataset, split, 29)
     assert manifest["permutation_unit"] == "identity"
-    for identity, donor in manifest["mapping"].items():
+    assert all(isinstance(identity, str) for identity in manifest["mapping"])
+    for identity_text, donor in manifest["mapping"].items():
+        identity = int(identity_text)
         rows = dataset.identity_ids == identity
         assert np.all(permuted[rows, 0] == donor)
         assert np.array_equal(permuted[rows, 1], dataset.scanner_ids[rows])
+
+
+def test_permutation_manifest_is_canonical_json_round_trip(dataset_and_split: tuple) -> None:
+    dataset, split = dataset_and_split
+    features = np.column_stack((dataset.identity_ids, dataset.scanner_ids)).astype(np.float32)
+    _, manifest = benchmark.identity_permuted_features(features, dataset, split, 31)
+    encoded = benchmark.base.canonical_json_bytes(manifest)
+    decoded = benchmark.base.json.loads(encoded)
+    assert benchmark.base.canonical_json_bytes(decoded) == encoded
 
 
 def test_regression_uses_both_calibrated_residual_seeds() -> None:
