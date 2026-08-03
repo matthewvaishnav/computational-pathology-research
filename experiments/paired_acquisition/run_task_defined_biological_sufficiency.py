@@ -155,6 +155,20 @@ def validate_model_family(model_family: str) -> None:
         raise BenchmarkError("Only crossed_target_prototype may be built.")
 
 
+def compare_factorizer_replication(
+    reference_run: Mapping[str, Any], observed_metrics: Mapping[str, float]
+) -> Dict[str, Any]:
+    """Compare a rerun with the operational metrics frozen in diagnostic v2."""
+    frozen_evaluation = reference_run.get("original_operational_evaluation_recomputed")
+    if not isinstance(frozen_evaluation, Mapping) or not isinstance(
+        frozen_evaluation.get("metrics"), Mapping
+    ):
+        raise BenchmarkError("Frozen calibrated run lacks operational replication metrics.")
+    return calibrated.compare_replication(
+        {"evaluation": frozen_evaluation}, observed_metrics
+    )
+
+
 def make_teacher(seed: int, output_dimension: int) -> FrozenTeacher:
     rng = np.random.default_rng(seed)
     dimensions = (8, 16, 16, output_dimension)
@@ -1126,7 +1140,7 @@ def run_experiment(
                     MODEL_FAMILY,
                     model_seed,
                 )
-                replication = calibrated.compare_replication(
+                replication = compare_factorizer_replication(
                     reference_run, evaluation["metrics"]
                 )
                 if not replication["passed"]:
