@@ -73,8 +73,15 @@ def test_no_other_factorizer_family_can_be_built() -> None:
 
 def test_exact_factorizer_replication_is_required() -> None:
     source = inspect.getsource(benchmark.run_experiment)
-    assert "compare_replication" in source
+    assert "compare_factorizer_replication" in source
     assert "Factorizer reference replication failed closed" in source
+
+
+def test_replication_uses_frozen_recomputed_operational_metrics(frozen: dict) -> None:
+    reference = frozen["factorial"]["calibrated"]["payload"]["runs"][0]
+    observed = reference["original_operational_evaluation_recomputed"]["metrics"]
+    comparison = benchmark.compare_factorizer_replication(reference, observed)
+    assert comparison["passed"]
 
 
 def test_biological_task_labels_are_evaluation_only() -> None:
