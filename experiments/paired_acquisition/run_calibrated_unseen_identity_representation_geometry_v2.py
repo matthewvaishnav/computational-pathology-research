@@ -641,7 +641,7 @@ def make_interpretation_flags(
         "linear_solution_preserved": linear_solution_preserved(biological_repeats),
         "linear_scanner_exclusion": bool(
             linear_scanner["balanced_accuracy"]
-            <= linear_scanner["chance_level"] + SCANNER_MARGIN
+            <= scanner["chance_level"] + SCANNER_MARGIN
         ),
         "nonlinear_scanner_exclusion": scanner_flags["nonlinear_scanner_exclusion"],
         "hidden_scanner_leakage_detected": scanner_flags[
