@@ -416,7 +416,10 @@ def identity_permuted_features(
     seed: int,
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
     output = np.empty_like(biological)
-    mapping: Dict[int, int] = {}
+    # JSON object keys are strings.  Store them canonically as strings before
+    # computing the internal result hash so numeric and lexical key ordering
+    # cannot differ across a serialize/reload round trip.
+    mapping: Dict[str, int] = {}
     partitions = (
         split.probe_training_identities,
         split.probe_validation_identities,
@@ -430,7 +433,7 @@ def identity_permuted_features(
         if np.any(donors == identities):
             donors = np.roll(identities, 1)
         for identity, donor in zip(identities, donors):
-            mapping[int(identity)] = int(donor)
+            mapping[str(int(identity))] = int(donor)
             for scanner in range(5):
                 output[lookup[(int(identity), scanner)]] = biological[
                     lookup[(int(donor), scanner)]
