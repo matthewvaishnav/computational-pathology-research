@@ -51,8 +51,6 @@ code or an old analysis protocol.
 ### PCam
 
 - Removed the unsupported cross-paper leaderboard and significance claims.
-- Removed claims about diagnoses saved, lives saved, clinical benefit, clinical
-  readiness, workflow burden, or deployment.
 - Reframed threshold values as retrospective test-set operating-point
   illustrations requiring validation-selected confirmation.
 
