@@ -1,0 +1,27 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  node distance=0.45cm and 0.6cm,
+  box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.4cm, minimum height=0.6cm}
+]
+\node[box, fill=green!8] (bags) {Patch feature bag};
+\node[box, fill=green!12, below left=of bags] (a) {Branch A\\TransMIL-style global correlation};
+\node[box, fill=green!12, below right=of bags] (b) {Branch B\\nnMIL-style gated attention};
+\node[box, fill=blue!10, below=of bags, yshift=-1.0cm] (tokens) {Branch tokens\\$[\,b_A \,;\, b_B\,]$};
+\node[box, fill=blue!14, below=of tokens] (fusion) {Corrected branch-token\\self-attention fusion};
+\node[box, fill=green!8, below=of fusion] (pool) {Hierarchical pooling\\topology branch $\cdot$ pruning};
+\node[box, below=of pool] (head) {Slide-level head (QWK)};
+\draw[->] (bags) -- (a);
+\draw[->] (bags) -- (b);
+\draw[->] (a) -- (tokens);
+\draw[->] (b) -- (tokens);
+\draw[->] (tokens) -- (fusion);
+\draw[->] (fusion) -- (pool);
+\draw[->] (pool) -- (head);
+\end{tikzpicture}
+\caption{TransnnMIL architecture family. The repaired canonical model fuses
+explicit branch tokens by self-attention. Historical fusion and topology
+results are withdrawn; post-repair PANDA runs are preliminary and pending
+matched controlled reruns (see Section~5).}
+\label{fig:transnnmil}
+\end{figure}

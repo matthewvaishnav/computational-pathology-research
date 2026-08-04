@@ -1,0 +1,47 @@
+\section*{Abstract}
+
+Computational-pathology neural systems aggregate information across several
+levels: patches are transformed into representations, patch instances are
+aggregated into whole-slide predictions, and institutional updates are
+aggregated into collaborative models. At each level, nuisance variation,
+shortcut signals, optimization failures, and institutional imbalance can be
+preserved or amplified. This research program develops neural architectures,
+paired-data designs, institutional-weighting protocols, stress tests, and
+provenance controls for auditing and improving those aggregation stages.
+
+At the representation level, we introduce Paired-Acquisition Neural
+Factorization (PA-NF), a paired-data architecture with an explicit
+tissue-oriented biological branch and an explicit acquisition branch trained on
+exact same-region multi-scanner pairs, together with strong linear baselines
+(centroid/QR, PCA, paired-linear), broken-pair controls, and synthetic
+identifiability studies. At the whole-slide level, we introduce TransnnMIL, a
+multibranch neural aggregation architecture family with canonical global
+correlation modeling, an nnMIL-style aggregation path, branch-token fusion,
+hierarchical spatial pooling, a topology branch, adaptive pruning, and
+coordinate-aware graph caching. At the institutional level, we develop
+PathologyFL, a pathology-specific federated-learning research framework, and
+FAIR-WEIGHTS-H, an auditable hybrid institutional-weighting protocol that
+separates training, validation, and monitoring signals.
+
+These components are connected by benchmark infrastructure (PCam patch
+evaluation), whole-slide benchmarks (PANDA), multi-center benchmarks
+(CAMELYON17), and a fail-closed scientific-audit and provenance system that
+binds every active empirical claim to an immutable result artifact.
+
+The evidence maturity differs sharply across components and is stated
+explicitly. Corrected paired-scanner experiments support partial structured
+separation and paired supervision, but not neural feature-space superiority:
+no neural feature-space increment over simple scanner-removal baselines was
+supported under the corrected fixed five-category estimand, B64 increased
+retrieval and scanner recoverability without category gain, and synthetic
+accessibility effects did not transport to corrected real category
+accessibility. TransnnMIL is an implemented architecture whose repaired
+matched-control performance evaluation remains pending. PathologyFL and
+FAIR-WEIGHTS-H support executable pathology-specific federated research and
+auditable institutional weighting without demonstrated clinical or fairness
+superiority.
+
+The shared contribution is a multi-level framework for building and auditing
+accountable neural aggregation in computational pathology, in which
+architecture, corrected empirical evidence, negative results, proposed
+protocols, and pending controlled validation are kept rigorously distinct.

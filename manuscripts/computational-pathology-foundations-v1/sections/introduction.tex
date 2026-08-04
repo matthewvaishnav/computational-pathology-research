@@ -1,0 +1,60 @@
+\section{Introduction}
+
+Computational-pathology neural systems aggregate information across several
+distinct levels. At the first level, image patches are transformed into
+representations, either by a frozen foundation model or by a task-trained
+encoder. At the second level, patch instances are aggregated into whole-slide
+predictions through multiple-instance learning. At the third level,
+institutional model updates are aggregated into collaborative models through
+federated learning. These levels are usually studied as separate engineering
+problems, yet the artifacts that threaten them are shared: scanner and stain
+variation, acquisition workflow differences, site and center identity, label
+noise, optimization failures, and institutional imbalance can all be preserved,
+shortcut-exploited, or amplified as information passes from one aggregation
+stage to the next.
+
+This research program treats those aggregation stages as a connected system and
+develops the neural architectures, paired-data designs,
+institutional-weighting protocols, stress tests, and provenance controls needed
+to build and audit them. The program spans:
+
+\begin{itemize}
+\item \textbf{Representation formation.} Patch and foundation-model
+  representations and the scanner, stain, acquisition, site, region, and
+  dataset artifacts they encode, studied through exact same-region paired
+  scanner designs, Paired-Acquisition Neural Factorization (PA-NF), SCORPION
+  and multi-scanner canine SCC, scanner and center subspaces, strong linear
+  baselines, broken-pair controls, and synthetic identifiability studies.
+\item \textbf{Whole-slide aggregation.} TransnnMIL, a multibranch neural
+  aggregation architecture family with canonical global correlation modeling,
+  an nnMIL-style aggregation path, branch-token fusion, hierarchical spatial
+  pooling, a topology branch, adaptive pruning, and coordinate-aware graph
+  caching, evaluated on PANDA feature bags.
+\item \textbf{Institutional aggregation.} PathologyFL, a pathology-specific
+  federated-learning research framework, and FAIR-WEIGHTS-H, an auditable
+  hybrid institutional-weighting protocol, exercised through dominant-site
+  stress tests, corruption and label-noise stress, ordinal-shift detection,
+  client heterogeneity and dropout, communication accounting, privacy probes,
+  and CAMELYON17 center studies.
+\item \textbf{Benchmark and provenance infrastructure.} PCam patch-level
+  evaluation, PANDA and CAMELYON17 whole-slide and center evaluation, and a
+  fail-closed scientific-audit system that binds every active empirical claim
+  to an immutable result artifact and every architectural claim to source and
+  tests.
+\end{itemize}
+
+A central methodological position of the program is that \emph{architecture},
+\emph{corrected empirical evidence}, \emph{negative results}, \emph{proposed
+protocols}, and \emph{pending controlled validation} must be kept rigorously
+distinct. An architecture can be an authored contribution, implemented and
+tested, even when its superiority over matched baselines has not been
+established or has been withdrawn and awaits repaired evaluation. Simple linear
+methods can outperform neural methods on bounded endpoints, and a negative
+result about neural feature-space superiority does not erase the architectural
+contribution of an explicit, inspectable, and swappable acquisition branch.
+
+This manuscript is the first program-level presentation of the complete
+research program. It is deliberately not a Paired-Acquisition Neural
+Factorization paper: PA-NF is one of several foundational contributions, and
+earlier manuscript drafts that treated it as the whole program are rejected
+here in favor of an accurate, three-level, evidence-maturity-aware structure.

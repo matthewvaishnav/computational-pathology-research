@@ -1,0 +1,57 @@
+\section{Research-program overview}
+
+The program is organized as three primary neural aggregation levels plus the
+benchmark and provenance infrastructure that connects them.
+
+\begin{enumerate}
+\item \textbf{Level I --- Representation formation.} How patch and
+  foundation-model representations encode tissue, scanner, stain, acquisition
+  workflow, site or center, region identity, and dataset artifacts. Principal
+  research lines: PCam patch foundation; paired-scanner and paired-acquisition
+  research; Paired-Acquisition Neural Factorization; SCORPION; multi-scanner
+  canine SCC; scanner and center subspaces; centroid/QR, PCA, paired-linear,
+  adversarial, and broken-pair controls; and synthetic identifiability and
+  capacity-allocation studies.
+\item \textbf{Level II --- Whole-slide aggregation.} How patch representations
+  are aggregated into slide predictions. Principal research line: TransnnMIL and
+  all of its implemented architectural families (canonical dual-branch,
+  three-branch v2, branch-token fusion, hierarchical pooling, topology branch,
+  adaptive pruning, graph caching).
+\item \textbf{Level III --- Institutional aggregation.} How multi-institution
+  updates, validation priorities, contribution signals, and safety constraints
+  are aggregated. Principal research lines: PathologyFL; FAIR-WEIGHTS-H;
+  institutional weighting; dominant-site stress testing; site imbalance;
+  ordinal-grading shift; corruption and label-noise stress; detector behavior;
+  client heterogeneity, dropout, and stragglers; communication accounting;
+  secure aggregation; differential-privacy support; Byzantine or anomaly
+  monitoring; and CAMELYON17 held-out-center and center-weighting studies.
+\end{enumerate}
+
+The three levels are connected by a shared evaluation and accountability
+framework, and by shared frozen feature inputs (DINOv2, Phikon
+\cite{filiot2023phikon}, ImageNet ResNet): scanner leakage, center leakage, descriptive task accessibility,
+region retrieval, whole-slide aggregation, institutional influence, fairness
+constraints, robustness, provenance, and claim validity are audited with the same
+fail-closed discipline at every level. PCam provides the patch-level benchmark
+foundation; PANDA provides the whole-slide benchmark; CAMELYON17 provides the
+multi-center benchmark; and the provenance system binds every active claim to an
+immutable artifact.
+
+The unifying thesis is that computational-pathology neural systems aggregate
+information at several levels --- patches into representations, patch instances
+into whole-slide predictions, and institutional updates into collaborative
+models --- and at each level nuisance variation, shortcut signals, optimization
+failures, and institutional imbalance can be preserved or amplified. This program
+develops the neural architectures, paired-data designs,
+institutional-weighting protocols, stress tests, and provenance controls for
+auditing and improving those aggregation stages.
+
+\input{figures/figure1_program_architecture}
+\input{figures/figure10_publication_portfolio}
+
+\noindent\textbf{Evidence-maturity discipline.} Throughout, the manuscript keeps
+four distinct categories separate: \emph{implemented architecture} (binds to
+source and tests), \emph{corrected empirical evidence} (binds to immutable
+result artifacts), \emph{negative or mixed results} (reported directly), and
+\emph{pending controlled validation} (labeled pending). No component is implied
+to have the same evidence maturity as any other.

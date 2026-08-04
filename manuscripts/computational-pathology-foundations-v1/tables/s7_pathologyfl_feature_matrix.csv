@@ -1,0 +1,11 @@
+feature,status,notes
+FedAvg,implemented+tested,weighted aggregator
+FedProx,implemented+tested,non-IID proximal
+FedAdam,implemented+tested,adaptive
+Weighted,implemented+tested,explicit FAIR-WEIGHTS-H weights
+Byzantine-robust,implemented+tested,Krum/trimmed-mean/median
+Secure,optional-lib gated,TenSEAL
+DP-SGD,optional-lib gated,opacus
+Monitoring,implemented+tested,Prometheus/TensorBoard
+Async+fault-tolerance,implemented+tested,dropout/stragglers
+E2E tests,dangling imports,not runnable as written

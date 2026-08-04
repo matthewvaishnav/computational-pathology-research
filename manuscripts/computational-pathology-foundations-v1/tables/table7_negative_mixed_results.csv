@@ -1,0 +1,6 @@
+result,outcome,implication
+No neural feature-space increment,negative,B64/B32 do not beat simple baselines on corrected category
+Synthetic transport failed,negative,width effect does not transport to corrected category accessibility
+Adversarial center removal,negative,did not reduce center leakage
+PCam CV paused,planned,projected tables not observed
+Threshold optimization withdrawn,withdrawn,retrospective test-set thresholds not deployment evidence

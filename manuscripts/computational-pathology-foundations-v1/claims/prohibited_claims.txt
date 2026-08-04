@@ -1,0 +1,46 @@
+# Prohibited claims in the Accountable Neural Aggregation manuscript
+#
+# These statements must NOT appear in any active result table, abstract, or
+# main-text result sentence unless current corrected evidence directly supports
+# them. Historical defective results may be discussed only as motivation for
+# remediation or preserved historical context — never as active evidence.
+
+## Performance and superiority claims (prohibited unless corrected evidence)
+- "TransnnMIL outperforms TransMIL."
+- "TransnnMIL outperforms nnMIL."
+- "TransnnMIL improves PANDA grading."
+- "PathologyFL improves clinical outcomes."
+- "FAIR-WEIGHTS-H proves fairness."
+- "FAIR-WEIGHTS-H is better than equal or volume weighting."
+- "PA-NF is the best scanner-removal method."
+- "PA-NF learns scanner-free biology."
+- Any method is "clinically ready."
+- Any architecture is "state of the art."
+- Any method is "the first ever."
+
+## Scope conflation prohibitions
+- Treating Paired-Acquisition Neural Factorization as the only research line.
+- Describing all centralized frozen-feature experiments as complete federated-learning validation.
+- Describing smoke-tested infrastructure as clinical deployment.
+- Describing centralized CAMELYON17 source-weighting as full federated learning.
+
+## Evidence-status prohibitions
+- Presenting projected TransnnMIL AUC or QWK numbers (from design documents) as observed results.
+- Reusing historical TransnnMIL superiority numbers as repaired-model evidence.
+- Listing withdrawn or invalidated artifacts in active result tables.
+- Claiming architecture novelty implies empirical superiority.
+- Equating the "FAIR" name in FAIR-WEIGHTS-H with proven fairness.
+- Claiming feature-space evidence establishes pixel-space scanner translation.
+- Claiming feature-space category preservation establishes clinical validity.
+- Claiming synthetic accessibility effects transport to real pathology features without a corrected category gain.
+- Claiming validated scanner swapping (Layer 2) without verified swap metadata.
+- Claiming categorical superiority over all prior work without a current literature review.
+
+## Absolute-priority prohibitions
+- Any "first to introduce" or "state of the art" wording before a current
+  external literature review verifies it.
+
+## Interpretability prohibitions
+- "Perfect disentanglement" or "complete independence" for PA-NF branches.
+- "Scanner-free biology" for the PA-NF biological branch.
+- "Eliminates scanner bias" as a solved problem.

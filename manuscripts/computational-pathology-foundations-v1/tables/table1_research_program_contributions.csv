@@ -1,0 +1,14 @@
+research_line,level,contribution_type,primary_contribution,implementation_status,evidence_status
+PCam patch benchmark,Foundation,engineering,evaluation+benchmark infrastructure,implemented,active patch benchmark
+Paired-scanner design,Level I,paired-data design,exact same-region paired scans + controls,implemented,active corrected
+PA-NF,Level I,architecture,biological/acquisition branch factorization,implemented,corrected partial separation; negative increment
+SCORPION,Level I,dataset,aligned multi-scanner H&E,implemented,active corrected
+Canine SCC,Level I,dataset,fixed five-category estimand,implemented,active corrected
+Scanner/center subspaces,Level I,baseline,centroid/QR + PCA + paired-linear + projection,implemented,active corrected
+Synthetic mechanism,Level I,theory,identifiability + capacity allocation,implemented,synthetic evidence
+TransnnMIL,Level II,architecture,multibranch whole-slide aggregation,implemented,pending controlled validation
+PathologyFL,Level III,infrastructure,federated pathology framework,implemented,execution validated
+FAIR-WEIGHTS-H,Level III,protocol,auditable institutional weighting,partial,no superiority
+PANDA studies,Level II/III,benchmark,ordinal grading + institutional stress,implemented,active simulated-site
+CAMELYON17 studies,Level III,benchmark,center weighting + leakage,implemented,active proxies
+Provenance/audit,cross-cutting,methodology,fail-closed claim validation,implemented,validated by tests

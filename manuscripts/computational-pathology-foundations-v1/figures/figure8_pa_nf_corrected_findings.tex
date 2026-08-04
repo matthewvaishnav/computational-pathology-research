@@ -1,0 +1,25 @@
+\begin{figure}[!htbp]
+\centering
+\small
+\caption{Corrected PA-NF findings from the fixed-estimand adjudication v2
+(consuming the exactly recovered B32/B64 artifacts). B64$-$B32 contrasts are
+means over five folds; the category contrast was positive in one of five
+folds.}
+\label{fig:panf_findings}
+\begin{tabular}{lccc}
+\toprule
+B64$-$B32 contrast & mean & positive folds & decision \\
+\midrule
+Corrected category BA & $-0.008$ & 1 of 5 & no category gain \\
+Scanner BA & $+0.049$ & 5 of 5 & recoverability increases \\
+Worst-pair retrieval & $+0.050$ & 5 of 5 & retrieval improves \\
+Overall retrieval & $+0.051$ & 5 of 5 & retrieval improves \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+Corrected category balanced accuracy (fold 0, seed-averaged): original frozen
+0.387; centroid/QR 0.386; paired linear 0.390; B32 0.345; B64 0.326.
+No neural feature-space increment over every simple scanner-removal baseline
+was supported; simple baselines are strong.
+\end{figure}
