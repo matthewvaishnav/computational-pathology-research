@@ -1,0 +1,65 @@
+\section{Discussion}
+
+\subsection{Aggregation choices interact across levels}
+
+Representation formation, whole-slide aggregation, and institutional aggregation
+are not independent engineering problems. A scanner shortcut encoded in patch
+representations can be amplified by a whole-slide attention model and then
+propagated into federated updates. Conversely, an institutional-weighting
+constraint can change which local models contribute and therefore which
+representation artifacts dominate the aggregate. The program treats these
+interactions as the object of study.
+
+\subsection{Architecture novelty and superiority are different}
+
+An architecture can be an authored, implemented, and tested contribution even
+when its superiority over matched baselines is unproven or has been withdrawn
+pending repair. TransnnMIL is an implemented multibranch architecture whose
+corrected matched-control evaluation is pending; PA-NF is an implemented paired
+factorization whose corrected empirical value is a negative or mixed result on
+bounded endpoints. Neither conclusion erases the architectural contribution.
+
+\subsection{Simple methods can outperform neural methods on bounded endpoints}
+
+On corrected bounded endpoints, simple scanner-removal baselines such as
+centroid/QR and paired linear transforms are strong: they can match or exceed
+neural category and retrieval levels while the neural biological branch can reach
+lower scanner recoverability in some folds. This is a positive methodological
+result: bounded evaluation instruments must include strong simple baselines, and
+a neural method's value may lie in structure (inspectable, bottleneckable,
+swappable branches) rather than in raw endpoint superiority.
+
+\subsection{Negative results belong in the main text}
+
+The corrected fixed-estimand adjudication found no neural feature-space
+increment; synthetic accessibility did not transport; adversarial center-removal
+did not reduce center leakage. These negative results are reported directly
+because they bound the program's claims and motivate the required next
+experiments (matched TransnnMIL reruns, prospective FAIR-WEIGHTS-H validation).
+
+\subsection{Explicit branches can remain scientifically useful}
+
+An explicit acquisition or institution branch provides structure --- an
+inspectable representation that can be bottlenecked, constrained, and, with
+verified swap metadata, swapped. Structural difference from a projection
+baseline is real even when empirical superiority is absent, but structural
+difference is not by itself empirical superiority.
+
+\subsection{Shortcut propagation into MIL and FL}
+
+Scanner and center shortcuts can propagate from frozen features into MIL and
+federated models. The cross-level accountability framework makes this checkable
+at every stage, and the provenance system makes the checks reproducible.
+
+\subsection{What requires external validation}
+
+Repaired matched TransnnMIL reruns, prospective and multi-center FAIR-WEIGHTS-H
+validation, real multi-center PathologyFL deployment, and validated Layer-2
+scanner swapping all require external evidence beyond the current corrected
+artifacts.
+
+\subsection{Which components are ready for focused papers}
+
+The publication portfolio identifies the flagship foundations manuscript and
+focused papers for PA-NF, TransnnMIL, PathologyFL/FAIR-WEIGHTS-H, and the
+scientific-audit system, with each paper's evidence maturity stated explicitly.

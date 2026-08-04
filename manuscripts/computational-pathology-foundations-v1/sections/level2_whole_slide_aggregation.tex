@@ -1,0 +1,85 @@
+\section{Level II: TransnnMIL whole-slide aggregation}
+\input{figures/figure3_transnnmil_family}
+
+Whole-slide prediction requires aggregating tens of thousands of patch
+representations into a single slide-level decision. This is the second primary
+aggregation level. The program's contribution here is TransnnMIL, a multibranch
+whole-slide neural aggregation architecture family. The architecture is an
+authored and implemented contribution; its corrected matched-control superiority
+evaluation is pending. Historical performance numbers produced by a defective
+execution path are withdrawn and are never used as repaired-model evidence.
+
+\subsection{Verified architectural families}
+
+The implementation lives in \texttt{src/models/transnnmil/} and is described
+here from the code, not from stale marketing prose. The verified families are:
+
+\begin{itemize}
+\item \textbf{Canonical TransnnMIL} (\texttt{transnnmil.py}): a dual-branch
+  model with a TransMIL-style global-correlation branch
+  (\texttt{src/models/mil/transmil.py}, after TransMIL \cite{shao2021transmil})
+  and an nnMIL-style gated-attention
+  branch (\texttt{src/models/mil/nnmil.py}, after attention-based
+  multiple-instance learning \cite{ilse2018attention}). The repaired model fuses the
+  branches by \emph{self-attention over explicit branch tokens}: the two
+  projected branch representations are stacked and attended
+  (\texttt{branch\_token\_fusion.py}), replacing the withdrawn one-query
+  one-key cross-attention path that was query-invariant. Explicit branch
+  representations are implemented and tested.
+\item \textbf{TransnnMILv2} (\texttt{transnnmil\_v2.py}): a three-branch
+  variant (TransMIL + hierarchical pooling + topology), a two-branch variant
+  with AB/AC/BC ablations, and explicit branch-token fusion. No empirical
+  results exist for these variants; numbers in design documentation are
+  explicitly projected, not observed.
+\item \textbf{Fusion controls} (\texttt{branch\_token\_fusion.py},
+  \texttt{transnnmil\_branch\_token.py}): learned branch-attention, concat, and
+  gate fusion operators, aligned to the repaired canonical branches. Implemented
+  and tested, but \emph{planned controls} with no recorded results yet.
+\item \textbf{Hierarchical spatial pooling} (\texttt{hierarchical\_pooling.py}):
+  learnable cluster centers, region attention/mean/max pooling, and region
+  transformers. Implemented and tested; a synthetic-MIL ablation exists, and a
+  real-data benchmark is planned. Enabled in the canonical model only when
+  requested (default off); PANDA runs did not enable it.
+\item \textbf{Topology or graph branch} (\texttt{topology\_branch.py}): k-NN
+  graph construction and GNN layers (GATv2, GraphSAGE, GIN). Implemented and
+  tested. \emph{Historical topology results are withdrawn}: the old forward pass
+  created an unregistered random projection. The repaired model registers the
+  projection; a post-repair rerun does not yet exist.
+\item \textbf{Adaptive pruning} (\texttt{adaptive\_pruning.py}): importance
+  scoring and adaptive pruning. Implemented and tested, but disabled in
+  TransnnMILv2 pending a proper batched implementation; no results.
+\item \textbf{Graph caching and coordinate-aware processing}
+  (\texttt{graph\_cache.py}): HDF5 k-NN graph precompute and cache. Implemented
+  and tested; no training result.
+\end{itemize}
+
+\subsection{PANDA training infrastructure and feature bags}
+
+The PANDA training infrastructure uses a verified Phikon 768-dimensional feature
+bag manifest (10{,}611 readable slide feature files; 8{,}488 train and 2{,}123
+validation rows) with \texttt{train\_panda\_transnnmil\_baseline.py}. Stability
+grids across learning rates and seeds show best validation QWK in the
+0.812--0.826 range, and ablation runs exist. These numbers are
+\emph{preliminary and pending}: they are not yet matched controlled comparisons
+against TransMIL, nnMIL, AttentionMIL, concat, gate, and learned branch-attention
+controls under identical splits, seeds, tuning budgets, and compute.
+
+\subsection{Evidence status}
+
+\begin{itemize}
+\item \textbf{Implemented and tested architecture:} all families above have
+  unit and integration tests.
+\item \textbf{Active empirical evidence:} PANDA stability and ablation runs on
+  the repaired canonical model are \emph{preliminary}, not superiority evidence.
+\item \textbf{Withdrawn evidence:} historical fusion and topology results,
+  including historical QWK values, are withdrawn by the authoritative claim
+  boundary. They remain records of the old defective execution path.
+\item \textbf{Pending:} repaired matched controlled reruns (the ablation plan
+  in \texttt{docs/results/panda-transnnmil-ablation-plan.md}) are required
+  before any superiority claim.
+\end{itemize}
+
+\noindent The architecture remains a distinct authored contribution and an
+active research line even though its corrected superiority evaluation is
+pending. Projected AUC values in design documents are never treated as observed
+results, and historical QWK values are never reused as repaired-model evidence.

@@ -1,0 +1,106 @@
+\section{Level I: Paired-acquisition representation formation}
+\input{figures/figure2_pa_nf_architecture}
+\input{figures/figure8_pa_nf_corrected_findings}
+\input{figures/figure9_b32_b64_tradeoff}
+
+The first aggregation level is representation formation: how patch and
+foundation-model representations encode tissue, scanner, stain, acquisition
+workflow, site or center, region identity, and dataset artifacts. The program's
+central design at this level is Paired-Acquisition Neural Factorization
+(PA-NF), which uses \emph{exact same-region paired multi-scanner scans} to train
+an explicit tissue-oriented biological branch and an explicit acquisition
+branch, together with a decoder and paired cross-reconstruction and consistency
+objectives. The program also develops the strong simple baselines, broken-pair
+controls, synthetic identifiability studies, and corrected fixed-estimand
+evaluation that determine what PA-NF does and does not establish.
+
+\subsection{Paired-acquisition design}
+
+PA-NF is trained on exact same-region pairs: the same biological region imaged
+under multiple scanners. Training pairs a source region under one scanner with
+the same region under another scanner. The biological branch is encouraged to be
+consistent across scanner views of the same region; the acquisition branch is
+driven by scanner identity. A decoder reconstructs the target view from the
+source biological representation and the target acquisition representation
+(crossed reconstruction). Biological variance floors and prototype
+regularization shape the branch geometry. The factorizer reads paired region and
+scanner metadata only; category or biological labels never enter factorizer
+optimization.
+
+\subsection{Datasets}
+
+\begin{itemize}
+\item \textbf{SCORPION}: 48 original H\&E slides, 480 aligned regions, five
+  scanners, and 2{,}400 image patches, under original-slide-blocked folds.
+  SCORPION has no validated biological category labels, so only scanner,
+  retrieval, and geometric endpoints are available.
+\item \textbf{Multi-scanner canine SCC}: a multi-scanner external dataset with
+  seven descriptive tissue categories, evaluated under the corrected fixed
+  five-category estimand (Dermis, Epidermis, Inflamm/Necrosis, SCC, Subcutis;
+  Bone and Cartilage excluded) with biological-sample-blocked folds, fit-only
+  probe standardization, and same-region and same-sample nearest-neighbour
+  exclusion.
+\end{itemize}
+
+\subsection{Corrected empirical evidence}
+
+The corrected July 26 forward-valid evidence release supports \emph{partial
+structured separation under the tested conditions}, not pure biological factors,
+complete independence, or clinical utility. Corrected paired-scanner experiments
+demonstrate paired supervision relative to broken-pair controls and support
+retrieval and scanner-recoverability findings.
+
+The versioned fixed-estimand adjudication (v2, consuming the exact recovered
+neural artifacts) established the current status
+\texttt{complete\_no\_neural\_feature\_space\_increment\_supported}. Under the
+corrected five-category estimand, on the recovered B32/B64 cells:
+
+\begin{itemize}
+\item B64 did \emph{not} improve corrected five-category canine category
+  balanced accuracy (B64 minus B32 mean $-0.008$, one positive fold).
+\item B64 \emph{did} increase scanner recoverability (mean $+0.049$, five of
+  five folds) and improve worst-pair and overall region retrieval (mean
+  $+0.050$ and $+0.051$, five of five folds).
+\item No neural feature-space increment over every simple scanner-removal
+  baseline was supported: neither B32 nor B64 achieved a category gain of 0.02
+  over all simple baselines in four of five folds, and both violated the
+  worst-pair retrieval margin.
+\item Simple baselines (centroid/QR, paired linear) are strong: they reach
+  category and retrieval levels the neural branches do not, while the neural
+  biological branch can reach lower scanner recoverability in some folds.
+  Neither a neural increment nor a strict simple-baseline Pareto dominance was
+  established.
+\item Synthetic accessibility effects did not transport: the corrected category
+  gain required for transport was not present.
+\end{itemize}
+
+\subsection{Simple baselines and controls}
+
+The program treats simple baselines seriously. Centroid/QR scanner-subspace
+projection, PCA scanner-component removal, and paired linear scanner transforms
+are all recomputed from the same frozen arrays under the same candidate pool and
+probe family. Oldstyle centroid/QR is the strongest raw scanner-removal baseline
+(original frozen-feature scanner probe $\approx 0.85$ reduced to
+$\approx 0.20$ at chance in corrected audits). Broken-pair controls preserve
+scanner counts and remain within the training fold while deranging region
+correspondences, isolating the contribution of true pairs.
+
+\subsection{Why the architecture remains distinct despite the absence of superiority}
+
+The negative neural-increment result does not erase the architectural
+contribution. PA-NF produces an explicit, inspectable, and decoder-swappable
+acquisition branch and a biological branch whose scanner recoverability can be
+reduced and whose structure can be bottlenecked. Centroid/QR is strong at blind
+removal but provides no structural decomposition. The architecture is a distinct
+structured method whose empirical value on corrected bounded endpoints is a
+negative or mixed result --- and that result is reported directly in the main
+text rather than hidden.
+
+\subsection{Layer-2 boundary}
+
+Validated scanner swapping through the decoder (Layer 2) is \emph{not}
+established: verified source-region, target-scanner, and swap-assignment metadata
+are absent. Swap assignments are never inferred from filenames, row order, or
+scanner labels. The missing-metadata schema is a future data-remediation
+specification only. Pixel-space evaluation and clinical interpretation are
+prohibited by evidence scope.

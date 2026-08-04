@@ -1,0 +1,39 @@
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  node distance=0.55cm and 0.6cm,
+  box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.2cm, minimum height=0.7cm},
+  lev/.style={font=\scriptsize\bfseries, align=center}
+]
+\node[lev] (foundation) at (0,2.6) {Benchmark foundation\\PCam patches $\to$ PCam eval};
+\node[box, fill=blue!8] (features) at (0,1.6) {Frozen patch/foundation features\\DINOv2 $\cdot$ Phikon $\cdot$ ResNet};
+\node[lev] (l1) at (-3.4,0.8) {Level I\\Representation};
+\node[box, fill=blue!12] (scan) at (-3.4,0.0) {Scanner \& center auditing};
+\node[box, fill=blue!12] (panf) at (-3.4,-1.0) {PA-NF\\bio branch $\cdot$ acq branch\\decoder $\cdot$ crossed recon};
+\node[box, fill=blue!12] (base) at (-3.4,-2.0) {centroid/QR $\cdot$ PCA\\paired-linear $\cdot$ broken-pair};
+\node[lev] (l2) at (0,-2.6) {Level II\\Whole-slide};
+\node[box, fill=green!8] (bags) at (0,-3.6) {Whole-slide feature bags};
+\node[box, fill=green!12] (mil) at (0,-4.6) {TransnnMIL\\TransMIL + nnMIL branches\\branch-token fusion $\cdot$ topology};
+\node[lev] (l3) at (3.4,0.8) {Level III\\Institutional};
+\node[box, fill=orange!8] (local) at (3.4,0.0) {Local institutional models};
+\node[box, fill=orange!12] (fl) at (3.4,-1.0) {PathologyFL\\coordinator $\cdot$ client $\cdot$ aggregator};
+\node[box, fill=orange!12] (fw) at (3.4,-2.0) {FAIR-WEIGHTS-H\\integrity $\cdot$ uncertainty\\useful-uniqueness};
+\node[lev] (audit) at (0,-6.2) {Cross-cutting: PCam/PANDA/CAMELYON17 benchmarks + provenance + claim validation};
+\draw[->] (foundation) -- (features);
+\draw[->] (features) -- (scan);
+\draw[->] (features) -- (bags);
+\draw[->] (features) -- (local);
+\draw[->] (scan) -- (panf);
+\draw[->] (panf) -- (base);
+\draw[->] (bags) -- (mil);
+\draw[->] (local) -- (fl);
+\draw[->] (fl) -- (fw);
+\draw[->] (mil) -- (audit);
+\draw[->] (fw) -- (audit);
+\end{tikzpicture}
+\caption{Three-level research-program architecture: representation formation
+(Level I), whole-slide aggregation (Level II), and institutional aggregation
+(Level III), connected by benchmark and provenance infrastructure. All
+component boxes are labeled by their evidence maturity in Tables~2--4.}
+\label{fig:program}
+\end{figure}

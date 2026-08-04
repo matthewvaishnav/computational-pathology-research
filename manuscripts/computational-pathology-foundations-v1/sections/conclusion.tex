@@ -1,0 +1,30 @@
+\section{Conclusion}
+
+This research program develops accountable neural aggregation in computational
+pathology across three connected levels: representations (how patches and
+foundation models encode tissue, scanner, acquisition, site, region, and dataset
+artifacts), whole slides (how patch instances are aggregated into slide
+predictions), and institutions (how institutional updates are aggregated into
+collaborative models). The program's contributions span neural architectures
+(Paired-Acquisition Neural Factorization and TransnnMIL), paired-data designs
+(exact same-region scanner pairs and their controls), institutional-weighting
+protocols (PathologyFL and FAIR-WEIGHTS-H), stress tests and benchmarks (PCam,
+PANDA, CAMELYON17), and a fail-closed provenance and scientific-audit system
+that binds every active claim to an immutable artifact.
+
+The evidence maturity is heterogeneous and is stated explicitly. Corrected
+paired-scanner evidence supports partial structured separation and paired
+supervision but not neural feature-space superiority; the corrected
+fixed-estimand adjudication found no neural feature-space increment, and
+synthetic accessibility effects did not transport. TransnnMIL is an implemented
+architecture whose corrected matched-control performance evaluation remains
+pending. PathologyFL and FAIR-WEIGHTS-H provide executable, auditable federated
+research and institutional weighting without demonstrated clinical or fairness
+superiority.
+
+The shared contribution is a multi-level framework for building and auditing
+accountable neural aggregation in computational pathology --- one in which
+architecture, corrected empirical evidence, negative results, proposed
+protocols, and pending controlled validation are kept rigorously distinct, and
+in which the aggregation choices at each level are treated as a connected system
+rather than separate engineering problems.

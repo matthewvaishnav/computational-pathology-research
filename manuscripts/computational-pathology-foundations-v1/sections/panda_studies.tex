@@ -1,0 +1,52 @@
+\section{PANDA institutional and ordinal studies}
+
+PANDA (Prostate cANcer graDe Assessment) \cite{bulten2022panda} provides the
+whole-slide ordinal
+grading benchmark (ISUP 0--5, quadratic-weighted kappa as the primary metric)
+and the substrate for institutional-aggregation stress experiments. The
+program's PANDA studies are organized into feature-bag and slide aggregation,
+ordinal grading, institutional weighting, dominant-site stress, and corruption
+and label-shift experiments.
+
+\subsection{Feature bags and slide aggregation}
+
+A verified Phikon feature-bag manifest covers 10{,}611 readable slide feature
+files (3 unreadable files dropped; 8{,}488 train and 2{,}123 validation rows).
+Slide-level baselines are mean-pooled Phikon + MLP (QWK 0.7274) and gated
+AttentionMIL (QWK 0.8100). The repaired TransnnMIL canonical model reaches
+best-validation QWK 0.8155 (tuned seed), with repeated seeds 0.8225 and 0.8086,
+and an 18-run stability grid over learning rates and seeds spanning
+$\approx$0.812--0.826. \emph{These are preliminary, not matched-controlled
+superiority results}; historical fusion and topology values are withdrawn.
+
+\subsection{Institutional weighting}
+
+FAIR-WEIGHTS-H, cross-site contribution blends, and FedAvg are compared on
+PANDA-derived simulated federations. FedAvg is strongest in the clean regime;
+contribution-aware blends are best at 25\% dominant-site label noise; results
+are mixed at higher noise. These are simulated-site, cached-feature experiments
+over synthetic institutional partitions, not real hospital federations.
+
+\subsection{Dominant-site stress, ordinal shift, and detector behavior}
+
+Simulated dominant-site label-flip corruption (0--45\%) over five simulated
+sites tests when sample-volume dominance becomes unsafe under controlled
+corruption. Ordinal-harm-aware analysis examines grading-shift failures. A
+tuned dominance detector reduces clean false-switch from 33.3\% to 6.7\% and
+shows significant global-QWK gains at 25\%/35\% noise over 15 seeds; detector
+transfer from label-noise calibration to ordinal threshold shift and detector
+ablation are documented.
+
+\subsection{Centralized versus federated}
+
+A centralized-vs-federated comparison on the 1{,}000- and 3{,}000-slide Phikon
+caches shows centralized $>$ FedAvg $>$ local-only ordering (e.g., global QWK
+0.6949 vs 0.6659 vs 0.6075 at 3{,}000 slides). This is simulated-site,
+cached-feature evidence only.
+
+\subsection{Patient-mapping and evaluation limitations}
+
+PANDA provides slide-level ISUP grades. The caches are mean-pooled slide
+vectors; sites are synthetic splits over cached feature subsets and do not
+correspond to a real hospital federation. No patient-level endpoint, real
+hospital mapping, or clinical validity is claimed.

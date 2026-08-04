@@ -1,0 +1,5 @@
+contrast,metric,mean_fold_difference,positive_folds,decision
+B64-B32,corrected_category_BA,-0.008,1 of 5,no category gain
+B64-B32,scanner_BA,0.049,5 of 5,recoverability increases
+B64-B32,worst_pair_retrieval,0.050,5 of 5,retrieval improves
+B64-B32,overall_retrieval,0.051,5 of 5,retrieval improves

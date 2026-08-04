@@ -1,0 +1,6 @@
+component,validation_status,evidence,required_before_superiority
+Canonical TransnnMIL,preliminary,QWK 0.815-0.826 stability grid,matched controlled reruns
+Branch-token fusion,no measured contribution,unit tests,fusion controls comparison
+Topology branch,historical withdrawn,registered projection,repaired rerun
+Hierarchical pooling,synthetic-MIL only,ablation,real-data benchmark
+Adaptive pruning,disabled,unit tests,proper implementation

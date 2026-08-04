@@ -1,0 +1,49 @@
+\section{CAMELYON17 center studies}
+
+CAMELYON17 \cite{bandi2018camelyon17} provides a multi-center whole-slide
+benchmark, structured here with the WILDS protocol \cite{koh2021wilds} (five
+centers, 455{,}954 labeled patches) and is used to study source-center weighting, center leakage,
+and held-out-center generalization. The program's CAMELYON17 work is organized as
+centralized feature-level proxies and representation-mechanism diagnostics, and
+is explicitly \emph{not} full federated-learning validation.
+
+\subsection{Source-center weighting}
+
+Three aggregation-weighting policies are compared on held-out-center accuracy:
+sample-proportional (FedAvg-style) patch weighting, equal-client weighting, and
+downweighting the dominant center. On frozen ImageNet ResNet18 features,
+equal-client weighting reaches 0.9132 held-out accuracy versus 0.8312 for
+sample-proportional (+8.20~pp); on supervised ResNet18 features, 0.9318 versus
+0.9052 (+2.66~pp). The WILDS structure uses source centers \{0,3,4\} for
+training and in-distribution validation, center 1 as the out-of-distribution
+validation center, and center 2 as the held-out test center. Detector-switch
+decisions use only in-distribution validation diagnostics, never the held-out
+test center.
+
+\subsection{Center subspace and center leakage}
+
+Adversarial and subtractive nuisance-removal variants (v3--v5) did not
+materially reduce post-hoc center leakage (a negative result). Supervised linear
+center-subspace projection (v6c/v7) reduces center decodability (center accuracy
+0.895 $\rightarrow$ 0.764 for five centers at effective rank four) while tumor
+AUC remains $\approx$0.990. These results are active only as
+representation-mechanism diagnostics.
+
+\subsection{Pillar studies}
+
+The four-pillars framework organizes federated-learning failure modes:
+non-IID site shift (strongest evidence), communication overhead (a bounded
+feature/head resolution for the communication-accounting pillar), residual
+privacy risk (a coefficient-noise robustness probe), and implementation and
+infrastructure barriers (an infrastructure-friction simulation with client
+speed, dropout, and straggler accounting).
+
+\subsection{Centralized proxies versus full federated learning}
+
+The CAMELYON17 weighted logistic-regression studies are centralized
+frozen-feature proxies for source-center influence on one held-out center.
+They do not validate a complete federated-learning algorithm, and one held-out
+center does not establish a general law across hospitals. The planned
+Track~A validation (centralized baseline, FL baselines, detector transfer) is
+planned, not completed. FAIR-WEIGHTS-H has no real CAMELYON17 validation; the
+synthetic CAMELYON17 smoke is explicitly historical and superseded.
