@@ -1,6 +1,6 @@
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[
+\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
   node distance=0.45cm and 0.6cm,
   box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.4cm, minimum height=0.6cm}
 ]
@@ -18,7 +18,7 @@
 \draw[->] (tokens) -- (fusion);
 \draw[->] (fusion) -- (pool);
 \draw[->] (pool) -- (head);
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{TransnnMIL architecture family. The repaired canonical model fuses
 explicit branch tokens by self-attention. Historical fusion and topology
 results are withdrawn; post-repair PANDA runs are preliminary and pending

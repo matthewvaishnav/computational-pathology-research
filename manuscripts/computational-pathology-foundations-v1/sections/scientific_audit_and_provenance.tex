@@ -16,12 +16,12 @@ Three separately versioned, immutable evidence packages live under
 \begin{itemize}
 \item \texttt{corrected-20260726} --- the corrected forward-valid
   paired-acquisition release (canine fixed-estimand + SCORPION fold-aware
-  evidence), validated by \texttt{validate\_corrected\_paired\_acquisition\_evidence.py}.
+  evidence), validated by \texttt{\seqsplit{validate\_corrected\_paired\_acquisition\_evidence.py}}.
 \item \texttt{dimensionality-xcov-factorial-20260726} --- the 450-cell
   dimensionality $\times$ cross-covariance factorial, validated by
-  \texttt{validate\_paired\_acquisition\_factorial\_evidence.py}.
+  \texttt{\seqsplit{validate\_paired\_acquisition\_factorial\_evidence.py}}.
 \item \texttt{scorpion-capacity-matched-20260726} --- the 175-fit capacity-matched
-  campaign, validated by \texttt{validate\_scorpion\_capacity\_matched\_evidence.py}.
+  campaign, validated by \texttt{\seqsplit{validate\_scorpion\_capacity\_matched\_evidence.py}}.
 \end{itemize}
 
 Each release carries a manifest that binds source-code commits (with
@@ -36,7 +36,7 @@ informationally.
 \subsection{Historical withdrawal and remediation}
 
 The authoritative claim boundary records which claims were withdrawn and why.
-The 2026-07-25 remediation ledger (\texttt{docs/research/scientific-audit-remediation-20260725.md})
+The 2026-07-25 remediation ledger (\texttt{\seqsplit{docs/research/scientific-audit-remediation-20260725.md}})
 documents corrected defects --- for example, TransnnMIL's query-invariant
 attention and unregistered topology projection, canine test-set leakage and
 scale-incomparable probes, SCORPION slide-level sign-flip withdrawal, and PCam
@@ -48,8 +48,8 @@ remediation but never appear in active result tables.
 
 The real paired-scanner run originally persisted metrics but no per-cell
 representations, leaving the fixed-estimand adjudication at
-\texttt{fixed\_estimand\_adjudication\_not\_ready}. An exact deterministic replay
-(\texttt{run\_real\_bottleneck\_representation\_recovery.py}) re-executed the
+\texttt{\seqsplit{fixed\_estimand\_adjudication\_not\_ready}}. An exact deterministic replay
+(\texttt{\seqsplit{run\_real\_bottleneck\_representation\_recovery.py}}) re-executed the
 50-cell canine B32/B64 grid on CUDA using the exact frozen training
 implementation (source-equivalence verified against the frozen commit), compared
 every cell against its frozen per-run record under a pre-fixed $10^{-6}$
@@ -60,11 +60,11 @@ remediation, not a new experiment.
 \subsection{Fail-closed statuses}
 
 Every runner uses a strict status vocabulary. Recovery uses
-\texttt{complete\_exact\_real\_bottleneck\_representation\_recovery} versus
-\texttt{real\_bottleneck\_representation\_recovery\_failed}. The fixed-estimand
+\texttt{\seqsplit{complete\_exact\_real\_bottleneck\_representation\_recovery}} versus
+\texttt{\seqsplit{real\_bottleneck\_representation\_recovery\_failed}}. The fixed-estimand
 adjudication uses a scientific vocabulary
-(\texttt{complete\_no\_neural\_feature\_space\_increment\_supported}, etc.) and
-reserves \texttt{fixed\_estimand\_adjudication\_failed} for integrity failures.
+(\texttt{\seqsplit{complete\_no\_neural\_feature\_space\_increment\_supported}}, etc.) and
+reserves \texttt{\seqsplit{fixed\_estimand\_adjudication\_failed}} for integrity failures.
 Poor scientific results receive scientific statuses; execution failures receive
 failure statuses. Claim verdicts are \texttt{supported},
 \texttt{unsupported}, or \texttt{prohibited by evidence scope}.

@@ -91,3 +91,38 @@ may remain internally reviewable, provided every pending and prohibited status i
 explicit, as it is. Public release is blocked until the external literature
 review, repaired TransnnMIL reruns, and any stated missing artifacts are
 completed.
+
+## Journal editor (coherence for submission)
+
+- **C8.1** Severity: high. Affected: overall. "This is a foundations/position
+  manuscript covering 13 lines in 12 pages; is it a coherent paper or a
+  repository catalogue?" Correction: the three-level framework is the unifying
+  argument; each level section carries technical mechanism depth (branch-token
+  fusion, round lifecycle, weight-computation equations), and implementation
+  inventories are pushed to the supplement. The manuscript is positioned as a
+  foundations/position-and-methods paper, not a results paper. Fatal: no.
+  New experiments: none for coherence; focused papers carry the empirical
+  depth. Internally reviewable: yes.
+- **C8.2** Severity: medium. Affected: Section 12. "The provenance section
+  risks reading as self-congratulation." Correction: framed as a
+  methodological contribution that makes the negative and pending statuses
+  trustworthy; the hostile-review register and validator are themselves the
+  evidence. Fatal: no. New experiments: none.
+- **C8.3** Severity: high. Affected: status/claims. "Evidence maturity varies
+  wildly across lines; the paper must not imply equality." Correction: the
+  abstract, evidence-status matrix (Figure 7), and claim ledger distinguish
+  corrected evidence, implemented architecture, negative results, proposed
+  protocols, and pending validation; the conclusion does not claim empirical
+  equality. Fatal: no. New experiments: matched TransnnMIL reruns, FAIR-WEIGHTS-H
+  multi-center validation, PathologyFL deployment before focused empirical
+  papers. Internally reviewable: yes.
+
+## Editor verdict
+
+The manuscript is internally reviewable as a foundations/position-and-methods
+paper. No criticism is currently fatal. Public submission is gated on: a targeted
+Scopus/PubMed citation-chasing pass (recommended, not blocking internal
+circulation); repaired matched TransnnMIL reruns; FAIR-WEIGHTS-H prospective
+validation; and real multi-center PathologyFL deployment — all required before
+the focused empirical papers, not before internal review of the foundations
+paper.

@@ -1,6 +1,6 @@
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[
+\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
   node distance=0.5cm and 0.6cm,
   box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.8cm, minimum height=0.6cm}
 ]
@@ -13,7 +13,7 @@
 \draw[->] (signals) -- (weight);
 \draw[->] (weight) -- (agg);
 \draw[->] (guard) -- (weight);
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{FAIR-WEIGHTS-H signal and constraint flow. Implemented: integrity gate,
 uncertainty penalty, useful-uniqueness, bounded weights, PathoAlign audit
 bridge, conservative mode. Specification-only or partial: training/validation/
