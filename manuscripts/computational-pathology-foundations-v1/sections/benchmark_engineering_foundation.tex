@@ -19,16 +19,21 @@ split into simulated sites to exercise weighting strategies.
 
 \subsection{What PCam establishes}
 
-The strongest documented PCam result is a single trained run with ROC AUC
-0.9394, accuracy 0.8526, and F1 0.8507 on the official 32{,}768-patch test
-split, with patch-level bootstrap confidence intervals. This is a documented
-observed run; the raw artifacts are not tracked in the repository. PCam
-establishes:
+PCam is treated here as \emph{implementation and benchmark context}, not as an
+active numerical empirical claim. A single documented single-split run was
+reported historically, but its underlying numerical result artifacts are not
+tracked in the repository and are not recoverable, so no specific performance
+number is promoted as an active cryptographically bound claim in this manuscript
+or its evidence manifest. What PCam establishes is:
 
 \begin{itemize}
-\item a working patch-level training and evaluation pipeline;
-\item bootstrap and evaluation infrastructure with tests;
-\item a foundation for later federated and whole-slide infrastructure.
+\item a working patch-level training and evaluation pipeline (dataset API,
+  heads, feature extractors, training, evaluation with bootstrap CIs);
+\item deterministic data handling and bootstrap evaluation infrastructure with
+  tests;
+\item a foundation for later federated and whole-slide infrastructure;
+\item a benchmark substrate whose \emph{infrastructure}, not unbound numbers,
+  is the contribution.
 \end{itemize}
 
 \subsection{What PCam does not establish}
