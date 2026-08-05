@@ -44,6 +44,19 @@ PathologyFL implements a coordinator-client architecture under
   client resource awareness.
 \end{itemize}
 
+\subsection{Round lifecycle and failure handling}
+
+The orchestrator runs a deterministic round lifecycle: select clients, distribute
+the global model, wait for updates (with adaptive per-client timeouts), apply
+Byzantine filtering and aggregation, and write a tamper-evident audit-log entry
+whose hash chain covers the round's client set, received updates, and aggregate.
+A client that times out or returns a non-finite update is retried, blacklisted
+after repeated failure, and recovered through a checkpointed round resume. Async
+modes weight stale updates by an exponential staleness decay. This lifecycle is
+what makes dropout and straggler behavior an \emph{accountable} part of the
+framework rather than an implicit assumption: it is tested by the dropout and
+checkpoint-recovery integration tests.
+
 \subsection{Execution validation}
 
 PathologyFL has integration and property tests that exercise five-client
@@ -67,9 +80,11 @@ deployment system. Key distinctions are enforced:
   federated-learning validation.
 \end{itemize}
 
-\noindent Two caveats are documented. The FAIR-WEIGHTS-H aggregator integration
-(\texttt{pathoalign\_fair.py}) has no dedicated test file, and the
-\emph{e2e} federated tests contain dangling imports of modules that do not
-exist, so those tests cannot execute as written. Differential-privacy and
-secure-aggregation guarantees are gated on optional libraries and are not
-independently audited.
+\noindent Caveats are documented. The FAIR-WEIGHTS-H aggregator integration
+(\texttt{pathoalign\_fair.py}) has no dedicated test file. Differential-privacy
+(Opacus-backed DP-SGD) and secure-aggregation (TenSEAL-backed) paths require
+optional libraries; in an environment without those libraries the corresponding
+tests skip cleanly and the guarantees are not independently audited. The
+integration, aggregation, production-integration, privacy-regression, and
+FAIR-WEIGHTS-H engine tests pass; the \emph{e2e} federated tests are gated as
+slow and collect cleanly.

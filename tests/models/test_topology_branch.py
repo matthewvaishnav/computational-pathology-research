@@ -15,7 +15,7 @@ import torch
 
 # Check if torch_geometric available
 try:
-    pass
+    import torch_geometric  # noqa: F401
 
     TORCH_GEOMETRIC_AVAILABLE = True
 except ImportError:
@@ -23,7 +23,7 @@ except ImportError:
 
 # Check if FAISS available
 try:
-    pass
+    import faiss  # noqa: F401
 
     FAISS_AVAILABLE = True
 except ImportError:

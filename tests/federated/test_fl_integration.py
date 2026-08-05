@@ -24,6 +24,13 @@ from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 from src.features.federated.pathology_fl.coordinator.orchestrator import TrainingOrchestrator
 from src.features.federated.pathology_fl.privacy.dp_sgd import DPSGDEngine
 
+try:
+    import opacus  # noqa: F401
+
+    OPACUS_AVAILABLE = True
+except ImportError:
+    OPACUS_AVAILABLE = False
+
 
 # Simple model for testing
 class SimpleModel(nn.Module):
@@ -274,6 +281,7 @@ def test_integration_convergence_validation():
 # ============================================================================
 
 
+@pytest.mark.skipif(not OPACUS_AVAILABLE, reason="Opacus not available")
 def test_integration_privacy_budget_enforcement():
     """
     Integration test: Validate privacy budget enforcement with DP-SGD.
