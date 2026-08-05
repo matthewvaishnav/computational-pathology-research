@@ -22,6 +22,22 @@ than sample volume alone. The protocol is implemented or specified as follows
   signals, with reason codes and a mechanism-validity flag.
 \end{itemize}
 
+\subsection{Weight-computation mechanism}
+
+The implemented engine scores each institution from a small signal set: an
+integrity gate (a failing integrity check drives the score to $-10^9$, so the
+softmax weight is effectively zero), an uncertainty penalty, and a
+useful-uniqueness term. Scores are converted to weights by a softmax or a
+mirror-descent update that moves the weight vector toward the target scores
+subject to caps and renormalization; normalized entropy and an
+effective-institution-count diagnostic quantify how concentrated the influence
+is. The PathoAlign audit bridge maps validation AUC / balanced accuracy /
+calibration plus nuisance and center audit signals into an adjusted quality, a
+useful-uniqueness term, a representation-risk value, and reason codes with a
+mechanism-validity flag. A conservative mode and an aggregator fallback-to-equal
+path bound the effect when signals are unreliable. The full signal and
+constraint definitions are in the supplement.
+
 \subsection{Specified but not fully implemented}
 
 Several protocol elements are specified in the design documentation but are not

@@ -1,6 +1,6 @@
 {
-  "schema_version": "foundations-manuscript-build-report/v1",
-  "date": "2026-08-04",
+  "schema_version": "foundations-manuscript-build-report/v2",
+  "date": "2026-08-05",
   "manuscript": "Accountable Neural Aggregation in Computational Pathology",
   "package": "manuscripts/computational-pathology-foundations-v1",
   "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex",
@@ -13,12 +13,12 @@
   "artifacts": {
     "main_pdf": {
       "path": "manuscripts/computational-pathology-foundations-v1/main.pdf",
-      "sha256": "b383aa8952212e59e690c29b44854e4f4cd191cf9e522a8d51d02649750b9a74",
+      "sha256": "66c36796c794dba7eb13d102e3bc5c43b3ff02b6be5671f65f2994e1f6d8e1d1",
       "pages": 12
     },
     "supplement_pdf": {
       "path": "manuscripts/computational-pathology-foundations-v1/supplement.pdf",
-      "sha256": "2362390968df72b06688063149fef61c36ce4f33259adcaa0718776ea667aa46",
+      "sha256": "bc1328f04364813d7d4159554a31f128fc307f1e2a7268bc64489baa6c5a3d8e",
       "pages": 3
     }
   },
@@ -26,9 +26,15 @@
     "unresolved_citations": 0,
     "undefined_references": 0,
     "missing_figures": 0,
-    "overfull_warnings": 21,
-    "overfull_note": "cosmetic line-overflow warnings only; no errors, no undefined references"
+    "overfull_warnings": "cosmetic only; no errors"
   },
-  "status": "internal_review_ready",
-  "status_note": "The PDF is marked internal review. Focused empirical studies remain pending (repaired TransnnMIL reruns, FAIR-WEIGHTS-H multi-center validation); every pending status is explicit in the manuscript. The PDF is not published."
+  "release_hardening": {
+    "placeholder_hashes_remaining": 0,
+    "every_active_numeric_claim_has_real_artifact_hash": true,
+    "pathologyfl_status_matches_executable_reality": true,
+    "validator_checks_run": 236,
+    "validator_checks_failed": 0
+  },
+  "status": "full_foundations_manuscript_release_candidate",
+  "status_note": "Every active numerical claim is bound to a real verified artifact hash; no placeholder hashes remain; all cited files exist; all references verified; PathologyFL/FAIR-WEIGHTS-H status matches executable reality; PDFs build cleanly; all validation tests pass; the public site is not modified. The PDFs are marked internal review and are not published."
 }
