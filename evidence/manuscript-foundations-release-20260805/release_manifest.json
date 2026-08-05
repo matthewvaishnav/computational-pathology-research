@@ -1,0 +1,73 @@
+{
+  "bound_artifacts": [
+    {
+      "path": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "size_bytes": 438446
+    },
+    {
+      "path": "evidence/manuscript-foundations-release-20260805/artifacts/real_bottleneck_representation_recovery_result.json",
+      "sha256": "2075a2aa240877a16f923c4e7da0c12c3a30d6adb489a4a7804f6b0ea6628065",
+      "size_bytes": 143894
+    },
+    {
+      "path": "evidence/paired_acquisition/corrected-20260726/release_manifest.json",
+      "sha256": "a7a7e34d1df24f7003ee8ccacc58e8885f5ebe60ed0b167f71c9f28767fadf4d",
+      "size_bytes": 33982
+    },
+    {
+      "path": "results/camelyon17/center_weighting_5seed_summary.md",
+      "sha256": "3637830e74fb7fb3cdc88eb6de80fb960635a99b20509f1ac5329c8a63c23155",
+      "size_bytes": 3322
+    }
+  ],
+  "branch": "research/foundations-manuscript-release-hardening-20260805",
+  "canonical_internal_hash": "318142415ae3d7e9f531f0dd08a63dd7de0a5b9122a4421ff3401e08e0fb959d",
+  "date": "2026-08-05",
+  "hardened_manifest": "manuscripts/computational-pathology-foundations-v1/evidence/manuscript_evidence_manifest.json",
+  "manuscript_package": "manuscripts/computational-pathology-foundations-v1/",
+  "pdfs": {
+    "main": {
+      "pages": 12,
+      "path": "manuscripts/computational-pathology-foundations-v1/main.pdf",
+      "sha256": "66c36796c794dba7eb13d102e3bc5c43b3ff02b6be5671f65f2994e1f6d8e1d1"
+    },
+    "supplement": {
+      "pages": 3,
+      "path": "manuscripts/computational-pathology-foundations-v1/supplement.pdf",
+      "sha256": "bc1328f04364813d7d4159554a31f128fc307f1e2a7268bc64489baa6c5a3d8e"
+    }
+  },
+  "schema_version": "foundations-manuscript-evidence-release/v1",
+  "status": "internal_review_ready",
+  "supporting_docs": {
+    "README": {
+      "path": "evidence/manuscript-foundations-release-20260805/README.md",
+      "sha256": "64927060d26996ab927f884ae4dfc63bf7797a8f9b2954f876d29f019395db47"
+    },
+    "build_log": {
+      "path": "evidence/manuscript-foundations-release-20260805/build_log.md",
+      "sha256": "8c129a26d32f070a2280915c7b1ace92bcd91a296a917fed8ee6e02146d0f55f"
+    },
+    "citation_audit": {
+      "path": "evidence/manuscript-foundations-release-20260805/citation_audit.md",
+      "sha256": "810225ee9ec164d43040f128b08c389831238dd79f4a8c5ce8d63c0a822ac99d"
+    },
+    "claim_boundary_snapshot": {
+      "path": "evidence/manuscript-foundations-release-20260805/claim_boundary_snapshot.md",
+      "sha256": "932a1dceebbc523d908ff8f0287914ec3eea6022e29fe74a14b556b6a417844c"
+    },
+    "pathologyfl_test_report": {
+      "path": "evidence/manuscript-foundations-release-20260805/pathologyfl_test_report.md",
+      "sha256": "fd94a074c308f3e219729049054676827fdc57bb62b3b14d4faf1c43cf26e9a9"
+    },
+    "prior_art_review": {
+      "path": "docs/research/full-program-prior-art-review-20260804.md",
+      "sha256": "708900d29370fae943c74d30c49cd392a8a07e7b3f28d8b476cfbaab30544c46"
+    },
+    "validation_environment": {
+      "path": "evidence/manuscript-foundations-release-20260805/validation_environment.json",
+      "sha256": "0e8d2276a4d21db7ab65302ac593dbcc97a81d3f9305048f40a0f416c2789448"
+    }
+  }
+}

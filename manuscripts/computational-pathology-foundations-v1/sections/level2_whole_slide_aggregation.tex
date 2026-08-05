@@ -53,6 +53,25 @@ here from the code, not from stale marketing prose. The verified families are:
   and tested; no training result.
 \end{itemize}
 
+\subsection{Branch-token fusion mechanism}
+
+The corrected fusion is the technical heart of the canonical model. Each branch
+produces a sequence of patch-level representations; the branch representations
+are projected to a fixed token dimension and stacked into an explicit branch-token
+sequence $T \in \mathbb{R}^{2 \times d}$, one token per branch. A multi-head
+self-attention over $T$ computes the fused slide representation as a learned
+interaction between the two branch tokens, and the attended tokens are
+mean-pooled before the classifier head. This fixes the historical defect: the
+old one-query/one-key cross-attention used a single query token against a single
+key, so the softmax over one position was identically $1$ and the fusion was
+\emph{query-invariant} --- it could not weight the branches at all. The repaired
+design gives the fusion genuine branch-interaction capacity, and regression tests
+require output sensitivity and gradient flow to both branches
+(\texttt{tests/models/test\_transnnmil\_canonical\_fusion.py}). The incremental
+contribution of this fusion relative to concat and gate controls is \emph{not yet
+measured}; that is exactly the pending matched-control evaluation. A full
+per-component implementation/test/result matrix is in the supplement.
+
 \subsection{PANDA training infrastructure and feature bags}
 
 The PANDA training infrastructure uses a verified Phikon 768-dimensional feature
