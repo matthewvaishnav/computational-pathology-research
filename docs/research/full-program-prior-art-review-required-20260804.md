@@ -82,3 +82,14 @@ manuscript uses "we introduce", "we develop", "our architecture", "our
 protocol", and "the distinguishing design combines…" and never "the first ever"
 or "state of the art". Focused papers A–D must each run their own scoped
 literature review before external submission.
+
+---
+
+## Completion status (2026-08-05)
+
+All 20 questions above are answered with current primary sources in
+`docs/research/full-program-prior-art-review-20260804.md`. Verified references
+were added to `manuscripts/computational-pathology-foundations-v1/references.bib`;
+no placeholder or unverifiable citation remains. No absolute-novelty wording is
+used. A comprehensive academic-index search (PubMed, DBLP, Scopus) is recommended
+before external submission.

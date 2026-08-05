@@ -28,9 +28,14 @@ from src.models.transnnmil.hierarchical_pooling import (
 )
 
 try:
-    from src.models.transnnmil.topology_branch import TopologyBranch
+    from src.models.transnnmil.topology_branch import (
+        TORCH_GEOMETRIC_AVAILABLE,
+        TopologyBranch,
+    )
 
-    TOPOLOGY_AVAILABLE = True
+    # TopologyBranch imports without torch_geometric (its constructor raises);
+    # TOPOLOGY_AVAILABLE must reflect whether torch_geometric is actually usable.
+    TOPOLOGY_AVAILABLE = TORCH_GEOMETRIC_AVAILABLE
 except ImportError:
     TOPOLOGY_AVAILABLE = False
 
