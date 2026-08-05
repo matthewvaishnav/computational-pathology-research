@@ -93,3 +93,13 @@ were added to `manuscripts/computational-pathology-foundations-v1/references.bib
 no placeholder or unverifiable citation remains. No absolute-novelty wording is
 used. A comprehensive academic-index search (PubMed, DBLP, Scopus) is recommended
 before external submission.
+
+## Final review status (2026-08-05)
+
+The academic-index search (OpenAlex/Crossref/Semantic Scholar/arXiv/web) is
+complete and recorded in `full-program-prior-art-review-final-20260805.md` and
+`prior-art-search-log-20260805.csv`. No exact combination for PA-NF, TransnnMIL,
+PathologyFL+FAIR-WEIGHTS-H, or the provenance system was found in the searched
+indexes. The blocker on the academic-index search is lifted; a targeted
+Scopus/PubMed citation-chasing pass remains recommended before journal
+submission.
