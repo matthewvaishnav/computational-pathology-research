@@ -1,6 +1,6 @@
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[
+\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
   node distance=0.5cm and 0.7cm,
   box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.6cm, minimum height=0.7cm}
 ]
@@ -19,7 +19,7 @@
 \draw[->] (bio) -- (swap);
 \draw[->] (acq) -- (swap);
 \draw[->] (acq) -- (proto);
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{Paired-Acquisition Neural Factorization: an explicit biological
 branch and acquisition branch are trained on exact same-region multi-scanner
 pairs with decoder self- and crossed-reconstruction, same-region biological

@@ -20,7 +20,8 @@ here from the code, not from stale marketing prose. The verified families are:
   (\texttt{src/models/mil/transmil.py}, after TransMIL \cite{shao2021transmil})
   and an nnMIL-style gated-attention
   branch (\texttt{src/models/mil/nnmil.py}, after attention-based
-  multiple-instance learning \cite{ilse2018attention}). The repaired model fuses the
+  multiple-instance learning \cite{ilse2018attention}), alongside
+  cluster/attention baselines such as CLAM \cite{lu2021clam}. The repaired model fuses the
   branches by \emph{self-attention over explicit branch tokens}: the two
   projected branch representations are stacked and attended
   (\texttt{branch\_token\_fusion.py}), replacing the withdrawn one-query
@@ -37,7 +38,9 @@ here from the code, not from stale marketing prose. The verified families are:
   and tested, but \emph{planned controls} with no recorded results yet.
 \item \textbf{Hierarchical spatial pooling} (\texttt{hierarchical\_pooling.py}):
   learnable cluster centers, region attention/mean/max pooling, and region
-  transformers. Implemented and tested; a synthetic-MIL ablation exists, and a
+  transformers (hierarchical MIL pooling has prior art, e.g.,
+  H$^2$-MIL \cite{hou2022h2mil}). Implemented and tested; a synthetic-MIL
+  ablation exists, and a
   real-data benchmark is planned. Enabled in the canonical model only when
   requested (default off); PANDA runs did not enable it.
 \item \textbf{Topology or graph branch} (\texttt{topology\_branch.py}): k-NN
@@ -67,7 +70,8 @@ key, so the softmax over one position was identically $1$ and the fusion was
 \emph{query-invariant} --- it could not weight the branches at all. The repaired
 design gives the fusion genuine branch-interaction capacity, and regression tests
 require output sensitivity and gradient flow to both branches
-(\texttt{tests/models/test\_transnnmil\_canonical\_fusion.py}). The incremental
+(\texttt{\seqsplit{tests/models/test\_transnnmil\_canonical\_fusion.py}}). The
+incremental
 contribution of this fusion relative to concat and gate controls is \emph{not yet
 measured}; that is exactly the pending matched-control evaluation. A full
 per-component implementation/test/result matrix is in the supplement.
@@ -94,7 +98,8 @@ controls under identical splits, seeds, tuning budgets, and compute.
   including historical QWK values, are withdrawn by the authoritative claim
   boundary. They remain records of the old defective execution path.
 \item \textbf{Pending:} repaired matched controlled reruns (the ablation plan
-  in \texttt{docs/results/panda-transnnmil-ablation-plan.md}) are required
+  in \texttt{\seqsplit{docs/results/panda-transnnmil-ablation-plan.md}}) are
+  required
   before any superiority claim.
 \end{itemize}
 

@@ -1,6 +1,6 @@
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[
+\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
   node distance=0.5cm and 0.6cm,
   box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.6cm, minimum height=0.6cm}
 ]
@@ -18,7 +18,7 @@
 \draw[->] (agg) -- (fw);
 \draw[->] (fw) -- (mon);
 \draw[->] (mon) -- (coord);
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{PathologyFL coordinator--client architecture with the FAIR-WEIGHTS-H
 weighting layer and anomaly/monitoring paths. Implemented research
 infrastructure; no real multi-center clinical deployment exists (see
