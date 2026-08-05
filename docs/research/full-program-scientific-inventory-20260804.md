@@ -49,14 +49,17 @@ Statuses never conflate architecture with empirical validation.
   0.8526, F1 0.8507 on the official 32,768-patch test split) has artifacts
   gitignored; `docs/results/pcam-results.md`, `docs/PCAM_REAL_RESULTS.md`.
 - **Source commits:** PCam training/eval/config history.
-- **Current status:** `active_corrected_empirical_evidence` (patch benchmark);
-  cross-validation `future_protocol_only` (paused); threshold study
-  `historical_withdrawn_evidence`.
-- **Strongest supported claim:** a working patch-level pipeline with a
-  documented observed test-split performance (ROC AUC 0.9394) and bootstrap
-  infrastructure.
+- **Current status:** `implemented_research_infrastructure` (patch benchmark
+  context); the historical numerical run is `documentation_only` and is not an
+  active cryptographically bound empirical claim because its result artifacts
+  are not tracked and not recoverable; cross-validation `future_protocol_only`
+  (paused); threshold study `historical_withdrawn_evidence`.
+- **Strongest supported claim:** a working patch-level training, evaluation, and
+  bootstrap pipeline (infrastructure contribution); no active numerical
+  empirical claim is promoted because the underlying artifacts are not tracked.
 - **Pending validation:** completed cross-validation; a calibration study at a
-  clinically meaningful operating point.
+  clinically meaningful operating point; re-running to a tracked immutable
+  artifact if a future numerical claim is desired.
 - **Withdrawn claims:** threshold optimization as confirmatory/deployment
   evidence; any clinical or superiority language.
 - **Prohibited interpretations:** clinical validation, diagnosis-saving
@@ -312,9 +315,14 @@ Statuses never conflate architecture with empirical validation.
   validated); **no real multi-center deployment**.
 - **Strongest supported claim:** executable pathology-specific federated
   research framework with validated integration and smoke behavior.
-- **Pending validation:** real multi-center deployment; the e2e federated tests
-  have dangling imports (not runnable as written); DP/secure guarantees gated on
-  optional libraries and not independently audited.
+- **Pending validation:** real multi-center deployment; the FAIR-WEIGHTS-H
+  aggregator integration (\texttt{pathoalign\_fair.py}) has no dedicated test
+  file; DP/secure guarantees gated on optional libraries (Opacus/TenSEAL) that
+  are not installed in the audit environment, so their tests skip cleanly and
+  are not independently audited. The integration, aggregation,
+  production-integration, privacy-regression, and FAIR-WEIGHTS-H engine tests
+  pass; the \emph{e2e} federated tests are gated slow and collect cleanly (no
+  dangling imports).
 - **Prohibited interpretations:** clinical outcomes; full multi-center
   validation; clinical readiness.
 - **Manuscript role:** Level III (Section 6).

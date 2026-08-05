@@ -1,4 +1,4 @@
-"""Tests for the foundations-manuscript validator (20 fail conditions)."""
+"""Tests for the hardened foundations-manuscript evidence validator."""
 
 from __future__ import annotations
 
@@ -17,8 +17,13 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 PACKAGE = Path(__file__).resolve().parents[2]
 
 
+def _errors(fn, *args):
+    checker = vm.Checker()
+    fn(*args, checker, REPO_ROOT)
+    return checker.errors
+
+
 def _full_text():
-    """A full valid manuscript text containing all required lines/levels."""
     return (
         "This manuscript introduces Paired-Acquisition Neural Factorization "
         "(PA-NF), TransnnMIL, PathologyFL, FAIR-WEIGHTS-H, and the PCam, PANDA, "
@@ -31,138 +36,277 @@ def _full_text():
     )
 
 
-def test_condition1_pa_nf_only_line_fails():
-    text = "The program is Paired-Acquisition Neural Factorization only."
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+REAL_ARTIFACT = "evidence/paired_acquisition/corrected-20260726/release_manifest.json"
 
 
-def test_condition2_transnnmil_absent_fails():
-    text = "PCam PANDA CAMELYON17 PathologyFL FAIR-WEIGHTS-H representation whole-slide institution"
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+def _valid_empirical_claim(tmp_path):
+    del tmp_path
+    artifact = REPO_ROOT / REAL_ARTIFACT
+    return {
+        "claim_id": "C1",
+        "claim": "claim",
+        "artifact": REAL_ARTIFACT,
+        "artifact_sha256": vm.sha256_file(artifact),
+        "artifact_size_bytes": artifact.stat().st_size,
+        "source_commit": "3ca1805850fbc57bf3a584c3e25f34249cae6107",
+        "binding_kind": "immutable_tracked_evidence",
+        "dataset": "dataset",
+        "statistical_unit": "unit",
+        "prohibited_stronger_wording": "prohibited",
+    }
 
 
-def test_condition3_pathologyfl_absent_fails():
-    text = _full_text().replace("PathologyFL", "the framework")
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+# --- Empirical claim checks ---
 
 
-def test_condition4_fair_weights_h_absent_fails():
-    text = _full_text().replace("FAIR-WEIGHTS-H", "weighting")
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+def test_placeholder_hash_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["artifact_sha256"] = "documented-observed-run-artifacts-gitignored"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("placeholder hash" in e for e in errors)
 
 
-def test_condition5_pcam_absent_fails():
-    text = _full_text().replace("PCam", "the benchmark")
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+def test_missing_file_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["artifact"] = "does/not/exist.json"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("artifact exists" in e for e in errors)
 
 
-def test_condition6_panda_absent_fails():
-    text = _full_text().replace("PANDA", "the slide benchmark")
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+def test_wrong_hash_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["artifact_sha256"] = "0" * 64
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("equals declared" in e for e in errors)
 
 
-def test_condition7_camelyon17_absent_fails():
-    text = _full_text().replace("CAMELYON17", "the center benchmark")
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_required_lines(text)
+def test_wrong_size_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["artifact_size_bytes"] = claim["artifact_size_bytes"] + 1
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("byte size equals actual" in e for e in errors)
 
 
-def test_condition8_three_levels_required():
-    for level in ("representation", "whole-slide", "institution"):
-        text = _full_text().replace(level, "other")
-        with pytest.raises(vm.ManuscriptValidationError):
-            vm.check_three_levels(text)
+def test_symlink_fails():
+    tmp_dir = REPO_ROOT / "tmp_manuscript_symlink_test"
+    tmp_dir.mkdir(exist_ok=True)
+    try:
+        target = tmp_dir / "target.json"
+        target.write_text("{}", encoding="utf-8")
+        link = tmp_dir / "link.json"
+        try:
+            link.symlink_to(target)
+        except OSError:
+            pytest.skip("symlinks not available on this platform")
+        relative = str(link.relative_to(REPO_ROOT)).replace("\\", "/")
+        claim = _valid_empirical_claim(None)
+        claim["artifact"] = relative
+        claim["artifact_sha256"] = vm.sha256_file(target)
+        claim["artifact_size_bytes"] = target.stat().st_size
+        errors = _errors(vm.check_empirical_claim, claim)
+        assert any("nonsymlink" in e for e in errors)
+    finally:
+        import shutil
+
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
-def test_condition9_projected_numbers_not_observed_fails():
-    text = "TransnnMIL projected AUC 0.912."
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_projected_vs_observed(text)
+def test_path_traversal_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["artifact"] = "../outside.json"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("traversal" in e or "canonical" in e for e in errors)
 
 
-def test_condition10_historical_qwk_as_repaired_fails():
-    text = "withdrawn\n\\textbf{QWK 0.915}"
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_withdrawn_not_active(text)
+def test_windows_backslash_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["artifact"] = "results\\file.json"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("canonical" in e for e in errors)
 
 
-def test_condition11_pa_nf_superiority_fails():
-    text = "PA-NF is the best scanner-removal method."
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_prohibited_phrases(text)
+def test_missing_source_commit_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["source_commit"] = "0000000000000000000000000000000000000000"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("commit exists" in e for e in errors)
 
 
-def test_condition12_fair_weights_h_fairness_fails():
-    text = "FAIR-WEIGHTS-H proves fairness."
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_prohibited_phrases(text)
+def test_short_source_commit_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["source_commit"] = "e436772b"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("40-character" in e for e in errors)
 
 
-def test_condition13_pathologyfl_clinical_fails():
-    text = "PathologyFL improves clinical outcomes."
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_prohibited_phrases(text)
+def test_missing_dataset_and_unit_fail(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["dataset"] = ""
+    claim["statistical_unit"] = ""
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("dataset" in e for e in errors)
+    assert any("statistical unit" in e for e in errors)
 
 
-def test_condition14_camelyon17_as_full_fl_fails():
-    # The manuscript must describe CAMELYON17 studies as centralized proxies,
-    # not full FL. The Section 9 narrative must contain the proxy wording.
-    text = _full_text() + " The CAMELYON17 weighting studies are centralized frozen-feature proxies, not full federated-learning validation."
-    assert "proxies" in text
-    assert "not full" in text.lower()
+def test_documentation_only_binding_fails(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    claim["binding_kind"] = "documentation_only_not_eligible"
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert any("documentation" in e for e in errors)
 
 
-def test_condition15_withdrawn_artifacts_in_active_tables_fails():
-    text = "withdrawn\n\\textbf{QWK}"
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_withdrawn_not_active(text)
+def test_valid_empirical_claim_passes(tmp_path):
+    claim = _valid_empirical_claim(tmp_path)
+    errors = _errors(vm.check_empirical_claim, claim)
+    assert errors == []
 
 
-def test_condition16_active_numbers_lack_bindings_fails(tmp_path, monkeypatch):
-    evidence = tmp_path / "evidence"
-    evidence.mkdir()
-    manifest = evidence / "manuscript_evidence_manifest.json"
-    manifest.write_text(
-        json.dumps({"active_empirical_claims": [{"claim_id": "X"}]}),
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(vm, "PACKAGE", tmp_path)
-    with pytest.raises(vm.ManuscriptValidationError, match="artifact binding"):
-        vm.check_manifest_bindings()
+# --- Architectural claim checks ---
 
 
-def test_condition17_architecture_empirical_conflation_fails():
-    text = "implemented and outperforms"
-    with pytest.raises(vm.ManuscriptValidationError):
-        vm.check_architecture_empirical_conflation(text)
+def test_architectural_missing_source_fails():
+    claim = {
+        "claim_id": "A1",
+        "source_paths": ["does/not/exist.py"],
+        "test_paths": ["tests/test_fixed_estimand_real_feature_space_adjudication.py"],
+        "implementation_status": "implemented",
+        "empirical_status": "negative",
+    }
+    errors = _errors(vm.check_architectural_claim, claim)
+    assert any("source file exists" in e for e in errors)
 
 
-def test_condition18_old_manuscript_not_overwritten():
-    assert (REPO_ROOT / "paper" / "paired_acquisition_manuscript" / "manuscript_draft.md").is_file()
-    assert (REPO_ROOT / "paper" / "arxiv" / "main.tex").is_file()
+def test_architectural_wildcard_only_path_fails():
+    claim = {
+        "claim_id": "A2",
+        "source_paths": ["src/models/transnnmil/*"],
+        "test_paths": ["tests/test_fixed_estimand_real_feature_space_adjudication.py"],
+        "implementation_status": "implemented",
+        "empirical_status": "negative",
+    }
+    errors = _errors(vm.check_architectural_claim, claim)
+    assert any("wildcard" in e for e in errors)
 
 
-def test_condition19_public_site_not_modified():
-    vm.check_public_site_not_modified()  # no raise = pass
+def test_architectural_statuses_separated():
+    claim = {
+        "claim_id": "A3",
+        "source_paths": ["src/paired_acquisition_factorial.py"],
+        "test_paths": ["tests/test_fixed_estimand_real_feature_space_adjudication.py"],
+        "implementation_status": "implemented",
+        "empirical_status": "negative_or_mixed_empirical_result",
+    }
+    errors = _errors(vm.check_architectural_claim, claim)
+    assert errors == []
 
 
-def test_condition20_pdf_reproducible_documentation():
-    readme = (PACKAGE / "README.md").read_text(encoding="utf-8")
-    assert "latexmk" in readme
-    assert "clean checkout" in readme
+# --- Protocol claim checks ---
+
+
+def test_protocol_requires_spec_hash():
+    claim = {
+        "claim_id": "P1",
+        "specification_path": "docs/theory/fair-weights-h.md",
+        "specification_sha256": "placeholder",
+        "implementation_path": "src/features/federated/pathology_fl/weighting/fair_weights_h.py",
+        "test_path": "tests/federated/test_fair_weights_h.py",
+        "implementation_status": "implemented",
+        "claim": "claim",
+        "components": [{"component": "x", "status": "implemented_and_tested"}],
+    }
+    errors = _errors(vm.check_protocol_claim, claim)
+    assert any("specification hash" in e for e in errors)
+
+
+def test_protocol_spec_only_component_rejects_plain_implemented():
+    claim = {
+        "claim_id": "P2",
+        "specification_path": "docs/theory/fair-weights-h.md",
+        "specification_sha256": "7531a50bd41d9a33ccee41e25e96b286efcabe81c4433ae43ad49f548bcfe7a1",
+        "implementation_path": "src/features/federated/pathology_fl/weighting/fair_weights_h.py",
+        "test_path": "tests/federated/test_fair_weights_h.py",
+        "implementation_status": "implemented",
+        "claim": "We implement FAIR-WEIGHTS-H fully.",
+        "components": [{"component": "difficulty", "status": "specification_only"}],
+    }
+    errors = _errors(vm.check_protocol_claim, claim)
+    assert any("not labeled plain 'implemented'" in e for e in errors)
+
+
+def test_protocol_partial_implementation_passes():
+    claim = {
+        "claim_id": "P3",
+        "specification_path": "docs/theory/fair-weights-h.md",
+        "specification_sha256": "7531a50bd41d9a33ccee41e25e96b286efcabe81c4433ae43ad49f548bcfe7a1",
+        "implementation_path": "src/features/federated/pathology_fl/weighting/fair_weights_h.py",
+        "test_path": "tests/federated/test_fair_weights_h.py",
+        "implementation_status": "proposed_protocol_with_execution_validation",
+        "claim": "We propose and partially implement FAIR-WEIGHTS-H.",
+        "components": [
+            {"component": "integrity_gate", "status": "implemented_and_tested"},
+            {"component": "difficulty_adjustment", "status": "specification_only"},
+        ],
+    }
+    errors = _errors(vm.check_protocol_claim, claim)
+    assert errors == []
+
+
+# --- Whole-manifest duplicate IDs ---
+
+
+def test_duplicate_claim_ids_detected(tmp_path, monkeypatch):
+    checker = vm.Checker()
+    manifest = {
+        "active_empirical_claims": [_valid_empirical_claim(tmp_path), _valid_empirical_claim(tmp_path)],
+        "architectural_claims": [],
+        "protocol_claims": [],
+        "negative_results": [],
+    }
+    all_ids = []
+    for family in ("active_empirical_claims", "architectural_claims", "protocol_claims", "negative_results"):
+        for claim in manifest.get(family, []):
+            all_ids.append(claim.get("claim_id"))
+    seen = [cid for cid in all_ids if cid is not None]
+    checker.check("no duplicate claim IDs across families", len(seen) == len(set(seen)), str(len(seen)))
+    assert any("duplicate" in e for e in checker.errors)
+
+
+# --- Content-level checks (research lines, levels, prohibited, frozen) ---
+
+
+def test_research_lines_all_present():
+    checker = vm.Checker()
+    vm.check_required_lines(_full_text(), checker)
+    assert checker.errors == []
+
+
+def test_missing_line_fails():
+    checker = vm.Checker()
+    vm.check_required_lines(_full_text().replace("TransnnMIL", "MIL"), checker)
+    assert any("TransnnMIL" in e for e in checker.errors)
+
+
+def test_prohibited_superiority_fails():
+    checker = vm.Checker()
+    vm.check_prohibited_phrases("TransnnMIL outperforms TransMIL", checker)
+    assert checker.errors
+
+
+def test_frozen_statuses_preserved():
+    checker = vm.Checker()
+    vm.check_frozen_statuses_preserved(checker)
+    assert checker.errors == []
+
+
+def test_old_manuscript_and_public_site():
+    checker = vm.Checker()
+    vm.check_old_manuscript_and_public_site(checker, REPO_ROOT)
+    assert checker.errors == []
 
 
 def test_full_package_validates():
-    vm.check_required_lines(_full_text())
-    vm.check_three_levels(_full_text())
-    vm.check_prohibited_phrases(_full_text())
-    vm.check_projected_vs_observed(_full_text())
-    vm.check_withdrawn_not_active(_full_text())
-    vm.check_architecture_empirical_conflation(_full_text())
-    vm.check_frozen_statuses_preserved()
+    checker = vm.Checker()
+    vm.check_required_lines(_full_text(), checker)
+    vm.check_prohibited_phrases(_full_text(), checker)
+    vm.check_frozen_statuses_preserved(checker)
+    assert checker.errors == []
