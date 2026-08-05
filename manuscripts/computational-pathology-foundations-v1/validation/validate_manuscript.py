@@ -475,6 +475,114 @@ def check_old_manuscript_and_public_site(checker: Checker, repo_root: Path) -> N
     checker.check("public site not modified", not bad, "; ".join(bad) or "none")
 
 
+ALLOWED_FINAL_STATUSES = {
+    "full_foundations_manuscript_release_candidate",
+    "full_foundations_manuscript_internal_review_ready",
+    "full_foundations_manuscript_not_ready",
+    "full_foundations_manuscript_build_failed",
+}
+
+
+def status_tokens_of_file(path: Path) -> list[str]:
+    if path.suffix == ".json":
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return []
+        collected: list[str] = []
+        if isinstance(value, dict):
+            for key in ("status", "status_note"):
+                if isinstance(value.get(key), str):
+                    collected.append(value[key])
+        return collected
+    if path.suffix == ".md":
+        return [line for line in path.read_text(encoding="utf-8").splitlines() if "review_ready" in line or "release_candidate" in line or "not_ready" in line or "build_failed" in line]
+    return []
+
+
+def check_status_consistency(checker: Checker, repo_root: Path) -> None:
+    status_files = [
+        repo_root / "evidence" / "manuscript-foundations-release-20260805" / "release_manifest.json",
+        repo_root / "evidence" / "manuscript-foundations-release-20260805" / "build_log.md",
+        repo_root / "manuscripts" / "computational-pathology-foundations-v1" / "validation" / "build_report.json",
+    ]
+    tokens: list[str] = []
+    for path in status_files:
+        for token in status_tokens_of_file(path):
+            matched = [s for s in ALLOWED_FINAL_STATUSES if s in token]
+            tokens.extend(matched)
+    tokens = sorted(set(tokens))
+    checker.check(
+        "final status is one of the allowed statuses",
+        bool(tokens),
+        "; ".join(tokens),
+    )
+    checker.check(
+        "status is consistent across all status files",
+        len(tokens) <= 1,
+        "; ".join(tokens),
+    )
+
+
+def check_final_review_artifacts(checker: Checker, repo_root: Path) -> None:
+    for path in (
+        repo_root / "docs" / "research" / "full-program-prior-art-review-final-20260805.md",
+        repo_root / "docs" / "research" / "prior-art-search-log-20260805.csv",
+        repo_root / "manuscripts" / "computational-pathology-foundations-v1" / "validation" / "final_citation_audit.md",
+        repo_root / "evidence" / "manuscript-foundations-release-20260805" / "pathologyfl_test_report.md",
+    ):
+        checker.check(f"final review artifact present: {path.name}", path.is_file(), str(path))
+
+
+def check_pdf_hashes(checker: Checker, repo_root: Path) -> None:
+    manifest_path = (
+        repo_root / "evidence" / "manuscript-foundations-release-20260805" / "release_manifest.json"
+    )
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        checker.check("release manifest readable", False, str(manifest_path))
+        return
+    pdfs = manifest.get("pdfs", {})
+    for role in ("main", "supplement"):
+        record = pdfs.get(role)
+        if not record:
+            checker.check(f"release manifest records pdf: {role}", False, str(pdfs))
+            continue
+        path = repo_root / record["path"]
+        declared = record["sha256"]
+        observed = sha256_file(path) if path.is_file() else None
+        checker.check(
+            f"release manifest pdf hash matches: {role}",
+            path.is_file() and observed == declared,
+            f"observed={str(observed)[:16] if observed else None} declared={declared[:16]}",
+        )
+
+
+def check_boundary_wording(checker: Checker) -> None:
+    text = text_of_package().lower()
+    checker.check(
+        "PCam remains nonnumerical (no active numeric claim)",
+        "0.9394" not in text and "0.8526" not in text,
+        "PCam numeric claims absent",
+    )
+    checker.check(
+        "CAMELYON17 remains a centralized proxy",
+        "proxy" in text and "centralized" in text,
+        "CAMELYON17 proxy wording present",
+    )
+    checker.check(
+        "TransnnMIL superiority remains pending",
+        "pending" in text and "outperforms" not in text,
+        "TransnnMIL pending wording present",
+    )
+    checker.check(
+        "FAIR-WEIGHTS-H fairness superiority unsupported",
+        "proves fairness" not in text,
+        "no fairness-superiority wording",
+    )
+
+
 def main() -> None:
     global REPO_ROOT
     parser = argparse.ArgumentParser(description=__doc__)
@@ -509,6 +617,10 @@ def main() -> None:
     check_prohibited_phrases(text, checker)
     check_frozen_statuses_preserved(checker)
     check_old_manuscript_and_public_site(checker, REPO_ROOT)
+    check_status_consistency(checker, REPO_ROOT)
+    check_final_review_artifacts(checker, REPO_ROOT)
+    check_pdf_hashes(checker, REPO_ROOT)
+    check_boundary_wording(checker)
 
     reports = checker.finish()
     print(json.dumps(

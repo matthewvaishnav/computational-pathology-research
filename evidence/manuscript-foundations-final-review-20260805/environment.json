@@ -1,0 +1,18 @@
+{
+  "schema_version": "foundations-release-validation-environment/v1",
+  "date": "2026-08-05",
+  "os": "Windows 11",
+  "python": "3.11",
+  "torch": "2.5.1+cu121",
+  "optional_dependencies": {
+    "tenseal": "not installed (secure-aggregation tests skip)",
+    "opacus": "not installed (DP-SGD tests skip)"
+  },
+  "latexmk": "4.88 (MiKTeX)",
+  "engine": "pdflatex",
+  "deterministic_settings": {
+    "cublas_workspace_config": ":4096:8",
+    "deterministic_algorithms": true
+  },
+  "note": "The exact 50-cell neural replay was executed on CUDA (NVIDIA RTX 3060) with bit-exact replication of the frozen metrics; the adjudication v2 was executed on CPU. The release-hardening package consumes the resulting immutable result artifacts."
+}

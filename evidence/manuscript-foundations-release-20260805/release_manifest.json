@@ -22,7 +22,7 @@
     }
   ],
   "branch": "research/foundations-manuscript-release-hardening-20260805",
-  "canonical_internal_hash": "318142415ae3d7e9f531f0dd08a63dd7de0a5b9122a4421ff3401e08e0fb959d",
+  "canonical_internal_hash": "63c197813ceb5d3198ef6249854f6584b4308e7e3d9c9302ee4f91405e713fcf",
   "date": "2026-08-05",
   "hardened_manifest": "manuscripts/computational-pathology-foundations-v1/evidence/manuscript_evidence_manifest.json",
   "manuscript_package": "manuscripts/computational-pathology-foundations-v1/",
@@ -30,16 +30,16 @@
     "main": {
       "pages": 12,
       "path": "manuscripts/computational-pathology-foundations-v1/main.pdf",
-      "sha256": "66c36796c794dba7eb13d102e3bc5c43b3ff02b6be5671f65f2994e1f6d8e1d1"
+      "sha256": "8d01305b2047c567803c5c50aaa08c575f09aaf622533e789695d3328d84b40f"
     },
     "supplement": {
       "pages": 3,
       "path": "manuscripts/computational-pathology-foundations-v1/supplement.pdf",
-      "sha256": "bc1328f04364813d7d4159554a31f128fc307f1e2a7268bc64489baa6c5a3d8e"
+      "sha256": "d8525a9ce49fa38145cf5e211d34f75d42290789ff239f9b9fa42b6d9794f672"
     }
   },
   "schema_version": "foundations-manuscript-evidence-release/v1",
-  "status": "internal_review_ready",
+  "status": "full_foundations_manuscript_release_candidate",
   "supporting_docs": {
     "README": {
       "path": "evidence/manuscript-foundations-release-20260805/README.md",

@@ -1,40 +1,40 @@
 {
-  "schema_version": "foundations-manuscript-build-report/v2",
-  "date": "2026-08-05",
-  "manuscript": "Accountable Neural Aggregation in Computational Pathology",
-  "package": "manuscripts/computational-pathology-foundations-v1",
-  "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex",
-  "environment": {
-    "latexmk_version": "4.88",
-    "engine": "pdflatex (MiKTeX)",
-    "os": "windows"
-  },
-  "reproducibility": "Build runs from the package sources (main.tex + sections/*.tex + figures/*.tex + references.bib) in a clean checkout; no external data required.",
   "artifacts": {
     "main_pdf": {
+      "pages": 12,
       "path": "manuscripts/computational-pathology-foundations-v1/main.pdf",
-      "sha256": "66c36796c794dba7eb13d102e3bc5c43b3ff02b6be5671f65f2994e1f6d8e1d1",
-      "pages": 12
+      "sha256": "66c36796c794dba7eb13d102e3bc5c43b3ff02b6be5671f65f2994e1f6d8e1d1"
     },
     "supplement_pdf": {
+      "pages": 3,
       "path": "manuscripts/computational-pathology-foundations-v1/supplement.pdf",
-      "sha256": "bc1328f04364813d7d4159554a31f128fc307f1e2a7268bc64489baa6c5a3d8e",
-      "pages": 3
+      "sha256": "bc1328f04364813d7d4159554a31f128fc307f1e2a7268bc64489baa6c5a3d8e"
     }
   },
-  "log_summary": {
-    "unresolved_citations": 0,
-    "undefined_references": 0,
-    "missing_figures": 0,
-    "overfull_warnings": "cosmetic only; no errors"
+  "build_command": "latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex",
+  "date": "2026-08-05",
+  "environment": {
+    "engine": "pdflatex (MiKTeX)",
+    "latexmk_version": "4.88",
+    "os": "windows"
   },
+  "log_summary": {
+    "missing_figures": 0,
+    "overfull_warnings": "cosmetic only; no errors",
+    "undefined_references": 0,
+    "unresolved_citations": 0
+  },
+  "manuscript": "Accountable Neural Aggregation in Computational Pathology",
+  "package": "manuscripts/computational-pathology-foundations-v1",
   "release_hardening": {
-    "placeholder_hashes_remaining": 0,
     "every_active_numeric_claim_has_real_artifact_hash": true,
     "pathologyfl_status_matches_executable_reality": true,
-    "validator_checks_run": 236,
-    "validator_checks_failed": 0
+    "placeholder_hashes_remaining": 0,
+    "validator_checks_failed": 0,
+    "validator_checks_run": 236
   },
+  "reproducibility": "Build runs from the package sources (main.tex + sections/*.tex + figures/*.tex + references.bib) in a clean checkout; no external data required.",
+  "schema_version": "foundations-manuscript-build-report/v2",
   "status": "full_foundations_manuscript_release_candidate",
-  "status_note": "Every active numerical claim is bound to a real verified artifact hash; no placeholder hashes remain; all cited files exist; all references verified; PathologyFL/FAIR-WEIGHTS-H status matches executable reality; PDFs build cleanly; all validation tests pass; the public site is not modified. The PDFs are marked internal review and are not published."
+  "status_note": "All final gates pass: academic-index prior-art review complete; all references verified; status consistent; every active numerical claim cryptographically bound; all foundational research lines present; architecture/empirical maturity separated; manuscript and supplement build cleanly; all required tests pass; no unresolved citation; public site not modified; no historical manuscript deleted."
 }
