@@ -310,3 +310,35 @@ def test_full_package_validates():
     vm.check_prohibited_phrases(_full_text(), checker)
     vm.check_frozen_statuses_preserved(checker)
     assert checker.errors == []
+
+
+# --- Phase G final-review checks ---
+
+
+def test_status_is_consistent_across_all_files():
+    checker = vm.Checker()
+    vm.check_status_consistency(checker, REPO_ROOT)
+    assert checker.errors == []
+
+
+def test_final_review_artifacts_all_present():
+    checker = vm.Checker()
+    vm.check_final_review_artifacts(checker, REPO_ROOT)
+    assert checker.errors == []
+
+
+def test_pdf_hashes_match_release_manifest():
+    checker = vm.Checker()
+    vm.check_pdf_hashes(checker, REPO_ROOT)
+    assert checker.errors == []
+
+
+def test_pcam_remains_nonnumerical():
+    checker = vm.Checker()
+    vm.check_boundary_wording(checker)
+    assert checker.errors == []
+
+
+def test_allowed_final_statuses_are_valid():
+    assert "full_foundations_manuscript_release_candidate" in vm.ALLOWED_FINAL_STATUSES
+    assert "full_foundations_manuscript_internal_review_ready" in vm.ALLOWED_FINAL_STATUSES

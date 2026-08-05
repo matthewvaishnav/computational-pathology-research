@@ -1,0 +1,140 @@
+{
+  "bound_artifacts": {
+    "adjudication_v2": {
+      "path": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "size_bytes": 438446
+    },
+    "camelyon17_summary": {
+      "path": "results/camelyon17/center_weighting_5seed_summary.md",
+      "sha256": "3637830e74fb7fb3cdc88eb6de80fb960635a99b20509f1ac5329c8a63c23155",
+      "size_bytes": 3322
+    },
+    "corrected_evidence": {
+      "path": "evidence/paired_acquisition/corrected-20260726/release_manifest.json",
+      "sha256": "a7a7e34d1df24f7003ee8ccacc58e8885f5ebe60ed0b167f71c9f28767fadf4d",
+      "size_bytes": 33982
+    }
+  },
+  "canonical_internal_hash": "7b88ef943424b9a05c7506a436f9da44e591d5e2e3c223964ce9b59160569487",
+  "claims": {
+    "manuscript_claim_ledger.csv": "32b103caa1d86df7534accf9417d3b2c85aa6ef19b7acc459ab7f70bc73d33b1",
+    "prohibited_claims.txt": "0b52d10b8c312c017c1ddbd9c1f2bbb745a0e8e621972f6e8f5416d883c0c7e0"
+  },
+  "clean_checkout_build": {
+    "commit": "793bb6d3f3de7d7a99ff56582dee82423654c1df",
+    "duration_seconds": 13,
+    "main_pdf_rebuilt_sha256": "265cfff0ca74582255f21cc9bb636fcf319dee152121375750330c92931deaa0",
+    "missing_figures": 0,
+    "note": "rebuilt PDF hashes differ from the committed PDFs only in embedded LaTeX metadata; page counts and content are identical",
+    "overfull_warnings": 0,
+    "supplement_pdf_rebuilt_sha256": "31ef3f461964f2a4b999e6fcccd977e16f93e57ecfeb31138eba8572969844e0",
+    "undefined_references": 0
+  },
+  "date": "2026-08-05",
+  "figures": {
+    "figure10_publication_portfolio.tex": "64afd89381e8d0a68fcb649b9ea7d59e35248b6aa7287d6ee135b0db27c45482",
+    "figure1_program_architecture.tex": "95d065f09a4e4ca24c076fd9462c25777384bc179516676da0cbd937ad16bee6",
+    "figure2_pa_nf_architecture.tex": "757650773df11beeb43275f9276eaef9ea6697492b2ca7f791f0e480794c987a",
+    "figure3_transnnmil_family.tex": "ca08d59f12a87ca83dc41112020c4aef24b937dd56630341177c3937d85e8fc5",
+    "figure4_pathologyfl_architecture.tex": "66945f9a2fec40bc57d0048fae4f2ebe635112fea3879413f5c0b74338ec3ce0",
+    "figure5_fair_weights_h_flow.tex": "b184e072d30c38a5f35d1c85852be433f8a5a0f805c34be612056d19dfe7c7ab",
+    "figure6_dataset_boundary.tex": "a6c75bb0b3cb29b26c079fb5eb4fb18ab4f4b4f203f520ab763b077c16184e7c",
+    "figure7_evidence_status_matrix.tex": "eb8c9ed5d7e55e59434d6c21f7f76fe83b6c61d2dbabd7f8ae1519e38bb7604f",
+    "figure8_pa_nf_corrected_findings.tex": "429efcfa405956dd7748a10d60931a2294d34eccbe74dd1e17ed4456ee641a87",
+    "figure9_b32_b64_tradeoff.tex": "7b884bffcc2a95ba6d0431ccbf6f565eace7f44a674a00014d5dddaea88976c3"
+  },
+  "git_commit": "793bb6d3f3de7d7a99ff56582dee82423654c1df",
+  "manuscript_package": "manuscripts/computational-pathology-foundations-v1/",
+  "manuscript_sources": {
+    "manuscripts/computational-pathology-foundations-v1/main.tex": "09948afb13dc4428cfc6430a86fbcde5b7a44cc97e7f2b7e989427697ceadb1a",
+    "manuscripts/computational-pathology-foundations-v1/references.bib": "6e33e7e049c9bbe79657122246b0f2f5faf1f0eb251058521694a26890d316f4",
+    "manuscripts/computational-pathology-foundations-v1/sections/abstract.tex": "c0aa0e1b5bb1b1aacf3690a8fa3a76380566a1a7ea96a95712e5e76ac9df47ee",
+    "manuscripts/computational-pathology-foundations-v1/sections/benchmark_engineering_foundation.tex": "25b6cf1f27d89f571f3e6640d940a37a7c75c10ae5d82bec3b174478e00161ed",
+    "manuscripts/computational-pathology-foundations-v1/sections/camelyon17_studies.tex": "b4a9225f57ef6d616dfc4bbf7fb440bfaae8064e1fa7a6023c208e7e097f0937",
+    "manuscripts/computational-pathology-foundations-v1/sections/conclusion.tex": "a9fc4a5335370c2b8b275cee1f115668ec4032967b99da3aa05a74b6452fdcd2",
+    "manuscripts/computational-pathology-foundations-v1/sections/cross_level_accountability_framework.tex": "0ae7dee5876aa83d7f1fe904718e50dc4c83c009075ac86b9a32985540d38cf8",
+    "manuscripts/computational-pathology-foundations-v1/sections/discussion.tex": "2c338980200842a3565ca4c9f0e16e77ca0e944307faa9f294bb49b64296fa69",
+    "manuscripts/computational-pathology-foundations-v1/sections/fair_weights_h.tex": "6bf0d84af77de5995a6af05779a03303806881c98aa62f81fd7acbfa960520d9",
+    "manuscripts/computational-pathology-foundations-v1/sections/introduction.tex": "9cfd6df2bfdd0b4a3df1bce121a9f9a700513fe04cdc635dc402677a7f976aa1",
+    "manuscripts/computational-pathology-foundations-v1/sections/level1_representation_formation.tex": "159a5c03eca592248a915f315808409da95273de649c869288df98e39c2a4fd8",
+    "manuscripts/computational-pathology-foundations-v1/sections/level2_whole_slide_aggregation.tex": "394d5eb2a117f773aa54fd074ecd5efa2322b1bcc3a38fdd4707ddb0e73b716f",
+    "manuscripts/computational-pathology-foundations-v1/sections/level3_institutional_aggregation.tex": "457b2e6b019009eb81e6faa9620a1a8af0122c4481d7c081ba02678925c7e650",
+    "manuscripts/computational-pathology-foundations-v1/sections/limitations.tex": "1b5c10222f73bbde0a1d9a60de453a9ae50072f2f9077a8ddb9c56fe88179dcc",
+    "manuscripts/computational-pathology-foundations-v1/sections/panda_studies.tex": "1eff9624663f81ac0be8813e367795e85866f9f1e25db2d282d119584d8b1e3d",
+    "manuscripts/computational-pathology-foundations-v1/sections/research_program_overview.tex": "55533a759d6b5602f3607397dc10520859d5661e50eec705b9e01c7d6f82eadf",
+    "manuscripts/computational-pathology-foundations-v1/sections/scientific_audit_and_provenance.tex": "988a6132e3e2205a790b9c060d40657ae26bd64c198b663e70700dcf014e2123",
+    "manuscripts/computational-pathology-foundations-v1/sections/synthetic_mechanism_studies.tex": "d2d9c81506c24fb67bf9170d43ea6aebbd419e6ae7072a60fdd2d8171a0a1c4b",
+    "manuscripts/computational-pathology-foundations-v1/supplement.tex": "a9fb5420a5220d4dd6ba55c8382482fbbcdeb04d600582fc95125ef333ebd60d"
+  },
+  "pdfs": {
+    "main": {
+      "pages": 12,
+      "path": "evidence/manuscript-foundations-final-review-20260805/artifacts/main.pdf",
+      "sha256": "8d01305b2047c567803c5c50aaa08c575f09aaf622533e789695d3328d84b40f"
+    },
+    "supplement": {
+      "pages": 3,
+      "path": "evidence/manuscript-foundations-final-review-20260805/artifacts/supplement.pdf",
+      "sha256": "d8525a9ce49fa38145cf5e211d34f75d42290789ff239f9b9fa42b6d9794f672"
+    }
+  },
+  "previous_release_package": "evidence/manuscript-foundations-release-20260805/release_manifest.json",
+  "schema_version": "foundations-manuscript-final-review-release/v1",
+  "status": "full_foundations_manuscript_release_candidate",
+  "supporting_docs": {
+    "build_report": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/build_report.md",
+      "sha256": "026d8763c9bc517efc77e26c653d30f00495796a1a113b5f412e4b13f20f2193"
+    },
+    "citation_audit": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/citation_audit.md",
+      "sha256": "6886d2545aede652ff120aad3050b00d0ce22f0caaaae3488476d0dc454aaaee"
+    },
+    "claim_boundary_snapshot": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/claim_boundary_snapshot.md",
+      "sha256": "932a1dceebbc523d908ff8f0287914ec3eea6022e29fe74a14b556b6a417844c"
+    },
+    "environment": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/environment.json",
+      "sha256": "0e8d2276a4d21db7ab65302ac593dbcc97a81d3f9305048f40a0f416c2789448"
+    },
+    "hostile_review": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/hostile_review.md",
+      "sha256": "acd1ca60ad8ea2368236cb7e98b5d2c9be06885299dfbe77f2d13c211ba109c5"
+    },
+    "prior_art_review": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/prior_art_review.md",
+      "sha256": "78d68a9b81796274cda5ff1c0bb086e206b68f32403565fbe7a67eb5f7bb4420"
+    },
+    "search_log": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/search_log.csv",
+      "sha256": "7122aef6589e21ea25d8c110e56bca9ff2c0c0b93150ee413d30f8e3578e0ea5"
+    },
+    "test_report": {
+      "path": "evidence/manuscript-foundations-final-review-20260805/test_report.md",
+      "sha256": "c23781747e513fc030fc9ea171e594a79a9e9326bd799cd9f9de42539b63995c"
+    }
+  },
+  "tables": {
+    "s10_panda_boundary.csv": "6b4ce122c5b90c02c679e911bd334b652ce4f2cb4afc0f846d711b5d5b77d346",
+    "s11_historical_withdrawal_ledger.csv": "452ebe6fd35099234bf74a5bdebb2ec9fe017db050cf1275379f194dbe73fecd",
+    "s1_implementation_paths.csv": "cb187dc2990ae4e43fa651f74bd2ed9cc1484e7e2fe965c5dde2df707c3c4f10",
+    "s2_test_coverage.csv": "23b78fd3aed893d38e0db2f3375bb74ee9b8b3f94498996642a1e0bdf713a1e1",
+    "s3_result_artifact_hashes.csv": "890f5a1998de87a2704b45a02a8b743d879de4eeb31e875eab97c5db49d6734f",
+    "s4_per_fold_pa_nf_metrics.csv": "01bf2a4a80fa687a7f9e3c5c935d0877f4598512a02193bc9253b4393283220e",
+    "s5_synthetic_status.csv": "32fc7314520d85763e8b170ef92b5112a9e9d81ccbc69a3cda8f6a831c6abf1b",
+    "s6_transnnmil_component_matrix.csv": "beaaed489da47dcbd81c173de660f4129be160df195b4d1a6e340ee2e333e968",
+    "s7_pathologyfl_feature_matrix.csv": "387093461da4c3d0c609feee23c2f9bf0ab23025c8691f6ac6b783166b160812",
+    "s8_fair_weights_h_signals.csv": "f225f0527434cec563e2fb2541f5e7835383a8eb8bc8b3e44f26ac5c900dfda8",
+    "s9_camelyon17_boundary.csv": "b5b305bb687f28c5bb7572e600492addaa1e14f65adeeb4c4916fd2f918f8610",
+    "table1_research_program_contributions.csv": "3911a40c79a538ca12c0f4c349217013a062885ce55ed8fe680c6751b1095c19",
+    "table2_dataset_boundaries.csv": "916825978356d5274400399e0b17677e157a74a494916da6bdf25dd6281e35a9",
+    "table3_architecture_protocol_status.csv": "7f111de972dddbe01d592b51782ef63dc2ec9669715cfaeeb53c35bfd46f4837",
+    "table4_corrected_pa_nf_results.csv": "d412ee3542572f0d993550828a6bea72559a5a61e86fa7cdc5cf01143029076a",
+    "table5_whole_slide_validation_status.csv": "4e52c18715a48502eecc0ac31f54a2f263171faf7e3ef13fa5102d32dd77002e",
+    "table6_federated_institutional_validation_status.csv": "76f7548d1fb96d67c072ea77bd6f12f6b1f45c497206063e9812789d848f99fd",
+    "table7_negative_mixed_results.csv": "5f1c9545d0c134620d8095cc57b8a7e7df2938631c662e243641904b42f03181",
+    "table8_claim_boundaries.csv": "6f6533bd4804b2cfc15f83bd987d2b180264773e6f85eb95e8e49790051814ee"
+  }
+}

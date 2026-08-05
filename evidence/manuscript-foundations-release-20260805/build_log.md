@@ -34,7 +34,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error supplement.tex
 
 ## Status
 
-`internal_review_ready` after release hardening. Every active numerical claim is
+`full_foundations_manuscript_release_candidate` after final review. Every active numerical claim is
 bound to a real verified artifact hash; no placeholder hashes remain; all cited
 files exist; all references verified; PathologyFL/FAIR-WEIGHTS-H status matches
 executable reality; PDFs build cleanly; all validation tests pass; the public
