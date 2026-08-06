@@ -1,22 +1,24 @@
-name: Deploy PA-NF research site
+name: Publish PA-NF preprint
 
 on:
   push:
     branches: [main]
     paths:
       - ".github/workflows/vitepress.yml"
+      - "paper/paired_acquisition_preprint/**"
       - "website/pa-nf-site/**"
       - "CLAIM_BOUNDARY.md"
-      - "docs/research/paired-acquisition-research-engineering-brief.md"
-      - "evidence/paired_acquisition/**"
+      - "README.md"
+      - ".zenodo.json"
   pull_request:
     branches: [main]
     paths:
       - ".github/workflows/vitepress.yml"
+      - "paper/paired_acquisition_preprint/**"
       - "website/pa-nf-site/**"
       - "CLAIM_BOUNDARY.md"
-      - "docs/research/paired-acquisition-research-engineering-brief.md"
-      - "evidence/paired_acquisition/**"
+      - "README.md"
+      - ".zenodo.json"
   workflow_dispatch:
 
 permissions:
@@ -27,58 +29,93 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  site:
+  preprint:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Validate focused PA-NF publication status
+      - name: Install LaTeX and PDF tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk lmodern poppler-utils zip \
+            texlive-fonts-recommended texlive-latex-extra texlive-pictures
+
+      - name: Validate publication source
         shell: bash
         run: |
           set -euo pipefail
+          test -s paper/paired_acquisition_preprint/source_parts/part01.tex
+          test -s paper/paired_acquisition_preprint/source_parts/part02.tex
+          test -s paper/paired_acquisition_preprint/source_parts/part03.tex
+          test -s paper/paired_acquisition_preprint/arxiv_metadata.md
+          test -s paper/paired_acquisition_preprint/zenodo_metadata.json
           test -s website/pa-nf-site/index.html
-          test -s CLAIM_BOUNDARY.md
-          test -s docs/research/paired-acquisition-research-engineering-brief.md
-          test -s evidence/paired_acquisition/corrected-20260726/release_manifest.json
-
-          grep -Fq "Paired-Acquisition Neural Factorization" website/pa-nf-site/index.html
-          grep -Fq "Focused PA-NF manuscript reconstruction" website/pa-nf-site/index.html
-          grep -Fq "partial structured separation" website/pa-nf-site/index.html
-          grep -Fq "no supported neural feature-space increment" website/pa-nf-site/index.html
-
-          if grep -Eqi "paper temporarily withdrawn|scientific audit hold site|full computational pathology foundations" website/pa-nf-site/index.html; then
-            echo "Stale publication framing found in public site"
+          cat paper/paired_acquisition_preprint/source_parts/part*.tex > paper/paired_acquisition_preprint/main.tex
+          echo "8fe086a4a282c98aafbca6951bf7f57013ae19ef68d38eaf7efc1717387802ba  paper/paired_acquisition_preprint/main.tex" | sha256sum -c -
+          grep -Fq "Paired-Acquisition Neural Factorization" paper/paired_acquisition_preprint/main.tex
+          grep -Fq "partial structured separation" paper/paired_acquisition_preprint/main.tex
+          grep -Fq "did not establish a feature-space increment" paper/paired_acquisition_preprint/main.tex
+          grep -Fq "paired-acquisition-neural-factorization.pdf" website/pa-nf-site/index.html
+          if grep -Eqi "focused manuscript reconstruction|publication status|paper temporarily withdrawn" website/pa-nf-site/index.html; then
+            echo "Status-page framing found in the public redirect"
             exit 1
           fi
 
-      - name: Prepare static site
+      - name: Build corrected focused manuscript
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd paper/paired_acquisition_preprint
+          latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+          test -s main.pdf
+          pages="$(pdfinfo main.pdf | awk '/^Pages:/ {print $2}')"
+          test "$pages" -ge 5
+          if grep -Eq "Overfull \\\\hbox|Citation .* undefined|Reference .* undefined|There were undefined references" main.log; then
+            echo "LaTeX quality gate failed"
+            exit 1
+          fi
+
+      - name: Prepare direct PDF site and source archive
         shell: bash
         run: |
           set -euo pipefail
           rm -rf public
           mkdir -p public
           cp website/pa-nf-site/index.html public/index.html
+          cp paper/paired_acquisition_preprint/main.pdf public/paired-acquisition-neural-factorization.pdf
+          (
+            cd paper/paired_acquisition_preprint
+            zip -j "$GITHUB_WORKSPACE/public/paired-acquisition-neural-factorization-arxiv-source.zip" main.tex
+          )
+          cp paper/paired_acquisition_preprint/arxiv_metadata.md public/arxiv-metadata.md
+          cp paper/paired_acquisition_preprint/zenodo_metadata.json public/zenodo-metadata.json
           touch public/.nojekyll
-          cat > public/publication-status.json <<EOF
+          pdf_sha="$(sha256sum public/paired-acquisition-neural-factorization.pdf | awk '{print $1}')"
+          source_sha="$(sha256sum public/paired-acquisition-neural-factorization-arxiv-source.zip | awk '{print $1}')"
+          cat > public/publication-status.json <<JSON
           {
-            "paper": "Paired-Acquisition Neural Factorization",
-            "status": "focused_manuscript_reconstruction",
+            "paper": "Paired-Acquisition Neural Factorization for Computational Pathology",
+            "status": "corrected_focused_preprint",
             "source_commit": "${GITHUB_SHA}",
-            "claim_boundary": "https://github.com/${GITHUB_REPOSITORY}/blob/main/CLAIM_BOUNDARY.md",
-            "corrected_evidence": "https://github.com/${GITHUB_REPOSITORY}/tree/main/evidence/paired_acquisition/corrected-20260726"
+            "pdf": "paired-acquisition-neural-factorization.pdf",
+            "pdf_sha256": "${pdf_sha}",
+            "arxiv_source": "paired-acquisition-neural-factorization-arxiv-source.zip",
+            "arxiv_source_sha256": "${source_sha}",
+            "claim_boundary": "https://github.com/${GITHUB_REPOSITORY}/blob/main/CLAIM_BOUNDARY.md"
           }
-          EOF
+          JSON
 
-      - name: Upload site artifact
+      - name: Upload publication artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pa-nf-research-site
+          name: paired-acquisition-neural-factorization-preprint
           path: public
-          retention-days: 14
+          retention-days: 30
 
-      - name: Deploy to gh-pages
+      - name: Deploy direct PDF site
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
