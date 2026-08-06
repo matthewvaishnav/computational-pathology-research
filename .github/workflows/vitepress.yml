@@ -58,8 +58,12 @@ jobs:
           test -s website/foundations-site/index.html
           grep -Fq "Accountable Neural Aggregation in Computational Pathology" manuscripts/computational-pathology-foundations-v1/main.tex
           grep -Fq "Preprint --- 2026-08-06" manuscripts/computational-pathology-foundations-v1/main.tex
+          grep -Fq "Public preprint supplement --- 2026-08-06" manuscripts/computational-pathology-foundations-v1/supplement.tex
           grep -Fq "accountable-neural-aggregation-in-computational-pathology.pdf" website/foundations-site/index.html
-          if grep -Eqi "internal-review draft|not for public release|paper temporarily withdrawn|focused manuscript reconstruction" website/foundations-site/index.html manuscripts/computational-pathology-foundations-v1/main.tex; then
+          if grep -Eqi "internal-review draft|internal-review supplement|not for public release|paper temporarily withdrawn|focused manuscript reconstruction" \
+            website/foundations-site/index.html \
+            manuscripts/computational-pathology-foundations-v1/main.tex \
+            manuscripts/computational-pathology-foundations-v1/supplement.tex; then
             echo "Non-public or status-page framing found in the primary publication path"
             exit 1
           fi
@@ -86,16 +90,10 @@ jobs:
           test "$main_pages" -eq 12
           test "$supplement_pages" -eq 3
 
-          if grep -Eq "Overfull \\\\hbox|Citation .* undefined|Reference .* undefined|There were undefined references|LaTeX Warning: File .* not found" main.log; then
-            echo "Primary manuscript LaTeX quality gate failed"
+          if grep -Eq "Overfull \\\\hbox|Citation .* undefined|Reference .* undefined|There were undefined references|LaTeX Warning: File .* not found" main.log supplement.log; then
+            echo "Foundations LaTeX quality gate failed"
             exit 1
           fi
-          if grep -Eq "Citation .* undefined|Reference .* undefined|There were undefined references|LaTeX Warning: File .* not found" supplement.log; then
-            echo "Supplement reference/file quality gate failed"
-            exit 1
-          fi
-          supplement_overfull="$(grep -c 'Overfull \\hbox' supplement.log || true)"
-          echo "Supplement pre-existing long-path/table overflow warnings: ${supplement_overfull}"
 
       - name: Build secondary focused PA-NF manuscript
         shell: bash
