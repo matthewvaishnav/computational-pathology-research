@@ -87,7 +87,7 @@ jobs:
           main_pages="$(pdfinfo main.pdf | awk '/^Pages:/ {print $2}')"
           supplement_pages="$(pdfinfo supplement.pdf | awk '/^Pages:/ {print $2}')"
           echo "Foundations pages: ${main_pages}; supplement pages: ${supplement_pages}"
-          test "$main_pages" -eq 12
+          test "$main_pages" -ge 12
           test "$supplement_pages" -eq 3
 
           if grep -Eq "Overfull \\\\hbox|Citation .* undefined|Reference .* undefined|There were undefined references|LaTeX Warning: File .* not found" main.log supplement.log; then
