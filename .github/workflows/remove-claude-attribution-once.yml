@@ -56,58 +56,14 @@ jobs:
           commit.message = (("\n".join(kept) + "\n") if kept else "").encode("utf-8")
           PY
 
+          before_tree=$(git rev-parse main^{tree})
           git filter-repo --force --refs refs/heads/main \
             --commit-callback "$(cat /tmp/remove_claude_callback.py)"
+          after_tree=$(git rev-parse main^{tree})
 
+          test "$before_tree" = "$after_tree"
           remaining=$(git log main --format=%B | grep -Fic 'Co-Authored-By: Claude <noreply@anthropic.com>' || true)
           test "$remaining" -eq 0
-
-          mkdir -p .github/workflows
-          cat > .github/workflows/forbid-claude-coauthor.yml <<'YAML'
-          name: Reject Claude co-author trailers
-
-          on:
-            push:
-              branches: [main]
-            pull_request:
-              branches: [main]
-
-          permissions:
-            contents: read
-
-          jobs:
-            audit-commit-messages:
-              runs-on: ubuntu-latest
-              steps:
-                - uses: actions/checkout@v5
-                  with:
-                    fetch-depth: 0
-                - name: Reject Claude attribution
-                  env:
-                    EVENT_NAME: ${{ github.event_name }}
-                    BEFORE: ${{ github.event.before }}
-                    SHA: ${{ github.sha }}
-                    PR_BASE: ${{ github.event.pull_request.base.sha }}
-                  run: |
-                    set -euo pipefail
-                    if [ "$EVENT_NAME" = "pull_request" ]; then
-                      range="$PR_BASE..$SHA"
-                    elif [ -n "${BEFORE:-}" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
-                      range="$BEFORE..$SHA"
-                    else
-                      range="$SHA^..$SHA"
-                    fi
-                    if git log "$range" --format=%B | grep -Eqi 'Co-Authored-By:.*Claude|noreply@anthropic\.com'; then
-                      echo 'Claude co-author attribution is prohibited in this repository.'
-                      exit 1
-                    fi
-          YAML
-
-          git config user.name "Matthew Vaishnav"
-          git config user.email "211710632+matthewvaishnav@users.noreply.github.com"
-          git rm .github/workflows/remove-claude-attribution-once.yml
-          git add .github/workflows/forbid-claude-coauthor.yml
-          git commit -m "Prevent future Claude co-author attribution"
 
           git remote remove origin || true
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
