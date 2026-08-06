@@ -1,4 +1,4 @@
-# Prospective paired affine comparison
+# Prospective FEATMAP-style affine comparison
 
 ## Purpose
 
@@ -14,8 +14,10 @@ The comparison separates two questions:
    representation that can be decoded, capacity-controlled, reconstructed, and
    audited separately from the tissue-oriented representation?
 
-The analysis must not merge these into one leaderboard or imply that a
-harmonizer and a factorization model provide the same object.
+FEATMAP is relevant to the first question. The neural model was designed
+primarily for the second. The analysis must not merge these into one
+leaderboard or imply that a harmonizer and a factorization model provide the
+same object.
 
 ## Frozen data and split contract
 
@@ -40,7 +42,7 @@ harmonizer and a factorization model provide the same object.
 | Centroid translation | Source-to-reference mean shift | Minimal paired correction |
 | Orthogonal Procrustes | Translation plus orthogonal rotation/reflection | Rigid geometric map |
 | Affine least squares | Unregularized global affine map | Direct high-dimensional affine baseline |
-| Ridge affine | Regularized global affine map | Primary paired affine baseline |
+| Ridge affine | Regularized global affine map | Primary FEATMAP-style baseline |
 | Paired-Acquisition Neural Factorization | Biological and acquisition neural branches with joint reconstruction | Explicit factorization method |
 
 Every scanner is used as the reference in turn. This avoids choosing the most
@@ -114,7 +116,8 @@ scanner recoverability under this protocol. It cannot establish:
 - complete scanner invariance or information-theoretic independence;
 - biological preservation from cosine or retrieval alone;
 - diagnostic, clinical, workflow, or patient benefit;
-- general superiority outside SCORPION and the frozen DINOv2 representation.
+- general superiority outside SCORPION and the frozen DINOv2 representation;
+- that conceptual overlap with FEATMAP implies copying.
 
 If an affine method removes scanner information more aggressively, that result
 must be reported directly. The remaining neural contribution must then be

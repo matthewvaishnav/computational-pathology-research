@@ -1,0 +1,7 @@
+claim,allowed,prohibited,binding
+PA-NF structured separation,partial structured separation under tested conditions,best scanner-removal; perfect factorization,corrected evidence manifest
+TransnnMIL architecture,implemented multibranch architecture,outperforms TransMIL/nnMIL; improves PANDA grading,source + tests
+PathologyFL framework,executable research framework,clinical outcomes; full multi-center validation,source + tests
+FAIR-WEIGHTS-H protocol,auditable weighting protocol,proves fairness; better than volume weighting,specification
+PCam benchmark,patch-level benchmark,clinical validation; SOTA,result artifact
+CAMELYON17 proxies,centralized frozen-feature proxies,full FL validation; general hospital law,result artifact

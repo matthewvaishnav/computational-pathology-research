@@ -1,0 +1,10 @@
+research_line,implementation_paths
+PCam,experiments/train_pcam.py;experiments/evaluate_pcam.py;src/data/datasets/pcam_dataset.py
+PA-NF,experiments/paired_acquisition/ runners;src/paired_acquisition_factorial.py
+SCORPION,experiments/paired_acquisition/run_*scorpion*;src/models/scorpion_pathoalign.py
+Canine,run_biological_label_preservation_fixed_estimand.py
+TransnnMIL,src/models/transnnmil/;src/models/mil/
+PathologyFL,src/features/federated/pathology_fl/
+FAIR-WEIGHTS-H,.../weighting/fair_weights_h.py;.../pathoalign_bridge.py
+CAMELYON17,experiments/camelyon17_*;scripts/camelyon17/
+Audit,scripts/provenance/;src/paired_acquisition_provenance.py

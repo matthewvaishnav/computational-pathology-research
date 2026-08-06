@@ -1,0 +1,24 @@
+\begin{figure}[!htbp]
+\centering
+\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
+  node distance=0.5cm and 0.6cm,
+  box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.8cm, minimum height=0.6cm}
+]
+\node[box, fill=orange!8] (upd) {Client update $\Delta_i$ + metadata};
+\node[box, fill=orange!12, right=of upd] (signals) {Signals\\integrity gate $\cdot$ uncertainty\\useful-uniqueness\\PathoAlign risk $\cdot$ reason codes};
+\node[box, fill=orange!14, right=of signals] (weight) {Weight computation\\scoring $\cdot$ bounded caps\\mirror descent $\cdot$ conservative};
+\node[box, fill=green!8, right=of weight] (agg) {Weighted aggregation};
+\node[box, below=of weight] (guard) {Constraints (spec/partial)\\train/val/monitor separation\\subgroup constraints $\cdot$ $\Delta$-limits};
+\draw[->] (upd) -- (signals);
+\draw[->] (signals) -- (weight);
+\draw[->] (weight) -- (agg);
+\draw[->] (guard) -- (weight);
+\end{tikzpicture}}
+\caption{FAIR-WEIGHTS-H signal and constraint flow. Implemented: integrity gate,
+uncertainty penalty, useful-uniqueness, bounded weights, PathoAlign audit
+bridge, conservative mode. Specification-only or partial: training/validation/
+monitoring weight separation, difficulty adjustment, Shapley-style contribution,
+subgroup constraints, weight-change limits. No established performance or
+fairness superiority (see Section~7).}
+\label{fig:fair}
+\end{figure}

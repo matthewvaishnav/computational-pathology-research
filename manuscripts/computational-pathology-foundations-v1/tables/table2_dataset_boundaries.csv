@@ -1,0 +1,6 @@
+dataset,scale,endpoints,evidence_boundary
+PCam,32768 test patches,binary tumor patch,patch benchmark; not clinical
+SCORPION,48 slides 480 regions 5 scanners 2400 patches,scanner retrieval geometry,no category labels
+Canine SCC,4025 patches 7 categories 5 scanners,corrected 5-category scanner retrieval,descriptive categories; not clinical
+PANDA,10611 Phikon slides ISUP 0-5,QWK institutional stress,simulated sites; no real mapping
+CAMELYON17,455954 patches 5 centers,held-out-center accuracy center leakage,centralized proxy; not full FL

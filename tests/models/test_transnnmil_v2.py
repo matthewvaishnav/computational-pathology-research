@@ -10,6 +10,11 @@ import pytest
 import torch
 import torch.nn as nn
 
+# TransnnMILv2 (three-branch: TransMIL + hierarchical + topology) constructs a
+# TopologyBranch, which requires torch_geometric. Skip the module cleanly when
+# that optional dependency is absent.
+pytest.importorskip("torch_geometric")
+
 from src.models.transnnmil.transnnmil_v2 import TransnnMILv2, TransnnMILv2TwoBranch
 
 

@@ -1,0 +1,50 @@
+\section{Benchmark and engineering foundation}
+\input{figures/figure6_dataset_boundary}
+
+The program is built on patch-level benchmark and evaluation infrastructure that
+establishes deterministic data handling, evaluation methodology, calibration and
+uncertainty analysis, and federated smoke validation.
+
+\subsection{PCam patch benchmark}
+
+PCam (PatchCamelyon) \cite{veeling2018rotation,pcam2018kaggle} is used as a
+patch-level engineering and evaluation
+benchmark: a binary tumor-detection task over 96$\times$96 RGB patches. The
+implementation includes a dataset API, binary classification head, ResNet and
+transformer feature extractors, full-config training, full-test evaluation with
+ROC AUC / accuracy / F1 and bootstrap confidence intervals, stratified
+cross-validation, threshold operating-point analysis, and failure-asymmetry
+analysis. Federated smoke and heterogeneity benchmarks use real PCam patches
+split into simulated sites to exercise weighting strategies.
+
+\subsection{What PCam establishes}
+
+PCam is treated here as \emph{implementation and benchmark context}, not as an
+active numerical empirical claim. A single documented single-split run was
+reported historically, but its underlying numerical result artifacts are not
+tracked in the repository and are not recoverable, so no specific performance
+number is promoted as an active cryptographically bound claim in this manuscript
+or its evidence manifest. What PCam establishes is:
+
+\begin{itemize}
+\item a working patch-level training and evaluation pipeline (dataset API,
+  heads, feature extractors, training, evaluation with bootstrap CIs);
+\item deterministic data handling and bootstrap evaluation infrastructure with
+  tests;
+\item a foundation for later federated and whole-slide infrastructure;
+\item a benchmark substrate whose \emph{infrastructure}, not unbound numbers,
+  is the contribution.
+\end{itemize}
+
+\subsection{What PCam does not establish}
+
+PCam does not establish clinical validation, diagnostic performance,
+patient-level or slide-level endpoints, external generalization, statistical
+superiority over unrelated published models, or calibration at a clinically
+meaningful operating point. The 5-fold cross-validation tables in documentation
+are projected (the cross-validation run is paused), not observed. The
+threshold-optimization study is retrospective and was withdrawn as
+confirmatory or deployment evidence. No selected threshold is recommended for
+inference or deployment. The current status is \emph{patch-level engineering
+and evaluation benchmark only}, and clinical and deployment prohibitions are
+enforced by the authoritative claim boundary.

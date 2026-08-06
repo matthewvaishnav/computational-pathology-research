@@ -1,0 +1,12 @@
+signal,status,note
+integrity_gate,implemented+tested,score to zero weight
+uncertainty_penalty,implemented+tested,lowers weight
+useful_uniqueness,implemented+computed,cosine-quality-risk
+bounded_weights,implemented+tested,caps + renormalization
+conservative_mode,implemented,fallback boolean
+pathoalign_bridge,implemented,representation risk + reason codes
+train_val_monitor_separation,spec-only,not implemented
+difficulty_adjustment,spec-only,not implemented
+shapley_contribution,spec-only,not implemented
+subgroup_constraints,spec-only,not implemented
+weight_change_limits,spec-only,not implemented

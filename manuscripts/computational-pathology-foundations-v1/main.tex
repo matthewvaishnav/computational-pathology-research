@@ -1,0 +1,95 @@
+\documentclass[10pt]{article}
+
+% Internal-review manuscript. Not for public release.
+% Accountable Neural Aggregation in Computational Pathology:
+% From Paired-Acquisition Representations to Whole-Slide and Institutional Learning
+
+\usepackage[letterpaper,top=0.55in,bottom=0.64in,left=0.72in,right=0.72in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{placeins}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{seqsplit}
+\usepackage{times}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black
+}
+
+\setlength{\columnsep}{0.24in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.08em}
+\setlength{\textfloatsep}{0.55em plus 0.2em minus 0.2em}
+\setlength{\floatsep}{0.45em plus 0.2em minus 0.2em}
+\setlength{\intextsep}{0.45em plus 0.2em minus 0.2em}
+\setlist{nosep,leftmargin=*}
+\captionsetup{font=small,labelfont=bf,skip=3pt}
+\titlespacing*{\section}{0pt}{0.80em}{0.35em}
+\titlespacing*{\subsection}{0pt}{0.55em}{0.20em}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+\AtBeginDocument{%
+  \setlength{\abovedisplayskip}{0.36em plus 0.16em minus 0.12em}%
+  \setlength{\belowdisplayskip}{0.36em plus 0.16em minus 0.12em}%
+  \setlength{\abovedisplayshortskip}{0.18em plus 0.10em minus 0.08em}%
+  \setlength{\belowdisplayshortskip}{0.26em plus 0.10em minus 0.08em}%
+}
+\emergencystretch=2em
+
+\begin{document}
+% Flush-left paragraphs with a soft ragged right edge.
+\raggedright
+\twocolumn[{
+\begin{center}
+\rule{\textwidth}{1.35pt}
+\vspace{0.12in}
+
+{\LARGE\bfseries Accountable Neural Aggregation in Computational Pathology:\\ From Paired-Acquisition Representations to Whole-Slide and Institutional Learning\par}
+
+\vspace{0.10in}
+{\normalsize Matthew Vaishnav}
+\vspace{0.04in}
+
+{\small\em Internal-review draft --- 2026-08-04. Not for public release.}
+\vspace{0.04in}
+
+{\footnotesize\em Every component's evidence maturity is stated explicitly. Architecture claims bind to source and tests; empirical claims bind to immutable result artifacts; pending and prohibited statuses are explicit.}
+\vspace{0.06in}
+\rule{\textwidth}{1.35pt}
+\end{center}
+}]
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/research_program_overview}
+\input{sections/benchmark_engineering_foundation}
+\input{sections/level1_representation_formation}
+\input{sections/level2_whole_slide_aggregation}
+\input{sections/level3_institutional_aggregation}
+\input{sections/fair_weights_h}
+\input{sections/panda_studies}
+\input{sections/camelyon17_studies}
+\input{sections/synthetic_mechanism_studies}
+\input{sections/cross_level_accountability_framework}
+\input{sections/scientific_audit_and_provenance}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

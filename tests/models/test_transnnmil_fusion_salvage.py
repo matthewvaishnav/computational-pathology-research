@@ -104,7 +104,7 @@ def test_model_checkpoint_round_trip(model_class) -> None:
 
 
 def test_topology_is_rejected_for_experimental_variants() -> None:
-    with pytest.raises(ValueError, match="disable enable_topology"):
+    with pytest.raises(ValueError, match="enable_topology=False"):
         TransnnMILBranchAttentionExperimental(
             feature_dim=64,
             hidden_dim=32,

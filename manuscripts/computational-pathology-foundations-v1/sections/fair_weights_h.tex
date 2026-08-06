@@ -1,0 +1,102 @@
+\section{FAIR-WEIGHTS-H}
+\input{figures/figure5_fair_weights_h_flow}
+
+FAIR-WEIGHTS-H is an auditable hybrid institutional-weighting protocol proposed
+and partially implemented under PathologyFL. It is designed to aggregate
+institutional updates using a bounded, auditable weight per institution rather
+than sample volume alone. The protocol is implemented or specified as follows
+(verified from the implementation and its specification):
+
+\subsection{Implemented and tested}
+
+\begin{itemize}
+\item \textbf{Weight engine} (\texttt{weighting/fair\_weights\_h.py}): linear
+  and log-linear scoring, softmax and mirror-descent updates, caps and
+  renormalization, normalized entropy and effective-institution-count
+  diagnostics, an integrity gate (a failing integrity check drives a weight
+  toward zero), an uncertainty penalty, and a conservative mode. These are
+  implemented and unit-tested.
+\item \textbf{PathoAlign audit bridge} (\texttt{weighting/pathoalign\_bridge.py}):
+  derives an adjusted-quality score, a useful-uniqueness signal, and an
+  uncertainty penalty from validation metrics and nuisance/center audit
+  signals, with reason codes and a mechanism-validity flag.
+\end{itemize}
+
+\subsection{Weight-computation mechanism}
+
+The implemented engine scores each institution from a small signal set. Let
+$q_i$ be an adjusted quality (e.g., from the PathoAlign audit bridge), $u_i$ a
+useful-uniqueness term, $p_i$ an uncertainty penalty, and $g_i \in \{0,1\}$ the
+integrity gate. The implemented per-institution score is
+\[
+s_i = \begin{cases}
+-\infty \quad (\text{effective weight } 0) & g_i = 0 \text{ (integrity fails)},\\
+\alpha\, q_i + \beta\, u_i - \lambda\, p_i & \text{otherwise},
+\end{cases}
+\]
+with coefficients $\alpha,\beta,\lambda \ge 0$. Scores are converted to weights
+either by a softmax $w_i = \exp(s_i)/\sum_j \exp(s_j)$ or by a mirror-descent
+update that moves the weight vector toward the target scores subject to caps and
+renormalization ($w_{\min} \le w_i \le w_{\max}$, $\sum_i w_i = 1$). Normalized
+entropy and an effective-institution-count diagnostic quantify how concentrated
+the influence is. The PathoAlign audit bridge maps validation AUC / balanced
+accuracy / calibration plus nuisance and center audit signals into
+$q_i, u_i, p_i$ and a representation-risk value with reason codes and a
+mechanism-validity flag. A conservative mode and an aggregator fallback-to-equal
+path bound the effect when signals are unreliable. The equations for the
+specification-only elements (training/validation/monitoring weight separation,
+difficulty adjustment, Shapley-style contribution, subgroup constraints,
+weight-change limits $\lVert w_{i,t} - w_{i,t-1}\rVert \le \Delta$) are defined
+in the specification document and are not part of the implemented engine. The
+full signal and constraint definitions are in the supplement.
+
+\subsection{Specified but not fully implemented}
+
+Several protocol elements are specified in the design documentation but are not
+implemented or are only partial:
+
+\begin{itemize}
+\item separation of training, validation, and monitoring weight vectors
+  ($w_{\mathrm{train}} \ne w_{\mathrm{val}} \ne w_{\mathrm{monitor}}$) is
+  specification-only;
+\item difficulty-adjusted quality (a fitted case-difficulty model) is not
+  implemented;
+\item Owen/Shapley-style \cite{shapley1953} counterfactual contribution is not
+  implemented as an
+  estimator (the contribution score is a free input field);
+\item subgroup-performance constraints and explicit weight-change limits
+  ($\lVert w_{i,t} - w_{i,t-1}\rVert \le \Delta$) are specification-only;
+\item the four-mode Normal/Conservative/Safety/Emergency fallback table is
+  specification-only, though a conservative mode and a fallback-to-equal
+  aggregator path exist;
+\item validated automated drift detection and fallback selection are not
+  implemented.
+\end{itemize}
+
+\subsection{Execution validation}
+
+Execution stability and aggregation behavior have been tested: synthetic
+perturbation experiments, a PCam federated smoke (all four weighting strategies
+achieve similar $\approx$0.53 accuracy, confirming plumbing rather than
+performance), and PANDA-derived simulated-federation stress tests. In the
+PANDA-3000 simulated stress, FedAvg is strongest in the clean regime, a
+cross-site blend is best at 25\% dominant-site label noise, and results are
+mixed at higher noise. These are \emph{conditional, simulated-site} results.
+
+\subsection{Exact claim status}
+
+Consistent performance or fairness superiority over simpler baselines is
+\emph{not} established by any current immutable artifact. FAIR-WEIGHTS-H
+results live under \texttt{results/} without forward-valid release manifests.
+The documented boundary is preserved exactly:
+
+\begin{itemize}
+\item execution stability and aggregation behavior may be supported;
+\item consistent performance or fairness superiority over simpler baselines is
+  not established;
+\item ``FAIR'' in the method name does not mean fairness has been proven;
+\item passing software tests does not establish improvement on real
+  multi-institution data, clinical validity, fairness across patient groups,
+  privacy guarantees, or deployment readiness;
+\item prospective and multi-center validation remain necessary.
+\end{itemize}

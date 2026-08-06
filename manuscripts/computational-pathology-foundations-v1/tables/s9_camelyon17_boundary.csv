@@ -1,0 +1,6 @@
+claim,status,boundary
+equal_client_weighting,active proxy,held-out-center +8.2pp frozen / +2.66pp supervised
+center_subspace,active mechanism,linear subspace partially removable
+adversarial_removal,negative,did not reduce leakage
+full_FL_validation,planned,not completed
+real_FAIR_WEIGHTS_H_CAMELYON17,absent,no real validation

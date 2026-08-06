@@ -3,7 +3,7 @@
 
 This runner is deliberately separate from the promoted neural-factorization
 evidence. It implements deterministic, source-to-reference embedding maps that
-answer the paired affine harmonization question:
+answer the FEATMAP-style harmonization question:
 
     can a single global map make one scanner's embeddings resemble a reference
     scanner's embeddings when exact same-region pairs are available?

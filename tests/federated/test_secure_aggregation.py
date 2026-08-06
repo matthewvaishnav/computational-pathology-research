@@ -13,7 +13,7 @@ from src.features.federated.pathology_fl.common.data_models import ClientUpdate
 
 # Check if TenSEAL is available
 try:
-    pass
+    import tenseal  # noqa: F401
 
     TENSEAL_AVAILABLE = True
 except ImportError:

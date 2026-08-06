@@ -1,0 +1,9 @@
+component,implemented,tested,empirical_result
+canonical_dual_branch,yes,yes,preliminary PANDA runs
+branch_token_self_attention,yes,yes,not measured vs controls
+transnnmil_v2_3branch,yes,yes,none
+concat_gate_learned_controls,yes,yes,planned controls none
+hierarchical_pooling,yes,yes,synthetic-MIL only
+topology_gnn,yes,yes,historical withdrawn
+adaptive_pruning,yes,yes,disabled in v2
+graph_caching,yes,yes,none

@@ -1,0 +1,94 @@
+\section{Level III: PathologyFL}
+\input{figures/figure4_pathologyfl_architecture}
+
+The third aggregation level is institutional aggregation: how multi-institution
+updates, validation priorities, contribution signals, and safety constraints are
+aggregated into a collaborative model. The program's contribution here is
+PathologyFL, a pathology-specific federated-learning research framework, and
+FAIR-WEIGHTS-H, an auditable hybrid institutional-weighting protocol.
+Pathology-specific federated and decentralized learning has prior art
+(HistoFL \cite{lu2022histofl}, swarm learning); PathologyFL is our specific
+framework integration with monitoring, Byzantine detection, secure aggregation,
+and FAIR-WEIGHTS-H weighting.
+
+\subsection{Architecture}
+
+PathologyFL implements a coordinator-client architecture under
+\texttt{src/features/federated/pathology\_fl/}:
+
+\begin{itemize}
+\item \textbf{Coordinator:} a production orchestrator with round lifecycle,
+  client selection, Byzantine filtering, a tamper-evident audit-log hash chain,
+  and versioned checkpoints; a failure handler with timeouts, retries,
+  blacklisting, and recovery; monitoring (Prometheus, TensorBoard, convergence
+  detection, alerts); and a model registry with SHA-256 integrity and rollback.
+\item \textbf{Client:} a production hospital client with local training,
+  differential-privacy integration \cite{abadi2016dp}, gRPC secure
+  communication, and round
+  participation; a local trainer; a resource manager; and a PACS connector.
+\item \textbf{Aggregator:} FedAvg \cite{mcmahan2017fedavg},
+  FedProx \cite{li2020fedprox}, FedAdam, an explicit weighted
+  adapter (for external FAIR-WEIGHTS-H weights), Byzantine-robust aggregation
+  (Krum \cite{blanchard2017krum}, multi-Krum, trimmed mean, median) with a
+  Byzantine detector, a
+  pathology-aware adapter, a secure aggregator \cite{bonawitz2017secure}, and a
+  FAIR-WEIGHTS-H aggregator.
+\item \textbf{Privacy:} differential-privacy engines (including an Opacus-backed
+  DP-SGD engine), privacy budget tracking and accounting, and noise calibration.
+\item \textbf{Monitoring and anomaly detection:} coordinator monitoring plus
+  Byzantine detection and FAIR-WEIGHTS-H per-parameter-group risk and reason
+  codes.
+\item \textbf{Secure communication and aggregation:} TLS-based gRPC with
+  certificate validation and mutual auth, and a TenSEAL-backed secure
+  aggregation protocol that rejects plaintext in the aggregate-only path.
+\item \textbf{Heterogeneity and systems concerns:} FedProx for non-IID
+  proximal terms, async training with staleness weighting and adaptive
+  timeouts, fault tolerance with checkpoint management, network monitoring, and
+  reconnection handling, compression (quantization, sparsification), and
+  client resource awareness.
+\end{itemize}
+
+\subsection{Round lifecycle and failure handling}
+
+The orchestrator runs a deterministic round lifecycle: select clients, distribute
+the global model, wait for updates (with adaptive per-client timeouts), apply
+Byzantine filtering and aggregation, and write a tamper-evident audit-log entry
+whose hash chain covers the round's client set, received updates, and aggregate.
+A client that times out or returns a non-finite update is retried, blacklisted
+after repeated failure, and recovered through a checkpointed round resume. Async
+modes weight stale updates by an exponential staleness decay. This lifecycle is
+what makes dropout and straggler behavior an \emph{accountable} part of the
+framework rather than an implicit assumption: it is tested by the dropout and
+checkpoint-recovery integration tests.
+
+\subsection{Execution validation}
+
+PathologyFL has integration and property tests that exercise five-client
+training, convergence, DP budget enforcement, Byzantine attacks, client dropout
+and checkpoint recovery, weighted aggregation, secure-aggregation homomorphism,
+and compression. A PCam-derived federated smoke run uses real PCam patches split
+into five simulated sites and four weighting strategies.
+
+\subsection{Evidence status}
+
+The framework is \emph{implemented research infrastructure} with validated
+smoke and integration behavior. It is \emph{not} a validated multi-center
+deployment system. Key distinctions are enforced:
+
+\begin{itemize}
+\item implemented infrastructure and tested execution are separate from
+  simulated pathology benchmarks;
+\item no real multi-center clinical deployment exists;
+\item PCam smoke results are plumbing validation, not performance evidence;
+\item centralized frozen-feature CAMELYON17 studies are not described as full
+  federated-learning validation.
+\end{itemize}
+
+\noindent Caveats are documented. The FAIR-WEIGHTS-H aggregator integration
+(\texttt{pathoalign\_fair.py}) has no dedicated test file. Differential-privacy
+(Opacus-backed DP-SGD) and secure-aggregation (TenSEAL-backed) paths require
+optional libraries; in an environment without those libraries the corresponding
+tests skip cleanly and the guarantees are not independently audited. The
+integration, aggregation, production-integration, privacy-regression, and
+FAIR-WEIGHTS-H engine tests pass; the \emph{e2e} federated tests are gated as
+slow and collect cleanly.

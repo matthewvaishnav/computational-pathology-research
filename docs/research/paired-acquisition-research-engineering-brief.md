@@ -88,23 +88,33 @@ This is part of the contribution: the repository shows how I detect invalid
 estimands, leakage, pseudoreplication, architectural mismatches, incomplete
 provenance, and claims that exceed their evidence.
 
-### Paired affine baselines and the remaining scientific question
+### FEATMAP and the remaining scientific question
 
-The next prospective comparison tests translation, orthogonal Procrustes,
-unregularized affine, and ridge-affine mappings on the exact frozen SCORPION
-folds. Every scanner is used as the reference in turn, and reference conditions
-are averaged within slide to avoid pseudoreplication.
+[FEATMAP](https://www.biorxiv.org/content/10.64898/2026.07.02.736184v1)
+independently uses paired acquisitions to learn global affine corrections
+between medical foundation-model embedding conditions. It is a close
+harmonization competitor, but it produces a different object:
 
-The comparison separates two scientific questions:
+\[
+z_{\text{source}}\rightarrow z_{\text{reference}}
+\]
 
-1. whether a global paired map can reduce recoverable scanner identity; and
-2. whether an explicit neural acquisition representation provides useful
-   reconstruction, bottleneck, leakage-audit, or intervention capabilities.
+whereas this project attempts:
 
-If an affine method wins at raw scanner removal, that result will be reported
+\[
+z\rightarrow(z_{\text{tissue}},z_{\text{acquisition}}).
+\]
+
+The next prospective comparison therefore includes translation, orthogonal
+Procrustes, unregularized affine, and ridge-affine mappings on the exact frozen
+SCORPION folds. Every scanner is used as the reference in turn, and reference
+conditions are averaged within slide to avoid pseudoreplication.
+
+If the affine method wins at raw scanner removal, that result will be reported
 directly. The neural method is scientifically useful only if the explicit
-acquisition representation adds information or control that a corrected
-embedding does not provide.
+acquisition representation, reconstruction, leakage auditing, bottleneck
+control, or intervention capability adds information that a corrected embedding
+does not provide.
 
 ### Reproducibility engineering
 
@@ -145,7 +155,8 @@ This work demonstrates my ability to:
 - design leakage-resistant, biological-sample-blocked evaluation;
 - build resumable and provenance-bound experiment infrastructure;
 - report negative results and narrow claims when simpler methods win;
-- add direct baseline comparisons without making unsupported ownership claims.
+- respond to a close concurrent paper with a direct baseline rather than an
+  ownership claim.
 
 My intended role is research engineering in computational pathology, medical
 imaging, or biomedical machine learning: building technically rigorous neural

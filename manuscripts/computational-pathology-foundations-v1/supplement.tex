@@ -1,0 +1,188 @@
+\documentclass[10pt]{article}
+
+% Supplement to: Accountable Neural Aggregation in Computational Pathology
+
+\usepackage[letterpaper,top=0.55in,bottom=0.64in,left=0.72in,right=0.72in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{placeins}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{times}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+
+\hypersetup{colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,urlcolor=blue!55!black}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.08em}
+\captionsetup{font=small,labelfont=bf,skip=3pt}
+
+\begin{document}
+\begin{center}
+{\LARGE\bfseries Supplement --- Accountable Neural Aggregation in Computational Pathology\par}
+\vspace{0.06in}
+{\small Internal-review supplement (2026-08-04). Not for public release.}
+\vspace{0.06in}
+\rule{\textwidth}{1.0pt}
+\end{center}
+
+\section{Implementation-path inventory}
+Table~\ref{tab:impl} lists the primary implementation paths per research line,
+bound in the evidence manifest (\texttt{evidence/manuscript\_evidence\_manifest.json}).
+Every architectural claim in the main text binds to these source paths and their
+tests.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Implementation-path inventory.}
+\label{tab:impl}
+\begin{tabular}{ll}
+\toprule
+Line & Primary implementation paths \\
+\midrule
+PCam & \texttt{experiments/train\_pcam.py}, \texttt{evaluate\_pcam.py}, \texttt{src/data/datasets/pcam\_dataset.py} \\
+PA-NF & \texttt{experiments/paired\_acquisition/} runners; \texttt{src/paired\_acquisition\_factorial.py} \\
+SCORPION & \texttt{experiments/paired\_acquisition/run\_*scorpion*}, \texttt{src/models/scorpion\_pathoalign.py} \\
+Canine & \texttt{run\_biological\_label\_preservation\_fixed\_estimand.py} \\
+TransnnMIL & \texttt{src/models/transnnmil/}; \texttt{src/models/mil/} \\
+PathologyFL & \texttt{src/features/federated/pathology\_fl/} \\
+FAIR-WEIGHTS-H & \texttt{.../weighting/fair\_weights\_h.py}, \texttt{.../pathoalign\_bridge.py} \\
+CAMELYON17 & \texttt{experiments/camelyon17\_*}; \texttt{scripts/camelyon17/} \\
+Audit & \texttt{scripts/provenance/}; \texttt{src/paired\_acquisition\_provenance.py} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\section{Test coverage}
+Table~\ref{tab:tests} maps each line to its test suites. Tests are the binding
+target for architectural claims.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Test coverage per research line.}
+\label{tab:tests}
+\begin{tabular}{ll}
+\toprule
+Line & Test suites \\
+\midrule
+PCam & \texttt{tests/test\_pcam\_*.py}, \texttt{test\_pcam\_evaluation\_ci.py} \\
+Paired/SCORPION/canine & \texttt{tests/test\_fixed\_estimand\_real\_feature\_space\_adjudication*.py}, \texttt{tests/test\_real\_paired\_scanner\_*.py} \\
+Synthetic & \texttt{tests/test\_biological\_bottleneck\_capacity\_allocation\_factorial.py} \\
+TransnnMIL & \texttt{tests/models/test\_transnnmil\_*.py}, \texttt{test\_topology\_branch.py}, \texttt{test\_hierarchical\_pooling.py} \\
+PathologyFL & \texttt{tests/federated/test\_fl\_integration.py}, \texttt{test\_pathology\_fl\_*.py}, \texttt{test\_secure\_aggregation*.py} \\
+FAIR-WEIGHTS-H & \texttt{tests/federated/test\_fair\_weights\_h.py}, \texttt{test\_weighting\_*.py} \\
+CAMELYON17 & \texttt{tests/test\_camelyon\_*.py}, \texttt{tests/camelyon17/} \\
+Audit & \texttt{tests/test\_corrected\_paired\_acquisition\_evidence.py}, \texttt{test\_real\_bottleneck\_representation\_recovery.py} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\section{Result artifact hashes}
+The authoritative artifact hashes are recorded in
+\texttt{evidence/manuscript\_evidence\_manifest.json}. Selected current hashes:
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Selected result-artifact hashes (2026-08-04).}
+\label{tab:hashes}
+\begin{tabular}{ll}
+\toprule
+Artifact & SHA-256 (first 16) \\
+\midrule
+Corrected evidence manifest & \texttt{a7a7e34d1df24f70} \\
+Corrected snapshot & \texttt{cb06886a6050a66f} \\
+Real paired-scanner result & \texttt{7293ddcddfe8fbaf} \\
+Recovery result & \texttt{2075a2aa240877a1} \\
+Adjudication v2 result & \texttt{2cccaad7aab89586} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\section{Per-fold PA-NF corrected metrics}
+Per-fold corrected five-category balanced accuracy, scanner balanced accuracy,
+and worst-pair retrieval for the recovered B32/B64 cells and the deterministic
+baselines are recorded in the adjudication v2 result
+(\texttt{canine\_metric\_table}). The v2 summary reports B64$-$B32 category
+mean $-0.008$ (one positive fold), scanner mean $+0.049$ (five of five), and
+worst-pair retrieval mean $+0.050$ (five of five).
+
+\section{Synthetic status inventory}
+Synthetic lines are classified \texttt{synthetic\_mechanism\_evidence}. The
+biological-bottleneck capacity-allocation factorial status is
+\texttt{complete\_capacity\_gain\_with\_scanner\_tradeoff}. The corrected
+adjudication reports \texttt{synthetic\_accessibility\_effect\_transported =
+false} because the required corrected category gain is absent.
+
+\section{TransnnMIL component matrix}
+\begin{table}[!htbp]
+\centering
+\small
+\caption{TransnnMIL component status matrix.}
+\label{tab:transnnmil}
+\begin{tabular}{llll}
+\toprule
+Component & Implemented & Tested & Empirical result \\
+\midrule
+Canonical dual-branch & yes & yes & preliminary PANDA runs \\
+Branch-token self-attention fusion & yes & yes & incremental contribution not measured \\
+TransnnMILv2 (3-branch) & yes & yes & none \\
+Concat/gate/learned-attention controls & yes & yes & planned controls, none \\
+Hierarchical pooling & yes & yes & synthetic-MIL ablation only \\
+Topology/GNN branch & yes & yes & historical withdrawn; no repaired rerun \\
+Adaptive pruning & yes & yes & disabled in v2; none \\
+Graph caching & yes & yes & none \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\section{PathologyFL feature matrix}
+PathologyFL implements FedAvg, FedProx, FedAdam, weighted, Byzantine-robust,
+secure (TenSEAL), pathology-aware, and FAIR-WEIGHTS-H aggregators; DP-SGD and
+privacy budget tracking; TLS gRPC and secure aggregation; monitoring and
+Byzantine detection; async training; fault tolerance; compression; and a model
+registry. The e2e federated tests have dangling imports and are not runnable as
+written; secure/DP guarantees are gated on optional libraries.
+
+\section{FAIR-WEIGHTS-H signal and constraint definitions}
+Implemented: integrity gate, uncertainty penalty, useful uniqueness,
+bounded-weight caps and renormalization, conservative mode, PathoAlign audit
+bridge (representation risk, reason codes, mechanism validity). Specification-
+only or partial: training/validation/monitoring weight separation, difficulty
+adjustment, Owen/Shapley contribution estimator, subgroup-performance
+constraints, weight-change limits, four-mode fallback table, validated drift
+detection.
+
+\section{CAMELYON17 boundary}
+CAMELYON17 weighting studies are centralized frozen-feature proxies for
+source-center influence on one held-out center. They are not full federated-
+learning validation, and one held-out center does not establish a cross-hospital
+law. Adversarial center removal was negative; a supervised linear center
+subspace was partially removable.
+
+\section{PANDA boundary}
+PANDA studies are simulated-site, cached-feature experiments over synthetic
+institutional partitions. There is no patient-level endpoint and no real
+hospital mapping. TransnnMIL historical QWK values are withdrawn; post-repair
+runs are preliminary and pending matched controlled reruns.
+
+\section{Historical withdrawal ledger}
+The authoritative ledger is \texttt{CLAIM\_BOUNDARY.md} and
+\texttt{docs/research/scientific-audit-remediation-20260725.md}. Withdrawn
+families include: historical TransnnMIL fusion/topology results, historical
+canine biological-category audit metrics, SCORPION slide-level sign-flip
+p-values, unified-scoreboard rankings, PCam clinical/superiority claims,
+historical canine category metrics, and cosine-as-biology. Withdrawn artifacts
+never appear in active result tables.
+
+\end{document}
