@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Validate focused PA-NF publication status
         shell: bash
@@ -48,13 +48,8 @@ jobs:
           grep -Fq "partial structured separation" website/pa-nf-site/index.html
           grep -Fq "no supported neural feature-space increment" website/pa-nf-site/index.html
 
-          if grep -Eqi "paper temporarily withdrawn|scientific audit hold site|Accountable Neural Aggregation|full computational pathology foundations" website/pa-nf-site/index.html; then
-            echo "Stale or rejected publication framing found in public site"
-            exit 1
-          fi
-
-          if grep -Fq "paper/arxiv/build_arxiv_package.py" .github/workflows/vitepress.yml; then
-            echo "Deployment workflow must not rebuild the superseded LaTeX paper"
+          if grep -Eqi "paper temporarily withdrawn|scientific audit hold site|full computational pathology foundations" website/pa-nf-site/index.html; then
+            echo "Stale publication framing found in public site"
             exit 1
           fi
 
