@@ -1,0 +1,120 @@
+\documentclass[10pt]{article}
+
+\usepackage[letterpaper,top=0.58in,bottom=0.64in,left=0.68in,right=0.68in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\usepackage{lmodern}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{titlesec}
+
+\definecolor{panfblue}{HTML}{234E8A}
+\definecolor{panflight}{HTML}{EAF1F8}
+\definecolor{panfgold}{HTML}{9A6A13}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=panfblue,
+  citecolor=panfblue,
+  urlcolor=panfblue,
+  pdftitle={Paired-Acquisition Neural Factorization for Computational Pathology},
+  pdfauthor={Matthew Vaishnav},
+  pdfsubject={Scanner-structured representation learning in computational pathology},
+  pdfkeywords={computational pathology, scanner variability, paired acquisition, representation learning, factorization}
+}
+
+\setlength{\columnsep}{0.24in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.10em}
+\setlength{\textfloatsep}{0.55em plus 0.2em minus 0.2em}
+\setlength{\floatsep}{0.45em plus 0.2em minus 0.2em}
+\setlength{\intextsep}{0.45em plus 0.2em minus 0.2em}
+\setlist{nosep,leftmargin=*}
+\captionsetup{font=small,labelfont=bf,skip=3pt}
+\titlespacing*{\section}{0pt}{0.75em}{0.30em}
+\titlespacing*{\subsection}{0pt}{0.52em}{0.18em}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+\emergencystretch=2em
+
+\newcommand{\panf}{Paired-Acquisition Neural Factorization}
+\newcommand{\zb}{z_{\mathrm{tissue}}}
+\newcommand{\za}{z_{\mathrm{acq}}}
+\newcommand{\R}{\mathbb{R}}
+
+\begin{document}
+\raggedright
+\twocolumn[{
+\begin{center}
+\rule{\textwidth}{1.35pt}
+\vspace{0.10in}
+
+{\LARGE\bfseries Paired-Acquisition Neural Factorization\\
+for Computational Pathology\par}
+
+\vspace{0.08in}
+{\large A corrected representation-level study of scanner-structured histopathology embeddings\par}
+\vspace{0.10in}
+\rule{\textwidth}{0.50pt}
+\vspace{0.12in}
+
+{\bfseries Matthew Vaishnav}\par
+Independent Researcher, Kitchener-Waterloo, Canada\par
+\href{https://github.com/matthewvaishnav/computational-pathology-research}{github.com/matthewvaishnav/computational-pathology-research}
+\end{center}
+
+\vspace{0.04in}
+\begin{center}
+\begin{minipage}{0.92\textwidth}
+\begin{center}\bfseries Abstract\end{center}
+\small
+Frozen histopathology embeddings can encode scanner identity together with tissue structure. Removing every scanner-predictive direction is unsafe when acquisition and tissue are correlated, yet leaving scanner information uncontrolled can compromise transport across devices. We study \panf{} (PA-NF), a two-branch model trained from matched acquisitions of the same tissue region. A tissue-oriented branch is optimized for same-region agreement and reduced scanner recoverability; an acquisition branch is optimized to retain scanner information; a joint decoder and variance controls discourage collapse.
+
+The primary corrected analysis uses SCORPION: 48 human H\&E slides, 480 aligned regions, five scanners, and 2,400 patches. In a separately versioned 175-fit, capacity-matched campaign, PA-NF reduced held-out linear scanner balanced accuracy by 0.3108 relative to an equal-parameter two-branch control without scanner objectives (95\% fold/slide bootstrap interval $[-0.3346,-0.2858]$). Mean top-1 same-region retrieval changed by only $+0.00004$ ($[-0.00009,0.00026]$), within a preregistered 0.02 noninferiority margin. The acquisition branch remained strongly scanner informative.
+
+On an independent five-scanner canine cutaneous squamous-cell-carcinoma dataset, corrected five-category evaluation yielded a materially more conservative result. Neural B32/B64 representations did not establish a feature-space increment over simple centroid/QR or paired-linear scanner-removal baselines. Increasing the tissue bottleneck from 32 to 64 dimensions increased scanner recoverability by 0.0489 and retrieval by 0.0515, but did not improve corrected category balanced accuracy ($-0.0076$, interval $[-0.0194,0.0071]$). The evidence supports partial structured separation under the tested protocols, not pure biological factors, complete scanner invariance, diagnostic improvement, or clinical utility.
+\end{minipage}
+\end{center}
+\vspace{0.07in}
+}]
+
+\section{Introduction}
+Digital pathology pipelines inherit variation from tissue preparation, staining, scanner optics, color response, compression, registration, and local workflow. Modern self-supervised and pathology-specific encoders can preserve useful morphology while also making the acquisition device highly recoverable. This creates a problem that ordinary domain invariance does not solve: a direction correlated with scanner may also carry tissue information, so suppressing it unconditionally can remove information that the model should retain.
+
+Matched acquisitions change the identification problem. When the same tissue region is scanned on several devices, within-region differences are candidates for acquisition variation while shared structure is a candidate for tissue-associated content. PA-NF uses that repeated-measures structure to learn two explicit representations rather than treating nuisance removal as unaccounted deletion.
+
+This paper makes four bounded contributions. First, it specifies a two-branch paired-acquisition objective with explicit retention, routing, reconstruction, and collapse controls. Second, it reports a capacity-matched SCORPION campaign with the original slide as the statistical unit. Third, it evaluates the resulting representation family on an independent five-scanner canine dataset under a corrected, fixed five-category estimand and identical candidate pools. Fourth, it publishes the negative result that the neural representation did not establish an increment over strong simple corrections. The target is an auditable representation study, not a clinical-performance claim.
+
+\section{Related Work and Problem Setting}
+Scanner variability is a known source of domain shift in computational pathology. The SCORPION benchmark provides spatially aligned views of 480 tissue regions scanned on five devices and introduces SimCons for scanner consistency evaluation \citep{ryu2025scorpion}. The multi-scanner canine cutaneous squamous-cell-carcinoma dataset similarly provides local correspondences across five scanners for 44 biological samples \citep{wilm2023multiscanner}. These datasets make scanner effects observable while controlling more tissue variation than unpaired institutional cohorts.
+
+Domain-adversarial training seeks features that confuse a domain classifier \citep{ganin2016dann}. Such objectives are useful, but low domain predictability alone does not establish retained task information. PA-NF therefore combines scanner suppression with same-region retention, an explicit acquisition branch, reconstruction, and collapse diagnostics. The experiments operate on frozen DINOv2, Phikon, or ResNet50 representations rather than training the image backbone end to end; DINOv2 is a general-purpose self-supervised visual encoder \citep{oquab2023dinov2}, while Phikon is pathology-specific \citep{filiot2023phikon}.
+
+The scientific target is conditional allocation. Let $x_{r,s}$ denote the embedding of tissue region $r$ acquired by scanner $s$. Under the illustrative additive model
+\begin{equation}
+ x_{r,s}=Bz_{r}^{*}+Az_{s}^{*}+\epsilon_{r,s},
+\end{equation}
+paired differences cancel the shared tissue term:
+\begin{equation}
+ x_{r,s'}-x_{r,s}=A(z_{s'}^{*}-z_{s}^{*})+(\epsilon_{r,s'}-\epsilon_{r,s}).
+\end{equation}
+The implemented neural model does not require exact additivity, but the cancellation argument explains why matched acquisition views contain information absent from scanner labels alone.
+
+\section{Method}
+\subsection{Architecture}
+For a standardized frozen embedding $x\in\R^D$, two multilayer perceptrons produce a tissue-oriented factor and an acquisition factor:
+\begin{align}
+ \zb &= f_{t}(x)\in\R^{d_t}, & d_t&\in\{32,64,256\},\\
+ \za &= f_{a}(x)\in\R^{d_a}, & d_a&=64,\\
+ \widehat{x} &= g([\zb;\za])\in\R^D.
+\end{align}
+The SCORPION reference configuration uses $d_t=256$; the canine bottleneck allocation study compares $d_t=32$ and $64$. Both encoders use a 512-unit GELU layer with layer normalization followed by a linear projection. The decoder maps the concatenated factors through width 512 back to the input feature dimension.

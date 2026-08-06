@@ -1,0 +1,41 @@
+{
+  "title": "Paired-Acquisition Neural Factorization for Computational Pathology",
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "description": "A corrected representation-level study of Paired-Acquisition Neural Factorization (PA-NF) using matched multi-scanner acquisitions. The release reports capacity-matched SCORPION evidence and a corrected independent multi-scanner canine SCC audit, including the negative result that the neural feature space did not establish an increment over strong simple scanner-removal baselines. The supported conclusion is partial structured separation under the tested protocols, not pure disentanglement, complete scanner invariance, diagnostic improvement, or clinical utility.",
+  "creators": [
+    {
+      "name": "Vaishnav, Matthew",
+      "affiliation": "Independent Researcher, Kitchener-Waterloo, Canada"
+    }
+  ],
+  "keywords": [
+    "computational pathology",
+    "paired acquisition",
+    "scanner variability",
+    "representation learning",
+    "neural factorization",
+    "histopathology"
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "version": "1.0.0",
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/matthewvaishnav/computational-pathology-research",
+      "relation": "isSupplementedBy",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.16517924",
+      "relation": "references",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1007/978-3-658-41657-7_46",
+      "relation": "references",
+      "scheme": "doi"
+    }
+  ]
+}

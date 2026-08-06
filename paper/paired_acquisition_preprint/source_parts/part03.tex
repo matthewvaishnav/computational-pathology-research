@@ -1,0 +1,108 @@
+Worst-pair top-1 retrieval & $0.00000$ & $[-0.00085,+0.00085]$ & 1/5 & 48 slides & Noninferior, not improved \\
+Acquisition scanner balanced accuracy & $+0.1180$ & $[+0.1003,+0.1358]$ & 5/5 & 48 slides & Stronger explicit routing \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+The ablations localize, but do not uniquely identify, the mechanism. Removing the direct scanner-dependence term increased tissue scanner recoverability by 0.3164 relative to the full objective; removing the acquisition classifier reduced acquisition-branch scanner recovery by 0.0670. Cross-factor covariance and adversarial-head ablations produced smaller or mixed changes. These results support the registered objective as a whole while arguing against claims that each component is independently necessary in every setting.
+
+Pair-integrity falsification provides an additional boundary. Shuffled-pair controls could suppress scanner recovery as much as, or more than, true pairs, but they degraded same-region agreement and retrieval. Scanner suppression alone is therefore insufficient evidence; correct matching matters because it constrains what the model is asked to preserve.
+
+\subsection{Corrected Canine Fixed-Estimand Audit}
+Table~\ref{tab:canine} gives five-fold means from the no-training v2 adjudication. Original features retain descriptive category structure but make scanner identity highly recoverable. Centroid/QR and paired-linear corrections sharply reduce scanner recovery while maintaining category balanced accuracy close to the original and retaining high retrieval. Neural B32 attains the lowest mean scanner balanced accuracy in the table, but its retrieval is substantially lower. B64 recovers some retrieval while also increasing scanner recoverability. Under the registered three-axis rule, neither neural representation establishes a feature-space increment over every simple baseline.
+
+\begin{table*}[t]
+\centering
+\caption{Corrected five-fold canine SCC representation audit. Values are fold means. Category balanced accuracy is descriptive and not a clinical endpoint.}
+\label{tab:canine}
+\small
+\setlength{\tabcolsep}{6.5pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+Representation & Category BA $\uparrow$ & Scanner BA $\downarrow$ & Overall retrieval $\uparrow$ & Worst-pair retrieval $\uparrow$ & Role \\
+\midrule
+Original frozen features & 0.4439 & 0.8635 & 0.8724 & 0.7613 & Uncorrected reference \\
+Centroid/QR scanner projection & 0.4414 & 0.3278 & 0.9099 & 0.8196 & Strong simple correction \\
+Paired linear scanner transform & 0.4422 & 0.3687 & 0.9022 & 0.8283 & Paired simple correction \\
+PCA component removal & 0.3949 & 0.8157 & 0.9197 & 0.8512 & Weak scanner suppression \\
+PA-NF tissue branch B32 & 0.4331 & 0.2996 & 0.7192 & 0.5848 & Neural reference \\
+PA-NF tissue branch B64 & 0.4255 & 0.3486 & 0.7707 & 0.6345 & Parameter-matched wider branch \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+The B64-minus-B32 contrast makes the allocation trade-off explicit. Corrected category balanced accuracy changed by $-0.0076$ with interval $[-0.0194,+0.0071]$. Scanner balanced accuracy increased by $+0.0489$ $([+0.0419,+0.0557])$, overall retrieval increased by $+0.0515$ $([+0.0447,+0.0602])$, and worst-pair retrieval increased by $+0.0497$ $([+0.0442,+0.0551])$. A wider tissue bottleneck therefore carried more region identity and more scanner information, without supported category gain.
+
+The explicit acquisition branch retained strong scanner information in the corrected audit. This supports information routing rather than unaccounted erasure, but does not establish that the acquisition branch is biologically pure or that factors can be swapped to produce valid images.
+
+\subsection{Cross-Backbone and Synthetic Boundaries}
+The frozen SCORPION objective was also evaluated on DINOv2-Base, Phikon, and ImageNet ResNet50 feature substrates without backbone-specific objective tuning. Across those representation families, the tissue branch reduced linear scanner recoverability while preserving near-saturated same-region retrieval. These transfers are supportive robustness checks; the primary inferential comparison remains the capacity-matched DINOv2 campaign.
+
+Controlled synthetic studies with known latent factors examine paired exposure, anchor diversity, and bottleneck capacity. They are useful for identifying mechanisms under specified generators, but their accessibility effects did not transport to corrected real canine category accessibility. Synthetic recovery is therefore not treated as biological validation.
+
+\section{Interpretation}
+The combined evidence supports a narrower conclusion than the original project framing. Paired acquisition is useful because it supplies a constraint on what should remain shared across scanner views. PA-NF can use that constraint to lower scanner recoverability while preserving same-region retrieval on SCORPION and to retain scanner information in an explicit acquisition branch. However, the corrected canine audit shows that a neural factorization is not automatically better than linear scanner removal. Strong simple baselines can occupy a better scanner/category/retrieval trade-off.
+
+This distinction matters. ``Scanner invariant'' is not equivalent to ``biological,'' and high same-region retrieval is not equivalent to preserved disease information. The representations should be interpreted operationally: one branch is trained to be more tissue-oriented, the other more acquisition-oriented, and the observed allocation is partial and protocol dependent.
+
+\section{Limitations}
+The study has several important limitations.
+\begin{enumerate}
+  \item SCORPION contains only 48 original human slides, even though it provides 2,400 aligned patches. The slide, not the patch, is the inferential unit.
+  \item The canine dataset is an independent multi-scanner geometry but differs in species, tissue distribution, resolution, and label construction. It is not a human clinical validation cohort.
+  \item Linear probes measure recoverability under a specified estimator; they do not prove information-theoretic independence.
+  \item Cosine agreement and retrieval are representation-geometry metrics. They do not prove biological preservation or diagnostic equivalence.
+  \item The main experiments operate on frozen feature vectors. They do not establish pixel-space normalization, valid scanner swapping, or end-to-end deployment behavior.
+  \item The objective contains several interacting terms. Ablations localize important effects but do not establish universal necessity or causal uniqueness.
+  \item Broader biological claims require additional independently collected human paired-scanner cohorts and clinically meaningful endpoints.
+\end{enumerate}
+
+\section{Evidence and Reproducibility}
+The corrected evidence is maintained as forward-valid, immutable release packages. The central paired-acquisition release is bound by SHA-256 and records the claim boundary, dataset manifests, commands, source commits, and output hashes. The capacity-matched SCORPION package records 175 unique completed runs, seven variants, five folds, five seeds, and 36 aggregate contrast rows. The canine v2 adjudication is bound to a 438,446-byte result artifact whose SHA-256 begins \texttt{2cccaad7aab89586}; the complete digest is recorded in the release manifest.
+
+Code, tests, evidence manifests, and the manuscript source are available at the repository linked on the first page. The authoritative public claim boundary overrides older PDFs, captions, and reports whenever they conflict. The earlier focused PDF remains superseded; this corrected manuscript does not retroactively validate it.
+
+\section{Conclusion}
+PA-NF demonstrates that matched acquisitions can supervise an explicit allocation of scanner-associated and tissue-associated information in frozen pathology embeddings. Capacity-matched SCORPION evidence supports lower linear scanner recoverability with noninferior same-region retrieval and strong acquisition-branch scanner retention. The corrected canine study adds the essential negative result: the neural feature space did not establish an increment over strong simple corrections, and a wider tissue bottleneck traded higher retrieval for higher scanner recoverability without category gain. The scientifically defensible conclusion is partial structured separation under the tested conditions, not pure disentanglement, scanner-free biology, or clinical utility.
+
+\section*{Data and Code Availability}
+SCORPION is available from Zenodo under DOI \href{https://doi.org/10.5281/zenodo.16517924}{10.5281/zenodo.16517924}. The multi-scanner canine SCC dataset is available from Zenodo under record \href{https://zenodo.org/records/7418555}{7418555}. Reproduction code, corrected evidence manifests, tests, and publication source are available at \href{https://github.com/matthewvaishnav/computational-pathology-research}{the project repository}.
+
+\section*{Ethics and Intended Use}
+This work analyzes public, de-identified research datasets and frozen representations. It is research only. It is not clinical software, a medical device, diagnostic validation, or deployment guidance.
+
+\begin{thebibliography}{9}
+
+\bibitem[Ryu et~al.(2025)Ryu, Song, Lee, Cho, Shin, Paeng, and Pereira]{ryu2025scorpion}
+J. Ryu, H. Song, S. Lee, S. I. Cho, J. Shin, K. Paeng, and S. Pereira.
+\newblock SCORPION: Addressing scanner-induced variability in histopathology.
+\newblock \emph{arXiv preprint arXiv:2507.20907}, 2025.
+\newblock Dataset DOI: \href{https://doi.org/10.5281/zenodo.16517924}{10.5281/zenodo.16517924}.
+
+\bibitem[Wilm et~al.(2023)Wilm, Fragoso, Bertram, Stathonikos, Oettl, Qiu, Klopfleisch, Maier, Breininger, and Aubreville]{wilm2023multiscanner}
+F. Wilm, M. Fragoso, C. A. Bertram, N. Stathonikos, M. Oettl, J. Qiu, R. Klopfleisch, A. Maier, K. Breininger, and M. Aubreville.
+\newblock Multi-scanner canine cutaneous squamous cell carcinoma histopathology dataset.
+\newblock In \emph{Bildverarbeitung fuer die Medizin 2023}, pages 281--286, 2023.
+\newblock doi: \href{https://doi.org/10.1007/978-3-658-41657-7_46}{10.1007/978-3-658-41657-7\_46}.
+
+\bibitem[Ganin et~al.(2016)Ganin, Ustinova, Ajakan, Germain, Larochelle, Laviolette, Marchand, and Lempitsky]{ganin2016dann}
+Y. Ganin, E. Ustinova, H. Ajakan, P. Germain, H. Larochelle, F. Laviolette, M. Marchand, and V. Lempitsky.
+\newblock Domain-adversarial training of neural networks.
+\newblock \emph{Journal of Machine Learning Research}, 17(59):1--35, 2016.
+
+\bibitem[Oquab et~al.(2023)Oquab, Darcet, Moutakanni, et~al.]{oquab2023dinov2}
+M. Oquab, T. Darcet, T. Moutakanni, et~al.
+\newblock DINOv2: Learning robust visual features without supervision.
+\newblock \emph{arXiv preprint arXiv:2304.07193}, 2023.
+
+\bibitem[Filiot et~al.(2023)Filiot, Ghermi, Olivier, Jacob, Fidon, Kain, Schiratti, and Camara]{filiot2023phikon}
+A. Filiot, R. Ghermi, A. Olivier, P. Jacob, L. Fidon, A. M. Kain, J.-B. Schiratti, and A. Camara.
+\newblock Scaling self-supervised learning for histopathology with masked image modeling.
+\newblock \emph{medRxiv}, 2023. doi: 10.1101/2023.07.21.23292757.
+
+\end{thebibliography}
+
+\end{document}
