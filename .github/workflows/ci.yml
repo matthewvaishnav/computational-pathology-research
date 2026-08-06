@@ -73,8 +73,10 @@ jobs:
     timeout-minutes: 10
 
     steps:
-    - name: Checkout code
+    - name: Checkout complete comparison history
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -87,18 +89,65 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 'black>=23.0.0,<25.0.0' isort mypy
 
+    - name: Determine changed Python files
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        BEFORE_SHA: ${{ github.event.before }}
+        HEAD_SHA: ${{ github.sha }}
+      run: |
+        set -euo pipefail
+        zero="0000000000000000000000000000000000000000"
+
+        if [ "$EVENT_NAME" = "pull_request" ]; then
+          range="${PR_BASE_SHA}..${HEAD_SHA}"
+        elif [ -n "${BEFORE_SHA:-}" ] && [ "$BEFORE_SHA" != "$zero" ]; then
+          range="${BEFORE_SHA}..${HEAD_SHA}"
+        elif git rev-parse "${HEAD_SHA}^" >/dev/null 2>&1; then
+          range="${HEAD_SHA}^..${HEAD_SHA}"
+        else
+          range="${HEAD_SHA}"
+        fi
+
+        echo "Formatting comparison range: $range"
+        git diff --diff-filter=ACMRT --name-only "$range" -- '*.py' \
+          | grep -E '^(src|tests)/' \
+          > /tmp/changed-python-files.txt || true
+
+        echo "Changed Python files subject to Black/isort:"
+        if [ -s /tmp/changed-python-files.txt ]; then
+          cat /tmp/changed-python-files.txt
+        else
+          echo "(none)"
+        fi
+
     - name: Run flake8
       run: |
         flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 src/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Check black formatting
+    - name: Check black formatting on changed Python files
+      shell: bash
       run: |
-        black --check src/ tests/
+        set -euo pipefail
+        if [ ! -s /tmp/changed-python-files.txt ]; then
+          echo "No changed Python files; Black check is not applicable."
+          exit 0
+        fi
+        mapfile -t files < /tmp/changed-python-files.txt
+        black --check "${files[@]}"
 
-    - name: Check isort
+    - name: Check isort on changed Python files
+      shell: bash
       run: |
-        isort --check-only src/ tests/
+        set -euo pipefail
+        if [ ! -s /tmp/changed-python-files.txt ]; then
+          echo "No changed Python files; isort check is not applicable."
+          exit 0
+        fi
+        mapfile -t files < /tmp/changed-python-files.txt
+        isort --check-only "${files[@]}"
 
   type-check:
     name: Type Checking
