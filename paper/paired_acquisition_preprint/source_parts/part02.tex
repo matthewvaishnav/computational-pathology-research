@@ -1,0 +1,110 @@
+
+A scanner head $q_t$ is attached to $\zb$ through gradient reversal, while $q_a$ predicts scanner directly from $\za$. The tissue branch is therefore trained against scanner recovery, whereas the acquisition branch is trained to retain it. Figure~\ref{fig:architecture} shows the routing logic.
+
+\begin{figure*}[t]
+\centering
+\resizebox{0.96\textwidth}{!}{%
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=2pt, minimum height=0.72cm, minimum width=2.15cm, align=center, fill=panflight},
+  head/.style={draw, rounded corners=2pt, minimum height=0.66cm, minimum width=2.05cm, align=center, fill=white},
+  loss/.style={draw, rounded corners=2pt, minimum height=0.72cm, minimum width=2.3cm, align=center, fill=yellow!12},
+  arr/.style={-Latex,thick},
+  rev/.style={-Latex,thick,dashed}
+]
+\node[box] (x1) at (0,1.35) {same region\\scanner $s_1$};
+\node[box] (x2) at (0,0) {same region\\scanner $s_2$};
+\node[box] (ft1) at (3.0,1.35) {shared tissue\\encoder $f_t$};
+\node[box] (ft2) at (3.0,0) {shared tissue\\encoder $f_t$};
+\node[box] (z1) at (5.65,1.35) {$z_{\mathrm{tissue}}^{(1)}$};
+\node[box] (z2) at (5.65,0) {$z_{\mathrm{tissue}}^{(2)}$};
+\node[loss] (pair) at (8.55,0.68) {paired agreement\\variance/dependence control};
+\node[head] (qt) at (11.35,1.55) {tissue scanner head\\gradient reversed};
+
+\node[box] (fa) at (3.0,-1.55) {acquisition\\encoder $f_a$};
+\node[box] (za) at (5.65,-1.55) {$z_{\mathrm{acq}}$};
+\node[head] (qa) at (8.55,-2.15) {acquisition scanner head\\ordinary gradient};
+\node[box] (dec) at (11.35,-0.55) {joint decoder\\$g([z_{\mathrm{tissue}};z_{\mathrm{acq}}])$};
+\node[loss] (rec) at (14.25,-0.55) {reconstruct $x$\\cross-factor control};
+
+\draw[arr] (x1) -- (ft1); \draw[arr] (x2) -- (ft2);
+\draw[arr] (ft1) -- (z1); \draw[arr] (ft2) -- (z2);
+\draw[arr] (z1) -- (pair); \draw[arr] (z2) -- (pair);
+\draw[rev] (pair) -- (qt);
+\draw[arr] (x2.south) |- (fa.west);
+\draw[arr] (fa) -- (za); \draw[arr] (za) -- (qa);
+\draw[arr] (z2.south) -- ++(0,-0.42) -| (dec.west);
+\draw[arr] (za.east) -- ++(0.72,0) |- (dec.south);
+\draw[arr] (dec) -- (rec);
+\end{tikzpicture}%
+}
+\caption{PA-NF routes matched tissue views into a tissue-oriented branch and routes scanner information into an explicit acquisition branch. Reduced scanner probe performance is interpreted only together with retention metrics, acquisition-branch scanner recovery, and collapse controls.}
+\label{fig:architecture}
+\end{figure*}
+
+\subsection{Training Objective}
+Let a minibatch be $\{(x_i,r_i,s_i)\}_{i=1}^{n}$, where $r_i$ is region identity and $s_i$ is scanner identity. With normalized tissue factors $u_i=\zb^{(i)}/\lVert\zb^{(i)}\rVert_2$, the supervised paired contrastive term is
+\begin{align}
+ P(i)&=\{p\ne i:r_p=r_i\},\\
+ \mathcal{L}_{\mathrm{pair}}
+ &=-\frac{1}{n}\sum_i\frac{1}{|P(i)|}\sum_{p\in P(i)}
+ \log\frac{\exp(u_i^\top u_p/\tau)}{\sum_{j\ne i}\exp(u_i^\top u_j/\tau)},
+\end{align}
+with $\tau=0.1$. Reconstruction uses mean squared error,
+\begin{equation}
+ \mathcal{L}_{\mathrm{recon}}=\frac{1}{nD}\lVert\widehat{X}-X\rVert_F^2.
+\end{equation}
+Variance penalties on both branches prevent constant solutions; a within-tissue covariance penalty discourages redundant coordinates. Scanner cross-entropy is reversed only at the tissue encoder and optimized normally for the acquisition encoder.
+
+A direct dependence term penalizes standardized tissue-factor covariance with one-hot scanner indicators:
+\begin{equation}
+ \mathcal{L}_{\mathrm{dep}}=\frac{1}{d_tC}\left\lVert\frac{1}{n-1}\widetilde Z_t^{\top}\widetilde Y_s\right\rVert_F^2.
+\end{equation}
+A cross-factor covariance penalty limits linear dependence between the centered tissue and acquisition factors:
+\begin{equation}
+ \mathcal{L}_{\mathrm{xcov}}=\frac{1}{d_td_a}\left\lVert\frac{1}{n-1}(Z_t^c)^\top Z_a^c\right\rVert_F^2.
+\end{equation}
+The frozen SCORPION objective is
+\begin{align}
+\mathcal{L}={}&\mathcal{L}_{\mathrm{pair}}+\mathcal{L}_{\mathrm{recon}}
++\mathcal{L}_{\mathrm{var},t}+0.25\mathcal{L}_{\mathrm{var},a}
++0.01\mathcal{L}_{\mathrm{cov},t}\\
+&+0.5\mathcal{L}_{\mathrm{scan},t}+0.5\mathcal{L}_{\mathrm{scan},a}
++20\mathcal{L}_{\mathrm{dep}}+0.05\mathcal{L}_{\mathrm{xcov}}.
+\end{align}
+The objective is evaluated as an implemented design, not as proof that every term is universally necessary.
+
+\section{Data and Evaluation}
+\subsection{SCORPION}
+SCORPION contains 48 H\&E slides, each scanned on Leica Aperio AT2, Leica Aperio GT450, Roche Ventana DP200, 3DHistech P1000, and Philips UFS B300 devices. Ten aligned regions per slide yield 480 matched regions and 2,400 patches \citep{ryu2025scorpion}. Five rotating folds keep every region and scanner view from an original slide in the same fold.
+
+The capacity-matched campaign contains seven variants, five folds, and five seeds: 175 completed fits with no failed or invalid cells. The primary control is an equal-parameter two-branch model without scanner objectives. Secondary ablations remove the acquisition classifier, adversarial scanner head, direct scanner-dependence term, or cross-factor covariance term. Seeds are averaged within fold, variant, and slide before contrasts. Confidence intervals use 100,000 bootstrap draws, resampling folds first and then slides within fold. No slide-independent sign-flip $p$-values are reported.
+
+\subsection{Independent Multi-Scanner Canine SCC Data}
+The external representation audit uses 44 canine cutaneous squamous-cell-carcinoma samples digitized by five scanners with local correspondences across devices \citep{wilm2023multiscanner}. Biological samples, not patches or views, define the folds. The corrected category estimand retains Dermis, Epidermis, Inflammation/Necrosis, SCC, and Subcutis; Bone and Cartilage are excluded. Each retained category has at least two fit and two held-out biological samples per fold. Standardization and probe fitting use fit rows only. Nearest-neighbor candidate pools exclude the same region and the same biological sample where specified.
+
+The v2 adjudication loads exact recovered neural representations and trains no new neural models. It compares original frozen features, centroid/QR scanner-subspace projection, a paired linear scanner transform, PCA component removal, a scanner-balanced random control, and neural tissue bottlenecks B32 and B64 under identical candidate pools and probe families.
+
+\subsection{Metrics and Decision Rules}
+Scanner balanced accuracy measures linearly recoverable device identity; lower values are favorable only if retention does not collapse. Tissue retention is summarized by same-region cross-scanner top-1 retrieval and cosine agreement. On canine SCC, descriptive tissue-category balanced accuracy is reported as a representation audit, not as diagnosis or clinical validation.
+
+SCORPION retrieval noninferiority uses a fixed 0.02 margin. Canine adjudication uses three axes: lower scanner balanced accuracy, higher corrected category balanced accuracy, and higher worst-scanner-pair retrieval. A neural feature-space increment requires category balanced accuracy at least 0.02 above every simple baseline in at least four folds without a scanner or worst-pair retrieval regression larger than 0.02. No weighted composite score is used.
+
+\section{Results}
+\subsection{Capacity-Matched SCORPION Evidence}
+Table~\ref{tab:scorpion} reports the primary registered comparison. Relative to the equal-parameter two-branch control without scanner objectives, PA-NF reduced tissue-branch scanner balanced accuracy by 0.3108. Mean and worst cross-scanner cosine increased, while top-1 retrieval remained effectively unchanged and inside the preregistered noninferiority margin. The acquisition branch gained 0.118 scanner balanced accuracy relative to the same control, and its absolute scanner accuracy was 0.6565 above five-class chance.
+
+\begin{table*}[t]
+\centering
+\caption{Fold-aware PA-NF minus equal-parameter two-branch control on SCORPION. Negative scanner-probe differences and positive retention differences are favorable. Retrieval is judged against a 0.02 noninferiority margin.}
+\label{tab:scorpion}
+\small
+\setlength{\tabcolsep}{5.5pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+Metric & Mean difference & 95\% interval & Folds favorable & Unit count & Interpretation \\
+\midrule
+Tissue scanner balanced accuracy & $-0.3108$ & $[-0.3346,-0.2858]$ & 5/5 & 48 slides & Lower recoverability \\
+Mean paired cosine & $+0.03639$ & $[+0.03355,+0.03954]$ & 5/5 & 48 slides & Positive geometry contrast \\
+Worst paired cosine & $+0.03557$ & $[+0.03167,+0.04064]$ & 5/5 & 48 slides & Positive geometry contrast \\
+Mean top-1 retrieval & $+0.00004$ & $[-0.00009,+0.00026]$ & 1/5 & 48 slides & Noninferior, not improved \\
