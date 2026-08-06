@@ -1,31 +1,13 @@
-\begin{figure}[!htbp]
+\begin{figure*}[!t]
 \centering
-\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
-  node distance=0.5cm and 0.7cm,
-  box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.6cm, minimum height=0.7cm}
-]
-\node[box, fill=blue!8] (in) {Frozen feature $x_{r,s}$\\region $r$, scanner $s$};
-\node[box, fill=blue!12, right=of in] (bio) {Biological branch $b_r$};
-\node[box, fill=orange!12, right=of bio] (acq) {Acquisition branch $a_s$};
-\node[box, fill=green!8, below=of bio] (dec) {Decoder};
-\node[box, below=of dec] (rec) {Self-reconstruction\\$\hat{x}_{r,s}$};
-\node[box, right=of acq] (swap) {Crossed reconstruction\\$\hat{x}_{r',s'}$};
-\node[box, below=of acq] (proto) {Prototypes $\cdot$ variance floor};
-\draw[->] (in) -- (bio);
-\draw[->] (in) -- (acq);
-\draw[->] (bio) -- (dec);
-\draw[->] (acq) -- (dec);
-\draw[->] (dec) -- (rec);
-\draw[->] (bio) -- (swap);
-\draw[->] (acq) -- (swap);
-\draw[->] (acq) -- (proto);
-\end{tikzpicture}}
-\caption{Paired-Acquisition Neural Factorization: an explicit biological
-branch and acquisition branch are trained on exact same-region multi-scanner
-pairs with decoder self- and crossed-reconstruction, same-region biological
-consistency, biological variance floor, and prototype regularization. Category
-labels never enter factorizer optimization. Corrected evidence supports partial
-structured separation and paired supervision but not neural feature-space
-superiority (see Section~4).}
+\includegraphics[width=\textwidth]{figures/pa_nf_architecture.pdf}
+\caption{Paired-Acquisition Neural Factorization routes matched views of the
+same tissue region through a shared tissue-oriented encoder and an explicit
+acquisition branch. Paired agreement, variance/dependence control, a
+gradient-reversed tissue scanner head, an ordinary acquisition scanner head,
+and joint decoding structure how scanner-associated information is allocated.
+The diagram describes the implemented architecture; the corrected empirical
+boundary remains partial structured separation rather than pure factors,
+complete scanner invariance, or clinical utility.}
 \label{fig:panf}
-\end{figure}
+\end{figure*}
