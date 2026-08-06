@@ -1,0 +1,11 @@
+component,architecture_or_protocol,implementation_status,empirical_status,strongest_evidence,missing_validation,allowed_wording,prohibited_wording
+PA-NF,factorization architecture,implemented+tested,negative neural increment,paired supervision; partial separation,corrected category gain; Layer-2 swap,we introduce PA-NF,best scanner-removal; scanner-free biology
+TransnnMIL canonical fusion,whole-slide architecture,implemented+tested,preliminary,stability grids,matched controlled reruns,we introduce TransnnMIL,outperforms TransMIL/nnMIL
+TransnnMIL branch-token fusion,fusion operator,implemented+tested,no measured contribution,unit tests,matched fusion controls,corrected branch-token fusion,historical QWK as evidence
+TransnnMIL hierarchical pooling,pooling,implemented+tested,synthetic-MIL only,ablation,real-data benchmark,implements hierarchical pooling,proven PANDA improvement
+TransnnMIL topology branch,graph branch,implemented+tested,historical withdrawn,registered projection,repaired rerun,topology branch implemented,trained topology contribution
+TransnnMIL adaptive pruning,pruning,implemented+tested,disabled,unit tests,proper batched implementation,adaptive pruning implemented,proven efficiency gain
+PathologyFL,federated infrastructure,implemented+tested,execution validated,integration/smoke tests,real multi-center deployment,we developed PathologyFL,clinical outcomes
+FAIR-WEIGHTS-H,weighting protocol,partial,no superiority,execution stability,multi-center validation,we propose and implement FAIR-WEIGHTS-H,proves fairness
+Center-subspace correction,subspace method,implemented,active mechanism,linear center subspace partial,CAMELYON17 full FL,center-subspace projection,center invariance
+Provenance/claim-validation,scientific audit,implemented+tested,validated by tests,fail-closed validators,external audit,claim-validation system,passing tests imply clinical performance

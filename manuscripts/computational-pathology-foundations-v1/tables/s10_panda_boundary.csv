@@ -1,0 +1,6 @@
+claim,status,boundary
+mean_pool_baseline,active,QWK 0.7274
+attention_mil_baseline,active,QWK 0.8100
+tuned_transnnmil,preliminary,QWK 0.8155/0.8225/0.8086
+centralized_vs_federated,active simulated,centralized > fedavg > local
+transnnmil_superiority,pending,not established

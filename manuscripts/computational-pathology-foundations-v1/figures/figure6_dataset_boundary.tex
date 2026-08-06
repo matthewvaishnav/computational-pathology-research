@@ -1,0 +1,17 @@
+\begin{figure}[!htbp]
+\centering
+\small
+\caption{Dataset and evidence-boundary map (verified at inventory time).}
+\label{fig:datasets}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llll}
+\toprule
+Dataset & Scale & Endpoints & Evidence boundary \\
+\midrule
+PCam & 96$\times$96 patches; 32,768 test & binary tumor patch & patch benchmark; not clinical \\
+SCORPION & 48 slides, 480 regions, 5 scanners, 2,400 patches & scanner, retrieval, geometry & no category labels \\
+Canine SCC & 4,025 patches, 7 categories, 5 scanners & corrected 5-category, scanner, retrieval & descriptive categories; not clinical \\
+PANDA & 10,611 readable Phikon slides, ISUP 0--5 & QWK, institutional stress & simulated sites; no real mapping \\
+CAMELYON17 & 455,954 patches, 5 centers & held-out-center accuracy, center leakage & centralized frozen-feature proxy; not full FL \\
+\bottomrule
+\end{tabular}}
+\end{figure}

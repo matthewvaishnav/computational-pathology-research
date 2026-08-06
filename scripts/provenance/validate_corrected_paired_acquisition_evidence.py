@@ -472,13 +472,44 @@ def validate_evidence(
     snapshot = release_artifacts["claim_boundary_snapshot"]
     if claim.get("snapshot_sha256") != snapshot["sha256"]:
         raise EvidenceValidationError("claim boundary snapshot hash is not bound")
+    publication_sha256 = claim.get("publication_sha256")
+    if not isinstance(publication_sha256, str) or not SHA256_PATTERN.fullmatch(
+        publication_sha256
+    ):
+        raise EvidenceValidationError("claim_boundary.publication_sha256 must be a SHA-256")
+    authoritative_path = claim.get("authoritative_repository_path")
+    if not isinstance(authoritative_path, str) or not authoritative_path:
+        raise EvidenceValidationError(
+            "claim_boundary.authoritative_repository_path must be a non-empty path"
+        )
+    # The immutable release-time snapshot is cryptographically bound. Its canonical
+    # text must equal the declared publication hash; this is what the historical
+    # release commits to and can never change.
+    snapshot_path = resolve_file(
+        package_root,
+        snapshot["path"],
+        label="claim_boundary_snapshot.path",
+    )
+    immutable_publication_hash = sha256_canonical_text(snapshot_path)
+    if immutable_publication_hash != publication_sha256:
+        raise EvidenceValidationError(
+            "immutable claim boundary publication hash mismatch"
+        )
+    # The current authoritative repository claim-boundary file must exist at the
+    # declared path, but it is a living document: it may legitimately evolve after
+    # the release. Its current hash is reported as informational, not as release
+    # invalidation.
     current_claim = resolve_file(
         repo_root,
-        claim.get("authoritative_repository_path"),
+        authoritative_path,
         label="claim_boundary.authoritative_repository_path",
     )
-    if sha256_canonical_text(current_claim) != claim.get("publication_sha256"):
-        raise EvidenceValidationError("authoritative claim boundary checksum mismatch")
+    current_authoritative_hash = sha256_canonical_text(current_claim)
+    claim_boundary_report = {
+        "immutable_publication_hash": immutable_publication_hash,
+        "current_authoritative_hash": current_authoritative_hash,
+        "hashes_match": immutable_publication_hash == current_authoritative_hash,
+    }
 
     family_records = manifest.get("evidence_families")
     if not isinstance(family_records, list) or len(family_records) != 2:
@@ -536,6 +567,7 @@ def validate_evidence(
         raise EvidenceValidationError("historical evidence boundary is invalid")
 
     return {
+        "claim_boundary_report": claim_boundary_report,
         "external_input_count": external_input_count,
         "external_inputs_revalidated": require_external_inputs,
         "external_output_count": external_output_count,

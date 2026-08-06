@@ -1,0 +1,6 @@
+component,validation_status,evidence,required
+PathologyFL infrastructure,execution validated,integration/smoke tests,real multi-center deployment
+FAIR-WEIGHTS-H,execution validated; no superiority,PANDA simulated stress,multi-center validation
+Secure aggregation,optional-lib gated,TenSEAL tests,independent audit
+DP-SGD,optional-lib gated,opacus tests,independent audit
+CAMELYON17 weighting,centralized proxies,held-out-center accuracy,full FL validation

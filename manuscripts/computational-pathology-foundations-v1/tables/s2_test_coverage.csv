@@ -1,0 +1,9 @@
+research_line,test_suites
+PCam,tests/test_pcam_*.py;test_pcam_evaluation_ci.py
+Paired/SCORPION/canine,tests/test_fixed_estimand_real_feature_space_adjudication*.py;tests/test_real_paired_scanner_*.py
+Synthetic,tests/test_biological_bottleneck_capacity_allocation_factorial.py
+TransnnMIL,tests/models/test_transnnmil_*.py;test_topology_branch.py;test_hierarchical_pooling.py
+PathologyFL,tests/federated/test_fl_integration.py;test_pathology_fl_*.py;test_secure_aggregation*.py
+FAIR-WEIGHTS-H,tests/federated/test_fair_weights_h.py;test_weighting_*.py
+CAMELYON17,tests/test_camelyon_*.py;tests/camelyon17/
+Audit,tests/test_corrected_paired_acquisition_evidence.py;test_real_bottleneck_representation_recovery.py

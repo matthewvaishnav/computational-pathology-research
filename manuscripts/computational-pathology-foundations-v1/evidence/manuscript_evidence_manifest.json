@@ -1,0 +1,280 @@
+{
+  "active_empirical_claims": [
+    {
+      "artifact": "evidence/paired_acquisition/corrected-20260726/release_manifest.json",
+      "artifact_sha256": "a7a7e34d1df24f7003ee8ccacc58e8885f5ebe60ed0b167f71c9f28767fadf4d",
+      "artifact_size_bytes": 33982,
+      "binding_kind": "immutable_tracked_evidence",
+      "claim": "Corrected paired-scanner experiments support partial structured separation and paired supervision.",
+      "claim_id": "MS_CLAIM_02",
+      "dataset": "SCORPION; multi-scanner canine SCC",
+      "prohibited_stronger_wording": "perfect disentanglement; clinical utility; best scanner-removal; scanner-free biology",
+      "source_commit": "4239d4f7380e5342736cabfc1aa1fc85fb5ef55c",
+      "statistical_unit": "biological-sample-blocked fold; fold-aware bootstrap"
+    },
+    {
+      "artifact": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "artifact_sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "artifact_size_bytes": 438446,
+      "binding_kind": "immutable_local_result_bound_through_release_manifest",
+      "claim": "No neural feature-space increment over simple scanner-removal baselines was supported under the corrected fixed five-category estimand.",
+      "claim_id": "MS_CLAIM_03",
+      "dataset": "multi-scanner canine SCC",
+      "prohibited_stronger_wording": "neural feature-space superiority; synthetic accessibility transport",
+      "source_commit": "3ca1805850fbc57bf3a584c3e25f34249cae6107",
+      "statistical_unit": "five folds; model seeds averaged within fold before cross-fold inference"
+    },
+    {
+      "artifact": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "artifact_sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "artifact_size_bytes": 438446,
+      "binding_kind": "immutable_local_result_bound_through_release_manifest",
+      "claim": "B64 increased scanner recoverability and region retrieval without corrected category gain.",
+      "claim_id": "MS_CLAIM_04",
+      "dataset": "multi-scanner canine SCC",
+      "prohibited_stronger_wording": "B64 improves corrected category accessibility; neural superiority",
+      "source_commit": "3ca1805850fbc57bf3a584c3e25f34249cae6107",
+      "statistical_unit": "five folds; seed-averaged within fold; canine_metric_table"
+    },
+    {
+      "artifact": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "artifact_sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "artifact_size_bytes": 438446,
+      "binding_kind": "immutable_local_result_bound_through_release_manifest",
+      "claim": "Synthetic accessibility effects did not transport to corrected real category accessibility.",
+      "claim_id": "MS_CLAIM_12",
+      "dataset": "multi-scanner canine SCC (corrected estimand)",
+      "prohibited_stronger_wording": "retrieval gain counted as biological accessibility; synthetic width effect transported",
+      "source_commit": "3ca1805850fbc57bf3a584c3e25f34249cae6107",
+      "statistical_unit": "five folds; synthetic_transport_decision in the v2 result"
+    },
+    {
+      "artifact": "results/camelyon17/center_weighting_5seed_summary.md",
+      "artifact_sha256": "3637830e74fb7fb3cdc88eb6de80fb960635a99b20509f1ac5329c8a63c23155",
+      "artifact_size_bytes": 3322,
+      "binding_kind": "tracked_summary_bounded_descriptive_proxy",
+      "binding_note": "tracked 5-seed summary; the upstream per-seed outputs (results/camelyon17/seed_1..5) are local-only, so the summary is a bounded descriptive proxy rather than fully promoted evidence; centralized frozen-feature proxy, not full federated learning",
+      "claim": "CAMELYON17 equal-client weighting improves held-out-center accuracy over sample-proportional weighting (centralized frozen-feature proxy).",
+      "claim_id": "MS_CLAIM_15",
+      "dataset": "CAMELYON17/WILDS (5 centers; held-out center)",
+      "prohibited_stronger_wording": "full federated-learning validation; general cross-hospital law; clinical readiness",
+      "source_commit": "e436772b4904b9e696066e070acf7bb99e175007",
+      "statistical_unit": "five seeds; held-out test center"
+    }
+  ],
+  "architectural_claims": [
+    {
+      "claim": "We introduce Paired-Acquisition Neural Factorization.",
+      "claim_id": "MS_CLAIM_01",
+      "empirical_status": "negative_or_mixed_empirical_result",
+      "implementation_status": "implemented_architecture",
+      "prohibited_stronger_wording": "best scanner-removal; scanner-free biology; perfect factorization",
+      "source_paths": [
+        "experiments/paired_acquisition/run_real_paired_scanner_bottleneck_allocation_validation.py",
+        "experiments/paired_acquisition/run_fixed_estimand_real_feature_space_adjudication.py",
+        "src/paired_acquisition_factorial.py"
+      ],
+      "test_paths": [
+        "tests/test_fixed_estimand_real_feature_space_adjudication.py",
+        "tests/test_fixed_estimand_real_feature_space_adjudication_v2.py"
+      ]
+    },
+    {
+      "claim": "We introduce TransnnMIL as a multibranch whole-slide neural aggregation architecture.",
+      "claim_id": "MS_CLAIM_05",
+      "empirical_status": "historical_withdrawn_evidence (historical QWK); preliminary/pending (post-repair PANDA runs)",
+      "implementation_status": "implemented_architecture_pending_controlled_validation",
+      "prohibited_stronger_wording": "outperforms TransMIL/nnMIL; improves PANDA grading; historical QWK as repaired evidence",
+      "source_paths": [
+        "src/models/transnnmil/transnnmil.py",
+        "src/models/transnnmil/transnnmil_v2.py",
+        "src/models/transnnmil/branch_token_fusion.py",
+        "src/models/transnnmil/hierarchical_pooling.py",
+        "src/models/transnnmil/topology_branch.py",
+        "src/models/transnnmil/adaptive_pruning.py",
+        "src/models/transnnmil/graph_cache.py",
+        "src/models/mil/transmil.py",
+        "src/models/mil/nnmil.py"
+      ],
+      "test_paths": [
+        "tests/models/test_transnnmil_canonical_fusion.py",
+        "tests/models/test_transnnmil_fusion_salvage.py",
+        "tests/models/test_topology_branch.py",
+        "tests/models/test_hierarchical_pooling.py",
+        "tests/models/test_adaptive_pruning.py"
+      ]
+    },
+    {
+      "claim": "We developed PathologyFL as a pathology-specific federated-learning research framework.",
+      "claim_id": "MS_CLAIM_07",
+      "empirical_status": "execution validated; no real multi-center deployment",
+      "implementation_status": "implemented_research_infrastructure",
+      "prohibited_stronger_wording": "clinical outcomes; full multi-center validation; clinical readiness",
+      "source_paths": [
+        "src/features/federated/pathology_fl/coordinator/orchestrator.py",
+        "src/features/federated/pathology_fl/client/hospital_client.py",
+        "src/features/federated/pathology_fl/aggregator/fedavg.py",
+        "src/features/federated/pathology_fl/aggregator/fedprox.py",
+        "src/features/federated/pathology_fl/aggregator/weighted.py",
+        "src/features/federated/pathology_fl/aggregator/byzantine_robust.py",
+        "src/features/federated/pathology_fl/privacy/dp_sgd.py",
+        "src/features/federated/pathology_fl/communication/grpc_server.py"
+      ],
+      "test_paths": [
+        "tests/federated/test_fl_integration.py",
+        "tests/test_pathology_fl_aggregation.py",
+        "tests/test_pathology_fl_production_integration.py",
+        "tests/test_pathology_fl_privacy_regressions.py",
+        "tests/federated/test_secure_aggregation.py"
+      ]
+    },
+    {
+      "claim": "The fail-closed scientific-audit system binds active claims to immutable artifacts.",
+      "claim_id": "MS_CLAIM_11",
+      "empirical_status": "validated by its own tests",
+      "implementation_status": "implemented_research_infrastructure",
+      "prohibited_stronger_wording": "passing tests imply clinical performance",
+      "source_paths": [
+        "scripts/provenance/validate_corrected_paired_acquisition_evidence.py",
+        "scripts/provenance/validate_scorpion_capacity_matched_evidence.py",
+        "scripts/provenance/validate_paired_acquisition_factorial_evidence.py",
+        "src/paired_acquisition_provenance.py",
+        "experiments/paired_acquisition/run_real_bottleneck_representation_recovery.py"
+      ],
+      "test_paths": [
+        "tests/test_corrected_paired_acquisition_evidence.py",
+        "tests/test_real_bottleneck_representation_recovery.py"
+      ]
+    }
+  ],
+  "authority": "CLAIM_BOUNDARY.md overrides conflicting older manuscripts, reports, tables, and website text.",
+  "binding_kind_vocabulary": [
+    "immutable_tracked_evidence",
+    "immutable_local_result_bound_through_release_manifest",
+    "tracked_summary_bound_to_upstream_immutable_outputs",
+    "tracked_summary_bounded_descriptive_proxy",
+    "documentation_only_not_eligible"
+  ],
+  "branch": "research/foundations-manuscript-release-hardening-20260805",
+  "date": "2026-08-05",
+  "documentation_only_context": [
+    {
+      "bounding_doc": "docs/results/pcam-results.md",
+      "claim": "PCam provides a patch-level engineering and evaluation benchmark.",
+      "claim_id": "MS_CLAIM_09",
+      "disposition": "downgraded_to_implementation_benchmark_context",
+      "reason": "the underlying numerical result artifacts (results/pcam_real, checkpoints/pcam) are not present or not tracked; only documentation survives, so no active numerical empirical claim is made. PCam is described as implementation/benchmark context."
+    }
+  ],
+  "frozen_statuses_preserved": {
+    "fixed_estimand_v1": "fixed_estimand_adjudication_not_ready",
+    "fixed_estimand_v2": "complete_no_neural_feature_space_increment_supported",
+    "real_paired_scanner": "complete_mixed_real_paired_scanner_allocation_effects",
+    "recovery": "complete_exact_real_bottleneck_representation_recovery"
+  },
+  "manuscript": "Accountable Neural Aggregation in Computational Pathology",
+  "negative_results": [
+    {
+      "artifact": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "artifact_sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "claim_id": "MS_NEG_01",
+      "corresponds_to": "MS_CLAIM_03",
+      "result": "no neural feature-space increment supported",
+      "status": "complete_no_neural_feature_space_increment_supported"
+    },
+    {
+      "artifact": "evidence/manuscript-foundations-release-20260805/artifacts/fixed_estimand_real_feature_space_adjudication_v2_result.json",
+      "artifact_sha256": "2cccaad7aab895867e4a31612d3d98cc923c35d14c7dd0a5e15d48ac387207b5",
+      "claim_id": "MS_NEG_02",
+      "corresponds_to": "MS_CLAIM_12",
+      "result": "synthetic accessibility did not transport to corrected real category accessibility",
+      "status": "synthetic_accessibility_effect_transported = false"
+    },
+    {
+      "artifact": "docs/benchmarks/camelyon17_center_projection_negative_to_positive_mechanism.md",
+      "artifact_sha256": "d5535344208e42d56c21ee1709d73d5cbb09c722d070f890c7f95dfba2d065af",
+      "artifact_size_bytes": 6005,
+      "claim_id": "MS_NEG_03",
+      "corresponds_to": "MS_CLAIM_16",
+      "result": "adversarial center removal did not reduce CAMELYON17 center leakage",
+      "source_commit": "fc74e0935a4c113fbde8011e5ecc5b092297e063",
+      "status": "negative_or_mixed_empirical_result"
+    }
+  ],
+  "protocol_claims": [
+    {
+      "claim": "We propose and partially implement FAIR-WEIGHTS-H as an auditable hybrid institutional-weighting protocol.",
+      "claim_id": "MS_CLAIM_08",
+      "components": [
+        {
+          "component": "integrity_gate",
+          "status": "implemented_and_tested"
+        },
+        {
+          "component": "uncertainty_penalty",
+          "status": "implemented_and_tested"
+        },
+        {
+          "component": "useful_uniqueness",
+          "status": "implemented"
+        },
+        {
+          "component": "bounded_weights",
+          "status": "implemented_and_tested"
+        },
+        {
+          "component": "conservative_mode",
+          "status": "implemented"
+        },
+        {
+          "component": "pathoalign_audit_bridge",
+          "status": "implemented"
+        },
+        {
+          "component": "train_validation_monitor_weight_separation",
+          "status": "specification_only"
+        },
+        {
+          "component": "difficulty_adjustment",
+          "status": "specification_only"
+        },
+        {
+          "component": "shapley_contribution_estimator",
+          "status": "specification_only"
+        },
+        {
+          "component": "subgroup_performance_constraints",
+          "status": "specification_only"
+        },
+        {
+          "component": "weight_change_limits",
+          "status": "specification_only"
+        },
+        {
+          "component": "four_mode_fallback_table",
+          "status": "specification_only"
+        }
+      ],
+      "empirical_status": "no established performance or fairness superiority",
+      "implementation_path": "src/features/federated/pathology_fl/weighting/fair_weights_h.py",
+      "implementation_sha256": "bb45c42e174f2810d127ec363ae4fa584b1e8247901e622a131a153821c1dcb6",
+      "implementation_status": "proposed_protocol_with_execution_validation",
+      "prohibited_stronger_wording": "proves fairness; better than equal or volume weighting; clinical readiness",
+      "specification_path": "docs/theory/fair-weights-h.md",
+      "specification_sha256": "7531a50bd41d9a33ccee41e25e96b286efcabe81c4433ae43ad49f548bcfe7a1",
+      "test_path": "tests/federated/test_fair_weights_h.py",
+      "test_sha256": "b2e1525631f1faf41eb7e122240d8e7241c687375be658a3378dd39cecaea175"
+    }
+  ],
+  "release_package": "evidence/manuscript-foundations-release-20260805/release_manifest.json",
+  "schema_version": "foundations-manuscript-evidence-manifest/v2",
+  "withdrawn_claims": [
+    "historical TransnnMIL fusion/topology QWK",
+    "historical canine biological-category audit metrics",
+    "SCORPION slide-level sign-flip p-values",
+    "unified-scoreboard rankings",
+    "PCam clinical/superiority claims",
+    "cosine-as-biology",
+    "PCam active numerical benchmark claim (unbound; downgraded to context)"
+  ]
+}
