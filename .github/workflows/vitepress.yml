@@ -1,204 +1,93 @@
-name: Build and deploy paper PDF
+name: Deploy PA-NF research site
 
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/vitepress.yml"
+      - "website/pa-nf-site/**"
+      - "CLAIM_BOUNDARY.md"
+      - "docs/research/paired-acquisition-research-engineering-brief.md"
+      - "evidence/paired_acquisition/**"
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/vitepress.yml"
+      - "website/pa-nf-site/**"
+      - "CLAIM_BOUNDARY.md"
+      - "docs/research/paired-acquisition-research-engineering-brief.md"
+      - "evidence/paired_acquisition/**"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: paper-pages
-  cancel-in-progress: false
+  group: pa-nf-pages
+  cancel-in-progress: true
 
 jobs:
-  paper:
+  site:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare self-contained paper source
-        run: python paper/arxiv/build_arxiv_package.py
-
-      - name: Validate result-first paper composition
+      - name: Validate focused PA-NF publication status
+        shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          set -euo pipefail
+          test -s website/pa-nf-site/index.html
+          test -s CLAIM_BOUNDARY.md
+          test -s docs/research/paired-acquisition-research-engineering-brief.md
+          test -s evidence/paired_acquisition/corrected-20260726/release_manifest.json
 
-          path = Path("paper/arxiv/build/main.tex")
-          text = path.read_text(encoding="utf-8")
+          grep -Fq "Paired-Acquisition Neural Factorization" website/pa-nf-site/index.html
+          grep -Fq "Focused PA-NF manuscript reconstruction" website/pa-nf-site/index.html
+          grep -Fq "partial structured separation" website/pa-nf-site/index.html
+          grep -Fq "no supported neural feature-space increment" website/pa-nf-site/index.html
 
-          required = (
-              "Paired-Acquisition Neural Factorization",
-              r"\twocolumn[",
-              r"\section{Introduction}",
-              r"\section{The Data}",
-              r"\section{The Paired-Acquisition Neural Factorization Model}",
-              r"\section{Preventing Representation Failure}",
-              r"\section{Details of Learning}",
-              r"\section{Results}",
-              r"\section{Discussion}",
-              r"\section{Conclusion}",
-              r"\input{paired_acquisition_model_math.tex}",
-              r"\input{paired_acquisition_resource_allocation_figure.tex}",
-              r"\input{paired_acquisition_figure1_benchmark_table.tex}",
-              r"\input{broader_research_program.tex}",
-              r"\input{identifiability_calculations.tex}",
-              r"\begin{figure*}",
-              r"\begin{table*}",
-              "PANDA",
-              "CAMELYON17",
-              "PCam",
-          )
-          missing = [item for item in required if item not in text]
-          if missing:
-              raise RuntimeError(f"Paper composition is incomplete: {missing}")
-          if "\\clearpage\n\\onecolumn\n\\appendix" in text:
-              raise RuntimeError(
-                  "Paper should not force a blank one-column appendix transition page"
-              )
+          if grep -Eqi "paper temporarily withdrawn|scientific audit hold site|Accountable Neural Aggregation|full computational pathology foundations" website/pa-nf-site/index.html; then
+            echo "Stale or rejected publication framing found in public site"
+            exit 1
+          fi
 
-          figure1_path = Path(
-              "paper/arxiv/build/paired_acquisition_figure1_benchmark_table.tex"
-          )
-          figure1 = figure1_path.read_text(encoding="utf-8")
-          figure1_required = (
-              "Paired-Acquisition Neural Factorization separates biological identity from acquisition identity",
-              "external multi-scanner canine SCC benchmark",
-              "Paired-Acquisition Neural Factorization biological",
-              "Paired-Acquisition Neural Factorization acquisition",
-              "Linear/RF/kNN",
-              "MLP",
-              "0.300",
-              "0.968",
-              "0.207",
-              "0.972",
-          )
-          figure1_missing = [item for item in figure1_required if item not in figure1]
-          if figure1_missing:
-              raise RuntimeError(
-                  f"Figure 1 benchmark table is incomplete: {figure1_missing}"
-              )
+          if grep -Fq "paper/arxiv/build_arxiv_package.py" .github/workflows/vitepress.yml; then
+            echo "Deployment workflow must not rebuild the superseded LaTeX paper"
+            exit 1
+          fi
 
-          model_math_path = Path(
-              "paper/arxiv/build/paired_acquisition_model_math.tex"
-          )
-          model_math = model_math_path.read_text(encoding="utf-8")
-          required_math = (
-              r"\mathcal{L}_{\mathrm{pair}}",
-              r"\mathcal{L}_{\mathrm{recon}}",
-              r"\mathcal{L}_{\mathrm{var},a}",
-              r"\mathcal{L}_{\mathrm{cov},b}",
-              r"\mathcal{L}_{\mathrm{scan},b}",
-              r"\mathcal{L}_{\mathrm{scan},a}",
-              r"\mathcal{L}_{\mathrm{dep}}",
-              r"\mathcal{L}_{\mathrm{xcov}}",
-              r"\operatorname{GRL}_{\gamma}",
-              r"0.25\mathcal{L}_{\mathrm{var},a}",
-              r"20\mathcal{L}_{\mathrm{dep}}",
-              "same-region agreement and scanner suppression",
-              "scanner prediction and acquisition retention",
-          )
-          missing_math = [item for item in required_math if item not in model_math]
-          if missing_math:
-              raise RuntimeError(
-                  "Paired-acquisition mathematical specification is incomplete: "
-                  f"{missing_math}"
-              )
-
-          legacy_stem = "patho" + "align"
-          retired_architecture_terms = (
-              f"{legacy_stem}_architecture_diagram",
-              f"{legacy_stem}_architecture_fullpage",
-              r"\pdfpageattr{/Rotate 90}",
-              r"\captionof{figure}",
-          )
-          present_architecture_terms = [
-              item for item in retired_architecture_terms if item in model_math
-          ]
-          if present_architecture_terms:
-              raise RuntimeError(
-                  "Retired legacy architecture figure remains in the paper: "
-                  f"{present_architecture_terms}"
-              )
-
-          forbidden = (
-              "federated_pathology_pipeline_diagram",
-              r"\usepackage{titling}",
-              r"\maketitle",
-          )
-          present = [item for item in forbidden if item in text]
-          if present:
-              raise RuntimeError(f"Legacy paper formatting remains: {present}")
-
-          print("Validated compact two-column main paper composition")
-          print("Validated external canine Figure 1 benchmark table")
-          print("Validated complete implementation-faithful paired-acquisition mathematics")
-          print("Validated math-only paired-acquisition architecture section")
-          print("Public publication remains disabled by the scientific-audit hold")
-          PY
-
-      - name: Build LaTeX PDF
-        uses: xu-cheng/latex-action@v3
-        with:
-          root_file: main.tex
-          working_directory: paper/arxiv/build
-          latexmk_use_xelatex: false
-          args: -pdf -interaction=nonstopmode -halt-on-error -file-line-error
-
-      - name: Verify PDF and bibliography
+      - name: Prepare static site
+        shell: bash
         run: |
-          test -s paper/arxiv/build/main.pdf
-          test -s paper/arxiv/build/main.bbl
-          reference_count=$(grep -F -c '\bibitem' paper/arxiv/build/main.bbl || true)
-          echo "Rendered bibliography entries: ${reference_count}"
-          test "${reference_count}" -ge 10
-
-      - name: Upload audit-only review PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: paper-pdf-audit-only
-          path: paper/arxiv/build/main.pdf
-          retention-days: 14
-
-      - name: Create scientific-audit hold site
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        run: |
-          mkdir -p paper_pdf_site
-          touch paper_pdf_site/.nojekyll
-          cat > paper_pdf_site/index.html <<'EOF'
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Scientific audit hold</title>
-            <style>
-              body { max-width: 760px; margin: 4rem auto; padding: 0 1.25rem; font: 18px/1.55 system-ui, sans-serif; }
-              h1 { line-height: 1.15; }
-              code { background: #f3f3f3; padding: 0.12rem 0.3rem; }
-            </style>
-          </head>
-          <body>
-            <h1>Paper temporarily withdrawn for scientific audit</h1>
-            <p>The previously published computational-pathology PDF contained claims and secondary analyses that are being corrected. It is not currently available as an authoritative research paper.</p>
-            <p>The active public claim boundary is maintained in <code>CLAIM_BOUNDARY.md</code> in the main repository. New PDF publication will resume only after the corrected audits and required reruns are complete.</p>
-            <p><a href="https://github.com/matthewvaishnav/computational-pathology-research/blob/main/CLAIM_BOUNDARY.md">Read the current claim boundary</a></p>
-            <p><a href="https://github.com/matthewvaishnav/computational-pathology-research/blob/main/docs/research/scientific-audit-remediation-20260725.md">Read the remediation ledger</a></p>
-          </body>
-          </html>
+          set -euo pipefail
+          rm -rf public
+          mkdir -p public
+          cp website/pa-nf-site/index.html public/index.html
+          touch public/.nojekyll
+          cat > public/publication-status.json <<EOF
+          {
+            "paper": "Paired-Acquisition Neural Factorization",
+            "status": "focused_manuscript_reconstruction",
+            "source_commit": "${GITHUB_SHA}",
+            "claim_boundary": "https://github.com/${GITHUB_REPOSITORY}/blob/main/CLAIM_BOUNDARY.md",
+            "corrected_evidence": "https://github.com/${GITHUB_REPOSITORY}/tree/main/evidence/paired_acquisition/corrected-20260726"
+          }
           EOF
 
-      - name: Deploy audit-hold site to gh-pages
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pa-nf-research-site
+          path: public
+          retention-days: 14
+
+      - name: Deploy to gh-pages
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ github.token }}
-          publish_dir: paper_pdf_site
+          publish_dir: public
           publish_branch: gh-pages
           force_orphan: true
