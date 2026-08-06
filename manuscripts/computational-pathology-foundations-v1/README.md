@@ -1,8 +1,8 @@
 # Accountable Neural Aggregation in Computational Pathology
 
-**Internal-review manuscript package v1 (2026-08-04). Not for public release.**
+**Public foundations preprint package (2026-08-06).**
 
-This package contains the flagship foundations manuscript for the complete
+This package contains the primary public foundations manuscript for the complete
 computational-pathology research program. It is organized as a connected system
 of three primary neural aggregation levels plus the cross-cutting benchmark and
 provenance infrastructure that connects them:
@@ -17,6 +17,9 @@ provenance infrastructure that connects them:
 4. **Cross-cutting — Benchmark and scientific-audit infrastructure** (PCam
    patch evaluation; provenance, immutable releases, claim validation, exact
    artifact recovery).
+
+The focused PA-NF manuscript remains available as a secondary supporting paper.
+It does not replace this program-level foundations manuscript.
 
 ## Status vocabulary
 
@@ -33,46 +36,49 @@ vs. empirical status is never conflated:
 - `future_protocol_only`
 - `prohibited_by_evidence_scope`
 
-## Key current evidence statuses (2026-08-04)
+## Key current evidence statuses
 
 - Real paired-scanner validation:
-  `complete_mixed_real_paired_scanner_allocation_effects` (frozen, unchanged).
-- Fixed-estimand adjudication v1:
-  `fixed_estimand_adjudication_not_ready` (prior, preserved).
+  `complete_mixed_real_paired_scanner_allocation_effects`.
 - Exact 50-cell artifact recovery:
-  `complete_exact_real_bottleneck_representation_recovery` (all 50 cells
-  replicated, projected features + checkpoints archived).
+  `complete_exact_real_bottleneck_representation_recovery`.
 - Fixed-estimand adjudication v2:
-  `complete_no_neural_feature_space_increment_supported` (new forward-valid
-  result; not reinterpreted as architectural invalidation).
+  `complete_no_neural_feature_space_increment_supported`.
 - Corrected July 26 evidence release: immutable and bound to its snapshot;
-  living claim boundary reported informationally.
+  living claim-boundary status is reported explicitly.
+- TransnnMIL: implemented authored architecture; controlled superiority evidence
+  remains pending.
+- PathologyFL: implemented research infrastructure; not a real multi-center
+  deployment validation.
+- FAIR-WEIGHTS-H: proposed and partially implemented protocol; fairness and
+  performance superiority remain unestablished.
 
 ## Layout
 
-- `main.tex` — main manuscript (twocolumn, input-per-section).
+- `main.tex` — main manuscript (two-column, sectioned source).
 - `supplement.tex` — supplement with implementation inventories and per-fold
   tables.
-- `references.bib` — bibliography (no fabricated citations).
-- `sections/` — one `.tex` per manuscript section (abstract, introduction,
-  three level sections, PANDA, CAMELYON17, synthetic, accountability framework,
-  audit, discussion, limitations, conclusion).
-- `figures/` — reproducible figure sources (TikZ / data tables); figures never
-  invent results.
-- `tables/` — main-paper and supplement tables as data files.
-- `claims/` — `manuscript_claim_ledger.csv`, `prohibited_claims.txt`.
-- `evidence/` — `manuscript_evidence_manifest.json`, `research_line_bindings.csv`.
-- `validation/` — `validate_manuscript.py` and its tests.
+- `references.bib` — bibliography.
+- `sections/` — manuscript sections.
+- `figures/` — reproducible figure sources, including the corrected full-width
+  PA-NF architecture diagram.
+- `tables/` — main-paper and supplement tables.
+- `claims/` — claim ledger and prohibited-claim register.
+- `evidence/` — evidence manifest and research-line bindings.
+- `validation/` — manuscript validator and tests.
 - `HOSTILE_REVIEW.md` — adversarial review register.
-- `RECONSTRUCTION_REPORT.md` — how this package corrects the earlier PA-NF-only
-  manuscript scope.
+- `RECONSTRUCTION_REPORT.md` — scope reconstruction report.
 
 ## Build
 
+The PA-NF SVG must first be converted to PDF for pdfLaTeX:
+
 ```sh
-# From this directory, with MiKTeX latexmk available:
+rsvg-convert -f pdf -o figures/pa_nf_architecture.pdf figures/pa_nf_architecture.svg
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main.tex
+latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error supplement.tex
 ```
 
-The build must be reproducible from a clean checkout. The PDF is marked
-internal review and must not be published.
+The GitHub publication workflow performs these steps, validates the page counts
+and LaTeX logs, and publishes the main PDF, supplement, source archive, and the
+secondary focused PA-NF manuscript.
