@@ -1,17 +1,20 @@
-\begin{figure}[!htbp]
+% Full-width wrapped table: do not replace with resizebox or globally scaled text.
+\begin{table*}[!t]
 \centering
-\small
 \caption{Dataset and evidence-boundary map (verified at inventory time).}
-\label{fig:datasets}
-\resizebox{\columnwidth}{!}{\begin{tabular}{llll}
+\label{tab:datasets}
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{0.12\textwidth} >{\raggedright\arraybackslash}p{0.19\textwidth} Y Y@{}}
 \toprule
-Dataset & Scale & Endpoints & Evidence boundary \\
+Dataset & \textbf{Scale} & \textbf{Endpoints} & \textbf{Evidence boundary} \\
 \midrule
-PCam & 96$\times$96 patches; 32,768 test & binary tumor patch & patch benchmark; not clinical \\
-SCORPION & 48 slides, 480 regions, 5 scanners, 2,400 patches & scanner, retrieval, geometry & no category labels \\
-Canine SCC & 4,025 patches, 7 categories, 5 scanners & corrected 5-category, scanner, retrieval & descriptive categories; not clinical \\
-PANDA & 10,611 readable Phikon slides, ISUP 0--5 & QWK, institutional stress & simulated sites; no real mapping \\
-CAMELYON17 & 455,954 patches, 5 centers & held-out-center accuracy, center leakage & centralized frozen-feature proxy; not full FL \\
+PCam & 96$\times$96 patches; 32,768-image test set & Binary tumor-patch classification & Patch-level engineering benchmark; not clinical validation \\
+SCORPION & 48 slides; 480 regions; 5 scanners; 2,400 patches & Scanner prediction, retrieval, and representation geometry & Paired-acquisition evidence without category labels \\
+Canine SCC & 4,025 patches; 7 categories; 5 scanners & Corrected five-category evaluation, scanner prediction, and retrieval & Descriptive tissue categories; not clinical endpoints \\
+PANDA & 10,611 readable Phikon slides; ISUP grades 0--5 & Quadratic weighted kappa and institutional stress tests & Simulated sites; no claim of real institutional mapping \\
+CAMELYON17 & 455,954 patches from 5 centers & Held-out-center accuracy and center leakage & Centralized frozen-feature proxy; not full federated learning \\
 \bottomrule
-\end{tabular}}
-\end{figure}
+\end{tabularx}
+\end{table*}
