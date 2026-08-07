@@ -1,10 +1,21 @@
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth,height=0.15\textheight,keepaspectratio]{figures/pa_nf_architecture.pdf}
-\caption{Paired-Acquisition Neural Factorization routes matched same-region
-views through a tissue-oriented path and an explicit acquisition path. Scanner
-heads and paired agreement/dependence controls structure information allocation;
-corrected evidence supports partial structured separation, not pure factors or
-clinical utility.}
-\label{fig:panf}
-\end{figure*}
+\begin{equation}
+\begin{aligned}
+h_{r,s} &= E_{\omega}(x_{r,s}), &
+b_{r,s} &= B_{\theta}(h_{r,s}), &
+a_{r,s} &= A_{\phi}(h_{r,s}), \\
+\widehat h_{r,t\mid s} &= D_{\psi}(b_{r,s},a_{r,t}),
+&& (r,s,t)\in\mathcal{M},\ s\neq t, \\
+\mathcal{L}_{\mathrm{PA\text{-}NF}}
+&= \lambda_{\mathrm{xrec}}
+   \sum_{(r,s,t)\in\mathcal{M}}
+   \left\|D_{\psi}(b_{r,s},a_{r,t})-h_{r,t}\right\|_{2}^{2} \\
+&\quad + \lambda_{\mathrm{pair}}
+   \sum_{(r,s,t)\in\mathcal{M}}
+   \left\|b_{r,s}-b_{r,t}\right\|_{2}^{2}
+   + \lambda_{\mathrm{acq}}\,\operatorname{CE}\!\left(C_{a}(a_{r,s}),s\right) \\
+&\quad + \lambda_{\mathrm{dep}}\,\mathcal{R}_{\mathrm{dep}}(b,a)
+   + \lambda_{\mathrm{var}}\,\mathcal{R}_{\mathrm{var}}(b)
+   + \lambda_{\mathrm{proto}}\,\mathcal{R}_{\mathrm{proto}}(b).
+\end{aligned}
+\label{eq:panf}
+\end{equation}
