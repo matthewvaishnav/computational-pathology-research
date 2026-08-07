@@ -55,13 +55,13 @@ vs. empirical status is never conflated:
 
 ## Layout
 
-- `main.tex` — main manuscript (two-column, sectioned source).
+- `main.tex` — main manuscript (single-column, sectioned source).
 - `supplement.tex` — supplement with implementation inventories and per-fold
   tables.
 - `references.bib` — bibliography.
 - `sections/` — manuscript sections.
-- `figures/` — reproducible figure sources, including the corrected full-width
-  PA-NF architecture diagram.
+- `figures/` — equation-only architecture definitions and quantitative/status
+  tables; no explanatory architecture diagrams are rendered in the main paper.
 - `tables/` — main-paper and supplement tables.
 - `claims/` — claim ledger and prohibited-claim register.
 - `evidence/` — evidence manifest and research-line bindings.
@@ -71,10 +71,7 @@ vs. empirical status is never conflated:
 
 ## Build
 
-The PA-NF SVG must first be converted to PDF for pdfLaTeX:
-
 ```sh
-rsvg-convert -f pdf -o figures/pa_nf_architecture.pdf figures/pa_nf_architecture.svg
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error supplement.tex
 ```
