@@ -1,27 +1,30 @@
-\begin{figure}[!htbp]
-\centering
-\resizebox{\columnwidth}{!}{\begin{tikzpicture}[
-  node distance=0.5cm and 0.6cm,
-  box/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=2.6cm, minimum height=0.6cm}
-]
-\node[box, fill=orange!12] (coord) {Coordinator\\orchestrator $\cdot$ monitoring\\model registry $\cdot$ failure handler};
-\node[box, fill=orange!8, below left=of coord] (c1) {Client 1\\hospital client $\cdot$ trainer\\DP $\cdot$ gRPC secure};
-\node[box, fill=orange!8, below=of coord] (c2) {Client 2};
-\node[box, fill=orange!8, below right=of coord] (c3) {Client 3};
-\node[box, fill=orange!10, below=of c2, yshift=-0.6cm] (agg) {Aggregator\\FedAvg $\cdot$ FedProx $\cdot$ FedAdam\\weighted $\cdot$ Byzantine-robust\\secure $\cdot$ FAIR-WEIGHTS-H};
-\node[box, below=of agg] (fw) {FAIR-WEIGHTS-H weights\\integrity $\cdot$ uncertainty\\useful-uniqueness $\cdot$ bounds};
-\node[box, below=of fw] (mon) {Anomaly / Byzantine detection\\DP budget $\cdot$ audit log};
-\draw[->] (c1) -- (coord);
-\draw[->] (c2) -- (coord);
-\draw[->] (c3) -- (coord);
-\draw[->] (coord) -- (agg);
-\draw[->] (agg) -- (fw);
-\draw[->] (fw) -- (mon);
-\draw[->] (mon) -- (coord);
-\end{tikzpicture}}
-\caption{PathologyFL coordinator--client architecture with the FAIR-WEIGHTS-H
-weighting layer and anomaly/monitoring paths. Implemented research
-infrastructure; no real multi-center clinical deployment exists (see
-Section~6).}
-\label{fig:fl}
-\end{figure}
+\begin{equation}
+\begin{aligned}
+\Delta\theta_i^{(t)}
+&= \operatorname{LocalTrain}\!\left(\theta^{(t)},\mathcal{D}_i;E_i,\mu_i,\varepsilon_i,\delta_i\right), \\
+a_i^{(t)}
+&= \mathbf{1}\!\left[
+\operatorname{finite}(\Delta\theta_i^{(t)})
+\land \tau_i^{(t)}\le T_i^{(t)}
+\land \neg\operatorname{Byz}_i^{(t)}
+\land \operatorname{Integrity}_i^{(t)}
+\right], \\
+\widetilde w_i^{(t)}
+&= a_i^{(t)}w_i^{(t)}e^{-\gamma\tau_i^{(t)}},
+&
+\bar w_i^{(t)}
+&= \frac{\widetilde w_i^{(t)}}{\sum_{j\in\mathcal{I}_t}\widetilde w_j^{(t)}}, \\
+\theta^{(t+1)}
+&= \theta^{(t)}
++ \operatorname{SecureAgg}\!\left(
+\left\{\bar w_i^{(t)}\Delta\theta_i^{(t)}\right\}_{i\in\mathcal{I}_t}
+\right), \\
+H_t
+&= \operatorname{SHA256}\!\left(
+H_{t-1}\Vert t\Vert\mathcal{I}_t\Vert
+\{\operatorname{SHA256}(\Delta\theta_i^{(t)})\}_{i\in\mathcal{I}_t}
+\Vert\operatorname{SHA256}(\theta^{(t+1)})
+\right).
+\end{aligned}
+\label{eq:pathologyfl}
+\end{equation}
