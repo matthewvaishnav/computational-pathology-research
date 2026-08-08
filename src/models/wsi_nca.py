@@ -281,7 +281,9 @@ class WSINCA(nn.Module):
         else:
             mask = mask.bool()
         if mask.shape != features.shape[:2]:
-            raise ValueError(f"mask must have shape {tuple(features.shape[:2])}, got {tuple(mask.shape)}")
+            raise ValueError(
+                f"mask must have shape {tuple(features.shape[:2])}, got {tuple(mask.shape)}"
+            )
         if torch.any(mask.sum(dim=1) < 2):
             raise ValueError("Each slide must contain at least two valid cells")
 
