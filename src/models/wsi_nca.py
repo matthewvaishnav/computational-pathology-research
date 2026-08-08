@@ -233,10 +233,7 @@ class WSINCA(nn.Module):
         else:
             self.cell_update = None
             self.cell_updates = nn.ModuleList(
-                [
-                    SharedCellUpdate(hidden_dim=hidden_dim, dropout=dropout)
-                    for _ in range(num_steps)
-                ]
+                [SharedCellUpdate(hidden_dim=hidden_dim, dropout=dropout) for _ in range(num_steps)]
             )
 
         self.readout = MaskedAttentionReadout(hidden_dim)
