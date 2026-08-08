@@ -40,7 +40,7 @@ def test_forward_exposes_states_and_ignores_padding():
         [
             [True, True, True, True, True],
             [True, True, True, False, False],
-        ]
+        ],
     )
 
     output = model(features, coordinates, mask)
@@ -66,7 +66,7 @@ def test_t0_is_coordinate_blind_static_control():
     features = torch.randn(1, 4, 4)
     coordinates_a = torch.tensor([[[0.0, 0.0], [2.0, 0.0], [5.0, 0.0], [9.0, 0.0]]])
     coordinates_b = torch.tensor(
-        [[[100.0, 50.0], [-50.0, 9.0], [1.0, 1000.0], [500.0, -200.0]]]
+        [[[100.0, 50.0], [-50.0, 9.0], [1.0, 1000.0], [500.0, -200.0]]],
     )
 
     output_a = model(features, coordinates_a)
@@ -123,7 +123,7 @@ def test_joint_patch_permutation_preserves_slide_prediction():
 
     features = torch.randn(1, 5, 6)
     coordinates = torch.tensor(
-        [[[0.0, 0.0], [1.0, 0.0], [4.0, 0.0], [10.0, 0.0], [20.0, 0.0]]]
+        [[[0.0, 0.0], [1.0, 0.0], [4.0, 0.0], [10.0, 0.0], [20.0, 0.0]]],
     )
     mask = torch.ones(1, 5, dtype=torch.bool)
 
