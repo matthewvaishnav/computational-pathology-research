@@ -1,0 +1,112 @@
+import torch
+
+from src.models.wsi_nca import WSINCA, build_neighbor_index
+
+
+def test_spatial_knn_uses_slide_coordinates():
+    states = torch.zeros(1, 4, 3)
+    coordinates = torch.tensor([[[0.0, 0.0], [1.0, 0.0], [10.0, 0.0], [12.0, 0.0]]])
+    mask = torch.ones(1, 4, dtype=torch.bool)
+
+    neighbors = build_neighbor_index(states, coordinates, mask, k=1, mode="spatial")
+
+    assert neighbors.shape == (1, 4, 1)
+    assert neighbors[0, 0, 0].item() == 1
+    assert neighbors[0, 1, 0].item() == 0
+    assert neighbors[0, 2, 0].item() == 3
+    assert neighbors[0, 3, 0].item() == 2
+
+
+def test_forward_exposes_states_and_ignores_padding():
+    torch.manual_seed(7)
+    model = WSINCA(
+        input_dim=8,
+        hidden_dim=16,
+        num_classes=6,
+        num_steps=2,
+        k_neighbors=2,
+        dropout=0.0,
+    ).eval()
+
+    features = torch.randn(2, 5, 8)
+    coordinates = torch.tensor(
+        [
+            [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
+            [[0, 0], [1, 0], [2, 0], [99, 99], [100, 100]],
+        ],
+        dtype=torch.float32,
+    )
+    mask = torch.tensor(
+        [
+            [True, True, True, True, True],
+            [True, True, True, False, False],
+        ]
+    )
+
+    output = model(features, coordinates, mask)
+
+    assert output.logits.shape == (2, 6)
+    assert output.slide_state.shape == (2, 16)
+    assert output.cell_state.shape == (2, 5, 16)
+    assert output.neighbor_index.shape == (2, 5, 2)
+    assert torch.count_nonzero(output.cell_state[1, 3:]).item() == 0
+
+
+def test_t0_is_valid_static_control():
+    torch.manual_seed(11)
+    model = WSINCA(
+        input_dim=4,
+        hidden_dim=8,
+        num_classes=3,
+        num_steps=0,
+        k_neighbors=2,
+        dropout=0.0,
+    ).eval()
+
+    features = torch.randn(1, 4, 4)
+    coordinates = torch.tensor([[[0.0, 0.0], [2.0, 0.0], [5.0, 0.0], [9.0, 0.0]]])
+    output = model(features, coordinates)
+
+    assert output.logits.shape == (1, 3)
+    assert torch.isfinite(output.logits).all()
+    assert torch.isfinite(output.cell_state).all()
+
+
+def test_parameter_count_does_not_grow_with_developmental_steps():
+    model_t1 = WSINCA(input_dim=8, hidden_dim=16, num_steps=1)
+    model_t16 = WSINCA(input_dim=8, hidden_dim=16, num_steps=16)
+
+    count_t1 = sum(parameter.numel() for parameter in model_t1.parameters())
+    count_t16 = sum(parameter.numel() for parameter in model_t16.parameters())
+
+    assert count_t1 == count_t16
+    assert set(model_t1.state_dict()) == set(model_t16.state_dict())
+
+
+def test_joint_patch_permutation_preserves_slide_prediction():
+    torch.manual_seed(19)
+    model = WSINCA(
+        input_dim=6,
+        hidden_dim=12,
+        num_classes=4,
+        num_steps=3,
+        k_neighbors=2,
+        dropout=0.0,
+    ).eval()
+
+    features = torch.randn(1, 5, 6)
+    coordinates = torch.tensor(
+        [[[0.0, 0.0], [1.0, 0.0], [4.0, 0.0], [10.0, 0.0], [20.0, 0.0]]]
+    )
+    mask = torch.ones(1, 5, dtype=torch.bool)
+
+    reference = model(features, coordinates, mask).logits
+
+    permutation = torch.tensor([3, 0, 4, 1, 2])
+    permuted = model(
+        features[:, permutation],
+        coordinates[:, permutation],
+        mask[:, permutation],
+    ).logits
+
+    torch.testing.assert_close(reference, permuted, rtol=1e-5, atol=1e-6)
