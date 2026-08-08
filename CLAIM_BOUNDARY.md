@@ -19,14 +19,22 @@ not retroactively validate older artifacts.
 > Paired-Acquisition Neural Factorization substantially reduces linearly
 > recoverable scanner identity in its tissue-oriented representation while
 > preserving descriptive tissue-category structure and same-region retrieval.
-> The acquisition branch retains strong scanner information. These results
+> The acquisition branch retains strong scanner information. In the registered
+> SCORPION capacity-matched campaign, PA-NF also has a controlled comparative
+> advantage over the equal-capacity two-branch neural control on the structured-
+> separation objective: tissue-branch scanner balanced accuracy is reduced by
+> 0.3108 with a fold-aware 95% interval of [-0.3346, -0.2858], while average and
+> worst same-region retrieval remain within the registered 0.02 noninferiority
+> margin and acquisition-branch scanner information remains strong. These results
 > support partial structured separation under the tested conditions, not pure
 > biological factors, complete independence, or clinical utility.
 
-This supports **partial structured separation under the tested conditions**. It
-does not establish pure biological factors, information-theoretic independence,
+This supports **partial structured separation under the tested conditions** and a
+**bounded controlled advantage on the registered SCORPION comparator/objective**.
+It does not establish pure biological factors, information-theoretic independence,
 complete scanner invariance, disease biology, diagnostic improvement, clinical
-utility, or deployment readiness.
+utility, deployment readiness, universal superiority, or superiority to every
+simple scanner-removal method.
 
 ## Evidence that remains active
 
@@ -36,7 +44,8 @@ The following result families remain within the current claim boundary:
   scanners, and 2,400 image patches, using original-slide-blocked folds and the
   current fold-aware two-stage fold/slide bootstrap.
 - The separately versioned 175-fit SCORPION capacity-matched campaign, including
-  its equal-capacity two-branch control and registered objective ablations.
+  its equal-capacity two-branch control and registered objective ablations. The
+  promoted controlled comparison supports the bounded advantage described above.
 - The separately versioned 450-fit canine SCC dimensionality × cross-covariance
   factorial, including its negative result: no stable fold-intersection Pareto
   condition and no universal dimensionality or regularization law.
@@ -98,6 +107,14 @@ Safe:
 
 Safe:
 
+> On the registered SCORPION capacity-matched objective, PA-NF has a controlled
+> comparative advantage over the equal-capacity two-branch neural control: it
+> lowers tissue-branch scanner recoverability while satisfying the registered
+> same-region retrieval noninferiority criterion and retaining acquisition-branch
+> scanner information.
+
+Safe:
+
 > Same-region retrieval and cross-scanner agreement are largely preserved under
 > the tested paired-acquisition protocols.
 
@@ -125,14 +142,20 @@ Not safe:
 
 Not safe:
 
-> Paired acquisition is the best scanner-removal method.
+> Paired acquisition is universally the best scanner-removal method.
 
-Under the corrected fixed-estimand protocol, the linear centroid/QR baseline
-removes linearly recoverable scanner information more aggressively than the
-neural tissue-oriented branch while retaining similar descriptive category
+Not safe:
+
+> The SCORPION controlled advantage proves superiority over every simple scanner-
+> removal baseline on the corrected canine fixed-estimand.
+
+Under the corrected canine fixed-estimand protocol, the linear centroid/QR
+baseline removes linearly recoverable scanner information more aggressively than
+the neural tissue-oriented branch while retaining similar descriptive category
 metrics. The neural factorization additionally retains an explicit acquisition
-branch with strong scanner information. This is a bounded representation audit,
-not a claim that either approach creates pure biology.
+branch with strong scanner information. This bounded negative comparison does not
+negate the separately established SCORPION controlled advantage because the two
+experiments use different comparators and endpoints.
 
 ## Whole-slide modeling boundary
 
