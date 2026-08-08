@@ -20,7 +20,11 @@ TRAINER = Path(__file__).with_name("train_panda_phase_a.py")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="WSI-NCA Phase A matrix launcher")
-    parser.add_argument("--manifest", default="results/panda_manifest/panda_phikon_manifest.csv")
+    parser.add_argument(
+        "--manifest",
+        default="results/wsi_nca_phase_a/panda_coordinate_manifest.csv",
+        help="Frozen readable coordinate manifest prepared before matched controls",
+    )
     parser.add_argument("--out-dir", default="results/wsi_nca_phase_a")
     parser.add_argument("--steps", type=int, nargs="+", default=[0, 1, 2, 4, 8, 16])
     parser.add_argument("--seeds", type=int, nargs="+", default=[42])
