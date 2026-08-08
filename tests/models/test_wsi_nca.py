@@ -52,7 +52,7 @@ def test_forward_exposes_states_and_ignores_padding():
     assert torch.count_nonzero(output.cell_state[1, 3:]).item() == 0
 
 
-def test_t0_is_valid_static_control():
+def test_t0_is_coordinate_blind_static_control():
     torch.manual_seed(11)
     model = WSINCA(
         input_dim=4,
@@ -64,23 +64,50 @@ def test_t0_is_valid_static_control():
     ).eval()
 
     features = torch.randn(1, 4, 4)
-    coordinates = torch.tensor([[[0.0, 0.0], [2.0, 0.0], [5.0, 0.0], [9.0, 0.0]]])
-    output = model(features, coordinates)
+    coordinates_a = torch.tensor([[[0.0, 0.0], [2.0, 0.0], [5.0, 0.0], [9.0, 0.0]]])
+    coordinates_b = torch.tensor(
+        [[[100.0, 50.0], [-50.0, 9.0], [1.0, 1000.0], [500.0, -200.0]]]
+    )
 
-    assert output.logits.shape == (1, 3)
-    assert torch.isfinite(output.logits).all()
-    assert torch.isfinite(output.cell_state).all()
+    output_a = model(features, coordinates_a)
+    output_b = model(features, coordinates_b)
+
+    assert output_a.neighbor_index.shape == (1, 4, 0)
+    assert output_b.neighbor_index.shape == (1, 4, 0)
+    torch.testing.assert_close(output_a.logits, output_b.logits, rtol=0.0, atol=0.0)
 
 
-def test_parameter_count_does_not_grow_with_developmental_steps():
-    model_t1 = WSINCA(input_dim=8, hidden_dim=16, num_steps=1)
-    model_t16 = WSINCA(input_dim=8, hidden_dim=16, num_steps=16)
+def test_spatial_topology_changes_when_coordinates_are_reassigned():
+    states = torch.zeros(1, 4, 3)
+    mask = torch.ones(1, 4, dtype=torch.bool)
+    coordinates = torch.tensor([[[0.0, 0.0], [1.0, 0.0], [10.0, 0.0], [11.0, 0.0]]])
+    reassigned = coordinates[:, torch.tensor([0, 2, 1, 3])]
+
+    original = build_neighbor_index(states, coordinates, mask, k=1, mode="spatial")
+    shuffled = build_neighbor_index(states, reassigned, mask, k=1, mode="spatial")
+
+    assert not torch.equal(original, shuffled)
+
+
+def test_tied_parameter_count_does_not_grow_with_developmental_steps():
+    model_t1 = WSINCA(input_dim=8, hidden_dim=16, num_steps=1, dynamics_mode="tied")
+    model_t16 = WSINCA(input_dim=8, hidden_dim=16, num_steps=16, dynamics_mode="tied")
 
     count_t1 = sum(parameter.numel() for parameter in model_t1.parameters())
     count_t16 = sum(parameter.numel() for parameter in model_t16.parameters())
 
     assert count_t1 == count_t16
     assert set(model_t1.state_dict()) == set(model_t16.state_dict())
+
+
+def test_untied_gnn_control_has_more_parameters_at_equal_width():
+    tied = WSINCA(input_dim=8, hidden_dim=16, num_steps=4, dynamics_mode="tied")
+    untied = WSINCA(input_dim=8, hidden_dim=16, num_steps=4, dynamics_mode="untied")
+
+    tied_count = sum(parameter.numel() for parameter in tied.parameters())
+    untied_count = sum(parameter.numel() for parameter in untied.parameters())
+
+    assert untied_count > tied_count
 
 
 def test_joint_patch_permutation_preserves_slide_prediction():
