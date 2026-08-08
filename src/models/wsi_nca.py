@@ -1,8 +1,8 @@
 """Minimal whole-slide neural cellular automata (WSI-NCA) research model.
 
-Phase A intentionally isolates one hypothesis: whether repeated, shared local
-updates over true WSI patch topology produce a useful slide representation beyond
-a static readout over the same frozen patch features.
+Phase A intentionally isolates whether repeated local updates over true WSI patch
+topology produce useful slide representations beyond static and non-recurrent
+controls.
 
 This module is architecture research only. It does not establish biological
 meaning, clinical utility, superiority, self-repair, or acquisition invariance.
@@ -17,6 +17,7 @@ import torch
 from torch import Tensor, nn
 
 NeighborMode = Literal["spatial", "embedding"]
+DynamicsMode = Literal["tied", "untied"]
 
 
 @dataclass(frozen=True)
@@ -30,23 +31,13 @@ class WSINCAOutput:
 
 
 def _masked_knn(metric: Tensor, mask: Tensor, k: int) -> Tensor:
-    """Return k nearest valid non-self neighbors for each cell.
-
-    Args:
-        metric: Pairwise distance tensor [B, N, N].
-        mask: Valid-cell mask [B, N].
-        k: Number of neighbors.
-
-    Returns:
-        Long tensor [B, N, K]. Invalid query cells receive arbitrary indices but
-        are zeroed by the caller and therefore cannot influence the result.
-    """
+    """Return k nearest valid non-self neighbors for each cell."""
     if metric.ndim != 3 or metric.shape[-1] != metric.shape[-2]:
         raise ValueError(f"metric must have shape [B, N, N], got {tuple(metric.shape)}")
     if mask.ndim != 2 or mask.shape != metric.shape[:2]:
         raise ValueError(f"mask must have shape {tuple(metric.shape[:2])}, got {tuple(mask.shape)}")
 
-    batch, num_cells, _ = metric.shape
+    _, num_cells, _ = metric.shape
     if num_cells < 2:
         raise ValueError("WSI-NCA requires at least two cells per padded bag")
 
@@ -73,7 +64,11 @@ def build_neighbor_index(
     """Construct a kNN topology from coordinates or initial cell states."""
     if states.ndim != 3:
         raise ValueError(f"states must have shape [B, N, H], got {tuple(states.shape)}")
-    if coordinates.ndim != 3 or coordinates.shape[:2] != states.shape[:2] or coordinates.shape[-1] != 2:
+    if (
+        coordinates.ndim != 3
+        or coordinates.shape[:2] != states.shape[:2]
+        or coordinates.shape[-1] != 2
+    ):
         raise ValueError(
             "coordinates must have shape [B, N, 2] matching states; "
             f"got states={tuple(states.shape)}, coordinates={tuple(coordinates.shape)}"
@@ -96,7 +91,7 @@ def _gather_neighbors(values: Tensor, neighbor_index: Tensor) -> Tensor:
     """Gather [B, N, K, D] neighbor values from [B, N, D]."""
     if values.ndim != 3 or neighbor_index.ndim != 3:
         raise ValueError("values and neighbor_index must have shapes [B,N,D] and [B,N,K]")
-    batch, num_cells, dim = values.shape
+    batch, num_cells, _ = values.shape
     if neighbor_index.shape[:2] != (batch, num_cells):
         raise ValueError("neighbor_index must match values batch/cell dimensions")
 
@@ -104,8 +99,13 @@ def _gather_neighbors(values: Tensor, neighbor_index: Tensor) -> Tensor:
     return values[batch_index, neighbor_index]
 
 
+def _signed_log_relative(relative: Tensor) -> Tensor:
+    """Compress coordinate magnitude while preserving relative distance and direction."""
+    return torch.sign(relative) * torch.log1p(torch.abs(relative))
+
+
 class SharedCellUpdate(nn.Module):
-    """One local update law reused at every cell and every developmental step."""
+    """One local update law that can be tied or untied across developmental steps."""
 
     def __init__(self, hidden_dim: int, dropout: float = 0.0):
         super().__init__()
@@ -135,11 +135,11 @@ class SharedCellUpdate(nn.Module):
         neighbor_states = _gather_neighbors(states, neighbor_index)
         neighbor_coords = _gather_neighbors(coordinates.float(), neighbor_index)
 
+        # Relative coordinates make the rule invariant to slide origin. Signed
+        # log compression preserves both direction and physical distance scale
+        # without feeding very large level-0 WSI coordinates directly to an MLP.
         relative = neighbor_coords - coordinates.float().unsqueeze(2)
-        # Normalize per query cell to make the update less sensitive to absolute
-        # WSI coordinate units while preserving directional geometry.
-        scale = relative.norm(dim=-1, keepdim=True).amax(dim=2, keepdim=True).clamp_min(1.0)
-        relative = relative / scale
+        relative = _signed_log_relative(relative)
 
         position_code = self.relative_position(relative)
         center = states.unsqueeze(2).expand_as(neighbor_states)
@@ -159,7 +159,7 @@ class SharedCellUpdate(nn.Module):
 
 
 class MaskedAttentionReadout(nn.Module):
-    """Simple slide readout held constant across T=0 and T>0 controls."""
+    """Simple slide readout held constant across the Phase A controls."""
 
     def __init__(self, hidden_dim: int):
         super().__init__()
@@ -179,11 +179,17 @@ class MaskedAttentionReadout(nn.Module):
 
 
 class WSINCA(nn.Module):
-    """Minimal recurrent local-dynamics model for coordinate-aware WSI bags.
+    """Coordinate-aware WSI local-dynamics model with explicit control modes.
 
-    The same ``SharedCellUpdate`` parameters are reused for all ``num_steps``.
-    Setting ``num_steps=0`` gives the critical static control with the identical
-    initializer, readout, and classifier.
+    ``dynamics_mode="tied"`` is the NCA hypothesis: the same
+    :class:`SharedCellUpdate` parameters are reused at every developmental step.
+
+    ``dynamics_mode="untied"`` is a fixed-depth recurrent-GNN control with one
+    independently parameterized update module per step. This deliberately gives
+    the control more trainable parameters at equal hidden width.
+
+    ``num_steps=0`` is the static bag control and skips graph construction
+    entirely. Its initializer, readout, and classifier are otherwise identical.
     """
 
     def __init__(
@@ -194,6 +200,7 @@ class WSINCA(nn.Module):
         num_steps: int = 4,
         k_neighbors: int = 8,
         neighbor_mode: NeighborMode = "spatial",
+        dynamics_mode: DynamicsMode = "tied",
         dropout: float = 0.1,
     ):
         super().__init__()
@@ -201,23 +208,64 @@ class WSINCA(nn.Module):
             raise ValueError("num_steps must be >= 0")
         if k_neighbors < 1:
             raise ValueError("k_neighbors must be >= 1")
+        if dynamics_mode not in {"tied", "untied"}:
+            raise ValueError("dynamics_mode must be 'tied' or 'untied'")
 
         self.input_dim = int(input_dim)
         self.hidden_dim = int(hidden_dim)
         self.num_steps = int(num_steps)
         self.k_neighbors = int(k_neighbors)
         self.neighbor_mode = neighbor_mode
+        self.dynamics_mode = dynamics_mode
 
         self.initialize = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
             nn.GELU(),
         )
-        self.cell_update = SharedCellUpdate(hidden_dim=hidden_dim, dropout=dropout)
+
+        if dynamics_mode == "tied":
+            self.cell_update: SharedCellUpdate | None = SharedCellUpdate(
+                hidden_dim=hidden_dim,
+                dropout=dropout,
+            )
+            self.cell_updates = nn.ModuleList()
+        else:
+            self.cell_update = None
+            self.cell_updates = nn.ModuleList(
+                [
+                    SharedCellUpdate(hidden_dim=hidden_dim, dropout=dropout)
+                    for _ in range(num_steps)
+                ]
+            )
+
         self.readout = MaskedAttentionReadout(hidden_dim)
         self.classifier = nn.Linear(hidden_dim, num_classes)
 
-    def forward(self, features: Tensor, coordinates: Tensor, mask: Tensor | None = None) -> WSINCAOutput:
+    def _apply_dynamics(
+        self,
+        states: Tensor,
+        coordinates: Tensor,
+        neighbor_index: Tensor,
+        mask: Tensor,
+    ) -> Tensor:
+        if self.dynamics_mode == "tied":
+            if self.cell_update is None:
+                raise RuntimeError("Tied dynamics missing shared cell update")
+            for _ in range(self.num_steps):
+                states = self.cell_update(states, coordinates, neighbor_index, mask)
+            return states
+
+        for update_module in self.cell_updates:
+            states = update_module(states, coordinates, neighbor_index, mask)
+        return states
+
+    def forward(
+        self,
+        features: Tensor,
+        coordinates: Tensor,
+        mask: Tensor | None = None,
+    ) -> WSINCAOutput:
         if features.ndim != 3:
             raise ValueError(f"features must have shape [B, N, D], got {tuple(features.shape)}")
         if features.shape[-1] != self.input_dim:
@@ -240,16 +288,21 @@ class WSINCA(nn.Module):
         states = self.initialize(features)
         states = torch.where(mask.unsqueeze(-1), states, torch.zeros_like(states))
 
-        neighbor_index = build_neighbor_index(
-            states=states.detach(),
-            coordinates=coordinates,
-            mask=mask,
-            k=self.k_neighbors,
-            mode=self.neighbor_mode,
-        )
-
-        for _ in range(self.num_steps):
-            states = self.cell_update(states, coordinates, neighbor_index, mask)
+        if self.num_steps == 0:
+            neighbor_index = torch.empty(
+                (*features.shape[:2], 0),
+                dtype=torch.long,
+                device=features.device,
+            )
+        else:
+            neighbor_index = build_neighbor_index(
+                states=states.detach(),
+                coordinates=coordinates,
+                mask=mask,
+                k=self.k_neighbors,
+                mode=self.neighbor_mode,
+            )
+            states = self._apply_dynamics(states, coordinates, neighbor_index, mask)
 
         slide_state = self.readout(states, mask)
         logits = self.classifier(slide_state)
