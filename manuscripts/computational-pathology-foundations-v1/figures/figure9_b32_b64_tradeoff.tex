@@ -1,12 +1,13 @@
 \begin{figure}[!htbp]
 \centering
-\small
 \caption{B32/B64 capacity trade-off under the corrected fixed five-category
 estimand (seed-averaged means over the recovered cells). Wider biological
 bottleneck (B64) increases scanner recoverability and region retrieval but does
 not increase corrected category balanced accuracy.}
 \label{fig:tradeoff}
-\resizebox{\columnwidth}{!}{\begin{tabular}{lcc}
+{\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}lcc@{}}
 \toprule
 Endpoint (mean over folds) & B32 & B64 \\
 \midrule
@@ -15,10 +16,15 @@ Scanner BA & 0.300 & 0.349 \\
 Worst-pair retrieval & 0.585 & 0.634 \\
 Overall retrieval & 0.719 & 0.771 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+}
+
 \smallskip
+\begin{minipage}{0.82\linewidth}
+\footnotesize
 \emph{Note:} values are seed-averaged means over the five folds computed from
 the adjudication v2 result (canine metric table). The width effect transports
 to retrieval and scanner recoverability but not to corrected category
 accessibility.
+\end{minipage}
 \end{figure}
