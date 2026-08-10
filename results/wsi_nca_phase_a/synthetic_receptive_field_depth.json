@@ -1,0 +1,653 @@
+{
+  "experiment": "wsi_nca_receptive_field_depth_falsification",
+  "status": "synthetic mechanism evidence only; not pathology evidence",
+  "scientific_question": "Can repeated application of one shared local update rule extract a signal that one spatial pass cannot?",
+  "predictions_before_observation": {
+    "t0": "incapable because the unordered feature multisets are identical",
+    "t1": "incapable because the complete slide multiset of rooted one-hop colored, signed-edge neighborhoods is identical",
+    "t2_t4": "representationally capable because class signatures first differ at depth two",
+    "shuffled": "expected to remove the stable feature/topology correspondence"
+  },
+  "task_construction": {
+    "class_templates": {
+      "0": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "1": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    "geometry": "eight equally spaced cells on a line; k=2 spatial nearest neighbors",
+    "nuisance_controls": [
+      "class-paired random global feature complement",
+      "class-paired random coordinate translation",
+      "the model uses relative rather than absolute coordinates in messages"
+    ],
+    "construction_audit": {
+      "unordered_feature_multisets_equal": true,
+      "coordinate_geometry_equal": true,
+      "neighbor_count": 2,
+      "depths": {
+        "0": {
+          "equal": true,
+          "class_0_sha256": "9123e83f694b671c86658c99ae9529e1aadbb35e4475deaa981889d2fbcaa994",
+          "class_1_sha256": "9123e83f694b671c86658c99ae9529e1aadbb35e4475deaa981889d2fbcaa994"
+        },
+        "1": {
+          "equal": true,
+          "class_0_sha256": "4caae60efa8783e4c36105686895fb77a10251ef430df11f6de05df3b21129e7",
+          "class_1_sha256": "4caae60efa8783e4c36105686895fb77a10251ef430df11f6de05df3b21129e7",
+          "class_0_histogram": {
+            "(0, (((-1, 0), 0), ((1, 0), 1)))": 1,
+            "(0, (((-1, 0), 1), ((1, 0), 1)))": 2,
+            "(0, (((1, 0), 0), ((2, 0), 1)))": 1,
+            "(1, (((-1, 0), 0), ((-2, 0), 1)))": 1,
+            "(1, (((-1, 0), 0), ((1, 0), 0)))": 1,
+            "(1, (((-1, 0), 0), ((1, 0), 1)))": 1,
+            "(1, (((-1, 0), 1), ((1, 0), 0)))": 1
+          },
+          "class_1_histogram": {
+            "(0, (((-1, 0), 0), ((1, 0), 1)))": 1,
+            "(0, (((-1, 0), 1), ((1, 0), 1)))": 2,
+            "(0, (((1, 0), 0), ((2, 0), 1)))": 1,
+            "(1, (((-1, 0), 0), ((-2, 0), 1)))": 1,
+            "(1, (((-1, 0), 0), ((1, 0), 0)))": 1,
+            "(1, (((-1, 0), 0), ((1, 0), 1)))": 1,
+            "(1, (((-1, 0), 1), ((1, 0), 0)))": 1
+          }
+        },
+        "2": {
+          "equal": false,
+          "class_0_sha256": "b773c34c6897f1cd94b5e56cc5fc17a0f7366e56ac911b64cd1e4bd9f03d8204",
+          "class_1_sha256": "c9a2c4772b4bbed1135a91ce66f33996dc5c8d497f7094899d4b1a089e8115da"
+        },
+        "3": {
+          "equal": false,
+          "class_0_sha256": "6ff5eb0ce8f113d252300cbd2a0ced1503fd0a44e3969fbd449dcca26ac9bcfc",
+          "class_1_sha256": "5fce6cc3ae2d1f9709c847e4f4db4fbdc4dda9b75019117f001198db7b67e261"
+        },
+        "4": {
+          "equal": false,
+          "class_0_sha256": "f19e38e111cd704787452759a27f9a918acfe0e0c76db5b80b288c43aa48e077",
+          "class_1_sha256": "ce194da29082f3ecf7a0378a0eb5c54d3685a473f4293ef50bd4449f57340dd8"
+        }
+      },
+      "first_distinguishing_depth": 2
+    },
+    "readout_leakage_audit": {
+      "t0": {
+        "max_abs_logit_difference": 8.940696716308594e-08,
+        "max_abs_slide_state_difference": 2.384185791015625e-07
+      },
+      "t1": {
+        "max_abs_logit_difference": 1.1920928955078125e-07,
+        "max_abs_slide_state_difference": 2.384185791015625e-07
+      }
+    },
+    "depth_initialization_audit": [
+      {
+        "seed": 7,
+        "steps": 2,
+        "dynamics_mode": "tied",
+        "initial_slide_gap": 0.00035315752029418945,
+        "initial_logit_gap": 0.00012674927711486816,
+        "initial_gradient_l2": 1.7024283391426165
+      },
+      {
+        "seed": 7,
+        "steps": 4,
+        "dynamics_mode": "tied",
+        "initial_slide_gap": 0.0020483732223510742,
+        "initial_logit_gap": 0.0005000084638595581,
+        "initial_gradient_l2": 0.9703719922513863
+      },
+      {
+        "seed": 7,
+        "steps": 4,
+        "dynamics_mode": "untied",
+        "initial_slide_gap": 0.002182215452194214,
+        "initial_logit_gap": 0.00048632174730300903,
+        "initial_gradient_l2": 0.12876066427293456
+      },
+      {
+        "seed": 19,
+        "steps": 2,
+        "dynamics_mode": "tied",
+        "initial_slide_gap": 0.00016361474990844727,
+        "initial_logit_gap": 5.3763389587402344e-05,
+        "initial_gradient_l2": 2.6625108384977003
+      },
+      {
+        "seed": 19,
+        "steps": 4,
+        "dynamics_mode": "tied",
+        "initial_slide_gap": 0.0003089010715484619,
+        "initial_logit_gap": 0.00015106797218322754,
+        "initial_gradient_l2": 2.917634695817499
+      },
+      {
+        "seed": 19,
+        "steps": 4,
+        "dynamics_mode": "untied",
+        "initial_slide_gap": 0.0006914138793945312,
+        "initial_logit_gap": 0.00022238492965698242,
+        "initial_gradient_l2": 0.30608391708406046
+      },
+      {
+        "seed": 43,
+        "steps": 2,
+        "dynamics_mode": "tied",
+        "initial_slide_gap": 0.0003598444163799286,
+        "initial_logit_gap": 6.857514381408691e-05,
+        "initial_gradient_l2": 0.9639964286544132
+      },
+      {
+        "seed": 43,
+        "steps": 4,
+        "dynamics_mode": "tied",
+        "initial_slide_gap": 0.0010429620742797852,
+        "initial_logit_gap": 0.00036656856536865234,
+        "initial_gradient_l2": 1.819917864310657
+      },
+      {
+        "seed": 43,
+        "steps": 4,
+        "dynamics_mode": "untied",
+        "initial_slide_gap": 0.0007511377334594727,
+        "initial_logit_gap": 0.0005142688751220703,
+        "initial_gradient_l2": 2.5380093246677484
+      }
+    ]
+  },
+  "execution": {
+    "train_pairs": 256,
+    "val_pairs": 128,
+    "epochs": 60,
+    "batch_size": 64,
+    "hidden_dim": 24,
+    "learning_rate": 0.003,
+    "weight_decay": 0.0001,
+    "seeds": [
+      7,
+      19,
+      43
+    ],
+    "device": "cpu",
+    "diagnostic_epochs": 240
+  },
+  "observed_results": {
+    "per_seed": [
+      {
+        "seed": 7,
+        "runs": {
+          "t0_tied_real": {
+            "steps": 0,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.693368673324585,
+            "train_accuracy": 0.5,
+            "val_loss": 0.693368673324585,
+            "val_accuracy": 0.5
+          },
+          "t1_tied_real": {
+            "steps": 1,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.6934251189231873,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6934248208999634,
+            "val_accuracy": 0.5
+          },
+          "t2_tied_real": {
+            "steps": 2,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.0002671473484952003,
+            "train_accuracy": 1.0,
+            "val_loss": 0.000266939023276791,
+            "val_accuracy": 1.0
+          },
+          "t4_tied_real": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.00035810598637908697,
+            "train_accuracy": 1.0,
+            "val_loss": 0.00035818395554088056,
+            "val_accuracy": 1.0
+          },
+          "t4_tied_real_train_shuffled_eval": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "shuffled",
+            "parameter_count": 6891,
+            "train_loss": 0.00035810598637908697,
+            "train_accuracy": 1.0,
+            "val_loss": 3.1114184856414795,
+            "val_accuracy": 0.5390625
+          },
+          "t4_tied_shuffled": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "shuffled",
+            "eval_topology": "shuffled",
+            "parameter_count": 6891,
+            "train_loss": 0.6835097074508667,
+            "train_accuracy": 0.5546875,
+            "val_loss": 0.7010634541511536,
+            "val_accuracy": 0.46875
+          },
+          "t4_untied_real": {
+            "steps": 4,
+            "dynamics_mode": "untied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 25179,
+            "train_loss": 0.00015841929416637868,
+            "train_accuracy": 1.0,
+            "val_loss": 0.00015834941586945206,
+            "val_accuracy": 1.0
+          }
+        }
+      },
+      {
+        "seed": 19,
+        "runs": {
+          "t0_tied_real": {
+            "steps": 0,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.693218469619751,
+            "train_accuracy": 0.5,
+            "val_loss": 0.693218469619751,
+            "val_accuracy": 0.5
+          },
+          "t1_tied_real": {
+            "steps": 1,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.6931704878807068,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6931705474853516,
+            "val_accuracy": 0.5
+          },
+          "t2_tied_real": {
+            "steps": 2,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.6930480599403381,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6930480599403381,
+            "val_accuracy": 0.5
+          },
+          "t4_tied_real": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.6931352019309998,
+            "train_accuracy": 0.5,
+            "val_loss": 0.693135142326355,
+            "val_accuracy": 0.5
+          },
+          "t4_tied_real_train_shuffled_eval": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "shuffled",
+            "parameter_count": 6891,
+            "train_loss": 0.6931352019309998,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6932350397109985,
+            "val_accuracy": 0.5
+          },
+          "t4_tied_shuffled": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "shuffled",
+            "eval_topology": "shuffled",
+            "parameter_count": 6891,
+            "train_loss": 0.6922013759613037,
+            "train_accuracy": 0.537109375,
+            "val_loss": 0.6955724954605103,
+            "val_accuracy": 0.48828125
+          },
+          "t4_untied_real": {
+            "steps": 4,
+            "dynamics_mode": "untied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 25179,
+            "train_loss": 0.6930721998214722,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6930719614028931,
+            "val_accuracy": 0.5
+          }
+        }
+      },
+      {
+        "seed": 43,
+        "runs": {
+          "t0_tied_real": {
+            "steps": 0,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.6932374238967896,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6932373642921448,
+            "val_accuracy": 0.5
+          },
+          "t1_tied_real": {
+            "steps": 1,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.6931746006011963,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6931745409965515,
+            "val_accuracy": 0.5
+          },
+          "t2_tied_real": {
+            "steps": 2,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.000470130325993523,
+            "train_accuracy": 1.0,
+            "val_loss": 0.0004703025333583355,
+            "val_accuracy": 1.0
+          },
+          "t4_tied_real": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 6891,
+            "train_loss": 0.00021551888494286686,
+            "train_accuracy": 1.0,
+            "val_loss": 0.00021557127183768898,
+            "val_accuracy": 1.0
+          },
+          "t4_tied_real_train_shuffled_eval": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "real",
+            "eval_topology": "shuffled",
+            "parameter_count": 6891,
+            "train_loss": 0.00021551888494286686,
+            "train_accuracy": 1.0,
+            "val_loss": 4.38967227935791,
+            "val_accuracy": 0.4765625
+          },
+          "t4_tied_shuffled": {
+            "steps": 4,
+            "dynamics_mode": "tied",
+            "train_topology": "shuffled",
+            "eval_topology": "shuffled",
+            "parameter_count": 6891,
+            "train_loss": 0.6907283663749695,
+            "train_accuracy": 0.52734375,
+            "val_loss": 0.6985212564468384,
+            "val_accuracy": 0.49609375
+          },
+          "t4_untied_real": {
+            "steps": 4,
+            "dynamics_mode": "untied",
+            "train_topology": "real",
+            "eval_topology": "real",
+            "parameter_count": 25179,
+            "train_loss": 0.0003215924953110516,
+            "train_accuracy": 1.0,
+            "val_loss": 0.00032373855356127024,
+            "val_accuracy": 1.0
+          }
+        }
+      }
+    ],
+    "aggregate": {
+      "t0_tied_real": {
+        "val_accuracy_values": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "val_accuracy_mean": 0.5,
+        "val_accuracy_std": 0.0,
+        "train_accuracy_values": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "train_accuracy_mean": 0.5,
+        "parameter_count": 6891
+      },
+      "t1_tied_real": {
+        "val_accuracy_values": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "val_accuracy_mean": 0.5,
+        "val_accuracy_std": 0.0,
+        "train_accuracy_values": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "train_accuracy_mean": 0.5,
+        "parameter_count": 6891
+      },
+      "t2_tied_real": {
+        "val_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "val_accuracy_mean": 0.8333333333333334,
+        "val_accuracy_std": 0.23570226039551584,
+        "train_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "train_accuracy_mean": 0.8333333333333334,
+        "parameter_count": 6891
+      },
+      "t4_tied_real": {
+        "val_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "val_accuracy_mean": 0.8333333333333334,
+        "val_accuracy_std": 0.23570226039551584,
+        "train_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "train_accuracy_mean": 0.8333333333333334,
+        "parameter_count": 6891
+      },
+      "t4_tied_real_train_shuffled_eval": {
+        "val_accuracy_values": [
+          0.5390625,
+          0.5,
+          0.4765625
+        ],
+        "val_accuracy_mean": 0.5052083333333334,
+        "val_accuracy_std": 0.025779934730759544,
+        "train_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "train_accuracy_mean": 0.8333333333333334,
+        "parameter_count": 6891
+      },
+      "t4_tied_shuffled": {
+        "val_accuracy_values": [
+          0.46875,
+          0.48828125,
+          0.49609375
+        ],
+        "val_accuracy_mean": 0.484375,
+        "val_accuracy_std": 0.01149968862803105,
+        "train_accuracy_values": [
+          0.5546875,
+          0.537109375,
+          0.52734375
+        ],
+        "train_accuracy_mean": 0.5397135416666666,
+        "parameter_count": 6891
+      },
+      "t4_untied_real": {
+        "val_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "val_accuracy_mean": 0.8333333333333334,
+        "val_accuracy_std": 0.23570226039551584,
+        "train_accuracy_values": [
+          1.0,
+          0.5,
+          1.0
+        ],
+        "train_accuracy_mean": 0.8333333333333334,
+        "parameter_count": 25179
+      }
+    },
+    "parameter_counts": {
+      "tied_t4": 6891,
+      "untied_t4": 25179,
+      "untied_minus_tied": 18288,
+      "untied_over_tied": 3.6538963865912057
+    },
+    "post_hoc_optimization_diagnostics": {
+      "rule": "Only depth-capable primary runs with train accuracy <= 0.75 were rerun with the same data, model, seed, optimizer, and learning rate; only the epoch horizon changed.",
+      "extended_horizon_runs": [
+        {
+          "seed": 19,
+          "run": "t2_tied_real",
+          "primary_epochs": 60,
+          "diagnostic_epochs": 240,
+          "parameter_count": 6891,
+          "primary_metrics": {
+            "train_loss": 0.6930480599403381,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6930480599403381,
+            "val_accuracy": 0.5
+          },
+          "extended_metrics": {
+            "train_loss": 1.761601015459746e-05,
+            "train_accuracy": 1.0,
+            "val_loss": 1.761484418238979e-05,
+            "val_accuracy": 1.0
+          }
+        },
+        {
+          "seed": 19,
+          "run": "t4_tied_real",
+          "primary_epochs": 60,
+          "diagnostic_epochs": 240,
+          "parameter_count": 6891,
+          "primary_metrics": {
+            "train_loss": 0.6931352019309998,
+            "train_accuracy": 0.5,
+            "val_loss": 0.693135142326355,
+            "val_accuracy": 0.5
+          },
+          "extended_metrics": {
+            "train_loss": 2.674465940799564e-05,
+            "train_accuracy": 1.0,
+            "val_loss": 2.680868055904284e-05,
+            "val_accuracy": 1.0
+          }
+        },
+        {
+          "seed": 19,
+          "run": "t4_untied_real",
+          "primary_epochs": 60,
+          "diagnostic_epochs": 240,
+          "parameter_count": 25179,
+          "primary_metrics": {
+            "train_loss": 0.6930721998214722,
+            "train_accuracy": 0.5,
+            "val_loss": 0.6930719614028931,
+            "val_accuracy": 0.5
+          },
+          "extended_metrics": {
+            "train_loss": 8.4180552221369e-05,
+            "train_accuracy": 1.0,
+            "val_loss": 8.421781240031123e-05,
+            "val_accuracy": 1.0
+          }
+        }
+      ]
+    }
+  },
+  "bounded_interpretation": {
+    "t0_t1_at_chance": true,
+    "depth_two_gate_observed": true,
+    "t4_depth_gate_observed": true,
+    "topology_perturbation_destroyed_t4_signal": true,
+    "successful_t4_seed_shuffled_eval_accuracy_mean": 0.5078125,
+    "locked_horizon_optimization_failures": [
+      {
+        "seed": 19,
+        "run": "t2_tied_real"
+      },
+      {
+        "seed": 19,
+        "run": "t4_tied_real"
+      },
+      {
+        "seed": 19,
+        "run": "t4_untied_real"
+      }
+    ],
+    "optimization_diagnosis": "A locked-horizon failure is attributable to optimization rather than task leakage or architectural incapacity only when the same initialization has nonzero class-sensitive states/gradients and succeeds in the labeled extended-horizon diagnostic.",
+    "claim_boundary": "A positive separation supports only that this shared local update can propagate information across multiple graph hops on the constructed task. It does not establish pathology utility, self-repair, attractors, regeneration, morphogenesis, or clinical value."
+  },
+  "provenance": {
+    "git_parent_revision": "9a970978f88918db7909d2681285c705632903a6",
+    "python": "3.12.13",
+    "torch": "2.13.0+cu130",
+    "numpy": "1.26.4"
+  }
+}

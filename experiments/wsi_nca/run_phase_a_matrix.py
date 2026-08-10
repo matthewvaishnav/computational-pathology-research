@@ -12,8 +12,6 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
-
 
 TRAINER = Path(__file__).with_name("train_panda_phase_a.py")
 
@@ -39,11 +37,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--include-shuffled", action="store_true")
     parser.add_argument("--include-embedding", action="store_true")
+    parser.add_argument(
+        "--include-untied-t4",
+        action="store_true",
+        help="Add the real-topology untied T=4 recurrent/GNN control",
+    )
     parser.add_argument("--execute", action="store_true")
     return parser.parse_args()
 
 
-def common_command(args: argparse.Namespace, steps: int, seed: int) -> List[str]:
+def common_command(
+    args: argparse.Namespace,
+    steps: int,
+    seed: int,
+    dynamics_mode: str = "tied",
+) -> list[str]:
     command = [
         sys.executable,
         str(TRAINER),
@@ -69,6 +77,8 @@ def common_command(args: argparse.Namespace, steps: int, seed: int) -> List[str]
         str(steps),
         "--seed",
         str(seed),
+        "--dynamics-mode",
+        dynamics_mode,
         "--device",
         args.device,
     ]
@@ -77,8 +87,8 @@ def common_command(args: argparse.Namespace, steps: int, seed: int) -> List[str]
     return command
 
 
-def build_commands(args: argparse.Namespace) -> List[List[str]]:
-    commands: List[List[str]] = []
+def build_commands(args: argparse.Namespace) -> list[list[str]]:
+    commands: list[list[str]] = []
     for seed in args.seeds:
         for steps in args.steps:
             spatial = common_command(args, steps, seed)
@@ -92,17 +102,18 @@ def build_commands(args: argparse.Namespace) -> List[List[str]]:
 
             if args.include_shuffled:
                 shuffled = common_command(args, steps, seed)
-                shuffled.extend(
-                    ["--neighbor-mode", "spatial", "--coordinate-control", "shuffle"]
-                )
+                shuffled.extend(["--neighbor-mode", "spatial", "--coordinate-control", "shuffle"])
                 commands.append(shuffled)
 
             if args.include_embedding:
                 embedding = common_command(args, steps, seed)
-                embedding.extend(
-                    ["--neighbor-mode", "embedding", "--coordinate-control", "real"]
-                )
+                embedding.extend(["--neighbor-mode", "embedding", "--coordinate-control", "real"])
                 commands.append(embedding)
+
+            if steps == 4 and args.include_untied_t4:
+                untied = common_command(args, steps, seed, dynamics_mode="untied")
+                untied.extend(["--neighbor-mode", "spatial", "--coordinate-control", "real"])
+                commands.append(untied)
 
     return commands
 

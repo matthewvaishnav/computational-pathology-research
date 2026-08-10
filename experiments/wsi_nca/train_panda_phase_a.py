@@ -17,6 +17,11 @@ Shuffled-topology control:
     python experiments/wsi_nca/train_panda_phase_a.py \
         --num-steps 4 --coordinate-control shuffle --max-patches 512 \
         --seed 42 --device cuda
+
+Untied recurrent/GNN control:
+    python experiments/wsi_nca/train_panda_phase_a.py \
+        --num-steps 4 --dynamics-mode untied --max-patches 512 \
+        --seed 42 --device cuda
 """
 
 from __future__ import annotations
@@ -25,8 +30,8 @@ import argparse
 import json
 import random
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
 
 import h5py
 import numpy as np
@@ -43,7 +48,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.models.wsi_nca import WSINCA
+from src.models.wsi_nca import WSINCA  # noqa: E402
 
 
 class PandaCoordinateBagDataset(Dataset):
@@ -66,7 +71,7 @@ class PandaCoordinateBagDataset(Dataset):
     def __len__(self) -> int:
         return len(self.frame)
 
-    def __getitem__(self, index: int) -> Tuple[Tensor, Tensor, Tensor, str]:
+    def __getitem__(self, index: int) -> tuple[Tensor, Tensor, Tensor, str]:
         row = self.frame.iloc[index]
         path = Path(str(row["feature_path"]))
         image_id = str(row["image_id"])
@@ -80,7 +85,9 @@ class PandaCoordinateBagDataset(Dataset):
                 features = handle["features"][:]
                 coordinates = handle["coordinates"][:]
         except Exception as exc:
-            raise OSError(f"Failed to load coordinate bag image_id={image_id}, path={path}: {exc}") from exc
+            raise OSError(
+                f"Failed to load coordinate bag image_id={image_id}, path={path}: {exc}"
+            ) from exc
 
         if features.ndim != 2 or features.shape[0] < 2:
             raise ValueError(f"Invalid features for {image_id}: shape={features.shape}")
@@ -113,8 +120,8 @@ class PandaCoordinateBagDataset(Dataset):
 
 
 def collate_coordinate_bags(
-    batch: Sequence[Tuple[Tensor, Tensor, Tensor, str]],
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, List[str]]:
+    batch: Sequence[tuple[Tensor, Tensor, Tensor, str]],
+) -> tuple[Tensor, Tensor, Tensor, Tensor, list[str]]:
     features, coordinates, labels, image_ids = zip(*batch)
     lengths = torch.tensor([item.shape[0] for item in features], dtype=torch.long)
     padded_features = pad_sequence(list(features), batch_first=True, padding_value=0.0)
@@ -136,6 +143,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-steps", type=int, default=4)
     parser.add_argument("--k-neighbors", type=int, default=8)
     parser.add_argument("--neighbor-mode", choices=["spatial", "embedding"], default="spatial")
+    parser.add_argument("--dynamics-mode", choices=["tied", "untied"], default="tied")
     parser.add_argument("--coordinate-control", choices=["real", "shuffle"], default="real")
     parser.add_argument("--max-patches", type=int, default=512)
     parser.add_argument("--dropout", type=float, default=0.1)
@@ -183,8 +191,8 @@ def load_manifest(path: Path, limit: int | None) -> pd.DataFrame:
 
 def validate_coordinate_files(frame: pd.DataFrame) -> pd.DataFrame:
     """Fail closed: Phase A cannot silently degrade to coordinate-free bags."""
-    rows: List[int] = []
-    failures: List[str] = []
+    rows: list[int] = []
+    failures: list[str] = []
     for index, row in frame.iterrows():
         path = Path(str(row["feature_path"]))
         image_id = str(row["image_id"])
@@ -195,9 +203,7 @@ def validate_coordinate_files(frame: pd.DataFrame) -> pd.DataFrame:
             if len(feature_shape) != 2 or feature_shape[0] < 2:
                 raise ValueError(f"features={feature_shape}")
             if coordinate_shape != (feature_shape[0], 2):
-                raise ValueError(
-                    f"features={feature_shape}, coordinates={coordinate_shape}"
-                )
+                raise ValueError(f"features={feature_shape}, coordinates={coordinate_shape}")
         except Exception as exc:
             failures.append(f"{image_id} | {path} | {exc}")
         else:
@@ -218,7 +224,9 @@ def infer_feature_dim(frame: pd.DataFrame) -> int:
         return int(handle["features"].shape[1])
 
 
-def make_split(frame: pd.DataFrame, val_fraction: float, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def make_split(
+    frame: pd.DataFrame, val_fraction: float, seed: int
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     train, val = train_test_split(
         frame,
         test_size=val_fraction,
@@ -235,7 +243,7 @@ def compute_class_weights(labels: Sequence[int], num_classes: int = 6) -> Tensor
     return torch.tensor(weights, dtype=torch.float32)
 
 
-def compute_metrics(targets: List[int], predictions: List[int], loss: float) -> Dict[str, float]:
+def compute_metrics(targets: list[int], predictions: list[int], loss: float) -> dict[str, float]:
     return {
         "loss": float(loss),
         "accuracy": float(accuracy_score(targets, predictions)),
@@ -251,11 +259,11 @@ def run_epoch(
     device: torch.device,
     optimizer: torch.optim.Optimizer | None = None,
     grad_clip_norm: float | None = None,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     training = optimizer is not None
     model.train(training)
-    targets_all: List[int] = []
-    predictions_all: List[int] = []
+    targets_all: list[int] = []
+    predictions_all: list[int] = []
     loss_sum = 0.0
     examples = 0
 
@@ -291,7 +299,7 @@ def run_epoch(
 
 
 def predict(model: WSINCA, loader: DataLoader, device: torch.device) -> pd.DataFrame:
-    rows: List[Dict[str, object]] = []
+    rows: list[dict[str, object]] = []
     model.eval()
     with torch.no_grad():
         for features, coordinates, mask, targets, image_ids in loader:
@@ -303,7 +311,7 @@ def predict(model: WSINCA, loader: DataLoader, device: torch.device) -> pd.DataF
             probabilities = torch.softmax(output.logits, dim=1).cpu().numpy()
             predictions = probabilities.argmax(axis=1)
             for idx, image_id in enumerate(image_ids):
-                row: Dict[str, object] = {
+                row: dict[str, object] = {
                     "image_id": image_id,
                     "isup_grade": int(targets[idx].item()),
                     "pred_isup_grade": int(predictions[idx]),
@@ -320,7 +328,7 @@ def main() -> None:
 
     out_dir = Path(args.out_dir) / (
         f"steps-{args.num_steps}_neighbors-{args.neighbor_mode}_"
-        f"coords-{args.coordinate_control}_seed-{args.seed}"
+        f"coords-{args.coordinate_control}_dynamics-{args.dynamics_mode}_seed-{args.seed}"
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -367,6 +375,7 @@ def main() -> None:
         num_steps=args.num_steps,
         k_neighbors=args.k_neighbors,
         neighbor_mode=args.neighbor_mode,
+        dynamics_mode=args.dynamics_mode,
         dropout=args.dropout,
     ).to(device)
 
@@ -390,7 +399,7 @@ def main() -> None:
     )
     (out_dir / "run_config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
 
-    history: List[Dict[str, float | int]] = []
+    history: list[dict[str, float | int]] = []
     best_qwk = float("-inf")
 
     for epoch in range(1, args.epochs + 1):
@@ -404,7 +413,7 @@ def main() -> None:
         )
         val_metrics = run_epoch(model, val_loader, criterion, device)
 
-        row: Dict[str, float | int] = {"epoch": epoch}
+        row: dict[str, float | int] = {"epoch": epoch}
         row.update({f"train_{key}": value for key, value in train_metrics.items()})
         row.update({f"val_{key}": value for key, value in val_metrics.items()})
         history.append(row)

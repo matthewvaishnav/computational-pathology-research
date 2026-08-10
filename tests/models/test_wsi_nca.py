@@ -137,3 +137,28 @@ def test_joint_patch_permutation_preserves_slide_prediction():
     ).logits
 
     torch.testing.assert_close(reference, permuted, rtol=1e-5, atol=1e-6)
+
+
+def test_relative_position_dynamics_are_translation_invariant():
+    torch.manual_seed(23)
+    model = WSINCA(
+        input_dim=5,
+        hidden_dim=10,
+        num_classes=2,
+        num_steps=2,
+        k_neighbors=2,
+        dropout=0.0,
+    ).eval()
+
+    features = torch.randn(1, 6, 5)
+    coordinates = torch.tensor(
+        [[[0.0, 0.0], [1.0, 0.0], [2.0, 0.0], [3.0, 0.0], [4.0, 0.0], [5.0, 0.0]]]
+    )
+    translated = coordinates + torch.tensor([[[137.0, -89.0]]])
+
+    reference = model(features, coordinates)
+    shifted = model(features, translated)
+
+    assert torch.equal(reference.neighbor_index, shifted.neighbor_index)
+    torch.testing.assert_close(reference.cell_state, shifted.cell_state, rtol=0.0, atol=0.0)
+    torch.testing.assert_close(reference.logits, shifted.logits, rtol=0.0, atol=0.0)
