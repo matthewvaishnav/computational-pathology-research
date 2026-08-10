@@ -11,8 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
-from typing import Dict, List
+from pathlib import Path, PureWindowsPath
 
 import h5py
 import pandas as pd
@@ -49,12 +48,19 @@ def parse_valid_column(series: pd.Series) -> pd.Series:
     return series.astype(str).str.lower().isin({"true", "1", "yes"})
 
 
+def resolve_manifest_feature_path(raw_path: str, manifest_path: Path) -> Path:
+    path = Path(raw_path)
+    if path.is_absolute() or PureWindowsPath(raw_path).is_absolute():
+        return path
+    return (manifest_path.parent / path).resolve()
+
+
 def verify_coordinate_bags(
     frame: pd.DataFrame,
     max_bad_files: int,
-) -> tuple[pd.DataFrame, List[Dict[str, str]]]:
-    good_indices: List[int] = []
-    bad_rows: List[Dict[str, str]] = []
+) -> tuple[pd.DataFrame, list[dict[str, str]]]:
+    good_indices: list[int] = []
+    bad_rows: list[dict[str, str]] = []
 
     print("Fully reading selected feature and coordinate arrays...")
     for position, (index, row) in enumerate(frame.iterrows(), start=1):
@@ -82,7 +88,7 @@ def verify_coordinate_bags(
             if len(bad_rows) > max_bad_files:
                 raise RuntimeError(
                     f"Aborting after more than {max_bad_files} unreadable coordinate bags"
-                )
+                ) from exc
         else:
             good_indices.append(index)
 
@@ -94,7 +100,7 @@ def verify_coordinate_bags(
 
 def main() -> None:
     args = parse_args()
-    manifest_path = Path(args.manifest)
+    manifest_path = Path(args.manifest).resolve()
     exclude_path = Path(args.exclude_csv)
     output_path = Path(args.out_manifest)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -111,6 +117,9 @@ def main() -> None:
     source_rows = len(frame)
     frame = frame[parse_valid_column(frame["valid"])].copy()
     frame = frame[frame["feature_path"].notna()].copy()
+    frame["feature_path"] = frame["feature_path"].map(
+        lambda value: str(resolve_manifest_feature_path(str(value), manifest_path))
+    )
     manifest_valid_rows = len(frame)
 
     excluded_ids: set[str] = set()
@@ -121,7 +130,7 @@ def main() -> None:
         excluded_ids = set(exclude_frame["image_id"].astype(str))
         frame = frame[~frame["image_id"].astype(str).isin(excluded_ids)].copy()
 
-    bad_rows: List[Dict[str, str]] = []
+    bad_rows: list[dict[str, str]] = []
     if args.verify_read:
         frame, bad_rows = verify_coordinate_bags(frame, args.max_bad_files)
         if bad_rows:

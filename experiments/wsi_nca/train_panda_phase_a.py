@@ -31,7 +31,7 @@ import json
 import random
 import sys
 from collections.abc import Sequence
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import h5py
 import numpy as np
@@ -170,7 +170,16 @@ def parse_valid_column(series: pd.Series) -> pd.Series:
     return series.astype(str).str.lower().isin({"true", "1", "yes"})
 
 
+def resolve_manifest_feature_path(raw_path: str, manifest_path: Path) -> Path:
+    """Resolve portable relative paths without mangling tracked Windows paths on Linux."""
+    path = Path(raw_path)
+    if path.is_absolute() or PureWindowsPath(raw_path).is_absolute():
+        return path
+    return (manifest_path.parent / path).resolve()
+
+
 def load_manifest(path: Path, limit: int | None) -> pd.DataFrame:
+    path = path.resolve()
     if not path.exists():
         raise FileNotFoundError(f"Manifest not found: {path}")
     frame = pd.read_csv(path)
@@ -181,6 +190,9 @@ def load_manifest(path: Path, limit: int | None) -> pd.DataFrame:
 
     frame = frame[parse_valid_column(frame["valid"])].copy()
     frame = frame[frame["feature_path"].notna()].copy()
+    frame["feature_path"] = frame["feature_path"].map(
+        lambda value: str(resolve_manifest_feature_path(str(value), path))
+    )
     frame["isup_grade"] = frame["isup_grade"].astype(int)
     if limit is not None:
         frame = frame.head(limit).copy()
