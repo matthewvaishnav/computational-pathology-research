@@ -1,0 +1,160 @@
+schema_version: huggingface-release-registry/v1
+last_verified_at: 2026-08-12T16:30:00Z
+releases:
+  - id: panf-evidence-20260726-v1
+    research_line: PA-NF / Paired-Acquisition Neural Factorization
+    audit_decision: release_now
+    artifact_type: dataset
+    hf_repo: MatthewVaishnav/paired-acquisition-factorization-evidence
+    visibility: public
+    release_state: prepared
+    github_repo: matthewvaishnav/computational-pathology-research
+    github_commit: edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce
+    source_branch: main
+    source_artifacts:
+      - evidence/paired_acquisition/corrected-20260726
+      - evidence/paired_acquisition/scorpion-capacity-matched-20260726
+    evidence_status: >-
+      Promoted, provenance-complete corrected evidence plus the separately
+      versioned valid 175/175-fit SCORPION capacity-matched campaign.
+    claim_boundary: >-
+      SCORPION supports a controlled comparative advantage over the registered
+      equal-capacity two-branch neural control on the structured-separation
+      objective. The canine fixed-estimand result separately does not establish
+      an additional neural feature-space improvement over the strongest simple
+      scanner-removal baselines. Neither result supports universal superiority,
+      pure biological factors, scanner invariance, or clinical utility.
+    license: MIT for the researcher-authored aggregate evidence package; underlying data excluded
+    checksums: {}
+    created_at: null
+    last_verified_at: 2026-08-12T16:30:00Z
+    hf_revision: null
+    blocker: Hugging Face authentication is unavailable in the Work environment
+
+  - id: panda-phikon-wsi-spatial-features-300-v1
+    research_line: PANDA / Phikon coordinate-bearing representations
+    audit_decision: prepare_private
+    artifact_type: dataset
+    hf_repo: MatthewVaishnav/panda-phikon-wsi-spatial-features
+    visibility: private
+    release_state: prepared
+    github_repo: matthewvaishnav/computational-pathology-research
+    github_commit: cb48cfda8c47307c54b97273d69c87004a1d3108
+    source_branch: research/wsi-nca-phase-a-20260807
+    source_artifacts:
+      - results/panda_manifest/panda_phikon_manifest.csv
+      - results/panda_attention_mil_baseline/unreadable_features.csv
+      - experiments/wsi_nca/prepare_panda_transfer_bundle.py
+      - docs/results/wsi-nca-panda-data-access-gate.md
+      - external:panda_wsi_nca_300/features/*.h5
+    evidence_status: >-
+      Engineering-only frozen transfer cohort: 300 intended slides from 10,611
+      eligible coordinate-bearing bags. No HDF5 bytes are present in Work and no
+      PANDA WSI-NCA result is claimed.
+    claim_boundary: >-
+      Coordinate-preserving frozen representations for non-commercial research
+      and remote execution only. This is not a trained WSI-NCA model, a PANDA
+      performance result, or evidence of pathology utility.
+    license: >-
+      other; PANDA is non-commercial CC BY-NC-SA/CC BY-SA-NC 4.0 as stated by
+      the source paper, and owkin/phikon uses the Owkin non-commercial license;
+      derived-feature redistribution requires explicit review
+    checksums: {}
+    created_at: null
+    last_verified_at: 2026-08-12T16:30:00Z
+    hf_revision: null
+    blocker: >-
+      Missing real HDF5 bundle, missing immutable Phikon Hub revision, unresolved
+      derived-feature redistribution review, and missing HF authentication
+
+  - id: wsi-nca-phase-a
+    research_line: WSI-NCA / self-organizing whole-slide dynamics
+    audit_decision: defer
+    artifact_type: model
+    hf_repo: null
+    visibility: none
+    release_state: deferred
+    github_repo: matthewvaishnav/computational-pathology-research
+    github_commit: cb48cfda8c47307c54b97273d69c87004a1d3108
+    source_branch: research/wsi-nca-phase-a-20260807
+    source_artifacts:
+      - pull/84
+      - results/wsi_nca_phase_a/synthetic_receptive_field_depth.json
+      - docs/results/wsi-nca-receptive-field-depth.md
+    evidence_status: Synthetic mechanism evidence only; no real pathology training result or checkpoint
+    claim_boundary: >-
+      The matched-multiset construction supports a depth-required local
+      propagation mechanism and topology dependence. It does not establish PANDA
+      benefit, pathology utility, reliable short-horizon optimization, self-repair,
+      morphogenesis, or clinical value.
+    license: MIT source code; no model artifact licensed for release
+    checksums: {}
+    created_at: null
+    last_verified_at: 2026-08-12T16:30:00Z
+
+  - id: transnnmil-repaired-canonical
+    research_line: TransnnMIL
+    audit_decision: defer
+    artifact_type: model
+    hf_repo: null
+    visibility: none
+    release_state: deferred
+    github_repo: matthewvaishnav/computational-pathology-research
+    github_commit: edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce
+    source_branch: main
+    source_artifacts:
+      - src/models/transnnmil
+      - tests/models/test_transnnmil_canonical_fusion.py
+      - docs/results/panda-transnnmil-stability.md
+    evidence_status: Repaired implementation exists; matched controlled reruns and a provenance-complete checkpoint do not
+    claim_boundary: >-
+      Architectural implementation only. Historical fusion/topology QWK values
+      remain withdrawn and do not validate the repaired canonical path.
+    license: MIT source code; no trained checkpoint available for release
+    checksums: {}
+    created_at: null
+    last_verified_at: 2026-08-12T16:30:00Z
+
+  - id: pathologyfl-fair-weights-h
+    research_line: PathologyFL / FAIR-WEIGHTS-H
+    audit_decision: do_not_release
+    artifact_type: model
+    hf_repo: null
+    visibility: none
+    release_state: deferred
+    github_repo: matthewvaishnav/computational-pathology-research
+    github_commit: edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce
+    source_branch: main
+    source_artifacts:
+      - src/features/federated/pathology_fl
+      - src/features/federated/pathology_fl/weighting/fair_weights_h.py
+      - tests/federated
+      - docs/FAIR_WEIGHTS_H_IMPLEMENTATION_STATUS.md
+    evidence_status: Infrastructure and smoke/integration validation; no reusable trained model or dataset
+    claim_boundary: >-
+      Implementation is not real multicenter deployment, privacy proof, clinical
+      validation, fairness proof, or universal performance superiority.
+    license: MIT source code; no distinct HF scientific object identified
+    checksums: {}
+    created_at: null
+    last_verified_at: 2026-08-12T16:30:00Z
+
+  - id: transnnmil-historical-fusion-topology
+    research_line: TransnnMIL historical execution paths
+    audit_decision: do_not_release
+    artifact_type: model
+    hf_repo: null
+    visibility: none
+    release_state: withdrawn
+    github_repo: matthewvaishnav/computational-pathology-research
+    github_commit: edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce
+    source_branch: main
+    source_artifacts:
+      - historical one-query/one-key fusion results
+      - historical unregistered topology-projection results
+    evidence_status: Withdrawn after implementation-validity defects were identified
+    claim_boundary: Historical scores remain provenance history only and must not be promoted
+    license: Not applicable; no artifact may be released
+    checksums: {}
+    created_at: null
+    last_verified_at: 2026-08-12T16:30:00Z
