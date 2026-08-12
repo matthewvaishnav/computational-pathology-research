@@ -82,12 +82,7 @@ class ReleaseError(RuntimeError):
 
 
 def utc_now() -> str:
-    return (
-        datetime.now(timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -111,14 +106,10 @@ def write_yaml_atomic(path: Path, value: Mapping[str, Any]) -> None:
     temporary.replace(path)
 
 
-def _require_nonempty_text(
-    record: Mapping[str, Any], field: str, record_id: str
-) -> None:
+def _require_nonempty_text(record: Mapping[str, Any], field: str, record_id: str) -> None:
     value = record.get(field)
     if not isinstance(value, str) or not value.strip():
-        raise ReleaseError(
-            f"Registry record {record_id!r} requires non-empty {field!r}"
-        )
+        raise ReleaseError(f"Registry record {record_id!r} requires non-empty {field!r}")
 
 
 def validate_registry_document(document: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -158,9 +149,7 @@ def validate_registry_document(document: Mapping[str, Any]) -> list[dict[str, An
                 f"{record['artifact_type']!r}"
             )
         if record["visibility"] == "none" and record["hf_repo"] is not None:
-            raise ReleaseError(
-                f"Registry record {record_id!r} must not name an HF repo"
-            )
+            raise ReleaseError(f"Registry record {record_id!r} must not name an HF repo")
         if record["visibility"] != "none":
             _require_nonempty_text(record, "hf_repo", record_id)
         for text_field in (
@@ -172,30 +161,20 @@ def validate_registry_document(document: Mapping[str, Any]) -> list[dict[str, An
         ):
             _require_nonempty_text(record, text_field, record_id)
         commit = record["github_commit"]
-        if commit is not None and (
-            not isinstance(commit, str) or not GIT_SHA_RE.fullmatch(commit)
-        ):
-            raise ReleaseError(
-                f"Registry record {record_id!r} has an invalid github_commit"
-            )
+        if commit is not None and (not isinstance(commit, str) or not GIT_SHA_RE.fullmatch(commit)):
+            raise ReleaseError(f"Registry record {record_id!r} has an invalid github_commit")
         if not isinstance(record["source_artifacts"], list):
-            raise ReleaseError(
-                f"Registry record {record_id!r} source_artifacts must be a list"
-            )
+            raise ReleaseError(f"Registry record {record_id!r} source_artifacts must be a list")
         checksums = record["checksums"]
         if not isinstance(checksums, dict):
-            raise ReleaseError(
-                f"Registry record {record_id!r} checksums must be a mapping"
-            )
+            raise ReleaseError(f"Registry record {record_id!r} checksums must be a mapping")
         for name, digest in checksums.items():
             if (
                 not isinstance(name, str)
                 or not isinstance(digest, str)
                 or not SHA256_RE.fullmatch(digest)
             ):
-                raise ReleaseError(
-                    f"Registry record {record_id!r} has an invalid checksum"
-                )
+                raise ReleaseError(f"Registry record {record_id!r} has an invalid checksum")
         validated.append(record)
     return validated
 
@@ -245,17 +224,13 @@ def write_checksum_manifest(folder: Path) -> dict[str, str]:
 
 def read_checksum_manifest(path: Path) -> dict[str, str]:
     checksums: dict[str, str] = {}
-    for line_number, line in enumerate(
-        path.read_text(encoding="utf-8").splitlines(), start=1
-    ):
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
             continue
         try:
             digest, name = line.split("  ", 1)
         except ValueError as exc:
-            raise ReleaseError(
-                f"Malformed checksum line {line_number} in {path}"
-            ) from exc
+            raise ReleaseError(f"Malformed checksum line {line_number} in {path}") from exc
         if not SHA256_RE.fullmatch(digest) or not name or name in checksums:
             raise ReleaseError(f"Invalid checksum line {line_number} in {path}")
         checksums[name] = digest
@@ -273,9 +248,7 @@ def verify_checksum_manifest(folder: Path) -> dict[str, str]:
     if set(expected) != set(observed):
         missing = sorted(set(expected) - set(observed))
         extra = sorted(set(observed) - set(expected))
-        raise ReleaseError(
-            f"Checksum inventory mismatch; missing={missing}, extra={extra}"
-        )
+        raise ReleaseError(f"Checksum inventory mismatch; missing={missing}, extra={extra}")
     mismatched = sorted(name for name in expected if expected[name] != observed[name])
     if mismatched:
         raise ReleaseError(f"SHA256 mismatch for: {mismatched}")
@@ -287,9 +260,7 @@ def _frontmatter(text: str) -> dict[str, Any]:
     if not lines or lines[0].strip() != "---":
         raise ReleaseError("Card must begin with YAML front matter")
     try:
-        closing = next(
-            i for i, line in enumerate(lines[1:], start=1) if line.strip() == "---"
-        )
+        closing = next(i for i, line in enumerate(lines[1:], start=1) if line.strip() == "---")
     except StopIteration as exc:
         raise ReleaseError("Card YAML front matter is not closed") from exc
     try:
@@ -312,9 +283,7 @@ def validate_card(path: Path, artifact_type: str) -> None:
         match.group(1).strip().lower()
         for match in re.finditer(r"^#{2,4}\s+(.+?)\s*$", text, flags=re.MULTILINE)
     }
-    required = (
-        DATASET_CARD_SECTIONS if artifact_type == "dataset" else MODEL_CARD_SECTIONS
-    )
+    required = DATASET_CARD_SECTIONS if artifact_type == "dataset" else MODEL_CARD_SECTIONS
     missing = sorted(required - headings)
     if missing:
         raise ReleaseError(f"Card {path} is missing required sections: {missing}")
@@ -351,9 +320,7 @@ def validate_release_spec(spec: Mapping[str, Any]) -> dict[str, Any]:
 def _relative_source(root: Path, raw_path: str) -> Path:
     candidate = Path(raw_path)
     if candidate.is_absolute():
-        raise ReleaseError(
-            f"Release source path must be repository-relative: {raw_path}"
-        )
+        raise ReleaseError(f"Release source path must be repository-relative: {raw_path}")
     root_resolved = root.resolve()
     resolved = (root / candidate).resolve()
     if resolved != root_resolved and root_resolved not in resolved.parents:
@@ -370,16 +337,12 @@ def prepare_release(
 ) -> dict[str, Any]:
     spec = validate_release_spec(load_yaml(spec_path))
     if spec.get("blocked"):
-        raise ReleaseError(
-            f"Release spec is blocked: {spec.get('blocker', 'unspecified blocker')}"
-        )
+        raise ReleaseError(f"Release spec is blocked: {spec.get('blocker', 'unspecified blocker')}")
     if output_folder.exists():
         raise ReleaseError(f"Output folder already exists: {output_folder}")
     card = _relative_source(repository_root, str(spec["card"]))
     validate_card(card, str(spec["repo_type"]))
-    sources = [
-        _relative_source(repository_root, str(item)) for item in spec["source_paths"]
-    ]
+    sources = [_relative_source(repository_root, str(item)) for item in spec["source_paths"]]
     if not sources:
         raise ReleaseError("Release spec has no source artifacts")
     missing = [str(path) for path in sources if not path.exists()]
@@ -390,9 +353,7 @@ def prepare_release(
         "id": spec["id"],
         "repo_id": spec["repo_id"],
         "visibility": spec["visibility"],
-        "sources": [
-            str(path.relative_to(repository_root.resolve())) for path in sources
-        ],
+        "sources": [str(path.relative_to(repository_root.resolve())) for path in sources],
         "output_folder": str(output_folder),
         "dry_run": dry_run,
     }
@@ -478,9 +439,7 @@ def verify_remote_release(
     local_checksums = verify_checksum_manifest(folder)
     api = HfApi(token=token)
     remote_files = set(
-        api.list_repo_files(
-            repo_id, repo_type=repo_type, revision=revision, token=token
-        )
+        api.list_repo_files(repo_id, repo_type=repo_type, revision=revision, token=token)
     )
     required_files = set(local_checksums) | {"checksums.sha256"}
     missing = sorted(required_files - remote_files)
@@ -537,13 +496,9 @@ def publish_release(
 ) -> dict[str, Any]:
     spec = validate_release_spec(load_yaml(spec_path))
     if spec.get("blocked"):
-        raise ReleaseError(
-            f"Release spec is blocked: {spec.get('blocker', 'unspecified blocker')}"
-        )
+        raise ReleaseError(f"Release spec is blocked: {spec.get('blocker', 'unspecified blocker')}")
     if spec["visibility"] == "public" and not allow_public:
-        raise ReleaseError(
-            "Public publishing requires the explicit --allow-public flag"
-        )
+        raise ReleaseError("Public publishing requires the explicit --allow-public flag")
     validate_card(folder / "README.md", str(spec["repo_type"]))
     checksums = verify_checksum_manifest(folder)
     plan = {
@@ -562,9 +517,7 @@ def publish_release(
         raise ReleaseError("No Hugging Face credential is available")
     status = authentication_status()
     if not status["write_capable"]:
-        raise ReleaseError(
-            f"Hugging Face credential is not write-capable (role={status['role']})"
-        )
+        raise ReleaseError(f"Hugging Face credential is not write-capable (role={status['role']})")
 
     api = HfApi(token=token)
     api.create_repo(
@@ -582,9 +535,7 @@ def publish_release(
         commit_message=str(spec.get("commit_message") or f"Release {spec['id']}"),
         token=token,
     )
-    revision = str(
-        getattr(commit, "oid", None) or getattr(commit, "commit_id", None) or "main"
-    )
+    revision = str(getattr(commit, "oid", None) or getattr(commit, "commit_id", None) or "main")
     verified = verify_remote_release(
         str(spec["repo_id"]),
         str(spec["repo_type"]),
@@ -612,38 +563,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     auth.set_defaults(handler=lambda args: authentication_status())
 
-    registry = subparsers.add_parser(
-        "validate-registry", help="Validate the release registry"
-    )
+    registry = subparsers.add_parser("validate-registry", help="Validate the release registry")
     registry.add_argument("registry", type=Path)
-    registry.set_defaults(
-        handler=lambda args: {"records": len(validate_registry(args.registry))}
-    )
+    registry.set_defaults(handler=lambda args: {"records": len(validate_registry(args.registry))})
 
-    card = subparsers.add_parser(
-        "validate-card", help="Validate a dataset or model card"
-    )
+    card = subparsers.add_parser("validate-card", help="Validate a dataset or model card")
     card.add_argument("card", type=Path)
     card.add_argument("--type", choices=["dataset", "model"], required=True)
-    card.set_defaults(
-        handler=lambda args: validate_card(args.card, args.type) or {"valid": True}
-    )
+    card.set_defaults(handler=lambda args: validate_card(args.card, args.type) or {"valid": True})
 
-    checksums = subparsers.add_parser(
-        "checksums", help="Write and verify checksums.sha256"
-    )
+    checksums = subparsers.add_parser("checksums", help="Write and verify checksums.sha256")
     checksums.add_argument("folder", type=Path)
     checksums.set_defaults(handler=lambda args: write_checksum_manifest(args.folder))
 
-    verify = subparsers.add_parser(
-        "verify-local", help="Verify a local checksum manifest"
-    )
+    verify = subparsers.add_parser("verify-local", help="Verify a local checksum manifest")
     verify.add_argument("folder", type=Path)
     verify.set_defaults(handler=lambda args: verify_checksum_manifest(args.folder))
 
-    prepare = subparsers.add_parser(
-        "prepare", help="Build a release folder from tracked sources"
-    )
+    prepare = subparsers.add_parser("prepare", help="Build a release folder from tracked sources")
     prepare.add_argument("spec", type=Path)
     prepare.add_argument("--repository-root", type=Path, default=Path.cwd())
     prepare.add_argument("--output", type=Path, required=True)
@@ -654,9 +591,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
 
-    publish = subparsers.add_parser(
-        "publish", help="Create/upload/verify a Hub release"
-    )
+    publish = subparsers.add_parser("publish", help="Create/upload/verify a Hub release")
     publish.add_argument("spec", type=Path)
     publish.add_argument("folder", type=Path)
     publish.add_argument("--registry", type=Path, required=True)
