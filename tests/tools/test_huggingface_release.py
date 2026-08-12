@@ -15,9 +15,7 @@ SPEC.loader.exec_module(release)
 
 def dataset_card() -> str:
     headings = sorted(release.DATASET_CARD_SECTIONS)
-    body = "\n\n".join(
-        f"## {heading.title()}\n\nExact bounded content." for heading in headings
-    )
+    body = "\n\n".join(f"## {heading.title()}\n\nExact bounded content." for heading in headings)
     return f"---\nlicense: mit\n---\n\n# Evidence\n\n{body}\n"
 
 
@@ -43,9 +41,7 @@ def registry_record() -> dict:
 
 def test_tracked_registry_and_cards_validate():
     root = Path(__file__).parents[2]
-    records = release.validate_registry(
-        root / "docs/releases/huggingface-release-registry.yaml"
-    )
+    records = release.validate_registry(root / "docs/releases/huggingface-release-registry.yaml")
     assert {record["id"] for record in records} >= {
         "panf-evidence-20260726-v1",
         "panda-phikon-wsi-spatial-features-300-v1",
@@ -54,8 +50,7 @@ def test_tracked_registry_and_cards_validate():
         "pathologyfl-fair-weights-h",
     }
     release.validate_card(
-        root
-        / "docs/releases/huggingface/paired-acquisition-factorization-evidence/README.md",
+        root / "docs/releases/huggingface/paired-acquisition-factorization-evidence/README.md",
         "dataset",
     )
     release.validate_card(
@@ -178,9 +173,7 @@ def test_prepare_creates_provenance_and_verified_checksums(tmp_path):
     output = tmp_path / "build"
     release.prepare_release(spec, root, output)
 
-    provenance = json.loads(
-        (output / "release-provenance.json").read_text(encoding="utf-8")
-    )
+    provenance = json.loads((output / "release-provenance.json").read_text(encoding="utf-8"))
     assert provenance["github_commit"] == "edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce"
     assert (output / "evidence/result.json").is_file()
     assert release.verify_checksum_manifest(output)
@@ -188,10 +181,7 @@ def test_prepare_creates_provenance_and_verified_checksums(tmp_path):
 
 def test_blocked_panda_spec_fails_closed(tmp_path):
     root = Path(__file__).parents[2]
-    spec = (
-        root
-        / "docs/releases/huggingface/panda-phikon-wsi-spatial-features/release-spec.yaml"
-    )
+    spec = root / "docs/releases/huggingface/panda-phikon-wsi-spatial-features/release-spec.yaml"
     with pytest.raises(release.ReleaseError, match="Release spec is blocked"):
         release.prepare_release(spec, root, tmp_path / "panda")
 
@@ -223,9 +213,7 @@ def test_public_publish_requires_explicit_flag(tmp_path):
     (folder / "README.md").write_text(dataset_card(), encoding="utf-8")
     release.write_checksum_manifest(folder)
     registry = root / "registry.yaml"
-    registry.write_text(
-        "schema_version: huggingface-release-registry/v1\nreleases: []\n"
-    )
+    registry.write_text("schema_version: huggingface-release-registry/v1\nreleases: []\n")
 
     with pytest.raises(release.ReleaseError, match="explicit --allow-public"):
         release.publish_release(spec, folder, registry, dry_run=True)
