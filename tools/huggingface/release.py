@@ -18,7 +18,7 @@ import tempfile
 from collections.abc import Iterable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -469,7 +469,7 @@ def verify_remote_release(
     folder: Path,
     *,
     revision: str = "main",
-    token: Optional[str] = None,
+    token: str | None = None,
 ) -> dict[str, str]:
     HfApi, get_token, hf_hub_download = _load_hf()
     token = token or os.environ.get("HF_TOKEN") or get_token()
@@ -674,7 +674,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
