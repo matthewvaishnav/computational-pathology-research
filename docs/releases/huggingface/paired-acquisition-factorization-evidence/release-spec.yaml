@@ -1,0 +1,14 @@
+schema_version: huggingface-release-spec/v1
+id: panf-evidence-20260726-v1
+repo_id: MatthewVaishnav/paired-acquisition-factorization-evidence
+repo_type: dataset
+visibility: public
+github_repo: matthewvaishnav/computational-pathology-research
+github_commit: edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce
+card: docs/releases/huggingface/paired-acquisition-factorization-evidence/README.md
+source_paths:
+  - evidence/paired_acquisition/corrected-20260726
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726
+commit_message: Release PA-NF corrected and capacity-matched evidence v1
+tag: panf-evidence-20260726-v1
+blocked: false

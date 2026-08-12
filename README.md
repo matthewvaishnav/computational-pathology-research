@@ -45,6 +45,20 @@ The results support partial structured separation under tested protocols. They d
 - [External canine SCC study](https://github.com/matthewvaishnav/paired-acquisition-factorization-caninescc)
 - [Pair-repeat allocation study](https://github.com/matthewvaishnav/paired-acquisition-factorization-allocation)
 
+## Hugging Face release layer
+
+Hugging Face is used only for curated, versioned scientific objects; GitHub
+remains the authoritative laboratory, engineering, evidence, and claim-history
+record.
+
+- [Retrospective release audit](docs/releases/huggingface-retrospective-audit-20260812.md)
+- [Machine-readable release registry](docs/releases/huggingface-release-registry.yaml)
+- [Fail-closed publishing and checksum tooling](tools/huggingface/README.md)
+
+A registry entry marked `prepared` or `deferred` is not a released Hub
+artifact. Public/private status and immutable HF revisions are recorded only
+after remote verification.
+
 ## Repository split
 
 The intended repository topology is:

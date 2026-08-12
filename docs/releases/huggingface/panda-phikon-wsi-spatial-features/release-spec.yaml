@@ -1,0 +1,15 @@
+schema_version: huggingface-release-spec/v1
+id: panda-phikon-wsi-spatial-features-300-v1
+repo_id: MatthewVaishnav/panda-phikon-wsi-spatial-features
+repo_type: dataset
+visibility: private
+github_repo: matthewvaishnav/computational-pathology-research
+github_commit: cb48cfda8c47307c54b97273d69c87004a1d3108
+card: docs/releases/huggingface/panda-phikon-wsi-spatial-features/README.md
+source_paths: []
+commit_message: Prepare private PANDA Phikon spatial-feature cohort v1
+blocked: true
+blocker: >-
+  Real 300-slide HDF5 bundle is absent; exact Phikon Hub revision is unrecorded;
+  derived-feature redistribution terms require explicit review; HF authentication
+  is unavailable.
