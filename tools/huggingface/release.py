@@ -480,8 +480,12 @@ def update_registry_after_publish(
     record["release_state"] = "private" if visibility == "private" else "released"
     record["hf_revision"] = revision
     record["checksums"] = dict(sorted(checksums.items()))
-    record["created_at"] = record.get("created_at") or utc_now()
-    record["last_verified_at"] = utc_now()
+    now = utc_now()
+    record["created_at"] = record.get("created_at") or now
+    record["last_verified_at"] = now
+    if "blocker" in record:
+        record["blocker"] = None
+    document["last_verified_at"] = now
     document["releases"] = records
     write_yaml_atomic(registry_path, document)
 

@@ -99,7 +99,15 @@ def test_checksums_reject_symlinks(tmp_path):
     folder.mkdir()
     target = tmp_path / "outside.txt"
     target.write_text("outside", encoding="utf-8")
-    (folder / "link.txt").symlink_to(target)
+    link = folder / "link.txt"
+    try:
+        link.symlink_to(target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows symlink privilege is unavailable")
+        raise
+    except NotImplementedError:
+        pytest.skip("Symlink creation is unavailable on this platform")
     with pytest.raises(release.ReleaseError, match="Symlinks are prohibited"):
         release.compute_checksums(folder)
 
@@ -228,3 +236,41 @@ def test_public_publish_requires_explicit_flag(tmp_path):
     assert plan["dry_run"] is True
     assert plan["visibility"] == "public"
     assert plan["repo_id"] == "MatthewVaishnav/public-v1"
+
+
+def test_registry_update_after_publish_clears_resolved_blocker(tmp_path):
+    record = registry_record()
+    record["visibility"] = "public"
+    record["blocker"] = "Hugging Face authentication is unavailable"
+
+    registry = tmp_path / "registry.yaml"
+    registry.write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": "huggingface-release-registry/v1",
+                "last_verified_at": "2026-08-12T16:30:00Z",
+                "releases": [record],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    checksums = {"evidence.json": "a" * 64}
+
+    release.update_registry_after_publish(
+        registry,
+        "artifact-v1",
+        revision="abcdef0123456789",
+        checksums=checksums,
+        visibility="public",
+    )
+
+    updated = release.load_yaml(registry)
+    released = updated["releases"][0]
+
+    assert released["release_state"] == "released"
+    assert released["hf_revision"] == "abcdef0123456789"
+    assert released["checksums"] == checksums
+    assert released["blocker"] is None
+    assert updated["last_verified_at"] == released["last_verified_at"]
