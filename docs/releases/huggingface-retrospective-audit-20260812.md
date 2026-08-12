@@ -3,7 +3,7 @@
 ## Audit basis
 
 This audit binds release decisions to the current program hub at
-`edf8b2b96fbdb8b21fbecc03b8a19ac0351e1dce`, the WSI-NCA branch at
+`c17f3117a01ca6c3364deb1f092441671b533954`, the WSI-NCA branch at
 `cb48cfda8c47307c54b97273d69c87004a1d3108`, open PR #84, open migration
 issues #87–#89, the root claim boundary, the foundations manuscript claim
 ledger, and the tracked machine-readable evidence packages.
@@ -13,17 +13,17 @@ source, tests, experiments, CI, negative results, repairs, and claim history.
 
 ## Authentication and existing remote state
 
-The official `huggingface_hub` 1.27.0 client reported no active credential.
-Repository creation, upload, visibility mutation, card update, Collection
-creation, and remote checksum verification were therefore not attempted. No Hub
-release is reported as created or populated by this audit.
+The current execution environment still has no active Hugging Face credential.
+The PA-NF evidence dataset was released and remotely verified in the completed
+PR #90 workflow before this model follow-up. Model-repository creation, upload,
+visibility mutation, and remote model checksum verification were not attempted.
 
 ## Decisions
 
 | Research line / artifact | Decision | Evidence and artifact finding | Release consequence |
 |---|---|---|---|
-| PA-NF corrected + SCORPION capacity-matched evidence | **RELEASE NOW** | Both tracked evidence families are promoted and provenance-complete. The SCORPION campaign has 175/175 valid registered fits; the corrected canine evidence preserves the distinct bounded negative result. No raw images, external feature arrays, or checkpoints are required in the compact bundle. | Prepare one public HF **dataset** repository, not a model repository: `MatthewVaishnav/paired-acquisition-factorization-evidence`. It remains `prepared` until authenticated upload and remote checksum verification. |
-| PA-NF trained factorizer / frozen representations | **DEFER** | No checkpoint is tracked in the hub or three study repositories. The evidence manifests explicitly identify external feature/checkpoint artifacts, but their bytes and a redistributable release license are unavailable here. | Do not imply that the evidence dataset is a trained model. |
+| PA-NF corrected + SCORPION capacity-matched evidence | **RELEASED** | Both tracked evidence families are promoted and provenance-complete. The SCORPION campaign has 175/175 valid registered fits; the corrected canine evidence preserves the distinct bounded negative result. No raw images, external feature arrays, or checkpoints are required in the compact bundle. | Public HF **dataset** repository `MatthewVaishnav/paired-acquisition-factorization-evidence`, remotely verified at immutable revision `a9853bd32e3b446a97608002f7e5ea12f68f88e1`. |
+| PA-NF trained factorizer / frozen representations | **PREPARE / BLOCKED** | No checkpoint is tracked in Git, but the promoted `cell_artifact_index.csv` identifies the exact 25-checkpoint `pathoalign_dep20` family and authenticates the external cell manifests that bind the five required fold standardizers. The checkpoint, cell-manifest, and standardization bytes are absent here. The SCORPION Zenodo v1 record also states no explicit redistribution license. | Prepare the complete 5-fold × 5-seed model-family transfer gate for `MatthewVaishnav/paired-acquisition-neural-factorization`; do not publish, select a “best” checkpoint, or imply that the evidence dataset is a trained model. |
 | PANDA Phikon coordinate-bearing 300-slide cohort | **PREPARE PRIVATE** | PR #84 verifies 10,616 manifest rows, 10,611 eligible bags, 768 dimensions, an HDF5 `features` + `coordinates` contract, deterministic grade allocation 82/75/38/35/35/35, and fail-closed transfer tooling. The real HDF5 files are absent. | Prepare `MatthewVaishnav/panda-phikon-wsi-spatial-features` as private and blocked. Do not populate it with fixtures or mark it complete. |
 | WSI-NCA Phase A | **DEFER** | PR #84 contains bounded synthetic depth-required mechanism evidence. It has no real PANDA result and no trained pathology checkpoint. | No public HF model. Retain card/release infrastructure only. |
 | TransnnMIL repaired canonical path | **DEFER** | Repair code exists, but matched repaired reruns and a checkpoint with exact data/config/hash provenance are not present. | No model repository. |
@@ -72,10 +72,13 @@ bundle is available.
 
 ## Artifact inventory findings
 
-- Hub and three study repositories contain no `.pt`, `.pth`, `.ckpt`, or
-  `.safetensors` checkpoint suitable for release.
-- `paired-acquisition-neural-factorization` does not yet exist; issue #89 tracks
-  the history-preserving reusable-core extraction.
+- Hub and three study repositories contain no tracked `.pt`, `.pth`, `.ckpt`, or
+  `.safetensors` checkpoint suitable for release. The promoted SCORPION artifact
+  index nevertheless records exact external checkpoint paths, sizes, and hashes
+  for the complete 25-member full-model family.
+- `MatthewVaishnav/paired-acquisition-neural-factorization` is reserved as the
+  intended model repository and must not be created or populated until the byte,
+  preprocessing, license, authentication, and remote-verification gates pass.
 - SCORPION, canine SCC, and allocation study repositories already exist on
   GitHub and should not be blindly mirrored.
 - PR #84 remains draft and synthetic/engineering-only; it does not change the

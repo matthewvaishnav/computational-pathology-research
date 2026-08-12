@@ -314,7 +314,163 @@ def validate_release_spec(spec: Mapping[str, Any]) -> dict[str, Any]:
         raise ReleaseError("Release source_paths must be a list")
     if not GIT_SHA_RE.fullmatch(str(spec["github_commit"])):
         raise ReleaseError("Release spec requires an immutable Git commit SHA")
+    if spec["repo_type"] == "model":
+        external_bundle = spec.get("external_bundle")
+        if not isinstance(external_bundle, dict):
+            raise ReleaseError("Model release specs require an external_bundle contract")
+        if not isinstance(external_bundle.get("schema_version"), str):
+            raise ReleaseError("Model external_bundle requires a schema_version")
+        for field in ("expected_checkpoints", "expected_preprocessing_files"):
+            value = external_bundle.get(field)
+            if not isinstance(value, int) or value <= 0:
+                raise ReleaseError(f"Model external_bundle requires positive {field}")
+        if external_bundle.get("manifest") != "model-manifest.json":
+            raise ReleaseError("Model external_bundle manifest must be model-manifest.json")
     return dict(spec)
+
+
+def _manifest_release_file(folder: Path, raw_path: Any, context: str) -> Path:
+    if not isinstance(raw_path, str) or not raw_path:
+        raise ReleaseError(f"Invalid release path for {context}")
+    relative = Path(raw_path)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise ReleaseError(f"Unsafe release path for {context}: {raw_path}")
+    root = folder.resolve()
+    resolved = (root / relative).resolve()
+    if root not in resolved.parents or not resolved.is_file():
+        raise ReleaseError(f"Missing release file for {context}: {raw_path}")
+    return resolved
+
+
+def _verify_manifest_file_record(
+    folder: Path,
+    record: Mapping[str, Any],
+    *,
+    path_field: str,
+    size_field: str,
+    sha256_field: str,
+    context: str,
+) -> Path:
+    path = _manifest_release_file(folder, record.get(path_field), context)
+    expected_size = record.get(size_field)
+    expected_sha256 = record.get(sha256_field)
+    if not isinstance(expected_size, int) or expected_size < 0:
+        raise ReleaseError(f"Invalid expected size for {context}")
+    if not isinstance(expected_sha256, str) or not SHA256_RE.fullmatch(expected_sha256):
+        raise ReleaseError(f"Invalid expected SHA256 for {context}")
+    if path.stat().st_size != expected_size:
+        raise ReleaseError(f"Model-manifest size mismatch for {context}")
+    if sha256_file(path) != expected_sha256:
+        raise ReleaseError(f"Model-manifest SHA256 mismatch for {context}")
+    return path
+
+
+def validate_model_release_folder(folder: Path, spec: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate the model-family inventory before dry-run or real publication."""
+
+    validated_spec = validate_release_spec(spec)
+    if validated_spec["repo_type"] != "model":
+        raise ReleaseError("Model-folder validation requires repo_type=model")
+    contract = validated_spec["external_bundle"]
+    manifest_path = folder / str(contract["manifest"])
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ReleaseError(f"Could not read model manifest {manifest_path}: {exc}") from exc
+    if manifest.get("schema_version") != contract["schema_version"]:
+        raise ReleaseError("Model-manifest schema does not match release spec")
+    if manifest.get("release_id") != validated_spec["id"]:
+        raise ReleaseError("Model-manifest release id does not match release spec")
+    if manifest.get("repo_id") != validated_spec["repo_id"]:
+        raise ReleaseError("Model-manifest repository id does not match release spec")
+
+    checkpoints = manifest.get("checkpoints")
+    preprocessing = manifest.get("preprocessing")
+    if not isinstance(checkpoints, list) or len(checkpoints) != contract["expected_checkpoints"]:
+        raise ReleaseError("Model-manifest checkpoint count does not match release spec")
+    if (
+        not isinstance(preprocessing, list)
+        or len(preprocessing) != contract["expected_preprocessing_files"]
+    ):
+        raise ReleaseError("Model-manifest preprocessing count does not match release spec")
+
+    identities: set[tuple[int, int]] = set()
+    for index, raw_record in enumerate(checkpoints):
+        if not isinstance(raw_record, dict):
+            raise ReleaseError(f"Checkpoint record {index} must be a mapping")
+        try:
+            identity = (int(raw_record["fold"]), int(raw_record["seed"]))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ReleaseError(f"Checkpoint record {index} has invalid fold/seed") from exc
+        if identity in identities:
+            raise ReleaseError(f"Duplicate checkpoint identity in model manifest: {identity}")
+        identities.add(identity)
+        _verify_manifest_file_record(
+            folder,
+            raw_record,
+            path_field="checkpoint_path",
+            size_field="checkpoint_size_bytes",
+            sha256_field="checkpoint_sha256",
+            context=f"checkpoint fold={identity[0]} seed={identity[1]}",
+        )
+        _verify_manifest_file_record(
+            folder,
+            raw_record,
+            path_field="source_cell_manifest_path",
+            size_field="source_cell_manifest_size_bytes",
+            sha256_field="source_cell_manifest_sha256",
+            context=f"cell manifest fold={identity[0]} seed={identity[1]}",
+        )
+        validation = raw_record.get("content_validation")
+        required_validations = {
+            "torch_load",
+            "metadata",
+            "config",
+            "state_dict_keys_and_shapes",
+            "finite_tensors",
+        }
+        if not isinstance(validation, dict) or any(
+            validation.get(name) is not True for name in required_validations
+        ):
+            raise ReleaseError(f"Checkpoint content validation is incomplete for {identity}")
+
+    folds: set[int] = set()
+    for index, raw_record in enumerate(preprocessing):
+        if not isinstance(raw_record, dict):
+            raise ReleaseError(f"Preprocessing record {index} must be a mapping")
+        try:
+            fold = int(raw_record["fold"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ReleaseError(f"Preprocessing record {index} has invalid fold") from exc
+        if fold in folds:
+            raise ReleaseError(f"Duplicate preprocessing fold in model manifest: {fold}")
+        folds.add(fold)
+        _verify_manifest_file_record(
+            folder,
+            raw_record,
+            path_field="path",
+            size_field="size_bytes",
+            sha256_field="sha256",
+            context=f"preprocessing fold={fold}",
+        )
+
+    license_gate = manifest.get("license_gate")
+    if validated_spec["visibility"] == "public" and (
+        not isinstance(license_gate, dict) or license_gate.get("public_release_allowed") is not True
+    ):
+        reason = license_gate.get("reason") if isinstance(license_gate, dict) else None
+        raise ReleaseError(
+            "Public model publication is blocked by the model-manifest license gate"
+            + (f": {reason}" if reason else "")
+        )
+    return {
+        "checkpoints": len(checkpoints),
+        "preprocessing_files": len(preprocessing),
+        "identities": len(identities),
+        "license_gate": bool(
+            isinstance(license_gate, dict) and license_gate.get("public_release_allowed")
+        ),
+    }
 
 
 def _relative_source(root: Path, raw_path: str) -> Path:
@@ -505,6 +661,8 @@ def publish_release(
         raise ReleaseError("Public publishing requires the explicit --allow-public flag")
     validate_card(folder / "README.md", str(spec["repo_type"]))
     checksums = verify_checksum_manifest(folder)
+    if spec["repo_type"] == "model":
+        validate_model_release_folder(folder, spec)
     plan = {
         "repo_id": spec["repo_id"],
         "repo_type": spec["repo_type"],
@@ -579,6 +737,15 @@ def build_parser() -> argparse.ArgumentParser:
     checksums = subparsers.add_parser("checksums", help="Write and verify checksums.sha256")
     checksums.add_argument("folder", type=Path)
     checksums.set_defaults(handler=lambda args: write_checksum_manifest(args.folder))
+
+    model_bundle = subparsers.add_parser(
+        "validate-model-bundle", help="Validate a model-family bundle against its release spec"
+    )
+    model_bundle.add_argument("folder", type=Path)
+    model_bundle.add_argument("--spec", type=Path, required=True)
+    model_bundle.set_defaults(
+        handler=lambda args: validate_model_release_folder(args.folder, load_yaml(args.spec))
+    )
 
     verify = subparsers.add_parser("verify-local", help="Verify a local checksum manifest")
     verify.add_argument("folder", type=Path)

@@ -1,5 +1,5 @@
 schema_version: huggingface-release-registry/v1
-last_verified_at: '2026-08-12T17:05:19Z'
+last_verified_at: '2026-08-12T18:51:36Z'
 releases:
 - id: panf-evidence-20260726-v1
   research_line: PA-NF / Paired-Acquisition Neural Factorization
@@ -59,6 +59,85 @@ releases:
   last_verified_at: '2026-08-12T17:05:19Z'
   hf_revision: a9853bd32e3b446a97608002f7e5ea12f68f88e1
   blocker: null
+- id: panf-model-scorpion-capacity-matched-v1
+  research_line: PA-NF / Paired-Acquisition Neural Factorization
+  audit_decision: prepare_blocked
+  artifact_type: model
+  hf_repo: MatthewVaishnav/paired-acquisition-neural-factorization
+  visibility: public
+  release_state: prepared
+  github_repo: matthewvaishnav/computational-pathology-research
+  github_commit: c17f3117a01ca6c3364deb1f092441671b533954
+  training_source_commit: 0adea50f1ef22865969109f1834a3c175e3f8b43
+  source_branch: release/panf-huggingface-model-20260812
+  source_artifacts:
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726/campaign/cell_artifact_index.csv
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726/campaign/campaign_design.json
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726/release_manifest.json
+  - external:results/scorpion/pathoalign_capacity_matched_ablations_v1/cells/*/pathoalign_dep20/*/checkpoint.pt
+  - external:results/scorpion/pathoalign_capacity_matched_ablations_v1/fold_context/fold_*_standardization.npz
+  evidence_status: The promoted index identifies a complete registered 25-checkpoint
+    full PA-NF family, but none of the checkpoint, cell-manifest, or fold-standardization
+    bytes is present in this execution environment. No checkpoint contents have been
+    represented as validated here.
+  package_structure: Complete 5-fold x 5-seed pathoalign_dep20 family; no best-checkpoint
+    selection and no post-hoc ranking by registered test results.
+  checkpoint_selection: none; fixed final epoch only
+  checkpoint_count_expected: 25
+  checkpoint_count_accessible: 0
+  checkpoint_index: docs/releases/panf-model-checkpoint-audit-20260812.csv
+  checkpoint_hashes:
+    fold_0_seed_801: c4fc76e1b92fa0de4ae27fbcf8e88a96914d7684d28a500827bbc16207233f97
+    fold_0_seed_802: 58d36272b6d0dfe79a2fb690de965a41bc05e6553c9d9bd5c05287d88e522959
+    fold_0_seed_803: c1648672231292711c5e1f03fdd7500ae0bd19cd7f6b1ae2b58da34b3791fc00
+    fold_0_seed_804: 8335161c09ae3d6dfcf83745eb23c8baa87ef261ba2a37f6bf334efa43bd46ec
+    fold_0_seed_805: 213eb604480658c5705dc2926930c62f9cf6652160adba47ddd143652cf646cb
+    fold_1_seed_801: 33eef30817b8e2372aa433e024efdc78d21adab4b76907be44ca5f7069198617
+    fold_1_seed_802: 66d592e92f28fc34c39f121ed200434ea3f31fd3ab39169f17ea4fe7b6704b2c
+    fold_1_seed_803: 41e1a8e39a770974f818432c52f8cd0dac53b9176b1551329c845e101703fdef
+    fold_1_seed_804: 4518d07614aa11b608399327569c7bdf852d3ba31d512616366c64e9bccf1c8a
+    fold_1_seed_805: b91bc7f94da58d802a32c6bad80b6906752b3d12c924026d2319eba3be628192
+    fold_2_seed_801: 8ed65598518c6f1befbdff6cf0a502a4c991d77a76915c4835cd473c534ef50c
+    fold_2_seed_802: 58c8a48cc2c1bd3336e3093d47bac6e00bd699b8047b9d666fd4fcf45bada840
+    fold_2_seed_803: a0dd0b8b7d9ef8dcfe1f200612e314c88e74fc8e226ec290de0207e2c8940943
+    fold_2_seed_804: 22ec616ac15abee297eb07cde6d84a3dccd9df73db83769011583e71c9b42714
+    fold_2_seed_805: 11ae0a09a19b5727ac06c9b9dedc3d13022828d7b767c96b4b125d88feb801c5
+    fold_3_seed_801: 7ec2e92b67ec89dd26ff3a1d8a837887eccc4c8c7746df237ade605aac63cae0
+    fold_3_seed_802: 83eb83551a5b41e9477e564b487a1a744edbf54085fbdaea119b9665e487235b
+    fold_3_seed_803: b87344e32d05ed1fa9636028cde68408f367b3e28468872096b4e846bcd59d18
+    fold_3_seed_804: 529b1397f3f11db015e22a2265ab9b7d223ddf387a3e5a3f98d53597a14d317c
+    fold_3_seed_805: c67144e3ebb894cf219bea9c8b3c247c8a34507de701818cf380d542623e753a
+    fold_4_seed_801: 38850e5eb9ec1f8f8ea4884e2ce2b869d1743ed4544311f0112a225e31850d9d
+    fold_4_seed_802: d86a70b48b2cda5a2d66039a50b214dfe1519d8281c07eba610831664376f627
+    fold_4_seed_803: affdd57afeeef24effd7e078e4b566a9d1114b84c04b1415fd347078ccd0c475
+    fold_4_seed_804: 703f611b1a8bccb22db761b7cd18d706d1501450d4c7a82a08c4b2cc8711180d
+    fold_4_seed_805: 0042ea013f950cdeee1554c9b804250d60b63d9bf0823938bf43f8e316e687c9
+  preprocessing:
+    required: true
+    expected_files: 5
+    accessible_files: 0
+    verification_source: Authenticated external cell manifests named by the promoted
+      artifact index; each records the required fold standardization SHA256.
+  model_card: docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
+  claim_boundary: On the registered SCORPION structured-separation objective, full
+    PA-NF has a controlled comparative advantage over the equal-capacity two-branch
+    neural control while registered average and worst-pair retrieval noninferiority
+    are preserved and the acquisition branch retains scanner information. The corrected
+    canine fixed five-category result separately does not establish an additional
+    neural improvement over the strongest simple scanner-removal baselines. Neither
+    result establishes pure factors, complete invariance, universal superiority, diagnostic
+    improvement, clinical utility, or deployment readiness.
+  license: MIT for researcher-authored code only; facebook/dinov2-base is identified
+    upstream as Apache-2.0 and is not redistributed; public PA-NF checkpoint publication
+    is blocked because the SCORPION Zenodo v1 record does not state an explicit license
+    or checkpoint-redistribution permission
+  checksums: {}
+  created_at: null
+  last_verified_at: '2026-08-12T18:51:36Z'
+  hf_revision: null
+  blocker: Missing 25 checkpoint bytes, 25 authenticated external cell manifests,
+    five required fold standardizers, explicit SCORPION-derived-checkpoint redistribution
+    permission, and Hugging Face authentication in this environment.
 - id: panda-phikon-wsi-spatial-features-300-v1
   research_line: PANDA / Phikon coordinate-bearing representations
   audit_decision: prepare_private

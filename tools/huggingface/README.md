@@ -58,3 +58,30 @@ python tools/huggingface/release.py publish \
 The PANDA spec remains blocked until the real 300-slide bundle is present and
 the non-commercial/share-alike redistribution basis is explicitly accepted.
 It cannot be published accidentally.
+
+## PA-NF trained model family
+
+The registered PA-NF release is a complete 25-checkpoint family plus five
+fold-specific standardizers. On the Windows machine containing the campaign
+`results` directory, run this from the repository root in PowerShell:
+
+```powershell
+python tools/huggingface/panf_model_bundle.py build --artifact-index evidence/paired_acquisition/scorpion-capacity-matched-20260726/campaign/cell_artifact_index.csv --source-results-root .\results --target-bundle build\huggingface\paired-acquisition-neural-factorization
+```
+
+The build is atomic and refuses missing cells, substituted runs, hash mismatches,
+invalid checkpoint metadata/config/state shapes, inconsistent preprocessing
+hashes, and copied-byte mismatches. Re-verify the completed folder with:
+
+```powershell
+python tools/huggingface/panf_model_bundle.py verify --bundle build\huggingface\paired-acquisition-neural-factorization
+python tools/huggingface/release.py verify-local build\huggingface\paired-acquisition-neural-factorization
+```
+
+The public release spec remains blocked even after a valid transfer because the
+SCORPION Zenodo v1 record does not state an explicit redistribution license.
+Once documented permission or a compatible license is committed to the release
+record, the model manifest's license gate and release spec can be updated in a
+reviewed change. Only then may the standard `release.py publish ...
+--allow-public` path run; it validates the model-family inventory before upload
+and verifies every remote file before recording an immutable Hub revision.
