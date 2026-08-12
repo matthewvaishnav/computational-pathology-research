@@ -67,7 +67,7 @@ releases:
   visibility: public
   release_state: prepared
   github_repo: matthewvaishnav/computational-pathology-research
-  github_commit: c17f3117a01ca6c3364deb1f092441671b533954
+  github_commit: cfeff2d2be615b0b8367df3aee4179e7f3ab6070
   training_source_commit: 0adea50f1ef22865969109f1834a3c175e3f8b43
   source_branch: release/panf-huggingface-model-20260812
   source_artifacts:
