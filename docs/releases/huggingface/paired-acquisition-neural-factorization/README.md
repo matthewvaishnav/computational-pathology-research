@@ -1,5 +1,5 @@
 ---
-license: other
+license: apache-2.0
 library_name: pytorch
 tags:
   - computational-pathology
@@ -146,16 +146,14 @@ registered result and analysis provenance.
 
 ## License
 
-The researcher-authored source and inference code are MIT-licensed. The frozen
-`facebook/dinov2-base` source model is identified as Apache-2.0 by its upstream
-model card and repository; its weights and frozen feature archive are not
-included here.
+The PA-NF model release, including the 25 released checkpoints and the
+researcher-authored release-specific source/inference code distributed with the
+model package, is licensed under the Apache License 2.0. See the bundled
+`LICENSE` file. The Hugging Face model card therefore uses `license: apache-2.0`.
 
-The SCORPION Zenodo v1 record currently does not state an explicit license.
-Public redistribution of the derived PA-NF checkpoints therefore remains
-blocked until documented permission or an explicit compatible dataset license
-is recorded. The `license: other` metadata is intentional and must not be changed
-to MIT merely because the surrounding source repository is MIT-licensed.
+The frozen `facebook/dinov2-base` feature archive and SCORPION source images are
+not redistributed in this model repository. Those third-party artifacts retain
+their own upstream terms; this release does not relicense them.
 
 ## Reproducibility
 
