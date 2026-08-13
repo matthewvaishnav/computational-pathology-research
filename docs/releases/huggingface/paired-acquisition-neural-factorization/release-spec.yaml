@@ -9,9 +9,9 @@ training_source_commit: 0adea50f1ef22865969109f1834a3c175e3f8b43
 card: docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
 source_paths:
   - docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
+  - docs/releases/huggingface/paired-acquisition-neural-factorization/LICENSE
   - src/models/scorpion_pathoalign.py
   - tools/huggingface/panf_model_inference.py
-  - LICENSE
 external_bundle:
   schema_version: panf-model-transfer-bundle/v1
   expected_checkpoints: 25
@@ -19,8 +19,5 @@ external_bundle:
   manifest: model-manifest.json
 commit_message: Release registered PA-NF SCORPION checkpoint family v1
 tag: panf-model-scorpion-capacity-matched-v1
-blocked: true
-blocker: >-
-  The 25 external checkpoint files and five fold standardizers are unavailable in
-  this execution environment. Public publication is independently blocked because
-  the SCORPION Zenodo v1 record does not state an explicit redistribution license.
+blocked: false
+blocker: null
