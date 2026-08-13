@@ -27,6 +27,7 @@ import numpy as np
 SCHEMA_VERSION = "panf-model-transfer-bundle/v1"
 RELEASE_ID = "panf-model-scorpion-capacity-matched-v1"
 REPO_ID = "MatthewVaishnav/paired-acquisition-neural-factorization"
+RELEASE_LICENSE = "Apache-2.0"
 VARIANT = "pathoalign_dep20"
 METHOD = "pathoalign"
 FOLDS = tuple(range(5))
@@ -464,10 +465,13 @@ def build_bundle(
     fold_hashes: dict[int, set[str]] = {fold: set() for fold in FOLDS}
     try:
         card = root / "docs/releases/huggingface/paired-acquisition-neural-factorization/README.md"
+        model_license = (
+            root / "docs/releases/huggingface/paired-acquisition-neural-factorization/LICENSE"
+        )
         release.validate_card(card, "model")
         tracked_files = {
             card: staging / "README.md",
-            root / "LICENSE": staging / "LICENSE",
+            model_license: staging / "LICENSE",
             model_source: staging / "scorpion_pathoalign.py",
             root / "tools/huggingface/panf_model_inference.py": staging / "inference.py",
         }
@@ -604,11 +608,15 @@ def build_bundle(
             ],
             "evidence_repo": "MatthewVaishnav/paired-acquisition-factorization-evidence",
             "license_gate": {
-                "public_release_allowed": False,
-                "reason": (
-                    "The SCORPION Zenodo v1 record does not state an explicit license. "
-                    "Public checkpoint redistribution requires documented permission or "
-                    "an explicit compatible dataset license."
+                "public_release_allowed": True,
+                "license": RELEASE_LICENSE,
+                "scope": (
+                    "The PA-NF checkpoints and researcher-authored release-specific code "
+                    "distributed in this model package are licensed under Apache-2.0."
+                ),
+                "upstream_note": (
+                    "SCORPION source images and the frozen DINOv2 feature archive are not "
+                    "redistributed and retain their own upstream terms."
                 ),
             },
         }
@@ -626,7 +634,7 @@ def build_bundle(
         "checkpoints": EXPECTED_COUNT,
         "preprocessing_files": len(FOLDS),
         "verified": True,
-        "public_release_allowed": False,
+        "public_release_allowed": True,
     }
 
 
