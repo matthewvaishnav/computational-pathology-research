@@ -441,9 +441,13 @@ def build_bundle(
     index_sha256 = sha256_file(index_path)
     model_source = root / "src/models/scorpion_pathoalign.py"
     model_source_sha256 = sha256_file(model_source)
-    if model_source_sha256 != SOURCE_MODEL_SHA256:
+    if model_source_sha256 not in {
+        SOURCE_MODEL_SHA256,
+        SOURCE_MODEL_CRLF_SHA256,
+    }:
         raise BundleError(
-            f"Exact model-definition hash mismatch: expected={SOURCE_MODEL_SHA256}, "
+            "Exact model-definition hash mismatch: "
+            f"expected one of [{SOURCE_MODEL_SHA256}, {SOURCE_MODEL_CRLF_SHA256}], "
             f"observed={model_source_sha256}"
         )
 
