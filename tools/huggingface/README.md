@@ -78,10 +78,23 @@ python tools/huggingface/panf_model_bundle.py verify --bundle build\huggingface\
 python tools/huggingface/release.py verify-local build\huggingface\paired-acquisition-neural-factorization
 ```
 
-The public release spec remains blocked even after a valid transfer because the
-SCORPION Zenodo v1 record does not state an explicit redistribution license.
-Once documented permission or a compatible license is committed to the release
-record, the model manifest's license gate and release spec can be updated in a
-reviewed change. Only then may the standard `release.py publish ...
---allow-public` path run; it validates the model-family inventory before upload
-and verifies every remote file before recording an immutable Hub revision.
+The PA-NF model release is licensed under Apache-2.0. The model package includes
+the 25 registered checkpoints, the five required fold standardizers, the exact
+model definition, release-specific inference code, provenance manifests, model
+card, Apache-2.0 license file, and checksums. Raw SCORPION images and the frozen
+DINOv2 feature archive are excluded and retain their own upstream terms.
+
+After rebuilding from the latest branch state and verifying the folder, publish
+through the standard fail-closed path:
+
+```powershell
+python tools/huggingface/release.py publish `
+  docs/releases/huggingface/paired-acquisition-neural-factorization/release-spec.yaml `
+  build/huggingface/paired-acquisition-neural-factorization `
+  --registry docs/releases/huggingface-release-registry.yaml `
+  --allow-public
+```
+
+The publisher validates the complete model-family inventory before upload,
+redownloads the remote repository, verifies every file checksum, and records the
+immutable Hugging Face revision in the release registry only after verification.
