@@ -4,7 +4,7 @@ repo_id: MatthewVaishnav/paired-acquisition-neural-factorization
 repo_type: model
 visibility: public
 github_repo: matthewvaishnav/computational-pathology-research
-github_commit: cfeff2d2be615b0b8367df3aee4179e7f3ab6070
+github_commit: fb1b1a16a454d0b08f3eba72844478d36f0fbd3a
 training_source_commit: 0adea50f1ef22865969109f1834a3c175e3f8b43
 card: docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
 source_paths:
