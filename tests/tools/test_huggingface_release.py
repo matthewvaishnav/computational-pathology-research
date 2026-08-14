@@ -50,6 +50,22 @@ def test_tracked_registry_and_cards_validate():
         "transnnmil-repaired-canonical",
         "pathologyfl-fair-weights-h",
     }
+    model_record = next(
+        record for record in records if record["id"] == "panf-model-scorpion-capacity-matched-v1"
+    )
+    assert model_record["artifact_type"] == "model"
+    assert model_record["visibility"] == "public"
+    assert model_record["release_state"] == "released"
+    assert model_record["hf_revision"] == "b5de3cf9c062cb0d5623628165098c26923309c7"
+    assert model_record["blocker"] is None
+    assert model_record["architecture"]["parameter_count"] == 1_550_026
+    assert model_record["input_contract"]["shape"] == ["n_samples", 768]
+    assert model_record["input_contract"]["accepts_raw_images"] is False
+    assert (
+        model_record["evidence_release"]["hf_revision"]
+        == "a9853bd32e3b446a97608002f7e5ea12f68f88e1"
+    )
+    assert model_record["remote_verification"]["checksum_entries"] == 61
     release.validate_card(
         root / "docs/releases/huggingface/paired-acquisition-factorization-evidence/README.md",
         "dataset",

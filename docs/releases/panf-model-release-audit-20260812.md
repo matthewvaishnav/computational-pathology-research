@@ -107,10 +107,17 @@ negative comparison remain in
 
 ## Current release state
 
-The artifact and preprocessing gates are cleared. Public publication has not yet
-occurred. The remaining operational steps are to rebuild the bundle from the
-latest branch state so it contains the Apache-2.0 card/license metadata, rerun
-local and release-folder verification, publish from an authenticated Hugging
-Face environment with the explicit public-release flag, redownload the remote
-repository, verify all checksums, and record the immutable Hub revision in the
-release registry.
+The release is public and remotely verified at
+`MatthewVaishnav/paired-acquisition-neural-factorization`, immutable Hugging Face
+revision `b5de3cf9c062cb0d5623628165098c26923309c7`. The public repository was
+created on 2026-08-13 and contains all 25 checkpoints, all five fold
+standardizers, all 25 authenticated source cell manifests, the filtered artifact
+index, exact model and inference code, the Apache-2.0 license, and the model
+card.
+
+On 2026-08-14, an independent immutable-revision Git/LFS checkout reproduced the
+Hub revision and all 61 entries in `checksums.sha256`. The registry checksum map
+matched the remote manifest exactly; all checkpoint and preprocessing hashes in
+`model-manifest.json` also matched the downloaded files. The release therefore
+has no remaining publication blocker. Future updates must create and verify a
+new immutable Hub revision rather than changing this recorded object in place.

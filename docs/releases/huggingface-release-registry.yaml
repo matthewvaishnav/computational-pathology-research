@@ -1,5 +1,5 @@
 schema_version: huggingface-release-registry/v1
-last_verified_at: '2026-08-13T17:17:02Z'
+last_verified_at: '2026-08-14T17:39:38Z'
 releases:
 - id: panf-evidence-20260726-v1
   research_line: PA-NF / Paired-Acquisition Neural Factorization
@@ -61,9 +61,10 @@ releases:
   blocker: null
 - id: panf-model-scorpion-capacity-matched-v1
   research_line: PA-NF / Paired-Acquisition Neural Factorization
-  audit_decision: release_ready
+  audit_decision: release_now
   artifact_type: model
   hf_repo: MatthewVaishnav/paired-acquisition-neural-factorization
+  hf_url: https://huggingface.co/MatthewVaishnav/paired-acquisition-neural-factorization
   visibility: public
   release_state: released
   github_repo: matthewvaishnav/computational-pathology-research
@@ -80,8 +81,59 @@ releases:
     PA-NF family, all 25 authenticated source cell manifests, and all five fold standardizers
     against the promoted artifact index. The bundle build returned verified=true;
     no checkpoint was selected, substituted, retrained, or fabricated.
+  evidence_release:
+    hf_repo: MatthewVaishnav/paired-acquisition-factorization-evidence
+    hf_revision: a9853bd32e3b446a97608002f7e5ea12f68f88e1
+    relationship: The model repository distributes the trained PA-NF family and
+      required preprocessing state. The separate evidence dataset distributes the
+      registered metrics, analyses, manifests, and retained negative results; it is
+      not a model or raw pathology-image dataset.
   package_structure: Complete 5-fold x 5-seed pathoalign_dep20 family; no best-checkpoint
     selection and no post-hoc ranking by registered test results.
+  model_files:
+  - model-manifest.json
+  - inference.py
+  - scorpion_pathoalign.py
+  - checksums.sha256
+  - checkpoints/fold_{0..4}/seed_{801..805}/checkpoint.pt
+  - preprocessing/fold_{0..4}_standardization.npz
+  - provenance/cell_artifact_index.pathoalign_dep20.csv
+  - provenance/source-cell-manifests/fold_{0..4}/seed_{801..805}/cell_manifest.json
+  architecture:
+    class: ScorpionProjection
+    framework: PyTorch
+    parameter_count: 1550026
+    state_dict_keys: 24
+    input_dim: 768
+    hidden_dim: 512
+    biological_dim: 256
+    acquisition_dim: 64
+    reconstruction_input_dim: 320
+    reconstruction_output_dim: 768
+    scanner_classes: 5
+    config:
+      temperature: 0.1
+      reconstruction_weight: 1.0
+      variance_weight: 1.0
+      covariance_weight: 0.01
+      scanner_adversary_weight: 0.5
+      scanner_acquisition_weight: 0.5
+      scanner_dependence_weight: 20.0
+      cross_covariance_weight: 0.05
+      gradient_reversal_strength: 1.0
+  input_contract:
+    representation: frozen facebook/dinov2-base CLS feature
+    backbone_revision: f9e44c814b77203eaa57a6bdbbd535f21ede1415
+    shape:
+    - n_samples
+    - 768
+    dtype: float32
+    standardization: (features - fold_mean) / fold_std using the matching released
+      fold standardizer
+    accepts_raw_images: false
+    checkpoint_alone_sufficient: false
+    scanner_labels_required_during_training: true
+    scanner_labels_required_during_inference: false
   checkpoint_selection: none; fixed final epoch only
   checkpoint_count_expected: 25
   checkpoint_count_accessible: 25
@@ -195,8 +247,15 @@ releases:
     provenance/source-cell-manifests/fold_4/seed_805/cell_manifest.json: c018d9dfeba623e0e0ea2f7033663a0968b195b5fcf4446a37a28b188baab692
     scorpion_pathoalign.py: 36855b70b38fc03ea4a798b58c85e08bd6ab7041e30f069b0837cd49fd168d65
   created_at: '2026-08-13T17:17:02Z'
-  last_verified_at: '2026-08-13T17:17:02Z'
+  hub_created_at: '2026-08-13T17:16:03Z'
+  last_verified_at: '2026-08-14T17:39:38Z'
   hf_revision: b5de3cf9c062cb0d5623628165098c26923309c7
+  remote_verification:
+    method: Immutable-revision Git/LFS checkout plus checksums.sha256 verification
+    checksum_entries: 61
+    checkpoints_verified: 25
+    preprocessing_files_verified: 5
+    verified_at: '2026-08-14T17:39:38Z'
   blocker: null
 - id: panda-phikon-wsi-spatial-features-300-v1
   research_line: PANDA / Phikon coordinate-bearing representations

@@ -84,8 +84,10 @@ model definition, release-specific inference code, provenance manifests, model
 card, Apache-2.0 license file, and checksums. Raw SCORPION images and the frozen
 DINOv2 feature archive are excluded and retain their own upstream terms.
 
-After rebuilding from the latest branch state and verifying the folder, publish
-through the standard fail-closed path:
+The first public release completed this path and is recorded at immutable Hub
+revision `b5de3cf9c062cb0d5623628165098c26923309c7`. For a future version, rebuild
+from the intended source state, verify the complete folder, and publish through
+the same fail-closed path:
 
 ```powershell
 python tools/huggingface/release.py publish `
