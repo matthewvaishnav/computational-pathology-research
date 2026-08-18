@@ -3,25 +3,17 @@
 
 The trainer is intentionally narrow. It provides one-run execution for the
 pre-registered controls in ``docs/research/wsi-nca-phase-a-spec-20260807.md``.
-Use identical seeds/splits/settings while changing only the control under study.
+Use identical data splits/settings while changing only the control under study.
 
-Example smoke run:
-    python experiments/wsi_nca/train_panda_phase_a.py \
-        --limit 200 --epochs 2 --max-patches 256 --num-steps 4 --device cuda
+The scientific PANDA protocol separates three sources of variation:
 
-Static T=0 control:
-    python experiments/wsi_nca/train_panda_phase_a.py \
-        --num-steps 0 --max-patches 512 --seed 42 --device cuda
+- ``--split-seed`` freezes train/validation/test slide membership;
+- ``--seed`` controls model/data-loader/patch-sampling stochasticity;
+- ``--coordinate-control`` controls training/validation topology, while
+  ``--eval-coordinate-control`` controls held-out test topology.
 
-Shuffled-topology control:
-    python experiments/wsi_nca/train_panda_phase_a.py \
-        --num-steps 4 --coordinate-control shuffle --max-patches 512 \
-        --seed 42 --device cuda
-
-Untied recurrent/GNN control:
-    python experiments/wsi_nca/train_panda_phase_a.py \
-        --num-steps 4 --dynamics-mode untied --max-patches 512 \
-        --seed 42 --device cuda
+Checkpoint selection is performed only on validation QWK. Held-out test metrics
+are computed after loading that checkpoint and are never used for selection.
 """
 
 from __future__ import annotations
@@ -125,15 +117,25 @@ def collate_coordinate_bags(
     features, coordinates, labels, image_ids = zip(*batch)
     lengths = torch.tensor([item.shape[0] for item in features], dtype=torch.long)
     padded_features = pad_sequence(list(features), batch_first=True, padding_value=0.0)
-    padded_coordinates = pad_sequence(list(coordinates), batch_first=True, padding_value=0.0)
+    padded_coordinates = pad_sequence(
+        list(coordinates), batch_first=True, padding_value=0.0
+    )
     max_len = padded_features.shape[1]
     mask = torch.arange(max_len).unsqueeze(0) < lengths.unsqueeze(1)
-    return padded_features, padded_coordinates, mask, torch.stack(list(labels)), list(image_ids)
+    return (
+        padded_features,
+        padded_coordinates,
+        mask,
+        torch.stack(list(labels)),
+        list(image_ids),
+    )
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="PANDA WSI-NCA Phase A")
-    parser.add_argument("--manifest", default="results/panda_manifest/panda_phikon_manifest.csv")
+    parser.add_argument(
+        "--manifest", default="results/panda_manifest/panda_phikon_manifest.csv"
+    )
     parser.add_argument("--out-dir", default="results/wsi_nca_phase_a")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=4)
@@ -142,17 +144,43 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hidden-dim", type=int, default=256)
     parser.add_argument("--num-steps", type=int, default=4)
     parser.add_argument("--k-neighbors", type=int, default=8)
-    parser.add_argument("--neighbor-mode", choices=["spatial", "embedding"], default="spatial")
+    parser.add_argument(
+        "--neighbor-mode", choices=["spatial", "embedding"], default="spatial"
+    )
     parser.add_argument("--dynamics-mode", choices=["tied", "untied"], default="tied")
-    parser.add_argument("--coordinate-control", choices=["real", "shuffle"], default="real")
+    parser.add_argument(
+        "--coordinate-control",
+        choices=["real", "shuffle"],
+        default="real",
+        help="Coordinate mode used for training and validation.",
+    )
+    parser.add_argument(
+        "--eval-coordinate-control",
+        choices=["match", "real", "shuffle", "both"],
+        default="match",
+        help=(
+            "Held-out test coordinate mode. 'match' uses the training mode; "
+            "'both' evaluates the same selected checkpoint on real and shuffled "
+            "test topology."
+        ),
+    )
     parser.add_argument("--max-patches", type=int, default=512)
     parser.add_argument("--dropout", type=float, default=0.1)
     parser.add_argument("--val-fraction", type=float, default=0.2)
+    parser.add_argument("--test-fraction", type=float, default=0.2)
+    parser.add_argument(
+        "--split-seed",
+        type=int,
+        default=42,
+        help="Fixed seed controlling slide membership only; independent of --seed.",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument(
+        "--device", default="cuda" if torch.cuda.is_available() else "cpu"
+    )
     return parser.parse_args()
 
 
@@ -215,7 +243,9 @@ def validate_coordinate_files(frame: pd.DataFrame) -> pd.DataFrame:
             if len(feature_shape) != 2 or feature_shape[0] < 2:
                 raise ValueError(f"features={feature_shape}")
             if coordinate_shape != (feature_shape[0], 2):
-                raise ValueError(f"features={feature_shape}, coordinates={coordinate_shape}")
+                raise ValueError(
+                    f"features={feature_shape}, coordinates={coordinate_shape}"
+                )
         except Exception as exc:
             failures.append(f"{image_id} | {path} | {exc}")
         else:
@@ -236,16 +266,60 @@ def infer_feature_dim(frame: pd.DataFrame) -> int:
         return int(handle["features"].shape[1])
 
 
-def make_split(
-    frame: pd.DataFrame, val_fraction: float, seed: int
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    train, val = train_test_split(
+def make_splits(
+    frame: pd.DataFrame,
+    val_fraction: float,
+    test_fraction: float,
+    split_seed: int,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Create deterministic stratified train/validation/test partitions."""
+    if not 0 < val_fraction < 1:
+        raise ValueError("val_fraction must be between 0 and 1")
+    if not 0 < test_fraction < 1:
+        raise ValueError("test_fraction must be between 0 and 1")
+    if val_fraction + test_fraction >= 1:
+        raise ValueError("val_fraction + test_fraction must be < 1")
+
+    train_val, test = train_test_split(
         frame,
-        test_size=val_fraction,
-        random_state=seed,
+        test_size=test_fraction,
+        random_state=split_seed,
         stratify=frame["isup_grade"],
     )
-    return train.reset_index(drop=True), val.reset_index(drop=True)
+    relative_val_fraction = val_fraction / (1.0 - test_fraction)
+    train, val = train_test_split(
+        train_val,
+        test_size=relative_val_fraction,
+        random_state=split_seed,
+        stratify=train_val["isup_grade"],
+    )
+
+    train = train.reset_index(drop=True)
+    val = val.reset_index(drop=True)
+    test = test.reset_index(drop=True)
+
+    train_ids = set(train["image_id"].astype(str))
+    val_ids = set(val["image_id"].astype(str))
+    test_ids = set(test["image_id"].astype(str))
+    if train_ids & val_ids or train_ids & test_ids or val_ids & test_ids:
+        raise RuntimeError("Split construction produced overlapping slide IDs")
+    if len(train_ids | val_ids | test_ids) != len(frame):
+        raise RuntimeError("Split construction did not preserve the full cohort exactly once")
+
+    return train, val, test
+
+
+def resolve_test_coordinate_modes(
+    train_coordinate_control: str, eval_coordinate_control: str
+) -> list[str]:
+    """Resolve one or two held-out test coordinate modes without retraining."""
+    if eval_coordinate_control == "match":
+        return [train_coordinate_control]
+    if eval_coordinate_control == "both":
+        return ["real", "shuffle"]
+    if eval_coordinate_control in {"real", "shuffle"}:
+        return [eval_coordinate_control]
+    raise ValueError(f"Unsupported eval_coordinate_control: {eval_coordinate_control}")
 
 
 def compute_class_weights(labels: Sequence[int], num_classes: int = 6) -> Tensor:
@@ -255,11 +329,15 @@ def compute_class_weights(labels: Sequence[int], num_classes: int = 6) -> Tensor
     return torch.tensor(weights, dtype=torch.float32)
 
 
-def compute_metrics(targets: list[int], predictions: list[int], loss: float) -> dict[str, float]:
+def compute_metrics(
+    targets: list[int], predictions: list[int], loss: float
+) -> dict[str, float]:
     return {
         "loss": float(loss),
         "accuracy": float(accuracy_score(targets, predictions)),
-        "macro_f1": float(f1_score(targets, predictions, average="macro", zero_division=0)),
+        "macro_f1": float(
+            f1_score(targets, predictions, average="macro", zero_division=0)
+        ),
         "qwk": float(cohen_kappa_score(targets, predictions, weights="quadratic")),
     }
 
@@ -334,49 +412,96 @@ def predict(model: WSINCA, loader: DataLoader, device: torch.device) -> pd.DataF
     return pd.DataFrame(rows)
 
 
+def make_loader(
+    frame: pd.DataFrame,
+    *,
+    max_patches: int,
+    seed: int,
+    coordinate_control: str,
+    batch_size: int,
+    num_workers: int,
+    pin_memory: bool,
+    shuffle: bool,
+) -> DataLoader:
+    dataset = PandaCoordinateBagDataset(
+        frame,
+        max_patches=max_patches,
+        seed=seed,
+        coordinate_control=coordinate_control,
+    )
+    return DataLoader(
+        dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        collate_fn=collate_coordinate_bags,
+        pin_memory=pin_memory,
+        shuffle=shuffle,
+    )
+
+
 def main() -> None:
     args = parse_args()
     set_seed(args.seed)
 
+    test_coordinate_modes = resolve_test_coordinate_modes(
+        args.coordinate_control, args.eval_coordinate_control
+    )
+    test_label = "-".join(test_coordinate_modes)
     out_dir = Path(args.out_dir) / (
         f"steps-{args.num_steps}_neighbors-{args.neighbor_mode}_"
-        f"coords-{args.coordinate_control}_dynamics-{args.dynamics_mode}_seed-{args.seed}"
+        f"coords-train-{args.coordinate_control}_test-{test_label}_"
+        f"dynamics-{args.dynamics_mode}_seed-{args.seed}"
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
     frame = load_manifest(Path(args.manifest), args.limit)
     frame = validate_coordinate_files(frame)
-    train_frame, val_frame = make_split(frame, args.val_fraction, args.seed)
-
-    # Persist the exact split before training so comparisons can reuse it.
-    train_frame[["image_id", "isup_grade", "feature_path"]].to_csv(
-        out_dir / "train_split.csv", index=False
-    )
-    val_frame[["image_id", "isup_grade", "feature_path"]].to_csv(
-        out_dir / "val_split.csv", index=False
+    train_frame, val_frame, test_frame = make_splits(
+        frame,
+        args.val_fraction,
+        args.test_fraction,
+        args.split_seed,
     )
 
-    train_dataset = PandaCoordinateBagDataset(
+    split_columns = ["image_id", "isup_grade", "feature_path"]
+    train_frame[split_columns].to_csv(out_dir / "train_split.csv", index=False)
+    val_frame[split_columns].to_csv(out_dir / "val_split.csv", index=False)
+    test_frame[split_columns].to_csv(out_dir / "test_split.csv", index=False)
+
+    pin_memory = args.device.startswith("cuda")
+    train_loader = make_loader(
         train_frame,
         max_patches=args.max_patches,
         seed=args.seed,
         coordinate_control=args.coordinate_control,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        pin_memory=pin_memory,
+        shuffle=True,
     )
-    val_dataset = PandaCoordinateBagDataset(
+    val_loader = make_loader(
         val_frame,
         max_patches=args.max_patches,
         seed=args.seed,
         coordinate_control=args.coordinate_control,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        pin_memory=pin_memory,
+        shuffle=False,
     )
-
-    loader_kwargs = {
-        "batch_size": args.batch_size,
-        "num_workers": args.num_workers,
-        "collate_fn": collate_coordinate_bags,
-        "pin_memory": args.device.startswith("cuda"),
+    test_loaders = {
+        mode: make_loader(
+            test_frame,
+            max_patches=args.max_patches,
+            seed=args.seed,
+            coordinate_control=mode,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=pin_memory,
+            shuffle=False,
+        )
+        for mode in test_coordinate_modes
     }
-    train_loader = DataLoader(train_dataset, shuffle=True, **loader_kwargs)
-    val_loader = DataLoader(val_dataset, shuffle=False, **loader_kwargs)
 
     feature_dim = infer_feature_dim(frame)
     device = torch.device(args.device)
@@ -405,11 +530,18 @@ def main() -> None:
             "feature_dim": feature_dim,
             "train_slides": len(train_frame),
             "val_slides": len(val_frame),
-            "parameter_count": sum(parameter.numel() for parameter in model.parameters()),
+            "test_slides": len(test_frame),
+            "test_coordinate_modes": test_coordinate_modes,
+            "parameter_count": sum(
+                parameter.numel() for parameter in model.parameters()
+            ),
+            "checkpoint_selection": "maximum validation QWK only",
             "claim_status": "unvalidated architecture research",
         }
     )
-    (out_dir / "run_config.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
+    (out_dir / "run_config.json").write_text(
+        json.dumps(config, indent=2), encoding="utf-8"
+    )
 
     history: list[dict[str, float | int]] = []
     best_qwk = float("-inf")
@@ -454,15 +586,29 @@ def main() -> None:
 
     checkpoint = torch.load(out_dir / "best.pt", map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
-    predictions = predict(model, val_loader, device)
-    predictions.to_csv(out_dir / "val_predictions.csv", index=False)
+
+    test_metrics: dict[str, dict[str, float]] = {}
+    for mode, loader in test_loaders.items():
+        metrics = run_epoch(model, loader, criterion, device)
+        predictions = predict(model, loader, device)
+        predictions.to_csv(out_dir / f"test_predictions_{mode}.csv", index=False)
+        test_metrics[mode] = metrics
 
     summary = {
         "best_epoch": int(checkpoint["epoch"]),
         "best_val_metrics": checkpoint["val_metrics"],
+        "test_metrics": test_metrics,
+        "split": {
+            "split_seed": int(args.split_seed),
+            "train_slides": len(train_frame),
+            "val_slides": len(val_frame),
+            "test_slides": len(test_frame),
+        },
         "output_dir": str(out_dir),
     }
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    (out_dir / "summary.json").write_text(
+        json.dumps(summary, indent=2), encoding="utf-8"
+    )
     print(json.dumps(summary, indent=2))
 
 
