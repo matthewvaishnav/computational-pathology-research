@@ -47,12 +47,18 @@ optimization.
 
 The corrected July 26 forward-valid evidence release supports \emph{partial
 structured separation under the tested conditions}, not pure biological factors,
-complete independence, or clinical utility. Corrected paired-scanner experiments
-demonstrate paired supervision relative to broken-pair controls and support
-retrieval and scanner-recoverability findings.
+complete independence, or clinical utility. In the separately versioned SCORPION
+capacity-matched campaign, the full PA-NF model completed 175/175 registered fits
+and, relative to the equal-capacity two-branch neural control without scanner
+objectives, reduced tissue-branch scanner balanced accuracy by 0.3108 with a
+fold-aware 95\% interval of $[-0.3346,-0.2858]$, while preserving average and
+worst same-region retrieval within the registered 0.02 noninferiority margin and
+retaining strong acquisition-branch scanner information. This is a controlled
+comparative advantage on the registered SCORPION structured-separation objective.
 
-The versioned fixed-estimand adjudication (v2, consuming the exact recovered
-neural artifacts) established the current status
+A different question is answered by the corrected canine fixed-estimand audit.
+The versioned adjudication (v2, consuming the exact recovered neural artifacts)
+established the current status
 \texttt{\seqsplit{complete\_no\_neural\_feature\_space\_increment\_supported}}. Under the
 corrected five-category estimand, on the recovered B32/B64 cells:
 
@@ -70,7 +76,7 @@ corrected five-category estimand, on the recovered B32/B64 cells:
   category and retrieval levels the neural branches do not, while the neural
   biological branch can reach lower scanner recoverability in some folds.
   Neither a neural increment nor a strict simple-baseline Pareto dominance was
-  established.
+  established on this canine fixed-estimand comparison.
 \item Synthetic accessibility effects did not transport: the corrected category
   gain required for transport was not present.
 \end{itemize}
@@ -86,16 +92,23 @@ $\approx 0.20$ at chance in corrected audits). Broken-pair controls preserve
 scanner counts and remain within the training fold while deranging region
 correspondences, isolating the contribution of true pairs.
 
-\subsection{Why the architecture remains distinct despite the absence of superiority}
+\subsection{Controlled advantage and bounded negative comparison}
 
-The negative neural-increment result does not erase the architectural
-contribution. PA-NF produces an explicit, inspectable, and decoder-swappable
-acquisition branch and a biological branch whose scanner recoverability can be
-reduced and whose structure can be bottlenecked. Centroid/QR is strong at blind
-removal but provides no structural decomposition. The architecture is a distinct
-structured method whose empirical value on corrected bounded endpoints is a
-negative or mixed result --- and that result is reported directly in the main
-text rather than hidden.
+The SCORPION capacity-matched result and the canine fixed-estimand result are not
+contradictory because they test different comparators and endpoints. PA-NF has a
+supported controlled advantage over the equal-capacity neural control on the
+registered SCORPION structured-separation objective. The corrected canine audit,
+however, does not support a stronger claim that the neural representation
+outperforms every simple scanner-removal baseline on corrected category and
+retrieval endpoints.
+
+PA-NF also produces an explicit, inspectable, and decoder-swappable acquisition
+branch and a tissue-oriented branch whose scanner recoverability can be reduced
+and whose structure can be bottlenecked. Centroid/QR is strong at blind removal
+but provides no structural decomposition. The evidence therefore supports a
+bounded comparative claim where the registered control establishes it, while
+retaining the negative result where the stronger simple-baseline comparison does
+not.
 
 \subsection{Layer-2 boundary}
 
