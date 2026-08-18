@@ -1,5 +1,5 @@
 schema_version: huggingface-release-registry/v1
-last_verified_at: '2026-08-12T17:05:19Z'
+last_verified_at: '2026-08-14T17:39:38Z'
 releases:
 - id: panf-evidence-20260726-v1
   research_line: PA-NF / Paired-Acquisition Neural Factorization
@@ -58,6 +58,204 @@ releases:
   created_at: '2026-08-12T17:05:19Z'
   last_verified_at: '2026-08-12T17:05:19Z'
   hf_revision: a9853bd32e3b446a97608002f7e5ea12f68f88e1
+  blocker: null
+- id: panf-model-scorpion-capacity-matched-v1
+  research_line: PA-NF / Paired-Acquisition Neural Factorization
+  audit_decision: release_now
+  artifact_type: model
+  hf_repo: MatthewVaishnav/paired-acquisition-neural-factorization
+  hf_url: https://huggingface.co/MatthewVaishnav/paired-acquisition-neural-factorization
+  visibility: public
+  release_state: released
+  github_repo: matthewvaishnav/computational-pathology-research
+  github_commit: fb1b1a16a454d0b08f3eba72844478d36f0fbd3a
+  training_source_commit: 0adea50f1ef22865969109f1834a3c175e3f8b43
+  source_branch: release/panf-huggingface-model-20260812
+  source_artifacts:
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726/campaign/cell_artifact_index.csv
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726/campaign/campaign_design.json
+  - evidence/paired_acquisition/scorpion-capacity-matched-20260726/release_manifest.json
+  - external:results/scorpion/pathoalign_capacity_matched_ablations_v1/cells/*/pathoalign_dep20/*/checkpoint.pt
+  - external:results/scorpion/pathoalign_capacity_matched_ablations_v1/fold_context/fold_*_standardization.npz
+  evidence_status: The Windows source machine verified the complete registered 25-checkpoint
+    PA-NF family, all 25 authenticated source cell manifests, and all five fold standardizers
+    against the promoted artifact index. The bundle build returned verified=true;
+    no checkpoint was selected, substituted, retrained, or fabricated.
+  evidence_release:
+    hf_repo: MatthewVaishnav/paired-acquisition-factorization-evidence
+    hf_revision: a9853bd32e3b446a97608002f7e5ea12f68f88e1
+    relationship: The model repository distributes the trained PA-NF family and
+      required preprocessing state. The separate evidence dataset distributes the
+      registered metrics, analyses, manifests, and retained negative results; it is
+      not a model or raw pathology-image dataset.
+  package_structure: Complete 5-fold x 5-seed pathoalign_dep20 family; no best-checkpoint
+    selection and no post-hoc ranking by registered test results.
+  model_files:
+  - model-manifest.json
+  - inference.py
+  - scorpion_pathoalign.py
+  - checksums.sha256
+  - checkpoints/fold_{0..4}/seed_{801..805}/checkpoint.pt
+  - preprocessing/fold_{0..4}_standardization.npz
+  - provenance/cell_artifact_index.pathoalign_dep20.csv
+  - provenance/source-cell-manifests/fold_{0..4}/seed_{801..805}/cell_manifest.json
+  architecture:
+    class: ScorpionProjection
+    framework: PyTorch
+    parameter_count: 1550026
+    state_dict_keys: 24
+    input_dim: 768
+    hidden_dim: 512
+    biological_dim: 256
+    acquisition_dim: 64
+    reconstruction_input_dim: 320
+    reconstruction_output_dim: 768
+    scanner_classes: 5
+    config:
+      temperature: 0.1
+      reconstruction_weight: 1.0
+      variance_weight: 1.0
+      covariance_weight: 0.01
+      scanner_adversary_weight: 0.5
+      scanner_acquisition_weight: 0.5
+      scanner_dependence_weight: 20.0
+      cross_covariance_weight: 0.05
+      gradient_reversal_strength: 1.0
+  input_contract:
+    representation: frozen facebook/dinov2-base CLS feature
+    backbone_revision: f9e44c814b77203eaa57a6bdbbd535f21ede1415
+    shape:
+    - n_samples
+    - 768
+    dtype: float32
+    standardization: (features - fold_mean) / fold_std using the matching released
+      fold standardizer
+    accepts_raw_images: false
+    checkpoint_alone_sufficient: false
+    scanner_labels_required_during_training: true
+    scanner_labels_required_during_inference: false
+  checkpoint_selection: none; fixed final epoch only
+  checkpoint_count_expected: 25
+  checkpoint_count_accessible: 25
+  checkpoint_count_verified: 25
+  checkpoint_index: docs/releases/panf-model-checkpoint-audit-20260812.csv
+  checkpoint_hashes:
+    fold_0_seed_801: c4fc76e1b92fa0de4ae27fbcf8e88a96914d7684d28a500827bbc16207233f97
+    fold_0_seed_802: 58d36272b6d0dfe79a2fb690de965a41bc05e6553c9d9bd5c05287d88e522959
+    fold_0_seed_803: c1648672231292711c5e1f03fdd7500ae0bd19cd7f6b1ae2b58da34b3791fc00
+    fold_0_seed_804: 8335161c09ae3d6dfcf83745eb23c8baa87ef261ba2a37f6bf334efa43bd46ec
+    fold_0_seed_805: 213eb604480658c5705dc2926930c62f9cf6652160adba47ddd143652cf646cb
+    fold_1_seed_801: 33eef30817b8e2372aa433e024efdc78d21adab4b76907be44ca5f7069198617
+    fold_1_seed_802: 66d592e92f28fc34c39f121ed200434ea3f31fd3ab39169f17ea4fe7b6704b2c
+    fold_1_seed_803: 41e1a8e39a770974f818432c52f8cd0dac53b9176b1551329c845e101703fdef
+    fold_1_seed_804: 4518d07614aa11b608399327569c7bdf852d3ba31d512616366c64e9bccf1c8a
+    fold_1_seed_805: b91bc7f94da58d802a32c6bad80b6906752b3d12c924026d2319eba3be628192
+    fold_2_seed_801: 8ed65598518c6f1befbdff6cf0a502a4c991d77a76915c4835cd473c534ef50c
+    fold_2_seed_802: 58c8a48cc2c1bd3336e3093d47bac6e00bd699b8047b9d666fd4fcf45bada840
+    fold_2_seed_803: a0dd0b8b7d9ef8dcfe1f200612e314c88e74fc8e226ec290de0207e2c8940943
+    fold_2_seed_804: 22ec616ac15abee297eb07cde6d84a3dccd9df73db83769011583e71c9b42714
+    fold_2_seed_805: 11ae0a09a19b5727ac06c9b9dedc3d13022828d7b767c96b4b125d88feb801c5
+    fold_3_seed_801: 7ec2e92b67ec89dd26ff3a1d8a837887eccc4c8c7746df237ade605aac63cae0
+    fold_3_seed_802: 83eb83551a5b41e9477e564b487a1a744edbf54085fbdaea119b9665e487235b
+    fold_3_seed_803: b87344e32d05ed1fa9636028cde68408f367b3e28468872096b4e846bcd59d18
+    fold_3_seed_804: 529b1397f3f11db015e22a2265ab9b7d223ddf387a3e5a3f98d53597a14d317c
+    fold_3_seed_805: c67144e3ebb894cf219bea9c8b3c247c8a34507de701818cf380d542623e753a
+    fold_4_seed_801: 38850e5eb9ec1f8f8ea4884e2ce2b869d1743ed4544311f0112a225e31850d9d
+    fold_4_seed_802: d86a70b48b2cda5a2d66039a50b214dfe1519d8281c07eba610831664376f627
+    fold_4_seed_803: affdd57afeeef24effd7e078e4b566a9d1114b84c04b1415fd347078ccd0c475
+    fold_4_seed_804: 703f611b1a8bccb22db761b7cd18d706d1501450d4c7a82a08c4b2cc8711180d
+    fold_4_seed_805: 0042ea013f950cdeee1554c9b804250d60b63d9bf0823938bf43f8e316e687c9
+  preprocessing:
+    required: true
+    expected_files: 5
+    accessible_files: 5
+    verified_files: 5
+    verification_source: Authenticated external cell manifests named by the promoted
+      artifact index; each records the required fold standardization SHA256.
+  model_card: docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
+  claim_boundary: On the registered SCORPION structured-separation objective, full
+    PA-NF has a controlled comparative advantage over the equal-capacity two-branch
+    neural control while registered average and worst-pair retrieval noninferiority
+    are preserved and the acquisition branch retains scanner information. The corrected
+    canine fixed five-category result separately does not establish an additional
+    neural improvement over the strongest simple scanner-removal baselines. Neither
+    result establishes pure factors, complete invariance, universal superiority, diagnostic
+    improvement, clinical utility, or deployment readiness.
+  license: Apache-2.0 for the released PA-NF checkpoints and researcher-authored release-specific
+    code; raw SCORPION images and the frozen DINOv2 feature archive are excluded and
+    retain their own upstream terms
+  checksums:
+    LICENSE: 4fef0f6f44d11dd4255502aaa70d76e7bb773150a3213c33fdf1c96ea88f4ac0
+    README.md: 3694b211f5f513abc582ebd4d5e7bdf087794ddd0a46f71ebb01924c50009ec7
+    checkpoints/fold_0/seed_801/checkpoint.pt: c4fc76e1b92fa0de4ae27fbcf8e88a96914d7684d28a500827bbc16207233f97
+    checkpoints/fold_0/seed_802/checkpoint.pt: 58d36272b6d0dfe79a2fb690de965a41bc05e6553c9d9bd5c05287d88e522959
+    checkpoints/fold_0/seed_803/checkpoint.pt: c1648672231292711c5e1f03fdd7500ae0bd19cd7f6b1ae2b58da34b3791fc00
+    checkpoints/fold_0/seed_804/checkpoint.pt: 8335161c09ae3d6dfcf83745eb23c8baa87ef261ba2a37f6bf334efa43bd46ec
+    checkpoints/fold_0/seed_805/checkpoint.pt: 213eb604480658c5705dc2926930c62f9cf6652160adba47ddd143652cf646cb
+    checkpoints/fold_1/seed_801/checkpoint.pt: 33eef30817b8e2372aa433e024efdc78d21adab4b76907be44ca5f7069198617
+    checkpoints/fold_1/seed_802/checkpoint.pt: 66d592e92f28fc34c39f121ed200434ea3f31fd3ab39169f17ea4fe7b6704b2c
+    checkpoints/fold_1/seed_803/checkpoint.pt: 41e1a8e39a770974f818432c52f8cd0dac53b9176b1551329c845e101703fdef
+    checkpoints/fold_1/seed_804/checkpoint.pt: 4518d07614aa11b608399327569c7bdf852d3ba31d512616366c64e9bccf1c8a
+    checkpoints/fold_1/seed_805/checkpoint.pt: b91bc7f94da58d802a32c6bad80b6906752b3d12c924026d2319eba3be628192
+    checkpoints/fold_2/seed_801/checkpoint.pt: 8ed65598518c6f1befbdff6cf0a502a4c991d77a76915c4835cd473c534ef50c
+    checkpoints/fold_2/seed_802/checkpoint.pt: 58c8a48cc2c1bd3336e3093d47bac6e00bd699b8047b9d666fd4fcf45bada840
+    checkpoints/fold_2/seed_803/checkpoint.pt: a0dd0b8b7d9ef8dcfe1f200612e314c88e74fc8e226ec290de0207e2c8940943
+    checkpoints/fold_2/seed_804/checkpoint.pt: 22ec616ac15abee297eb07cde6d84a3dccd9df73db83769011583e71c9b42714
+    checkpoints/fold_2/seed_805/checkpoint.pt: 11ae0a09a19b5727ac06c9b9dedc3d13022828d7b767c96b4b125d88feb801c5
+    checkpoints/fold_3/seed_801/checkpoint.pt: 7ec2e92b67ec89dd26ff3a1d8a837887eccc4c8c7746df237ade605aac63cae0
+    checkpoints/fold_3/seed_802/checkpoint.pt: 83eb83551a5b41e9477e564b487a1a744edbf54085fbdaea119b9665e487235b
+    checkpoints/fold_3/seed_803/checkpoint.pt: b87344e32d05ed1fa9636028cde68408f367b3e28468872096b4e846bcd59d18
+    checkpoints/fold_3/seed_804/checkpoint.pt: 529b1397f3f11db015e22a2265ab9b7d223ddf387a3e5a3f98d53597a14d317c
+    checkpoints/fold_3/seed_805/checkpoint.pt: c67144e3ebb894cf219bea9c8b3c247c8a34507de701818cf380d542623e753a
+    checkpoints/fold_4/seed_801/checkpoint.pt: 38850e5eb9ec1f8f8ea4884e2ce2b869d1743ed4544311f0112a225e31850d9d
+    checkpoints/fold_4/seed_802/checkpoint.pt: d86a70b48b2cda5a2d66039a50b214dfe1519d8281c07eba610831664376f627
+    checkpoints/fold_4/seed_803/checkpoint.pt: affdd57afeeef24effd7e078e4b566a9d1114b84c04b1415fd347078ccd0c475
+    checkpoints/fold_4/seed_804/checkpoint.pt: 703f611b1a8bccb22db761b7cd18d706d1501450d4c7a82a08c4b2cc8711180d
+    checkpoints/fold_4/seed_805/checkpoint.pt: 0042ea013f950cdeee1554c9b804250d60b63d9bf0823938bf43f8e316e687c9
+    inference.py: 87c1a9e4bfa39fed240e36fa7ff72ff1ddfcaf83ed07374fc51cdb27b4c35c06
+    model-manifest.json: 1bfd8f522cdbe6c730abace923b2d5554ff127404555b7ca6e7829286e8392a5
+    preprocessing/fold_0_standardization.npz: 3946488305333650bb12ed6e7258709eafcad47c2a750da0a15ffef77c63bf23
+    preprocessing/fold_1_standardization.npz: fe299eaf815e78a0fd30bfeb12f6f28db1220b13153f86be713e897d83d5192e
+    preprocessing/fold_2_standardization.npz: b654a5229ae14a9f5f4b4d81b222906079372a18bd54191e6c380a0a0ee6fe96
+    preprocessing/fold_3_standardization.npz: 40fcd1d54ee23a00783b11170f89a62131565a8a15665a57b16db2e70c1e10bc
+    preprocessing/fold_4_standardization.npz: f15de55052e2c8621f1430e8aa9d162a15f4bd9fd9840a07d82f86bb247ae361
+    provenance/cell_artifact_index.pathoalign_dep20.csv: ef88785ed18a5f6e76c72b920cd61067bdc91a7d4566c8a2f4a864d423aa4a53
+    provenance/source-cell-manifests/fold_0/seed_801/cell_manifest.json: f4b4bf134f77817b1ab31e226080e7b13a8eff533a658a5794b4dabf81f49326
+    provenance/source-cell-manifests/fold_0/seed_802/cell_manifest.json: 0252737f39c405be05eb08fae286d76d334c5696e0a75113a8b9c62696d8efbd
+    provenance/source-cell-manifests/fold_0/seed_803/cell_manifest.json: 4cd6093b2dcdcfab8e585bb6e715c07d4a62cb516b48e8dc31c0ae49776441bd
+    provenance/source-cell-manifests/fold_0/seed_804/cell_manifest.json: 37eed2f673ba1cb1b3b3b1f15e31adaf5c1c5f0318cd75ec34ecb9fa287fc50d
+    provenance/source-cell-manifests/fold_0/seed_805/cell_manifest.json: 95d682fc5c6bed66edd28e946a3a5bd4c6d311882628c793b7b454a3f825fcda
+    provenance/source-cell-manifests/fold_1/seed_801/cell_manifest.json: 1abdd7db31874b11a05281cfe451d5312c994d45fbcdb54ca6b393771dccc996
+    provenance/source-cell-manifests/fold_1/seed_802/cell_manifest.json: eaae442d4df2fcd151570b746a7c0102b87ae24af1277c337415beedbc6d77de
+    provenance/source-cell-manifests/fold_1/seed_803/cell_manifest.json: 744a65c2451f6075944fe65d36d9ff6797cf4518c3e912978c500cac7a05ca7a
+    provenance/source-cell-manifests/fold_1/seed_804/cell_manifest.json: 08178e58c49131facff16d4b4d982baab98b6c223b24e9a31b62873025afb093
+    provenance/source-cell-manifests/fold_1/seed_805/cell_manifest.json: fb39004e4840373f2a3f0d6ba859e3408aa811770452952132a5eb75e9d76ed2
+    provenance/source-cell-manifests/fold_2/seed_801/cell_manifest.json: 07a31e0bfaab97e47047385d8ebde8e8808962c4b37526d7b931b96eedf1b961
+    provenance/source-cell-manifests/fold_2/seed_802/cell_manifest.json: 49f66cd5ef798feedf6e4f07bf0bc089134672ff098881207218cfa4e800fd2d
+    provenance/source-cell-manifests/fold_2/seed_803/cell_manifest.json: d6395d3dbf8c5d08316105c6d218663ab0809e6fd17c5ce21cd2e022bde2d411
+    provenance/source-cell-manifests/fold_2/seed_804/cell_manifest.json: cb9b43c250ae8e2bde43a6ae0f8b214c479e8134e8848f6817c3ed5c5f9f83a0
+    provenance/source-cell-manifests/fold_2/seed_805/cell_manifest.json: 8d2116be3944dab078d37963e88c93a6d4c3f5032a1d158ecae971309caf52ad
+    provenance/source-cell-manifests/fold_3/seed_801/cell_manifest.json: eb6f47a65ba51b07bee693fad7800cf7dcc25b1fb8499e3dbd4ef961c4bfe987
+    provenance/source-cell-manifests/fold_3/seed_802/cell_manifest.json: bbb912a2e7c947917e49e52ee27a6458403209cde2f73f180d9155a9fa8b46a8
+    provenance/source-cell-manifests/fold_3/seed_803/cell_manifest.json: 620362461c5037cff8f9eedaaab73cbf7dc8e1ca280e89fab1913effe49b3947
+    provenance/source-cell-manifests/fold_3/seed_804/cell_manifest.json: 9d80987bf024b76882de67890f3e81b307d0d2e14876832c6c1c45a3b8a3a966
+    provenance/source-cell-manifests/fold_3/seed_805/cell_manifest.json: cc636628a6962855928f6f2544792937e5ee6e7cc0a19d324741517fb7c2097b
+    provenance/source-cell-manifests/fold_4/seed_801/cell_manifest.json: 5459b35754b080c7d44ef578f21de9fbf93f157a413f492f9659e568b4710f6d
+    provenance/source-cell-manifests/fold_4/seed_802/cell_manifest.json: a29a642dddc686747119477f90fc8aab81d56a4c15b13796937408b41e6fcb4c
+    provenance/source-cell-manifests/fold_4/seed_803/cell_manifest.json: 777b4c16b9a912ebeb32f43fb669466e7eb7072aa63b9939df305397a91b3206
+    provenance/source-cell-manifests/fold_4/seed_804/cell_manifest.json: 7c83e2e094671e4e52887afd284044ec36b4a14924758b8499a1e31436f079dc
+    provenance/source-cell-manifests/fold_4/seed_805/cell_manifest.json: c018d9dfeba623e0e0ea2f7033663a0968b195b5fcf4446a37a28b188baab692
+    scorpion_pathoalign.py: 36855b70b38fc03ea4a798b58c85e08bd6ab7041e30f069b0837cd49fd168d65
+  created_at: '2026-08-13T17:17:02Z'
+  hub_created_at: '2026-08-13T17:16:03Z'
+  last_verified_at: '2026-08-14T17:39:38Z'
+  hf_revision: b5de3cf9c062cb0d5623628165098c26923309c7
+  remote_verification:
+    method: Immutable-revision Git/LFS checkout plus checksums.sha256 verification
+    checksum_entries: 61
+    checkpoints_verified: 25
+    preprocessing_files_verified: 5
+    verified_at: '2026-08-14T17:39:38Z'
   blocker: null
 - id: panda-phikon-wsi-spatial-features-300-v1
   research_line: PANDA / Phikon coordinate-bearing representations

@@ -1,0 +1,23 @@
+schema_version: huggingface-release-spec/v1
+id: panf-model-scorpion-capacity-matched-v1
+repo_id: MatthewVaishnav/paired-acquisition-neural-factorization
+repo_type: model
+visibility: public
+github_repo: matthewvaishnav/computational-pathology-research
+github_commit: fb1b1a16a454d0b08f3eba72844478d36f0fbd3a
+training_source_commit: 0adea50f1ef22865969109f1834a3c175e3f8b43
+card: docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
+source_paths:
+  - docs/releases/huggingface/paired-acquisition-neural-factorization/README.md
+  - docs/releases/huggingface/paired-acquisition-neural-factorization/LICENSE
+  - src/models/scorpion_pathoalign.py
+  - tools/huggingface/panf_model_inference.py
+external_bundle:
+  schema_version: panf-model-transfer-bundle/v1
+  expected_checkpoints: 25
+  expected_preprocessing_files: 5
+  manifest: model-manifest.json
+commit_message: Release registered PA-NF SCORPION checkpoint family v1
+tag: panf-model-scorpion-capacity-matched-v1
+blocked: false
+blocker: null

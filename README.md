@@ -54,6 +54,18 @@ record.
 - [Retrospective release audit](docs/releases/huggingface-retrospective-audit-20260812.md)
 - [Machine-readable release registry](docs/releases/huggingface-release-registry.yaml)
 - [Fail-closed publishing and checksum tooling](tools/huggingface/README.md)
+- [Public PA-NF evidence release](https://huggingface.co/datasets/MatthewVaishnav/paired-acquisition-factorization-evidence)
+  at immutable revision `a9853bd32e3b446a97608002f7e5ea12f68f88e1`
+- [Public PA-NF model release](https://huggingface.co/MatthewVaishnav/paired-acquisition-neural-factorization)
+  at immutable revision `b5de3cf9c062cb0d5623628165098c26923309c7`
+
+The model release is the complete registered 25-checkpoint SCORPION
+`pathoalign_dep20` family plus five fold-specific standardizers, exact model and
+inference code, and provenance manifests. It consumes raw 768-dimensional
+frozen `facebook/dinov2-base` features under the documented fold-specific input
+contract; it does not accept raw pathology images. The separate evidence
+release carries registered metrics, analyses, manifests, and retained negative
+results.
 
 A registry entry marked `prepared` or `deferred` is not a released Hub
 artifact. Public/private status and immutable HF revisions are recorded only

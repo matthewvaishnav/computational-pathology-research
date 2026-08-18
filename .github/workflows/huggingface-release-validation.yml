@@ -6,6 +6,7 @@ on:
       - "docs/releases/**"
       - "tools/huggingface/**"
       - "tests/tools/test_huggingface_release.py"
+      - "tests/tools/test_panf_model_bundle.py"
       - ".github/workflows/huggingface-release-validation.yml"
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - "docs/releases/**"
       - "tools/huggingface/**"
       - "tests/tools/test_huggingface_release.py"
+      - "tests/tools/test_panf_model_bundle.py"
 
 permissions:
   contents: read
@@ -34,17 +36,18 @@ jobs:
 
       - name: Format and lint
         run: |
-          black --check tools/huggingface/release.py tests/tools/test_huggingface_release.py
-          ruff check tools/huggingface/release.py tests/tools/test_huggingface_release.py
+          black --check tools/huggingface/release.py tools/huggingface/panf_model_bundle.py tools/huggingface/panf_model_inference.py tests/tools/test_huggingface_release.py tests/tools/test_panf_model_bundle.py
+          ruff check tools/huggingface/release.py tools/huggingface/panf_model_bundle.py tools/huggingface/panf_model_inference.py tests/tools/test_huggingface_release.py tests/tools/test_panf_model_bundle.py
 
       - name: Unit tests
-        run: pytest tests/tools/test_huggingface_release.py -q -o addopts=''
+        run: pytest tests/tools/test_huggingface_release.py tests/tools/test_panf_model_bundle.py -q -o addopts=''
 
       - name: Registry and card validation
         run: |
           python tools/huggingface/release.py validate-registry docs/releases/huggingface-release-registry.yaml
           python tools/huggingface/release.py validate-card docs/releases/huggingface/paired-acquisition-factorization-evidence/README.md --type dataset
           python tools/huggingface/release.py validate-card docs/releases/huggingface/panda-phikon-wsi-spatial-features/README.md --type dataset
+          python tools/huggingface/release.py validate-card docs/releases/huggingface/paired-acquisition-neural-factorization/README.md --type model
 
       - name: Public evidence release dry run
         run: |
