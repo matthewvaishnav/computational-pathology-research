@@ -1,8 +1,7 @@
 {
-  "title": "Accountable Neural Aggregation in Computational Pathology: From Paired-Acquisition Representations to Whole-Slide and Institutional Learning",
-  "upload_type": "publication",
-  "publication_type": "preprint",
-  "description": "A program-level foundations preprint spanning representation formation, whole-slide aggregation, and institutional aggregation in computational pathology. It covers Paired-Acquisition Neural Factorization, TransnnMIL, PathologyFL, FAIR-WEIGHTS-H, benchmark studies, and claim-bound provenance. Architecture, empirical evidence, pending validation, negative results, and prohibited interpretations are separated explicitly. The manuscript does not claim clinical utility, deployment readiness, complete scanner invariance, or validated superiority for research lines whose controlled evaluations remain pending.",
+  "title": "Computational Pathology Research",
+  "upload_type": "software",
+  "description": "Research software, reproducible experiments, evidence packages, and claim-bound provenance for a computational pathology research program spanning Paired-Acquisition Neural Factorization (PA-NF), whole-slide aggregation including TransnnMIL and WSI-NCA, and institutional aggregation including PathologyFL and FAIR-WEIGHTS-H. The repository distinguishes promoted evidence, negative results, pending validation, and unsupported interpretations. It is research software and is not validated for clinical diagnosis, treatment decisions, or patient care.",
   "creators": [
     {
       "name": "Vaishnav, Matthew",
@@ -11,16 +10,17 @@
   ],
   "keywords": [
     "computational pathology",
-    "neural aggregation",
+    "digital pathology",
+    "whole-slide imaging",
     "paired acquisition",
     "multiple-instance learning",
     "federated learning",
     "representation learning",
+    "reproducible research",
     "scientific provenance"
   ],
-  "license": "MIT",
+  "license": "mit",
   "access_right": "open",
-  "version": "1.0.0",
   "language": "eng",
   "related_identifiers": [
     {
