@@ -1,94 +1,29 @@
-\section{Level III: PathologyFL}
+\section{Stage III: multi-institutional learning with PathologyFL}
 \input{figures/figure4_pathologyfl_architecture}
 
-The third aggregation level is institutional aggregation: how multi-institution
-updates, validation priorities, contribution signals, and safety constraints are
-aggregated into a collaborative model. The program's contribution here is
-PathologyFL, a pathology-specific federated-learning research framework, and
-FAIR-WEIGHTS-H, an auditable hybrid institutional-weighting protocol.
-Pathology-specific federated and decentralized learning has prior art
-(HistoFL \cite{lu2022histofl}, swarm learning); PathologyFL is my specific
-framework integration with monitoring, Byzantine detection, secure aggregation,
-and FAIR-WEIGHTS-H weighting.
+The third stage of PA-NF studies how site-level information is aggregated. Standard FedAvg assigns influence in proportion to sample count \cite{mcmahan2017fedavg}; this is appropriate only when sample volume is a reasonable proxy for the reliability and task alignment of a client's update. PathologyFL is the custom federated computational pathology framework developed to test that assumption and alternatives to it.
 
-\subsection{Architecture}
-
-PathologyFL implements a coordinator-client architecture under
-\texttt{src/features/federated/pathology\_fl/}:
-
+\subsection{Framework architecture}
+PathologyFL implements a coordinator/client system with standard and custom aggregation paths. The framework includes:
 \begin{itemize}
-\item \textbf{Coordinator:} a production orchestrator with round lifecycle,
-  client selection, Byzantine filtering, a tamper-evident audit-log hash chain,
-  and versioned checkpoints; a failure handler with timeouts, retries,
-  blacklisting, and recovery; monitoring (Prometheus, TensorBoard, convergence
-  detection, alerts); and a model registry with SHA-256 integrity and rollback.
-\item \textbf{Client:} a production hospital client with local training,
-  differential-privacy integration \cite{abadi2016dp}, gRPC secure
-  communication, and round
-  participation; a local trainer; a resource manager; and a PACS connector.
-\item \textbf{Aggregator:} FedAvg \cite{mcmahan2017fedavg},
-  FedProx \cite{li2020fedprox}, FedAdam, an explicit weighted
-  adapter (for external FAIR-WEIGHTS-H weights), Byzantine-robust aggregation
-  (Krum \cite{blanchard2017krum}, multi-Krum, trimmed mean, median) with a
-  Byzantine detector, a
-  pathology-aware adapter, a secure aggregator \cite{bonawitz2017secure}, and a
-  FAIR-WEIGHTS-H aggregator.
-\item \textbf{Privacy:} differential-privacy engines (including an Opacus-backed
-  DP-SGD engine), privacy budget tracking and accounting, and noise calibration.
-\item \textbf{Monitoring and anomaly detection:} coordinator monitoring plus
-  Byzantine detection and FAIR-WEIGHTS-H per-parameter-group risk and reason
-  codes.
-\item \textbf{Secure communication and aggregation:} TLS-based gRPC with
-  certificate validation and mutual auth, and a TenSEAL-backed secure
-  aggregation protocol that rejects plaintext in the aggregate-only path.
-\item \textbf{Heterogeneity and systems concerns:} FedProx for non-IID
-  proximal terms, async training with staleness weighting and adaptive
-  timeouts, fault tolerance with checkpoint management, network monitoring, and
-  reconnection handling, compression (quantization, sparsification), and
-  client resource awareness.
+\item FedAvg, FedProx \cite{li2020fedprox}, FedAdam, explicit weighted aggregation, and Byzantine-robust variants;
+\item local pathology training with synchronous and asynchronous round execution;
+\item dropout, retry, timeout, checkpoint, and model-registry mechanisms;
+\item differential-privacy integrations and privacy-budget tracking \cite{abadi2016dp};
+\item TLS/gRPC communication and secure-aggregation integrations \cite{bonawitz2017secure};
+\item update anomaly and Byzantine-detection components, including Krum-family and robust summary operators \cite{blanchard2017krum};
+\item compression, resource-awareness, monitoring, and round-level instrumentation; and
+\item FAIR-WEIGHTS-H and dominance-aware weighting paths for experiments in which sample volume and site reliability diverge.
 \end{itemize}
 
-\subsection{Round lifecycle and failure handling}
+The implementation is a research framework rather than a deployed hospital federation. Its scientific role in this paper is to make institutional influence an explicit variable that can be perturbed and measured on pathology-derived data.
 
-The orchestrator runs a deterministic round lifecycle: select clients, distribute
-the global model, wait for updates (with adaptive per-client timeouts), apply
-Byzantine filtering and aggregation, and write a tamper-evident audit-log entry
-whose hash chain covers the round's client set, received updates, and aggregate.
-A client that times out or returns a non-finite update is retried, blacklisted
-after repeated failure, and recovered through a checkpointed round resume. Async
-modes weight stale updates by an exponential staleness decay. This lifecycle is
-what makes dropout and straggler behavior an \emph{accountable} part of the
-framework rather than an implicit assumption: it is tested by the dropout and
-checkpoint-recovery integration tests.
+\subsection{The dominant-site failure model}
+PANDA Phikon slide representations are partitioned into five simulated sites with one largest client. Controlled stress is then applied only to that dominant site's label process while the aggregation rule initially continues to assign influence by sample count. The design isolates a concrete failure mode: the largest site remains the most influential even after its training signal becomes less aligned with the validation objective.
 
-\subsection{Execution validation}
+The first intervention is cross-site blending, which reduces dominant-site authority. It is not universally better than FedAvg: under clean conditions FedAvg retains advantages on some metrics. Under dominant-site corruption, however, cross-site blending significantly improves global QWK at 25\% and 35\% label noise and worst-site QWK at 45\%. This motivates a conditional rather than permanent replacement of FedAvg.
 
-PathologyFL has integration and property tests that exercise five-client
-training, convergence, DP budget enforcement, Byzantine attacks, client dropout
-and checkpoint recovery, weighted aggregation, secure-aggregation homomorphism,
-and compression. A PCam-derived federated smoke run uses real PCam patches split
-into five simulated sites and four weighting strategies.
+\subsection{Dominance-aware detector switching}
+The detector uses only observable validation behavior from the current FedAvg solution: global QWK, worst-site QWK, site-QWK spread, mean absolute ordinal error, and severe-error rate. Thresholds are calibrated from clean runs. The selected rule switches only when at least three diagnostics leave their clean-calibrated ranges, allowing the system to preserve FedAvg when its validation behavior remains normal and to reduce sample-size dominance when several independent indicators degrade.
 
-\subsection{Evidence status}
-
-The framework is \emph{implemented research infrastructure} with validated
-smoke and integration behavior. It is \emph{not} a validated multi-center
-deployment system. Key distinctions are enforced:
-
-\begin{itemize}
-\item implemented infrastructure and tested execution are separate from
-  simulated pathology benchmarks;
-\item no real multi-center clinical deployment exists;
-\item PCam smoke results are plumbing validation, not performance evidence;
-\item centralized frozen-feature CAMELYON17 studies are not described as full
-  federated-learning validation.
-\end{itemize}
-
-\noindent Caveats are documented. The FAIR-WEIGHTS-H aggregator integration
-(\texttt{pathoalign\_fair.py}) has no dedicated test file. Differential-privacy
-(Opacus-backed DP-SGD) and secure-aggregation (TenSEAL-backed) paths require
-optional libraries; in an environment without those libraries the corresponding
-tests skip cleanly and the guarantees are not independently audited. The
-integration, aggregation, production-integration, privacy-regression, and
-FAIR-WEIGHTS-H engine tests pass; the \emph{e2e} federated tests are gated as
-slow and collect cleanly.
+This mechanism is evaluated in two distinct stress families: random dominant-site label corruption and systematic conservative ordinal threshold shift. The second experiment freezes the detector calibrated in the first family and applies it without retuning, providing a direct test of whether the decision rule transfers beyond the stress mechanism on which it was selected.
