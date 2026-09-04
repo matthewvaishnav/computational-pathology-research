@@ -1,65 +1,24 @@
 \section{Discussion}
 
-\subsection{Aggregation choices interact across levels}
+\subsection{PA-NF as a connected pathology system}
+The main contribution of this work is not one isolated model but a pipeline in which acquisition, slide-level, and institutional effects can be studied in sequence. The SCORPION experiments show that same-tissue paired acquisitions can change how scanner information is allocated in a frozen representation. The PANDA experiments then move from representations to slide predictions and simulated multi-site aggregation. CAMELYON17 provides a separate natural center-shift setting in which source influence can be tested against an unseen center. Taken together, these studies support the premise that scanner and site effects are not merely preprocessing concerns: they can interact with later aggregation choices.
 
-Representation formation, whole-slide aggregation, and institutional aggregation
-are not independent engineering problems. A scanner shortcut encoded in patch
-representations can be amplified by a whole-slide attention model and then
-propagated into federated updates. Conversely, an institutional-weighting
-constraint can change which local models contribute and therefore which
-representation artifacts dominate the aggregate. The program treats these
-interactions as the object of study.
+\subsection{What the representation result establishes}
+The strongest representation result is comparator-specific and reproducible across folds: PA-NF has a registered controlled advantage over an equal-capacity two-branch neural control on the SCORPION structured-separation objective. The method reduces linear scanner recoverability in the tissue branch while satisfying the registered retrieval noninferiority requirement and increasing scanner routing to the acquisition branch. Cross-backbone transfer shows that this behavior is not confined to DINOv2.
 
-\subsection{Architecture novelty and superiority are different}
+The canine SCC result is valuable because it prevents that claim from becoming broader than the evidence. Strong centroid/QR and paired-linear corrections can occupy competitive points on the scanner/category/retrieval frontier. PA-NF therefore should not be described as the universally best scanner-removal method. Its demonstrated advantage is the registered SCORPION neural-control comparison together with an explicit factor allocation that remains useful for mechanism studies.
 
-An architecture can be an authored, implemented, and tested contribution even
-when its superiority over matched baselines is unproven or has been withdrawn
-pending repair. TransnnMIL is an implemented multibranch architecture whose
-corrected matched-control evaluation is pending; PA-NF is an implemented paired
-factorization whose corrected empirical value is a negative or mixed result on
-bounded endpoints. Neither conclusion erases the architectural contribution.
+\subsection{Whole-slide modeling is now a real pipeline stage}
+TransnnMIL is no longer a design sketch: it has a verified full-PANDA feature pipeline and an 18-run stabilization study. The most defensible current statement is that the repaired canonical architecture can be trained stably over a broad learning-rate range and produces competitive validation QWK in this setting. A matched architecture-superiority experiment remains necessary before claiming that the TransnnMIL fusion itself beats AttentionMIL, TransMIL, or nnMIL.
 
-\subsection{Simple methods can outperform neural methods on bounded endpoints}
+The negative WSI-NCA PANDA-300 ladder is also informative. Repeated spatial updates did not produce a predictive advantage in that frozen experiment, which argues against promoting spatial recurrence merely because it is architecturally appealing. Future spatial additions to PA-NF should earn their place by improving a controlled pathology endpoint.
 
-On corrected bounded endpoints, simple scanner-removal baselines such as
-centroid/QR and paired linear transforms are strong: they can match or exceed
-neural category and retrieval levels while the neural biological branch can reach
-lower scanner recoverability in some folds. This is a positive methodological
-result: bounded evaluation instruments must include strong simple baselines, and
-a neural method's value may lie in structure (inspectable, bottleneckable,
-swappable branches) rather than in raw endpoint superiority.
+\subsection{Institutional influence is not equivalent to sample volume}
+The strongest institutional result is the detector-transfer experiment. In the clean PANDA regime the detector switches rarely and has near-zero global-QWK cost. Under stronger dominant-site misalignment, the same fixed rule increasingly switches away from sample-size dominance and improves global QWK, macro-F1, and worst-site QWK. The fact that a rule selected under random label-noise stress transfers without retuning to systematic conservative ordinal shift makes the result more informative than a separately optimized detector for each failure mode.
 
-\subsection{Negative results belong in the main text}
+CAMELYON17 independently supports the same conceptual distinction. Sample-proportional weighting is not the best held-out-center policy in either tested feature family, even when the source-trained model fits the source data almost perfectly. These experiments do not prove a universal institutional weighting law, but they demonstrate that source quantity and target generalization can diverge.
 
-The corrected fixed-estimand adjudication found no neural feature-space
-increment; synthetic accessibility did not transport; adversarial center-removal
-did not reduce center leakage. These negative results are reported directly
-because they bound the program's claims and motivate the required next
-experiments (matched TransnnMIL reruns, prospective FAIR-WEIGHTS-H validation).
+\subsection{Pipeline-level implication}
+The common thread is conditional allocation. At the representation stage, scanner-associated information should not simply be deleted if it overlaps with tissue information; it can be routed into an explicit acquisition branch. At the institutional stage, a large site's influence should not simply be removed because it is large; influence can be reduced when multiple validation signals indicate that sample-volume authority has become misaligned with the task. The same design principle appears at two different scales: preserve useful information while changing where and how unreliable variation is allowed to dominate.
 
-\subsection{Explicit branches can remain scientifically useful}
-
-An explicit acquisition or institution branch provides structure --- an
-inspectable representation that can be bottlenecked, constrained, and, with
-verified swap metadata, swapped. Structural difference from a projection
-baseline is real even when empirical superiority is absent, but structural
-difference is not by itself empirical superiority.
-
-\subsection{Shortcut propagation into MIL and FL}
-
-Scanner and center shortcuts can propagate from frozen features into MIL and
-federated models. The cross-level accountability framework makes this checkable
-at every stage, and the provenance system makes the checks reproducible.
-
-\subsection{What requires external validation}
-
-Repaired matched TransnnMIL reruns, prospective and multi-center FAIR-WEIGHTS-H
-validation, real multi-center PathologyFL deployment, and validated Layer-2
-scanner swapping all require external evidence beyond the current corrected
-artifacts.
-
-\subsection{Which components are ready for focused papers}
-
-The publication portfolio identifies the flagship foundations manuscript and
-focused papers for PA-NF, TransnnMIL, PathologyFL/FAIR-WEIGHTS-H, and the
-scientific-audit system, with each paper's evidence maturity stated explicitly.
+This perspective makes PA-NF extensible. New spatial, representation, or optimization systems should enter the flagship pipeline only after they are tested against the existing stages and controls. That keeps the pipeline cumulative without treating every experimental branch as an established contribution.
