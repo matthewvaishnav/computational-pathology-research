@@ -1,13 +1,12 @@
 \begin{equation}
 \begin{aligned}
 \Delta\theta_i^{(t)}
-&= \operatorname{LocalTrain}\!\left(\theta^{(t)},\mathcal{D}_i;E_i,\mu_i,\varepsilon_i,\delta_i\right), \\
+&= \operatorname{LocalTrain}\!\left(\theta^{(t)},\mathcal{D}_i;E_i,\mu_i\right), \\
 a_i^{(t)}
 &= \mathbf{1}\!\left[
 \operatorname{finite}(\Delta\theta_i^{(t)})
 \land \tau_i^{(t)}\le T_i^{(t)}
 \land \neg\operatorname{Byz}_i^{(t)}
-\land \operatorname{Integrity}_i^{(t)}
 \right], \\
 \widetilde w_i^{(t)}
 &= a_i^{(t)}w_i^{(t)}e^{-\gamma\tau_i^{(t)}},
@@ -16,15 +15,9 @@ a_i^{(t)}
 &= \frac{\widetilde w_i^{(t)}}{\sum_{j\in\mathcal{I}_t}\widetilde w_j^{(t)}}, \\
 \theta^{(t+1)}
 &= \theta^{(t)}
-+ \operatorname{SecureAgg}\!\left(
-\left\{\bar w_i^{(t)}\Delta\theta_i^{(t)}\right\}_{i\in\mathcal{I}_t}
-\right), \\
-H_t
-&= \operatorname{SHA256}\!\left(
-H_{t-1}\Vert t\Vert\mathcal{I}_t\Vert
-\{\operatorname{SHA256}(\Delta\theta_i^{(t)})\}_{i\in\mathcal{I}_t}
-\Vert\operatorname{SHA256}(\theta^{(t+1)})
-\right).
++ \sum_{i\in\mathcal{I}_t}\bar w_i^{(t)}\Delta\theta_i^{(t)}.
 \end{aligned}
 \label{eq:pathologyfl}
 \end{equation}
+
+\noindent The institutional weight $w_i^{(t)}$ can instantiate sample-proportional FedAvg, equal-client weighting, or a bounded adaptive policy such as FAIR-WEIGHTS-H. The availability gate $a_i^{(t)}$ captures finite-update, timeout, and robust-aggregation checks, while the exponential term represents optional staleness weighting in asynchronous execution.
