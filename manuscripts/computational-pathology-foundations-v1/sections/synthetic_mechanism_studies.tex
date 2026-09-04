@@ -1,57 +1,16 @@
-\section{Synthetic and mechanism studies}
+\section{Controlled mechanism studies}
 
-Synthetic and controlled mechanism studies are organized by the question they
-test rather than by dataset. Because the latent biological and acquisition
-factors are known in synthetic generators, recovery can be measured rather than
-inferred indirectly. All synthetic claims are kept strictly separate from
-pathology claims.
+Real pathology data do not reveal the true latent biological and acquisition factors. Controlled generators therefore complement the empirical pipeline by making those factors known and allowing recovery to be measured directly. These experiments are used to study mechanism and resource allocation, not to replace real pathology validation.
 
-\subsection{Identifiability}
+\subsection{Observations, paired anchors, and repeated exposure}
+The synthetic program separates three resources: ordinary observations $N_u$, unique paired anchors $N_p$, and repeated paired presentations. Ordinary observations define the task manifold; unique anchors expose more biological locations under acquisition changes; repetition supplies additional optimization signal for already observed interventions.
 
-Synthetic crossed-factor identifiability studies ask when ordinary observations
-and paired interventions jointly control recovery of latent biological and
-acquisition factors, covering observational sample size, unique paired-anchor
-count, factor overlap, linear versus nonlinear mixing, and seed. Crossed-target
-scanner-prototype factorization and unseen-identity representation-geometry
-studies examine factor recovery under crossed targets and held-out identities.
-Finite-sample whitening identifiability audits examine when whitening aids or
-confounds recovery.
+In a matched-budget high-overlap nonlinear study, total paired exposure produced the largest effect. Doubling paired presentations from 6,400 to 12,800 increased the universal biological recovery score by $+0.037357$, with interval $[0.030315,0.043657]$, positive in all ten seed blocks. Under 6,400 presentations, increasing unique anchors from 50 to 200 improved recovery by $+0.017865$ with interval $[0.010560,0.026079]$, while the incremental 100-to-200 gain was only $+0.001578$. The same diminishing-return pattern appeared under the larger presentation budget.
 
-\subsection{Factor allocation and capacity}
+The practical conclusion within this generator is that paired supervision has two separable resources: exposure and diversity. More pair-loss updates matter, but repeatedly observing only a very small anchor set is not equivalent to seeing a broader set of paired biological locations.
 
-Paired-acquisition dimensionality $\times$ cross-covariance factorials (450
-cells) and capacity-matched campaigns (175 fits) probe the separation frontier
-of biological and acquisition branches. The biological-bottleneck capacity
-allocation factorial (status
-\texttt{\seqsplit{complete\_capacity\_gain\_with\_scanner\_tradeoff}}) showed a capacity
-gain with a scanner tradeoff. Routed paired-consensus bottleneck and
-paired-consensus linear-anchor studies test routed and consensus supervision.
-The real paired-scanner bottleneck-allocation validation
-(\texttt{\seqsplit{complete\_mixed\_real\_paired\_scanner\_allocation\_effects}}) transferred
-the capacity question to real paired-scanner data: B64 improved retrieval and
-increased scanner recoverability without a category gain.
+\subsection{Capacity allocation}
+Factorial experiments vary tissue-branch dimensionality and cross-factor regularization to test how capacity moves information between branches. The real canine B32/B64 comparison mirrors one synthetic mechanism: increasing tissue capacity can recover more region identity while also allowing more scanner information through. In the corrected canine experiment, however, that capacity increase does not produce a corresponding descriptive category gain. Synthetic accessibility trends are therefore treated as mechanistic hypotheses rather than as biological conclusions.
 
-\subsection{Task sufficiency}
-
-Task-defined biological-sufficiency benchmarks and task-benchmark
-instrument-power audits measure how much capacity is actually used by a task and
-whether the evaluation instrument has power to detect differences. Minimal and
-whitened biological-bottleneck studies and residual-probe nonlinear-capacity
-calibration examine how representation geometry responds to constrained
-capacity.
-
-\subsection{Synthetic-to-real transport}
-
-Synthetic accessibility effects do not automatically transport to real pathology
-features. The corrected fixed-estimand adjudication established that the
-synthetic width effect did not produce a corrected real category gain:
-\texttt{\seqsplit{synthetic\_accessibility\_effect\_transported}} is false because B64 did
-not improve corrected five-category canine balanced accuracy. Retrieval gain is
-never counted as transport of biological accessibility.
-
-\subsection{Interpretation boundary}
-
-Synthetic results demonstrate mechanism, identifiability, and allocation
-behavior under controlled generators. They are not pathology evidence, do not
-establish clinical utility, and are never used to inflate a real-data claim
-beyond what the corrected real-data artifacts support.
+\subsection{Why synthetic experiments remain separate}
+The controlled generators establish properties of the specified observation models, mixing functions, optimization budgets, and evaluation metrics. They cannot establish scanner-free biology, clinical validity, or universal identifiability in histopathology. Their role in PA-NF is to explain why particular real-data experiments are worth running and to identify variables---pair exposure, anchor diversity, bottleneck width, overlap, and nonlinear mixing---that can be manipulated systematically.
