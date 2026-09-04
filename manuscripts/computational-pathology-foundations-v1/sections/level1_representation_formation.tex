@@ -1,120 +1,61 @@
-\section{Level I: Paired-acquisition representation formation}
+\section{Stage I: paired-acquisition representation learning}
 \input{figures/figure2_pa_nf_architecture}
-\input{figures/figure8_pa_nf_corrected_findings}
-\input{figures/figure9_b32_b64_tradeoff}
 
-The first aggregation level is representation formation: how patch and
-foundation-model representations encode tissue, scanner, stain, acquisition
-workflow, site or center, region identity, and dataset artifacts. The program's
-central design at this level is Paired-Acquisition Neural Factorization
-(PA-NF), which uses \emph{exact same-region paired multi-scanner scans} to train
-an explicit tissue-oriented biological branch and an explicit acquisition
-branch, together with a decoder and paired cross-reconstruction and consistency
-objectives. The program also develops the strong simple baselines, broken-pair
-controls, synthetic identifiability studies, and corrected fixed-estimand
-evaluation that determine what PA-NF does and does not establish.
+The representation stage asks whether matched acquisitions can provide a useful supervisory signal for allocating scanner-associated variation without simply erasing the representation. For a region observed under several scanners, PA-NF learns a tissue-oriented branch $b_{r,s}$ and an acquisition-oriented branch $a_{r,s}$, with crossed reconstruction, same-region consistency, acquisition prediction, dependence control, and variance regularization. Tissue or diagnostic category labels are not required to construct the paired objective.
 
-\subsection{Paired-acquisition design}
+\subsection{Registered SCORPION capacity-matched experiment}
+The primary human paired-scanner experiment uses SCORPION \cite{ryu2023scorpion}: 48 original H\&E slides, ten aligned regions per slide, and five scanner views per region, for 480 biological regions and 2,400 images. The registered capacity-matched campaign contains seven variants, five folds, and five seeds, for 175 completed fits. Its primary comparator is an equal-capacity two-branch neural control without the scanner-routing objectives.
 
-PA-NF is trained on exact same-region pairs: the same biological region imaged
-under multiple scanners. Training pairs a source region under one scanner with
-the same region under another scanner. The biological branch is encouraged to be
-consistent across scanner views of the same region; the acquisition branch is
-driven by scanner identity. A decoder reconstructs the target view from the
-source biological representation and the target acquisition representation
-(crossed reconstruction). Biological variance floors and prototype
-regularization shape the branch geometry. The factorizer reads paired region and
-scanner metadata only; category or biological labels never enter factorizer
-optimization.
+\begin{table*}[t]
+\centering
+\caption{Primary registered SCORPION comparison: PA-NF minus the equal-capacity two-branch neural control. Negative tissue scanner balanced accuracy is favorable; retrieval is judged against the registered 0.02 noninferiority margin.}
+\label{tab:scorpion_primary}
+\small
+\begin{tabular}{lrrl}
+\toprule
+Metric & Mean difference & 95\% fold/slide interval & Result \\
+\midrule
+Tissue scanner balanced accuracy & $-0.3108$ & $[-0.3346,-0.2858]$ & Lower scanner recoverability \\
+Mean same-region top-1 retrieval & $+0.00004$ & $[-0.00009,+0.00026]$ & Noninferior \\
+Mean paired cosine & $+0.03639$ & $[+0.03355,+0.03954]$ & Positive geometry contrast \\
+Worst paired cosine & $+0.03557$ & $[+0.03167,+0.04064]$ & Positive geometry contrast \\
+Acquisition scanner balanced accuracy & $+0.1180$ & $[+0.1003,+0.1358]$ & Stronger explicit scanner routing \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-\subsection{Datasets}
+The key result is the joint pattern: tissue-branch scanner recovery falls substantially relative to the capacity-matched neural control, same-region retrieval remains inside the predefined noninferiority margin, and scanner information becomes more recoverable from the acquisition branch. This supports a controlled comparative advantage on the registered SCORPION structured-separation objective. Because SCORPION does not supply a validated biological-category endpoint for these regions, the result is a representation result rather than a disease-biology claim.
 
-\begin{itemize}
-\item \textbf{SCORPION} \cite{ryu2023scorpion}: 48 original H\&E slides, 480
-  aligned regions, five
-  scanners, and 2{,}400 image patches, under original-slide-blocked folds.
-  SCORPION has no validated biological category labels, so only scanner,
-  retrieval, and geometric endpoints are available.
-\item \textbf{Multi-scanner canine SCC}: a multi-scanner external dataset with
-  seven descriptive tissue categories, evaluated under the corrected fixed
-  five-category estimand (Dermis, Epidermis, Inflamm/Necrosis, SCC, Subcutis;
-  Bone and Cartilage excluded) with biological-sample-blocked folds, fit-only
-  probe standardization, and same-region and same-sample nearest-neighbour
-  exclusion.
-\end{itemize}
+\subsection{Cross-backbone transfer}
+The frozen objective was transferred without backbone-specific tuning across DINOv2-Base, pathology-native Phikon, and ImageNet ResNet50 representations. In the transfer study, PA-NF reduced scanner recoverability in the tissue branch while retaining near-saturated same-region retrieval across all three feature families. Averaging the two unseen feature families within the same 48 SCORPION slides gave a scanner-probe difference of $-0.4019$ with interval $[-0.4145,-0.3895]$. The acquisition branch remained strongly scanner informative. This result shows that the paired objective is not tied to one visual encoder, although the registered DINOv2 capacity-matched campaign remains the primary controlled comparison.
 
-\subsection{Corrected empirical evidence}
+\subsection{Independent multi-scanner canine SCC study}
+The external paired-scanner study uses 44 canine cutaneous squamous-cell-carcinoma biological samples digitized on five scanners. After geometry qualification, 805 complete five-view regions are available. The corrected evaluation fixes five descriptive tissue categories---Dermis, Epidermis, Inflammation/Necrosis, SCC, and Subcutis---and uses biological-sample-blocked folds, fit-only standardization, and same-region/same-sample exclusions in nearest-neighbour candidate pools.
 
-The corrected July 26 forward-valid evidence release supports \emph{partial
-structured separation under the tested conditions}, not pure biological factors,
-complete independence, or clinical utility. In the separately versioned SCORPION
-capacity-matched campaign, the full PA-NF model completed 175/175 registered fits
-and, relative to the equal-capacity two-branch neural control without scanner
-objectives, reduced tissue-branch scanner balanced accuracy by 0.3108 with a
-fold-aware 95\% interval of $[-0.3346,-0.2858]$, while preserving average and
-worst same-region retrieval within the registered 0.02 noninferiority margin and
-retaining strong acquisition-branch scanner information. This is a controlled
-comparative advantage on the registered SCORPION structured-separation objective.
+\begin{table*}[t]
+\centering
+\caption{Corrected five-fold canine SCC representation comparison. Category balanced accuracy is descriptive; lower scanner balanced accuracy and higher retrieval are favorable.}
+\label{tab:canine_corrected}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Representation & Category BA & Scanner BA & Overall retrieval & Worst-pair retrieval \\
+\midrule
+Original frozen features & 0.4439 & 0.8635 & 0.8724 & 0.7613 \\
+Centroid/QR scanner projection & 0.4414 & 0.3278 & 0.9099 & 0.8196 \\
+Paired linear scanner transform & 0.4422 & 0.3687 & 0.9022 & 0.8283 \\
+PCA component removal & 0.3949 & 0.8157 & 0.9197 & 0.8512 \\
+PA-NF tissue branch B32 & 0.4331 & 0.2996 & 0.7192 & 0.5848 \\
+PA-NF tissue branch B64 & 0.4255 & 0.3486 & 0.7707 & 0.6345 \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-A different question is answered by the corrected canine fixed-estimand audit.
-The versioned adjudication (v2, consuming the exact recovered neural artifacts)
-established the current status
-\texttt{\seqsplit{complete\_no\_neural\_feature\_space\_increment\_supported}}. Under the
-corrected five-category estimand, on the recovered B32/B64 cells:
+The canine experiment establishes an important boundary around the SCORPION result. PA-NF B32 attains the lowest mean scanner balanced accuracy in the corrected table, but strong centroid/QR and paired-linear corrections preserve higher retrieval while retaining similar descriptive category accuracy. Under the registered three-axis rule, neither B32 nor B64 establishes a universal neural feature-space increment over every simple baseline. Increasing the tissue bottleneck from 32 to 64 dimensions increases overall retrieval by $+0.0515$ and scanner recoverability by $+0.0489$, while corrected category balanced accuracy changes by $-0.0076$ with an interval crossing zero.
 
-\begin{itemize}
-\item B64 did \emph{not} improve corrected five-category canine category
-  balanced accuracy (B64 minus B32 mean $-0.008$, one positive fold).
-\item B64 \emph{did} increase scanner recoverability (mean $+0.049$, five of
-  five folds) and improve worst-pair and overall region retrieval (mean
-  $+0.050$ and $+0.051$, five of five folds).
-\item No neural feature-space increment over every simple scanner-removal
-  baseline was supported: neither B32 nor B64 achieved a category gain of 0.02
-  over all simple baselines in four of five folds, and both violated the
-  worst-pair retrieval margin.
-\item Simple baselines (centroid/QR, paired linear) are strong: they reach
-  category and retrieval levels the neural branches do not, while the neural
-  biological branch can reach lower scanner recoverability in some folds.
-  Neither a neural increment nor a strict simple-baseline Pareto dominance was
-  established on this canine fixed-estimand comparison.
-\item Synthetic accessibility effects did not transport: the corrected category
-  gain required for transport was not present.
-\end{itemize}
+This is not a contradiction with the SCORPION controlled result. The two experiments use different comparators and endpoints. SCORPION establishes a bounded advantage over an equal-capacity neural control on the registered structured-separation objective; the canine study shows that broader scanner correction has a harder frontier in which strong linear methods remain competitive.
 
-\subsection{Simple baselines and controls}
+\subsection{Pair integrity and information routing}
+Broken-pair controls provide a direct test of whether scanner suppression alone explains the result. Region- and sample-shuffled pairings can reduce scanner probe accuracy as much as, or more than, true same-region pairs, but they degrade same-region agreement and retrieval. Correct pairing therefore constrains what the system preserves rather than merely teaching it to confuse a scanner classifier.
 
-The program treats simple baselines seriously. Centroid/QR scanner-subspace
-projection, PCA scanner-component removal, and paired linear scanner transforms
-are all recomputed from the same frozen arrays under the same candidate pool and
-probe family. Oldstyle centroid/QR is the strongest raw scanner-removal baseline
-(original frozen-feature scanner probe $\approx 0.85$ reduced to
-$\approx 0.20$ at chance in corrected audits). Broken-pair controls preserve
-scanner counts and remain within the training fold while deranging region
-correspondences, isolating the contribution of true pairs.
-
-\subsection{Controlled advantage and bounded negative comparison}
-
-The SCORPION capacity-matched result and the canine fixed-estimand result are not
-contradictory because they test different comparators and endpoints. PA-NF has a
-supported controlled advantage over the equal-capacity neural control on the
-registered SCORPION structured-separation objective. The corrected canine audit,
-however, does not support a stronger claim that the neural representation
-outperforms every simple scanner-removal baseline on corrected category and
-retrieval endpoints.
-
-PA-NF also produces an explicit, inspectable, and decoder-swappable acquisition
-branch and a tissue-oriented branch whose scanner recoverability can be reduced
-and whose structure can be bottlenecked. Centroid/QR is strong at blind removal
-but provides no structural decomposition. The evidence therefore supports a
-bounded comparative claim where the registered control establishes it, while
-retaining the negative result where the stronger simple-baseline comparison does
-not.
-
-\subsection{Layer-2 boundary}
-
-Validated scanner swapping through the decoder (Layer 2) is \emph{not}
-established: verified source-region, target-scanner, and swap-assignment metadata
-are absent. Swap assignments are never inferred from filenames, row order, or
-scanner labels. The missing-metadata schema is a future data-remediation
-specification only. Pixel-space evaluation and clinical interpretation are
-prohibited by evidence scope.
+The explicit acquisition branch is equally important. Scanner information remains strongly recoverable there, so the intended operation is allocation rather than wholesale deletion. The observed separation is partial and estimator-dependent: low linear scanner recoverability is not information-theoretic independence, and same-region retrieval is not a clinical or diagnostic endpoint.
