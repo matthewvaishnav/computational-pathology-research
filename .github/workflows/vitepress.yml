@@ -1,4 +1,4 @@
-name: Publish foundations manuscript
+name: Publish PA-NF flagship manuscript
 
 on:
   push:
@@ -56,10 +56,11 @@ jobs:
           test -s manuscripts/computational-pathology-foundations-v1/arxiv_metadata.md
           test -s manuscripts/computational-pathology-foundations-v1/zenodo_metadata.json
           test -s website/foundations-site/index.html
-          grep -Fq "Accountable Neural Aggregation in Computational Pathology" manuscripts/computational-pathology-foundations-v1/main.tex
-          grep -Fq "Preprint --- 2026-08-06" manuscripts/computational-pathology-foundations-v1/main.tex
-          grep -Fq "Public preprint supplement --- 2026-08-06" manuscripts/computational-pathology-foundations-v1/supplement.tex
-          grep -Fq "accountable-neural-aggregation-in-computational-pathology.pdf" website/foundations-site/index.html
+          grep -Fq "Paired-Acquisition Neural Factorization:" manuscripts/computational-pathology-foundations-v1/main.tex
+          grep -Fq "An End-to-End Computational Pathology Pipeline" manuscripts/computational-pathology-foundations-v1/main.tex
+          grep -Fq "Preprint --- 2026-09-04" manuscripts/computational-pathology-foundations-v1/main.tex
+          grep -Fq "Public preprint supplement --- 2026-09-04" manuscripts/computational-pathology-foundations-v1/supplement.tex
+          grep -Fq "paired-acquisition-neural-factorization-pipeline.pdf" website/foundations-site/index.html
           if grep -Eqi "internal-review draft|internal-review supplement|not for public release|paper temporarily withdrawn|focused manuscript reconstruction" \
             website/foundations-site/index.html \
             manuscripts/computational-pathology-foundations-v1/main.tex \
@@ -74,7 +75,7 @@ jobs:
           cat paper/paired_acquisition_preprint/source_parts/part*.tex > paper/paired_acquisition_preprint/main.tex
           echo "8fe086a4a282c98aafbca6951bf7f57013ae19ef68d38eaf7efc1717387802ba  paper/paired_acquisition_preprint/main.tex" | sha256sum -c -
 
-      - name: Build primary foundations manuscript
+      - name: Build primary PA-NF flagship manuscript
         shell: bash
         run: |
           set -euo pipefail
@@ -85,16 +86,16 @@ jobs:
           test -s supplement.pdf
           main_pages="$(pdfinfo main.pdf | awk '/^Pages:/ {print $2}')"
           supplement_pages="$(pdfinfo supplement.pdf | awk '/^Pages:/ {print $2}')"
-          echo "Foundations pages: ${main_pages}; supplement pages: ${supplement_pages}"
-          test "$main_pages" -ge 12
-          test "$supplement_pages" -eq 3
+          echo "PA-NF flagship pages: ${main_pages}; supplement pages: ${supplement_pages}"
+          test "$main_pages" -ge 10
+          test "$supplement_pages" -ge 2
 
           if grep -Eq "Overfull \\\\hbox|Citation .* undefined|Reference .* undefined|There were undefined references|LaTeX Warning: File .* not found" main.log supplement.log; then
-            echo "Foundations LaTeX quality gate failed"
+            echo "PA-NF LaTeX quality gate failed"
             exit 1
           fi
 
-      - name: Build secondary focused PA-NF manuscript
+      - name: Build focused PA-NF representation manuscript
         shell: bash
         run: |
           set -euo pipefail
@@ -116,21 +117,29 @@ jobs:
           mkdir -p public
           cp website/foundations-site/index.html public/index.html
 
+          # New canonical flagship filenames.
           cp manuscripts/computational-pathology-foundations-v1/main.pdf \
-            public/accountable-neural-aggregation-in-computational-pathology.pdf
+            public/paired-acquisition-neural-factorization-pipeline.pdf
           cp manuscripts/computational-pathology-foundations-v1/supplement.pdf \
-            public/accountable-neural-aggregation-in-computational-pathology-supplement.pdf
+            public/paired-acquisition-neural-factorization-pipeline-supplement.pdf
           (
             cd manuscripts/computational-pathology-foundations-v1
-            zip -r "$GITHUB_WORKSPACE/public/accountable-neural-aggregation-arxiv-source.zip" \
+            zip -r "$GITHUB_WORKSPACE/public/paired-acquisition-neural-factorization-pipeline-arxiv-source.zip" \
               main.tex supplement.tex references.bib sections figures tables \
               -x '*.pdf' '*.aux' '*.bbl' '*.blg' '*.fdb_latexmk' '*.fls' '*.log' '*.out'
           )
           cp manuscripts/computational-pathology-foundations-v1/arxiv_metadata.md \
-            public/foundations-arxiv-metadata.md
+            public/panf-pipeline-arxiv-metadata.md
           cp manuscripts/computational-pathology-foundations-v1/zenodo_metadata.json \
-            public/foundations-zenodo-metadata.json
+            public/panf-pipeline-zenodo-metadata.json
 
+          # Compatibility aliases for previously shared public URLs.
+          cp manuscripts/computational-pathology-foundations-v1/main.pdf \
+            public/accountable-neural-aggregation-in-computational-pathology.pdf
+          cp manuscripts/computational-pathology-foundations-v1/supplement.pdf \
+            public/accountable-neural-aggregation-in-computational-pathology-supplement.pdf
+
+          # Focused representation-only paper remains available separately.
           cp paper/paired_acquisition_preprint/main.pdf public/paired-acquisition-neural-factorization.pdf
           (
             cd paper/paired_acquisition_preprint
@@ -140,21 +149,22 @@ jobs:
           cp paper/paired_acquisition_preprint/zenodo_metadata.json public/pa-nf-zenodo-metadata.json
 
           touch public/.nojekyll
-          primary_sha="$(sha256sum public/accountable-neural-aggregation-in-computational-pathology.pdf | awk '{print $1}')"
-          supplement_sha="$(sha256sum public/accountable-neural-aggregation-in-computational-pathology-supplement.pdf | awk '{print $1}')"
+          primary_sha="$(sha256sum public/paired-acquisition-neural-factorization-pipeline.pdf | awk '{print $1}')"
+          supplement_sha="$(sha256sum public/paired-acquisition-neural-factorization-pipeline-supplement.pdf | awk '{print $1}')"
           secondary_sha="$(sha256sum public/paired-acquisition-neural-factorization.pdf | awk '{print $1}')"
-          source_sha="$(sha256sum public/accountable-neural-aggregation-arxiv-source.zip | awk '{print $1}')"
+          source_sha="$(sha256sum public/paired-acquisition-neural-factorization-pipeline-arxiv-source.zip | awk '{print $1}')"
           cat > public/publication-status.json <<JSON
           {
-            "primary_paper": "Accountable Neural Aggregation in Computational Pathology: From Paired-Acquisition Representations to Whole-Slide and Institutional Learning",
-            "primary_status": "public_foundations_preprint",
+            "primary_paper": "Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline",
+            "primary_status": "public_flagship_preprint",
             "source_commit": "${GITHUB_SHA}",
-            "primary_pdf": "accountable-neural-aggregation-in-computational-pathology.pdf",
+            "primary_pdf": "paired-acquisition-neural-factorization-pipeline.pdf",
             "primary_pdf_sha256": "${primary_sha}",
-            "supplement": "accountable-neural-aggregation-in-computational-pathology-supplement.pdf",
+            "supplement": "paired-acquisition-neural-factorization-pipeline-supplement.pdf",
             "supplement_sha256": "${supplement_sha}",
-            "primary_source": "accountable-neural-aggregation-arxiv-source.zip",
+            "primary_source": "paired-acquisition-neural-factorization-pipeline-arxiv-source.zip",
             "primary_source_sha256": "${source_sha}",
+            "legacy_pdf_alias": "accountable-neural-aggregation-in-computational-pathology.pdf",
             "secondary_paper": "Paired-Acquisition Neural Factorization for Computational Pathology",
             "secondary_pdf": "paired-acquisition-neural-factorization.pdf",
             "secondary_pdf_sha256": "${secondary_sha}",
@@ -165,7 +175,7 @@ jobs:
       - name: Upload publication artifact
         uses: actions/upload-artifact@v4
         with:
-          name: computational-pathology-foundations-preprint
+          name: paired-acquisition-neural-factorization-pipeline-preprint
           path: public
           retention-days: 30
 
