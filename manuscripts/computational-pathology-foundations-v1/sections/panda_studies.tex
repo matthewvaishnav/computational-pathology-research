@@ -1,52 +1,57 @@
-\section{PANDA institutional and ordinal studies}
+\section{PANDA whole-slide and institutional results}
 
-PANDA (Prostate cANcer graDe Assessment) \cite{bulten2022panda} provides the
-whole-slide ordinal
-grading benchmark (ISUP 0--5, quadratic-weighted kappa as the primary metric)
-and the substrate for institutional-aggregation stress experiments. The
-program's PANDA studies are organized into feature-bag and slide aggregation,
-ordinal grading, institutional weighting, dominant-site stress, and corruption
-and label-shift experiments.
+PANDA \cite{bulten2022panda} connects the whole-slide and institutional stages of PA-NF. The same 10,611-slide readable Phikon cache supports slide-level ISUP grading, model aggregation studies, dominant-site stress, and detector-transfer experiments.
 
-\subsection{Feature bags and slide aggregation}
+\subsection{Whole-slide model hierarchy}
+The slide-level hierarchy shows the gain from learned aggregation over a simple pooled baseline in this feature setting. Mean-pooled Phikon plus an MLP reached QWK 0.7274; gated AttentionMIL reached 0.8100; tuned TransnnMIL runs reached 0.8155, 0.8225, and 0.8086. The separate 18-run stabilization grid is reported in Section~\ref{tab:transnnmil_stability}. These values establish a working and stable custom whole-slide architecture, while a definitive architecture-superiority claim awaits a fully matched comparison against all MIL controls.
 
-A verified Phikon feature-bag manifest covers 10{,}611 readable slide feature
-files (3 unreadable files dropped; 8{,}488 train and 2{,}123 validation rows).
-Slide-level baselines are mean-pooled Phikon + MLP (QWK 0.7274) and gated
-AttentionMIL (QWK 0.8100). The repaired TransnnMIL canonical model reaches
-best-validation QWK 0.8155 (tuned seed), with repeated seeds 0.8225 and 0.8086,
-and an 18-run stability grid over learning rates and seeds spanning
-$\approx$0.812--0.826. \emph{These are preliminary, not matched-controlled
-superiority results}; historical fusion and topology values are withdrawn.
+\subsection{Dominant-site label-noise stress}
+The full-cache institutional experiment uses five simulated sites and 15 seeds. Label noise is applied only to the largest site at 0\%, 25\%, 35\%, and 45\% corruption. Cross-site blending is intentionally not assumed to be universally preferable: in the clean regime, FedAvg retains an advantage on some site-level metrics. Under corruption, however, reducing dominant-site authority becomes beneficial.
 
-\subsection{Institutional weighting}
+The tuned observable detector requires at least three FedAvg validation diagnostics to leave their clean-calibrated ranges. This reduced the clean false-switch rate from 33.3\% for the initial detector to 6.7\%, while trigger rates remained 86.7\%, 86.7\%, and 93.3\% at 25\%, 35\%, and 45\% corruption respectively.
 
-FAIR-WEIGHTS-H, cross-site contribution blends, and FedAvg are compared on
-PANDA-derived simulated federations. FedAvg is strongest in the clean regime;
-contribution-aware blends are best at 25\% dominant-site label noise; results
-are mixed at higher noise. These are simulated-site, cached-feature experiments
-over synthetic institutional partitions, not real hospital federations.
+\begin{table*}[t]
+\centering
+\caption{Tuned dominance-aware detector on the full readable PANDA feature cache across 15 seeds. Deltas are detector-switch minus FedAvg.}
+\label{tab:panda_detector}
+\small
+\begin{tabular}{rllrr}
+\toprule
+Dominant-site corruption & Metric & FedAvg mean & Detector mean & Delta (95\% interval) \\
+\midrule
+0\% & Global QWK & 0.720137 & 0.720262 & $+0.000126\;[-0.000144,0.000395]$ \\
+25\% & Global QWK & 0.694833 & 0.702842 & $+0.008009\;[0.001345,0.014672]$ \\
+35\% & Global QWK & 0.689265 & 0.696747 & $+0.007482\;[0.003919,0.011046]$ \\
+45\% & Worst-site QWK & 0.633666 & 0.643379 & $+0.009713\;[-0.000257,0.019683]$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-\subsection{Dominant-site stress, ordinal shift, and detector behavior}
+The result is conditional rather than universal: the detector is near-neutral when FedAvg remains well behaved and produces statistically positive global-QWK gains at 25\% and 35\% dominant-site corruption.
 
-Simulated dominant-site label-flip corruption (0--45\%) over five simulated
-sites tests when sample-volume dominance becomes unsafe under controlled
-corruption. Ordinal-harm-aware analysis examines grading-shift failures. A
-tuned dominance detector reduces clean false-switch from 33.3\% to 6.7\% and
-shows significant global-QWK gains at 25\%/35\% noise over 15 seeds; detector
-transfer from label-noise calibration to ordinal threshold shift and detector
-ablation are documented.
+\subsection{Transfer to systematic ordinal threshold shift}
+A stronger test freezes the detector selected under random dominant-site label noise and applies it without retuning to conservative ordinal threshold shift. This changes the failure mechanism from stochastic label corruption to a systematic shift in ordinal grading thresholds.
 
-\subsection{Centralized versus federated}
+\begin{table*}[t]
+\centering
+\caption{Fixed detector transfer from label-noise calibration to conservative ordinal threshold shift. Deltas are detector-switch minus the clean-strategy baseline.}
+\label{tab:panda_detector_transfer}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Shift & Trigger rate & Global QWK $\Delta$ & Macro-F1 $\Delta$ & Worst-site QWK $\Delta$ \\
+\midrule
+0\% & 13.3\% & $-0.00025$ & $+0.00009$ & $+0.00151$ \\
+25\% & 33.3\% & $+0.00129$ & $+0.00290$ & $+0.00353$ \\
+35\% & 60.0\% & $+0.00542$ & $+0.00838$ & $+0.00991$ \\
+45\% & 73.3\% & $+0.01053$ & $+0.01512$ & $+0.01290$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-A centralized-vs-federated comparison on the 1{,}000- and 3{,}000-slide Phikon
-caches shows centralized $>$ FedAvg $>$ local-only ordering (e.g., global QWK
-0.6949 vs 0.6659 vs 0.6075 at 3{,}000 slides). This is simulated-site,
-cached-feature evidence only.
+At 35\% shift, the 95\% intervals are $[0.00062,0.01022]$ for global QWK, $[0.00272,0.01405]$ for macro-F1, and $[0.00169,0.01813]$ for worst-site QWK. At 45\% shift, the corresponding intervals are $[0.00239,0.01866]$, $[0.00819,0.02204]$, and $[0.00547,0.02034]$. The fixed detector therefore transfers across stress mechanisms at the stronger shift levels without being tuned on the transfer condition.
 
-\subsection{Patient-mapping and evaluation limitations}
+Leave-one-diagnostic-family ablation and a 36-setting calibration-neighbourhood sweep further test whether the result depends on one exact feature or one exact threshold choice. Removing the most frequent diagnostic family retains positive mean 35/45-shift deltas, and 29 of 36 nearby detector settings preserve low clean switching together with positive 35\%/45\% gains across the three headline metrics.
 
-PANDA provides slide-level ISUP grades. The caches are mean-pooled slide
-vectors; sites are synthetic splits over cached feature subsets and do not
-correspond to a real hospital federation. No patient-level endpoint, real
-hospital mapping, or clinical validity is claimed.
+\subsection{Centralized, federated, and local-only ordering}
+A separate cached-feature comparison provides context for the cost of federation. On the 3,000-slide PANDA subset, global QWK followed the ordering centralized $>$ FedAvg $>$ local-only, with values 0.6949, 0.6659, and 0.6075 respectively. This is a simulated-site feature-level experiment rather than a claim about real hospital deployment, but it establishes that the PathologyFL experiments operate in a regime where institutional aggregation materially affects predictive performance.
