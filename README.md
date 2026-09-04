@@ -1,116 +1,210 @@
-# Computational Pathology Research
+# Computational Pathology Research Pipeline
 
-Independent research program spanning representation learning, whole-slide neural aggregation, institutional aggregation, and scientific provenance in computational pathology.
+An end-to-end computational pathology research system designed and engineered by **Matthew Vaishnav** for representation learning, whole-slide modeling, spatial tissue reasoning, scanner/site-effect analysis, and multi-institutional learning.
 
-This repository is the **program-level hub and evidence ledger**. Distinct methods are being maintained or extracted as standalone repositories so that each contribution has its own implementation, tests, experiments, and claim boundary without losing the cross-project research narrative.
+This repository is the central research pipeline: data preparation, pathology feature extraction, model development, controlled benchmarking, whole-slide aggregation, federated experimentation, result analysis, and release tooling live within one connected system rather than as isolated notebook experiments.
 
-## Primary public preprint
+**Research only. Not clinical or diagnostic software.**
 
-**Accountable Neural Aggregation in Computational Pathology: From Paired-Acquisition Representations to Whole-Slide and Institutional Learning** is the program-level foundations manuscript.
+## Pipeline at a glance
 
-- [Open the primary paper PDF directly](https://matthewvaishnav.github.io/computational-pathology-research/accountable-neural-aggregation-in-computational-pathology.pdf)
-- [Open the supplement](https://matthewvaishnav.github.io/computational-pathology-research/accountable-neural-aggregation-in-computational-pathology-supplement.pdf)
-- [Download the primary arXiv source package](https://matthewvaishnav.github.io/computational-pathology-research/accountable-neural-aggregation-arxiv-source.zip)
-- [Read the manuscript source and release metadata](manuscripts/computational-pathology-foundations-v1/README.md)
-- [Read the authoritative claim boundary](CLAIM_BOUNDARY.md)
+```text
+Public / paired-acquisition pathology data
+                │
+                ▼
+      preprocessing + data contracts
+                │
+                ▼
+   pathology foundation-model features
+      (Phikon, DINOv2, other encoders)
+                │
+        ┌───────┴────────┐
+        ▼                ▼
+representation       whole-slide learning
+learning              / MIL aggregation
+(PA-NF)               (TransnnMIL + baselines)
+        │                │
+        └───────┬────────┘
+                ▼
+      spatial / tissue modeling
+   (WSI-NCA / factorized dynamics)
+                │
+                ▼
+      scanner + site-signal studies
+                │
+                ▼
+   multi-institutional learning
+(PathologyFL + FAIR-WEIGHTS-H)
+                │
+                ▼
+ experiment, reproducibility, release,
+      and scientific tooling
+```
 
-The root GitHub Pages URL opens the primary PDF directly.
+The pipeline is built around pretrained pathology/general-purpose encoders where appropriate; the surrounding research architecture, methods, training/evaluation code, aggregation systems, federated infrastructure, experiment machinery, and scientific tooling are developed in this program.
 
-## Research lines
+## Major research systems
 
-| Research line | Repository / status | Current evidence boundary |
-|---|---|---|
-| **Paired-Acquisition Neural Factorization (PA-NF)** | Study-specific repositories already split; reusable method extraction planned | Registered SCORPION capacity-matched campaign establishes a controlled comparative advantage over the equal-capacity two-branch neural control on the structured-separation objective. The corrected canine fixed-estimand audit does **not** establish an additional neural feature-space increment over every strong simple scanner-removal baseline. |
-| **TransnnMIL** | Standalone repository extraction prepared | Authored multibranch whole-slide architecture is implemented; historical fusion/topology scores remain withdrawn pending repaired matched reruns. |
-| **PathologyFL** | Standalone repository extraction prepared | Pathology-specific federated-learning research infrastructure is implemented and integration/smoke tested; this is not a real multi-center deployment validation. |
-| **FAIR-WEIGHTS-H** | Currently inside PathologyFL; standalone extraction remains optional | Auditable hybrid institutional-weighting protocol with implemented stability/safety mechanisms; universal fairness or performance superiority is not claimed. |
-| **WSI-NCA / Factorized Tissue Dynamics** | Experimental branch only | Architecture research remains pre-pathology-validation and is intentionally not promoted as an established research line yet. |
-| **Scientific provenance** | Remains in this hub | Immutable evidence packages, claim ledgers, hostile review, exact artifact recovery, and fail-closed validation. |
+### TransnnMIL — whole-slide neural aggregation
 
-## PA-NF: what is actually established
+TransnnMIL is the custom whole-slide multiple-instance learning architecture developed in this project. It explores combinations of:
 
-Paired-Acquisition Neural Factorization uses matched acquisitions of the same tissue region to learn a tissue-oriented branch and an explicit acquisition branch.
+- global transformer-style attention over patch embeddings;
+- local diagnostic-region reasoning;
+- hierarchical spatial aggregation;
+- topology-aware tissue modeling;
+- graph-inspired neighborhood structure;
+- branch-token fusion and matched fusion controls;
+- adaptive pruning and efficiency experiments.
 
-The separately versioned SCORPION capacity-matched campaign completed all **175/175 registered fits**. Against an equal-capacity two-branch neural control without scanner objectives, PA-NF reduced tissue-branch scanner balanced accuracy by **0.3108** with a fold-aware 95% interval of **[-0.3346, -0.2858]**, while preserving average and worst same-region retrieval within the registered **0.02 noninferiority margin** and retaining strong acquisition-branch scanner information. This is a supported **controlled comparative advantage on the registered SCORPION structured-separation objective**.
+The PANDA pipeline supports slide-level Phikon feature bags and comparisons against mean pooling, gated AttentionMIL, TransMIL-style models, nnMIL-style baselines, and related MIL controls.
 
-The corrected canine fixed-estimand audit answers a different question. On that comparison, PA-NF B32/B64 did not establish a feature-space increment over the strongest simple centroid/QR and paired-linear scanner-removal baselines. Increasing the tissue bottleneck from 32 to 64 dimensions increased retrieval and scanner recoverability without a supported corrected-category gain.
+- [TransnnMIL v2 architecture](docs/models/transnnmil-v2.md)
+- [TransnnMIL implementation](src/models/transnnmil/)
+- [PANDA stabilization results](docs/results/panda-transnnmil-stability.md)
 
-These results are complementary rather than contradictory: a bounded controlled advantage is established where the registered SCORPION comparator supports it, while a broader claim of superiority over every simple scanner-removal baseline is not supported by the corrected canine experiment.
+### Paired-Acquisition Neural Factorization (PA-NF) — representation learning across scanners
 
-The results support partial structured separation under tested protocols. They do not establish pure biological factors, complete scanner invariance, diagnostic improvement, clinical utility, deployment readiness, or universal superiority over all harmonization methods.
+PA-NF uses matched acquisitions of the same tissue region to learn separate tissue-oriented and acquisition-oriented representations. The research line studies what can be separated when the same biological material is observed through multiple scanners rather than relying only on unpaired domain labels.
 
-## Study-specific PA-NF repositories
+The program includes SCORPION paired-acquisition experiments, an external canine SCC study, allocation experiments, trained model releases, and frozen-feature experiments using DINOv2 representations.
 
 - [SCORPION paired-acquisition study](https://github.com/matthewvaishnav/paired-acquisition-factorization-scorpion)
 - [External canine SCC study](https://github.com/matthewvaishnav/paired-acquisition-factorization-caninescc)
 - [Pair-repeat allocation study](https://github.com/matthewvaishnav/paired-acquisition-factorization-allocation)
+- [PA-NF model release](https://huggingface.co/MatthewVaishnav/paired-acquisition-neural-factorization)
+- [PA-NF evidence release](https://huggingface.co/datasets/MatthewVaishnav/paired-acquisition-factorization-evidence)
 
-## Hugging Face release layer
+### WSI-NCA / Factorized Tissue Dynamics — learned tissue-state evolution
 
-Hugging Face is used only for curated, versioned scientific objects; GitHub
-remains the authoritative laboratory, engineering, evidence, and claim-history
-record.
+WSI-NCA is the spatial modeling line built around learned local update rules over whole-slide tissue representations. Instead of treating a slide as an unordered bag alone, this line investigates whether local state transitions and spatial neighborhoods can model tissue structure and multi-step interactions.
 
-- [Retrospective release audit](docs/releases/huggingface-retrospective-audit-20260812.md)
-- [Machine-readable release registry](docs/releases/huggingface-release-registry.yaml)
-- [Fail-closed publishing and checksum tooling](tools/huggingface/README.md)
-- [Public PA-NF evidence release](https://huggingface.co/datasets/MatthewVaishnav/paired-acquisition-factorization-evidence)
-  at immutable revision `a9853bd32e3b446a97608002f7e5ea12f68f88e1`
-- [Public PA-NF model release](https://huggingface.co/MatthewVaishnav/paired-acquisition-neural-factorization)
-  at immutable revision `b5de3cf9c062cb0d5623628165098c26923309c7`
+Current work includes synthetic mechanism tests, topology controls, tied/untied update studies, two-hop falsification experiments, and transfer infrastructure for PANDA feature bags.
 
-The model release is the complete registered 25-checkpoint SCORPION
-`pathoalign_dep20` family plus five fold-specific standardizers, exact model and
-inference code, and provenance manifests. It consumes raw 768-dimensional
-frozen `facebook/dinov2-base` features under the documented fold-specific input
-contract; it does not accept raw pathology images. The separate evidence
-release carries registered metrics, analyses, manifests, and retained negative
-results.
+- [WSI-NCA research branch](https://github.com/matthewvaishnav/computational-pathology-research/tree/research/wsi-nca-phase-a-20260807)
+- [PANDA spatial-feature release specification](docs/releases/huggingface/panda-phikon-wsi-spatial-features/README.md)
 
-A registry entry marked `prepared` or `deferred` is not a released Hub
-artifact. Public/private status and immutable HF revisions are recorded only
-after remote verification.
+### PathologyFL — federated computational pathology
 
-## Repository split
+PathologyFL is the multi-institutional learning layer of the pipeline. It provides pathology-oriented federated experiments with coordinator/client training, weighted aggregation, privacy hooks, robustness checks, and simulated-site evaluation on real pathology data.
 
-The intended repository topology is:
+Research components include:
+
+- federated coordinator/client workflows;
+- local pathology training loops;
+- weighted model aggregation;
+- differential-privacy integration;
+- secure-aggregation work;
+- client dropout and malformed-update robustness;
+- site heterogeneity experiments;
+- dominant-site / institutional signal analysis.
+
+- [PathologyFL documentation](docs/federated/pathologyfl.md)
+- [Federated source](src/features/federated/)
+- [Federated experiment protocol](experiments/FEDERATED_ABLATION_PROTOCOL.md)
+
+### FAIR-WEIGHTS-H — institutional aggregation
+
+FAIR-WEIGHTS-H explores learned and constrained institutional weighting beyond ordinary sample-count FedAvg. The system studies how contribution, uncertainty, coverage, uniqueness, anomaly signals, entropy, and effective institution count can influence aggregation across simulated pathology sites.
+
+- [FAIR-WEIGHTS-H documentation](docs/theory/fair-weights-h.md)
+
+### Scanner and site-signal research
+
+A second major thread of the program studies non-biological variation introduced by scanners, acquisition workflows, centers, and site structure.
+
+This includes:
+
+- paired-scanner representation experiments;
+- scanner recoverability and feature-space analysis;
+- dominant-site federated pathology detectors;
+- site-signal alignment studies;
+- CAMELYON17/WILDS external-center experiments;
+- preparation/workflow metadata investigations.
+
+The goal is to model these effects explicitly instead of silently allowing site identity to become a shortcut inside pathology representations.
+
+### Pathology Pipeline Language / scientific compiler
+
+The newest tooling line extends the pipeline beyond model code into machine-checkable experiment semantics. It introduces typed dataset identities, split constraints, paired-acquisition semantics, physical units, evidence objects, result ingestion, and bounded scientific statements.
+
+The compiler work is designed so experimental assumptions that are normally buried in scripts or prose can be represented directly in the pipeline and checked before or after execution.
+
+This work is being versioned as its own software line while remaining part of the broader computational-pathology research program.
+
+## Data and benchmark layer
+
+The pipeline currently spans several public and research pathology settings:
+
+| Dataset / setting | Role in the pipeline |
+|---|---|
+| **PCam** | patch-level classification, training infrastructure, federated simulations |
+| **PANDA** | whole-slide prostate grading, Phikon feature extraction, MIL and spatial modeling |
+| **CAMELYON17 / WILDS** | multi-center and out-of-distribution site analysis |
+| **SCORPION paired acquisitions** | scanner-aware paired representation learning |
+| **External canine SCC paired acquisitions** | cross-study PA-NF evaluation |
+
+Generated tensors and fixtures are used for software and mechanism tests; public pathology datasets are used for the corresponding scientific evaluations.
+
+## Representative pipeline results
+
+### PCam
+
+The full PCam evaluation includes a 32,768-sample test split and has been used for patch-level modeling as well as simulated-site federated experiments.
+
+| Metric | Result |
+|---|---:|
+| Validation AUC | 95.37% |
+| Test AUC | 0.9394 |
+| Test accuracy | 85.26% |
+| F1 | 0.8507 |
+
+### PANDA whole-slide learning
+
+The slide-level pipeline validated **10,611 readable Phikon feature files** and supports repeated-seed MIL benchmarking.
+
+| Model | Best validation QWK |
+|---|---:|
+| Mean-pooled Phikon + MLP | 0.7274 |
+| Gated AttentionMIL | 0.8100 |
+| Tuned TransnnMIL, seed 42 | 0.8155 |
+| Tuned TransnnMIL, seed 123 | 0.8225 |
+| Tuned TransnnMIL, seed 2025 | 0.8086 |
+
+These values are benchmark results from the recorded experimental configurations, not claims of clinical performance.
+
+## Repository map
 
 ```text
-computational-pathology-research      # program hub, manuscripts, claim/evidence ledger
-paired-acquisition-neural-factorization # reusable PA-NF method/core
-transnnmil                            # whole-slide architecture and PANDA evaluations
-pathologyfl                           # federated pathology infrastructure
-fair-weights-h                        # optional standalone protocol repository
+src/
+  models/                 model and MIL architectures
+  features/               pathology feature and federated components
+
+scripts/
+  training/               model training entry points
+  experiments/            experiment and aggregation scripts
+
+experiments/              registered / structured experiment protocols
+
+docs/
+  models/                  architecture documentation
+  federated/              PathologyFL and privacy/robustness work
+  results/                benchmark and experiment results
+  research/               research notes and program structure
+  releases/               model/data release specifications
+
+paper/                    focused manuscript material
+manuscripts/              longer-form research manuscripts
+tests/                    software and experiment-infrastructure tests
 ```
 
-The detailed extraction boundaries and history-preserving commands are documented in [`docs/research/repository-split-plan-20260808.md`](docs/research/repository-split-plan-20260808.md).
+## Research philosophy
 
-The split is intentionally **history preserving**. New repositories should be created from filtered history rather than by copying current source trees into unrelated initial commits.
+The repository is organized as a **working scientific system**, not a single-model demo. New ideas are developed against matched baselines, repeated experiments, real pathology datasets where available, and explicit data/experiment contracts.
 
-## Evidence restrictions
+Reproducibility and provenance infrastructure are retained because they make the research easier to rerun and extend, but they are supporting machinery—not the scientific identity of the project.
 
-Do not use the following as current claim evidence:
-
-- historical TransnnMIL fusion or topology interpretations;
-- withdrawn canine analyses that predate the corrected fixed-estimand audit;
-- unified cross-protocol scoreboard rankings;
-- claims that cosine differences prove biological preservation or tissue damage;
-- historical slide-independent SCORPION p-values as exact inference;
-- PCam claims about diagnoses, lives, clinical benefit, readiness, or state-of-the-art performance;
-- any superseded PDF that conflicts with the current primary manuscript or claim boundary.
-
-## Start here
-
-- [Primary foundations manuscript](manuscripts/computational-pathology-foundations-v1/README.md)
-- [Focused PA-NF manuscript](paper/paired_acquisition_preprint/README.md)
-- [Current claim boundary](CLAIM_BOUNDARY.md)
-- [Repository split plan](docs/research/repository-split-plan-20260808.md)
-- [Scientific audit remediation ledger](docs/research/scientific-audit-remediation-20260725.md)
-- [Research-engineering brief](docs/research/paired-acquisition-research-engineering-brief.md)
-
-## Reproducibility
-
-Raw whole-slide images, large feature archives, checkpoints, and generated run directories remain outside Git.
+## Getting started
 
 ```bash
 python -m venv .venv
@@ -120,3 +214,16 @@ pip install -r requirements.txt
 pip install -e .
 pytest -q
 ```
+
+Large whole-slide images, generated feature archives, checkpoints, and run directories are kept outside Git where appropriate.
+
+## Publications, models, and data releases
+
+- [Focused PA-NF preprint](paper/paired_acquisition_preprint/README.md)
+- [PA-NF trained model family](https://huggingface.co/MatthewVaishnav/paired-acquisition-neural-factorization)
+- [PA-NF evidence dataset](https://huggingface.co/datasets/MatthewVaishnav/paired-acquisition-factorization-evidence)
+- [Research documentation](docs/)
+
+---
+
+**Matthew Vaishnav — computational pathology, representation learning, whole-slide neural systems, spatial tissue modeling, and federated learning.**
