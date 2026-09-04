@@ -1,16 +1,16 @@
 \begin{equation}
 \begin{aligned}
 h_{r,s} &= E_{\omega}(x_{r,s}), \\
-\mathcal{R}_{1}:\ \{h_{r,s}\}_{s\in\mathcal{S}_{r}}
-&\longmapsto \bigl(z^{\mathrm{bio}}_{r},\{z^{\mathrm{acq}}_{r,s}\}_{s\in\mathcal{S}_{r}}\bigr), \\
-\mathcal{R}_{2}:\ \{z_{k,j}\}_{j\in\mathcal{B}_{k}}
+\mathcal{F}_{\mathrm{pair}}:\ \{h_{r,s}\}_{s\in\mathcal{S}_{r}}
+&\longmapsto \left(z^{\mathrm{tissue}}_{r,s},z^{\mathrm{acq}}_{r,s}\right), \\
+\mathcal{A}_{\mathrm{slide}}:\ \{(z_{k,j},p_{k,j})\}_{j\in\mathcal{B}_{k}}
 &\longmapsto \widehat y_{k}, \\
-\mathcal{R}_{3}:\ \{(\Delta\theta_{i}^{(t)},w_{i}^{(t)})\}_{i\in\mathcal{I}_{t}}
+\mathcal{A}_{\mathrm{site}}:\ \{(\Delta\theta_{i}^{(t)},w_{i}^{(t)})\}_{i\in\mathcal{I}_{t}}
 &\longmapsto \theta^{(t+1)}, \\
-\mathcal{V}:\ (c,a,\Gamma)
-&\longmapsto \mathbf{1}\!\left[a\models c\ \land\ \operatorname{SHA256}(a)\in\Gamma\right], \\
-\mathcal{P}
-&= \mathcal{V}\circ\mathcal{R}_{3}\circ\mathcal{R}_{2}\circ\mathcal{R}_{1}\circ E_{\omega}.
+\mathcal{P}_{\mathrm{PA\text{-}NF}}
+&= \mathcal{A}_{\mathrm{site}}\circ\mathcal{A}_{\mathrm{slide}}\circ\mathcal{F}_{\mathrm{pair}}\circ E_{\omega}.
 \end{aligned}
 \label{eq:program}
 \end{equation}
+
+\noindent Here $E_{\omega}$ is a frozen or task-trained visual encoder, $\mathcal{F}_{\mathrm{pair}}$ is the paired-acquisition representation stage, $\mathcal{A}_{\mathrm{slide}}$ is whole-slide aggregation (TransnnMIL and matched MIL baselines), and $\mathcal{A}_{\mathrm{site}}$ is institutional aggregation (PathologyFL, FedAvg-family baselines, and dominance-aware weighting). Spatial coordinates $p_{k,j}$ are optional inputs to the slide stage for spatial and topology experiments.
