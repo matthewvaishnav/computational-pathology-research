@@ -1,30 +1,7 @@
 \section{Conclusion}
 
-This research program develops accountable neural aggregation in computational
-pathology across three connected levels: representations (how patches and
-foundation models encode tissue, scanner, acquisition, site, region, and dataset
-artifacts), whole slides (how patch instances are aggregated into slide
-predictions), and institutions (how institutional updates are aggregated into
-collaborative models). The program's contributions span neural architectures
-(Paired-Acquisition Neural Factorization and TransnnMIL), paired-data designs
-(exact same-region scanner pairs and their controls), institutional-weighting
-protocols (PathologyFL and FAIR-WEIGHTS-H), stress tests and benchmarks (PCam,
-PANDA, CAMELYON17), and a fail-closed provenance and scientific-audit system
-that binds every active claim to an immutable artifact.
+Paired-Acquisition Neural Factorization is presented here as a complete computational pathology research pipeline extending from scanner-aware representations to whole-slide and multi-institutional learning. The representation stage uses same-tissue multi-scanner observations to route acquisition information between explicit tissue-oriented and acquisition-oriented branches. The whole-slide stage uses TransnnMIL and matched MIL baselines over a verified 10,611-slide PANDA feature pipeline. The institutional stage uses PathologyFL, dominance-aware aggregation, and center-weighting experiments to study how site influence changes when sample volume and task alignment diverge.
 
-The evidence maturity is heterogeneous and is stated explicitly. Corrected
-paired-scanner evidence supports partial structured separation and paired
-supervision but not neural feature-space superiority; the corrected
-fixed-estimand adjudication found no neural feature-space increment, and
-synthetic accessibility effects did not transport. TransnnMIL is an implemented
-architecture whose corrected matched-control performance evaluation remains
-pending. PathologyFL and FAIR-WEIGHTS-H provide executable, auditable federated
-research and institutional weighting without demonstrated clinical or fairness
-superiority.
+The strongest results are specific and complementary. On SCORPION, PA-NF has a registered controlled advantage over an equal-capacity two-branch neural control, reducing tissue-branch scanner balanced accuracy by 0.3108 while satisfying the predefined same-region retrieval noninferiority criterion and retaining scanner information in the acquisition branch. On PANDA, a fixed dominance-aware detector improves over FedAvg in specified dominant-site stress regimes and transfers without retuning from random label noise to systematic ordinal threshold shift. On CAMELYON17/WILDS, equal-client or dominant-source-adjusted weighting improves held-out-center accuracy over sample-proportional weighting in both tested feature families. TransnnMIL adds a stable custom whole-slide architecture, while the external canine and WSI-NCA experiments define important boundaries around what has and has not yet been established.
 
-The shared contribution is a multi-level framework for building and auditing
-accountable neural aggregation in computational pathology --- one in which
-architecture, corrected empirical evidence, negative results, proposed
-protocols, and pending controlled validation are kept rigorously distinct, and
-in which the aggregation choices at each level are treated as a connected system
-rather than separate engineering problems.
+The resulting contribution is not a universal leaderboard or a clinical system. It is an end-to-end experimental framework for asking how information is represented and aggregated across scanners, tissue, slides, and institutions---and for replacing implicit assumptions about scanner invariance or sample-volume authority with explicit, testable neural and statistical mechanisms.
