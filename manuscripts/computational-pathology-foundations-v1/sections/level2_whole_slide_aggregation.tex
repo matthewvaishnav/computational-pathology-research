@@ -1,109 +1,69 @@
-\section{Level II: TransnnMIL whole-slide aggregation}
+\section{Stage II: whole-slide neural aggregation}
 \input{figures/figure3_transnnmil_family}
 
-Whole-slide prediction requires aggregating tens of thousands of patch
-representations into a single slide-level decision. This is the second primary
-aggregation level. The program's contribution here is TransnnMIL, a multibranch
-whole-slide neural aggregation architecture family. The architecture is an
-authored and implemented contribution; its corrected matched-control superiority
-evaluation is pending. Historical performance numbers produced by a defective
-execution path are withdrawn and are never used as repaired-model evidence.
+The second stage of PA-NF converts patch-level representations into slide-level predictions. A whole-slide image can contain tens of thousands of candidate tissue patches, so the learning problem is not only feature quality but how information is selected, combined, and propagated across the bag. TransnnMIL is the custom architecture family developed for this stage.
 
-\subsection{Verified architectural families}
+\subsection{TransnnMIL architecture}
+The canonical implementation combines two complementary aggregation paths. A TransMIL-style branch models global correlations among patch embeddings \cite{shao2021transmil}, while an nnMIL/attention-style branch learns gated instance aggregation \cite{ilse2018attention}. Their slide representations are projected into explicit branch tokens and fused with self-attention over the branch-token sequence. This corrected design allows genuine interaction between the branches rather than reducing to a single-position attention operation.
 
-The implementation lives in \texttt{src/models/transnnmil/} and is described
-here from the code, not from stale marketing prose. The verified families are:
-
+The wider TransnnMIL family also contains:
 \begin{itemize}
-\item \textbf{Canonical TransnnMIL} (\texttt{transnnmil.py}): a dual-branch
-  model with a TransMIL-style global-correlation branch
-  (\texttt{src/models/mil/transmil.py}, after TransMIL \cite{shao2021transmil})
-  and an nnMIL-style gated-attention
-  branch (\texttt{src/models/mil/nnmil.py}, after attention-based
-  multiple-instance learning \cite{ilse2018attention}), alongside
-  cluster/attention baselines such as CLAM \cite{lu2021clam}. The repaired model fuses the
-  branches by \emph{self-attention over explicit branch tokens}: the two
-  projected branch representations are stacked and attended
-  (\texttt{branch\_token\_fusion.py}), replacing the withdrawn one-query
-  one-key cross-attention path that was query-invariant. Explicit branch
-  representations are implemented and tested.
-\item \textbf{TransnnMILv2} (\texttt{transnnmil\_v2.py}): a three-branch
-  variant (TransMIL + hierarchical pooling + topology), a two-branch variant
-  with AB/AC/BC ablations, and explicit branch-token fusion. No empirical
-  results exist for these variants; numbers in design documentation are
-  explicitly projected, not observed.
-\item \textbf{Fusion controls} (\texttt{branch\_token\_fusion.py},
-  \texttt{transnnmil\_branch\_token.py}): learned branch-attention, concat, and
-  gate fusion operators, aligned to the repaired canonical branches. Implemented
-  and tested, but \emph{planned controls} with no recorded results yet.
-\item \textbf{Hierarchical spatial pooling} (\texttt{hierarchical\_pooling.py}):
-  learnable cluster centers, region attention/mean/max pooling, and region
-  transformers (hierarchical MIL pooling has prior art, e.g.,
-  H$^2$-MIL \cite{hou2022h2mil}). Implemented and tested; a synthetic-MIL
-  ablation exists, and a
-  real-data benchmark is planned. Enabled in the canonical model only when
-  requested (default off); PANDA runs did not enable it.
-\item \textbf{Topology or graph branch} (\texttt{topology\_branch.py}): k-NN
-  graph construction and GNN layers (GATv2, GraphSAGE, GIN). Implemented and
-  tested. \emph{Historical topology results are withdrawn}: the old forward pass
-  created an unregistered random projection. The repaired model registers the
-  projection; a post-repair rerun does not yet exist.
-\item \textbf{Adaptive pruning} (\texttt{adaptive\_pruning.py}): importance
-  scoring and adaptive pruning. Implemented and tested, but disabled in
-  TransnnMILv2 pending a proper batched implementation; no results.
-\item \textbf{Graph caching and coordinate-aware processing}
-  (\texttt{graph\_cache.py}): HDF5 k-NN graph precompute and cache. Implemented
-  and tested; no training result.
+\item hierarchical spatial pooling over learned regions;
+\item an optional topology branch with GATv2, GraphSAGE, or GIN processing;
+\item coordinate-aware k-nearest-neighbour graph construction and HDF5 graph caching;
+\item adaptive patch-pruning experiments;
+\item concat, gate, and learned branch-attention fusion controls; and
+\item two-branch and three-branch variants for matched ablation studies.
 \end{itemize}
 
-\subsection{Branch-token fusion mechanism}
+These modules are part of the authored whole-slide architecture. The headline empirical evidence below concerns the repaired canonical PANDA path; optional branches are treated as extensions unless they have their own matched real-data result.
 
-The corrected fusion is the technical heart of the canonical model. Each branch
-produces a sequence of patch-level representations; the branch representations
-are projected to a fixed token dimension and stacked into an explicit branch-token
-sequence $T \in \mathbb{R}^{2 \times d}$, one token per branch. A multi-head
-self-attention over $T$ computes the fused slide representation as a learned
-interaction between the two branch tokens, and the attended tokens are
-mean-pooled before the classifier head. This fixes the historical defect: the
-old one-query/one-key cross-attention used a single query token against a single
-key, so the softmax over one position was identically $1$ and the fusion was
-\emph{query-invariant} --- it could not weight the branches at all. The repaired
-design gives the fusion genuine branch-interaction capacity, and regression tests
-require output sensitivity and gradient flow to both branches
-(\texttt{\seqsplit{tests/models/test\_transnnmil\_canonical\_fusion.py}}). The
-incremental
-contribution of this fusion relative to concat and gate controls is \emph{not yet
-measured}; that is exactly the pending matched-control evaluation. A full
-per-component implementation/test/result matrix is in the supplement.
+\subsection{Full-PANDA feature pipeline}
+PANDA \cite{bulten2022panda} provides the primary slide-level substrate. The feature manifest was verified before training: 10,614 candidate HDF5 files were attempted, 10,611 were readable, and three unreadable files were removed. The resulting split contains 8,488 training slides and 2,123 validation slides, with 768-dimensional Phikon patch embeddings.
 
-\subsection{PANDA training infrastructure and feature bags}
+The baseline hierarchy is informative even before matched architecture-superiority testing. Mean-pooled Phikon followed by an MLP reached validation QWK 0.7274, while gated AttentionMIL reached 0.8100. Three tuned TransnnMIL runs reached 0.8155, 0.8225, and 0.8086.
 
-The PANDA training infrastructure uses a verified Phikon 768-dimensional feature
-bag manifest (10{,}611 readable slide feature files; 8{,}488 train and 2{,}123
-validation rows) with \texttt{train\_panda\_transnnmil\_baseline.py}. Stability
-grids across learning rates and seeds show best validation QWK in the
-0.812--0.826 range, and ablation runs exist. These numbers are
-\emph{preliminary and pending}: they are not yet matched controlled comparisons
-against TransMIL, nnMIL, AttentionMIL, concat, gate, and learned branch-attention
-controls under identical splits, seeds, tuning budgets, and compute.
+\begin{table}[t]
+\centering
+\caption{Representative PANDA whole-slide results on Phikon feature bags. QWK is quadratic weighted kappa.}
+\label{tab:panda_mil}
+\small
+\begin{tabular}{lr}
+\toprule
+Model / run & Validation QWK \\
+\midrule
+Mean-pooled Phikon + MLP & 0.7274 \\
+Gated AttentionMIL & 0.8100 \\
+TransnnMIL tuned seed 42 & 0.8155 \\
+TransnnMIL tuned seed 123 & 0.8225 \\
+TransnnMIL tuned seed 2025 & 0.8086 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Evidence status}
+\subsection{Optimizer stabilization across 18 full-PANDA runs}
+Initial TransnnMIL experiments exposed substantial learning-rate sensitivity. The stabilized recipe therefore combined AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping. Six learning rates were evaluated across seeds 42, 123, and 2025, producing 18 full-PANDA runs.
 
-\begin{itemize}
-\item \textbf{Implemented and tested architecture:} all families above have
-  unit and integration tests.
-\item \textbf{Active empirical evidence:} PANDA stability and ablation runs on
-  the repaired canonical model are \emph{preliminary}, not superiority evidence.
-\item \textbf{Withdrawn evidence:} historical fusion and topology results,
-  including historical QWK values, are withdrawn by the authoritative claim
-  boundary. They remain records of the old defective execution path.
-\item \textbf{Pending:} repaired matched controlled reruns (the ablation plan
-  in \texttt{\seqsplit{docs/results/panda-transnnmil-ablation-plan.md}}) are
-  required
-  before any superiority claim.
-\end{itemize}
+\begin{table*}[t]
+\centering
+\caption{TransnnMIL optimization-stability grid on the full readable PANDA feature manifest.}
+\label{tab:transnnmil_stability}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Learning rate & Mean best val QWK & Std. & Min. & Max. \\
+\midrule
+$1\times10^{-4}$ & \textbf{0.8257} & 0.0169 & 0.8087 & 0.8425 \\
+$2\times10^{-4}$ & 0.8245 & 0.0192 & 0.8077 & \textbf{0.8455} \\
+$3\times10^{-4}$ & 0.8238 & 0.0160 & 0.8127 & 0.8422 \\
+$5\times10^{-4}$ & 0.8158 & 0.0144 & 0.8042 & 0.8319 \\
+$7\times10^{-4}$ & 0.8117 & 0.0163 & 0.7994 & 0.8301 \\
+$1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-\noindent The architecture remains a distinct authored contribution and an
-active research line even though its corrected superiority evaluation is
-pending. Projected AUC values in design documents are never treated as observed
-results, and historical QWK values are never reused as repaired-model evidence.
+The principal whole-slide conclusion is therefore stability rather than field-wide superiority: a careful training recipe keeps the repaired canonical TransnnMIL competitive across a broad optimization range. A fully matched comparison against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls remains the correct test for an architecture-superiority claim.
+
+\subsection{Spatial tissue-dynamics extension}
+PA-NF also contains an experimental WSI-NCA line that replaces one-shot bag aggregation with repeated local state updates over spatial neighbourhoods. A frozen PANDA-300 ladder compared static, one-step, four-step tied, shuffled-topology, and untied controls across five seeds. The four-step tied model did not outperform the static or one-step controls on mean held-out QWK, and real topology did not consistently outperform shuffled topology. WSI-NCA therefore remains an active spatial-modeling extension rather than a demonstrated predictive improvement in the current pipeline.
