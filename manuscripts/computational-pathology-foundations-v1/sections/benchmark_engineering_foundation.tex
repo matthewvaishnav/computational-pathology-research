@@ -6,8 +6,10 @@ The PA-NF pipeline has been exercised across paired-scanner, patch-level, whole-
 \centering
 \caption{Real pathology datasets used across the PA-NF pipeline. The datasets answer different questions and are not combined into one leaderboard.}
 \label{tab:dataset_map}
-\small
-\begin{tabularx}{\textwidth}{@{}lYllY@{}}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.13}
+\begin{tabularx}{\textwidth}{@{}>{\hsize=.65\hsize}Y>{\hsize=1.25\hsize}Y>{\hsize=.85\hsize}Y>{\hsize=1.05\hsize}Y>{\hsize=1.20\hsize}Y@{}}
 \toprule
 Dataset & Scale used in this program & Pipeline stage & Primary endpoint & Role \\
 \midrule
