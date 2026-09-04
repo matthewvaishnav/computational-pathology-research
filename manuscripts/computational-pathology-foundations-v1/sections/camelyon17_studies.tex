@@ -1,49 +1,33 @@
-\section{CAMELYON17 center studies}
+\section{CAMELYON17 natural center-shift studies}
 
-CAMELYON17 \cite{bandi2018camelyon17} provides a multi-center whole-slide
-benchmark, structured here with the WILDS protocol \cite{koh2021wilds} (five
-centers, 455{,}954 labeled patches) and is used to study source-center weighting, center leakage,
-and held-out-center generalization. The program's CAMELYON17 work is organized as
-centralized feature-level proxies and representation-mechanism diagnostics, and
-is explicitly \emph{not} full federated-learning validation.
+CAMELYON17/WILDS \cite{bandi2018camelyon17,koh2021wilds} provides a complementary institutional setting in which center identity is observed rather than synthetically assigned. The feature-level dataset used here contains 455,954 labeled examples from five centers. Centers 0, 3, and 4 form the source-training pool, center 1 is used for out-of-distribution validation, and center 2 is held out for final testing.
 
-\subsection{Source-center weighting}
+\subsection{Source weighting and held-out-center generalization}
+Three source-influence policies are compared: sample-proportional weighting, equal-client weighting, and downweighting the dominant source. The experiment is implemented as a centralized feature-level proxy for institutional influence, not as a full federated training run.
 
-Three aggregation-weighting policies are compared on held-out-center accuracy:
-sample-proportional (FedAvg-style) patch weighting, equal-client weighting, and
-downweighting the dominant center. On frozen ImageNet ResNet18 features,
-equal-client weighting reaches 0.9132 held-out accuracy versus 0.8312 for
-sample-proportional (+8.20~pp); on supervised ResNet18 features, 0.9318 versus
-0.9052 (+2.66~pp). The WILDS structure uses source centers \{0,3,4\} for
-training and in-distribution validation, center 1 as the out-of-distribution
-validation center, and center 2 as the held-out test center. Detector-switch
-decisions use only in-distribution validation diagnostics, never the held-out
-test center.
+\begin{table}[t]
+\centering
+\caption{Held-out center-2 accuracy under two feature families and three source-weighting policies.}
+\label{tab:camelyon_weighting}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Feature extractor & Sample-proportional & Equal-client & Downweight dominant \\
+\midrule
+Frozen ImageNet ResNet18 & 0.8312 & \textbf{0.9132} & 0.9094 \\
+CAMELYON17-trained ResNet18 & 0.9052 & 0.9318 & \textbf{0.9322} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\subsection{Center subspace and center leakage}
+On frozen ImageNet features, equal-client weighting improves held-out-center accuracy by 8.20 percentage points over sample-proportional weighting. With source-trained CAMELYON17 features, the gap narrows but remains positive: dominant-source downweighting reaches 0.9322 versus 0.9052 for sample-proportional weighting. The source-trained sample-proportional model reaches approximately 0.9991 source-training accuracy, demonstrating that stronger source fit does not guarantee stronger performance on the unseen center.
 
-Adversarial and subtractive nuisance-removal variants (v3--v5) did not
-materially reduce post-hoc center leakage (a negative result). Supervised linear
-center-subspace projection (v6c/v7) reduces center decodability (center accuracy
-0.895 $\rightarrow$ 0.764 for five centers at effective rank four) while tumor
-AUC remains $\approx$0.990. These results are active only as
-representation-mechanism diagnostics.
+These experiments reinforce the PANDA stress result from a different direction. More source samples can improve estimation when source and target distributions align, but sample volume alone does not determine which weighting best generalizes to a new center.
 
-\subsection{Pillar studies}
+\subsection{Center subspace diagnostics}
+The same dataset is used to study whether center identity occupies a partially removable representation subspace. Adversarial and subtractive nuisance-removal variants did not materially reduce post-hoc center leakage. A supervised linear center-subspace projection provided a cleaner mechanism test: five-center decodability fell from approximately 0.895 to 0.764 at effective rank four while tumor AUC remained approximately 0.990. This is evidence that part of the center signal is linearly structured and removable without a large loss on the measured tumor endpoint; it is not evidence of complete center invariance.
 
-The four-pillars framework organizes federated-learning failure modes:
-non-IID site shift (strongest evidence), communication overhead (a bounded
-feature/head resolution for the communication-accounting pillar), residual
-privacy risk (a coefficient-noise robustness probe), and implementation and
-infrastructure barriers (an infrastructure-friction simulation with client
-speed, dropout, and straggler accounting).
+\subsection{Communication and systems studies}
+The CAMELYON17 feature/head setting also provides a bounded systems calculation for federated communication. Across 100 fp32 rounds and three clients, exchanging a full ResNet18 was estimated at approximately 24.98 GB, compared with approximately 2.35 MB for a 512-to-2 classification head---a ratio of roughly 10,894. A coefficient-noise perturbation study preserved the equal-client and dominant-source-downweighting advantages through noise standard deviation 0.20, while a separate infrastructure simulation measured client-speed heterogeneity, dropout, failed rounds, and synchronous straggler burden.
 
-\subsection{Centralized proxies versus full federated learning}
-
-The CAMELYON17 weighted logistic-regression studies are centralized
-frozen-feature proxies for source-center influence on one held-out center.
-They do not validate a complete federated-learning algorithm, and one held-out
-center does not establish a general law across hospitals. The planned
-Track~A validation (centralized baseline, FL baselines, detector transfer) is
-planned, not completed. FAIR-WEIGHTS-H has no real CAMELYON17 validation; the
-synthetic CAMELYON17 smoke is explicitly historical and superseded.
+These experiments are useful engineering bounds around the PA-NF institutional stage. They do not substitute for a real multi-hospital federated deployment, but they connect source weighting, center shift, communication cost, and infrastructure heterogeneity within the same research pipeline.
