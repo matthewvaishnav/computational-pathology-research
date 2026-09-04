@@ -1,60 +1,21 @@
 \section{Introduction}
 
-Computational-pathology neural systems aggregate information across several
-distinct levels. At the first level, image patches are transformed into
-representations, either by a frozen foundation model or by a task-trained
-encoder. At the second level, patch instances are aggregated into whole-slide
-predictions through multiple-instance learning. At the third level,
-institutional model updates are aggregated into collaborative models through
-federated learning. These levels are usually studied as separate engineering
-problems, yet the artifacts that threaten them are shared: scanner and stain
-variation, acquisition workflow differences, site and center identity, label
-noise, optimization failures, and institutional imbalance can all be preserved,
-shortcut-exploited, or amplified as information passes from one aggregation
-stage to the next.
+Computational pathology is often divided into separate model problems: patch classification, foundation-model feature extraction, multiple-instance learning, domain robustness, or federated learning. PA-NF is built from the opposite direction. It treats the pathology system as one connected pipeline in which acquisition and institutional effects can enter at several stages and can be amplified as information moves from patches to representations, from representations to slide predictions, and from local models to collaborative models.
 
-This research program treats those aggregation stages as a connected system and
-develops the neural architectures, paired-data designs,
-institutional-weighting protocols, stress tests, and provenance controls needed
-to build and audit them. The program spans:
+The name \emph{Paired-Acquisition Neural Factorization} originated in the representation stage, where exact same-tissue acquisitions expose what changes with scanner while holding the biological region fixed. That paired design remains the foundation of the program, but PA-NF now denotes the full pipeline built around it. Within this manuscript, \emph{PA-NF representation factorization} refers specifically to the tissue/acquisition two-branch model, while \emph{the PA-NF pipeline} refers to the complete computational pathology system.
 
+The pipeline contains four principal authored systems:
 \begin{itemize}
-\item \textbf{Representation formation.} Patch and foundation-model
-  representations and the scanner, stain, acquisition, site, region, and
-  dataset artifacts they encode, studied through exact same-region paired
-  scanner designs, Paired-Acquisition Neural Factorization (PA-NF), SCORPION
-  and multi-scanner canine SCC, scanner and center subspaces, strong linear
-  baselines, broken-pair controls, and synthetic identifiability studies.
-\item \textbf{Whole-slide aggregation.} TransnnMIL, a multibranch neural
-  aggregation architecture family with canonical global correlation modeling,
-  an nnMIL-style aggregation path, branch-token fusion, hierarchical spatial
-  pooling, a topology branch, adaptive pruning, and coordinate-aware graph
-  caching, evaluated on PANDA feature bags.
-\item \textbf{Institutional aggregation.} PathologyFL, a pathology-specific
-  federated-learning research framework, and FAIR-WEIGHTS-H, an auditable
-  hybrid institutional-weighting protocol, exercised through dominant-site
-  stress tests, corruption and label-noise stress, ordinal-shift detection,
-  client heterogeneity and dropout, communication accounting, privacy probes,
-  and CAMELYON17 center studies.
-\item \textbf{Benchmark and provenance infrastructure.} PCam patch-level
-  evaluation, PANDA and CAMELYON17 whole-slide and center evaluation, and a
-  fail-closed scientific-audit system that binds every active empirical claim
-  to an immutable result artifact and every architectural claim to source and
-  tests.
+\item \textbf{PA-NF representation factorization:} a paired-scanner representation model with explicit tissue-oriented and acquisition-oriented branches, a joint decoder, crossed reconstruction, paired consistency, variance control, and scanner-routing objectives;
+\item \textbf{TransnnMIL:} a whole-slide multiple-instance learning architecture family combining transformer-style global correlation modeling with gated aggregation and optional hierarchical, topological, and pruning components;
+\item \textbf{PathologyFL:} a pathology-specific federated-learning framework with coordinator/client training, FedAvg/FedProx/FedAdam and custom weighting paths, robustness mechanisms, privacy integrations, monitoring, asynchronous execution, and failure handling;
+\item \textbf{FAIR-WEIGHTS-H and dominance-aware aggregation:} institutional weighting and detector-switch mechanisms that test when sample-count authority should yield to cross-site evidence, uncertainty, and reliability signals.
 \end{itemize}
 
-A central methodological position of the program is that \emph{architecture},
-\emph{corrected empirical evidence}, \emph{negative results}, \emph{proposed
-protocols}, and \emph{pending controlled validation} must be kept rigorously
-distinct. An architecture can be an authored contribution, implemented and
-tested, even when its superiority over matched baselines has not been
-established or has been withdrawn and awaits repaired evaluation. Simple linear
-methods can outperform neural methods on bounded endpoints, and a negative
-result about neural feature-space superiority does not erase the architectural
-contribution of an explicit, inspectable, and swappable acquisition branch.
+These systems share a common experimental layer. PCam provides patch-level training and evaluation. SCORPION and multi-scanner canine SCC provide exact paired acquisitions across five scanners. PANDA provides 10,611 readable slide-level Phikon feature bags for whole-slide modeling and simulated institutional stress. CAMELYON17/WILDS supplies 455,954 examples across five centers for natural center-shift studies. Controlled latent-factor generators provide ground truth for mechanism questions that cannot be observed directly in pathology data.
 
-This manuscript is the first program-level presentation of the complete
-research program. It is deliberately not a Paired-Acquisition Neural
-Factorization paper: PA-NF is one of several foundational contributions, and
-earlier manuscript drafts that treated it as the whole program are rejected
-here in favor of an accurate, three-level, evidence-maturity-aware structure.
+The central scientific hypothesis is that scanner and site variation should not be treated as a single preprocessing nuisance. A scanner shortcut can be encoded in a patch representation, attended to by a slide model, and then amplified through institutional aggregation. Conversely, institutional reweighting can change which representation failures dominate the global model. PA-NF therefore studies the transitions between these levels rather than optimizing them in isolation.
+
+The main contributions of this paper are: (i) a registered paired-acquisition representation result on SCORPION with an equal-capacity neural control and cross-backbone transfer; (ii) an independent multi-scanner canine study that tests the limits of the representation claim against strong simple corrections; (iii) an implemented whole-slide architecture and full-PANDA stabilization study; (iv) a custom federated pathology stack with a dominance-aware detector that improves over FedAvg in controlled PANDA failure regimes and transfers without retuning to systematic ordinal shift; and (v) a CAMELYON17 held-out-center study showing that source influence and source sample count are not interchangeable.
+
+The goal is not to collapse these experiments into one leaderboard. Each dataset answers a different question at a different level of the pipeline. The result is a single research system with several experimentally linked components, not a claim that one metric or one model dominates all of computational pathology.
