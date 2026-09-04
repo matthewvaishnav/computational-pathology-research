@@ -2,51 +2,12 @@
 \begin{minipage}{0.92\linewidth}
 \small
 \textbf{Abstract.}
-Computational-pathology neural systems aggregate information across several
-levels: patches are transformed into representations, patch instances are
-aggregated into whole-slide predictions, and institutional updates are
-aggregated into collaborative models. At each level, nuisance variation,
-shortcut signals, optimization failures, and institutional imbalance can be
-preserved or amplified. This research program develops neural architectures,
-paired-data designs, institutional-weighting protocols, stress tests, and
-provenance controls for auditing and improving those aggregation stages.
+Paired-Acquisition Neural Factorization (PA-NF) is an end-to-end computational pathology research pipeline spanning representation learning, whole-slide neural aggregation, spatial modeling, and multi-institutional learning. The pipeline uses pretrained visual encoders where appropriate, while the paired-factorization methods, slide-level architectures, federated framework, institutional-weighting mechanisms, training and evaluation code, controlled stress experiments, and release infrastructure are developed within the program. The central question is how scanner, site, and institutional variation enters a pathology system and how that information changes as patches become representations, representations become slide predictions, and site-level models become collaborative models.
 
-At the representation level, I introduce Paired-Acquisition Neural
-Factorization (PA-NF), a paired-data architecture with an explicit
-tissue-oriented biological branch and an explicit acquisition branch trained on
-exact same-region multi-scanner pairs, together with strong linear baselines
-(centroid/QR, PCA, paired-linear), broken-pair controls, and synthetic
-identifiability studies. At the whole-slide level, I introduce TransnnMIL, a
-multibranch neural aggregation architecture family with canonical global
-correlation modeling, an nnMIL-style aggregation path, branch-token fusion,
-hierarchical spatial pooling, a topology branch, adaptive pruning, and
-coordinate-aware graph caching. At the institutional level, I develop
-PathologyFL, a pathology-specific federated-learning research framework, and
-FAIR-WEIGHTS-H, a proposed and partially implemented auditable hybrid
-institutional-weighting protocol that specifies, but has not yet fully
-implemented, a separation of training, validation, and monitoring signals.
+At the representation stage, the registered SCORPION campaign uses 48 human H\&E slides, 480 aligned tissue regions, five scanners, and 2,400 images. Across 175 completed capacity-matched fits, PA-NF reduced tissue-branch scanner balanced accuracy by 0.3108 relative to an equal-capacity two-branch neural control, with fold/slide bootstrap interval $[-0.3346,-0.2858]$, while same-region retrieval remained within a preregistered 0.02 noninferiority margin and scanner information remained concentrated in an explicit acquisition branch. The frozen objective also transferred across DINOv2, Phikon, and ImageNet ResNet50 feature families. An independent five-scanner canine SCC study provides an external paired-scanner test and a harder boundary: PA-NF produces strong scanner separation, but the corrected fixed five-category comparison does not establish universal superiority over strong simple scanner-removal baselines.
 
-These components are connected by benchmark infrastructure (PCam patch
-evaluation), whole-slide benchmarks (PANDA), multi-center benchmarks
-(CAMELYON17), and a fail-closed scientific-audit and provenance system that
-binds every active empirical claim to an immutable result artifact.
+At the whole-slide stage, 10,611 readable PANDA Phikon feature bags support TransnnMIL and federated experiments. Stabilized TransnnMIL remained competitive across 18 full-PANDA runs spanning six learning rates and three seeds, with mean best validation QWK 0.8257 at learning rate $10^{-4}$ and a best recorded run of 0.8455. At the institutional stage, a dominance-aware detector-switch policy on five simulated PANDA sites kept the clean regime essentially unchanged while improving global QWK by $+0.008009$ at 25\% dominant-site corruption and $+0.007482$ at 35\%. A fixed detector calibrated under label-noise stress transferred without retuning to systematic conservative ordinal threshold shift; at 45\% shift it improved global QWK by $+0.01053$, macro-F1 by $+0.01512$, and worst-site QWK by $+0.01290$, with positive 95\% intervals for all three metrics. CAMELYON17/WILDS adds a natural five-center test over 455,954 examples: equal-client weighting improved held-out center accuracy from 0.8312 to 0.9132 on frozen ImageNet features, while dominant-source downweighting reached 0.9322 with source-trained features versus 0.9052 for sample-proportional weighting. PCam provides a complete patch-level benchmark, with a documented run reaching 0.9394 ROC AUC, 0.8526 accuracy, and 0.8507 F1 on the official 32,768-patch test split.
 
-The evidence maturity differs sharply across components and is stated
-explicitly. Corrected paired-scanner experiments support partial structured
-separation and paired supervision, but not neural feature-space superiority:
-no neural feature-space increment over simple scanner-removal baselines was
-supported under the corrected fixed five-category estimand, B64 increased
-retrieval and scanner recoverability without category gain, and synthetic
-accessibility effects did not transport to corrected real category
-accessibility. TransnnMIL is an implemented architecture whose repaired
-matched-control performance evaluation remains pending. PathologyFL and
-FAIR-WEIGHTS-H support executable pathology-specific federated research and
-auditable institutional weighting without demonstrated clinical or fairness
-superiority.
-
-The shared contribution is a multi-level framework for building and auditing
-accountable neural aggregation in computational pathology, in which
-architecture, corrected empirical evidence, negative results, proposed
-protocols, and pending controlled validation are kept rigorously distinct.
+Together, these studies define PA-NF as a connected computational pathology pipeline rather than a single representation model: scanner-aware paired representation learning feeds into whole-slide modeling and then into explicit studies of institutional influence, failure, and adaptive aggregation. The strongest conclusions are comparator-specific: PA-NF has a registered controlled advantage over its equal-capacity neural control on SCORPION; dominance-aware aggregation improves over FedAvg in specified PANDA stress regimes; and alternative source weighting improves held-out-center accuracy in the CAMELYON17 proxy. These results do not constitute clinical validation or a universal state-of-the-art claim.
 \end{minipage}
 \end{center}
