@@ -1,20 +1,60 @@
 \section{Introduction}
 
-Computational pathology is usually presented as a sequence of separate model problems: patch classification, foundation-model feature extraction, multiple-instance learning, domain robustness, or federated learning. I built this research program from the opposite direction. The objective is an end-to-end experimental pipeline in which the same pathology system can be followed from raw or preprocessed image data, through frozen representations and scanner effects, into whole-slide aggregation, and finally into multi-institutional learning.
+Computational-pathology neural systems aggregate information across several
+distinct levels. At the first level, image patches are transformed into
+representations, either by a frozen foundation model or by a task-trained
+encoder. At the second level, patch instances are aggregated into whole-slide
+predictions through multiple-instance learning. At the third level,
+institutional model updates are aggregated into collaborative models through
+federated learning. These levels are usually studied as separate engineering
+problems, yet the artifacts that threaten them are shared: scanner and stain
+variation, acquisition workflow differences, site and center identity, label
+noise, optimization failures, and institutional imbalance can all be preserved,
+shortcut-exploited, or amplified as information passes from one aggregation
+stage to the next.
 
-That pipeline matters because the errors do not stay inside one level. Scanner and preparation differences can enter the representation; a whole-slide aggregator can amplify shortcuts in those representations; and federated aggregation can then amplify whichever institution contributes the most samples rather than the most reliable signal. The research problem is therefore not only which model scores highest on one benchmark. It is how information changes as it is represented and aggregated across tissue and across institutions.
-
-The program has four principal authored systems:
+This research program treats those aggregation stages as a connected system and
+develops the neural architectures, paired-data designs,
+institutional-weighting protocols, stress tests, and provenance controls needed
+to build and audit them. The program spans:
 
 \begin{itemize}
-\item \textbf{Paired-Acquisition Neural Factorization (PA-NF):} representation learning from exact same-tissue, multi-scanner observations, with separate tissue-oriented and acquisition-oriented branches.
-\item \textbf{TransnnMIL:} a whole-slide multiple-instance learning architecture family combining transformer-style global correlation modeling with gated aggregation and optional spatial/topological components.
-\item \textbf{PathologyFL:} a pathology-specific federated-learning framework implementing coordinator/client training, weighted aggregation, robustness mechanisms, privacy integrations, monitoring, and simulated multi-site experiments.
-\item \textbf{FAIR-WEIGHTS-H:} a bounded institutional-weighting mechanism for studying when sample-count weighting should yield to quality, uncertainty, uniqueness, and integrity signals.
+\item \textbf{Representation formation.} Patch and foundation-model
+  representations and the scanner, stain, acquisition, site, region, and
+  dataset artifacts they encode, studied through exact same-region paired
+  scanner designs, Paired-Acquisition Neural Factorization (PA-NF), SCORPION
+  and multi-scanner canine SCC, scanner and center subspaces, strong linear
+  baselines, broken-pair controls, and synthetic identifiability studies.
+\item \textbf{Whole-slide aggregation.} TransnnMIL, a multibranch neural
+  aggregation architecture family with canonical global correlation modeling,
+  an nnMIL-style aggregation path, branch-token fusion, hierarchical spatial
+  pooling, a topology branch, adaptive pruning, and coordinate-aware graph
+  caching, evaluated on PANDA feature bags.
+\item \textbf{Institutional aggregation.} PathologyFL, a pathology-specific
+  federated-learning research framework, and FAIR-WEIGHTS-H, an auditable
+  hybrid institutional-weighting protocol, exercised through dominant-site
+  stress tests, corruption and label-noise stress, ordinal-shift detection,
+  client heterogeneity and dropout, communication accounting, privacy probes,
+  and CAMELYON17 center studies.
+\item \textbf{Benchmark and provenance infrastructure.} PCam patch-level
+  evaluation, PANDA and CAMELYON17 whole-slide and center evaluation, and a
+  fail-closed scientific-audit system that binds every active empirical claim
+  to an immutable result artifact and every architectural claim to source and
+  tests.
 \end{itemize}
 
-These systems sit inside a common data and experiment layer. PCam provides a full patch-classification benchmark and federated smoke substrate; SCORPION and multi-scanner canine SCC provide paired-acquisition scanner studies; PANDA provides 10,611 verified slide-level Phikon feature bags for whole-slide and institutional experiments; and CAMELYON17/WILDS provides 455,954 labeled examples across five centers for natural center-shift studies. Synthetic latent-factor experiments are used only where ground-truth factors are required to test mechanism questions directly.
+A central methodological position of the program is that \emph{architecture},
+\emph{corrected empirical evidence}, \emph{negative results}, \emph{proposed
+protocols}, and \emph{pending controlled validation} must be kept rigorously
+distinct. An architecture can be an authored contribution, implemented and
+tested, even when its superiority over matched baselines has not been
+established or has been withdrawn and awaits repaired evaluation. Simple linear
+methods can outperform neural methods on bounded endpoints, and a negative
+result about neural feature-space superiority does not erase the architectural
+contribution of an explicit, inspectable, and swappable acquisition branch.
 
-The resulting research record contains several different kinds of evidence rather than one leaderboard. PCam measures patch-level classification; SCORPION measures whether acquisition information can be separated from tissue-oriented representations; PANDA measures slide aggregation and simulated institutional stress; and CAMELYON17 measures held-out-center behavior. The metrics are therefore reported within their own experimental settings rather than collapsed into one score.
-
-The central contribution of this manuscript is the system itself: a computational-pathology pipeline that connects representation learning, whole-slide modeling, spatial/tissue research, and multi-institutional learning under one implementation and evaluation framework. Pretrained feature encoders are used as inputs where appropriate; the surrounding architecture, factorization methods, slide aggregators, federated infrastructure, weighting mechanisms, experiments, and evaluation code are the authored research program described here.
+This manuscript is the first program-level presentation of the complete
+research program. It is deliberately not a Paired-Acquisition Neural
+Factorization paper: PA-NF is one of several foundational contributions, and
+earlier manuscript drafts that treated it as the whole program are rejected
+here in favor of an accurate, three-level, evidence-maturity-aware structure.
