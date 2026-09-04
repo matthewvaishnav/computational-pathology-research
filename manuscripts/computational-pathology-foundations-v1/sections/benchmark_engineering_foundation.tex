@@ -1,50 +1,30 @@
-\section{Benchmark and engineering foundation}
-\input{figures/figure6_dataset_boundary}
+\section{Datasets and benchmark layer}
 
-The program is built on patch-level benchmark and evaluation infrastructure that
-establishes deterministic data handling, evaluation methodology, calibration and
-uncertainty analysis, and federated smoke validation.
+The PA-NF pipeline has been exercised across paired-scanner, patch-level, whole-slide, and multi-center pathology settings. Table~\ref{tab:dataset_map} summarizes the real-data substrates used in the program. Synthetic generators are used separately for mechanism and identifiability experiments.
+
+\begin{table*}[t]
+\centering
+\caption{Real pathology datasets used across the PA-NF pipeline. The datasets answer different questions and are not combined into one leaderboard.}
+\label{tab:dataset_map}
+\small
+\begin{tabularx}{\textwidth}{@{}lYllY@{}}
+\toprule
+Dataset & Scale used in this program & Pipeline stage & Primary endpoint & Role \\
+\midrule
+PCam & Official 32,768-patch test split & Patch / engineering & ROC AUC, accuracy, F1 & Full training/evaluation and federated smoke substrate \\
+SCORPION & 48 human H\&E slides, 480 aligned regions, 5 scanners, 2,400 images & Representation & Scanner balanced accuracy, same-region retrieval & Registered paired-acquisition experiment \\
+Multi-scanner canine SCC & 44 biological samples; 805 geometry-qualified complete five-view regions across 5 scanners & Representation & Scanner recovery, descriptive category BA, retrieval & Independent paired-scanner external test \\
+PANDA & 10,611 readable Phikon slide feature bags & Whole-slide / institutional & QWK, macro-F1, worst-site QWK & MIL training, ordinal grading, simulated-site stress \\
+CAMELYON17/WILDS & 455,954 examples from 5 centers & Institutional / center shift & Held-out-center accuracy, center recovery & Natural source-center weighting and center-subspace studies \\
+\bottomrule
+\end{tabularx}
+\end{table*}
 
 \subsection{PCam patch benchmark}
+PCam \cite{veeling2018rotation,pcam2018kaggle} is the patch-level foundation. A ResNet18-based classifier with a transformer encoder/classification head was trained on the full training split and evaluated on the official 32,768-patch test split. The documented run reached ROC AUC 0.9394, accuracy 0.8526, and F1 0.8507. Patch-level bootstrap intervals were 0.9369--0.9418 for AUC and 0.8483--0.8563 for accuracy. This establishes a complete patch training/evaluation path and strong single-split discrimination; it is not used as a state-of-the-art or clinical-performance claim.
 
-PCam (PatchCamelyon) \cite{veeling2018rotation,pcam2018kaggle} is used as a
-patch-level engineering and evaluation
-benchmark: a binary tumor-detection task over 96$\times$96 RGB patches. The
-implementation includes a dataset API, binary classification head, ResNet and
-transformer feature extractors, full-config training, full-test evaluation with
-ROC AUC / accuracy / F1 and bootstrap confidence intervals, stratified
-cross-validation, threshold operating-point analysis, and failure-asymmetry
-analysis. Federated smoke and heterogeneity benchmarks use real PCam patches
-split into simulated sites to exercise weighting strategies.
+\subsection{Feature substrates}
+The program deliberately separates the authored pipeline from the visual encoders used as inputs. PA-NF representation experiments use frozen DINOv2, pathology-native Phikon \cite{filiot2023phikon}, and ImageNet ResNet representations. PANDA whole-slide experiments use 768-dimensional Phikon patch embeddings stored in slide-level HDF5 feature bags. CAMELYON17 experiments include both frozen ImageNet ResNet18 features and features from a source-trained CAMELYON17 ResNet18.
 
-\subsection{What PCam establishes}
-
-PCam is treated here as \emph{implementation and benchmark context}, not as an
-active numerical empirical claim. A single documented single-split run was
-reported historically, but its underlying numerical result artifacts are not
-tracked in the repository and are not recoverable, so no specific performance
-number is promoted as an active cryptographically bound claim in this manuscript
-or its evidence manifest. What PCam establishes is:
-
-\begin{itemize}
-\item a working patch-level training and evaluation pipeline (dataset API,
-  heads, feature extractors, training, evaluation with bootstrap CIs);
-\item deterministic data handling and bootstrap evaluation infrastructure with
-  tests;
-\item a foundation for later federated and whole-slide infrastructure;
-\item a benchmark substrate whose \emph{infrastructure}, not unbound numbers,
-  is the contribution.
-\end{itemize}
-
-\subsection{What PCam does not establish}
-
-PCam does not establish clinical validation, diagnostic performance,
-patient-level or slide-level endpoints, external generalization, statistical
-superiority over unrelated published models, or calibration at a clinically
-meaningful operating point. The 5-fold cross-validation tables in documentation
-are projected (the cross-validation run is paused), not observed. The
-threshold-optimization study is retrospective and was withdrawn as
-confirmatory or deployment evidence. No selected threshold is recommended for
-inference or deployment. The current status is \emph{patch-level engineering
-and evaluation benchmark only}, and clinical and deployment prohibitions are
-enforced by the authoritative claim boundary.
+\subsection{Statistical units}
+The inferential unit follows the data-generating structure. SCORPION is blocked by original slide; all scanner views and regions from a slide remain in the same fold. Canine SCC uses biological-sample-blocked folds. PANDA whole-slide analyses operate at the slide level. CAMELYON17 center studies preserve the WILDS center split, with one out-of-distribution validation center and one held-out test center. These units prevent the much larger counts of patches or scanner views from being treated as independent biological samples.
