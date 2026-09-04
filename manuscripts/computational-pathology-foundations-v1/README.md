@@ -1,73 +1,28 @@
-# Accountable Neural Aggregation in Computational Pathology
+# Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline
 
-**Public foundations preprint package (2026-08-06).**
+**Flagship PA-NF preprint package — 2026-09-04.**
 
-This package contains the primary public foundations manuscript for the complete
-computational-pathology research program. It is organized as a connected system
-of three primary neural aggregation levels plus the cross-cutting benchmark and
-provenance infrastructure that connects them:
+This directory contains the program-level manuscript for the full PA-NF computational pathology pipeline. The paper follows the system from paired scanner-aware representation learning through whole-slide neural aggregation and into multi-institutional learning.
 
-1. **Level I — Representation formation** (patch and foundation-model
-   representations; Paired-Acquisition Neural Factorization; scanner and center
-   subspaces; synthetic identifiability).
-2. **Level II — Whole-slide aggregation** (TransnnMIL and its architectural
-   families).
-3. **Level III — Institutional aggregation** (PathologyFL; FAIR-WEIGHTS-H;
-   institutional weighting; PANDA and CAMELYON17 studies).
-4. **Cross-cutting — Benchmark and scientific-audit infrastructure** (PCam
-   patch evaluation; provenance, immutable releases, claim validation, exact
-   artifact recovery).
+## Scientific structure
 
-The focused PA-NF manuscript remains available as a secondary supporting paper.
-It does not replace this program-level foundations manuscript.
+1. **Paired-acquisition representation learning** — SCORPION and independent multi-scanner canine SCC; tissue/acquisition factorization; strong simple scanner-removal controls; cross-backbone transfer.
+2. **Whole-slide modeling** — TransnnMIL and the 10,611-slide PANDA Phikon feature pipeline; optimization-stability studies; spatial/tissue-dynamics extensions.
+3. **Multi-institutional learning** — PathologyFL, FAIR-WEIGHTS-H, dominance-aware aggregation, PANDA simulated-site stress, and detector transfer to ordinal threshold shift.
+4. **Natural center shift** — CAMELYON17/WILDS source-weighting and center-subspace studies over 455,954 examples from five centers.
+5. **Patch and mechanism foundations** — PCam patch evaluation and controlled synthetic identifiability/resource-allocation experiments.
 
-## Status vocabulary
+The focused PA-NF representation paper remains available separately under `paper/paired_acquisition_preprint/`. The flagship manuscript integrates that representation work with the downstream whole-slide and institutional pipeline.
 
-Every research line is classified with one of these statuses, and architecture
-vs. empirical status is never conflated:
+## Main files
 
-- `active_corrected_empirical_evidence`
-- `implemented_architecture_pending_controlled_validation`
-- `implemented_research_infrastructure`
-- `proposed_protocol_with_execution_validation`
-- `synthetic_mechanism_evidence`
-- `negative_or_mixed_empirical_result`
-- `historical_withdrawn_evidence`
-- `future_protocol_only`
-- `prohibited_by_evidence_scope`
-
-## Key current evidence statuses
-
-- Real paired-scanner validation:
-  `complete_mixed_real_paired_scanner_allocation_effects`.
-- Exact 50-cell artifact recovery:
-  `complete_exact_real_bottleneck_representation_recovery`.
-- Fixed-estimand adjudication v2:
-  `complete_no_neural_feature_space_increment_supported`.
-- Corrected July 26 evidence release: immutable and bound to its snapshot;
-  living claim-boundary status is reported explicitly.
-- TransnnMIL: implemented authored architecture; controlled superiority evidence
-  remains pending.
-- PathologyFL: implemented research infrastructure; not a real multi-center
-  deployment validation.
-- FAIR-WEIGHTS-H: proposed and partially implemented protocol; fairness and
-  performance superiority remain unestablished.
-
-## Layout
-
-- `main.tex` — main manuscript (single-column, sectioned source).
-- `supplement.tex` — supplement with implementation inventories and per-fold
-  tables.
+- `main.tex` — flagship manuscript.
+- `supplement.tex` — implementation, testing, result-pointer, and reproducibility supplement.
 - `references.bib` — bibliography.
-- `sections/` — manuscript sections.
-- `figures/` — equation-only architecture definitions and quantitative/status
-  tables; no explanatory architecture diagrams are rendered in the main paper.
-- `tables/` — main-paper and supplement tables.
-- `claims/` — claim ledger and prohibited-claim register.
-- `evidence/` — evidence manifest and research-line bindings.
-- `validation/` — manuscript validator and tests.
-- `HOSTILE_REVIEW.md` — adversarial review register.
-- `RECONSTRUCTION_REPORT.md` — scope reconstruction report.
+- `sections/` — scientific manuscript sections.
+- `figures/` — architecture and result figures used by the manuscript.
+- `tables/` — supporting tables.
+- `evidence/`, `claims/`, and `validation/` — supporting reproducibility and historical research records; these remain available without defining the narrative of the main paper.
 
 ## Build
 
@@ -76,6 +31,4 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error supplement.tex
 ```
 
-The GitHub publication workflow performs these steps, validates the page counts
-and LaTeX logs, and publishes the main PDF, supplement, source archive, and the
-secondary focused PA-NF manuscript.
+The GitHub publication workflow builds the flagship PDF and supplement, creates a source archive, publishes them under PA-NF filenames, and retains the former public PDF filename only as a compatibility alias for previously shared links.
