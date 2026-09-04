@@ -1,57 +1,19 @@
-\section{Research-program overview}
+\section{The PA-NF pipeline}
 
-The program is organized as three primary neural aggregation levels plus the
-benchmark and provenance infrastructure that connects them.
-
-\begin{enumerate}
-\item \textbf{Level I --- Representation formation.} How patch and
-  foundation-model representations encode tissue, scanner, stain, acquisition
-  workflow, site or center, region identity, and dataset artifacts. Principal
-  research lines: PCam patch foundation; paired-scanner and paired-acquisition
-  research; Paired-Acquisition Neural Factorization; SCORPION; multi-scanner
-  canine SCC; scanner and center subspaces; centroid/QR, PCA, paired-linear,
-  adversarial, and broken-pair controls; and synthetic identifiability and
-  capacity-allocation studies.
-\item \textbf{Level II --- Whole-slide aggregation.} How patch representations
-  are aggregated into slide predictions. Principal research line: TransnnMIL and
-  all of its implemented architectural families (canonical dual-branch,
-  three-branch v2, branch-token fusion, hierarchical pooling, topology branch,
-  adaptive pruning, graph caching).
-\item \textbf{Level III --- Institutional aggregation.} How multi-institution
-  updates, validation priorities, contribution signals, and safety constraints
-  are aggregated. Principal research lines: PathologyFL; FAIR-WEIGHTS-H;
-  institutional weighting; dominant-site stress testing; site imbalance;
-  ordinal-grading shift; corruption and label-noise stress; detector behavior;
-  client heterogeneity, dropout, and stragglers; communication accounting;
-  secure aggregation; differential-privacy support; Byzantine or anomaly
-  monitoring; and CAMELYON17 held-out-center and center-weighting studies.
-\end{enumerate}
-
-The three levels are connected by a shared evaluation and accountability
-framework, and by shared frozen feature inputs (DINOv2, Phikon
-\cite{filiot2023phikon}, ImageNet ResNet): scanner leakage, center leakage, descriptive task accessibility,
-region retrieval, whole-slide aggregation, institutional influence, fairness
-constraints, robustness, provenance, and claim validity are audited with the same
-fail-closed discipline at every level. PCam provides the patch-level benchmark
-foundation; PANDA provides the whole-slide benchmark; CAMELYON17 provides the
-multi-center benchmark; and the provenance system binds every active claim to an
-immutable artifact.
-
-The unifying thesis is that computational-pathology neural systems aggregate
-information at several levels --- patches into representations, patch instances
-into whole-slide predictions, and institutional updates into collaborative
-models --- and at each level nuisance variation, shortcut signals, optimization
-failures, and institutional imbalance can be preserved or amplified. This program
-develops the neural architectures, paired-data designs,
-institutional-weighting protocols, stress tests, and provenance controls for
-auditing and improving those aggregation stages.
+PA-NF is organized around three learned aggregation stages connected by a common pathology data layer. The same system can therefore be interrogated at the point where scanner information enters a representation, at the point where thousands of patch representations become a slide prediction, and at the point where site-level updates or source models are combined.
 
 \input{figures/figure1_program_architecture}
-\input{figures/figure10_publication_portfolio}
 
-\noindent\textbf{Evidence-maturity discipline.} Throughout, the manuscript keeps
-four distinct categories separate: \emph{implemented architecture} (binds to
-source and tests), \emph{corrected empirical evidence} (binds to immutable
-result artifacts), \emph{negative or mixed results} (reported directly), and
-\emph{pending controlled validation} (labeled pending). No component is implied
-to have the same evidence maturity as any other.
+\subsection{Stage I: paired representation factorization}
+For a tissue region $r$ observed under scanner $s$, a visual encoder produces $h_{r,s}$. The PA-NF representation factorizer maps this feature into a tissue-oriented representation and an acquisition-oriented representation. Exact same-region multi-scanner correspondences provide the central supervisory structure. The main experiments use DINOv2 features, with frozen transfer to Phikon and ImageNet ResNet50. SCORPION provides the registered human paired-scanner experiment; multi-scanner canine SCC provides an independent external geometry with descriptive tissue categories.
+
+\subsection{Stage II: whole-slide aggregation}
+A whole slide is represented by a bag $\mathcal{B}_{k}$ of patch features, optionally paired with spatial coordinates. TransnnMIL combines a TransMIL-style global-correlation branch with an nnMIL-style gated aggregation branch and supports hierarchical spatial pooling, topology/GNN processing, branch-token fusion, graph caching, and controlled architectural variants. PANDA supplies the primary whole-slide substrate through 10,611 readable Phikon feature bags.
+
+\subsection{Stage III: institutional aggregation}
+PathologyFL extends the pipeline from a single slide model to simulated multi-site learning. The framework includes standard federated optimizers and custom institutional weighting, while the PANDA stress program tests a specific failure mode of sample-proportional aggregation: the largest site can retain the largest influence even when its label process becomes less aligned with the declared validation objective. CAMELYON17/WILDS provides a separate natural center-shift setting for studying source influence on an unseen center.
+
+\subsection{A shared experimental question}
+Across all three stages, the operative question is not simply whether a nuisance variable can be predicted. It is whether changing how information is allocated or weighted changes the downstream object that matters: same-region structure at the representation stage, slide prediction at the MIL stage, or held-out/site-level performance at the institutional stage. This is why scanner suppression, slide aggregation, and site weighting are treated as connected parts of one computational pathology pipeline.
+
+The program uses strong conventional comparators at each stage: scanner-removal projections and paired-linear transforms for representation learning; mean pooling, AttentionMIL, TransMIL/nnMIL-family controls for whole-slide learning; and FedAvg-style sample weighting or equal-client weighting for institutional studies. Claims are therefore attached to specific comparisons rather than to a universal leaderboard.
