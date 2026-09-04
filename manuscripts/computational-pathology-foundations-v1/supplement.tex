@@ -1,6 +1,6 @@
 \documentclass[10pt]{article}
 
-% Public supplement to: Accountable Neural Aggregation in Computational Pathology
+% Public supplement to: Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline
 
 \usepackage[letterpaper,top=0.48in,bottom=0.56in,left=0.62in,right=0.62in]{geometry}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -33,9 +33,9 @@
 
 \begin{document}
 \begin{center}
-{\LARGE\bfseries Supplement --- Accountable Neural Aggregation in Computational Pathology\par}
+{\LARGE\bfseries Supplement --- Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline\par}
 \vspace{0.04in}
-{\small Public preprint supplement --- 2026-08-06. Research use only; not clinical software.}
+{\small Public preprint supplement --- 2026-09-04. Research use only; not clinical software.}
 \vspace{0.04in}
 \rule{\textwidth}{1.0pt}
 \end{center}
@@ -63,7 +63,7 @@ TransnnMIL & \codepath{src/models/transnnmil/}; \codepath{src/models/mil/} \\
 PathologyFL & \codepath{src/features/federated/pathology_fl/} \\
 FAIR-WEIGHTS-H & \codepath{.../weighting/fair_weights_h.py}; \codepath{.../pathoalign_bridge.py} \\
 CAMELYON17 & \codepath{experiments/camelyon17_*}; \codepath{scripts/camelyon17/} \\
-Audit & \codepath{scripts/provenance/}; \codepath{src/paired_acquisition_provenance.py} \\
+Reproducibility & \codepath{scripts/provenance/}; \codepath{src/paired_acquisition_provenance.py} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -89,7 +89,7 @@ TransnnMIL & \codepath{tests/models/test_transnnmil_*.py}; \codepath{test_topolo
 PathologyFL & \codepath{tests/federated/test_fl_integration.py}; \codepath{test_pathology_fl_*.py}; \codepath{test_secure_aggregation*.py} \\
 FAIR-WEIGHTS-H & \codepath{tests/federated/test_fair_weights_h.py}; \codepath{test_weighting_*.py} \\
 CAMELYON17 & \codepath{tests/test_camelyon_*.py}; \codepath{tests/camelyon17/} \\
-Audit & \codepath{tests/test_corrected_paired_acquisition_evidence.py}; \codepath{test_real_bottleneck_representation_recovery.py} \\
+Reproducibility & \codepath{tests/test_corrected_paired_acquisition_evidence.py}; \codepath{test_real_bottleneck_representation_recovery.py} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -99,101 +99,23 @@ Audit & \codepath{tests/test_corrected_paired_acquisition_evidence.py}; \codepat
 The authoritative artifact hashes are recorded in
 \codepath{evidence/manuscript_evidence_manifest.json}. Selected current hashes:
 
-\begin{table}[!htbp]
-\centering
-\small
-\caption{Selected result-artifact hashes (2026-08-04).}
-\label{tab:hashes}
-\begin{tabular}{ll}
-\toprule
-Artifact & SHA-256 (first 16) \\
-\midrule
-Corrected evidence manifest & \texttt{a7a7e34d1df24f70} \\
-Corrected snapshot & \texttt{cb06886a6050a66f} \\
-Real paired-scanner result & \texttt{7293ddcddfe8fbaf} \\
-Recovery result & \texttt{2075a2aa240877a1} \\
-Adjudication v2 result & \texttt{2cccaad7aab89586} \\
-\bottomrule
-\end{tabular}
-\end{table}
-\FloatBarrier
+\begin{itemize}
+\item corrected paired-acquisition release manifest: \codepath{evidence/paired_acquisition/corrected-20260726/release_manifest.json};
+\item SCORPION capacity-matched release manifest: \codepath{evidence/paired_acquisition/scorpion-capacity-matched-20260726/release_manifest.json};
+\item dimensionality/cross-covariance release manifest: \codepath{evidence/paired_acquisition/dimensionality-xcov-factorial-20260726/release_manifest.json}.
+\end{itemize}
 
-\section{Per-fold PA-NF corrected metrics}
-Per-fold corrected five-category balanced accuracy, scanner balanced accuracy,
-and worst-pair retrieval for the recovered B32/B64 cells and deterministic
-baselines are recorded in the adjudication v2 result
-(\texttt{canine\_metric\_table}). The v2 summary reports B64$-$B32 category
-mean $-0.008$ (one positive fold), scanner mean $+0.049$ (five of five), and
-worst-pair retrieval mean $+0.050$ (five of five).
+\section{PA-NF controlled-result boundary}
+The primary registered SCORPION comparison is the 175-fit capacity-matched campaign: seven variants, five folds, and five seeds. PA-NF reduces tissue-branch scanner balanced accuracy by 0.3108 relative to the equal-capacity two-branch neural control while satisfying the registered same-region retrieval noninferiority criterion and retaining strong acquisition-branch scanner information.
 
-\section{Synthetic status inventory}
-Synthetic lines are classified \texttt{synthetic\_mechanism\_evidence}. The
-biological-bottleneck capacity-allocation factorial status is
-\texttt{complete\_capacity\_gain\_with\_scanner\_tradeoff}. The corrected
-adjudication records the synthetic accessibility transport flag as false because
-the required corrected category gain is absent.
+The corrected canine SCC comparison answers a broader and harder question. Under the fixed five-category estimand, strong centroid/QR and paired-linear corrections remain competitive and no universal neural feature-space increment is established. The two results use different comparators and endpoints and should be interpreted together rather than collapsed into one ranking.
 
-\section{TransnnMIL component matrix}
-\begin{table}[!htbp]
-\centering
-\scriptsize
-\caption{TransnnMIL component status matrix.}
-\label{tab:transnnmil}
-\begin{tabularx}{\textwidth}{@{}p{0.30\textwidth}p{0.10\textwidth}p{0.08\textwidth}Y@{}}
-\toprule
-Component & Implemented & Tested & Empirical result \\
-\midrule
-Canonical dual-branch & yes & yes & preliminary PANDA runs \\
-Branch-token self-attention fusion & yes & yes & incremental contribution not measured \\
-TransnnMILv2 (3-branch) & yes & yes & none \\
-Concat/gate/learned-attention controls & yes & yes & planned controls, none \\
-Hierarchical pooling & yes & yes & synthetic-MIL ablation only \\
-Topology/GNN branch & yes & yes & historical withdrawn; no repaired rerun \\
-Adaptive pruning & yes & yes & disabled in v2; none \\
-Graph caching & yes & yes & none \\
-\bottomrule
-\end{tabularx}
-\end{table}
-\FloatBarrier
+\section{Whole-slide and institutional result pointers}
+The full PANDA feature manifest contains 10,611 readable Phikon slide bags. TransnnMIL optimization-stability results are recorded under \codepath{docs/results/panda-transnnmil-stability.md}. The full-cache dominance-aware detector experiment is recorded under \codepath{docs/results/dominance-aware-switch-full-panda.md}, and the fixed label-noise-to-ordinal-shift transfer is recorded under \codepath{docs/research/dominance-detector-transfer-results.md}.
 
-\section{PathologyFL feature matrix}
-PathologyFL implements FedAvg, FedProx, FedAdam, weighted, Byzantine-robust,
-secure (TenSEAL), pathology-aware, and FAIR-WEIGHTS-H aggregators; DP-SGD and
-privacy budget tracking; TLS gRPC and secure aggregation; monitoring and
-Byzantine detection; async training; fault tolerance; compression; and a model
-registry. The e2e federated tests have dangling imports and are not runnable as
-written; secure/DP guarantees are gated on optional libraries.
+CAMELYON17 source-weighting and center-subspace experiments are recorded under \codepath{results/camelyon17/}, \codepath{results/camelyon17_supervised_resnet18/}, and the corresponding research notes.
 
-\section{FAIR-WEIGHTS-H signal and constraint definitions}
-Implemented: integrity gate, uncertainty penalty, useful uniqueness,
-bounded-weight caps and renormalization, conservative mode, PathoAlign audit
-bridge (representation risk, reason codes, mechanism validity). Specification-
-only or partial: training/validation/monitoring weight separation, difficulty
-adjustment, Owen/Shapley contribution estimator, subgroup-performance
-constraints, weight-change limits, four-mode fallback table, validated drift
-detection.
-
-\section{CAMELYON17 boundary}
-CAMELYON17 weighting studies are centralized frozen-feature proxies for
-source-center influence on one held-out center. They are not full federated-
-learning validation, and one held-out center does not establish a cross-hospital
-law. Adversarial center removal was negative; a supervised linear center
-subspace was partially removable.
-
-\section{PANDA boundary}
-PANDA studies are simulated-site, cached-feature experiments over synthetic
-institutional partitions. There is no patient-level endpoint and no real
-hospital mapping. TransnnMIL historical QWK values are withdrawn; post-repair
-runs are preliminary and pending matched controlled reruns.
-
-\clearpage
-\section{Historical withdrawal ledger}
-The authoritative ledger is \codepath{CLAIM_BOUNDARY.md} and
-\codepath{docs/research/scientific-audit-remediation-20260725.md}. Withdrawn
-families include historical TransnnMIL fusion/topology results, historical
-canine biological-category audit metrics, SCORPION slide-level sign-flip
-p-values, unified-scoreboard rankings, PCam clinical/superiority claims,
-historical canine category metrics, and cosine-as-biology. Withdrawn artifacts
-never appear in active result tables.
+\section{Reproducibility}
+The repository preserves code, tests, result summaries, release manifests, and source hashes for the major research lines. Detailed correction history and superseded analyses remain available in the repository but are supporting research records rather than the narrative focus of the flagship manuscript.
 
 \end{document}
