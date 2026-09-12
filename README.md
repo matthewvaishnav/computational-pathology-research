@@ -71,7 +71,7 @@ pathologyfl                             # federated pathology infrastructure
 fair-weights-h                          # optional standalone protocol repository
 ```
 
-The detailed extraction boundaries and history-preserving commands are documented in [`docs/research/repository-split-plan-20260808.md`](docs/research/research/repository-split-plan-20260808.md).
+The detailed extraction boundaries and history-preserving commands are documented in [`docs/research/repository-split-plan-20260808.md`](docs/research/repository-split-plan-20260808.md).
 
 The split is intentionally **history preserving**. New repositories should be created from filtered history rather than by copying current source trees into unrelated initial commits.
 
