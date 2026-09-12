@@ -1,45 +1,5 @@
 
-A scanner head $q_t$ is attached to $\zb$ through gradient reversal, while $q_a$ predicts scanner directly from $\za$. The tissue branch is therefore trained against scanner recovery, whereas the acquisition branch is trained to retain it. Figure~\ref{fig:architecture} shows the routing logic.
-
-\begin{figure*}[t]
-\centering
-\resizebox{0.96\textwidth}{!}{%
-\begin{tikzpicture}[
-  box/.style={draw, rounded corners=2pt, minimum height=0.72cm, minimum width=2.15cm, align=center, fill=panflight},
-  head/.style={draw, rounded corners=2pt, minimum height=0.66cm, minimum width=2.05cm, align=center, fill=white},
-  loss/.style={draw, rounded corners=2pt, minimum height=0.72cm, minimum width=2.3cm, align=center, fill=yellow!12},
-  arr/.style={-Latex,thick},
-  rev/.style={-Latex,thick,dashed}
-]
-\node[box] (x1) at (0,1.35) {same region\\scanner $s_1$};
-\node[box] (x2) at (0,0) {same region\\scanner $s_2$};
-\node[box] (ft1) at (3.0,1.35) {shared tissue\\encoder $f_t$};
-\node[box] (ft2) at (3.0,0) {shared tissue\\encoder $f_t$};
-\node[box] (z1) at (5.65,1.35) {$z_{\mathrm{tissue}}^{(1)}$};
-\node[box] (z2) at (5.65,0) {$z_{\mathrm{tissue}}^{(2)}$};
-\node[loss] (pair) at (8.55,0.68) {paired agreement\\variance/dependence control};
-\node[head] (qt) at (11.35,1.55) {tissue scanner head\\gradient reversed};
-
-\node[box] (fa) at (3.0,-1.55) {acquisition\\encoder $f_a$};
-\node[box] (za) at (5.65,-1.55) {$z_{\mathrm{acq}}$};
-\node[head] (qa) at (8.55,-2.15) {acquisition scanner head\\ordinary gradient};
-\node[box] (dec) at (11.35,-0.55) {joint decoder\\$g([z_{\mathrm{tissue}};z_{\mathrm{acq}}])$};
-\node[loss] (rec) at (14.25,-0.55) {reconstruct $x$\\cross-factor control};
-
-\draw[arr] (x1) -- (ft1); \draw[arr] (x2) -- (ft2);
-\draw[arr] (ft1) -- (z1); \draw[arr] (ft2) -- (z2);
-\draw[arr] (z1) -- (pair); \draw[arr] (z2) -- (pair);
-\draw[rev] (pair) -- (qt);
-\draw[arr] (x2.south) |- (fa.west);
-\draw[arr] (fa) -- (za); \draw[arr] (za) -- (qa);
-\draw[arr] (z2.south) -- ++(0,-0.42) -| (dec.west);
-\draw[arr] (za.east) -- ++(0.72,0) |- (dec.south);
-\draw[arr] (dec) -- (rec);
-\end{tikzpicture}%
-}
-\caption{PA-NF routes matched tissue views into a tissue-oriented branch and routes scanner information into an explicit acquisition branch. Reduced scanner probe performance is interpreted only together with retention metrics, acquisition-branch scanner recovery, and collapse controls.}
-\label{fig:architecture}
-\end{figure*}
+A scanner head $q_t$ is attached to $\zb$ through gradient reversal, while $q_a$ predicts scanner directly from $\za$. The tissue branch is therefore trained against scanner recovery, whereas the acquisition branch is trained to retain it.
 
 \subsection{Training Objective}
 Let a minibatch be $\{(x_i,r_i,s_i)\}_{i=1}^{n}$, where $r_i$ is region identity and $s_i$ is scanner identity. With normalized tissue factors $u_i=\zb^{(i)}/\lVert\zb^{(i)}\rVert_2$, the supervised paired contrastive term is
