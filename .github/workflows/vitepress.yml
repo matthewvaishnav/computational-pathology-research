@@ -86,7 +86,7 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare direct PDF site and source archive
+      - name: Prepare canonical PDF site and source archive
         shell: bash
         run: |
           set -euo pipefail
@@ -109,14 +109,6 @@ jobs:
           cp manuscripts/computational-pathology-foundations-v1/zenodo_metadata.json \
             public/panf-pipeline-zenodo-metadata.json
 
-          # Compatibility aliases point to the same canonical flagship paper.
-          cp manuscripts/computational-pathology-foundations-v1/main.pdf \
-            public/paired-acquisition-neural-factorization.pdf
-          cp manuscripts/computational-pathology-foundations-v1/main.pdf \
-            public/accountable-neural-aggregation-in-computational-pathology.pdf
-          cp manuscripts/computational-pathology-foundations-v1/supplement.pdf \
-            public/accountable-neural-aggregation-in-computational-pathology-supplement.pdf
-
           touch public/.nojekyll
           primary_sha="$(sha256sum public/paired-acquisition-neural-factorization-pipeline.pdf | awk '{print $1}')"
           supplement_sha="$(sha256sum public/paired-acquisition-neural-factorization-pipeline-supplement.pdf | awk '{print $1}')"
@@ -132,10 +124,6 @@ jobs:
             "supplement_sha256": "${supplement_sha}",
             "primary_source": "paired-acquisition-neural-factorization-pipeline-arxiv-source.zip",
             "primary_source_sha256": "${source_sha}",
-            "compatibility_aliases": [
-              "paired-acquisition-neural-factorization.pdf",
-              "accountable-neural-aggregation-in-computational-pathology.pdf"
-            ],
             "claim_boundary": "https://github.com/${GITHUB_REPOSITORY}/blob/main/CLAIM_BOUNDARY.md"
           }
           JSON
