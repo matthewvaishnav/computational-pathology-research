@@ -1,8 +1,8 @@
 # Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline
 
-**Flagship PA-NF preprint package — 2026-09-04.**
+**Canonical PA-NF preprint package — 2026-09-04.**
 
-This directory contains the program-level manuscript for the full PA-NF computational pathology pipeline. The paper follows the system from paired scanner-aware representation learning through whole-slide neural aggregation and into multi-institutional learning.
+This directory contains the single public PA-NF manuscript for the full computational pathology pipeline. The paper follows the system from paired scanner-aware representation learning through whole-slide neural aggregation and into multi-institutional learning. Corrections and evidence updates are incorporated directly into this manuscript rather than published as a separate "corrected" paper.
 
 ## Scientific structure
 
@@ -12,15 +12,13 @@ This directory contains the program-level manuscript for the full PA-NF computat
 4. **Natural center shift** — CAMELYON17/WILDS source-weighting and center-subspace studies over 455,954 examples from five centers.
 5. **Patch and mechanism foundations** — PCam patch evaluation and controlled synthetic identifiability/resource-allocation experiments.
 
-The focused PA-NF representation paper remains available separately under `paper/paired_acquisition_preprint/`. The flagship manuscript integrates that representation work with the downstream whole-slide and institutional pipeline.
-
 ## Main files
 
-- `main.tex` — flagship manuscript.
+- `main.tex` — canonical manuscript.
 - `supplement.tex` — implementation, testing, result-pointer, and reproducibility supplement.
 - `references.bib` — bibliography.
 - `sections/` — scientific manuscript sections.
-- `figures/` — architecture and result figures used by the manuscript.
+- `figures/` — figures and equations used by the manuscript.
 - `tables/` — supporting tables.
 - `evidence/`, `claims/`, and `validation/` — supporting reproducibility and historical research records; these remain available without defining the narrative of the main paper.
 
@@ -31,4 +29,4 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error supplement.tex
 ```
 
-The GitHub publication workflow builds the flagship PDF and supplement, creates a source archive, publishes them under PA-NF filenames, and retains the former public PDF filename only as a compatibility alias for previously shared links.
+The GitHub publication workflow builds this manuscript and supplement, creates the source archive, and publishes `paired-acquisition-neural-factorization-pipeline.pdf` as the canonical PDF. Previously shared PDF filenames are compatibility aliases to the exact same manuscript, not separate papers.
