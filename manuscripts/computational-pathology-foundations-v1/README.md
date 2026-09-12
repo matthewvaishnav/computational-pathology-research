@@ -29,4 +29,4 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error main.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error supplement.tex
 ```
 
-The GitHub publication workflow builds this manuscript and supplement, creates the source archive, and publishes `paired-acquisition-neural-factorization-pipeline.pdf` as the canonical PDF. Previously shared PDF filenames are compatibility aliases to the exact same manuscript, not separate papers.
+The GitHub publication workflow builds this manuscript and supplement, creates the source archive, and publishes `paired-acquisition-neural-factorization-pipeline.pdf` as the sole public main-paper PDF.
