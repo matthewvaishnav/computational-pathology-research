@@ -14,7 +14,7 @@ This repository is the **program-level hub and evidence ledger**. Distinct metho
 - [Read the manuscript source and release metadata](manuscripts/computational-pathology-foundations-v1/README.md)
 - [Read the authoritative claim boundary](CLAIM_BOUNDARY.md)
 
-The root GitHub Pages URL opens this PDF directly. Previously shared PDF filenames are retained only as compatibility aliases to the same manuscript; there is no separate "corrected" or focused public paper.
+The root GitHub Pages URL opens this PDF directly. This is the only public main-paper PDF; corrections and evidence updates are made directly in it rather than published as a separate focused or "corrected" paper.
 
 ## Research lines
 
