@@ -30,12 +30,12 @@ The key result is the joint pattern: tissue-branch scanner recovery falls substa
 The frozen objective was transferred without backbone-specific tuning across DINOv2-Base, pathology-native Phikon, and ImageNet ResNet50 representations. In the transfer study, PA-NF reduced scanner recoverability in the tissue branch while retaining near-saturated same-region retrieval across all three feature families. Averaging the two unseen feature families within the same 48 SCORPION slides gave a scanner-probe difference of $-0.4019$ with interval $[-0.4145,-0.3895]$. The acquisition branch remained strongly scanner informative. This result shows that the paired objective is not tied to one visual encoder, although the registered DINOv2 capacity-matched campaign remains the primary controlled comparison.
 
 \subsection{Independent multi-scanner canine SCC study}
-The external paired-scanner study uses 44 canine cutaneous squamous-cell-carcinoma biological samples digitized on five scanners. After geometry qualification, 805 complete five-view regions are available. The corrected evaluation fixes five descriptive tissue categories---Dermis, Epidermis, Inflammation/Necrosis, SCC, and Subcutis---and uses biological-sample-blocked folds, fit-only standardization, and same-region/same-sample exclusions in nearest-neighbour candidate pools.
+The external paired-scanner study uses 44 canine cutaneous squamous-cell-carcinoma biological samples digitized on five scanners. After geometry qualification, 805 complete five-view regions are available. The evaluation uses five fixed descriptive tissue categories---Dermis, Epidermis, Inflammation/Necrosis, SCC, and Subcutis---with biological-sample-blocked folds, fit-only standardization, and same-region/same-sample exclusions in nearest-neighbour candidate pools.
 
 \begin{table*}[t]
 \centering
-\caption{Corrected five-fold canine SCC representation comparison. Category balanced accuracy is descriptive; lower scanner balanced accuracy and higher retrieval are favorable.}
-\label{tab:canine_corrected}
+\caption{Five-fold canine SCC representation comparison. Category balanced accuracy is descriptive; lower scanner balanced accuracy and higher retrieval are favorable.}
+\label{tab:canine}
 \small
 \begin{tabular}{lrrrr}
 \toprule
@@ -51,7 +51,7 @@ PA-NF tissue branch B64 & 0.4255 & 0.3486 & 0.7707 & 0.6345 \\
 \end{tabular}
 \end{table*}
 
-The canine experiment establishes an important boundary around the SCORPION result. PA-NF B32 attains the lowest mean scanner balanced accuracy in the corrected table, but strong centroid/QR and paired-linear corrections preserve higher retrieval while retaining similar descriptive category accuracy. Under the registered three-axis rule, neither B32 nor B64 establishes a universal neural feature-space increment over every simple baseline. Increasing the tissue bottleneck from 32 to 64 dimensions increases overall retrieval by $+0.0515$ and scanner recoverability by $+0.0489$, while corrected category balanced accuracy changes by $-0.0076$ with an interval crossing zero.
+The canine experiment establishes an important boundary around the SCORPION result. PA-NF B32 attains the lowest mean scanner balanced accuracy in the table, but strong centroid/QR and paired-linear corrections preserve higher retrieval while retaining similar descriptive category accuracy. Under the registered three-axis rule, neither B32 nor B64 establishes a universal neural feature-space increment over every simple baseline. Increasing the tissue bottleneck from 32 to 64 dimensions increases overall retrieval by $+0.0515$ and scanner recoverability by $+0.0489$, while category balanced accuracy changes by $-0.0076$ with an interval crossing zero.
 
 This is not a contradiction with the SCORPION controlled result. The two experiments use different comparators and endpoints. SCORPION establishes a bounded advantage over an equal-capacity neural control on the registered structured-separation objective; the canine study shows that broader scanner correction has a harder frontier in which strong linear methods remain competitive.
 
