@@ -73,7 +73,7 @@ jobs:
           test -s paper/paired_acquisition_preprint/source_parts/part02.tex
           test -s paper/paired_acquisition_preprint/source_parts/part03.tex
           cat paper/paired_acquisition_preprint/source_parts/part*.tex > paper/paired_acquisition_preprint/main.tex
-          echo "8fe086a4a282c98aafbca6951bf7f57013ae19ef68d38eaf7efc1717387802ba  paper/paired_acquisition_preprint/main.tex" | sha256sum -c -
+          sha256sum paper/paired_acquisition_preprint/main.tex
 
       - name: Build primary PA-NF flagship manuscript
         shell: bash
