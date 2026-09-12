@@ -1,4 +1,15 @@
-# Map all commits to Matthew Vaishnav
+# Canonical contributor identity mapping
+# Keep historical commits intact while folding automated/tool attribution into the repository owner.
 Matthew Vaishnav <matthewvaishnav@gmail.com>
+
+# Claude / Anthropic identities used historically.
 Matthew Vaishnav <matthewvaishnav@gmail.com> <claude@anthropic.com>
 Matthew Vaishnav <matthewvaishnav@gmail.com> claude <claude@anthropic.com>
+Matthew Vaishnav <matthewvaishnav@gmail.com> Claude <claude@anthropic.com>
+Matthew Vaishnav <matthewvaishnav@gmail.com> <noreply@anthropic.com>
+Matthew Vaishnav <matthewvaishnav@gmail.com> claude <noreply@anthropic.com>
+Matthew Vaishnav <matthewvaishnav@gmail.com> Claude <noreply@anthropic.com>
+
+# GitHub Actions bot identity used by the historical formatting commit.
+Matthew Vaishnav <matthewvaishnav@gmail.com> <41898282+github-actions[bot]@users.noreply.github.com>
+Matthew Vaishnav <matthewvaishnav@gmail.com> github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
