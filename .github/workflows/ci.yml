@@ -60,6 +60,10 @@ jobs:
       run: |
         python -c "import torch, torch_geometric; print(f'PyTorch {torch.__version__}; PyG {torch_geometric.__version__}')"
 
+    - name: Verify installed package boundaries
+      run: |
+        python -c "import src; import src.foundation.training_pipeline; print('Package imports successful')"
+
     - name: Run tests
       env:
         ENVIRONMENT: production
