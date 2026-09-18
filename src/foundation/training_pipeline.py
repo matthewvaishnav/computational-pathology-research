@@ -15,12 +15,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import wandb
-from data_collection import UnlabeledWSIDataset, WSIDataCollector
-from multi_disease_model import ModelConfig, MultiDiseaseFoundationModel
-from self_supervised_pretrainer import PreTrainingConfig, SelfSupervisedPreTrainer
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, Dataset
-from zero_shot_detection import DiseaseKnowledgeBase, VisionLanguageEncoder, ZeroShotDetector
+
+from .data_collection import UnlabeledWSIDataset, WSIDataCollector
+from .multi_disease_model import ModelConfig, MultiDiseaseFoundationModel
+from .self_supervised_pretrainer import PreTrainingConfig, SelfSupervisedPreTrainer
+from .zero_shot_detection import DiseaseKnowledgeBase, VisionLanguageEncoder, ZeroShotDetector
 
 
 @dataclass

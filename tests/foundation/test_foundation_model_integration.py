@@ -4,7 +4,6 @@ Tests all components: multi-disease model, self-supervised pre-training, zero-sh
 """
 
 # Import foundation model components
-import sys
 import tempfile
 import time
 from pathlib import Path
@@ -14,20 +13,22 @@ import numpy as np
 import pytest
 import torch
 
-sys.path.append("src/foundation")
-
-from data_collection import (
+from src.foundation.data_collection import (
     SlideDatabase,
     UnlabeledWSIDataset,
     WSIQualityAssessment,
 )
-from multi_disease_model import ModelConfig, MultiDiseaseFoundationModel, create_foundation_model
-from self_supervised_pretrainer import (
+from src.foundation.multi_disease_model import (
+    ModelConfig,
+    MultiDiseaseFoundationModel,
+    create_foundation_model,
+)
+from src.foundation.self_supervised_pretrainer import (
     PreTrainingConfig,
     SelfSupervisedPreTrainer,
 )
-from training_pipeline import FoundationModelTrainer, TrainingConfig
-from zero_shot_detection import (
+from src.foundation.training_pipeline import FoundationModelTrainer, TrainingConfig
+from src.foundation.zero_shot_detection import (
     DiseaseDescription,
     DiseaseKnowledgeBase,
     VisionLanguageEncoder,
@@ -156,7 +157,10 @@ class TestSelfSupervisedPreTrainer:
 
     def test_histopathology_augmentation(self):
         """Test histopathology-specific augmentation"""
-        from self_supervised_pretrainer import AugmentationConfig, HistopathologyAugmentation
+        from src.foundation.self_supervised_pretrainer import (
+            AugmentationConfig,
+            HistopathologyAugmentation,
+        )
 
         config = AugmentationConfig()
         augmentation = HistopathologyAugmentation(config)
@@ -172,7 +176,7 @@ class TestSelfSupervisedPreTrainer:
 
     def test_simclr_loss(self):
         """Test SimCLR contrastive loss"""
-        from self_supervised_pretrainer import SimCLRLoss
+        from src.foundation.self_supervised_pretrainer import SimCLRLoss
 
         criterion = SimCLRLoss(temperature=0.07)
 
@@ -325,7 +329,7 @@ class TestDataCollection:
             db = SlideDatabase(tmp_db.name)
 
             # Test metadata insertion
-            from data_collection import SlideMetadata
+            from src.foundation.data_collection import SlideMetadata
 
             metadata = SlideMetadata(
                 slide_id="test_slide",
@@ -370,7 +374,7 @@ class TestDataCollection:
 
         # Mock quality assessment (would normally use real slide)
         with patch.object(assessor, "assess_slide_quality") as mock_assess:
-            from data_collection import QualityMetrics
+            from src.foundation.data_collection import QualityMetrics
 
             mock_assess.return_value = QualityMetrics(
                 tissue_percentage=0.6,
@@ -390,7 +394,7 @@ class TestDataCollection:
     def test_unlabeled_dataset(self):
         """Test unlabeled WSI dataset"""
         # Create mock slide metadata
-        from data_collection import SlideMetadata
+        from src.foundation.data_collection import SlideMetadata
 
         mock_metadata = [
             SlideMetadata(
@@ -482,7 +486,7 @@ class TestTrainingPipeline:
             trainer = FoundationModelTrainer(config)
 
             # Add some mock metrics
-            from training_pipeline import TrainingMetrics
+            from src.foundation.training_pipeline import TrainingMetrics
 
             trainer.metrics_history = [
                 TrainingMetrics(

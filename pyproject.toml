@@ -69,6 +69,29 @@ dev = [
     "ipywidgets>=8.0.0,<9.0.0",
 ]
 
+ci = [
+    "pytest>=7.3.0,<10.0.0",
+    "pytest-cov>=4.0.0,<8.0.0",
+    "pytest-asyncio>=0.21.0,<2.0.0",
+    "hypothesis>=6.0.0,<7.0.0",
+    "mypy>=1.0.0,<2.0.0",
+    "types-PyYAML>=6.0.0,<7.0.0",
+    "bandit[toml]>=1.7.0,<2.0.0",
+    "python-jose[cryptography]>=3.3.0,<4.0.0",
+    "passlib[bcrypt]>=1.7.4,<2.0.0",
+    "PyJWT>=2.8.0,<3.0.0",
+    "slowapi>=0.1.9,<1.0.0",
+    "python-magic>=0.4.27,<1.0.0",
+    "bcrypt>=4.0.1,<6.0.0",
+    "pyclamd>=0.4.0,<1.0.0",
+    "python-multipart>=0.0.6,<1.0.0",
+    "requests>=2.31.0,<3.0.0",
+    "httpx>=0.27.0,<1.0.0",
+    "psutil>=5.9.0,<8.0.0",
+    "tenacity>=8.2.0,<10.0.0",
+    "defusedxml>=0.7.1,<1.0.0",
+]
+
 cloud = [
     "azure-identity>=1.15.0,<2.0.0",
     "azure-mgmt-web>=7.0.0,<8.0.0",
@@ -82,6 +105,15 @@ ml = [
     "umap-learn>=0.5.0,<1.0.0",
 ]
 
+foundation = [
+    "opencv-python>=4.7.0,<5.0.0",
+    "timm>=0.9.0,<1.0.0",
+    "faiss-cpu>=1.7.4,<2.0.0",
+    "transformers>=4.40.0,<6.0.0",
+    "wandb>=0.15.0,<1.0.0",
+    "openslide-bin>=4.0.0; sys_platform == 'win32' or sys_platform == 'darwin'",
+]
+
 federated = [
     "flwr[simulation]>=1.5.0,<2.0.0",
     "redis==7.4.0",
@@ -89,7 +121,7 @@ federated = [
 ]
 
 all = [
-    "computational-pathology-research[cloud,dev,ml,federated]",
+    "computational-pathology-research[cloud,dev,ci,ml,foundation,federated]",
 ]
 
 [project.urls]
@@ -119,6 +151,8 @@ extend-exclude = '''
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -134,7 +168,7 @@ ignore = [
     "C901",  # too complex
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 
 [tool.mypy]

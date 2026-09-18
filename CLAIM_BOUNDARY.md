@@ -4,14 +4,17 @@ This document is the authoritative public claim boundary for the repository. It
 overrides older manuscripts, reports, tables, captions, website text, and result
 summaries whenever they conflict.
 
-**Primary foundations-preprint status:** corrected paired-acquisition evidence was
-promoted on 2026-07-26 under the forward-valid record at
+**Primary preprint status:** corrected paired-acquisition evidence was promoted
+on 2026-07-26 under the forward-valid record at
 `evidence/paired_acquisition/corrected-20260726/release_manifest.json`. The
-program-level foundations manuscript was released on 2026-08-06 as the primary
-public paper, with the corrected focused PA-NF manuscript retained as a secondary
-supporting paper. Scientific-audit remediation continues for research lines whose
-controlled evaluations remain pending. Code fixes and corrected replacements do
-not retroactively validate older artifacts.
+single canonical public manuscript is **Paired-Acquisition Neural Factorization:
+An End-to-End Computational Pathology Pipeline**, with the current preprint
+package dated 2026-09-04 under
+`manuscripts/computational-pathology-foundations-v1/`. Corrections and evidence
+updates are incorporated into that manuscript rather than published as separate
+"corrected" or secondary papers. Scientific-audit remediation continues for
+research lines whose controlled evaluations remain pending. Code fixes and
+corrected replacements do not retroactively validate older artifacts.
 
 ## Current safe central claim
 
@@ -236,12 +239,15 @@ The corrected canine fixed-estimand audit, fold-aware SCORPION inference,
 175-fit capacity-matched campaign, and 450-fit factorial are complete and
 promoted only within the boundaries above.
 
-The primary public manuscript is:
-`https://matthewvaishnav.github.io/computational-pathology-research/accountable-neural-aggregation-in-computational-pathology.pdf`.
+The single canonical public manuscript is:
+`https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline.pdf`.
 
-The corrected focused PA-NF manuscript remains available as a secondary paper at:
-`https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization.pdf`.
-Every earlier focused PA-NF PDF remains superseded and on audit hold.
+The supplement is:
+`https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline-supplement.pdf`.
+
+Earlier program-level or focused PA-NF PDF identities are superseded and must not
+be treated as parallel current papers. Historical evidence packages and audit
+records remain preserved under their original provenance paths.
 
 The detailed remediation ledger is
 `docs/research/scientific-audit-remediation-20260725.md`.

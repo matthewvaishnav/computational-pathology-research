@@ -128,11 +128,6 @@ class ModelLoader:
     def _create_pcam_model(self) -> nn.Module:
         """Create PCam model architecture."""
         try:
-            # Try to import your custom model architecture
-            import sys
-
-            sys.path.append(str(Path(__file__).parent.parent.parent))
-
             from src.models.foundation.histocore import HistoCore
 
             # Create model with PCam configuration

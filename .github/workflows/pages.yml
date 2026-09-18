@@ -8,4 +8,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Explain deployment ownership
-        run: echo "Legacy Docusaurus deployment is disabled. MkDocs deploys the site via .github/workflows/mkdocs.yml."
+        run: echo "Legacy Docusaurus Pages deployment is disabled. The canonical public manuscript site is published by .github/workflows/publish-panf-manuscript.yml."

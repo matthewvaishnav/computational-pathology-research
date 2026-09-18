@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Explain deployment ownership
-        run: echo "MkDocs deployment is disabled. The Deploy VitePress workflow now publishes the paper PDF site."
+        run: echo "Legacy MkDocs deployment is disabled. The canonical public manuscript site is published by .github/workflows/publish-panf-manuscript.yml."
