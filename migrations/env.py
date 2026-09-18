@@ -81,7 +81,7 @@ async def run_async_migrations():
     """Run migrations in async mode."""
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_database_url()
-    
+
     connectable = AsyncEngine(
         engine_from_config(
             configuration,
@@ -109,7 +109,7 @@ def run_migrations_online() -> None:
     else:
         configuration = config.get_section(config.config_ini_section)
         configuration["sqlalchemy.url"] = get_database_url()
-        
+    
         connectable = engine_from_config(
             configuration,
             prefix="sqlalchemy.",
