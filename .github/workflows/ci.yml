@@ -47,11 +47,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libopenslide0 openslide-tools
 
-    - name: Install dependencies
+    - name: Install full research environment
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e ".[foundation]"
+        pip install -e . --no-deps
+        pip check
 
     # PyG's compiled extension packages are optional for these security tests.
     # Do not install them here: unsupported future PyTorch releases cause pip to
@@ -70,6 +71,42 @@ jobs:
       run: |
         pytest tests/security -v -m "not property and not slow" --cov=src --cov-report=term
       timeout-minutes: 30
+
+  package-smoke:
+    name: Package smoke on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install OpenSlide runtime (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libopenslide0 openslide-tools
+
+    - name: Install declared foundation package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[foundation]"
+        pip check
+
+    - name: Verify package imports
+      run: |
+        python -c "import src; import src.foundation.training_pipeline; print('Declared package boundary imports successfully')"
+
 
   lint:
     name: Lint and Format Check
@@ -201,8 +238,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e .
+        pip install -e . --no-deps
         pip install bandit[toml]
+        pip check
 
     - name: Run bandit security scan
       run: |
@@ -334,7 +372,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e ".[foundation]"
+        pip install -e . --no-deps
+        pip check
 
     - name: Verify PyG import
       run: |
@@ -383,7 +422,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -e ".[foundation]"
+        pip install -e . --no-deps
+        pip check
 
     - name: Verify PyG import
       run: |
@@ -405,7 +445,7 @@ jobs:
     name: All Checks Passed
     runs-on: ubuntu-latest
     # Depends on all essential checks
-    needs: [test, lint, type-check, security]
+    needs: [test, package-smoke, lint, type-check, security]
     if: always()
     timeout-minutes: 5
 
@@ -414,6 +454,10 @@ jobs:
       run: |
         if [ "${{ needs.test.result }}" != "success" ]; then
           echo "Tests failed"
+          exit 1
+        fi
+        if [ "${{ needs.package-smoke.result }}" != "success" ]; then
+          echo "Package smoke failed"
           exit 1
         fi
         if [ "${{ needs.lint.result }}" != "success" ]; then
