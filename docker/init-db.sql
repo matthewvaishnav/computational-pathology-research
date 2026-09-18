@@ -166,11 +166,9 @@ INSERT INTO system_config (key, value, description) VALUES
     ('enable_gpu_acceleration', 'true', 'Enable GPU acceleration for inference')
 ON CONFLICT (key) DO NOTHING;
 
--- Create default admin user (password: admin123)
--- Note: In production, change this password immediately
-INSERT INTO users (email, username, password_hash, full_name, role, is_active, is_verified) VALUES
-    ('admin@medical-ai.com', 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBdXwtO5S5EM.S', 'System Administrator', 'admin', true, true)
-ON CONFLICT (email) DO NOTHING;
+-- No default application user is created here.
+-- Create local users through the application/authentication path so a known
+-- credential is never embedded in repository-managed database initialization.
 
 -- Create triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
