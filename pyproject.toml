@@ -88,6 +88,7 @@ foundation = [
     "faiss-cpu>=1.7.4,<2.0.0",
     "transformers>=4.40.0,<6.0.0",
     "wandb>=0.15.0,<1.0.0",
+    "openslide-bin>=4.0.0; sys_platform == 'win32' or sys_platform == 'darwin'",
 ]
 
 federated = [
