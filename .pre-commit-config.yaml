@@ -8,10 +8,7 @@ repos:
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
-        exclude: >-
-          ^(package-lock\.json|website/package-lock\.json|\.env(?:\.[^/]+)?\.example|
-          tests/|evidence/|results/|panda/splits\.json|
-          benchmarks/paired_acquisition_provenance_release/)
+        exclude: '^(package-lock\.json|website/package-lock\.json|\.env(?:\.[^/]+)?\.example|tests/|evidence/|results/|panda/splits\.json|benchmarks/paired_acquisition_provenance_release/)'
 
   # Python code quality
   - repo: https://github.com/psf/black
