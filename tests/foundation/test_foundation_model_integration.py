@@ -18,7 +18,11 @@ from src.foundation.data_collection import (
     UnlabeledWSIDataset,
     WSIQualityAssessment,
 )
-from src.foundation.multi_disease_model import ModelConfig, MultiDiseaseFoundationModel, create_foundation_model
+from src.foundation.multi_disease_model import (
+    ModelConfig,
+    MultiDiseaseFoundationModel,
+    create_foundation_model,
+)
 from src.foundation.self_supervised_pretrainer import (
     PreTrainingConfig,
     SelfSupervisedPreTrainer,
@@ -153,7 +157,10 @@ class TestSelfSupervisedPreTrainer:
 
     def test_histopathology_augmentation(self):
         """Test histopathology-specific augmentation"""
-        from src.foundation.self_supervised_pretrainer import AugmentationConfig, HistopathologyAugmentation
+        from src.foundation.self_supervised_pretrainer import (
+            AugmentationConfig,
+            HistopathologyAugmentation,
+        )
 
         config = AugmentationConfig()
         augmentation = HistopathologyAugmentation(config)
