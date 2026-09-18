@@ -8,7 +8,7 @@ repos:
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
-        exclude: package.lock.json
+        exclude: ^package-lock\.json$
 
   # Python code quality
   - repo: https://github.com/psf/black
@@ -21,7 +21,11 @@ repos:
     rev: 7.0.0
     hooks:
       - id: flake8
-        args: ["--max-line-length=120", "--extend-ignore=E203,W503"]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
 
   # Security scanning
   - repo: https://github.com/PyCQA/bandit
