@@ -1,50 +1,35 @@
-# Multi-stage build for Medical AI API Server
-FROM python:3.11-slim as base
+# Local research API image.
+# This image is development/research infrastructure, not a validated clinical deployment.
+FROM python:3.11-slim AS runtime
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     curl \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
     libgomp1 \
+    libopenslide0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
+# Runtime code only. Experiments, tests, notebooks, and local environment files
+# are intentionally excluded from the image.
 COPY src/ ./src/
-COPY experiments/ ./experiments/
-COPY mobile/ ./mobile/
-COPY tests/ ./tests/
 
-# Copy configuration files
-COPY pyproject.toml .
-COPY .env.example .env
+RUN mkdir -p /app/logs /app/checkpoints /app/data /tmp/prometheus_multiproc \
+    && useradd --create-home --shell /usr/sbin/nologin appuser \
+    && chown -R appuser:appuser /app
 
-# Create necessary directories
-RUN mkdir -p /app/logs /app/checkpoints /app/data /tmp/prometheus_multiproc
+USER appuser
 
-# Create non-root user
-RUN useradd --create-home --shell /bin/bash medai
-RUN chown -R medai:medai /app
-USER medai
-
-# Expose port
 EXPOSE 8000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl --fail --silent http://localhost:8000/health >/dev/null || exit 1
 
-# Start API server
-CMD ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
