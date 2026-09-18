@@ -4,12 +4,14 @@
   "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev docs",
-    "docs:build": "python -m pip install reportlab pillow && python scripts/reports/build_complete_project_pdf.py && vitepress build docs",
+    "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:deploy": "npm run docs:build && gh-pages -d docs/.vitepress/dist"
+    "docs:pdf": "python scripts/reports/build_complete_project_pdf.py"
+  },
+  "engines": {
+    "node": ">=20 <23"
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0",
     "markdown-it-mathjax3": "^4.3.2",
     "vitepress": "^1.6.3"
   }
