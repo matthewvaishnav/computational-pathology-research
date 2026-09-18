@@ -1,0 +1,42 @@
+name: Bootstrap root docs lockfile
+
+on:
+  push:
+    branches:
+      - professional-grade-audit-2026-09-18
+    paths:
+      - package.json
+      - .github/workflows/bootstrap-root-docs-lock.yml
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@v4
+        with:
+          ref: professional-grade-audit-2026-09-18
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Commit lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "Root docs lockfile already current"
+          else
+            git commit -m "Lock root documentation dependencies"
+            git push
+          fi
