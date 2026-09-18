@@ -1,62 +1,33 @@
 ---
 layout: doc
 aside: false
-outline: false
 ---
 
-# Complete Technical Report
+# Computational Pathology Research
 
-## Computational Pathology AI Research Framework
+This documentation belongs to the program-level research repository and evidence ledger.
 
-**Matthew Vaishnav**  
-Independent research and engineering technical report  
-Research-only. Not clinically validated. Not diagnostic software.
+## Canonical public record
 
-[Open PDF](/computational-pathology-research/computational_pathology_research_complete_technical_report.pdf)
+- [Repository overview](../README.md)
+- [Authoritative claim boundary](../CLAIM_BOUNDARY.md)
+- [Canonical PA-NF manuscript source and release metadata](../manuscripts/computational-pathology-foundations-v1/README.md)
+- [Current research status](./CURRENT_STATUS.md)
+- [Hugging Face release registry](./releases/huggingface-release-registry.yaml)
 
-[Download PDF](/computational-pathology-research/computational_pathology_research_complete_technical_report.pdf)
+The canonical public paper is **Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline**. The publication workflow builds and publishes the manuscript PDF, supplement, source archive, and checksums.
 
-[Source Repository](https://github.com/matthewvaishnav/computational-pathology-research)
+## Research lines
 
----
+The repository contains several distinct research lines with separate evidence boundaries:
 
-This website is now intentionally reduced to the complete technical report PDF.
+- Paired-Acquisition Neural Factorization (PA-NF);
+- TransnnMIL whole-slide modeling;
+- PathologyFL;
+- FAIR-WEIGHTS-H;
+- experimental WSI-NCA / factorized tissue dynamics;
+- scientific provenance and evidence tooling.
 
-The PDF covers:
+Do not infer a unified end-to-end validated clinical system from the presence of these components in one repository.
 
-- PCam full-dataset benchmark
-- PANDA slide-level Phikon / MIL benchmarking
-- TransnnMIL stabilization
-- PathologyFL federated learning infrastructure
-- FAIR-WEIGHTS-H
-- dominant-site federated pathology detector results
-- mathematical notation
-- claim boundaries
-- reproducibility artifacts
-
-::: warning Research-only claim boundary
-This is not clinical validation, not diagnostic software, and not evidence of hospital deployment readiness.
-:::
-
-<style>
-.VPDoc .container,
-.VPDoc .content,
-.VPDoc .content-container {
-  max-width: 900px !important;
-}
-.VPDoc h1 {
-  font-size: 3.2rem;
-  line-height: 1;
-  letter-spacing: -0.045em;
-}
-.VPDoc a[href$='.pdf'] {
-  display: inline-block;
-  margin: 0.35rem 0.5rem 0.35rem 0;
-  padding: 0.7rem 1rem;
-  border-radius: 999px;
-  background: var(--vp-c-brand-1);
-  color: white !important;
-  text-decoration: none !important;
-  font-weight: 800;
-}
-</style>
+> **Research-only boundary:** this repository does not establish clinical validation, diagnostic utility, hospital deployment, regulatory approval, or universal superiority. When older documentation conflicts with the current claim boundary, `CLAIM_BOUNDARY.md` controls.
