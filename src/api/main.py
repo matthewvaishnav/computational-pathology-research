@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-"""
-Medical AI Platform - Production API Server
+"""Research API entry point for local computational-pathology engineering.
 
-FastAPI-based REST API server for Medical AI pathology analysis, DICOM integration,
-case management, and system monitoring.
-
-This is the production API entrypoint. Legacy mobile app endpoints were removed
-when the unused mobile scaffolding was deleted from the research repository.
+The API exposes experimental analysis, authentication, database, and monitoring
+surfaces used by the repository's engineering stack. It is not a clinical,
+hospital, or validated production interface.
 """
 
 import logging
 import os
-import sys
 import time
 import uuid
-from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
@@ -23,9 +18,6 @@ from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
-
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # API components
 from src.api.dependencies import get_inference_engine
@@ -54,9 +46,9 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="Medical AI Platform API",
-    description="Production REST API for Medical AI pathology analysis platform with real database and model inference",
-    version="2.0.0",
+    title="Computational Pathology Research API",
+    description="Research-only API scaffolding for computational pathology experiments and local engineering validation",
+    version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -142,7 +134,7 @@ async def startup_event() -> None:
         tracer.initialize(
             jaeger_endpoint=os.getenv("JAEGER_ENDPOINT"),
             otlp_endpoint=os.getenv("OTLP_ENDPOINT"),
-            service_version="2.0.0",
+            service_version="0.1.0",
             environment=os.getenv("ENVIRONMENT", "development"),
         )
         tracer.instrument_fastapi(app)
