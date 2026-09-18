@@ -33,8 +33,16 @@ target_metadata = Base.metadata
 
 
 def get_database_url():
-    """Get database URL from environment or config."""
-    return os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
+    """Return the migration database URL from the environment.
+
+    Repository-managed configuration must not embed database credentials.
+    """
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL must be set explicitly before running Alembic migrations."
+        )
+    return url
 
 
 def run_migrations_offline() -> None:
