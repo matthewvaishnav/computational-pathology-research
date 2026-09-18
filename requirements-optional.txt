@@ -21,6 +21,7 @@ PyKCS11>=1.5.12,<2.0.0
 
 # Advanced ML Models
 timm>=0.9.0,<1.0.0
+transformers>=4.40.0,<6.0.0
 umap-learn>=0.5.0,<1.0.0
 torch-geometric>=2.3.0,<3.0.0
 
@@ -81,7 +82,7 @@ hydra-core>=1.3.0,<2.0.0
 anthropic>=0.30.0,<1.0.0
 
 # Platform-specific
-openslide-bin>=4.0.0; sys_platform == 'darwin'
+openslide-bin>=4.0.0; sys_platform == 'darwin' or sys_platform == 'win32'
 
 # Python version compatibility
 tomli>=2.0.0,<3.0.0; python_version < '3.11'
