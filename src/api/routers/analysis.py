@@ -74,10 +74,10 @@ async def upload_for_analysis(
 
     try:
         # Enforce size limit before reading entire file into memory (DoS prevention)
-        max_size = 100 * 1024 * 1024  # 100MB
+        max_size = 50 * 1024 * 1024  # Match InferenceEngine byte-input limit
         content_length = request.headers.get("content-length") if request else None
         if content_length and int(content_length) > max_size:
-            raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 50MB")
 
         # Read file content (bounded by max_size)
         file_content = await file.read(max_size + 1)
@@ -85,14 +85,20 @@ async def upload_for_analysis(
             raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
 
         # Comprehensive file validation using centralized validator
-        detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
+        detected_mime, safe_filename = validate_file_upload(
+            file_content,
+            file.filename,
+            allowed_extensions={"jpg", "jpeg", "png", "tiff", "tif", "bmp"},
+            max_size=max_size,
+        )
         detected_type = detected_mime  # Alias for consistency
 
         file_size = len(file_content)
 
         # Create secure temporary file with restricted permissions
+        suffix = Path(safe_filename).suffix.lower() or ".tmp"
         fd, temp_path = tempfile.mkstemp(
-            suffix=".tmp", prefix="medical_ai_", dir=tempfile.gettempdir()
+            suffix=suffix, prefix="pathology_upload_", dir=tempfile.gettempdir()
         )
 
         try:
@@ -120,7 +126,12 @@ async def upload_for_analysis(
 
             # Start background processing with real inference
             # Pass only file path to avoid keeping file content in memory
-            background_tasks.add_task(process_real_analysis, str(analysis.id), temp_path)
+            background_tasks.add_task(
+                process_real_analysis,
+                str(analysis.id),
+                temp_path,
+                safe_filename,
+            )
 
             logger.info(
                 f"Analysis created: {analysis.id} for file {sanitize_for_log(safe_filename)}"
@@ -158,8 +169,12 @@ async def upload_for_analysis(
         raise HTTPException(status_code=500, detail="Upload failed. Please try again.")
 
 
-async def process_real_analysis(analysis_id: str, file_path: str) -> None:
-    """Background task to process analysis with real AI model."""
+async def process_real_analysis(
+    analysis_id: str,
+    file_path: str,
+    original_filename: str,
+) -> None:
+    """Background task to process a validated raster image with the model-backed engine."""
 
     # Get database session for background task
     from src.platform.database.connection import get_database_manager
@@ -184,7 +199,7 @@ async def process_real_analysis(analysis_id: str, file_path: str) -> None:
             # Run real model inference
             result = engine.analyze_image_bytes(
                 image_bytes=file_content,
-                filename=Path(file_path).name,
+                filename=original_filename,
                 disease_type="breast_cancer",
             )
 
