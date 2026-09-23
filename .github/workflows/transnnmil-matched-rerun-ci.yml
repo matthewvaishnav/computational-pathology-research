@@ -39,7 +39,7 @@ jobs:
 
       - name: Run integrity and repaired-fusion tests
         run: |
-          python -m pytest             tests/training/test_panda_transnnmil_matched_rerun.py             tests/models/test_transnnmil_canonical_fusion.py             -q
+          python -m pytest             tests/training/test_panda_transnnmil_matched_rerun.py             tests/models/test_transnnmil_canonical_fusion.py             -q -o addopts=''
 
       - name: Build synthetic locked split
         run: |
