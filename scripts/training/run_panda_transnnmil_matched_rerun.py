@@ -495,6 +495,11 @@ def main() -> None:
         smoke=args.smoke,
         smoke_limit_per_split=args.smoke_limit_per_split,
     )
+    if not args.smoke and len(frame) != int(spec["expected_valid_feature_bags"]):
+        raise ValueError(
+            f"full locked manifest must contain {spec['expected_valid_feature_bags']} valid bags; "
+            f"observed {len(frame)}"
+        )
     if args.verify_read:
         frame = verify_readable_features(frame, out_dir, args.max_bad_files)
     train_df, selection_df, confirmation_df = partition(frame)
@@ -504,6 +509,11 @@ def main() -> None:
         optimization["epochs"] = 1
         optimization["early_stopping_patience"] = 1
     feature_dim = infer_feature_dim(train_df)
+    if feature_dim != int(spec["expected_feature_dim"]):
+        raise ValueError(
+            f"feature dimension differs from frozen protocol: {feature_dim} "
+            f"!= {spec['expected_feature_dim']}"
+        )
     model = build_model(
         args.model_type,
         feature_dim=feature_dim,
