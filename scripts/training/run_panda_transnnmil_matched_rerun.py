@@ -500,9 +500,9 @@ def main() -> None:
         smoke=args.smoke,
         smoke_limit_per_split=args.smoke_limit_per_split,
     )
-    if not args.smoke and len(frame) != int(spec["expected_valid_feature_bags"]):
+    if not args.smoke and len(frame) != int(spec["expected_readable_feature_bags"]):
         raise ValueError(
-            f"full locked manifest must contain {spec['expected_valid_feature_bags']} valid bags; "
+            f"full locked manifest must contain {spec['expected_readable_feature_bags']} valid bags; "
             f"observed {len(frame)}"
         )
     if args.verify_read:
