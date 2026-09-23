@@ -16,37 +16,37 @@ The wider TransnnMIL family also contains:
 \item two-branch and three-branch variants for matched ablation studies.
 \end{itemize}
 
-These modules are part of the authored whole-slide architecture. The headline empirical evidence below concerns the repaired canonical PANDA path; optional branches are treated as extensions unless they have their own matched real-data result.
+These modules are part of the authored whole-slide architecture. The repaired canonical fusion and topology implementation has not yet received a provenance-complete matched PANDA rerun. The numerical PANDA results below are retained as historical pre-remediation execution records and must not be interpreted as empirical validation of the repaired architecture.
 
 \subsection{Full-PANDA feature pipeline}
 PANDA \cite{bulten2022panda} provides the primary slide-level substrate. The feature manifest was verified before training: 10,614 candidate HDF5 files were attempted, 10,611 were readable, and three unreadable files were removed. The resulting split contains 8,488 training slides and 2,123 validation slides, with 768-dimensional Phikon patch embeddings.
 
-The baseline hierarchy is informative even before matched architecture-superiority testing. Mean-pooled Phikon followed by an MLP reached validation QWK 0.7274, while gated AttentionMIL reached 0.8100. Three tuned TransnnMIL runs reached 0.8155, 0.8225, and 0.8086.
+Before the later TransnnMIL implementation remediation, mean-pooled Phikon followed by an MLP reached validation QWK 0.7274, while gated AttentionMIL reached 0.8100. Three historical TransnnMIL executions reached 0.8155, 0.8225, and 0.8086. These values remain records of the historical execution path; because that path was later found to contain fusion and topology implementation defects, they do not validate genuine repaired TransMIL--nnMIL fusion or a trained repaired topology contribution.
 
 \begin{table}[t]
 \centering
-\caption{Representative PANDA whole-slide results on Phikon feature bags. QWK is quadratic weighted kappa.}
+\caption{Historical pre-remediation PANDA whole-slide execution results on Phikon feature bags. QWK is quadratic weighted kappa. The TransnnMIL values do not constitute validation of the repaired canonical architecture.}
 \label{tab:panda_mil}
 \small
 \begin{tabular}{lr}
 \toprule
-Model / run & Validation QWK \\
+Model / historical run & Validation QWK \\
 \midrule
 Mean-pooled Phikon + MLP & 0.7274 \\
 Gated AttentionMIL & 0.8100 \\
-TransnnMIL tuned seed 42 & 0.8155 \\
-TransnnMIL tuned seed 123 & 0.8225 \\
-TransnnMIL tuned seed 2025 & 0.8086 \\
+Historical TransnnMIL seed 42 & 0.8155 \\
+Historical TransnnMIL seed 123 & 0.8225 \\
+Historical TransnnMIL seed 2025 & 0.8086 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Optimizer stabilization across 18 full-PANDA runs}
-Initial TransnnMIL experiments exposed substantial learning-rate sensitivity. The stabilized recipe therefore combined AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping. Six learning rates were evaluated across seeds 42, 123, and 2025, producing 18 full-PANDA runs.
+\subsection{Historical optimizer-stability record}
+The pre-remediation TransnnMIL execution path exposed substantial learning-rate sensitivity. A stabilization recipe combining AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping was evaluated across six learning rates and seeds 42, 123, and 2025, producing 18 historical full-PANDA runs.
 
 \begin{table*}[t]
 \centering
-\caption{TransnnMIL optimization-stability grid on the full readable PANDA feature manifest.}
+\caption{Historical pre-remediation TransnnMIL optimization-stability grid on the full readable PANDA feature manifest. These results characterize the earlier execution path and are not evidence for the repaired canonical implementation.}
 \label{tab:transnnmil_stability}
 \small
 \begin{tabular}{lrrrr}
@@ -63,7 +63,7 @@ $1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
 \end{tabular}
 \end{table*}
 
-The principal whole-slide conclusion is therefore stability rather than field-wide superiority: a careful training recipe keeps the repaired canonical TransnnMIL competitive across a broad optimization range. A fully matched comparison against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls remains the correct test for an architecture-superiority claim.
+The defensible conclusion from this grid is limited to the historical execution path: optimizer stabilization widened its usable learning-rate range. It does not establish stability, competitiveness, or predictive superiority of the repaired canonical TransnnMIL. New matched reruns of the repaired implementation against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls are required before promoting a repaired-architecture empirical claim.
 
 \subsection{Spatial tissue-dynamics extension}
 PA-NF also contains an experimental WSI-NCA line that replaces one-shot bag aggregation with repeated local state updates over spatial neighbourhoods. A frozen PANDA-300 ladder compared static, one-step, four-step tied, shuffled-topology, and untied controls across five seeds. The four-step tied model did not outperform the static or one-step controls on mean held-out QWK, and real topology did not consistently outperform shuffled topology. WSI-NCA therefore remains an active spatial-modeling extension rather than a demonstrated predictive improvement in the current pipeline.
