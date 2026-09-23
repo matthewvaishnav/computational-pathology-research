@@ -6,7 +6,7 @@
   "source_manifest": "results/panda_manifest/panda_phikon_manifest.csv",
   "locked_split": {
     "seed": 20260923,
-    "train_fraction": 0.70,
+    "train_fraction": 0.7,
     "selection_fraction": 0.15,
     "confirmation_fraction": 0.15,
     "stratification": "provider_plus_isup_grade_with_grade_fallback",
@@ -34,7 +34,13 @@
     "attention_mil",
     "transnnmil_branch_attention"
   ],
-  "seeds": [7, 19, 42, 123, 2025],
+  "seeds": [
+    7,
+    19,
+    42,
+    123,
+    2025
+  ],
   "optimization": {
     "epochs": 20,
     "batch_size": 8,
@@ -47,9 +53,9 @@
     "scheduler": "warmup_cosine",
     "warmup_epochs": 2,
     "min_learning_rate": 0.000001,
-    "gradient_clip_norm": 1.0,
+    "gradient_clip_norm": 1,
     "early_stopping_patience": 6,
-    "early_stopping_min_delta": 0.0,
+    "early_stopping_min_delta": 0,
     "max_patches": null,
     "class_weighting": "inverse_frequency_from_train_partition_only"
   },
@@ -67,7 +73,10 @@
     "bootstrap_draws": 10000,
     "bootstrap_seed": 20260923,
     "method": "hierarchical paired bootstrap: resample prespecified seeds, then identical confirmation cases within each selected seed",
-    "confidence_interval": [0.025, 0.975]
+    "confidence_interval": [
+      0.025,
+      0.975
+    ]
   },
   "preregistered_primary_success_rule": {
     "all_required_comparators_must_pass": true,
@@ -86,5 +95,8 @@
     "Historical pre-remediation TransnnMIL QWK values are not repaired-model evidence.",
     "If the primary rule fails, retain the result and report the failed gate rather than retuning.",
     "The secondary learned branch-attention model is reported separately and cannot retroactively redefine the primary model."
-  ]
+  ],
+  "source_manifest_git_blob_sha": "c928627705929ef7981934c05b9f294572671aad",
+  "expected_valid_feature_bags": 10611,
+  "expected_feature_dim": 768
 }
