@@ -24,6 +24,7 @@ import pandas as pd
 SPEC = Path("experiments/transnnmil/transnnmil_matched_panda_rerun_spec_20260923.json")
 SOURCE_MANIFEST = Path("results/panda_manifest/panda_phikon_manifest.csv")
 LOCKED_MANIFEST = Path("results/panda_transnnmil_matched_rerun/locked_split_20260923.csv")
+EXECUTION_MANIFEST = Path("results/panda_transnnmil_matched_rerun/locked_split_20260923_readable.csv")
 RESULTS_DIR = Path("results/panda_transnnmil_matched_rerun")
 
 
@@ -129,10 +130,21 @@ def freeze_split(source_manifest: Path) -> None:
     )
 
 
-def preflight_features(verify_all: bool) -> Dict[str, Any]:
+def preflight_features(verify_all: bool, spec: Dict[str, Any]) -> Dict[str, Any]:
     frame = pd.read_csv(LOCKED_MANIFEST)
-    valid = frame["valid"] if frame["valid"].dtype == bool else frame["valid"].astype(str).str.lower().isin({"true", "1", "yes"})
+    valid = (
+        frame["valid"]
+        if frame["valid"].dtype == bool
+        else frame["valid"].astype(str).str.lower().isin({"true", "1", "yes"})
+    )
     frame = frame[valid & frame["feature_path"].notna()].copy()
+
+    expected_structural = int(spec["expected_structurally_valid_feature_bags"])
+    if len(frame) != expected_structural:
+        raise RuntimeError(
+            f"frozen split contains {len(frame)} structurally valid bags; "
+            f"expected {expected_structural}"
+        )
 
     missing = [str(path) for path in frame["feature_path"] if not Path(str(path)).is_file()]
     if missing:
@@ -141,26 +153,90 @@ def preflight_features(verify_all: bool) -> Dict[str, Any]:
             f"{len(missing)} frozen PANDA HDF5 files are missing. First paths:\n{preview}"
         )
 
+    unreadable_rows: list[Dict[str, str]] = []
     checked = 0
     if verify_all:
-        for path_text in frame["feature_path"]:
-            path = Path(str(path_text))
-            with h5py.File(path, "r") as handle:
-                if "features" not in handle:
-                    raise ValueError(f"missing 'features' dataset: {path}")
-                shape = handle["features"].shape
-                if len(shape) != 2 or int(shape[1]) != 768:
-                    raise ValueError(f"unexpected feature shape {shape}: {path}")
-                _ = handle["features"][0:1]
+        for _, row in frame.iterrows():
+            image_id = str(row["image_id"])
+            path = Path(str(row["feature_path"]))
+            try:
+                with h5py.File(path, "r") as handle:
+                    if "features" not in handle:
+                        raise ValueError("missing 'features' dataset")
+                    shape = handle["features"].shape
+                    if len(shape) != 2 or int(shape[1]) != int(spec["expected_feature_dim"]):
+                        raise ValueError(f"unexpected feature shape {shape}")
+                    _ = handle["features"][0:1]
+            except Exception as exc:
+                unreadable_rows.append(
+                    {
+                        "image_id": image_id,
+                        "feature_path": str(path),
+                        "error": repr(exc),
+                    }
+                )
+                print(f"  unreadable: {image_id} | {path} | {exc}", flush=True)
             checked += 1
+            if checked % 250 == 0:
+                print(f"  verified {checked}/{len(frame)} HDF5 files...", flush=True)
+
+        observed_ids = {row["image_id"] for row in unreadable_rows}
+        expected_ids = set(spec["preexisting_runtime_unreadable_exclusions"]["image_ids"])
+        if observed_ids != expected_ids:
+            raise RuntimeError(
+                "runtime-unreadable PANDA set differs from the pre-existing frozen exclusion list: "
+                f"observed={sorted(observed_ids)} expected={sorted(expected_ids)}"
+            )
+
+        exclusion_path = RESULTS_DIR / "preexisting_runtime_unreadable_features.csv"
+        pd.DataFrame(unreadable_rows).to_csv(exclusion_path, index=False)
+        readable = frame[~frame["image_id"].astype(str).isin(expected_ids)].copy()
+    else:
+        expected_ids = set(spec["preexisting_runtime_unreadable_exclusions"]["image_ids"])
+        readable = frame[~frame["image_id"].astype(str).isin(expected_ids)].copy()
+
+    expected_readable = int(spec["expected_readable_feature_bags"])
+    if len(readable) != expected_readable:
+        raise RuntimeError(
+            f"readable execution manifest has {len(readable)} bags; expected {expected_readable}"
+        )
+
+    readable.to_csv(EXECUTION_MANIFEST, index=False)
+    execution_metadata = {
+        "schema_version": "panda-transnnmil-readable-execution-manifest/v1",
+        "status": "derived_from_frozen_split_without_resplitting",
+        "locked_parent_manifest": str(LOCKED_MANIFEST),
+        "locked_parent_manifest_sha256": sha256(LOCKED_MANIFEST),
+        "locked_manifest_sha256": sha256(EXECUTION_MANIFEST),
+        "seed": int(spec["locked_split"]["seed"]),
+        "selection_fraction": float(spec["locked_split"]["selection_fraction"]),
+        "confirmation_fraction": float(spec["locked_split"]["confirmation_fraction"]),
+        "excluded_image_ids": sorted(expected_ids),
+        "exclusion_provenance": spec["preexisting_runtime_unreadable_exclusions"]["provenance"],
+        "counts": {
+            key: int(value)
+            for key, value in readable["split"].value_counts().sort_index().items()
+        },
+    }
+    execution_metadata_path = EXECUTION_MANIFEST.with_suffix(
+        EXECUTION_MANIFEST.suffix + ".metadata.json"
+    )
+    execution_metadata_path.write_text(
+        json.dumps(execution_metadata, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     report = {
         "status": "passed",
-        "locked_manifest_sha256": sha256(LOCKED_MANIFEST),
-        "valid_feature_rows": int(len(frame)),
+        "locked_assignment_manifest_sha256": sha256(LOCKED_MANIFEST),
+        "execution_manifest_sha256": sha256(EXECUTION_MANIFEST),
+        "structurally_valid_feature_rows": int(len(frame)),
+        "runtime_unreadable_exclusions": sorted(expected_ids),
+        "readable_feature_rows": int(len(readable)),
         "missing_feature_files": 0,
         "hdf5_files_opened": checked,
         "all_hdf5_opened": bool(verify_all),
+        "partition_counts_after_exclusion": execution_metadata["counts"],
     }
     path = RESULTS_DIR / "preflight.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +266,7 @@ def completed_cell_is_valid(model: str, seed: int, spec_hash: str, split_hash: s
 def execute_matrix(args: argparse.Namespace) -> None:
     spec = load_json(SPEC)
     spec_hash = sha256(SPEC)
-    split_hash = sha256(LOCKED_MANIFEST)
+    split_hash = sha256(EXECUTION_MANIFEST)
     expected = len(spec["models"]) * len(spec["seeds"])
     completed = 0
 
@@ -211,7 +287,7 @@ def execute_matrix(args: argparse.Namespace) -> None:
                     "--seed",
                     str(seed),
                     "--manifest",
-                    str(LOCKED_MANIFEST),
+                    str(EXECUTION_MANIFEST),
                     "--out-dir",
                     str(RESULTS_DIR),
                     "--device",
@@ -257,7 +333,7 @@ def main() -> None:
 
     source = prepare_source_manifest(args.feature_root)
     freeze_split(source)
-    preflight_features(args.verify_all_hdf5)
+    preflight_features(args.verify_all_hdf5, spec)
 
     if args.preflight_only:
         return
