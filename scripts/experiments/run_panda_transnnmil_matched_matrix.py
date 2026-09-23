@@ -71,6 +71,13 @@ def run(command: list[str]) -> None:
     subprocess.run(command, check=True)
 
 
+def git_blob_sha(path: Path) -> str:
+    return subprocess.check_output(
+        ["git", "hash-object", str(path)],
+        text=True,
+    ).strip()
+
+
 def prepare_source_manifest(feature_root: Path | None) -> Path:
     if feature_root is None:
         return SOURCE_MANIFEST
@@ -239,6 +246,14 @@ def main() -> None:
     args = parse_args()
     if not SPEC.is_file() or not SOURCE_MANIFEST.is_file():
         raise FileNotFoundError("run from the computational-pathology-research repository root")
+
+    spec = load_json(SPEC)
+    observed_blob = git_blob_sha(SOURCE_MANIFEST)
+    expected_blob = str(spec["source_manifest_git_blob_sha"])
+    if observed_blob != expected_blob:
+        raise RuntimeError(
+            f"canonical PANDA manifest differs from frozen protocol: {observed_blob} != {expected_blob}"
+        )
 
     source = prepare_source_manifest(args.feature_root)
     freeze_split(source)
