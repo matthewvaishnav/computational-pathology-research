@@ -1,0 +1,140 @@
+name: TransnnMIL matched rerun CI
+
+on:
+  push:
+    branches:
+      - research/transnnmil-matched-rerun-20260923
+  pull_request:
+    paths:
+      - "experiments/transnnmil/transnnmil_matched_panda_rerun_spec_20260923.json"
+      - "scripts/data/build_panda_locked_split_manifest.py"
+      - "scripts/training/run_panda_transnnmil_matched_rerun.py"
+      - "scripts/experiments/analyze_panda_transnnmil_matched_rerun.py"
+      - "src/models/transnnmil/**"
+      - "src/models/mil/**"
+      - "tests/training/test_panda_transnnmil_matched_rerun.py"
+      - ".github/workflows/transnnmil-matched-rerun-ci.yml"
+
+jobs:
+  integrity-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install targeted dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch numpy pandas h5py scikit-learn pytest
+
+      - name: Compile rerun infrastructure
+        run: |
+          python -m py_compile             scripts/data/build_panda_locked_split_manifest.py             scripts/training/run_panda_transnnmil_matched_rerun.py             scripts/experiments/analyze_panda_transnnmil_matched_rerun.py
+
+      - name: Run integrity and repaired-fusion tests
+        run: |
+          python -m pytest             tests/training/test_panda_transnnmil_matched_rerun.py             tests/models/test_transnnmil_canonical_fusion.py             -q
+
+      - name: Build synthetic locked split
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          import h5py
+          import numpy as np
+          import pandas as pd
+
+          root = Path("/tmp/transnnmil-matched-smoke")
+          features = root / "features"
+          features.mkdir(parents=True, exist_ok=True)
+          rows = []
+          rng = np.random.default_rng(20260923)
+          for split_index, split in enumerate(("train", "selection", "confirmation")):
+              for index in range(12):
+                  image_id = f"{split}_{index:02d}"
+                  path = features / f"{image_id}.h5"
+                  array = rng.normal(
+                      loc=float(index % 6) / 5.0,
+                      scale=1.0,
+                      size=(6 + (index % 3), 32),
+                  ).astype("float32")
+                  with h5py.File(path, "w") as handle:
+                      handle.create_dataset("features", data=array)
+                  rows.append(
+                      {
+                          "image_id": image_id,
+                          "feature_path": str(path),
+                          "valid": True,
+                          "isup_grade": index % 6,
+                          "data_provider": f"provider_{split_index % 2}",
+                          "split": split,
+                      }
+                  )
+
+          manifest = root / "locked.csv"
+          pd.DataFrame(rows).to_csv(manifest, index=False)
+          digest = hashlib.sha256(manifest.read_bytes()).hexdigest()
+          metadata = {
+              "schema_version": "panda-transnnmil-locked-split/v1",
+              "status": "synthetic_smoke_only",
+              "locked_manifest_sha256": digest,
+              "seed": 20260923,
+              "selection_fraction": 0.15,
+              "confirmation_fraction": 0.15,
+              "counts": {"train": 12, "selection": 12, "confirmation": 12},
+          }
+          manifest.with_suffix(".csv.metadata.json").write_text(
+              json.dumps(metadata, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(manifest)
+          PY
+
+      - name: Smoke all seven preregistered models
+        run: |
+          set -euo pipefail
+          for model in             attention_mil             nnmil             transmil             transnnmil_repaired             transnnmil_concat             transnnmil_gate             transnnmil_branch_attention
+          do
+            python scripts/training/run_panda_transnnmil_matched_rerun.py               --model-type "$model"               --seed 42               --manifest /tmp/transnnmil-matched-smoke/locked.csv               --out-dir /tmp/transnnmil-matched-smoke/results               --device cpu               --smoke               --smoke-limit-per-split 12
+          done
+
+      - name: Verify smoke matrix completeness
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("/tmp/transnnmil-matched-smoke/results/smoke")
+          models = (
+              "attention_mil",
+              "nnmil",
+              "transmil",
+              "transnnmil_repaired",
+              "transnnmil_concat",
+              "transnnmil_gate",
+              "transnnmil_branch_attention",
+          )
+          for model in models:
+              path = root / model / "seed_42" / "metrics.json"
+              if not path.is_file():
+                  raise SystemExit(f"missing smoke result: {path}")
+              payload = json.loads(path.read_text())
+              if payload["status"] != "smoke_non_evidence":
+                  raise SystemExit(f"unexpected status for {model}")
+          print("7/7 smoke cells complete")
+          PY
+
+      - name: Upload smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transnnmil-matched-rerun-smoke
+          path: /tmp/transnnmil-matched-smoke/results
