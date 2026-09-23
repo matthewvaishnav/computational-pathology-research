@@ -509,7 +509,7 @@ def main() -> None:
         optimization["epochs"] = 1
         optimization["early_stopping_patience"] = 1
     feature_dim = infer_feature_dim(train_df)
-    if feature_dim != int(spec["expected_feature_dim"]):
+    if not args.smoke and feature_dim != int(spec["expected_feature_dim"]):
         raise ValueError(
             f"feature dimension differs from frozen protocol: {feature_dim} "
             f"!= {spec['expected_feature_dim']}"
