@@ -97,6 +97,24 @@
     "The secondary learned branch-attention model is reported separately and cannot retroactively redefine the primary model."
   ],
   "source_manifest_git_blob_sha": "c928627705929ef7981934c05b9f294572671aad",
-  "expected_valid_feature_bags": 10611,
-  "expected_feature_dim": 768
+  "expected_feature_dim": 768,
+  "expected_structurally_valid_feature_bags": 10614,
+  "expected_readable_feature_bags": 10611,
+  "preexisting_runtime_unreadable_exclusions": {
+    "provenance": "results/panda_transnnmil_baseline/unreadable_features.csv",
+    "application_order": "after frozen split assignment; never re-split",
+    "image_ids": [
+      "0032bfa835ce0f43a92ae0bbab6871cb",
+      "003a91841da04a5a31f808fb5c21538a",
+      "004391d48d58b18156f811087cd38abf"
+    ]
+  },
+  "amendments": [
+    {
+      "date": "2026-09-23",
+      "stage": "before_any_full_training_or_confirmation_evaluation",
+      "reason": "Implementation clarification after preflight encountered the already-documented HDF5 decompression failure. The frozen split assignment is preserved unchanged; only the three pre-existing runtime-unreadable bags are excluded afterward.",
+      "scientific_change": false
+    }
+  ]
 }
