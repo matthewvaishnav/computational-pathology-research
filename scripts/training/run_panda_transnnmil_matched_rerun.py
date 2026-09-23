@@ -16,6 +16,7 @@ import hashlib
 import json
 import math
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
@@ -27,6 +28,10 @@ from sklearn.metrics import confusion_matrix
 from torch import nn
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 
 from scripts.training.train_panda_transnnmil_baseline import (
     PandaFeatureBagDataset,
