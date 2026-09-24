@@ -77,9 +77,8 @@ Use only the part of this stack relevant to the recipient. Do not paste the enti
 - 10,611 slide-level Phikon feature bags were verified as readable.
 - Mean-pooled Phikon + MLP: QWK 0.7274.
 - Gated AttentionMIL: QWK 0.8100.
-- Repeated-seed TransnnMIL results: 0.8155, 0.8225, and 0.8086 QWK.
-- The stabilized learning-rate grid reached a best three-seed mean QWK of 0.8257 ± 0.0169.
-- The correct claim is that stabilized TransnnMIL is competitive with AttentionMIL in the current setup, not conclusively superior.
+- Historical pre-repair TransnnMIL prediction records are retained in the repository but are not current evidence for genuine repaired fusion/topology mechanisms.
+- The current TransnnMIL evidence path is a preregistered seven-model × five-seed matched PANDA rerun with branch-gradient, ablation, collapse, parameter-count, and timing controls.
 
 ### PCam validation
 
