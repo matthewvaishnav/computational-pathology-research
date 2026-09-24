@@ -16,7 +16,7 @@ The strongest current evidence is:
 - PANDA readable slide-level feature files after HDF5 verification: **10,611**
 - PANDA mean-pooled Phikon + MLP: **QWK 0.7274**
 - PANDA gated AttentionMIL: **QWK 0.8100**
-- PANDA tuned TransnnMIL repeated-seed QWK: **0.8155 / 0.8225 / 0.8086**
+- TransnnMIL: **repaired matched PANDA rerun active**; historical pre-repair QWK values are retained as execution records but are not current architecture evidence
 
 ---
 
@@ -41,17 +41,19 @@ Current PANDA results:
 |---|---:|
 | Mean-pooled Phikon + MLP | 0.7274 |
 | Gated AttentionMIL | 0.8100 |
-| Tuned TransnnMIL, seed 42 | 0.8155 |
-| Tuned TransnnMIL, seed 123 | 0.8225 |
-| Tuned TransnnMIL, seed 2025 | 0.8086 |
+| Historical pre-repair TransnnMIL, seed 42 | 0.8155 |
+| Historical pre-repair TransnnMIL, seed 123 | 0.8225 |
+| Historical pre-repair TransnnMIL, seed 2025 | 0.8086 |
 
 Interpretation:
 
-> Tuned TransnnMIL is competitive with gated AttentionMIL and slightly favorable across the current repeated-seed PANDA experiments, beating AttentionMIL on 2 of 3 tested seeds. The advantage is small and should not be described as conclusive superiority.
+> The listed TransnnMIL values are historical pre-repair prediction records. They do not validate the repaired canonical fusion/topology mechanisms. Current architectural interpretation is deferred to the preregistered matched rerun against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls.
 
 ---
 
 ## TransnnMIL ablation status
+
+> **Evidence-status correction:** the optimizer/ablation results below were produced on the historical pre-repair execution path. They remain useful for execution history and optimizer diagnostics, but they are not current evidence for genuine repaired branch fusion or topology.
 
 | Run | Best validation QWK | Interpretation |
 |---|---:|---|
