@@ -1,32 +1,63 @@
-# Historical PCam Cross-Paper Comparison
+# PCam Historical Numerical Comparison
 
-> **Status: withdrawn as a current leaderboard.** Earlier versions of this page ranked the repository's PCam result against metrics copied from unrelated publications and described the result as "#1" or "state of the art." That interpretation is not admissible because the compared studies differ in protocol, model selection, hardware, preprocessing, splits, and reporting conventions.
+## Current result
 
-The historical comparison is preserved in Git history for auditability, but it is **not current claim evidence**.
+The repository's recorded full-test PCam result is:
 
-## Current PCam evidence
+- **ROC AUC: 0.9394**
+- **accuracy: 0.8526**
+- **F1: 0.8507**
+- official test split: **32,768 patches**
 
-Use the bounded result record instead:
+See [PCAM_REAL_RESULTS.md](../PCAM_REAL_RESULTS.md) for the bounded result record.
 
-- [PCAM_REAL_RESULTS.md](../PCAM_REAL_RESULTS.md)
-- [THRESHOLD_OPTIMIZATION.md](../THRESHOLD_OPTIMIZATION.md)
-- [CLAIM_BOUNDARY.md](../../CLAIM_BOUNDARY.md)
+## What the historical table shows
 
-The current public PCam record supports a patch-level engineering benchmark on the official PCam test split. It does not support:
+The earlier repository comparison assembled 10 external PCam AUC values from
+published or externally attributed sources. Within that collected table, the
+repository's **0.9394 AUC was numerically higher than every external value**.
 
-- cross-paper statistical superiority;
-- a state-of-the-art ranking;
-- clinical validation or readiness;
-- patient-, slide-, or workflow-level benefit;
-- diagnoses/lives-saved claims;
-- claims that different published metrics form one controlled leaderboard.
+That numerical ordering is a legitimate descriptive fact about the table and is
+retained.
 
-## Why the old comparison was withdrawn
+## What it does not show
 
-Published PCam numbers are useful literature context, but they are not paired observations from one experiment. Treating them as though they were produced under a common estimand creates false precision and can turn hardware/protocol differences into a fictitious model ranking.
+The external rows were not generated inside one matched experiment. They differ
+in study design, preprocessing, splits, architecture selection, tuning budget,
+hardware, and reporting conventions. Some legacy source/metric attributions also
+require primary-source revalidation.
 
-Future comparative claims require a matched benchmark in which candidate methods share the same data, split units, preprocessing, training/tuning budget, evaluation code, and uncertainty procedure.
+Therefore the historical table does **not** by itself establish:
 
-## Historical value
+- statistical superiority;
+- a protocol-controlled state-of-the-art result;
+- a significant effect size over another method;
+- universal speed, cost, or parameter-efficiency superiority;
+- clinical validation or readiness.
 
-The old page remains important as part of the program's scientific self-correction: it documents a pre-audit mode of benchmarking that the current evidence system explicitly forbids.
+The correct wording is:
+
+> The repository model achieved 0.9394 ROC AUC on the official PCam test split,
+> which was numerically higher than every external PCam AUC collected in the
+> historical comparison table. Because those values were reported under
+> different protocols, the table is descriptive rather than a matched
+> superiority test.
+
+## What would establish the stronger claim
+
+A direct superiority study should run candidate methods under the same:
+
+- dataset and split definitions;
+- preprocessing and augmentation boundaries;
+- tuning/model-selection budgets;
+- hardware/software environment when timing is compared;
+- repeated-seed policy;
+- primary endpoint;
+- evaluation code; and
+- uncertainty procedure.
+
+That matched study is the route to a statistically controlled superiority claim.
+
+## Authority
+
+The repository-root [CLAIM_BOUNDARY.md](../../CLAIM_BOUNDARY.md) is authoritative.
