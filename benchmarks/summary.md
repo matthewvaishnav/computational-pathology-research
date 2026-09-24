@@ -8,21 +8,24 @@
 
 ### Metrics (Full Test Set: 32,768 samples)
 - **test_accuracy**: 0.8526 (85.26% ± 0.40% with 95% CI)
-- **test_auc**: 0.9394 🏆 **#1 vs 10 published baselines**
+- **test_auc**: 0.9394 — **numerically higher than all 10 external PCam AUC values in the historical comparison table**
 - **f1_score**: 0.8507
 - **training_time**: 4.2 hours (RTX 4070)
 - **inference_time**: 12.3 ms per image
 - **model_parameters**: 12.2M
 
-### Competitive Analysis
-**the platform vs State-of-the-Art:**
-- **Swin-Transformer (2021)**: +0.0082 AUC (+0.88%) with 0.14x parameters
-- **ConvNeXt (2022)**: +0.0096 AUC (+1.03%) with 0.43x parameters
-- **ViT-Base (2021)**: +0.0107 AUC (+1.15%) with 0.14x parameters
-- **PathViT (2023)**: +0.0127 AUC (+1.37%) with 0.27x parameters
-- **MedViT (2023)**: +0.0160 AUC (+1.73%) with 0.55x parameters
+### Historical numerical comparison
 
-**Ranking**: #1/11 in AUC (primary metric for medical AI)
+The earlier comparison table contained 10 external PCam AUC values. The
+repository result of **0.9394** was numerically higher than every value in that
+table.
+
+This is a **descriptive numerical lead**, not a matched statistical superiority
+test. The external values came from different studies/protocols, and some legacy
+source/metric attributions still require primary-source revalidation.
+
+**Historical numerical position:** highest AUC value in the collected 11-row
+table (1 repository result + 10 external values).
 
 ### Commands
 
@@ -36,8 +39,9 @@ python experiments/train_pcam.py --config experiments/configs/pcam_real.yaml
 python experiments/evaluate_pcam.py --checkpoint checkpoints/pcam/best_model.pth
 ```
 
-### Full Report
-See `results/comprehensive_benchmark_full/PLATFORM_SUPERIORITY_REPORT.md`
+### Comparison boundary
+See `docs/results/performance-comparison.md` and `CLAIM_BOUNDARY.md` for the
+current descriptive-vs-controlled comparison boundary.
 
 ---
 
