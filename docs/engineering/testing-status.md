@@ -1,5 +1,7 @@
 # Testing Summary - Computational Pathology Framework
 
+> **Historical engineering snapshot (April 2026):** this document predates the repository-wide scientific audit and should not be used as current evidence for production readiness, clinical integration, optimal hyperparameters, state-of-the-art architecture, or real-world transfer. Current scientific status is governed by `CLAIM_BOUNDARY.md`, `docs/status/current-status.md`, and study-specific evidence packages.
+
 **Date**: 2026-04-13  
 **Status**: ✅ All tests passing  
 **Coverage**: 55% overall, 972 tests passing
@@ -510,13 +512,13 @@ python run_temporal_demo.py
 - Training works end-to-end
 - Missing modality handling robust
 - Temporal reasoning functional
-- Clinical workflow integration complete
+- Historical clinical-integration prototype paths existed; this did not establish validated clinical workflow integration
 - Attention MIL models working
 - Multi-scale feature support
-- Performance optimization validated
-- Reproducible results
+- Performance-oriented code paths were exercised in the historical engineering suite
+- Reproducibility tooling and test fixtures were present
 
-✅ **Production quality**
+### Historical software-quality checklist
 - Proper error handling
 - Edge cases tested
 - Performance benchmarked
@@ -526,23 +528,23 @@ python run_temporal_demo.py
 
 ### Confidence Level
 
-**High confidence** that:
+**Historical engineering confidence claimed at the time:**
 - Architecture is sound
 - Implementation is correct
-- Code is production-ready (for research)
+- Core research software paths were executable under the then-current test suite
 - Results are reproducible
 
-**Medium confidence** that:
-- Performance will transfer to real data
-- Hyperparameters are optimal
-- Architecture is state-of-the-art
+**Not established by this historical test suite:**
+- transfer of performance to new real datasets;
+- optimal hyperparameters;
+- state-of-the-art architecture or performance;
 
-**Low confidence** that:
-- This beats existing methods (not tested)
-- Clinical deployment is ready (not validated)
+**Explicitly not established:**
+- superiority over existing methods;
+- clinical deployment readiness.
 
 ---
 
 **Last Updated**: 2026-04-13  
 **Next Review**: After full-scale PCam experiments  
-**Status**: ✅ All systems operational, CI passing on all platforms
+**Historical status at time of writing:** software test snapshot; not a current scientific or deployment-status statement.
