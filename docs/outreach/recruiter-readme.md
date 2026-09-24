@@ -36,11 +36,7 @@ This is research-only. It is not clinical software, not clinically validated, an
 | PANDA readable slide-level feature files | 10,611 |
 | PANDA mean-pooled Phikon + MLP | QWK 0.7274 |
 | PANDA gated AttentionMIL | QWK 0.8100 |
-| PANDA tuned TransnnMIL seed 42 | QWK 0.8155 |
-| PANDA tuned TransnnMIL seed 123 | QWK 0.8225 |
-| PANDA tuned TransnnMIL seed 2025 | QWK 0.8086 |
-| PANDA stabilized TransnnMIL LR grid | Mean best val QWK 0.8117-0.8257 across 18 full-PANDA runs |
-| PANDA stabilized TransnnMIL best LR mean | QWK 0.8257 +/- 0.0169 across 3 seeds |
+| PANDA TransnnMIL | Historical pre-repair prediction records retained; repaired seven-model × five-seed matched rerun is the current architecture-evidence path |
 | PCam validation AUC | 95.37% |
 
 ---
@@ -72,12 +68,12 @@ The work includes:
 - slide-level feature-bag training
 - mean-pooling baseline
 - gated AttentionMIL baseline
-- tuned and stabilized TransnnMIL baselines
+- historical TransnnMIL optimizer/stability records plus a current repaired matched-control rerun
 - repeated-seed validation
 - controlled ablations for patch cap, learning rate, and dropout
 - optimizer-stability testing across six learning rates and three seeds
 
-The current interpretation is intentionally conservative: tuned and stabilized TransnnMIL is competitive with gated AttentionMIL in the current repeated-seed PANDA experiments, and stabilization widened the usable learning-rate regime, but stronger architecture-superiority claims require more controlled validation.
+The historical TransnnMIL runs remain useful execution records, but they were produced before fusion/topology remediation and are not current evidence for the repaired architecture. The active claim path is the preregistered matched rerun against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls.
 
 ---
 
