@@ -1,11 +1,13 @@
 # Unpublished Benchmarks Inventory
 
+> **Historical pre-audit inventory:** this document records benchmark artifacts and contradictions discovered during repository cleanup. Its old cross-paper "superiority," ranking, effect-size, clinical-readiness, and publication recommendations are **withdrawn interpretations**, not current evidence. External comparator values were not all traced to matched primary-source protocols. The current claim boundary governs.
+
 **Date**: 2026-05-09  
 **Status**: COMPREHENSIVE INVENTORY COMPLETE
 
 ## Executive Summary
 
-This document inventories all benchmark results that exist on this PC but are **NOT published** in the public documentation. The analysis reveals **significant unpublished performance data** that demonstrates the platform's superiority over state-of-the-art methods.
+This document inventories benchmark artifacts that were present during the pre-audit repository review. Its main value is provenance and self-correction: it exposes inconsistent numbers, unmatched external comparisons, and historical reports that were once interpreted as superiority evidence but are not admissible as a controlled leaderboard.
 
 ### Key Findings
 
@@ -25,7 +27,7 @@ This document inventories all benchmark results that exist on this PC but are **
 
 ---
 
-## 1. the platform Superiority Reports (UNPUBLISHED)
+## 1. Historical self-labeled superiority reports (interpretation withdrawn)
 
 ### Location
 - `results/comprehensive_benchmark_full/the platform_SUPERIORITY_REPORT.md` (2026-05-08)
@@ -69,7 +71,7 @@ Full comparison table includes:
 - Statistical significance for all comparisons
 - Efficiency metrics (Acc/Params)
 - Training time, inference time
-- Clinical readiness features (Federated Learning, PACS Integration)
+- Implementation-feature columns (for example federated-learning or PACS prototype code); these do not establish clinical readiness
 
 **Unique the platform Advantages (UNPUBLISHED):**
 - ✅ PACS Integration (only method)
@@ -312,9 +314,9 @@ The reports claim:
 
 ## Recommendations
 
-### 1. Publish the Superiority Reports
+### 1. Do not publish these artifacts as superiority reports
 
-**Action**: Update `website/docs/PERFORMANCE_COMPARISON.md` with actual benchmark data from superiority reports.
+**Action**: Preserve raw repository metrics only where provenance is recoverable, and use a new matched benchmark if a comparative claim is needed. Do not promote the historical cross-paper ranking.
 
 **Benefits:**
 - Replace "estimates from literature" with real benchmarks
@@ -323,7 +325,7 @@ The reports claim:
 - Demonstrate parameter efficiency
 
 **Risks:**
-- Claims of "superiority" may be seen as aggressive
+- Claims of superiority are not scientifically admissible from these unmatched cross-paper values
 - Need to verify reproducibility of results
 - Should include methodology and caveats
 
@@ -404,7 +406,7 @@ The reports claim:
 
 ## Conclusion
 
-This inventory reveals **significant unpublished benchmark data** that demonstrates the platform's performance:
+This inventory reveals a substantial historical benchmark trail, but it does **not** by itself establish comparative performance:
 
 1. **the platform achieves #1 AUC (93.94%)** among 11 methods - UNPUBLISHED
 2. **Statistically significant improvements** over 10 competitors - UNPUBLISHED
@@ -414,9 +416,9 @@ This inventory reveals **significant unpublished benchmark data** that demonstra
 
 The published documentation (`PERFORMANCE_COMPARISON.md`) makes strong claims but relies on "estimates from literature" rather than the actual benchmark data that exists in `results/` directories.
 
-**Recommendation**: Update published documentation to reflect actual benchmark results, with appropriate methodology, caveats, and reproducibility instructions.
+**Current recommendation**: retain this inventory as an audit artifact, reconcile any repository-owned metric against its producer/configuration lineage, verify external values from primary sources before citing them, and run a matched benchmark before making any comparative performance claim.
 
 ---
 
 **Inventory Status**: COMPLETE ✅  
-**Next Steps**: Analyze remaining experiments, reconcile discrepancies, publish rigorous benchmarks ⚠️
+**Next steps**: reconcile remaining producer/provenance gaps and design new matched benchmarks when comparative evidence is scientifically necessary.
