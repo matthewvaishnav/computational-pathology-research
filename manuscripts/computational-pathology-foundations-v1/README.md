@@ -1,5 +1,8 @@
 # Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline
 
+> **Evidence-status notice:** this directory preserves a versioned foundations manuscript and supporting research history. Where its text conflicts with the repository-root `CLAIM_BOUNDARY.md`, the root claim boundary governs. In particular, historical TransnnMIL fusion/topology QWK records do not validate the repaired canonical implementation; current architecture evidence requires the repaired matched rerun.
+
+
 **Canonical PA-NF preprint package — 2026-09-04.**
 
 This directory contains the single public PA-NF manuscript for the full computational pathology pipeline. The paper follows the system from paired scanner-aware representation learning through whole-slide neural aggregation and into multi-institutional learning. Corrections and evidence updates are incorporated directly into this manuscript rather than published as a separate "corrected" paper.
