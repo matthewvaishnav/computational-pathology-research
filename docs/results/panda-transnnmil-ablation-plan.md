@@ -1,5 +1,7 @@
 # PANDA TransnnMIL Ablation Plan
 
+> **Historical planning record:** this plan predates the later TransnnMIL fusion/topology remediation. The QWK values below are retained to document what motivated the original ablations, not as current evidence for the repaired architecture. The active evaluation path is the preregistered repaired matched PANDA rerun governed by `CLAIM_BOUNDARY.md`.
+
 **Status:** planned controlled validation  
 **Dataset:** PANDA prostate cancer pathology  
 **Feature source:** Phikon patch features  
@@ -9,7 +11,7 @@
 
 ## Purpose
 
-The tuned TransnnMIL run reached validation QWK 0.8155 on the current PANDA split, slightly exceeding the gated AttentionMIL baseline QWK 0.8100. Because the margin is small, the next step is controlled ablation and repeated-split validation rather than stronger claims.
+At the time this plan was written, the historical pre-repair TransnnMIL run recorded validation QWK 0.8155 on its PANDA split versus 0.8100 for gated AttentionMIL. That historical comparison motivated the ablation plan; it is not current evidence for the repaired implementation.
 
 This plan is designed to answer three questions:
 
@@ -19,7 +21,7 @@ This plan is designed to answer three questions:
 
 ---
 
-## Current scoreboard
+## Historical pre-repair scoreboard
 
 | Model | Configuration | Best validation QWK |
 |---|---|---:|
@@ -128,7 +130,7 @@ If AttentionMIL with the same patch cap and tuning also improves beyond 0.8155, 
 
 Use:
 
-> Tuned TransnnMIL slightly exceeded AttentionMIL on one PANDA held-out split, reaching validation QWK 0.8155 versus 0.8100.
+> Historical pre-repair TransnnMIL recorded QWK 0.8155 versus 0.8100 for AttentionMIL on the original held-out split; this is an execution-history statement, not a repaired-model comparison.
 
 Do not use:
 
@@ -136,7 +138,7 @@ Do not use:
 
 Use after repeated-seed confirmation only if supported:
 
-> Tuned TransnnMIL showed a small but repeated QWK improvement over the current AttentionMIL baseline across repeated splits.
+> Do not promote the historical repeated-seed TransnnMIL values as evidence for the repaired architecture.
 
 ---
 
