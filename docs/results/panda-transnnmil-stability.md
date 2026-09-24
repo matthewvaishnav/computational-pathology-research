@@ -1,5 +1,7 @@
 # PANDA TransnnMIL Stabilization Results
 
+> **Historical evidence-status notice:** all TransnnMIL QWK values and optimizer conclusions on this page come from the **pre-repair execution path**. They are retained as historical prediction/training records. They do **not** validate the repaired canonical branch-fusion or topology mechanisms. Current architecture evidence requires the preregistered repaired matched rerun described in `CLAIM_BOUNDARY.md`.
+
 **Status:** completed repeated-seed optimizer-stability summary  
 **Task:** PANDA slide-level ISUP grading  
 **Features:** Phikon patch feature bags  
@@ -65,7 +67,7 @@ Earlier ablations suggested that TransnnMIL was highly optimization-sensitive in
 
 This supports the more careful claim:
 
-> TransnnMIL was optimizer-sensitive in the initial PANDA setup, but a stabilized training recipe substantially reduced learning-rate sensitivity and kept performance competitive across a broad LR grid.
+> On the historical pre-repair execution path, the recorded optimizer recipe reduced observed learning-rate sensitivity across the tested grid. This is a training-history observation, not current validation of repaired TransnnMIL architecture mechanisms.
 
 It does **not** prove that TransnnMIL is conclusively superior to gated AttentionMIL. The margin remains small and would require stronger controlled validation, additional splits, and/or external data before making architecture-superiority claims.
 
@@ -75,7 +77,7 @@ It does **not** prove that TransnnMIL is conclusively superior to gated Attentio
 
 Safe wording:
 
-> On PANDA Phikon feature bags, stabilized TransnnMIL remained competitive across 18 full-PANDA runs spanning six learning rates and three seeds, with mean best validation QWK ranging from approximately 0.812 to 0.826. This suggests the model is not inherently unstable, but requires a careful training recipe.
+> Historical pre-repair PANDA runs recorded mean best validation QWK values of approximately 0.812 to 0.826 across the tested optimizer grid. These values remain execution records only; repaired-model conclusions are deferred to the current matched rerun.
 
 Avoid wording:
 
