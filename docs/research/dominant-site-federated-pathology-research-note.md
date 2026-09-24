@@ -274,8 +274,8 @@ The next validation steps are:
 4. **Ablation of detector diagnostics**  
    Identify which FedAvg validation diagnostics drive the detector and which are redundant.
 
-5. **Training-stability evidence**  
-   Show that TransnnMIL performance is not a single learning-rate accident by testing warmup, cosine decay, gradient clipping, and repeated-seed stability.
+5. **Whole-slide control evidence**  
+   Keep historical pre-repair TransnnMIL optimizer/stability runs as execution records only, and use the repaired matched-control rerun for any current architecture comparison.
 
 ---
 
