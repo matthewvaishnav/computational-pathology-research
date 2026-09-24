@@ -1,5 +1,7 @@
 # PANDA Slide-Level Baselines
 
+> **Historical TransnnMIL boundary:** the mean-pooling and gated-AttentionMIL baseline records remain useful baseline evidence. The TransnnMIL values on this page were produced on the **pre-repair execution path** and are retained as historical predictions only. They do not validate genuine repaired TransMIL–nnMIL fusion or topology. See `CLAIM_BOUNDARY.md` and the repaired matched-rerun protocol for the current architecture-evidence path.
+
 **Status:** mean-pooling, AttentionMIL, and tuned TransnnMIL slide-level baselines completed; repeated-seed TransnnMIL validation in progress  
 **Dataset:** PANDA prostate cancer pathology  
 **Feature source:** Phikon patch features  
@@ -17,7 +19,7 @@ Three slide-level baselines are complete:
 2. gated AttentionMIL over patch-level Phikon feature bags,
 3. tuned TransnnMIL over capped Phikon feature bags.
 
-AttentionMIL substantially improves over mean pooling. Tuned TransnnMIL slightly exceeds AttentionMIL under the original seed-42 held-out validation split. Repeated-seed validation now shows TransnnMIL beating AttentionMIL on 2 of 3 tested seeds, with a small positive mean margin.
+AttentionMIL substantially improves over mean pooling in this historical comparison. The listed TransnnMIL runs are preserved as pre-repair execution records; their relative QWK values are not current evidence that the repaired TransnnMIL architecture improves on AttentionMIL.
 
 ---
 
@@ -272,7 +274,7 @@ The mean-pooling baseline establishes that the PANDA Phikon feature pipeline is 
 
 The first conservative TransnnMIL configuration only slightly exceeded mean pooling and underperformed AttentionMIL. A tuned TransnnMIL configuration using a larger patch cap, lower learning rate, lower dropout, smaller batch size, and longer training improved performance substantially.
 
-Across repeated seeds tested so far, tuned TransnnMIL is competitive with the AttentionMIL baseline and slightly favorable on average. It beats AttentionMIL on 2 of 3 tested seeds, but the margin remains small. This supports TransnnMIL as a promising PANDA slide-level model under tuned settings, while still requiring controlled ablations and more repeated splits before stronger superiority claims.
+Across the historical pre-repair runs, the recorded TransnnMIL QWK values were close to the AttentionMIL baseline. Because the historical fusion/topology path was later remediated, that comparison is not current architecture evidence. The repaired matched rerun, not this historical table, governs future comparative interpretation.
 
 ---
 
@@ -280,7 +282,7 @@ Across repeated seeds tested so far, tuned TransnnMIL is competitive with the At
 
 Use:
 
-> PANDA slide-level baseline training has started. Mean-pooled Phikon features achieved validation QWK 0.7274, gated AttentionMIL reached QWK 0.8100, and tuned TransnnMIL achieved repeated-seed best-validation QWK values of 0.8155, 0.8225, and 0.8086 on three PANDA splits after HDF5 readability verification.
+> PANDA mean-pooled Phikon and gated AttentionMIL provide active baseline records. Historical pre-repair TransnnMIL executions recorded best-validation QWK values of 0.8155, 0.8225, and 0.8086; those values are retained as execution history and are not current evidence for repaired fusion/topology mechanisms.
 
 Do not use:
 
@@ -296,4 +298,4 @@ Do not use:
 
 Use instead:
 
-> Tuned TransnnMIL is competitive with AttentionMIL and slightly favorable across the current repeated-seed PANDA experiments, beating AttentionMIL on 2 of 3 tested seeds. Controlled ablations and additional repeated splits are needed to establish robustness.
+> Current TransnnMIL comparative claims are pending the preregistered repaired matched rerun.
