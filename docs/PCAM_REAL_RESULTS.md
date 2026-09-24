@@ -34,6 +34,18 @@ pipeline exported reproducible descriptive metrics.
 
 It may be used as an engineering benchmark within this repository.
 
+### Historical numerical position
+
+The repository's historical comparison table collected 10 external PCam AUC
+values. The recorded repository result of **0.9394 ROC AUC was numerically higher
+than every value in that table**.
+
+That descriptive fact is retained. It is stronger than saying only that the
+model achieved nontrivial discrimination, but it is not the same as a matched
+superiority experiment: the external values came from different studies,
+training/tuning procedures, preprocessing paths, hardware, and reporting
+conventions.
+
 ## Unsupported interpretation
 
 This result does not establish:
@@ -44,7 +56,8 @@ This result does not establish:
 - diagnostic sensitivity or specificity in practice;
 - cancers, patients, or diagnoses saved;
 - workflow or patient benefit;
-- state-of-the-art performance;
+- a protocol-controlled or statistically established state-of-the-art claim
+  against unrelated published models;
 - statistical superiority to published models evaluated under different
   protocols, hardware, preprocessing, or tuning budgets; or
 - clinical or deployment readiness.
@@ -67,9 +80,12 @@ reproduced from the exact commit and configuration.
 
 ## Comparison policy
 
-No cross-paper leaderboard is maintained. Published results from unrelated
-systems are not directly comparable unless datasets, splits, preprocessing,
-model-selection rules, tuning budgets, hardware, and statistical units are
+The historical cross-paper table may be used for **descriptive numerical
+context**: 0.9394 was the highest AUC value in that collected table. It must not
+be treated as a controlled leaderboard or inferential superiority test.
+
+A stronger comparative claim requires datasets, splits, preprocessing,
+model-selection rules, tuning budgets, hardware, and statistical units to be
 controlled.
 
 ## Current authority
