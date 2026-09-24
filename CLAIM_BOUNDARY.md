@@ -88,10 +88,14 @@ The following results are not current claim evidence:
    published fixed-estimand replacement is active.
 3. **Unified separation scoreboard rankings.** Cross-dataset and cross-protocol
    values are an evidence inventory, not a controlled leaderboard.
-4. **PCam clinical or superiority claims.** No statement about diagnoses saved,
-   lives saved, clinical benefit, clinical readiness, workflow burden,
-   state-of-the-art performance, or statistical superiority over unrelated
-   published models is allowed.
+4. **PCam clinical or inferential cross-paper superiority claims.** The
+   documented 0.9394 ROC AUC may be described as numerically higher than every
+   external PCam AUC value collected in the historical comparison table. That is
+   a descriptive ordering of reported numbers, not a matched experiment. No
+   statement about diagnoses saved, lives saved, clinical benefit, clinical
+   readiness, workflow burden, statistically established superiority, or a
+   protocol-controlled state-of-the-art result is allowed without a matched
+   benchmark.
 5. **Any claim that cosine differences prove biological preservation or tissue
    damage.** Cosine agreement is a representation-geometry metric. It may be
    reported descriptively under a matched protocol but cannot by itself establish
@@ -206,6 +210,14 @@ Safe:
 
 > The documented PCam model achieved 0.9394 ROC AUC and 0.8526 accuracy on one
 > official patch-level test split.
+
+Safe:
+
+> In the historical comparison table assembled in this repository, 0.9394 was
+> numerically higher than every collected external PCam AUC value. Because those
+> external values came from different studies and protocols, this is a
+> descriptive numerical comparison, not a controlled statistical superiority
+> claim.
 
 Safe:
 
