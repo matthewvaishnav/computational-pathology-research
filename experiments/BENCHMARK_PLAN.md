@@ -4,10 +4,11 @@
 Run PathML, CLAM, and other frameworks on identical hardware (RTX 4070) with identical dataset (PCam) for fair comparison.
 
 ## Current Status
-- ✅ HistoCore optimized: 95.37% validation AUC, 2-3 hours
-- ✅ Baseline PyTorch: Estimated 89% AUC, 20-40 hours
-- ⏳ PathML: Not yet benchmarked
-- ⏳ CLAM: Not yet benchmarked
+- ✅ Repository PCam model: recorded 0.9394 test ROC AUC on the official 32,768-patch test split
+- ℹ️ Historical literature table: 0.9394 is numerically higher than all 10 collected external PCam AUC values, but those values are not a matched benchmark
+- ⏳ Direct baseline PyTorch rerun: implemented, not yet executed under the matched GPU protocol
+- ⏳ PathML: not yet benchmarked under the matched protocol
+- ⏳ CLAM: not yet benchmarked under the matched protocol
 
 ## Requirements
 
@@ -72,9 +73,9 @@ All benchmarks must use:
 
 ## Timeline
 
-### Phase 1: Baseline (Completed)
-- [x] HistoCore optimized benchmark
-- [ ] Baseline PyTorch benchmark (needs GPU)
+### Phase 1: Repository result + direct baseline
+- [x] Repository PCam result recorded
+- [ ] Direct baseline PyTorch benchmark under the matched GPU protocol
 
 ### Phase 2: PathML (Est. 1-2 days)
 - [ ] Install PathML
@@ -95,18 +96,13 @@ All benchmarks must use:
 - [ ] Include reproducibility instructions
 - [ ] Publish results
 
-## Expected Outcomes
+## Comparison target
 
-Based on architecture and optimization differences, I expect:
+The historical numerical lead is already documented. This plan exists to test
+the **stronger experimental claim** under matched conditions.
 
-**HistoCore advantages**:
-- Faster training (8-12x vs baseline)
-- Better GPU utilization (mixed precision, torch.compile)
-- Smaller memory footprint
-
-**Potential competitor advantages**:
-- PathML: More comprehensive API, better documentation
-- CLAM: Proven on clinical datasets, attention visualization
+No speed, cost, or accuracy advantage should be assumed in advance. The direct
+benchmark should report whatever the controlled reruns show.
 
 ## Reproducibility
 
@@ -118,10 +114,10 @@ All benchmarks will be:
 
 ## Notes
 
-- Current documentation uses estimated competitor numbers from literature
-- Direct benchmarks will replace estimates once completed
-- All claims will be updated to reflect actual measured performance
-- Statistical significance testing will be added for accuracy comparisons
+- Historical external numbers may be retained as descriptive context, with their provenance limitations stated
+- Direct matched benchmarks will determine whether experimental superiority is supported
+- The repository result of 0.9394 AUC remains valid regardless of the later comparative outcome
+- Statistical inference will be applied only to measurements generated under a defensible matched design
 
 ## Running Benchmarks
 
