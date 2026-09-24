@@ -1,30 +1,26 @@
-"""
-HistoCore Command Line Interface
-Simple commands like: histocore analyze slide.svs --output results/
+"""Legacy research utility CLI.
+
+This module is retained for local engineering/demo utilities. It is not a
+clinical or production inference interface. Commands that do not have a
+supported end-to-end inference path fail closed rather than emitting synthetic
+predictions.
 """
 
 import json
 import os
 import sys
 import time
-from pathlib import Path
 
 import click
-
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 @click.group()
 @click.version_option(version="1.0.0", prog_name="HistoCore")
 def cli():
-    """
-    HistoCore - Production-grade computational pathology framework
+    """Research utilities and explicitly synthetic demonstrations.
 
-    Examples:
-        histocore analyze slide.svs --output results/
-        histocore batch-analyze *.svs --model resnet50
-        histocore demo --quick
+    The legacy WSI analysis commands are intentionally disabled until they are
+    backed by a supported end-to-end inference artifact.
     """
 
 
@@ -44,83 +40,14 @@ def cli():
 @click.option("--gpu/--cpu", default=True, help="Use GPU acceleration")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, gpu, verbose):
-    """Analyze a single WSI file"""
-
-    click.echo("HistoCore Analysis Starting...")
-    click.echo(f"Input: {wsi_path}")
-    click.echo(f"Output: {output}")
-    click.echo(f"Model: {model}")
-
-    if verbose:
-        click.echo(
-            f"Settings: patch_size={patch_size}, batch_size={batch_size}, tissue_threshold={tissue_threshold}"
-        )
-        click.echo(f"Device: {'GPU' if gpu else 'CPU'}")
-
-    try:
-        # Create output directory
-        os.makedirs(output, exist_ok=True)
-
-        # Import HistoCore modules
-        if verbose:
-            click.echo("Loading HistoCore modules...")
-
-        from src.data.wsi.pipeline import BatchProcessor, ProcessingConfig
-
-        # Create processing config
-        config = ProcessingConfig(
-            patch_size=patch_size,
-            encoder_name=model,
-            batch_size=batch_size,
-            tissue_threshold=tissue_threshold,
-        )
-
-        # Process WSI
-        click.echo("Processing WSI patches...")
-        with click.progressbar(length=100, label="Processing") as bar:
-            processor = BatchProcessor(config, num_workers=2)
-
-            # Simulate progress updates
-            for i in range(0, 101, 10):
-                time.sleep(0.1)  # Simulate work
-                bar.update(10)
-
-            processor.process_slide(wsi_path)
-
-        # Run inference (demo mode)
-        click.echo("Running AI analysis...")
-
-        # Generate demo results
-        import numpy as np
-
-        predictions = {
-            "probability": float(np.random.random()),
-            "prediction": np.random.choice(["Normal", "Tumor"]),
-            "confidence": float(np.random.uniform(0.7, 0.95)),
-            "model_used": model,
-            "processing_time": time.time(),
-            "wsi_path": wsi_path,
-        }
-
-        # Save results
-        results_file = os.path.join(output, "analysis_results.json")
-        with open(results_file, "w") as f:
-            json.dump(predictions, f, indent=2)
-
-        # Display results
-        click.echo("\nAnalysis Complete!")
-        click.echo(f"Prediction: {predictions['prediction']}")
-        click.echo(f"Probability: {predictions['probability']:.3f}")
-        click.echo(f"Confidence: {predictions['confidence']:.2%}")
-        click.echo(f"Results saved to: {results_file}")
-
-    except ImportError as e:
-        click.echo(f"❌ Error: Missing dependencies - {e}")
-        click.echo("💡 Try: pip install -r requirements.txt")
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"❌ Analysis failed: {e}")
-        sys.exit(1)
+    """Fail closed: no supported end-to-end WSI classifier is wired to this legacy command."""
+    raise click.ClickException(
+        "The legacy 'analyze' command is disabled because it does not currently have a "
+        "supported end-to-end WSI inference artifact. It previously emitted synthetic "
+        "predictions, which is not acceptable for a research-facing analysis command. "
+        "Use the experiment-specific training/evaluation entry points documented under "
+        "experiments/ and scripts/, or use 'demo --quick' for explicitly synthetic output."
+    )
 
 
 @cli.command()
@@ -130,47 +57,11 @@ def analyze(wsi_path, output, model, patch_size, batch_size, tissue_threshold, g
 @click.option("--max-files", default=10, help="Maximum files to process")
 @click.option("--parallel", "-p", default=2, help="Number of parallel processes")
 def batch_analyze(pattern, output, model, max_files, parallel):
-    """Analyze multiple WSI files matching a pattern"""
-
-    import glob
-
-    # Find matching files
-    files = glob.glob(pattern)[:max_files]
-
-    if not files:
-        click.echo(f"❌ No files found matching pattern: {pattern}")
-        return
-
-    click.echo(f"🔬 HistoCore Batch Analysis")
-    click.echo(f"📁 Found {len(files)} files")
-    click.echo(f"📂 Output: {output}")
-
-    os.makedirs(output, exist_ok=True)
-
-    # Process each file
-    with click.progressbar(files, label="Processing files") as bar:
-        for i, file_path in enumerate(bar):
-            file_output = os.path.join(output, f"file_{i:03d}")
-            os.makedirs(file_output, exist_ok=True)
-
-            # Generate demo results for each file
-            import numpy as np
-
-            predictions = {
-                "file_index": i,
-                "wsi_path": file_path,
-                "probability": float(np.random.random()),
-                "prediction": np.random.choice(["Normal", "Tumor"]),
-                "confidence": float(np.random.uniform(0.7, 0.95)),
-                "model_used": model,
-            }
-
-            # Save individual results
-            results_file = os.path.join(file_output, "results.json")
-            with open(results_file, "w") as f:
-                json.dump(predictions, f, indent=2)
-
-    click.echo(f"✅ Batch analysis complete! Results in {output}")
+    """Fail closed for the same reason as the legacy single-WSI analysis command."""
+    raise click.ClickException(
+        "The legacy 'batch-analyze' command is disabled because it is not backed by a "
+        "supported end-to-end WSI inference artifact. No synthetic predictions are emitted."
+    )
 
 
 @cli.command()
@@ -179,11 +70,11 @@ def batch_analyze(pattern, output, model, max_files, parallel):
 def demo(quick, output):
     """Run a demonstration of HistoCore capabilities"""
 
-    click.echo("🎬 HistoCore Demo")
+    click.echo("🎬 Synthetic research demo")
     click.echo("=" * 50)
 
     if quick:
-        click.echo("⚡ Quick demo mode - using synthetic data")
+        click.echo("⚡ Synthetic demo only — outputs are illustrative, not model evidence")
 
         # Generate synthetic demo
 
@@ -197,6 +88,7 @@ def demo(quick, output):
         results = {
             "demo_mode": True,
             "synthetic_data": True,
+            "not_model_evidence": True,
             "prediction": "Tumor",
             "probability": 0.847,
             "confidence": 0.923,
@@ -273,13 +165,12 @@ def info():
     except ImportError:
         click.echo(f"\n🖥️  GPU: PyTorch not installed")
 
-    # HistoCore info
-    click.echo(f"\n🔬 HistoCore Features:")
-    click.echo(f"  • 4,196 comprehensive tests")
-    click.echo(f"  • 8-12x training optimization")
-    click.echo(f"  • Federated learning with privacy")
-    click.echo(f"  • PACS integration")
-    click.echo(f"  • Enterprise security")
+    click.echo("\n🔬 Repository scope:")
+    click.echo("  • Computational pathology research code")
+    click.echo("  • Multiple-instance and whole-slide modeling")
+    click.echo("  • Paired-acquisition representation experiments")
+    click.echo("  • Federated-pathology research modules")
+    click.echo("  • Reproducibility and scientific-audit tooling")
 
 
 @cli.command()

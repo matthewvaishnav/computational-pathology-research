@@ -1,397 +1,128 @@
-# GitHub Actions Workflows
+# GitHub Actions workflows
 
-This directory contains CI/CD workflows for automated testing, building, and deployment.
+This directory contains the repository's automated engineering, security, publication, and release checks.
 
-## Available Workflows
+The workflow files are part of a **research codebase**. The presence of Docker, Kubernetes, cloud, API, security, or deployment automation does not establish clinical validation, hospital deployment, regulatory readiness, or production use. Public interpretation is bounded by [`CLAIM_BOUNDARY.md`](../../CLAIM_BOUNDARY.md).
 
-### 1. `ci.yml` - Continuous Integration
-**Trigger**: Push to main/develop, Pull requests
-**Purpose**: Main CI pipeline for testing and validation
+## Core engineering checks
 
-**Jobs**:
-- **test**: Run tests on multiple OS (Ubuntu, Windows, macOS) and Python versions (3.9, 3.10, 3.11) with parallel execution (pytest-xdist)
-- **lint**: Code quality checks (flake8, black, isort)
-- **type-check**: Static type checking with mypy
-- **security**: Security scanning with bandit
-- **docker**: Docker build test
-- **docs**: Documentation validation and link checking
-- **quick-demo**: Run quick demo to ensure end-to-end functionality
-- **pacs-tests**: PACS integration property tests (40/48 properties, 83% coverage)
-- **coverage-report**: Generate and upload coverage reports
-- **all-checks-passed**: Final status check
+### `ci.yml` — CI
 
-**Artifacts**:
-- Coverage reports (XML and HTML)
-- Security scan results
-- Quick demo results
-- PACS test results and Hypothesis statistics
+Runs on pushes and pull requests to `main` and `develop`, plus manual dispatch.
 
-**Status Badge**:
-```markdown
-![CI](https://github.com/your-org/repo/workflows/CI/badge.svg)
-```
+The current CI performs:
 
-### 2. `release.yml` - Release Automation
-**Trigger**: Push tags matching `v*.*.*` (e.g., v1.0.0)
-**Purpose**: Automated release creation and package publishing
+- changed-file Python formatting and lint checks;
+- static type checking;
+- security checks;
+- a Linux/Windows Python test matrix;
+- installed-package import validation, including the optional foundation-model research package;
+- Docker image build validation;
+- documentation/YAML checks on pull requests;
+- a quick synthetic/demo smoke on `main`;
+- coverage artifacts on `main`.
 
-**Jobs**:
-- **create-release**: Build Python package and create GitHub release
-- **docker-release**: Build and push Docker images with version tags
+The primary test matrix currently uses Ubuntu with Python 3.10 and 3.11 plus Windows with Python 3.10. The comprehensive weekly matrix is separate.
 
-**Steps**:
-1. Run full test suite
-2. Build Python package (wheel and sdist)
-3. Generate changelog from git commits
-4. Create GitHub release with artifacts
-5. Build and push Docker image to Docker Hub
+### `quick-check.yml` — Quick Check
 
-**Usage**:
+Fast Ubuntu/Python 3.10 feedback on pushes and pull requests to `main` and `develop`.
+
+### `comprehensive-test.yml` — Comprehensive Test
+
+Weekly and manually triggered broader platform test matrix. It is intentionally separate from the faster pull-request path.
+
+### `repository-audit.yml` — Repository Audit
+
+Runs on pull requests to `main` and on manual dispatch. It inventories tracked files, duplicate content, large/generated artifacts, and Python syntax. The audit is diagnostic; it does not delete or rewrite scientific artifacts.
+
+### `root-layout.yml` — Root layout
+
+Checks that root-level files follow the repository layout rules.
+
+## Scientific provenance and publication
+
+### `publish-panf-manuscript.yml` — PA-NF manuscript publication
+
+Builds the canonical PA-NF manuscript and supplement from LaTeX, applies PDF/source quality gates, packages the arXiv source bundle, records checksums, and publishes the direct manuscript site on `gh-pages`.
+
+This workflow owns the canonical public Pages publication path.
+
+### `paired-acquisition-provenance.yml` — Paired-acquisition provenance
+
+Validates the paired-acquisition provenance/release machinery and its protected evidence paths.
+
+### `huggingface-release-validation.yml` — Hugging Face release validation
+
+Validates release registry/tooling and model/evidence bundle tests when the Hugging Face release layer changes.
+
+### `build-arxiv-paper.yml` — arXiv preprint build
+
+Builds the separate arXiv source/PDF artifact for the path-filtered paper source under `paper/arxiv/`.
+
+## Security
+
+### `security.yml` — Security Audit
+
+Runs on `main`, on a daily schedule, and manually.
+
+### `security-scan.yml` — Security Scan
+
+Runs on pushes/pull requests to `main`, weekly, and manually.
+
+### `codeql.yml` — CodeQL Security Scan
+
+Runs weekly and on manual dispatch.
+
+### `dependency-review.yml` — Standalone dependency review
+
+Retained for manual use. Pull-request dependency review is integrated into the main CI path.
+
+## Release and deployment scaffolding
+
+### `release.yml` — Release
+
+Tag/manual release automation for packaged artifacts.
+
+### `docker-publish.yml` — Docker Publish
+
+Manual-only container publishing workflow. It is not evidence that a public or clinical deployment exists.
+
+### `cd.yml` — CD
+
+Research/deployment scaffolding retained for reproducibility and engineering experiments. Treat it as infrastructure code, not as evidence of a validated development/staging/production service.
+
+### `pages.yml` and `mkdocs.yml`
+
+Disabled compatibility stubs. They are retained because repository regression tests reference these workflow paths. They do not own deployment.
+
+## Local verification
+
+For the Python package:
+
 ```bash
-# Create a new release
-git tag -a v1.0.0 -m "Release version 1.0.0"
-git push origin v1.0.0
-```
-
-### 3. `cd.yml` - Continuous Deployment
-**Trigger**: Push to main (when src/k8s/Dockerfile/requirements change), Manual dispatch
-**Purpose**: Automated deployment pipeline with environment promotion
-
-**Jobs**:
-- **test**: Run full test suite (skippable via manual trigger)
-- **build**: Build and push Docker image to GitHub Container Registry
-- **deploy-dev**: Deploy to development environment (automatic)
-- **deploy-staging**: Deploy to staging environment (automatic after dev)
-- **deploy-prod**: Deploy to production with blue-green strategy (manual only)
-- **rollback**: Automatic rollback on failure
-- **notify**: Deployment status summary
-
-**Features**:
-- Multi-environment deployment (dev → staging → prod)
-- Blue-green deployment for production
-- Automatic rollback on failure
-- Smoke tests and integration tests
-- Security scanning with Trivy
-- Health check verification
-
-**Manual Deployment**:
-```bash
-# Deploy to specific environment
-gh workflow run cd.yml -f environment=prod
-```
-
-**Environments**:
-- Development: https://dev.histocore.example.com
-- Staging: https://staging.histocore.example.com
-- Production: https://histocore.example.com
-
-### 4. `docker-publish.yml` - Docker Image Publishing
-**Trigger**: Manual dispatch only
-**Purpose**: Standalone Docker image publishing to Docker Hub
-
-**Jobs**:
-- **build-and-push**: Build and push Docker image to Docker Hub
-
-**Tags Created**:
-- `latest` (for main branch)
-- `main-<sha>` (commit-specific)
-- Branch name (for other branches)
-
-### 5. `codeql.yml` - Security Analysis
-**Trigger**: Push, Pull requests, Weekly schedule (Monday midnight)
-**Purpose**: Advanced security scanning with CodeQL
-
-**Features**:
-- Detects security vulnerabilities
-- Identifies code quality issues
-- Runs security-and-quality queries
-- Integrates with GitHub Security tab
-
-### 6. `dependency-review.yml` - Dependency Security
-**Trigger**: Pull requests
-**Purpose**: Review dependency changes for security issues
-
-**Features**:
-- Checks for vulnerable dependencies
-- Validates license compatibility
-- Fails on moderate+ severity issues
-- Comments summary in PR
-
-## Workflow Status
-
-Check workflow status at: `https://github.com/your-org/repo/actions`
-
-## Required Secrets
-
-Configure these secrets in repository settings:
-
-### Kubernetes (for cd.yml)
-- `KUBECONFIG_DEV`: Base64-encoded kubeconfig for dev cluster
-- `KUBECONFIG_STAGING`: Base64-encoded kubeconfig for staging cluster
-- `KUBECONFIG_PROD`: Base64-encoded kubeconfig for prod cluster
-
-### Docker Hub (for docker-publish.yml and release.yml)
-- `DOCKER_USERNAME`: Docker Hub username
-- `DOCKER_PASSWORD`: Docker Hub password or access token
-
-### Optional: Codecov (for coverage reporting)
-- `CODECOV_TOKEN`: Codecov upload token
-
-### Optional: Weights & Biases (for experiment tracking)
-- `WANDB_API_KEY`: W&B API key
-
-## Setting Up Secrets
-
-1. Go to repository Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Add each required secret
-
-### Encoding kubeconfig for GitHub Secrets
-```bash
-# Encode kubeconfig file
-cat ~/.kube/config | base64 -w 0 > kubeconfig.b64
-
-# Copy content and add as secret
-cat kubeconfig.b64
-```
-
-## Workflow Triggers
-
-### Automatic Triggers
-- **Push to main/develop**: Runs CI, Docker publish
-- **Push to main (src/k8s changes)**: Runs CD pipeline (dev → staging)
-- **Pull requests**: Runs CI, dependency review
-- **Tag push (v*.*.*)**: Runs release workflow
-- **Weekly (Monday)**: Runs CodeQL security scan
-
-### Manual Triggers
-All workflows support manual triggering via `workflow_dispatch`:
-1. Go to Actions tab
-2. Select workflow
-3. Click "Run workflow"
-4. Choose branch and run
-
-**CD Pipeline Manual Deployment**:
-```bash
-# Using GitHub CLI
-gh workflow run cd.yml -f environment=prod -f skip_tests=false
-
-# Or via Actions UI
-# 1. Go to Actions → CD
-# 2. Click "Run workflow"
-# 3. Select environment (dev/staging/prod)
-# 4. Optionally skip tests
-```
-
-## Local Testing
-
-### Run tests locally (mimics CI)
-```bash
-# Install dependencies
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-pip install -e .
-pip install pytest-xdist  # For parallel execution
-
-# Run tests (parallel execution like CI)
-pytest tests/ -v -n auto -m "not property and not slow" --cov=src --cov-report=term
-
-# Run PACS tests
-pytest tests/test_pacs_*.py -v --hypothesis-show-statistics -m "not slow"
-
-# Run linting
-flake8 src/ tests/
-black --check src/ tests/
-isort --check-only src/ tests/
-
-# Run type checking
-mypy src/ --ignore-missing-imports
-
-# Run security scan
-bandit -r src/
-
-# Test Docker build
-docker build -t pathology-api:test .
-docker run --rm pathology-api:test python -c "import src"
-
-# Run quick demo
-python run_quick_demo.py
+pip install -e ".[foundation]"
+python -c "import src; import src.foundation.training_pipeline"
+pytest tests/security -m "not property and not slow"
 ```
 
-### Test CD pipeline locally
+For root documentation tooling:
+
 ```bash
-# Build Docker image
-docker build -t histocore:test .
-
-# Test with Helm (requires k8s cluster)
-helm install histocore-test ./k8s/helm/histocore \
-  --namespace test \
-  --create-namespace \
-  --values ./k8s/helm/histocore/values-dev.yaml \
-  --set image.repository=histocore \
-  --set image.tag=test \
-  --dry-run --debug
-
-# Deploy to local k8s (minikube/kind)
-helm upgrade --install histocore-local ./k8s/helm/histocore \
-  --namespace local \
-  --create-namespace \
-  --values ./k8s/helm/histocore/values-dev.yaml \
-  --set image.repository=histocore \
-  --set image.tag=test
-
-# Verify deployment
-kubectl get pods -n local
-kubectl logs -n local -l app.kubernetes.io/name=histocore
+npm ci
+npm run docs:build
 ```
 
-## Workflow Optimization
+For the historical Docusaurus tree under `website/`, use its own lockfile:
 
-### Caching
-All workflows use caching to speed up builds:
-- **pip cache**: Python dependencies
-- **Docker layer cache**: Docker builds (GitHub Actions cache)
-
-### Matrix Strategy
-CI runs tests across multiple configurations:
-- OS: Ubuntu, Windows, macOS
-- Python: 3.9, 3.10, 3.11
-
-This ensures compatibility across platforms.
-
-### Parallel Execution
-Jobs run in parallel when possible:
-```
-test ─┐
-lint ─┼─→ all-checks-passed
-docker─┤
-docs ─┘
+```bash
+cd website
+npm ci
+npm run build
 ```
 
-## Troubleshooting
-
-### Issue: Tests fail on Windows but pass on Linux
-**Cause**: Path separator differences or line ending issues
-**Solution**: 
-- Use `pathlib.Path` for cross-platform paths
-- Configure git to handle line endings: `git config core.autocrlf true`
-
-### Issue: Docker build fails
-**Cause**: Missing dependencies or incorrect Dockerfile
-**Solution**:
-- Test locally: `docker build -t test .`
-- Check Dockerfile syntax
-- Verify all required files are included (check .dockerignore)
-
-### Issue: Coverage upload fails
-**Cause**: Missing CODECOV_TOKEN or network issues
-**Solution**:
-- Add CODECOV_TOKEN secret
-- Set `fail_ci_if_error: false` in workflow (already configured)
-
-### Issue: Quick demo times out
-**Cause**: Demo takes longer than 10 minutes
-**Solution**:
-- Increase timeout in workflow: `timeout-minutes: 15`
-- Optimize demo for faster execution
-
-### Issue: Dependency review blocks PR
-**Cause**: Vulnerable or incompatible dependencies
-**Solution**:
-- Update vulnerable packages: `pip install --upgrade <package>`
-- Review license compatibility
-- Request exception if necessary
-
-### Issue: CD deployment fails
-**Cause**: Missing kubeconfig secrets or cluster access issues
-**Solution**:
-- Verify kubeconfig secrets are base64-encoded correctly
-- Test cluster access: `kubectl --kubeconfig=<file> get nodes`
-- Check Helm chart syntax: `helm lint ./k8s/helm/histocore`
-- Verify namespace exists or use `--create-namespace`
-
-### Issue: Blue-green deployment stuck
-**Cause**: Green deployment not healthy or traffic switch failed
-**Solution**:
-- Check pod status: `kubectl get pods -n prod -l version=green`
-- View logs: `kubectl logs -n prod -l version=green`
-- Manual rollback: `kubectl patch service histocore -n prod -p '{"spec":{"selector":{"version":"blue"}}}'`
-
-### Issue: Trivy security scan fails
-**Cause**: Critical vulnerabilities in Docker image
-**Solution**:
-- Update base image in Dockerfile
-- Update vulnerable dependencies in requirements.txt
-- Review Trivy report in GitHub Security tab
-
-## Best Practices
-
-1. **Always run tests locally** before pushing
-2. **Keep workflows fast** - aim for <10 minutes total
-3. **Use caching** to speed up builds
-4. **Monitor workflow runs** and fix failures promptly
-5. **Update dependencies** regularly to avoid security issues
-6. **Use semantic versioning** for releases (v1.0.0, v1.1.0, etc.)
-7. **Write meaningful commit messages** (used in changelog)
-8. **Test Docker images** before releasing
-
-## Workflow Badges
-
-Add these badges to your README.md:
-
-```markdown
-![CI](https://github.com/your-org/repo/workflows/CI/badge.svg)
-![CD](https://github.com/your-org/repo/workflows/CD/badge.svg)
-![Docker](https://github.com/your-org/repo/workflows/Docker%20Publish/badge.svg)
-![CodeQL](https://github.com/your-org/repo/workflows/CodeQL/badge.svg)
-[![codecov](https://codecov.io/gh/your-org/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/your-org/repo)
-```
-
-## Customization
-
-### Modify test matrix
-Edit `ci.yml`:
-```yaml
-matrix:
-  os: [ubuntu-latest, windows-latest]  # Remove macOS
-  python-version: ['3.10', '3.11']     # Remove 3.9
-```
-
-### Change Docker registry
-Edit `docker-publish.yml` to use GitHub Container Registry:
-```yaml
-- name: Log in to GitHub Container Registry
-  uses: docker/login-action@v3
-  with:
-    registry: ghcr.io
-    username: ${{ github.actor }}
-    password: ${{ secrets.GITHUB_TOKEN }}
-```
-
-### Add new workflow
-1. Create new YAML file in `.github/workflows/`
-2. Define trigger, jobs, and steps
-3. Test with `workflow_dispatch` first
-4. Enable for automatic triggers
-
-## Monitoring
-
-### View workflow runs
-- Go to repository Actions tab
-- Click on workflow name
-- View run history and logs
-
-### Set up notifications
-1. Go to repository Settings → Notifications
-2. Configure email/Slack notifications for workflow failures
-
-### Monitor costs
-- GitHub Actions is free for public repos
-- Private repos: 2,000 minutes/month free
-- Monitor usage: Settings → Billing → Actions
-
-## Additional Resources
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Workflow Syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions)
-- [Docker Build Push Action](https://github.com/docker/build-push-action)
-- [CodeQL](https://codeql.github.com/)
+Do not deploy either documentation stack directly to `gh-pages`; the canonical publication workflow owns that branch.

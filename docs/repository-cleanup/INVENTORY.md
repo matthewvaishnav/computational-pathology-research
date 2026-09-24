@@ -92,7 +92,7 @@ The following paths are protected from cleanup deletion or silent rewriting unti
 - `paper/arxiv/identifiability_calculations.tex`
 - `paper/arxiv/main.tex`
 - `paper/arxiv/references.bib`
-- `.github/workflows/vitepress.yml`
+- `.github/workflows/publish-panf-manuscript.yml`
 
 ## First repair tranche
 

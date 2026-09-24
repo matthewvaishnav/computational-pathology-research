@@ -300,6 +300,19 @@ class TestAnalysisRouterFunctionality:
 
         assert not validation_passed
 
+    def test_upload_contract_matches_inference_engine(self):
+        """Regression guard for upload filename/format handoff."""
+        analysis_file = "src/api/routers/analysis.py"
+
+        with open(analysis_file, "r", encoding="utf-8") as handle:
+            content = handle.read()
+
+        assert 'allowed_extensions={"jpg", "jpeg", "png", "tiff", "tif", "bmp"}' in content
+        assert "max_size = 50 * 1024 * 1024" in content
+        assert "original_filename: str" in content
+        assert "filename=original_filename" in content
+        assert "filename=Path(file_path).name" not in content
+
     def test_analysis_router_endpoint_count(self):
         """Test that analysis router has the expected number of endpoints."""
         analysis_file = "src/api/routers/analysis.py"

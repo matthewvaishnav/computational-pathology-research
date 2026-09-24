@@ -1,11 +1,15 @@
-"""
-HistoCore Web Interface
-Browser-based WSI analysis
+"""Legacy synthetic web demonstration.
+
+This Flask surface is retained for UI/demo development only. It does not expose
+a supported pathology inference backend. Real-looking analysis routes fail
+closed; synthetic output is available only through an explicitly named demo
+endpoint.
 """
 
 import json
 import os
 import time
+from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import numpy as np
@@ -54,8 +58,26 @@ def upload_file() -> Tuple[Response, int]:
 
 @app.route("/analyze", methods=["POST"])
 def analyze() -> Tuple[Response, int]:
-    data = request.get_json()
-    filename = data.get("filename")
+    """Fail closed rather than return synthetic values from a real-looking route."""
+    return (
+        jsonify(
+            {
+                "error": (
+                    "No supported end-to-end WSI inference backend is wired to this "
+                    "legacy web interface. Use /demo/analyze only for explicitly "
+                    "synthetic demonstration output."
+                )
+            }
+        ),
+        501,
+    )
+
+
+@app.route("/demo/analyze", methods=["POST"])
+def demo_analyze() -> Tuple[Response, int]:
+    """Run the explicitly synthetic UI demonstration."""
+    data = request.get_json(silent=True) or {}
+    filename = secure_filename(data.get("filename", ""))
 
     if not filename:
         return jsonify({"error": "No filename provided"}), 400
@@ -64,30 +86,21 @@ def analyze() -> Tuple[Response, int]:
     if not os.path.exists(filepath):
         return jsonify({"error": "File not found"}), 404
 
-    # Analysis configuration
     config = {
         "patch_size": data.get("patch_size", 256),
-        "model": data.get("model", "resnet50"),
+        "model_label": data.get("model", "resnet50"),
         "tissue_threshold": data.get("tissue_threshold", 0.5),
-        "use_gpu": data.get("use_gpu", True),
+        "use_gpu_label": data.get("use_gpu", True),
     }
 
-    # Start analysis (demo mode)
-    analysis_id = f"analysis_{int(time.time())}"
+    analysis_id = f"demo_{int(time.time())}"
+    result = run_demo_analysis(filepath, config)
 
-    try:
-        # Demo analysis - replace with real processing
-        result = run_demo_analysis(filepath, config)
+    result_path = os.path.join(app.config["RESULTS_FOLDER"], f"{analysis_id}.json")
+    with open(result_path, "w", encoding="utf-8") as handle:
+        json.dump(result, handle, indent=2)
 
-        # Save results
-        result_path = os.path.join(app.config["RESULTS_FOLDER"], f"{analysis_id}.json")
-        with open(result_path, "w") as f:
-            json.dump(result, f, indent=2)
-
-        return jsonify({"success": True, "analysis_id": analysis_id, "result": result})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"success": True, "analysis_id": analysis_id, "result": result})
 
 
 @app.route("/status/<analysis_id>")
@@ -113,24 +126,22 @@ def download_results(analysis_id: str) -> Tuple[Response, int]:
 
 
 def run_demo_analysis(filepath: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Demo analysis - replace with real HistoCore processing"""
+    """Create deterministic synthetic values for UI demonstration only."""
+    seed = sum(Path(filepath).name.encode("utf-8")) % (2**32)
+    rng = np.random.default_rng(seed)
 
-    # Simulate processing time
-    time.sleep(2)
-
-    # Generate demo results
-    result = {
-        "file_path": filepath,
+    return {
+        "demo_mode": True,
+        "synthetic_data": True,
+        "not_model_evidence": True,
+        "file_name": Path(filepath).name,
         "config": config,
-        "prediction": np.random.choice(["Normal", "Tumor"]),
-        "probability": float(np.random.random()),
-        "confidence": float(np.random.uniform(0.7, 0.95)),
-        "patches_analyzed": np.random.randint(500, 2000),
-        "processing_time": 2.3,
-        "attention_weights": np.random.random((10, 10)).tolist(),
+        "prediction": str(rng.choice(["Normal", "Tumor"])),
+        "probability": float(rng.random()),
+        "confidence": float(rng.uniform(0.7, 0.95)),
+        "patches_analyzed": int(rng.integers(500, 2000)),
+        "attention_weights": rng.random((10, 10)).tolist(),
     }
-
-    return result
 
 
 if __name__ == "__main__":

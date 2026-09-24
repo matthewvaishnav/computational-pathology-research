@@ -331,7 +331,3 @@ class InferenceEngine:
 
         except Exception as e:
             logger.warning(f"Failed to warm up model for {disease_type}: {e}")
-
-
-# Add missing import
-import io

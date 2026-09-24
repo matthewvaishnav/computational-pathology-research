@@ -63,6 +63,7 @@ dmypy.json
 .env
 .env.*
 !.env.example
+!.env.docker.example
 .venv/
 env/
 venv/

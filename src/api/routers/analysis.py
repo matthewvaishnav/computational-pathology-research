@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -35,14 +35,6 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 # Pydantic models
-class AnalysisRequest(BaseModel):
-    """Analysis request model for pathology case processing."""
-
-    case_id: Optional[str] = None
-    priority: str = "normal"
-    case_type: str = "breast_cancer_screening"
-
-
 class CaseData(BaseModel):
     """Case data model for pathology analysis."""
 
@@ -63,10 +55,10 @@ class CaseStatusUpdate(BaseModel):
 @router.post("/analyze/upload")
 @limiter.limit("10/minute")
 async def upload_for_analysis(
+    background_tasks: BackgroundTasks,
+    request: Request,
     file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = BackgroundTasks(),
-    request_data: AnalysisRequest = AnalysisRequest(),
-    request: Request = None,
+    case_id: Optional[str] = Form(None),
     db: Session = Depends(get_db_session),
     current_user: dict = Depends(get_current_user),
 ):
@@ -74,25 +66,31 @@ async def upload_for_analysis(
 
     try:
         # Enforce size limit before reading entire file into memory (DoS prevention)
-        max_size = 100 * 1024 * 1024  # 100MB
-        content_length = request.headers.get("content-length") if request else None
+        max_size = 50 * 1024 * 1024  # Match InferenceEngine byte-input limit
+        content_length = request.headers.get("content-length")
         if content_length and int(content_length) > max_size:
-            raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 50MB")
 
         # Read file content (bounded by max_size)
         file_content = await file.read(max_size + 1)
         if len(file_content) > max_size:
-            raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB")
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 50MB")
 
         # Comprehensive file validation using centralized validator
-        detected_mime, safe_filename = validate_file_upload(file_content, file.filename)
+        detected_mime, safe_filename = validate_file_upload(
+            file_content,
+            file.filename or "",
+            allowed_extensions={"jpg", "jpeg", "png", "tiff", "tif", "bmp"},
+            max_size=max_size,
+        )
         detected_type = detected_mime  # Alias for consistency
 
         file_size = len(file_content)
 
         # Create secure temporary file with restricted permissions
+        suffix = Path(safe_filename).suffix.lower() or ".tmp"
         fd, temp_path = tempfile.mkstemp(
-            suffix=".tmp", prefix="medical_ai_", dir=tempfile.gettempdir()
+            suffix=suffix, prefix="pathology_upload_", dir=tempfile.gettempdir()
         )
 
         try:
@@ -105,6 +103,14 @@ async def upload_for_analysis(
                 f.flush()
                 os.fsync(f.fileno())
 
+            # Validate optional case identity before creating database state.
+            case_uuid = None
+            if case_id:
+                try:
+                    case_uuid = uuid.UUID(case_id)
+                except ValueError as exc:
+                    raise HTTPException(status_code=400, detail="Invalid case_id UUID") from exc
+
             # Create analysis record in database
             analysis_ops = AnalysisOperations(db)
             analysis = analysis_ops.create_analysis(
@@ -112,7 +118,7 @@ async def upload_for_analysis(
                 content_type=detected_type,
                 file_size=file_size,
                 file_path=temp_path,
-                case_id=uuid.UUID(request_data.case_id) if request_data.case_id else None,
+                case_id=case_uuid,
             )
 
             # Commit to database
@@ -120,7 +126,12 @@ async def upload_for_analysis(
 
             # Start background processing with real inference
             # Pass only file path to avoid keeping file content in memory
-            background_tasks.add_task(process_real_analysis, str(analysis.id), temp_path)
+            background_tasks.add_task(
+                process_real_analysis,
+                str(analysis.id),
+                temp_path,
+                safe_filename,
+            )
 
             logger.info(
                 f"Analysis created: {analysis.id} for file {sanitize_for_log(safe_filename)}"
@@ -128,7 +139,7 @@ async def upload_for_analysis(
 
             log_security_event(
                 "file_upload",
-                ip_address=request.client.host if request else None,
+                ip_address=request.client.host if request.client else None,
                 details=f"File: {safe_filename}, Size: {file_size}, Type: {detected_type}",
                 success=True,
             )
@@ -158,8 +169,12 @@ async def upload_for_analysis(
         raise HTTPException(status_code=500, detail="Upload failed. Please try again.")
 
 
-async def process_real_analysis(analysis_id: str, file_path: str) -> None:
-    """Background task to process analysis with real AI model."""
+async def process_real_analysis(
+    analysis_id: str,
+    file_path: str,
+    original_filename: str,
+) -> None:
+    """Background task to process a validated raster image with the model-backed engine."""
 
     # Get database session for background task
     from src.platform.database.connection import get_database_manager
@@ -184,7 +199,7 @@ async def process_real_analysis(analysis_id: str, file_path: str) -> None:
             # Run real model inference
             result = engine.analyze_image_bytes(
                 image_bytes=file_content,
-                filename=Path(file_path).name,
+                filename=original_filename,
                 disease_type="breast_cancer",
             )
 
