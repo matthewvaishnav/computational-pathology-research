@@ -2,7 +2,7 @@
 Historical PCam cross-paper metric inventory.
 
 This script preserves literature-reported PCam metrics next to the repository's
-own PCam result for provenance and historical review. The rows do NOT share one
+own PCam result for provenance and historical review. External rows are legacy repository attributions whose exact study/metric provenance has not been revalidated. The rows do NOT share one
 controlled protocol: preprocessing, splits, tuning, architectures, hardware, and
 reporting conventions differ across sources.
 
@@ -25,8 +25,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Published baselines from literature (PCam dataset)
-PUBLISHED_BASELINES = {
+# Legacy externally attributed baseline values from the pre-audit repository. Source/metric provenance has not been revalidated.
+LEGACY_EXTERNAL_BASELINES = {
     "ResNet-18": {
         "accuracy": 0.8314,
         "auc": 0.8890,
@@ -162,7 +162,7 @@ def create_descriptive_inventory_table() -> pd.DataFrame:
             }
         )
 
-    for method_name, metrics in PUBLISHED_BASELINES.items():
+    for method_name, metrics in LEGACY_EXTERNAL_BASELINES.items():
         rows.append(
             {
                 "Method": method_name,
@@ -174,7 +174,7 @@ def create_descriptive_inventory_table() -> pd.DataFrame:
                 "Parameters (M)": metrics["parameters"] / 1e6,
                 "Source": metrics["source"],
                 "Protocol status": (
-                    "Literature-reported value; protocol is not matched to the "
+                    "Legacy externally attributed value; exact source/metric provenance is not revalidated and protocol is not matched to the "
                     "repository experiment and no superiority inference is allowed"
                 ),
             }
@@ -196,7 +196,7 @@ def create_descriptive_visualization(df: pd.DataFrame, output_dir: Path) -> None
         literature["Reported AUC"],
         s=80,
         alpha=0.7,
-        label="Literature-reported values",
+        label="Legacy external values (provenance unverified)",
     )
     ax.scatter(
         repository["Year"],
@@ -218,7 +218,7 @@ def create_descriptive_visualization(df: pd.DataFrame, output_dir: Path) -> None
     ax.set_xlabel("Publication / record year")
     ax.set_ylabel("Reported AUC")
     ax.set_title(
-        "Reported PCam AUC values across different protocols\n"
+        "Legacy PCam-attributed AUC values across different protocols\n"
         "(descriptive literature context; not a controlled leaderboard)"
     )
     ax.legend()
@@ -243,7 +243,7 @@ def generate_historical_inventory_report(df: pd.DataFrame, output_dir: Path) -> 
 
 ## Evidence boundary
 
-The rows below were not produced under one matched experiment. They differ in
+The external rows below are legacy repository attributions whose exact metric provenance has not been revalidated, and none of the rows were produced under one matched experiment. They differ in
 preprocessing, splits, model selection, tuning budgets, hardware, and reporting
 conventions. Numeric ordering therefore does **not** establish superiority,
 state-of-the-art performance, statistical significance, or clinical readiness.
@@ -258,8 +258,8 @@ The repository's own PCam result should be interpreted through
 ## Admissible use
 
 This table may be used for:
-- provenance of values previously cited in repository history;
-- literature-context review;
+- provenance/audit of values previously cited in repository history;
+- identifying which external attributions need primary-source verification;
 - identifying methods worth rerunning under a future matched benchmark.
 
 It must not be used for:
