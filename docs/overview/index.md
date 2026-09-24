@@ -45,7 +45,7 @@ Key modeling areas include:
 - feature extraction with pretrained CNN and pathology foundation-style encoders,
 - and threshold tuning for screening-style sensitivity/specificity tradeoffs.
 
-The strongest current evidence combines PCam validation, PANDA slide-level MIL benchmarking, and CAMELYON17/WILDS external-center analysis. The PCam work reports **95.37% validation AUC** and **0.9394 test AUC** on the full 32,768-sample PCam test split. The PANDA work validates **10,611 readable slide-level Phikon feature files** and compares mean pooling, gated AttentionMIL, and tuned TransnnMIL. The CAMELYON17/WILDS work audits **455,954 real pathology image examples across five centers**.
+The strongest current evidence combines PCam validation, PANDA feature/baseline infrastructure, paired-acquisition representation studies, institutional stress tests, and CAMELYON17/WILDS external-center analysis. The PANDA record validates **10,611 readable slide-level Phikon feature files** and active mean-pooling / gated-AttentionMIL baselines. Historical pre-repair TransnnMIL predictions remain documented, while current TransnnMIL architecture evidence is deferred to the repaired matched rerun. The CAMELYON17/WILDS work audits **455,954 real pathology image examples across five centers**.
 
 ### 2. TransnnMIL
 
@@ -60,7 +60,7 @@ TransnnMIL is the custom model direction in this project. It is intended to comb
 
 The goal is to move beyond single-patch classification toward models that better represent whole-slide structure.
 
-Current PANDA evidence shows tuned TransnnMIL is competitive with gated AttentionMIL and slightly favorable across the current repeated-seed experiments, but not conclusively superior.
+Historical PANDA runs showed competitive pre-repair TransnnMIL predictions, but those values are not current evidence for the repaired branch-fusion/topology implementation. The repaired matched rerun is the active architecture-evaluation path.
 
 Read more: [TransnnMIL v2.0](../models/transnnmil-v2.md)
 
@@ -113,7 +113,7 @@ The project uses a staged validation ladder rather than treating every result as
 | PCam balanced federated benchmark | Complete | Weighting strategies compared under balanced simulated sites |
 | PCam heterogeneous benchmark | Complete | Different weights produced, but no performance sensitivity observed |
 | PANDA slide-level prostate benchmark | Complete | Slide-level MIL over Phikon feature bags |
-| PANDA TransnnMIL ablations | Complete | Patch cap, learning rate, and dropout ablations documented |
+| PANDA historical TransnnMIL ablations | Historical pre-repair | Optimizer/patch/dropout execution records retained; repaired matched rerun active |
 | CAMELYON17/WILDS external-center validation | Complete, feature-level evidence | Real multi-center pathology data with held-out OOD centers |
 | Clinical validation | Not completed | Requires clinical workflow / patient-level validation and governance |
 
@@ -134,9 +134,9 @@ The project uses a staged validation ladder rather than treating every result as
 |---|---:|
 | Mean-pooled Phikon + MLP | 0.7274 |
 | Gated AttentionMIL | 0.8100 |
-| Tuned TransnnMIL, seed 42 | 0.8155 |
-| Tuned TransnnMIL, seed 123 | 0.8225 |
-| Tuned TransnnMIL, seed 2025 | 0.8086 |
+| Historical pre-repair TransnnMIL, seed 42 | 0.8155 |
+| Historical pre-repair TransnnMIL, seed 123 | 0.8225 |
+| Historical pre-repair TransnnMIL, seed 2025 | 0.8086 |
 
 ### PANDA TransnnMIL ablation summary
 
