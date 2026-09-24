@@ -14,8 +14,8 @@ Adversarial Paired-Acquisition Neural Factorization confirmation & Pathology-der
 Factorized and subtraction falsification & Pathology-derived representations & Can a learned site component be removed without deleting biology? \\
 Synthetic two-resource phase maps & Controlled latent-factor generators & How do ordinary observations and paired interventions jointly control recovery? \\
 Pair-repeat anchor allocation & Controlled nonlinear high-overlap regime & Under fixed paired exposure, how much does unique-anchor diversity matter relative to repetition? \\
-PANDA baseline hierarchy & 10,611 verified Phikon feature bags & How much do mean pooling, gated attention, and TransnnMIL differ for whole-slide grading? \\
-TransnnMIL stability grid & PANDA feature bags & Is the custom MIL model stable across optimization settings and seeds? \\
+PANDA baseline hierarchy & 10,611 verified Phikon feature bags & How much do mean pooling and gated attention differ, and what historical predictions were produced by the pre-repair TransnnMIL path? \\
+Historical TransnnMIL stability grid & PANDA feature bags & What optimizer behavior was recorded on the pre-repair execution path? \\
 Dominant-site label-noise stress & PANDA-derived federations & When does sample-volume dominance become unsafe under controlled corruption? \\
 Fixed detector transfer & PANDA-derived federations & Does a label-noise-calibrated detector transfer to systematic ordinal threshold shift? \\
 Detector ablation and sensitivity & PANDA-derived federations & Is the detector dependent on one diagnostic family or one exact calibration? \\
@@ -93,12 +93,12 @@ The supported interpretation is that total paired exposure was the dominant reso
 
 \section{PANDA whole-slide studies}
 
-\subsection{Mean pooling, AttentionMIL, and TransnnMIL comparison}
-The PANDA work studies weakly supervised prostate-cancer grading from whole-slide Phikon feature bags on the PANDA challenge data \citep{bulten2022artificial}. After HDF5 readability verification, 10,611 slide-level feature files were retained. Three principal model families were evaluated: a mean-pooled Phikon MLP, gated AttentionMIL \citep{ilse2018attention}, and TransnnMIL, a custom direction combining TransMIL-style correlated self-attention \citep{shao2021transmil} with nnMIL-style gated aggregation \citep{luo2025nnmil}.
+\subsection{Mean pooling, AttentionMIL, and historical TransnnMIL executions}
+The PANDA work studies weakly supervised prostate-cancer grading from whole-slide Phikon feature bags on the PANDA challenge data \citep{bulten2022artificial}. After HDF5 readability verification, 10,611 slide-level feature files were retained. Mean-pooled Phikon MLP and gated AttentionMIL \citep{ilse2018attention} provide active baseline records. The listed TransnnMIL runs were produced on the historical pre-repair execution path; they are retained as prediction records but do not validate genuine repaired TransMIL-style \citep{shao2021transmil} / nnMIL-style \citep{luo2025nnmil} branch fusion or topology.
 
 \begin{table}[!htbp]
 \centering
-\caption{PANDA whole-slide validation evidence. QWK denotes quadratic weighted kappa.}
+\caption{PANDA whole-slide records. Mean-pooling and AttentionMIL are active baselines; TransnnMIL rows are historical pre-repair predictions. QWK denotes quadratic weighted kappa.}
 \small
 \begin{tabular}{lr}
 \toprule
@@ -106,23 +106,23 @@ Model or run & Validation QWK \\
 \midrule
 Mean-pooled Phikon + MLP & 0.7274 \\
 Gated AttentionMIL & 0.8100 \\
-Tuned TransnnMIL, seed 42 & 0.8155 \\
-Tuned TransnnMIL, seed 123 & 0.8225 \\
-Tuned TransnnMIL, seed 2025 & 0.8086 \\
+Historical pre-repair TransnnMIL, seed 42 & 0.8155 \\
+Historical pre-repair TransnnMIL, seed 123 & 0.8225 \\
+Historical pre-repair TransnnMIL, seed 2025 & 0.8086 \\
 \bottomrule
 \end{tabular}
 \label{tab:panda_model_hierarchy}
 \end{table}
 \FloatBarrier
 
-The model hierarchy establishes that attention-based slide aggregation substantially improved on simple mean pooling in this feature-bag setting. TransnnMIL was favorable on two of three listed tuned seeds, but the margin over AttentionMIL remained small.
+The active baseline hierarchy establishes that gated attention improved on simple mean pooling in this feature-bag setting. The historical TransnnMIL predictions were numerically above AttentionMIL in two of three listed runs, but because the old fusion/topology implementation was later remediated, those comparisons are not current architecture evidence.
 
-\subsection{TransnnMIL optimization-stability grid}
-The stabilization study used the same 10,611 readable PANDA bags, three seeds, and six learning rates. The recipe used AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping.
+\subsection{Historical pre-repair TransnnMIL optimization-stability grid}
+The historical stabilization study used the same 10,611 readable PANDA bags, three seeds, and six learning rates. The recipe used AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping. Because these runs predate the fusion/topology remediation, the table is retained as optimizer/execution history rather than evidence for the repaired canonical architecture.
 
 \begin{table}[!htbp]
 \centering
-\caption{TransnnMIL stability across three seeds per learning rate.}
+\caption{Historical pre-repair TransnnMIL optimizer grid across three seeds per learning rate.}
 \small
 \begin{tabular}{lrrrr}
 \toprule
@@ -140,7 +140,7 @@ $1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
 \end{table}
 \FloatBarrier
 
-This study supports optimizer stabilization and a wider usable learning-rate range. It does not yet establish that the complete TransnnMIL architecture is superior to simpler MIL methods under matched compute. Optional hierarchical, topology, and pruning branches remain separate implementation directions until controlled ablations validate them.
+On the historical execution path, the recorded optimizer recipe reduced observed learning-rate sensitivity. This does not validate the repaired TransnnMIL fusion/topology mechanisms. Current architecture evidence is deferred to the preregistered repaired matched rerun against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls.
 
 \section{PANDA federated site-signal studies}
 
