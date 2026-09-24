@@ -4,8 +4,10 @@
 
 The former page ranked the repository’s PCam result against published systems
 using numbers collected from different papers, hardware, preprocessing paths,
-model-selection procedures, and experimental protocols. That comparison was not
-a controlled benchmark and is withdrawn.
+model-selection procedures, and experimental protocols. The **inferential
+leaderboard interpretation** is withdrawn, but the descriptive numerical fact is
+retained: the repository’s **0.9394 ROC AUC was higher than every external PCam
+AUC value collected in that historical table**.
 
 ## Current supported PCam record
 
@@ -16,12 +18,23 @@ The repository records one official patch-level PCam test-split result:
 
 See [`PCAM_REAL_RESULTS.md`](PCAM_REAL_RESULTS.md) for the bounded result record.
 
+## What is still supported
+
+The repository may state:
+
+- the model achieved **0.9394 ROC AUC** and **0.8526 accuracy** on the official
+  32,768-patch PCam test split;
+- 0.9394 was **numerically higher than all 10 external AUC values in the
+  historical comparison table**.
+
+That is a descriptive comparison of reported numbers, not a matched statistical
+test.
+
 ## What is no longer claimed
 
 The repository does not claim:
 
-- “#1” performance;
-- state-of-the-art performance;
+- protocol-controlled “#1” or state-of-the-art status from the historical table;
 - statistical superiority over published systems;
 - valid improvement percentages computed across incompatible studies;
 - universal speed or cost advantages;
