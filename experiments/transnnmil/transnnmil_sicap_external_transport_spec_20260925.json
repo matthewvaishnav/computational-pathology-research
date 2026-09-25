@@ -2,7 +2,7 @@
   "schema_version": "transnnmil-sicap-external-transport/v1",
   "status": "preregistered_before_external_feature_extraction_or_prediction",
   "frozen_date": "2026-09-25",
-  "claim_boundary": "External non-clinical transport evidence on SICAPv2 only. Success can support a bounded claim that frozen PANDA-trained repaired TransnnMIL transports better than frozen PANDA-trained TransMIL under this prespecified external protocol; it cannot establish universal architectural superiority or clinical validity.",
+  "claim_boundary": "External non-clinical transport evidence on SICAPv2 only. The TransnnMIL-vs-TransMIL comparison is frozen before any such SICAPv2 predictions, but SICAPv2 has appeared elsewhere in the broader research program; therefore success can support a bounded external-transport claim, not an untouched-cohort or universal-superiority claim.",
   "antecedent_panda_campaign": {
     "branch": "research/transnnmil-matched-rerun-20260923",
     "training_git_commit": "6c0abecc8f44c140eb51b98684b9e19cb7719b09",
@@ -57,7 +57,8 @@
       "16B0027040_Block_Region_10",
       "18B0005478J_Block_Region_13",
       "18B0005478J_Block_Region_10"
-    ]
+    ],
+    "prior_program_exposure": "SICAPv2 has been encountered in separate WSI-NCA/transport work. No TransnnMIL-vs-TransMIL SICAPv2 predictions have been generated at protocol freeze. Therefore this is external-cohort prospective comparison evidence, not an investigator-blind untouched-cohort replication."
   },
   "target_mapping": {
     "0+0": 0,
