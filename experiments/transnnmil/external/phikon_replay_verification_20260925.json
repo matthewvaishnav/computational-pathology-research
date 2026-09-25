@@ -1,0 +1,74 @@
+{
+  "comparisons": [
+    {
+      "cosine_similarity": 1.0000001192092896,
+      "image_id": "0005f7aaab2800f6170c399693a96917",
+      "relative_l2": 8.268574447356514e-07,
+      "row_index": 0
+    },
+    {
+      "cosine_similarity": 0.9999998807907104,
+      "image_id": "0005f7aaab2800f6170c399693a96917",
+      "relative_l2": 8.624276688351529e-07,
+      "row_index": 1
+    },
+    {
+      "cosine_similarity": 0.9999998807907104,
+      "image_id": "0005f7aaab2800f6170c399693a96917",
+      "relative_l2": 8.508805535711872e-07,
+      "row_index": 2
+    },
+    {
+      "cosine_similarity": 0.9999998807907104,
+      "image_id": "000920ad0b612851f8e01bcc880d9b3d",
+      "relative_l2": 7.537778969890496e-07,
+      "row_index": 0
+    },
+    {
+      "cosine_similarity": 1.0000001192092896,
+      "image_id": "000920ad0b612851f8e01bcc880d9b3d",
+      "relative_l2": 7.661672611902759e-07,
+      "row_index": 1
+    },
+    {
+      "cosine_similarity": 1.0,
+      "image_id": "000920ad0b612851f8e01bcc880d9b3d",
+      "relative_l2": 7.535088570875814e-07,
+      "row_index": 2
+    },
+    {
+      "cosine_similarity": 1.0,
+      "image_id": "0018ae58b01bdadc8e347995b69f99aa",
+      "relative_l2": 9.489679655416694e-07,
+      "row_index": 0
+    },
+    {
+      "cosine_similarity": 0.9999998807907104,
+      "image_id": "0018ae58b01bdadc8e347995b69f99aa",
+      "relative_l2": 8.648456741866539e-07,
+      "row_index": 1
+    },
+    {
+      "cosine_similarity": 1.0000001192092896,
+      "image_id": "0018ae58b01bdadc8e347995b69f99aa",
+      "relative_l2": 8.621411211606755e-07,
+      "row_index": 2
+    }
+  ],
+  "device": "cuda",
+  "observed": {
+    "comparison_count": 9,
+    "maximum_relative_l2": 9.489679655416694e-07,
+    "minimum_cosine_similarity": 0.9999998807907104
+  },
+  "panda_manifest": "results\\panda_transnnmil_matched_rerun\\locked_split_20260923_readable.csv",
+  "panda_wsi_root": "D:\\panda\\train_images",
+  "schema_version": "phikon-panda-replay-verification/v1",
+  "snapshot_path": "C:\\Users\\matth\\.cache\\huggingface\\hub\\models--owkin--phikon\\snapshots\\057cc0295895c2df3dd7681a89680da6015cbefe",
+  "snapshot_revision": "057cc0295895c2df3dd7681a89680da6015cbefe",
+  "status": "passed",
+  "thresholds": {
+    "maximum_relative_l2": 0.001,
+    "minimum_cosine_similarity": 0.99999
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "transnnmil-external-spec-amendment-attestation/v1",
+  "status": "pre_external_outcome_non_scientific_amendment_attested",
+  "checkpoint_manifest_path": "experiments/transnnmil/external/frozen_panda_checkpoint_manifest_20260925.json",
+  "checkpoint_manifest_sha256": "485abcbf1bffebde45553ed4fe6d95d0395bb25f4aaefd56bd21d18aeba3e2f0",
+  "checkpoint_manifest_recorded_external_spec_sha256": "57778f83c22e8f383cbb11bfed36a193a3ed3fae9a85e32e1bfa0d5457e4572f",
+  "current_external_spec_path": "experiments/transnnmil/transnnmil_sicap_external_transport_spec_20260925.json",
+  "current_external_spec_sha256": "f17242db725dc4aaeb8e18656c415b9077d38acf31b12554b98669c6e5d95541",
+  "amendment_commit": "3a7ab3ae5f0a09cfe6aba6580b37910c68f97379",
+  "amendment_commit_message": "Clarify SICAPv2 prior program exposure boundary",
+  "changed_fields": [
+    "claim_boundary",
+    "external_dataset.prior_program_exposure"
+  ],
+  "scientific_design_changed": false,
+  "unchanged_confirmatory_elements": [
+    "primary candidate",
+    "primary comparator",
+    "seed set",
+    "SICAPv2 version and unit counts",
+    "patient mapping",
+    "duplicate-region exclusions",
+    "target mapping",
+    "feature preprocessing",
+    "bagging",
+    "primary endpoint",
+    "bootstrap design",
+    "primary success rule",
+    "interpretation rule against retuning after failure"
+  ],
+  "phikon_replay_report_path": "experiments/transnnmil/external/phikon_replay_verification_20260925.json",
+  "phikon_replay_report_sha256": "418fb48fa6325f1f41dd3be7b157ed3d0a2eeba7748e374e4f010088358dd580",
+  "external_sicap_model_predictions_generated_before_attestation": false,
+  "external_sicap_model_outcomes_accessed_before_attestation": false,
+  "note": "The frozen checkpoint manifest is retained byte-for-byte. This attestation bridges its pre-disclosure-amendment spec hash to the current spec hash. The amendment narrowed the claim boundary by disclosing prior program exposure to SICAPv2 and did not alter any confirmatory scientific design field."
+}
