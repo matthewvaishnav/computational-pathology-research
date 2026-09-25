@@ -7,7 +7,10 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import cohen_kappa_score
 
-from scripts.experiments.evaluate_transnnmil_sicap_external_transport import qwk_fast
+from scripts.experiments.evaluate_transnnmil_sicap_external_transport import (
+    qwk_fast,
+    validate_spec_identity,
+)
 from scripts.experiments.prepare_sicapv2_phikon_external_bags import stable_indices
 
 
@@ -16,6 +19,12 @@ SPEC = Path(
 )
 LABELS = Path(
     "experiments/transnnmil/external/sicapv2_image_labels_seggini_1c90f832.csv"
+)
+CHECKPOINTS = Path(
+    "experiments/transnnmil/external/frozen_panda_checkpoint_manifest_20260925.json"
+)
+AMENDMENT = Path(
+    "experiments/transnnmil/external/external_spec_amendment_attestation_20260925.json"
 )
 
 
@@ -61,3 +70,18 @@ def test_over_cap_sampling_is_deterministic_sorted_and_bounded() -> None:
 def test_under_cap_sampling_preserves_all_patches() -> None:
     observed = stable_indices("16B0001851", n=17, cap=600, seed=20260925)
     assert np.array_equal(observed, np.arange(17))
+
+
+def test_spec_hash_bridge_is_explicit_and_fail_closed() -> None:
+    frozen = json.loads(CHECKPOINTS.read_text(encoding="utf-8"))
+    mode = validate_spec_identity(SPEC, CHECKPOINTS, AMENDMENT, frozen)
+    assert mode == "attested_non_scientific_amendment"
+
+    amendment = json.loads(AMENDMENT.read_text(encoding="utf-8"))
+    assert amendment["scientific_design_changed"] is False
+    assert amendment["changed_fields"] == [
+        "claim_boundary",
+        "external_dataset.prior_program_exposure",
+    ]
+    assert amendment["external_sicap_model_predictions_generated_before_attestation"] is False
+    assert amendment["external_sicap_model_outcomes_accessed_before_attestation"] is False
