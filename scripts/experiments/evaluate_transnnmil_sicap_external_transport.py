@@ -37,6 +37,9 @@ DEFAULT_PANDA_SPEC = Path(
 DEFAULT_CHECKPOINTS = Path(
     "experiments/transnnmil/external/frozen_panda_checkpoint_manifest_20260925.json"
 )
+DEFAULT_SPEC_AMENDMENT = Path(
+    "experiments/transnnmil/external/external_spec_amendment_attestation_20260925.json"
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,6 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--spec", type=Path, default=DEFAULT_SPEC)
     parser.add_argument("--panda-spec", type=Path, default=DEFAULT_PANDA_SPEC)
     parser.add_argument("--checkpoints", type=Path, default=DEFAULT_CHECKPOINTS)
+    parser.add_argument("--spec-amendment", type=Path, default=DEFAULT_SPEC_AMENDMENT)
     parser.add_argument(
         "--out-dir",
         type=Path,
@@ -66,6 +70,52 @@ def sha256(path: Path) -> str:
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_spec_identity(
+    spec_path: Path,
+    checkpoints_path: Path,
+    amendment_path: Path,
+    frozen: dict[str, Any],
+) -> str:
+    current_spec_hash = sha256(spec_path)
+    recorded_spec_hash = str(frozen.get("external_spec_sha256", ""))
+    if recorded_spec_hash == current_spec_hash:
+        return "direct_match"
+
+    if not amendment_path.is_file():
+        raise ValueError(
+            "frozen checkpoint manifest points to a different external spec and "
+            "no amendment attestation is present"
+        )
+
+    amendment = load_json(amendment_path)
+    expected_checkpoint_hash = sha256(checkpoints_path)
+    checks = {
+        "status": amendment.get("status")
+        == "pre_external_outcome_non_scientific_amendment_attested",
+        "checkpoint_manifest_sha256": amendment.get("checkpoint_manifest_sha256")
+        == expected_checkpoint_hash,
+        "checkpoint_manifest_recorded_external_spec_sha256": amendment.get(
+            "checkpoint_manifest_recorded_external_spec_sha256"
+        )
+        == recorded_spec_hash,
+        "current_external_spec_sha256": amendment.get("current_external_spec_sha256")
+        == current_spec_hash,
+        "scientific_design_changed": amendment.get("scientific_design_changed") is False,
+        "external_outcomes_unaccessed": amendment.get(
+            "external_sicap_model_outcomes_accessed_before_attestation"
+        )
+        is False,
+        "external_predictions_ungenerated": amendment.get(
+            "external_sicap_model_predictions_generated_before_attestation"
+        )
+        is False,
+    }
+    failed = sorted(name for name, passed in checks.items() if not passed)
+    if failed:
+        raise ValueError(f"external spec amendment attestation failed checks: {failed}")
+    return "attested_non_scientific_amendment"
 
 
 def qwk_fast(y_true: np.ndarray, y_pred: np.ndarray, n_classes: int = 6) -> float:
@@ -277,8 +327,12 @@ def main() -> None:
     frozen = load_json(args.checkpoints)
     if frozen.get("status") != "frozen_before_external_outcomes":
         raise ValueError("PANDA checkpoints are not frozen for external evaluation")
-    if frozen.get("external_spec_sha256") != sha256(args.spec):
-        raise ValueError("frozen checkpoint manifest points to a different external spec")
+    spec_identity_mode = validate_spec_identity(
+        args.spec,
+        args.checkpoints,
+        args.spec_amendment,
+        frozen,
+    )
 
     frame = load_external_manifest(args.external_manifest, spec)
     device = torch.device(args.device)
@@ -405,6 +459,10 @@ def main() -> None:
         "status": "complete",
         "claim_boundary": spec["claim_boundary"],
         "external_spec_sha256": sha256(args.spec),
+        "external_spec_identity_mode": spec_identity_mode,
+        "external_spec_amendment_sha256": sha256(args.spec_amendment)
+        if args.spec_amendment.is_file()
+        else None,
         "checkpoint_manifest_sha256": sha256(args.checkpoints),
         "external_manifest_sha256": sha256(args.external_manifest),
         "wsi_count": len(frame),
