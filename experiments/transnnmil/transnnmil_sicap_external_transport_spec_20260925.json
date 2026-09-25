@@ -1,0 +1,143 @@
+{
+  "schema_version": "transnnmil-sicap-external-transport/v1",
+  "status": "preregistered_before_external_feature_extraction_or_prediction",
+  "frozen_date": "2026-09-25",
+  "claim_boundary": "External non-clinical transport evidence on SICAPv2 only. Success can support a bounded claim that frozen PANDA-trained repaired TransnnMIL transports better than frozen PANDA-trained TransMIL under this prespecified external protocol; it cannot establish universal architectural superiority or clinical validity.",
+  "antecedent_panda_campaign": {
+    "branch": "research/transnnmil-matched-rerun-20260923",
+    "training_git_commit": "6c0abecc8f44c140eb51b98684b9e19cb7719b09",
+    "experiment_spec_sha256": "8e2d38de27b72ded5e47193c56e392e8138798a15226fee6f2d4e5425bff1ea3",
+    "execution_manifest_sha256": "4a5dff500fd03e7f7f656d4d7e63ef29fddfad767e467a706a420cf2895f6a27",
+    "seeds": [
+      7,
+      19,
+      42,
+      123,
+      2025
+    ],
+    "checkpoint_selection": "PANDA selection partition only; checkpoints already frozen before this external campaign",
+    "confirmation_note": "No SICAPv2 information may be used to retrain, recalibrate, threshold-tune, seed-select, or checkpoint-select any model."
+  },
+  "models": {
+    "primary_candidate": "transnnmil_repaired",
+    "primary_comparator": "transmil",
+    "descriptive_context": [
+      "attention_mil",
+      "nnmil",
+      "transnnmil_concat",
+      "transnnmil_gate",
+      "transnnmil_branch_attention"
+    ]
+  },
+  "external_dataset": {
+    "name": "SICAPv2",
+    "version": 1,
+    "doi": "10.17632/9xxm58dvs3.1",
+    "direct_archive_url": "https://data.mendeley.com/public-files/datasets/9xxm58dvs3/files/6ab087a7-ca89-47ac-9698-f6546bb50f98/file_downloaded",
+    "license": "CC BY 4.0",
+    "expected_patch_images": 18783,
+    "expected_wsi_units": 155,
+    "expected_patients": 95,
+    "labels": "global Gleason primary+secondary score",
+    "patient_mapping": {
+      "source_repo": "histocartography/seg-gini",
+      "source_commit": "1c90f832d7c872f8d9eafa72aa6afcdab7808b7f",
+      "source_path": "data/image_labels.csv",
+      "source_blob_sha": "8d4cdd4058825f2d47e3d881535492a61c2b09d5",
+      "local_frozen_copy": "experiments/transnnmil/external/sicapv2_image_labels_seggini_1c90f832.csv"
+    },
+    "duplicate_regions_excluded": [
+      "16B0001851_Block_Region_3",
+      "16B0003388_Block_Region_5",
+      "16B0003394_Block_Region_1",
+      "16B0022608_Block_Region_2",
+      "16B0022786_Block_Region_0",
+      "16B0023614_Block_Region_3",
+      "16B0026792_Block_Region_3",
+      "16B0027040_Block_Region_10",
+      "18B0005478J_Block_Region_13",
+      "18B0005478J_Block_Region_10"
+    ]
+  },
+  "target_mapping": {
+    "0+0": 0,
+    "3+3": 1,
+    "3+4": 2,
+    "4+3": 3,
+    "4+4": 4,
+    "3+5": 4,
+    "5+3": 4,
+    "4+5": 5,
+    "5+4": 5,
+    "5+5": 5
+  },
+  "feature_transport": {
+    "source_backbone": "owkin/phikon",
+    "required_output_dim": 768,
+    "snapshot_requirement": "A local immutable Hugging Face snapshot must be identified and replay-validated against existing PANDA HDF5 rows before any SICAPv2 feature is extracted.",
+    "replay_gate": {
+      "minimum_panda_slides": 3,
+      "rows_per_slide": 3,
+      "minimum_cosine_similarity": 0.99999,
+      "maximum_relative_l2": 0.001
+    },
+    "sicap_patch_transform": {
+      "input": "official SICAPv2 512x512 RGB patch",
+      "resize": [
+        224,
+        224
+      ],
+      "tensor": "float32 [0,1]",
+      "normalize_mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "normalize_std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "augmentation": false,
+      "stain_normalization": false
+    },
+    "bagging": {
+      "group_key": "image_id / WSI prefix before first underscore",
+      "ordering": "lexicographic patch filename",
+      "max_patches": 600,
+      "over_cap_rule": "deterministic uniform sample without replacement using seed 20260925; sort selected indices before extraction",
+      "duplicate_region_policy": "exclude only the ten frozen duplicate regions listed in external_dataset.duplicate_regions_excluded"
+    }
+  },
+  "primary_endpoint": "external_wsi_quadratic_weighted_kappa",
+  "secondary_endpoints": [
+    "external_wsi_accuracy",
+    "external_wsi_macro_f1",
+    "external_wsi_ordinal_mae",
+    "external_branch_ablation_change_fraction",
+    "external_practical_branch_collapse",
+    "PANDA_to_SICAP_QWK_drop"
+  ],
+  "inference": {
+    "bootstrap_draws": 100000,
+    "bootstrap_seed": 20260925,
+    "method": "hierarchical paired bootstrap: resample the five frozen seeds, then resample 95 SICAPv2 patients with replacement and include all WSIs belonging to each sampled patient",
+    "confidence_interval": [
+      0.025,
+      0.975
+    ]
+  },
+  "primary_success_rule": {
+    "mean_external_qwk_difference_transnnmil_minus_transmil": "greater_than_zero",
+    "positive_seed_differences": "at_least_4_of_5",
+    "hierarchical_patient_bootstrap_lower_95": "greater_than_zero",
+    "transnnmil_practical_branch_collapse": "false_in_all_5_seeds"
+  },
+  "interpretation_rules": [
+    "No SICAPv2 outcome may alter architecture, hyperparameters, preprocessing, checkpoint selection, label mapping, seed set, or success thresholds.",
+    "Do not select or report only favorable seeds.",
+    "If the primary success rule fails, retain the failure and do not reuse SICAPv2 as a development set.",
+    "Descriptive context models do not redefine the primary candidate or comparator.",
+    "A passing result supports only external transport superiority over TransMIL under this exact protocol."
+  ]
+}
