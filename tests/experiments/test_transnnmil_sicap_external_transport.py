@@ -72,16 +72,8 @@ def test_under_cap_sampling_preserves_all_patches() -> None:
     assert np.array_equal(observed, np.arange(17))
 
 
-def test_spec_hash_bridge_is_explicit_and_fail_closed() -> None:
+def test_external_spec_hash_directly_matches_frozen_checkpoint_manifest() -> None:
     frozen = json.loads(CHECKPOINTS.read_text(encoding="utf-8"))
     mode = validate_spec_identity(SPEC, CHECKPOINTS, AMENDMENT, frozen)
-    assert mode == "attested_non_scientific_amendment"
-
-    amendment = json.loads(AMENDMENT.read_text(encoding="utf-8"))
-    assert amendment["scientific_design_changed"] is False
-    assert amendment["changed_fields"] == [
-        "claim_boundary",
-        "external_dataset.prior_program_exposure",
-    ]
-    assert amendment["external_sicap_model_predictions_generated_before_attestation"] is False
-    assert amendment["external_sicap_model_outcomes_accessed_before_attestation"] is False
+    assert mode == "direct_match"
+    assert frozen["external_spec_sha256"] == "57778f83c22e8f383cbb11bfed36a193a3ed3fae9a85e32e1bfa0d5457e4572f"
