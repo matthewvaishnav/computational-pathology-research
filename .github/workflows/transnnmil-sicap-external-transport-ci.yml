@@ -1,0 +1,38 @@
+name: TransnnMIL SICAP external transport CI
+
+on:
+  push:
+    branches:
+      - research/transnnmil-sicap-external-transport-20260925
+  pull_request:
+    paths:
+      - "experiments/transnnmil/transnnmil_sicap_external_transport_spec_20260925.json"
+      - "experiments/transnnmil/external/**"
+      - "scripts/data/download_sicapv2_external.py"
+      - "scripts/experiments/freeze_transnnmil_panda_checkpoints.py"
+      - "scripts/experiments/verify_phikon_panda_replay.py"
+      - "scripts/experiments/prepare_sicapv2_phikon_external_bags.py"
+      - "scripts/experiments/evaluate_transnnmil_sicap_external_transport.py"
+      - "tests/experiments/test_transnnmil_sicap_external_transport.py"
+      - ".github/workflows/transnnmil-sicap-external-transport-ci.yml"
+
+jobs:
+  protocol-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install targeted dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision transformers numpy pandas h5py scikit-learn pytest pytest-cov requests pillow
+      - name: Compile external transport tooling
+        run: |
+          python -m py_compile             scripts/data/download_sicapv2_external.py             scripts/experiments/freeze_transnnmil_panda_checkpoints.py             scripts/experiments/prepare_sicapv2_phikon_external_bags.py             scripts/experiments/evaluate_transnnmil_sicap_external_transport.py
+      - name: Run protocol integrity tests
+        run: |
+          python -m pytest tests/experiments/test_transnnmil_sicap_external_transport.py -q -o addopts=''
