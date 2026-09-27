@@ -1,0 +1,14 @@
+{
+  "schema_version": "transnnmil-sicapv2-mirror-rejection/v1",
+  "date": "2026-09-27",
+  "mirror": "shridharspol/sicapv2",
+  "local_inspection_report": "D:\\sicapv2_external\\kaggle_mapping_inspection.json",
+  "numeric_image_count": 18783,
+  "metadata_file_count": 0,
+  "original_sicap_ids_found_anywhere": false,
+  "candidate_reversible_mapping_count": 0,
+  "decision": "rejected_for_wsi_mil",
+  "reason": "The mirror contains the expected 18,783 images but renames patches to numeric identifiers and provides no reversible mapping to the original SICAPv2 patch filenames / WSI identifiers. WSI grouping therefore cannot be recovered without guessing.",
+  "allowed_use": "none for the preregistered TransnnMIL SICAPv2 external WSI transport test",
+  "next_source": "provenance-preserving SICAPv2 distribution with original filenames, e.g. OpenDataLab SICAPv2 or the official Mendeley archive when accessible"
+}
