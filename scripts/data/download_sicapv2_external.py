@@ -91,22 +91,37 @@ def validate_zip(path: Path) -> None:
         raise RuntimeError(f"ZIP CRC failure: {bad}")
 
 
-def find_image_root(root: Path, expected_count: int) -> Path:
-    candidates: list[tuple[Path, int]] = []
-    for directory in [root, *[p for p in root.rglob("*") if p.is_dir()]]:
+def collect_image_files(root: Path) -> tuple[list[Path], list[tuple[Path, int]]]:
+    """Collect JPGs from every SICAP directory named images, preserving split mirrors.
+
+    Official distributions normally expose one images directory. The public
+    Kaggle mirror exposes Train/Images and Val/Images. Treating both as one
+    corpus is valid only when filenames are unique and downstream inventory
+    gates match the frozen 18,783-patch / 155-WSI protocol.
+    """
+    directories: list[tuple[Path, int]] = []
+    files: list[Path] = []
+    candidate_dirs = [root, *[path for path in root.rglob("*") if path.is_dir()]]
+    for directory in candidate_dirs:
         if directory.name.lower() != "images":
             continue
-        count = sum(1 for _ in directory.glob("*.jpg"))
-        if count:
-            candidates.append((directory, count))
-    exact = [directory for directory, count in candidates if count == expected_count]
-    if len(exact) != 1:
-        raise RuntimeError(
-            "expected exactly one SICAPv2 images directory with "
-            f"{expected_count} JPG files; observed "
-            + repr([(str(path), count) for path, count in candidates])
+        jpgs = sorted(directory.glob("*.jpg"), key=lambda path: path.name)
+        if not jpgs:
+            continue
+        directories.append((directory, len(jpgs)))
+        files.extend(jpgs)
+
+    names = [path.name for path in files]
+    if len(names) != len(set(names)):
+        duplicates = sorted(
+            name for name in set(names) if names.count(name) > 1
         )
-    return exact[0]
+        raise RuntimeError(
+            "duplicate SICAPv2 patch filenames across image roots: "
+            + repr(duplicates[:20])
+        )
+    files.sort(key=lambda path: path.name)
+    return files, directories
 
 
 def validate_image_corpus(
@@ -117,8 +132,13 @@ def validate_image_corpus(
 ) -> dict[str, object]:
     expected_images = int(dataset["expected_patch_images"])
     expected_wsi = int(dataset["expected_wsi_units"])
-    image_root = find_image_root(root, expected_images)
-    images = sorted(image_root.glob("*.jpg"), key=lambda p: p.name)
+    images, image_dirs = collect_image_files(root)
+    if len(images) != expected_images:
+        raise RuntimeError(
+            f"expected {expected_images} SICAPv2 JPG files across all image roots; "
+            f"observed {len(images)} from "
+            + repr([(str(path), count) for path, count in image_dirs])
+        )
 
     observed_wsi = sorted({path.stem.split("_", 1)[0] for path in images})
     mapping_path = Path(str(dataset["patient_mapping"]["local_frozen_copy"]))
@@ -154,7 +174,11 @@ def validate_image_corpus(
             print(f"  hashed {index}/{len(images)} SICAPv2 images...", flush=True)
 
     return {
-        "image_root": str(image_root.resolve()),
+        "image_roots": [str(path.resolve()) for path, _ in image_dirs],
+        "image_root_counts": [
+            {"path": str(path.resolve()), "jpg_count": count}
+            for path, count in image_dirs
+        ],
         "image_count": len(images),
         "wsi_count": len(observed_wsi),
         "image_bytes": total_bytes,
@@ -289,46 +313,79 @@ def main() -> None:
 
     download_meta: dict[str, object]
     route_errors: list[str] = []
+    prevalidated_corpus: dict[str, object] | None = None
 
-    if archive.is_file():
-        validate_zip(archive)
-        download_meta = {
-            "download_source": "existing_local_archive",
-            "download_request_url": "",
-            "download_final_host": "",
-            "downloaded_bytes": archive.stat().st_size,
-        }
-        if not args.no_extract:
-            extract_root.mkdir(parents=True, exist_ok=True)
-            with zipfile.ZipFile(archive, "r") as zf:
-                zf.extractall(extract_root)
-    else:
-        print(f"Acquiring frozen SICAPv2 v1 into {args.output_root}", flush=True)
-        meta, route_errors = download_mendeley_archive(
-            dataset=dataset,
-            destination=archive,
-            chunk_mb=args.chunk_mb,
-        )
-        if meta is not None:
-            download_meta = dict(meta)
+    # Reuse a complete already-extracted corpus before attempting the network.
+    if not args.force_redownload and extract_root.is_dir():
+        try:
+            prevalidated_corpus = validate_image_corpus(
+                root=extract_root,
+                spec_path=args.spec,
+                dataset=dataset,
+            )
+        except RuntimeError as exc:
+            print(f"Existing extracted corpus is incomplete or invalid: {exc}", flush=True)
+        else:
+            mirror_layout = any(
+                "SICAPv2_Kaggle" in str(path)
+                for path in prevalidated_corpus.get("image_roots", [])
+            )
+            download_meta = {
+                "download_source": (
+                    "kagglehub_public_mirror_existing_extraction"
+                    if mirror_layout
+                    else "existing_extracted_corpus"
+                ),
+                "download_request_url": (
+                    f"https://www.kaggle.com/datasets/{KAGGLE_MIRROR_HANDLE}"
+                    if mirror_layout
+                    else ""
+                ),
+                "download_final_host": "www.kaggle.com" if mirror_layout else "",
+                "downloaded_bytes": 0,
+            }
+            print("Reusing complete existing SICAPv2 extracted corpus.", flush=True)
+
+    if prevalidated_corpus is None:
+        if archive.is_file():
+            validate_zip(archive)
+            download_meta = {
+                "download_source": "existing_local_archive",
+                "download_request_url": "",
+                "download_final_host": "",
+                "downloaded_bytes": archive.stat().st_size,
+            }
             if not args.no_extract:
                 extract_root.mkdir(parents=True, exist_ok=True)
                 with zipfile.ZipFile(archive, "r") as zf:
                     zf.extractall(extract_root)
         else:
-            if args.no_extract:
-                raise RuntimeError(
-                    "Mendeley routes failed and --no-extract prevents directory-mirror fallback:\n  - "
-                    + "\n  - ".join(route_errors)
-                )
-            extract_root.mkdir(parents=True, exist_ok=True)
-            download_meta = download_kaggle_mirror(extract_root)
+            print(f"Acquiring frozen SICAPv2 v1 into {args.output_root}", flush=True)
+            meta, route_errors = download_mendeley_archive(
+                dataset=dataset,
+                destination=archive,
+                chunk_mb=args.chunk_mb,
+            )
+            if meta is not None:
+                download_meta = dict(meta)
+                if not args.no_extract:
+                    extract_root.mkdir(parents=True, exist_ok=True)
+                    with zipfile.ZipFile(archive, "r") as zf:
+                        zf.extractall(extract_root)
+            else:
+                if args.no_extract:
+                    raise RuntimeError(
+                        "Mendeley routes failed and --no-extract prevents directory-mirror fallback:\n  - "
+                        + "\n  - ".join(route_errors)
+                    )
+                extract_root.mkdir(parents=True, exist_ok=True)
+                download_meta = download_kaggle_mirror(extract_root)
 
     if args.no_extract:
         if not archive.is_file():
             raise RuntimeError("no valid SICAPv2 archive was acquired")
         payload = {
-            "schema_version": "sicapv2-v1-download/v2",
+            "schema_version": "sicapv2-v1-download/v3",
             "dataset": dataset["name"],
             "version": dataset["version"],
             "doi": dataset["doi"],
@@ -340,13 +397,13 @@ def main() -> None:
             **download_meta,
         }
     else:
-        corpus = validate_image_corpus(
+        corpus = prevalidated_corpus or validate_image_corpus(
             root=extract_root,
             spec_path=args.spec,
             dataset=dataset,
         )
         payload = {
-            "schema_version": "sicapv2-v1-download/v2",
+            "schema_version": "sicapv2-v1-download/v3",
             "dataset": dataset["name"],
             "version": dataset["version"],
             "doi": dataset["doi"],
