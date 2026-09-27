@@ -73,22 +73,42 @@ def stable_indices(wsi_id: str, n: int, cap: int, seed: int) -> np.ndarray:
     return chosen.astype(np.int64)
 
 
-def find_images_dir(root: Path, expected_count: int) -> Path:
+def collect_image_paths(root: Path, expected_count: int) -> tuple[list[Path], list[tuple[Path, int]]]:
+    """Collect the frozen SICAP image corpus across one or more images directories.
+
+    The official distribution may expose a single images directory. The Kaggle
+    mirror currently exposes Train/Images and Val/Images. We merge those roots
+    only when patch filenames are globally unique and the total count matches
+    the preregistered corpus size.
+    """
     candidates: list[tuple[Path, int]] = []
+    image_paths: list[Path] = []
     for path in [root, *[item for item in root.rglob("*") if item.is_dir()]]:
         if path.name.lower() != "images":
             continue
-        count = sum(1 for _ in path.glob("*.jpg"))
-        if count:
-            candidates.append((path, count))
-    exact = [path for path, count in candidates if count == expected_count]
-    if len(exact) != 1:
+        jpgs = sorted(path.glob("*.jpg"), key=lambda p: p.name)
+        if not jpgs:
+            continue
+        candidates.append((path, len(jpgs)))
+        image_paths.extend(jpgs)
+
+    if len(image_paths) != expected_count:
         raise FileNotFoundError(
-            "expected exactly one SICAPv2 images directory containing "
-            f"{expected_count} JPG files under {root}; observed "
+            f"expected {expected_count} SICAPv2 JPG files across image roots under {root}; "
+            f"observed {len(image_paths)} from "
             + repr([(str(path), count) for path, count in candidates])
         )
-    return exact[0]
+
+    names = [path.name for path in image_paths]
+    if len(names) != len(set(names)):
+        duplicate_names = sorted(name for name in set(names) if names.count(name) > 1)
+        raise ValueError(
+            "duplicate SICAPv2 patch filenames across image roots: "
+            + repr(duplicate_names[:20])
+        )
+
+    image_paths.sort(key=lambda path: path.name)
+    return image_paths, candidates
 
 
 def main() -> None:
@@ -127,16 +147,10 @@ def main() -> None:
         raise ValueError(f"unmapped SICAP Gleason scores: {unknown_scores}")
     mapping["isup_grade"] = mapping["gleason_score"].astype(str).map(target_mapping).astype(int)
 
-    images_dir = find_images_dir(
+    image_paths, image_roots = collect_image_paths(
         args.dataset_root,
         int(dataset_spec["expected_patch_images"]),
     )
-    image_paths = sorted(images_dir.glob("*.jpg"))
-    if len(image_paths) != int(dataset_spec["expected_patch_images"]):
-        raise ValueError(
-            f"SICAPv2 patch inventory has {len(image_paths)} JPG files; "
-            f"expected {dataset_spec['expected_patch_images']}"
-        )
 
     duplicate_regions = tuple(dataset_spec["duplicate_regions_excluded"])
     by_wsi: dict[str, list[Path]] = {image_id: [] for image_id in mapping["image_id"].astype(str)}
@@ -196,6 +210,10 @@ def main() -> None:
         payload = {
             "status": "inventory_passed",
             "patch_count": len(image_paths),
+            "image_roots": [
+                {"path": str(path.resolve()), "jpg_count": count}
+                for path, count in image_roots
+            ],
             "wsi_count": len(inventory),
             "patient_count": inventory["patient_id"].nunique(),
             "duplicate_patch_exclusion_count": len(excluded_duplicate_rows),
@@ -242,10 +260,7 @@ def main() -> None:
             all_features = []
             for start in range(0, len(selected_paths), args.batch_size):
                 batch_paths = selected_paths[start : start + args.batch_size]
-                tensors = [
-                    tfm(Image.open(path).convert("RGB"))
-                    for path in batch_paths
-                ]
+                tensors = [tfm(Image.open(path).convert("RGB")) for path in batch_paths]
                 batch = torch.stack(tensors).to(device)
                 with torch.no_grad():
                     features = (
@@ -279,9 +294,7 @@ def main() -> None:
                 handle.attrs["patient_id"] = str(row.patient_id)
                 handle.attrs["gleason_score"] = str(row.gleason_score)
                 handle.attrs["isup_grade"] = int(row.isup_grade)
-                handle.attrs["phikon_snapshot_revision"] = str(
-                    replay["snapshot_revision"]
-                )
+                handle.attrs["phikon_snapshot_revision"] = str(replay["snapshot_revision"])
             temporary.replace(output_path)
 
         with h5py.File(output_path, "r") as handle:
@@ -318,6 +331,10 @@ def main() -> None:
         "replay_report_sha256": sha256(args.replay_report),
         "phikon_snapshot_revision": replay["snapshot_revision"],
         "dataset_root": str(args.dataset_root.resolve()),
+        "image_roots": [
+            {"path": str(path.resolve()), "jpg_count": count}
+            for path, count in image_roots
+        ],
         "source_patch_count": len(image_paths),
         "duplicate_patch_exclusion_count": len(excluded_duplicate_rows),
         "wsi_count": len(manifest),
