@@ -73,17 +73,22 @@ def stable_indices(wsi_id: str, n: int, cap: int, seed: int) -> np.ndarray:
     return chosen.astype(np.int64)
 
 
-def find_images_dir(root: Path) -> Path:
-    candidates = [
-        root / "images",
-        root / "SICAPv2" / "images",
-    ]
-    hits = [path for path in candidates if path.is_dir()]
-    if len(hits) != 1:
+def find_images_dir(root: Path, expected_count: int) -> Path:
+    candidates: list[tuple[Path, int]] = []
+    for path in [root, *[item for item in root.rglob("*") if item.is_dir()]]:
+        if path.name.lower() != "images":
+            continue
+        count = sum(1 for _ in path.glob("*.jpg"))
+        if count:
+            candidates.append((path, count))
+    exact = [path for path, count in candidates if count == expected_count]
+    if len(exact) != 1:
         raise FileNotFoundError(
-            f"expected exactly one SICAPv2 images directory under {root}; found {hits}"
+            "expected exactly one SICAPv2 images directory containing "
+            f"{expected_count} JPG files under {root}; observed "
+            + repr([(str(path), count) for path, count in candidates])
         )
-    return hits[0]
+    return exact[0]
 
 
 def main() -> None:
@@ -122,7 +127,10 @@ def main() -> None:
         raise ValueError(f"unmapped SICAP Gleason scores: {unknown_scores}")
     mapping["isup_grade"] = mapping["gleason_score"].astype(str).map(target_mapping).astype(int)
 
-    images_dir = find_images_dir(args.dataset_root)
+    images_dir = find_images_dir(
+        args.dataset_root,
+        int(dataset_spec["expected_patch_images"]),
+    )
     image_paths = sorted(images_dir.glob("*.jpg"))
     if len(image_paths) != int(dataset_spec["expected_patch_images"]):
         raise ValueError(
