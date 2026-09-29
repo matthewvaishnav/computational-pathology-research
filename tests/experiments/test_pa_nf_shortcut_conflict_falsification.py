@@ -75,9 +75,8 @@ def test_scanner_slots_realize_every_registered_correlation_exactly() -> None:
             }
 
 
-def test_training_pairs_are_balanced_and_candidate_scanner_never_matches_query() -> (
-    None
-):
+def test_training_pairs_are_balanced_and_candidate_scanner_never_matches_query(
+) -> None:
     frame = synthetic_frame()
     fit = np.flatnonzero(frame["split"].to_numpy() == "train")
     pairs = build_training_pairs(
@@ -99,9 +98,8 @@ def test_training_pairs_are_balanced_and_candidate_scanner_never_matches_query()
     assert set(negatives["query_scanner"]) == {"B300"}
 
 
-def test_uniform_training_condition_has_identical_query_scanner_counts_by_label() -> (
-    None
-):
+def test_uniform_training_condition_has_identical_query_scanner_counts_by_label(
+) -> None:
     frame = synthetic_frame()
     fit = np.flatnonzero(frame["split"].to_numpy() == "train")
     pairs = build_training_pairs(
