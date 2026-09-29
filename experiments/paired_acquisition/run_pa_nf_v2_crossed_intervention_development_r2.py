@@ -20,9 +20,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+if str(REPOSITORY_ROOT) not in os.sys.path:
+    os.sys.path.insert(0, str(REPOSITORY_ROOT))
 
 import numpy as np
 import torch
