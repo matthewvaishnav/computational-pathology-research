@@ -1,0 +1,117 @@
+{
+  "schema_version": "pa-nf-shortcut-conflict-falsification/v1",
+  "status": "preregistered_before_outcome_inspection",
+  "date_frozen": "2026-09-29",
+  "dataset": {
+    "name": "SCORPION paired-scanner benchmark",
+    "slides": 48,
+    "regions": 480,
+    "scanners": ["AT2", "B300", "DP200", "GT450", "P1000"],
+    "views_per_region": 5,
+    "patches": 2400,
+    "biological_unit_for_inference": "original slide_id",
+    "important_boundary": "SCORPION does not provide a validated biological-category label for these regions. These experiments therefore use tissue-region identity as the preserved target and must not be described as diagnostic-task validation."
+  },
+  "frozen_inputs": {
+    "base_features": {
+      "path": "results/scorpion/features/fold_0_dinov2_base.npz",
+      "sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+      "model": "dinov2_base",
+      "model_revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415"
+    },
+    "capacity_matched_campaign": {
+      "artifact_index": "evidence/paired_acquisition/scorpion-capacity-matched-20260726/campaign/cell_artifact_index.csv",
+      "campaign_hash": "59ba04450adf738aa2983dc40ecb4ff09ffa495f13d43c56edde5ec57707a2e1",
+      "source_commit": "0adea50f1ef22865969109f1834a3c175e3f8b43",
+      "folds": [0, 1, 2, 3, 4],
+      "seeds": [801, 802, 803, 804, 805],
+      "primary_candidate": "pathoalign_dep20",
+      "capacity_matched_comparator": "two_branch_no_scanner_objectives"
+    },
+    "manifests_dir": "data/scorpion/splits"
+  },
+  "representations": {
+    "raw_dinov2": "Frozen DINOv2-Base source features aligned to each registered fold.",
+    "capacity_control_biological": "features array from two_branch_no_scanner_objectives projected_features.npz.",
+    "pa_nf_biological": "features array from pathoalign_dep20 projected_features.npz.",
+    "pa_nf_acquisition_descriptive": "acquisition_features array from pathoalign_dep20 projected_features.npz; mechanism control only."
+  },
+  "experiment_1_shortcut_susceptibility": {
+    "question": "When scanner identity is made spuriously predictive of a same-region matching label during downstream training, does the frozen PA-NF biological representation retain held-out matching performance better than raw DINOv2 and the equal-capacity two-branch control?",
+    "task": "Binary ordered-pair classification: same tissue region versus different tissue region from the same original slide.",
+    "train_scope": "Only non-test slides from the registered five-fold split.",
+    "test_scope": "Only held-out slides from the registered fold; test pair construction is scanner-balanced and independent of label.",
+    "correlation_levels": [0.2, 0.4, 0.6, 0.8, 1.0],
+    "correlation_definition": "For each projection seed, one preferred query scanner is assigned to positive pairs and a different preferred query scanner to negative pairs. At level c, the preferred scanner receives fraction c of query slots and the remaining four scanners share 1-c equally. c=0.2 is exactly uniform over five scanners; c=1.0 makes query scanner perfectly label-predictive in training.",
+    "preferred_scanner_rotation_by_seed": {
+      "801": ["AT2", "B300"],
+      "802": ["B300", "DP200"],
+      "803": ["DP200", "GT450"],
+      "804": ["GT450", "P1000"],
+      "805": ["P1000", "AT2"]
+    },
+    "pairs_per_region_per_class": 20,
+    "positive_pair": "same region, different scanner",
+    "negative_pair": "different region from the same slide, different scanner",
+    "candidate_scanner_constraint": "candidate scanner is always different from query scanner for both labels so same-scanner pair status cannot itself reveal the label",
+    "downstream_model": {
+      "type": "StandardScaler + L2 logistic regression",
+      "C": 1.0,
+      "max_iter": 5000,
+      "random_state": 0,
+      "pair_vector": "concat(query, candidate, abs(query-candidate), query*candidate)"
+    },
+    "primary_endpoint": "held-out balanced accuracy at correlation level 1.0",
+    "secondary_endpoints": [
+      "held-out balanced accuracy at every frozen correlation level",
+      "held-out ROC AUC",
+      "performance drop from correlation 0.2 to 1.0",
+      "normalized trapezoidal area under the held-out balanced-accuracy curve"
+    ],
+    "primary_success_rule": {
+      "all_required": [
+        "PA-NF minus capacity-control held-out balanced accuracy at c=1.0 has mean > 0 and hierarchical slide/seed bootstrap lower 95% bound > 0",
+        "PA-NF minus raw-DINOv2 held-out balanced accuracy at c=1.0 has mean > 0 and hierarchical slide/seed bootstrap lower 95% bound > 0",
+        "capacity-control performance drop minus PA-NF performance drop from c=0.2 to c=1.0 has mean > 0 and bootstrap lower 95% bound > 0",
+        "PA-NF baseline c=0.2 balanced accuracy is noninferior to the capacity control with lower 95% bound >= -0.02"
+      ]
+    }
+  },
+  "experiment_2_adversarial_retrieval": {
+    "question": "When biological identity and acquisition identity directly conflict, does the PA-NF biological representation retrieve the correct tissue region across scanners instead of a wrong region from the same scanner?",
+    "query_set": "Every held-out SCORPION image exactly once in its registered test fold.",
+    "candidate_set_per_query": {
+      "correct_candidates": "the other four scanner views of the same tissue region",
+      "shortcut_candidates": "all different regions from the same original slide acquired on the query scanner"
+    },
+    "similarity": "cosine similarity after row-wise L2 normalization",
+    "primary_endpoint": "conflict top-1 accuracy: max cosine to any correct cross-scanner view exceeds max cosine to every wrong same-scanner region",
+    "secondary_endpoints": [
+      "hard-negative margin = max(correct cross-scanner cosine) - max(wrong same-scanner cosine)",
+      "per-slide conflict top-1 accuracy",
+      "PA-NF biological versus PA-NF acquisition-branch conflict accuracy"
+    ],
+    "primary_success_rule": {
+      "all_required": [
+        "PA-NF biological minus capacity-control biological conflict top-1 accuracy has mean > 0 and hierarchical slide/seed bootstrap lower 95% bound > 0",
+        "PA-NF biological minus raw-DINOv2 conflict top-1 accuracy has mean > 0 and bootstrap lower 95% bound > 0",
+        "PA-NF biological minus PA-NF acquisition-branch conflict top-1 accuracy has mean > 0 and bootstrap lower 95% bound > 0",
+        "PA-NF biological hard-negative margin has mean > 0 and bootstrap lower 95% bound > 0"
+      ]
+    }
+  },
+  "inference": {
+    "bootstrap": "paired hierarchical bootstrap: resample the five frozen projection seeds with replacement, then resample the 48 original slides with replacement; preserve all within-slide query/pair rows",
+    "draws": 100000,
+    "seed": 20260929,
+    "interval": "percentile 95%",
+    "unit_warning": "Patch rows and region pairs are not treated as independent biological replicates."
+  },
+  "prohibited_actions_after_freeze": [
+    "No change to correlation levels, preferred-scanner rotations, pair counts, pair construction, downstream classifier, endpoints, margins, bootstrap design, comparator set, or success rules after outcome inspection.",
+    "No tuning on registered test slides.",
+    "No replacing region identity with an unsupported biological or diagnostic label.",
+    "If either primary gate fails, retain the failure and do not redefine the endpoint on the same outcomes."
+  ],
+  "claim_boundary": "A passing result may support reduced acquisition-shortcut susceptibility and stronger acquisition-conflict tissue-identity retrieval on the registered SCORPION paired-scanner protocol. It does not establish diagnostic robustness, clinical utility, external-site generalization, pure biological disentanglement, or universal superiority."
+}
