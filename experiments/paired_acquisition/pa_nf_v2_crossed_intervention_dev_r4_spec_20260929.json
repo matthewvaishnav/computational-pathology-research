@@ -1,0 +1,74 @@
+{
+  "schema_version": "pa-nf-v2-crossed-intervention-development/v4",
+  "date_frozen": "2026-09-29",
+  "status": "development_only_not_confirmation",
+  "purpose": "Test whether the persistent R2/R3 biology-retention deficit is caused by donor-identity leakage through individual acquisition codes during crossed intervention.",
+  "development_history": {
+    "r2_result": "Crossed factorization, acquisition transfer, and variance-normalized cycle fidelity passed; biology-retention contrast versus the matched control remained negative.",
+    "r3_result": "A frozen biological-contrastive weight grid [0.1,0.25,0.5,1.0] failed to change the approximately -0.02 candidate-minus-control biology-retention deficit, so insufficient biological contrastive pressure is not treated as the primary mechanism.",
+    "r3_selected_weight": null
+  },
+  "isolation": {
+    "forbidden_for_tuning": [
+      "results/paired_acquisition_factorization_shortcut_conflict_20260929",
+      "registered SCORPION shortcut/conflict outcomes"
+    ],
+    "allowed_development_evidence": [
+      "R1 synthetic smoke",
+      "R2 synthetic smoke",
+      "R3 frozen synthetic contrastive grid",
+      "R4 synthetic donor-invariant pooling diagnostics"
+    ],
+    "confirmation_rule": "Any promoted configuration must be frozen before untouched development-holdout seeds and before any new real-data confirmation."
+  },
+  "architectures": {
+    "candidate": "pa_nf_v2_crossed_intervention_r4_pooled_acquisition",
+    "primary_control": "v2_r4_control_no_cross_cycle",
+    "identical_parameterization_required": true,
+    "parameter_count_expected": 158432,
+    "difference": "Candidate enables crossed reconstruction and cycle losses; control disables those losses. Both use the same image-inferred encoders, decoder, prototypes, and evaluation intervention operator."
+  },
+  "r4_intervention_operator": {
+    "name": "donor-invariant acquisition pooling",
+    "training": "For each crossed target sample, replace its individual acquisition code with the mean acquisition embedding of other training identities from the same scanner. The target sample itself is excluded from the pool.",
+    "evaluation": "For each held-out identity-scanner combination, use the mean acquisition embedding of training samples from the requested scanner. The held-out identity has no image in that scanner and therefore cannot contribute to the pool.",
+    "reason": "The crossed decoder receives target acquisition state without receiving a donor image-specific latent that can carry donor biological identity.",
+    "scanner_identity_required_at_model_inference": false,
+    "scanner_grouping_required_for_intervention_construction": true
+  },
+  "losses": {
+    "self_reconstruction_weight": 1.0,
+    "crossed_reconstruction_weight_candidate": 1.0,
+    "crossed_reconstruction_weight_control": 0.0,
+    "biological_cycle_weight_candidate": 2.0,
+    "biological_cycle_weight_control": 0.0,
+    "acquisition_cycle_weight_candidate": 1.0,
+    "acquisition_cycle_weight_control": 0.0,
+    "biological_consistency_weight": 1.0,
+    "acquisition_same_scanner_consistency_weight": 0.5,
+    "acquisition_prototype_weight": 0.25,
+    "biological_variance_weight": 0.05,
+    "prototype_center_weight": 0.01,
+    "prototype_separation_weight": 0.01,
+    "biological_contrastive_weight": 0.0
+  },
+  "development_grid": {
+    "renderers": ["linear", "nonlinear"],
+    "smoke_model_seeds": [3401, 3402, 3403],
+    "smoke_identities": 64,
+    "scanners": 5,
+    "smoke_epochs": 80,
+    "dataset_seed": 5317,
+    "no_weight_grid": true
+  },
+  "development_promotion_gate": {
+    "parameter_counts_equal": true,
+    "candidate_all_seed_crossed_factorization_success": true,
+    "candidate_mean_acquisition_transfer_delta_greater_than_control": true,
+    "candidate_mean_biology_retention_delta_greater_than_control": true,
+    "candidate_mean_variance_normalized_cycle_error_lower_than_control": true,
+    "note": "All R2 gates are retained unchanged. R4 changes the intervention mechanism, not the success criteria."
+  },
+  "if_passes": "Freeze R4 and evaluate on untouched synthetic development-holdout seeds before any real-data confirmation.",
+  "if_fails": "Retain the failure and reconsider the factorization architecture rather than tuning additional loss weights on these same synthetic seeds."
+}
