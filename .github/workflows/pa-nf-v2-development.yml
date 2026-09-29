@@ -27,11 +27,19 @@ jobs:
         run: |
           python -m py_compile \
             experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development.py \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r2.py \
             scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development.py \
-            tests/test_pa_nf_v2_crossed_intervention_development.py
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r2.py \
+            tests/test_pa_nf_v2_crossed_intervention_development.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r2.py
 
       - name: Validate development wiring
-        run: python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development.py
+        run: |
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development.py
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r2.py
 
       - name: Run focused tests
-        run: pytest -q tests/test_pa_nf_v2_crossed_intervention_development.py
+        run: |
+          pytest -q \
+            tests/test_pa_nf_v2_crossed_intervention_development.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r2.py
