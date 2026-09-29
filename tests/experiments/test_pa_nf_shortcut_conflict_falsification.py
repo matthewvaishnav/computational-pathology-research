@@ -43,13 +43,23 @@ def synthetic_frame(slides: int = 2, regions_per_slide: int = 3) -> pd.DataFrame
 def test_registered_spec_keeps_region_identity_claim_boundary() -> None:
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     assert spec["status"] == "preregistered_before_outcome_inspection"
-    assert spec["frozen_inputs"]["capacity_matched_campaign"]["primary_candidate"] == "pathoalign_dep20"
     assert (
-        spec["frozen_inputs"]["capacity_matched_campaign"]["capacity_matched_comparator"]
+        spec["frozen_inputs"]["capacity_matched_campaign"]["primary_candidate"]
+        == "pathoalign_dep20"
+    )
+    assert (
+        spec["frozen_inputs"]["capacity_matched_campaign"][
+            "capacity_matched_comparator"
+        ]
         == "two_branch_no_scanner_objectives"
     )
-    assert spec["experiment_1_shortcut_susceptibility"]["correlation_levels"] == list(CORRELATIONS)
-    assert "does not provide a validated biological-category label" in spec["dataset"]["important_boundary"]
+    assert spec["experiment_1_shortcut_susceptibility"][
+        "correlation_levels"
+    ] == list(CORRELATIONS)
+    assert (
+        "does not provide a validated biological-category label"
+        in spec["dataset"]["important_boundary"]
+    )
 
 
 def test_scanner_slots_realize_every_registered_correlation_exactly() -> None:
@@ -65,7 +75,9 @@ def test_scanner_slots_realize_every_registered_correlation_exactly() -> None:
             }
 
 
-def test_training_pairs_are_balanced_and_candidate_scanner_never_matches_query() -> None:
+def test_training_pairs_are_balanced_and_candidate_scanner_never_matches_query() -> (
+    None
+):
     frame = synthetic_frame()
     fit = np.flatnonzero(frame["split"].to_numpy() == "train")
     pairs = build_training_pairs(
@@ -87,7 +99,9 @@ def test_training_pairs_are_balanced_and_candidate_scanner_never_matches_query()
     assert set(negatives["query_scanner"]) == {"B300"}
 
 
-def test_uniform_training_condition_has_identical_query_scanner_counts_by_label() -> None:
+def test_uniform_training_condition_has_identical_query_scanner_counts_by_label() -> (
+    None
+):
     frame = synthetic_frame()
     fit = np.flatnonzero(frame["split"].to_numpy() == "train")
     pairs = build_training_pairs(
@@ -109,6 +123,8 @@ def test_held_out_pairs_are_label_and_scanner_balanced() -> None:
     pairs = build_test_pairs(frame, test)
     per_slide = pairs.groupby(["slide_id", "label"]).size().unstack(fill_value=0)
     assert (per_slide[0] == per_slide[1]).all()
-    scanner_counts = pairs.groupby(["label", "query_scanner"]).size().unstack(fill_value=0)
+    scanner_counts = (
+        pairs.groupby(["label", "query_scanner"]).size().unstack(fill_value=0)
+    )
     assert scanner_counts.loc[0].to_dict() == scanner_counts.loc[1].to_dict()
     assert not (pairs["query_scanner"] == pairs["candidate_scanner"]).any()
