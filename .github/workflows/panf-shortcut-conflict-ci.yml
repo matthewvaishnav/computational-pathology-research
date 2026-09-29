@@ -5,17 +5,23 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/panf-shortcut-conflict-ci.yml"
+      - "docs/research/pa-nf-shortcut-conflict-preregistration-20260929.md"
       - "experiments/paired_acquisition/pa_nf_shortcut_conflict_spec_20260929.json"
       - "experiments/paired_acquisition/run_pa_nf_shortcut_conflict_falsification.py"
+      - "scripts/paired_acquisition/validate_pa_nf_shortcut_conflict_inputs.py"
       - "tests/experiments/test_pa_nf_shortcut_conflict_falsification.py"
+      - "tests/experiments/test_pa_nf_shortcut_conflict_input_validator.py"
   push:
     branches:
       - "research/panf-shortcut-conflict-20260929"
     paths:
       - ".github/workflows/panf-shortcut-conflict-ci.yml"
+      - "docs/research/pa-nf-shortcut-conflict-preregistration-20260929.md"
       - "experiments/paired_acquisition/pa_nf_shortcut_conflict_spec_20260929.json"
       - "experiments/paired_acquisition/run_pa_nf_shortcut_conflict_falsification.py"
+      - "scripts/paired_acquisition/validate_pa_nf_shortcut_conflict_inputs.py"
       - "tests/experiments/test_pa_nf_shortcut_conflict_falsification.py"
+      - "tests/experiments/test_pa_nf_shortcut_conflict_input_validator.py"
 
 permissions:
   contents: read
@@ -37,11 +43,13 @@ jobs:
           "scikit-learn>=1.2,<2"
           "torch>=2,<3"
           "pytest>=7.3,<8"
-      - name: Compile preregistered runner
+      - name: Compile preregistered gates
         run: >-
           python -m py_compile
           experiments/paired_acquisition/run_pa_nf_shortcut_conflict_falsification.py
-      - name: Run pair-construction contract tests
+          scripts/paired_acquisition/validate_pa_nf_shortcut_conflict_inputs.py
+      - name: Run shortcut/conflict contract tests
         run: >-
           pytest -q -o addopts=''
           tests/experiments/test_pa_nf_shortcut_conflict_falsification.py
+          tests/experiments/test_pa_nf_shortcut_conflict_input_validator.py
