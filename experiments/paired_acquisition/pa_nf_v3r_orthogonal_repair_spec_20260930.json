@@ -1,0 +1,39 @@
+{
+  "schema_version": "pa-nf-v3r-orthogonal-repair-spec/v1",
+  "date_frozen": "2026-09-30",
+  "status": "frozen_before_repaired_outcomes",
+  "invalidated_run": {
+    "line": "PA-NF v3 group transport",
+    "reason": "post-outcome audit showed learned basis collapsed to the zero matrix, violating the preregistered identity/inverse/group assumptions",
+    "scientific_interpretation": "implementation-invalid; do not treat as evidence against group transport"
+  },
+  "repair": {
+    "scope": "implementation invariant only",
+    "old_basis": "torch.nn.utils.parametrizations.orthogonal on Linear.weight",
+    "new_basis": "Q = matrix_exp(A - A^T) computed every forward pass",
+    "guarantees": [
+      "Q^T Q = I up to numerical precision",
+      "T_0 = identity up to numerical precision",
+      "T_theta inverse = T_-theta for group_transport",
+      "T_b(T_a(x)) = T_(a+b)(x) for group_transport"
+    ],
+    "unchanged": [
+      "synthetic generator",
+      "dataset seed 7301",
+      "train/test identity split",
+      "held-out scanner-5 A+B composition",
+      "acquisition encoder",
+      "operator log-scale parameterization",
+      "loss terms and weights",
+      "optimizer and epochs",
+      "control family",
+      "evaluation metrics",
+      "promotion gates",
+      "parameter count"
+    ]
+  },
+  "fresh_model_seeds": [4201, 4202, 4203],
+  "burned_previous_seeds": [4101, 4102, 4103],
+  "promotion_policy": "Only fresh seeds 4201-4203 may contribute to repaired development promotion. Burned v3 seeds are diagnostic only.",
+  "stop_rule": "If the repaired candidate preserves the exact operator invariants but still fails promotion, retain the negative result and do not modify this benchmark or these gates using the repaired outcomes."
+}
