@@ -1,0 +1,67 @@
+{
+  "schema_version": "pa-nf-v2-crossed-intervention-development/v1",
+  "date_frozen": "2026-09-29",
+  "status": "development_only_not_confirmation",
+  "purpose": "Develop a structurally stronger PA-NF objective on synthetic known-factor data without reusing the frozen 2026-09-29 SCORPION shortcut/conflict outcomes as a development target.",
+  "isolation": {
+    "forbidden_for_tuning": [
+      "results/paired_acquisition_factorization_shortcut_conflict_20260929",
+      "registered shortcut/conflict primary outcomes from 2026-09-29"
+    ],
+    "allowed_development_evidence": [
+      "synthetic known-factor crossed grids",
+      "non-confirmatory diagnostics produced by this development runner"
+    ],
+    "confirmation_rule": "Any promoted PA-NF v2 configuration must be frozen before a new prospective confirmation experiment."
+  },
+  "architectures": {
+    "candidate": "pa_nf_v2_crossed_intervention",
+    "primary_control": "v2_control_no_cross_cycle",
+    "identical_parameterization_required": true,
+    "difference": "Candidate enables crossed reconstruction and factor re-encoding cycle losses; primary control sets exactly those two loss weights to zero."
+  },
+  "representation": {
+    "biological": "z_b = E_b(x)",
+    "acquisition": "z_a = E_a(x)",
+    "decoder": "x_hat = D(z_b, z_a)",
+    "scanner_identity_required_at_inference": false,
+    "scanner_prototypes": "training-only anchors for image-inferred acquisition embeddings"
+  },
+  "losses": {
+    "self_reconstruction_weight": 1.0,
+    "crossed_reconstruction_weight_candidate": 1.0,
+    "crossed_reconstruction_weight_control": 0.0,
+    "cycle_weight_candidate": 1.0,
+    "cycle_weight_control": 0.0,
+    "biological_consistency_weight": 1.0,
+    "acquisition_prototype_weight": 0.25,
+    "biological_variance_weight": 0.05,
+    "prototype_center_weight": 0.01,
+    "prototype_separation_weight": 0.01
+  },
+  "development_grid": {
+    "renderers": ["linear", "nonlinear"],
+    "full_model_seeds": [3101, 3102, 3103, 3104, 3105, 3106, 3107, 3108, 3109, 3110],
+    "smoke_model_seeds": [3101, 3102, 3103],
+    "full_identities": 256,
+    "smoke_identities": 64,
+    "scanners": 5,
+    "full_epochs": 250,
+    "smoke_epochs": 80,
+    "dataset_seed": 5317
+  },
+  "development_promotion_gate": {
+    "parameter_counts_equal": true,
+    "candidate_all_seed_two_axis_crossed_factorization_success": true,
+    "candidate_mean_acquisition_transfer_delta_greater_than_control": true,
+    "candidate_mean_biology_retention_delta_greater_than_control": true,
+    "candidate_mean_cycle_error_lower_than_control": true,
+    "note": "This is a development promotion gate only and is not a confirmatory scientific claim."
+  },
+  "prospective_confirmation_target": {
+    "design": "five-rotation leave-one-scanner-out transport",
+    "primary_contrast": "frozen PA-NF v2 minus identical-capacity v2 control lacking crossed/cycle losses",
+    "secondary_comparators": ["PA-NF v1", "raw DINOv2"],
+    "must_be_preregistered_before_outcomes": true
+  }
+}

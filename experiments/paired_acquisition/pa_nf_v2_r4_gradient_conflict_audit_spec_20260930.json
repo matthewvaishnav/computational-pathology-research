@@ -1,0 +1,37 @@
+{
+  "schema_version": "pa-nf-v2-r4-gradient-conflict-audit/v1",
+  "status": "frozen_before_gradient_audit_outcomes",
+  "frozen_date": "2026-09-30",
+  "purpose": "Post-hoc mechanism audit of the persistent R4 biology-retention deficit before inspecting frozen R5 outcomes. This audit does not change R4 or R5 and cannot promote either model.",
+  "source_model": "pa_nf_v2_crossed_intervention_r4_pooled_acquisition",
+  "renderers": ["linear", "nonlinear"],
+  "model_seeds": [3401, 3402, 3403],
+  "smoke_config": {
+    "identities": 64,
+    "epochs": 80,
+    "checkpoints": [1, 10, 20, 40, 80]
+  },
+  "retention_surrogate": {
+    "target": "known synthetic biological latent",
+    "probe": "affine ridge map from current biological code to ground-truth biological latent",
+    "probe_fit": "detached biological codes from even-numbered calibration identities only",
+    "gradient_evaluation": "odd-numbered diagnostic identities only; probe parameters and calibration normalization detached",
+    "ridge_alpha": 0.001
+  },
+  "gradient_pairs": [
+    "crossed_reconstruction_gradient_vs_biological_retention_gradient",
+    "candidate_specific_cross_plus_cycle_gradient_vs_biological_retention_gradient"
+  ],
+  "parameters_compared": "biological_encoder parameters only",
+  "interpretation_rule": {
+    "gradient_conflict_supported": "for each renderer, candidate-specific cross+cycle cosine has negative mean and at least 80 percent of checkpoint-by-seed measurements are negative",
+    "gradient_conflict_not_supported": "the above rule is not satisfied; persistent retention loss then cannot be explained as a systematic negative-gradient effect by this audit"
+  },
+  "boundaries": {
+    "post_hoc_mechanism_diagnostic": true,
+    "r5_outcomes_must_remain_uninspected": true,
+    "frozen_scorpion_outcomes_used": false,
+    "may_change_r5_spec": false,
+    "confirmation_claim_allowed": false
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "pa-nf-v2-crossed-intervention-development/v3",
+  "date_frozen": "2026-09-29",
+  "status": "development_only_not_confirmation",
+  "rationale": {
+    "r1_result": "Crossed factorization and acquisition transfer improved, but biology retention and raw cycle MSE lagged the matched control.",
+    "r2_result": {
+      "candidate_all_seed_crossed_factorization_success": true,
+      "paired_mean_candidate_minus_control_acquisition_transfer_delta": 0.03335753314161356,
+      "paired_mean_candidate_minus_control_biology_retention_delta": -0.020193080107371014,
+      "paired_mean_control_minus_candidate_variance_normalized_cycle_error": 0.10867249220609665,
+      "development_promotion_pass": false
+    },
+    "remaining_problem": "Preserve source biological identity during acquisition intervention without sacrificing the R2 gains in acquisition transfer and normalized cycle fidelity."
+  },
+  "isolation": {
+    "forbidden_for_tuning": [
+      "results/paired_acquisition_factorization_shortcut_conflict_20260929",
+      "registered shortcut/conflict primary outcomes from 2026-09-29"
+    ],
+    "allowed_development_evidence": [
+      "R1 synthetic development output",
+      "R2 synthetic development output",
+      "R3 synthetic known-factor grid"
+    ],
+    "confirmation_rule": "Any R3-selected configuration must be frozen and pass fresh development-holdout seeds before a new prospective real-data confirmation experiment."
+  },
+  "architectures": {
+    "candidate": "pa_nf_v2_crossed_intervention_r3",
+    "primary_control": "v2_r3_control_no_cross_cycle",
+    "identical_parameterization_required": true,
+    "shared_biological_contrastive_objective": true,
+    "difference": "Candidate enables crossed reconstruction and biological/acquisition cycle preservation; primary control sets those three weights to zero. Both receive the same biological contrastive loss and all R2 regularizers."
+  },
+  "biological_contrastive": {
+    "positive_definition": "same paired biological identity/region across different observed scanners",
+    "negative_definition": "different biological identities/regions in the same training batch",
+    "temperature": 0.1,
+    "weight_grid": [0.1, 0.25, 0.5, 1.0],
+    "selection_rule": "Select the lowest weight that satisfies every unchanged R2 promotion gate. If no weight passes, R3 fails and no configuration is selected."
+  },
+  "development_grid": {
+    "renderers": ["linear", "nonlinear"],
+    "model_seeds": [3301, 3302, 3303],
+    "identities": 64,
+    "scanners": 5,
+    "epochs": 80,
+    "dataset_seed": 5317,
+    "contrastive_weight_grid": [0.1, 0.25, 0.5, 1.0]
+  },
+  "promotion_gate_per_weight": {
+    "parameter_counts_equal": true,
+    "candidate_all_seed_crossed_factorization_success": true,
+    "candidate_mean_acquisition_transfer_delta_greater_than_control": true,
+    "candidate_mean_biology_retention_delta_greater_than_control": true,
+    "candidate_mean_variance_normalized_cycle_error_lower_than_control": true,
+    "note": "The gate is intentionally unchanged from R2 apart from evaluating the frozen contrastive-weight cells separately."
+  },
+  "prohibited_after_freeze": [
+    "change contrastive weight grid after observing R3 outputs",
+    "change R3 seeds after observing R3 outputs",
+    "relax any R2 promotion gate after observing R3 outputs",
+    "select a nonpassing weight",
+    "use frozen September 29 SCORPION confirmation outcomes to select the R3 configuration"
+  ]
+}

@@ -1,0 +1,60 @@
+name: PA-NF v2 crossed-intervention CI
+
+on:
+  push:
+    branches:
+      - research/panf-v2-crossed-intervention-20260929
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy scikit-learn torch pytest
+
+      - name: Compile v2 files
+        run: |
+          python -m py_compile \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development.py \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r2.py \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r3.py \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r4.py \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r5.py \
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development.py \
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r2.py \
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r3.py \
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r4.py \
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r5.py \
+            tests/test_pa_nf_v2_crossed_intervention_development.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r2.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r3.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r4.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r5.py
+
+      - name: Validate development wiring
+        run: |
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development.py
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r2.py
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r3.py
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r4.py
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r5.py
+
+      - name: Run focused tests
+        run: |
+          pytest -q \
+            tests/test_pa_nf_v2_crossed_intervention_development.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r2.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r3.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r4.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r5.py

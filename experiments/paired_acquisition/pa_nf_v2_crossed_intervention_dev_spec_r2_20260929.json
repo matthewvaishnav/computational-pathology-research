@@ -1,0 +1,84 @@
+{
+  "schema_version": "pa-nf-v2-crossed-intervention-development/v2",
+  "date_frozen": "2026-09-29",
+  "status": "development_only_not_confirmation",
+  "development_iteration": 2,
+  "purpose": "Strengthen PA-NF v2 using only revision-1 synthetic smoke evidence while continuing to isolate all frozen 2026-09-29 SCORPION confirmation outcomes from development.",
+  "revision_1_observation": {
+    "candidate_all_seed_crossed_factorization_success": true,
+    "candidate_minus_control_acquisition_transfer_delta_mean": 0.022946033987574884,
+    "candidate_minus_control_biology_retention_delta_mean": -0.025181134541829426,
+    "control_minus_candidate_raw_cycle_total_mse_mean": -0.01468863400320212,
+    "interpretation": "Crossed intervention improved acquisition transfer and passed all-seed crossed factorization, but biological retention weakened relative to the matched control. Raw latent-cycle MSE was also worse, but raw MSE can reward small or collapsed latent geometry and is therefore replaced by a variance-normalized cycle diagnostic in revision 2."
+  },
+  "isolation": {
+    "forbidden_for_tuning": [
+      "results/paired_acquisition_factorization_shortcut_conflict_20260929",
+      "registered shortcut/conflict primary outcomes from 2026-09-29"
+    ],
+    "allowed_development_evidence": [
+      "revision-1 synthetic known-factor smoke result",
+      "revision-2 synthetic known-factor crossed grids",
+      "non-confirmatory diagnostics produced by the revision-2 runner"
+    ],
+    "confirmation_rule": "Any promoted PA-NF v2 configuration must be frozen before a new prospective confirmation experiment."
+  },
+  "architectures": {
+    "candidate": "pa_nf_v2_crossed_intervention_r2",
+    "primary_control": "v2_r2_control_no_cross_cycle",
+    "identical_parameterization_required": true,
+    "difference": "Candidate enables crossed reconstruction plus biological and acquisition cycle-preservation losses. Control has the exact same encoders, decoder, scanner prototypes, same-scanner acquisition consistency, biological consistency, variance floor, and prototype regularizers, but sets crossed and both cycle weights to zero."
+  },
+  "representation": {
+    "biological": "z_b = E_b(x)",
+    "acquisition": "z_a = E_a(x)",
+    "decoder": "x_hat = D(z_b, z_a)",
+    "scanner_identity_required_at_inference": false,
+    "scanner_prototypes": "training-only anchors for image-inferred acquisition embeddings"
+  },
+  "losses": {
+    "self_reconstruction_weight": 1.0,
+    "crossed_reconstruction_weight_candidate": 1.0,
+    "crossed_reconstruction_weight_control": 0.0,
+    "biological_cycle_weight_candidate": 2.0,
+    "biological_cycle_weight_control": 0.0,
+    "acquisition_cycle_weight_candidate": 1.0,
+    "acquisition_cycle_weight_control": 0.0,
+    "biological_consistency_weight": 1.0,
+    "acquisition_same_scanner_consistency_weight": 0.5,
+    "acquisition_prototype_weight": 0.25,
+    "biological_variance_weight": 0.05,
+    "prototype_center_weight": 0.01,
+    "prototype_separation_weight": 0.01
+  },
+  "cycle_metric": {
+    "primary": "cycle_variance_normalized_total",
+    "definition": "biological_cycle_mse / biological_target_variance + acquisition_cycle_mse / acquisition_target_variance",
+    "reason": "Avoid rewarding low-amplitude or collapsed latent codes merely because their raw MSE is numerically small. Raw cycle MSE remains descriptive."
+  },
+  "development_grid": {
+    "renderers": ["linear", "nonlinear"],
+    "full_model_seeds": [3201, 3202, 3203, 3204, 3205, 3206, 3207, 3208, 3209, 3210],
+    "smoke_model_seeds": [3201, 3202, 3203],
+    "full_identities": 256,
+    "smoke_identities": 64,
+    "scanners": 5,
+    "full_epochs": 250,
+    "smoke_epochs": 80,
+    "dataset_seed": 5317
+  },
+  "development_promotion_gate": {
+    "parameter_counts_equal": true,
+    "candidate_all_seed_two_axis_crossed_factorization_success": true,
+    "candidate_mean_acquisition_transfer_delta_greater_than_control": true,
+    "candidate_mean_biology_retention_delta_greater_than_control": true,
+    "candidate_mean_variance_normalized_cycle_error_lower_than_control": true,
+    "note": "This remains a development promotion gate only and is not a confirmatory scientific claim."
+  },
+  "prospective_confirmation_target": {
+    "design": "five-rotation leave-one-scanner-out transport",
+    "primary_contrast": "frozen PA-NF v2 minus identical-capacity v2 control lacking crossed/cycle losses",
+    "secondary_comparators": ["PA-NF v1", "raw DINOv2"],
+    "must_be_preregistered_before_outcomes": true
+  }
+}
