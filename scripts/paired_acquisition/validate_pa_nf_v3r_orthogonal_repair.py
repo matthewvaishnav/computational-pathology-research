@@ -63,8 +63,6 @@ def main() -> None:
     if initial[0] >= 1e-5 or max(initial[1:]) >= 1e-8:
         raise SystemExit(f"Initial exact-basis invariant failure: {initial}")
 
-    # Stress the raw parameter with the same optimizer family and weight decay.
-    # This intentionally tries to collapse basis_raw; Q must remain orthogonal.
     candidate.train()
     optimizer = torch.optim.AdamW(
         candidate.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay
@@ -93,7 +91,7 @@ def main() -> None:
     print(f"Post-optimizer inverse MSE: {stressed[2]:.3e}")
     print(f"Post-optimizer composition MSE: {stressed[3]:.3e}")
     print("Generator, losses, metrics, control and promotion gates unchanged")
-    print("No repaired development or confirmation outcomes were computed")
+    print("This validator reads and computes no development or confirmation outcomes")
 
 
 if __name__ == "__main__":
