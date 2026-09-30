@@ -1,0 +1,59 @@
+{
+  "schema_version": "pa-nf-v2-crossed-intervention-development/v5",
+  "status": "frozen_before_r5_outcome_inspection",
+  "frozen_date": "2026-09-30",
+  "development_iteration": 5,
+  "motivation": "R4 donor-invariant acquisition pooling reduced but did not eliminate the candidate-minus-control biology-retention deficit, indicating that donor leakage was only part of the failure and that the unconstrained concatenative decoder remains a structural entanglement path.",
+  "architecture": {
+    "name": "canonical_biology_plus_bounded_acquisition_operator",
+    "biological_encoder": "image inferred",
+    "acquisition_encoder": "image inferred",
+    "decoder": "FiLM-style bounded acquisition operator acting on a canonical biological hidden state before a shared readout",
+    "zero_acquisition_operator": "identity by construction",
+    "crossed_acquisition_source": "leave-query-out same-scanner training pool",
+    "individual_donor_acquisition_code_used_in_crossed_intervention": false,
+    "scanner_id_required_at_inference": false
+  },
+  "comparison": {
+    "candidate": "pa_nf_v2_r5_operator_factorization",
+    "control": "v2_r5_operator_control_no_cross_cycle",
+    "parameter_matching": "exact",
+    "only_candidate_control_difference": "crossed reconstruction plus biological/acquisition cycle losses"
+  },
+  "training": {
+    "self_reconstruction_weight": 1.0,
+    "crossed_reconstruction_weight_candidate": 1.0,
+    "biological_cycle_weight_candidate": 2.0,
+    "acquisition_cycle_weight_candidate": 1.0,
+    "biological_consistency_weight": 1.0,
+    "acquisition_same_scanner_consistency_weight": 0.5,
+    "acquisition_prototype_weight": 0.25,
+    "biological_variance_weight": 0.05,
+    "prototype_center_weight": 0.01,
+    "prototype_separation_weight": 0.01,
+    "biological_contrastive_weight": 0.0
+  },
+  "smoke": {
+    "renderers": ["linear", "nonlinear"],
+    "identities": 64,
+    "epochs": 80,
+    "bootstrap_replicates": 1000,
+    "model_seeds": [3501, 3502, 3503]
+  },
+  "promotion_gate": {
+    "unchanged_from_r4": true,
+    "requirements": [
+      "parameter counts exactly equal",
+      "candidate crossed-factorization success on every smoke seed and renderer",
+      "mean candidate-minus-control acquisition-transfer delta > 0",
+      "mean candidate-minus-control biology-retention delta > 0",
+      "mean control-minus-candidate variance-normalized cycle error > 0"
+    ]
+  },
+  "development_isolation": {
+    "frozen_2026_09_29_scorpion_outcomes_used_for_tuning": false,
+    "r1_r2_r3_r4_synthetic_development_used": true,
+    "confirmation_claim_allowed": false
+  },
+  "decision_rule": "If R5 fails, do not continue optimization on this synthetic development set. Treat the crossed-intervention v2 line as development-negative pending a fundamentally new representation hypothesis. If R5 passes, freeze the architecture and evaluate untouched synthetic holdout seeds before any real-pathology confirmation."
+}
