@@ -30,14 +30,17 @@ jobs:
             experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r2.py \
             experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r3.py \
             experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r4.py \
+            experiments/paired_acquisition/run_pa_nf_v2_crossed_intervention_development_r5.py \
             scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development.py \
             scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r2.py \
             scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r3.py \
             scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r4.py \
+            scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r5.py \
             tests/test_pa_nf_v2_crossed_intervention_development.py \
             tests/test_pa_nf_v2_crossed_intervention_development_r2.py \
             tests/test_pa_nf_v2_crossed_intervention_development_r3.py \
-            tests/test_pa_nf_v2_crossed_intervention_development_r4.py
+            tests/test_pa_nf_v2_crossed_intervention_development_r4.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r5.py
 
       - name: Validate development wiring
         run: |
@@ -45,6 +48,7 @@ jobs:
           python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r2.py
           python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r3.py
           python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r4.py
+          python scripts/paired_acquisition/validate_pa_nf_v2_crossed_intervention_development_r5.py
 
       - name: Run focused tests
         run: |
@@ -52,4 +56,5 @@ jobs:
             tests/test_pa_nf_v2_crossed_intervention_development.py \
             tests/test_pa_nf_v2_crossed_intervention_development_r2.py \
             tests/test_pa_nf_v2_crossed_intervention_development_r3.py \
-            tests/test_pa_nf_v2_crossed_intervention_development_r4.py
+            tests/test_pa_nf_v2_crossed_intervention_development_r4.py \
+            tests/test_pa_nf_v2_crossed_intervention_development_r5.py
