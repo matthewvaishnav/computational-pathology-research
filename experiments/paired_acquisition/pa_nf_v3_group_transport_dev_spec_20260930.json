@@ -1,0 +1,69 @@
+{
+  "schema_version": "pa-nf-v3-group-transport-development/v1",
+  "status": "frozen_before_v3_outcome_inspection",
+  "frozen_date": "2026-09-30",
+  "representation_hypothesis": "biology is the observation after inverse acquisition transport, not an independently decoded peer channel",
+  "architecture": {
+    "acquisition_code": "image-inferred theta(x) in R^3",
+    "biological_code": "u(x) = T_{-theta(x)}(x)",
+    "candidate_operator": "T_theta(x)=c+Q^T(exp(H theta) elementwise * Q(x-c)); Q orthogonal",
+    "candidate_laws": [
+      "T_0 = identity",
+      "T_theta^-1 = T_-theta",
+      "T_b composed with T_a = T_(a+b)"
+    ],
+    "control_operator": "same tensors and parameter count, but log-scale=tanh(H theta), retaining identity/inverse while breaking additive closure",
+    "reference_gauge": "scanner 0 acquisition coordinate fixed to zero",
+    "scanner_id_required_at_inference": false
+  },
+  "new_synthetic_benchmark": {
+    "reuse_of_v2_r1_to_r5_generator": false,
+    "train_identities": 128,
+    "test_identities": 64,
+    "identity_split": "disjoint",
+    "feature_dimension": 32,
+    "biological_latent_dimension": 8,
+    "acquisition_dimension": 3,
+    "renderers": ["linear_biology", "nonlinear_biology"],
+    "training_scanners": [0, 1, 2, 3, 4],
+    "heldout_scanner": 5,
+    "heldout_relation": "scanner_5 = scanner_1 composed with scanner_2 relative to scanner_0",
+    "heldout_scanner_cells_used_in_training": false,
+    "dataset_seed": 7301,
+    "model_seeds": [4101, 4102, 4103],
+    "noise_std": 0.01
+  },
+  "training": {
+    "epochs": 120,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "relative_transport_weight": 1.0,
+    "canonical_consistency_weight": 1.0,
+    "prototype_anchor_weight": 0.5,
+    "reference_anchor_weight": 1.0,
+    "theta_l2_weight": 0.001,
+    "operator_basis_norm_weight": 0.001,
+    "candidate_control_training_losses_identical": true
+  },
+  "primary_falsification": {
+    "name": "heldout composition prediction",
+    "rule": "using no scanner-5 training cells, predict scanner 5 from an unseen-identity scanner-0 observation using the learned scanner-1 and scanner-2 acquisition operators",
+    "candidate_prediction": "T_(mu_1-mu_0 + mu_2-mu_0)(x_0)",
+    "control_prediction": "same coordinate-sum rule through the parameter-matched nonclosed operator",
+    "heldout_scanner_code_or_images_used_to_construct_prediction": false
+  },
+  "promotion_gate": {
+    "requirements": [
+      "candidate and control parameter counts exactly equal",
+      "candidate heldout-composition improvement versus no transport has lower 95% bootstrap bound > 0 in every renderer/seed",
+      "candidate mean known-scanner transport gain > 0",
+      "candidate mean biological-latent recovery R2 from canonical representation >= 0.80",
+      "control-minus-candidate heldout-composition MSE lower 95% bootstrap bound > 0",
+      "control-minus-candidate heldout-scanner canonical MSE lower 95% bootstrap bound > 0",
+      "candidate numerical group-closure MSE < 1e-10"
+    ],
+    "no_gate_relaxation_after_outcomes": true
+  },
+  "claim_boundary": "A pass establishes only that explicit feature-space group transport supports reusable factorization and heldout composition on this new synthetic mechanism benchmark. It does not establish that real scanners obey this group family.",
+  "future_real_data_test_if_promoted": "prospectively freeze v3, then evaluate five-scanner paired data using reference-gauge canonicalization, direct versus composed relative transport, unseen-scanner transport, scanner leakage, biological retention, and matched unstructured transport controls without pretending any real scanner is physically a composition of two others."
+}
