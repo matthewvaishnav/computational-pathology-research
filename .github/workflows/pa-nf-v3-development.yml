@@ -1,0 +1,39 @@
+name: PA-NF v3 group-transport CI
+
+on:
+  push:
+    branches:
+      - research/panf-v3-group-transport-20260930
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install focused dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy scikit-learn torch pytest
+
+      - name: Compile v3 files
+        run: |
+          python -m py_compile \
+            experiments/paired_acquisition/run_pa_nf_v3_group_transport_development.py \
+            scripts/paired_acquisition/validate_pa_nf_v3_group_transport_development.py \
+            tests/test_pa_nf_v3_group_transport_development.py
+
+      - name: Validate frozen development wiring
+        run: |
+          python scripts/paired_acquisition/validate_pa_nf_v3_group_transport_development.py
+
+      - name: Run focused tests
+        run: |
+          pytest -q tests/test_pa_nf_v3_group_transport_development.py
