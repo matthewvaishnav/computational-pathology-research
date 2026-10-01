@@ -1,0 +1,101 @@
+{
+  "schema_version": "pa-nf-v4-reference-gauge-factorization/v1",
+  "status": "frozen_before_v4_outcome_inspection",
+  "frozen_date": "2026-10-01",
+  "scientific_question": "Does defining biology after explicit inverse acquisition transport improve factor allocation relative to an exact-capacity model that has the same learned acquisition operators, paired supervision, encoder, decoder, and calibration data but encodes biology directly from the acquired observation?",
+  "motivation": {
+    "v2_r1_to_r5": "Peer-channel crossed factorization repeatedly retained acquisition information but showed a persistent biology-retention deficit versus matched controls.",
+    "v3r_development": "After repair of an implementation-invalid orthogonal basis, inverse-transport biology passed the synthetic development gates.",
+    "v3r_confirmation": "Biological recovery and known-scanner transport replicated, but incremental additive-group closure superiority over a matched nonclosed control did not.",
+    "v4_change": "Remove the additive scanner-coordinate law entirely and test inverse source canonicalization itself."
+  },
+  "generator": {
+    "reuse_of_v2_or_v3_generator": false,
+    "dataset_seed": 12037,
+    "bootstrap_seed": 20261001,
+    "feature_dimension": 32,
+    "biological_latent_dimension": 8,
+    "renderers": ["linear_biology", "nonlinear_biology"],
+    "train_identities": 160,
+    "heldout_scanner_calibration_identities": 24,
+    "test_identities": 80,
+    "identity_sets_disjoint": true,
+    "training_scanners": [0, 1, 2, 3, 4],
+    "heldout_scanner": 5,
+    "reference_scanner": 0,
+    "noise_std": 0.01,
+    "scanner_transform_family": "Each scanner is sampled independently as a well-conditioned invertible affine feature-space acquisition transform T_s(x)=b_s+Q_s^T(exp(d_s) elementwise * Q_s x), with scanner 0 fixed to identity.",
+    "shared_additive_scanner_coordinate_law": false,
+    "heldout_scanner_is_composition_of_training_scanners": false,
+    "heldout_scanner_training_images_used_for_shared_model_fit": false,
+    "heldout_scanner_calibration": "After shared-model training, only scanner-5 operator parameters may be fit using 24 paired scanner-0/scanner-5 calibration identities. Calibration identities are excluded from evaluation."
+  },
+  "model_seeds": [4401, 4402, 4403, 4404, 4405],
+  "architecture": {
+    "shared_biological_encoder": "32 -> 64 -> 8 MLP",
+    "shared_reference_decoder": "8 -> 64 -> 32 MLP",
+    "scanner_operator_bank": "One explicitly invertible scanner-specific affine operator per scanner; orthogonal factors computed as matrix_exp(A_s-A_s^T), diagonal positive scales exp(d_s), and translation b_s. Scanner 0 is fixed identity.",
+    "scanner_id_available": true,
+    "reason_scanner_id_available": "v4 isolates factor-allocation structure rather than acquisition-ID inference; scanner metadata is treated as observed acquisition provenance.",
+    "candidate_biology": "u_candidate(x_s,s)=E(T_s^-1(x_s))",
+    "control_biology": "u_control(x_s,s)=E(x_s)",
+    "target_reconstruction_both_arms": "xhat_t=T_t(D(u))",
+    "candidate_control_parameter_count_exactly_equal": true,
+    "only_structural_difference": "Whether the source acquisition inverse T_s^-1 is applied before the shared biological encoder."
+  },
+  "training": {
+    "epochs": 160,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "self_reconstruction_weight": 1.0,
+    "cross_scanner_reconstruction_weight": 1.0,
+    "paired_biological_consistency_weight": 1.0,
+    "direct_operator_forward_calibration_weight": 1.0,
+    "direct_operator_inverse_calibration_weight": 1.0,
+    "latent_variance_floor_weight": 0.05,
+    "candidate_control_losses_and_weights_identical": true,
+    "training_scanner_pairs": "all ordered scanner pairs among scanners 0-4 for training identities",
+    "heldout_scanner_excluded": true
+  },
+  "heldout_scanner_calibration": {
+    "shared_model_frozen": true,
+    "training_scanner_operators_frozen": true,
+    "only_scanner_5_operator_parameters_trainable": true,
+    "calibration_epochs": 120,
+    "calibration_learning_rate": 0.001,
+    "calibration_loss": "paired forward and inverse operator reconstruction between scanner 0 and scanner 5",
+    "candidate_control_calibration_procedure_identical": true
+  },
+  "evaluation": {
+    "known_scanner_test": [
+      "biological latent recovery R2 to true z",
+      "scanner recoverability from biological latent",
+      "same-identity cross-scanner retrieval",
+      "cross-scanner transport gain versus no transport"
+    ],
+    "heldout_scanner_test_after_calibration": [
+      "biological latent recovery R2 on scanner-5 test identities using a biological decoder/probe fit without scanner-5 evaluation identities",
+      "paired canonical latent alignment to scanner 0",
+      "scanner-0/scanner-5 identity retrieval",
+      "scanner-0 to scanner-5 transport gain"
+    ],
+    "no_calibration_identity_may_enter_evaluation": true
+  },
+  "promotion_gate": {
+    "requirements": [
+      "candidate and control parameter counts exactly equal",
+      "all learned candidate and control scanner operators preserve inverse roundtrip MSE < 1e-8 on numerical probes",
+      "candidate mean known-scanner transport gain > 0",
+      "candidate mean heldout-scanner transport gain > 0",
+      "candidate mean heldout-scanner biological latent recovery R2 >= 0.80",
+      "candidate-minus-control heldout-scanner biological R2 has lower 95% paired-bootstrap bound > 0",
+      "control-minus-candidate heldout canonical-alignment MSE has lower 95% paired-bootstrap bound > 0",
+      "candidate-minus-control heldout same-identity retrieval has lower 95% paired-bootstrap bound >= 0",
+      "control-minus-candidate biological scanner-probe accuracy across known scanners has lower 95% paired-bootstrap bound > 0"
+    ],
+    "no_gate_relaxation_after_outcomes": true,
+    "all_five_model_seeds_and_both_renderers_required": true
+  },
+  "claim_boundary": "A pass would support the structural hypothesis that explicit inverse acquisition transport before biological encoding improves factor allocation under paired, provenance-known, independently generated invertible acquisition transforms with small heldout-scanner calibration. It would not establish that real scanners are exactly invertible, that scanner metadata is always available, or that additive group closure is beneficial.",
+  "stop_rule": "If v4 fails the frozen promotion gate, retain the failure and do not tune on dataset seed 12037 or model seeds 4401-4405. Any successor must use a new hypothesis and fresh generator/seeds."
+}
