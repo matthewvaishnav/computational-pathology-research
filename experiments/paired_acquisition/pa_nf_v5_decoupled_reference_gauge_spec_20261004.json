@@ -1,0 +1,78 @@
+{
+  "schema_version": "pa-nf-v5-decoupled-reference-gauge/v1",
+  "status": "frozen_before_v5_outcome_inspection",
+  "frozen_date": "2026-10-04",
+  "motivation": "PA-NF v4 improved biological recovery, scanner alignment, and scanner exclusion versus an exact-capacity no-inverse control, while failing transport-gain gates. A read-only audit localized the dominant error to the bottlenecked encoder-decoder transport path: direct scanner-operator calibration losses were low while end-to-end transport through the biological bottleneck remained negative. V5 prospectively decouples operator transport from biological sufficiency instead of tuning v4 on its used data.",
+  "primary_hypothesis": "explicit inverse acquisition transport before biological encoding improves reference-gauge biological factorization, while scanner transport should be evaluated directly in feature space rather than through a low-dimensional biological reconstruction bottleneck",
+  "architecture": {
+    "shared_model_class": "same ReferenceGaugeModel parameterization as v4",
+    "candidate": "u_s = E(T_s^-1(x_s))",
+    "control": "u_s = E(x_s)",
+    "decoder_role": "decode biological representation to the reference-scanner feature x_0 only; decoder is not part of the scanner-transport metric",
+    "operator_transport_metric": "x_s -> T_s^-1(x_s) -> T_t(.) with no biological encoder or decoder in the path",
+    "scanner_operator_family": "independently parameterized invertible orthogonal-basis plus diagonal-log-scale plus shift operators, unchanged from v4",
+    "reference_scanner": 0,
+    "heldout_scanner": 5,
+    "scanner_id_required_for_explicit_operator_application": true
+  },
+  "synthetic_benchmark": {
+    "generator_family": "same independently sampled invertible acquisition-transform family as v4",
+    "shared_additive_scanner_coordinate_law": false,
+    "heldout_scanner_composition_construction": false,
+    "train_identities": 160,
+    "heldout_calibration_identities": 24,
+    "test_identities": 80,
+    "feature_dimension": 32,
+    "biological_latent_dimension": 8,
+    "renderers": ["linear_biology", "nonlinear_biology"],
+    "training_scanners": [0, 1, 2, 3, 4],
+    "heldout_scanner": 5,
+    "dataset_seed": 16037,
+    "model_seeds": [4501, 4502, 4503, 4504, 4505],
+    "bootstrap_seed": 20261004,
+    "noise_std": 0.01,
+    "reuse_of_v4_dataset_seed": false,
+    "reuse_of_v4_model_seeds": false
+  },
+  "training": {
+    "epochs": 160,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "heldout_calibration_epochs": 120,
+    "heldout_calibration_learning_rate": 0.001,
+    "reference_reconstruction_weight": 1.0,
+    "biological_consistency_weight": 1.0,
+    "operator_forward_weight": 1.0,
+    "operator_inverse_weight": 1.0,
+    "latent_variance_floor_weight": 0.05,
+    "latent_variance_floor": 0.25,
+    "candidate_control_training_losses_identical": true,
+    "removed_v4_objective": "no cross-scanner reconstruction through biological decoder"
+  },
+  "promotion_gate": {
+    "requirements": [
+      "candidate and control parameter counts exactly equal",
+      "max operator inverse roundtrip MSE across candidate/control < 1e-8",
+      "candidate mean operator-only known-scanner transport gain > 0",
+      "candidate mean operator-only heldout-scanner transport gain > 0",
+      "candidate mean heldout biological-latent recovery R2 >= 0.80",
+      "candidate-minus-control heldout biological R2 lower 95% bootstrap bound > 0",
+      "control-minus-candidate heldout canonical alignment MSE lower 95% bootstrap bound > 0",
+      "candidate-minus-control heldout same-identity retrieval lower 95% bootstrap bound >= 0",
+      "control-minus-candidate known-scanner probe accuracy lower 95% bootstrap bound > 0"
+    ],
+    "no_gate_relaxation_after_outcomes": true
+  },
+  "interpretation_rules": {
+    "pass": "supports explicit inverse acquisition transport before biological encoding on a fresh synthetic benchmark when operator transport and biological sufficiency are evaluated as separate capabilities",
+    "operator_transport_pass_biology_fail": "operator family works but inverse canonicalization does not improve biological factorization under this benchmark",
+    "biology_pass_operator_transport_fail": "inverse canonicalization helps factorization but current operator learning remains inadequate even when measured directly",
+    "fail_both": "do not continue this exact mechanism on the same synthetic family without a new hypothesis"
+  },
+  "claim_boundary": "V5 is synthetic development evidence only. It does not establish real-scanner invertibility, clinical robustness, additive group structure, or WSI-level predictive benefit.",
+  "reproducibility": {
+    "required_cuda_environment": "CUBLAS_WORKSPACE_CONFIG=:4096:8 before Python starts when running on CUDA",
+    "v4_outcomes_used_only_to_form_new_hypothesis": true,
+    "v4_dataset_or_model_seeds_reused": false
+  }
+}
