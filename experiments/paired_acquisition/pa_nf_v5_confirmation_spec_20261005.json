@@ -1,0 +1,51 @@
+{
+  "schema_version": "pa-nf-v5-confirmation/v1",
+  "status": "frozen_before_confirmation_outcome_inspection",
+  "frozen_date": "2026-10-05",
+  "development_result": "PA-NF v5 development passed every preregistered promotion gate on dataset seed 16037 and model seeds 4501-4505",
+  "confirmation_purpose": "test whether the v5 development result replicates on a fresh independently generated synthetic benchmark without any architecture, objective, control, metric, threshold, sample-size, renderer, calibration, or gate changes",
+  "implementation": {
+    "source_runner": "experiments/paired_acquisition/run_pa_nf_v5_decoupled_reference_gauge.py",
+    "architecture_unchanged": true,
+    "training_objectives_unchanged": true,
+    "candidate_control_difference_unchanged": true,
+    "operator_family_unchanged": true,
+    "heldout_scanner_calibration_protocol_unchanged": true,
+    "evaluation_metrics_unchanged": true,
+    "promotion_gates_unchanged": true,
+    "renderers_unchanged": true,
+    "identity_counts_unchanged": true,
+    "epochs_and_optimizer_unchanged": true,
+    "parameter_count_unchanged": true
+  },
+  "fresh_randomness": {
+    "dataset_seed": 22037,
+    "model_seeds": [4601, 4602, 4603, 4604, 4605],
+    "bootstrap_seed": 20261005,
+    "development_dataset_seed_burned": 16037,
+    "development_model_seeds_burned": [4501, 4502, 4503, 4504, 4505]
+  },
+  "confirmation_gate": {
+    "requirements": [
+      "candidate and control parameter counts exactly equal",
+      "max operator inverse roundtrip MSE across candidate/control < 1e-8",
+      "candidate mean operator-only known-scanner transport gain > 0",
+      "candidate mean operator-only heldout-scanner transport gain > 0",
+      "candidate mean heldout biological-latent recovery R2 >= 0.80",
+      "candidate-minus-control heldout biological R2 lower 95% bootstrap bound > 0",
+      "control-minus-candidate heldout canonical alignment MSE lower 95% bootstrap bound > 0",
+      "candidate-minus-control heldout same-identity retrieval lower 95% bootstrap bound >= 0",
+      "control-minus-candidate known-scanner probe accuracy lower 95% bootstrap bound > 0"
+    ],
+    "identical_to_v5_development_gate": true,
+    "no_gate_relaxation_or_seed_replacement_after_outcomes": true
+  },
+  "decision_rule": {
+    "pass": "v5 synthetic mechanism is confirmed on an untouched independently generated benchmark; stop synthetic tuning and move to a separately preregistered real paired-acquisition test",
+    "fail": "retain the v5 development pass but record confirmation failure; do not tune on dataset seed 22037 or model seeds 4601-4605"
+  },
+  "claim_boundary": "A confirmation pass supports the v5 inverse-transport factorization mechanism only within this synthetic invertible acquisition family. It does not establish real-scanner invertibility, WSI-level predictive benefit, clinical robustness, or additive group structure.",
+  "reproducibility": {
+    "required_cuda_environment": "CUBLAS_WORKSPACE_CONFIG=:4096:8 before Python starts when running on CUDA"
+  }
+}
