@@ -1,0 +1,126 @@
+{
+  "schema_version": "path-execution-obligations/panf-v5-rt1-scorpion/v1",
+  "status": "frozen_before_rt1_outcome_inspection",
+  "protocol": "PANFV5RT1SCORPION",
+  "scientific_source": "experiments/scorpion/pa_nf_v5_rt1_scorpion_translation_spec_20261005.json",
+  "compiler_boundary": {
+    "surface_declarable_now": [
+      "SCORPION manifest-backed dataset",
+      "slide_id as independent split unit",
+      "region identity preserved across scanner pairing",
+      "scanner_id as acquisition-varying field",
+      "frozen DINOv2 representation source",
+      "primary factorization versus capacity-matched control"
+    ],
+    "not_yet_surface_declarable": [
+      "AT2-only preprocessing fit scope",
+      "rotation over four heldout scanner domains",
+      "heldout scanner operator exclusion from the shared optimizer",
+      "validation split used only for heldout-operator calibration",
+      "test split forbidden from all fitting and calibration",
+      "seed averaging before slide-level contrast",
+      "collapse of scanner holdouts within source slide before primary bootstrap"
+    ],
+    "policy": "Until PATH derives these obligations natively, RT1 must fail closed unless the runner and validator prove them explicitly."
+  },
+  "required_bindings": [
+    {
+      "id": "O-RT1-001",
+      "kind": "artifact_hash",
+      "subject": "DINOv2 base feature archive",
+      "expected_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71"
+    },
+    {
+      "id": "O-RT1-002",
+      "kind": "manifest_hash_set",
+      "subject": "five SCORPION fold manifests",
+      "expected_count": 5
+    },
+    {
+      "id": "O-RT1-003",
+      "kind": "independence",
+      "subject": "train/val/test partitions",
+      "independent_unit": "slide_id",
+      "require_pairwise_disjoint": true
+    },
+    {
+      "id": "O-RT1-004",
+      "kind": "pair_integrity",
+      "subject": "SCORPION region groups",
+      "same": ["slide_id", "region_id"],
+      "vary": "scanner_id",
+      "required_scanners": ["AT2", "GT450", "DP200", "P1000", "B300"]
+    },
+    {
+      "id": "O-RT1-005",
+      "kind": "fit_scope",
+      "subject": "32-D preprocessing",
+      "allowed_rows": "split=train AND scanner_id=AT2",
+      "forbidden_rows": ["split=val", "split=test", "scanner_id!=AT2"]
+    },
+    {
+      "id": "O-RT1-006",
+      "kind": "holdout_schedule",
+      "reference_scanner": "AT2",
+      "heldout_scanners": ["GT450", "DP200", "P1000", "B300"],
+      "selection_after_outcomes_forbidden": true
+    },
+    {
+      "id": "O-RT1-007",
+      "kind": "optimizer_exclusion",
+      "subject": "heldout scanner operator",
+      "shared_fit_split": "train",
+      "must_not_receive_shared_optimizer_updates": true
+    },
+    {
+      "id": "O-RT1-008",
+      "kind": "calibration_scope",
+      "subject": "heldout scanner operator",
+      "allowed_split": "val",
+      "allowed_parameters": "heldout scanner operator only",
+      "forbidden_parameter_updates": ["encoder", "decoder", "non-heldout scanner operators"]
+    },
+    {
+      "id": "O-RT1-009",
+      "kind": "evaluation_scope",
+      "allowed_split": "test",
+      "test_rows_used_for_fit_or_calibration": false
+    },
+    {
+      "id": "O-RT1-010",
+      "kind": "matched_control",
+      "candidate": "inverse_transport",
+      "control": "no_inverse_transport_control",
+      "parameter_counts_equal": true,
+      "training_losses_equal": true,
+      "matched_initialization_seed": true
+    },
+    {
+      "id": "O-RT1-011",
+      "kind": "transport_endpoint",
+      "definition": "T_target(T_source^-1(x_source))",
+      "encoder_decoder_must_be_excluded": true
+    },
+    {
+      "id": "O-RT1-012",
+      "kind": "statistical_unit",
+      "independent_unit": "slide_id",
+      "seed_average_before_contrast": true,
+      "scanner_holdout_average_within_slide_before_primary_bootstrap": true,
+      "bootstrap_draws": 100000,
+      "bootstrap_seed": 2026100501
+    },
+    {
+      "id": "O-RT1-013",
+      "kind": "claim_boundary",
+      "allowed": "real-data translation evidence on previously used SCORPION under the frozen RT1 protocol",
+      "forbidden": [
+        "untouched external confirmation",
+        "pixel-level scanner invertibility",
+        "clinical robustness",
+        "diagnostic benefit",
+        "deployment readiness"
+      ]
+    }
+  ]
+}
