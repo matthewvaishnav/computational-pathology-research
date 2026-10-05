@@ -1,0 +1,131 @@
+{
+  "schema_version": "pa-nf-v5-rt1-scorpion-translation/v1",
+  "status": "frozen_before_rt1_outcome_inspection",
+  "frozen_date": "2026-10-05",
+  "purpose": "Translate the synthetically confirmed PA-NF v5 decoupled reference-gauge mechanism to real paired SCORPION DINOv2 features without treating SCORPION as untouched external confirmation.",
+  "evidence_class": "real-data translation bridge; not independent confirmation",
+  "scientific_hypothesis": "On real same-tissue multi-scanner features, explicit inverse acquisition transport before biological encoding improves scanner-stable tissue representation versus an exact-capacity no-inverse control while separately supporting positive scanner-operator transport.",
+  "dataset": {
+    "name": "SCORPION",
+    "expected_rows": 2400,
+    "expected_slides": 48,
+    "expected_regions": 480,
+    "expected_scanners": ["AT2", "GT450", "DP200", "P1000", "B300"],
+    "reference_scanner": "AT2",
+    "heldout_scanners": ["GT450", "DP200", "P1000", "B300"],
+    "folds": [0, 1, 2, 3, 4],
+    "split_unit": "slide_id",
+    "pair_identity": ["slide_id", "region_id"],
+    "shared_fit_split": "train",
+    "heldout_operator_calibration_split": "val",
+    "evaluation_split": "test",
+    "feature_archive_path": "results/scorpion/features/fold_0_dinov2_base.npz",
+    "feature_archive_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+    "fold_manifest_sha256": {
+      "0": "af8ba0111297978078dfdad6bb5d696bfd06609ea9ebcb6cc3d89ac1c9db30bd",
+      "1": "b8bbeaf8e54c7b76b7281fadfcf28b0202edde191db63f92f1202ee189217eb3",
+      "2": "f580fab2388f8850fffc6e0a15f1d6433f52b422ad17e45104d5938f1e3dbbef",
+      "3": "74ca19d31e31526cc345f4f8e37a8f30af0008aa053e1fa9b31a9f6b170489db",
+      "4": "ccecf74a52e109ce79eea0258ade0b0d99196e265339615de44a2b3731d8a60c"
+    }
+  },
+  "preprocessing": {
+    "target_feature_dim": 32,
+    "fit_scope": "AT2 rows from the train split only, separately within each fold",
+    "steps": [
+      "fit per-feature mean/std on AT2 train rows only",
+      "standardize all scanner rows using those AT2-train statistics",
+      "fit deterministic PCA-32 by SVD on standardized AT2 train rows only",
+      "fix each PCA component sign by requiring its largest-absolute loading to be positive",
+      "fit projected-score mean/std on AT2 train rows only",
+      "standardize projected 32-D scores using those AT2-train statistics"
+    ],
+    "forbidden_inputs_to_preprocessing_fit": ["val rows", "test rows", "non-AT2 rows"],
+    "rationale": "preserve the confirmed v5 32-D operator mechanism without allowing dimensionality reduction to learn scanner invariance"
+  },
+  "model": {
+    "families": ["inverse_transport", "no_inverse_transport_control"],
+    "candidate": "u_s = E(T_s^-1(x_s))",
+    "control": "u_s = E(x_s)",
+    "feature_dim": 32,
+    "biological_latent_dim": 8,
+    "hidden_dim": 64,
+    "scanner_operator_family": "v5 ScannerOperator: exact orthogonal matrix exponential basis + diagonal log-scale + shift",
+    "reference_scanner_has_identity_operator": true,
+    "heldout_scanner_operator_excluded_from_shared_optimizer": true,
+    "candidate_control_parameter_counts_must_match": true,
+    "scanner_count_adaptation": "SCORPION has five scanners rather than the six synthetic v5 scanners; the per-scanner operator family and biological encoder/decoder are unchanged."
+  },
+  "training": {
+    "model_seeds": [4701, 4702, 4703],
+    "epochs": 160,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "heldout_calibration_epochs": 120,
+    "heldout_calibration_learning_rate": 0.001,
+    "reference_reconstruction_weight": 1.0,
+    "biological_consistency_weight": 1.0,
+    "operator_forward_weight": 1.0,
+    "operator_inverse_weight": 1.0,
+    "latent_variance_floor_weight": 0.05,
+    "latent_variance_floor": 0.25,
+    "candidate_control_training_losses_identical": true,
+    "heldout_calibration_updates": "heldout scanner operator parameters only; encoder, decoder and all other operators frozen"
+  },
+  "evaluation": {
+    "independent_statistical_unit": "original source slide",
+    "seed_handling": "average seeds within fold, heldout scanner, model family and slide before candidate-control contrasts",
+    "scanner_holdout_handling": "average the four preregistered heldout-scanner contrasts within each slide before primary inference",
+    "bootstrap": {
+      "draws": 100000,
+      "seed": 2026100501,
+      "confidence_interval": [0.025, 0.975],
+      "unit": "48 source slides"
+    },
+    "primary_metrics": [
+      "control-minus-candidate heldout biological alignment MSE",
+      "candidate-minus-control heldout same-region retrieval top1",
+      "candidate operator-only heldout scanner transport gain",
+      "candidate operator-only known-scanner transport gain",
+      "control-minus-candidate known-scanner probe accuracy"
+    ],
+    "retrieval_noninferiority_margin": 0.02,
+    "secondary_outputs": [
+      "per-heldout-scanner slide-level contrasts",
+      "worst heldout-scanner contrast per slide",
+      "reference reconstruction MSE",
+      "operator calibration loss reduction",
+      "PCA/preprocessing hashes"
+    ]
+  },
+  "promotion_gate": {
+    "requirements": [
+      "candidate and control parameter counts exactly equal in every fit",
+      "maximum operator inverse roundtrip MSE < 1e-8",
+      "lower 95% slide-bootstrap bound of candidate operator-only heldout transport gain > 0",
+      "lower 95% slide-bootstrap bound of candidate operator-only known-scanner transport gain > 0",
+      "lower 95% slide-bootstrap bound of control-minus-candidate heldout alignment MSE > 0",
+      "lower 95% slide-bootstrap bound of candidate-minus-control heldout retrieval top1 >= -0.02",
+      "lower 95% slide-bootstrap bound of control-minus-candidate known-scanner probe accuracy > 0"
+    ],
+    "no_gate_relaxation_after_outcomes": true
+  },
+  "path_obligations": {
+    "must_bind": [
+      "feature archive SHA-256",
+      "five fold-manifest SHA-256 values",
+      "slide-independent split unit",
+      "same-region scanner pairing",
+      "AT2-only preprocessing fit scope",
+      "heldout scanner schedule fixed to all four non-reference scanners",
+      "train-only shared fitting",
+      "val-only heldout-operator calibration",
+      "test-only evaluation",
+      "heldout operator exclusion from shared optimizer",
+      "slide-level seed averaging and bootstrap unit",
+      "claim boundary"
+    ],
+    "current_surface_gap": "PATH v0.3 syntax can declare the dataset, pairing, slide split, frozen encoder and factorization, but not yet the scanner-specific optimizer exclusion/calibration-role semantics; these remain explicit execution obligations for RT1 and should fail closed if not verified."
+  },
+  "claim_boundary": "A pass is real paired-acquisition translation evidence that the confirmed v5 mechanism survives this previously used SCORPION benchmark under a newly frozen leave-one-scanner-out calibration protocol. It is not independent external confirmation, does not establish pixel-level scanner invertibility, clinical robustness, diagnostic benefit, or deployment readiness, and cannot be used to select McGill analysis rules after McGill outcomes are seen."
+}
