@@ -1,0 +1,46 @@
+{
+  "schema_version": "pa-nf-v5-rt1-preoutcome-protocol-repair/v1",
+  "status": "frozen_before_any_rt1_scientific_outcomes",
+  "date": "2026-10-05",
+  "parent_spec": "experiments/scorpion/pa_nf_v5_rt1_scorpion_translation_spec_20261005.json",
+  "trigger": "The first RT1 pre-outcome validator invocation stopped at fold 0 because the local runtime CSV byte SHA-256 differed from the archival hash recorded in the historical SCORPION evidence package. No RT1 model fit or scientific outcome metric had been computed.",
+  "classification": "input-provenance/infrastructure repair; not a scientific-model or analysis change",
+  "repair": {
+    "archival_raw_hashes_remain_immutable_provenance_references": true,
+    "runtime_manifest_acceptance": [
+      "runtime manifest row keys must match the frozen DINOv2 feature archive exactly",
+      "all 48 source slides must be present",
+      "slide-to-fold assignment must exactly reproduce the original deterministic SCORPION builder with n_folds=5 and seed=2026",
+      "for evaluation fold k, test must equal fold k, val must equal fold (k+1) mod 5, and all remaining slides must be train",
+      "every slide must have exactly one split role within a fold",
+      "existing RT1 complete five-scanner group and slide-disjointness checks remain mandatory"
+    ],
+    "runtime_raw_sha256": "record actual runtime CSV hashes after semantic identity passes; do not silently substitute them for the archival provenance hashes"
+  },
+  "unchanged": [
+    "feature archive and its frozen SHA-256",
+    "AT2 reference scanner",
+    "GT450/DP200/P1000/B300 heldout-scanner rotation",
+    "all five folds",
+    "train-only shared fitting",
+    "val-only heldout-operator calibration",
+    "test-only evaluation",
+    "AT2-train-only preprocessing fit scope",
+    "PCA target dimension 32",
+    "candidate/control architecture and capacity",
+    "model seeds 4701/4702/4703",
+    "optimizer, epochs and losses",
+    "operator-only transport definition",
+    "slide-level seed averaging",
+    "four-holdout within-slide collapse",
+    "100000-draw source-slide bootstrap",
+    "all promotion gates and thresholds",
+    "claim boundary"
+  ],
+  "forbidden": [
+    "accepting a manifest solely because its raw bytes are locally available",
+    "changing a split assignment to match local files",
+    "using RT1 outcomes to choose which manifest identity rule to accept",
+    "relaxing any scientific promotion gate"
+  ]
+}
