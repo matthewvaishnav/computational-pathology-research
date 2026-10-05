@@ -19,16 +19,17 @@ def _fixture(tmp_path, fold: int = 0):
     rows = []
     for slide_number in range(1, 49):
         slide_id = f"slide_{slide_number}"
-        region_id = f"{slide_id}__sample_1"
-        for scanner in SCANNERS:
-            rows.append(
-                {
-                    "slide_id": slide_id,
-                    "region_id": region_id,
-                    "scanner_id": scanner,
-                    "path": f"{slide_id}/sample_1/{scanner}.jpg",
-                }
-            )
+        for sample_number in range(1, 11):
+            region_id = f"{slide_id}__sample_{sample_number}"
+            for scanner in SCANNERS:
+                rows.append(
+                    {
+                        "slide_id": slide_id,
+                        "region_id": region_id,
+                        "scanner_id": scanner,
+                        "path": f"{slide_id}/sample_{sample_number}/{scanner}.jpg",
+                    }
+                )
     base_frame = pd.DataFrame(rows)
     base_features = np.zeros((len(base_frame), 8), dtype=np.float32)
     slide_folds = assign_slide_folds(
@@ -47,7 +48,7 @@ def _fixture(tmp_path, fold: int = 0):
 def test_semantic_binding_accepts_exact_deterministic_split(tmp_path):
     features, frame, path = _fixture(tmp_path, fold=0)
     _, aligned, report = validate_manifest_semantics(features, frame, path, 0)
-    assert len(aligned) == 240
+    assert len(aligned) == 2400
     assert report["semantic_match"] is True
     assert sum(report["slide_counts"].values()) == 48
 
