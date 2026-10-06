@@ -1,0 +1,98 @@
+{
+  "schema_version": "pa-nf-v5-rt2-residual-encoder-sensitivity/v1",
+  "status": "frozen_before_rt2_outcome_inspection",
+  "frozen_date": "2026-10-06",
+  "evidence_class": "post-RT1 mechanistic follow-up on already-observed SCORPION data; not independent confirmation and not a promotion experiment",
+  "motivation": "RT1 failed only the held-out biological-alignment gate while operator-only transport, scanner-probe reduction, retrieval noninferiority, exact invertibility, and matched capacity passed. A read-only audit showed candidate/control held-out calibration losses and held-out operator-only transport were numerically identical, yet latent alignment diverged by scanner. RT2 tests whether the divergence is caused by differential encoder sensitivity to the same post-transport residual.",
+  "scientific_question": "For the actual held-out scanner residual r = T_h^-1(x_h) - x_0, does the inverse-transport candidate encoder produce a larger latent displacement than the no-inverse control encoder when both encoders receive the identical residualized observation x_0 + r?",
+  "dataset": {
+    "name": "SCORPION",
+    "rows": 2400,
+    "slides": 48,
+    "regions": 480,
+    "scanners": ["AT2", "GT450", "DP200", "P1000", "B300"],
+    "reference_scanner": "AT2",
+    "heldout_scanners": ["GT450", "DP200", "P1000", "B300"],
+    "folds": [0, 1, 2, 3, 4],
+    "split_unit": "slide_id",
+    "pair_identity": ["slide_id", "region_id"],
+    "shared_fit_split": "train",
+    "heldout_operator_calibration_split": "val",
+    "evaluation_split": "test",
+    "feature_archive_path": "results/scorpion/features/fold_0_dinov2_base.npz",
+    "feature_archive_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+    "manifest_binding": "Use the frozen pre-outcome semantic manifest identity rule from RT1; raw CSV byte identity is provenance-only."
+  },
+  "preprocessing": {
+    "identical_to_rt1": true,
+    "target_feature_dim": 32,
+    "fit_scope": "AT2 train rows only, separately within each fold"
+  },
+  "training": {
+    "architecture_losses_optimizer_epochs_and_calibration": "exactly RT1",
+    "model_seeds": [4801, 4802, 4803, 4804, 4805],
+    "candidate": "u = E_c(T_s^-1(x_s))",
+    "control": "u = E_x(x_s)",
+    "heldout_operator_excluded_from_shared_training": true,
+    "heldout_operator_calibration_updates": "heldout operator only, on val slides",
+    "candidate_control_initialization_matched_within_seed": true,
+    "candidate_control_parameter_counts_equal": true,
+    "fresh_seed_rule": "RT1 seeds 4701-4703 are burned and are not reused."
+  },
+  "mechanistic_probe": {
+    "raw_displacement": "d = x_h - x_0",
+    "post_transport_residual": "r = T_h^-1(x_h) - x_0",
+    "same_residual_input": "x_0 + r",
+    "encoder_conditions": [
+      "candidate encoder E_c evaluated on x_0, x_0+r, and x_h",
+      "control encoder E_x evaluated on x_0, x_0+r, and x_h"
+    ],
+    "finite_residual_sensitivity": "MSE(E(x_0+r), E(x_0))",
+    "finite_raw_sensitivity": "MSE(E(x_h), E(x_0))",
+    "observation_residual_mse": "MSE(x_0+r, x_0)",
+    "observation_raw_mse": "MSE(x_h, x_0)",
+    "directional_jacobian_residual_gain": "MSE(J_E(x_0) r, 0) / max(MSE(r,0), 1e-12)",
+    "directional_jacobian_raw_gain": "MSE(J_E(x_0) d, 0) / max(MSE(d,0), 1e-12)",
+    "matched_random_direction_probe": {
+      "directions_per_region": 16,
+      "seed": 2026100602,
+      "construction": "Gaussian directions normalized per region to the RMS norm of r; identical directions supplied to candidate and control encoders",
+      "metric": "mean directional Jacobian gain across the 16 matched random directions"
+    },
+    "heldout_operator_identity_check": "After calibration, candidate/control heldout operator parameters and residual tensors must agree to <=1e-7 within each fold/holdout/seed cell; otherwise the mechanistic comparison fails closed."
+  },
+  "primary_endpoint": {
+    "name": "candidate_minus_control_same_residual_finite_sensitivity",
+    "definition": "finite_residual_sensitivity(E_c) - finite_residual_sensitivity(E_x)",
+    "aggregation": "average regions within slide, average fresh model seeds within fold/holdout/slide, then average the four preregistered scanner holdouts within each of the 48 slides",
+    "inference": {
+      "bootstrap_unit": "source slide",
+      "draws": 100000,
+      "seed": 2026100601,
+      "confidence_interval": [0.025, 0.975]
+    },
+    "support_rule": "encoder-residual amplification is supported if the lower 95% slide-bootstrap bound is > 0",
+    "no_margin_tuning": true
+  },
+  "secondary_localization": {
+    "not_promotion_gates": true,
+    "metrics": [
+      "candidate-minus-control residual directional Jacobian gain",
+      "candidate-minus-control matched-random directional Jacobian gain",
+      "residual-direction specificity interaction = (candidate-control residual JVP gain) - (candidate-control random JVP gain)",
+      "candidate and control raw-displacement finite sensitivity",
+      "canonicalization benefit within each encoder = raw finite sensitivity - residual finite sensitivity",
+      "observation-space residual-to-raw MSE ratio",
+      "scanner-specific primary contrasts",
+      "fold-specific primary contrasts",
+      "fresh-seed reproduction of the RT1 heldout alignment direction as descriptive context"
+    ]
+  },
+  "interpretation_tree": {
+    "primary_positive_and_jvp_positive_and_specificity_positive": "supports residual-direction-specific local encoder amplification after otherwise-successful transport",
+    "primary_positive_and_jvp_positive_but_specificity_not_positive": "supports broader local sensitivity amplification rather than residual-direction specificity",
+    "primary_positive_but_jvp_not_positive": "supports finite/nonlinear or off-reference amplification not captured by the local Jacobian",
+    "primary_not_positive": "does not support differential same-residual encoder sensitivity as the explanation for RT1; do not repair the encoder on this basis"
+  },
+  "claim_boundary": "RT2 can only localize the already-observed RT1 SCORPION failure. It cannot rescue RT1, cannot establish external validity, cannot select a favorable scanner subset, and cannot be treated as independent confirmation. Any architectural successor motivated by RT2 requires a separately frozen prospective protocol."
+}
