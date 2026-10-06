@@ -1,0 +1,54 @@
+{
+  "schema_version": "pa-nf-v5-rt2-result-record/v1",
+  "recorded_date": "2026-10-06",
+  "status": "rt2_complete",
+  "primary_support": {
+    "encoder_residual_amplification_supported": true,
+    "rule": "lower 95% slide-bootstrap bound of candidate-minus-control same-residual finite sensitivity > 0"
+  },
+  "primary_slide_level_intervals": {
+    "candidate_minus_control_same_residual_finite_sensitivity": {
+      "mean": 0.00675242068246007,
+      "ci_025": 0.005843655895296251,
+      "ci_975": 0.007739706371503417
+    },
+    "candidate_minus_control_jvp_residual_gain": {
+      "mean": 0.035007081491251785,
+      "ci_025": 0.03263835366582498,
+      "ci_975": 0.03747871284877571
+    },
+    "candidate_minus_control_jvp_random_gain": {
+      "mean": 0.022729301049063604,
+      "ci_025": 0.02016777802025899,
+      "ci_975": 0.025455898656509816
+    },
+    "residual_direction_specificity_interaction": {
+      "mean": 0.012277780442188184,
+      "ci_025": 0.009896692411275582,
+      "ci_975": 0.01459565830999054
+    },
+    "candidate_canonicalization_benefit": {
+      "mean": 0.005621281122633566,
+      "ci_025": 0.00419730789741152,
+      "ci_975": 0.007004721626823689
+    },
+    "control_canonicalization_benefit": {
+      "mean": 0.001997678696837587,
+      "ci_025": 0.0006392041146561191,
+      "ci_975": 0.003291050457191886
+    },
+    "control_minus_candidate_rt1_style_alignment": {
+      "mean": -0.004754741985622483,
+      "ci_025": -0.006623581693202141,
+      "ci_975": -0.0030325121501421875
+    },
+    "observation_residual_to_raw_mse_ratio": {
+      "mean": 0.8474908903152981,
+      "ci_025": 0.8370340560763734,
+      "ci_975": 0.8585229222011398
+    }
+  },
+  "interpretation": "residual_direction_specific_local_encoder_amplification_supported",
+  "mechanistic_summary": "Inverse transport reduces the observation displacement and provides positive canonicalization benefit, but the inverse-transport candidate encoder has higher general local sensitivity and an additional residual-direction-specific sensitivity component. The remaining post-transport residual is therefore disproportionately amplified in latent space, reproducing the negative RT1-style alignment direction despite successful observation-space transport.",
+  "claim_boundary": "RT2 is mechanistic localization on already-observed SCORPION and cannot rescue RT1, establish external validity, or count as independent confirmation."
+}
