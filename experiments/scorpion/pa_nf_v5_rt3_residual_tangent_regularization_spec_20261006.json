@@ -1,0 +1,102 @@
+{
+  "schema_version": "pa-nf-v5-rt3-residual-tangent-regularization/v1",
+  "status": "frozen_before_rt3_outcome_inspection",
+  "frozen_date": "2026-10-06",
+  "evidence_class": "mechanism-repair development on already-burned SCORPION; not confirmation and cannot rescue RT1",
+  "motivation": "RT2 prospectively supported residual-direction-specific local encoder amplification: candidate-minus-control same-residual finite sensitivity mean +0.00675242 with 95% slide-bootstrap CI [+0.00584366,+0.00773971]; candidate-minus-control residual JVP gain +0.03500708 CI [+0.03263835,+0.03747871]; matched-random JVP difference +0.02272930 CI [+0.02016778,+0.02545590]; residual-direction specificity interaction +0.01227778 CI [+0.00989669,+0.01459566]. RT3 tests whether suppressing encoder gain specifically along training-scanner post-transport residuals repairs the real-data alignment failure better than generic matched-norm smoothing.",
+  "dataset": {
+    "name": "SCORPION",
+    "status": "burned development dataset",
+    "rows": 2400,
+    "slides": 48,
+    "regions": 480,
+    "scanners": ["AT2","GT450","DP200","P1000","B300"],
+    "reference_scanner": "AT2",
+    "heldout_scanners": ["GT450","DP200","P1000","B300"],
+    "folds": [0,1,2,3,4],
+    "split_unit": "slide_id",
+    "pair_identity": ["slide_id","region_id"],
+    "shared_fit_split": "train",
+    "heldout_operator_calibration_split": "val",
+    "evaluation_split": "test",
+    "feature_archive_path": "results/scorpion/features/fold_0_dinov2_base.npz",
+    "feature_archive_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+    "manifest_binding": "identical RT1/RT2 semantic split identity"
+  },
+  "arms": {
+    "no_inverse_control": {
+      "biological_input": "x_s",
+      "sensitivity_regularizer": "none"
+    },
+    "inverse_baseline": {
+      "biological_input": "T_s^-1(x_s)",
+      "sensitivity_regularizer": "none"
+    },
+    "inverse_isotropic": {
+      "biological_input": "T_s^-1(x_s)",
+      "sensitivity_regularizer": "matched-norm random directions around reference x_0"
+    },
+    "inverse_residual_tangent": {
+      "biological_input": "T_s^-1(x_s)",
+      "sensitivity_regularizer": "actual post-transport residual directions r_s=T_s^-1(x_s)-x_0 around reference x_0"
+    }
+  },
+  "capacity": {
+    "architecture": "identical RT1 encoder, decoder, and scanner operator family in all four arms",
+    "parameter_counts_must_be_exactly_equal": true,
+    "initial_parameter_state_matched_within_seed_across_all_arms": true
+  },
+  "training": {
+    "model_seeds": [4901,4902,4903],
+    "rt1_seeds_burned": [4701,4702,4703],
+    "rt2_seeds_burned": [4801,4802,4803,4804,4805],
+    "base_epochs_learning_rate_weight_decay_losses": "exactly RT1",
+    "heldout_calibration": "exactly RT1; heldout operator only on val slides",
+    "regularizer_weight": 1.0,
+    "regularizer_definition": "mean over known non-reference scanners and train regions of MSE(E(x_0+v),E(x_0)) / max(MSE(v,0),1e-12)",
+    "residual_tangent_direction": "v=stop_gradient(T_s^-1(x_s)-x_0)",
+    "isotropic_direction": "one fixed Gaussian unit direction per train region and known scanner, rescaled each epoch to exactly match the RMS norm of that scanner's current detached residual",
+    "isotropic_direction_seed": 2026100603,
+    "regularizer_operator_gradient": "forbidden; residual direction and norm are detached before the sensitivity term",
+    "rationale_for_weight": "the sensitivity term is dimensionless because latent displacement is normalized by input-direction MSE; weight 1.0 is frozen and not tuned on SCORPION outcomes"
+  },
+  "evaluation": {
+    "independent_unit": "source slide",
+    "seed_handling": "average seeds within fold/heldout/arm/slide before arm contrasts",
+    "scanner_handling": "average all four preregistered heldout-scanner contrasts within slide before primary inference",
+    "bootstrap_draws": 100000,
+    "bootstrap_seed": 2026100604,
+    "retrieval_noninferiority_margin": 0.02
+  },
+  "primary_gate": {
+    "requirements": [
+      "residual-tangent arm has lower heldout biological alignment MSE than inverse baseline: lower 95% slide-bootstrap bound of baseline-minus-residual_tangent alignment > 0",
+      "residual-tangent arm has lower heldout biological alignment MSE than isotropic smoothing: lower 95% slide-bootstrap bound of isotropic-minus-residual_tangent alignment > 0",
+      "residual-tangent arm restores advantage over no-inverse control: lower 95% slide-bootstrap bound of control-minus-residual_tangent alignment > 0",
+      "residual-tangent retrieval versus no-inverse control is noninferior: lower 95% bound of residual_tangent-minus-control top1 >= -0.02",
+      "residual-tangent known-scanner probe accuracy is lower than no-inverse control: lower 95% bound of control-minus-residual_tangent probe accuracy > 0",
+      "residual-tangent operator-only heldout transport gain has lower 95% bound > 0",
+      "residual-tangent operator-only known-scanner transport gain has lower 95% bound > 0",
+      "maximum inverse roundtrip MSE < 1e-8",
+      "all four arms have equal parameter counts"
+    ],
+    "rt3_development_pass": "all requirements true",
+    "no_gate_relaxation_after_outcomes": true
+  },
+  "secondary_mechanistic_outputs": [
+    "heldout same-residual finite encoder sensitivity for all arms",
+    "heldout residual-direction JVP gain for all arms",
+    "matched-random JVP gain for all arms",
+    "training residual sensitivity regularizer trajectory",
+    "scanner-specific arm contrasts",
+    "fold-specific arm contrasts",
+    "reference reconstruction MSE"
+  ],
+  "interpretation_tree": {
+    "targeted_beats_baseline_and_isotropic_and_control": "supports residual-direction-specific sensitivity as a causally repairable contributor to RT1 failure",
+    "targeted_beats_baseline_but_not_isotropic": "generic smoothness is sufficient; residual-direction specificity is not established as the necessary intervention",
+    "targeted_beats_isotropic_but_not_control": "specific repair helps but is insufficient to restore the original real-data alignment hypothesis",
+    "targeted_does_not_beat_baseline": "residual-tangent suppression does not causally repair the RT1 alignment failure under this intervention"
+  },
+  "claim_boundary": "RT3 is development on the already-inspected SCORPION dataset. Even a full pass cannot retrospectively turn RT1 into a pass and cannot count as independent confirmation. A successful RT3 mechanism must be frozen and tested externally on an unseen genuinely paired scanner dataset such as McGill before any external-validity claim."
+}
