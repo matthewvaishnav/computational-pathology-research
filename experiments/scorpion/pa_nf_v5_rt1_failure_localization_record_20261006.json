@@ -1,0 +1,57 @@
+{
+  "schema_version": "pa-nf-v5-rt1-readonly-failure-localization-record/v1",
+  "recorded_date": "2026-10-06",
+  "status": "post_outcome_read_only_localization_complete",
+  "rt1_frozen_pass": false,
+  "primary_alignment_effect_control_minus_candidate": {
+    "mean": -0.00493631,
+    "ci_025": -0.00682813,
+    "ci_975": -0.00317178
+  },
+  "matched_arm_checks": {
+    "max_calibration_final_abs_arm_diff": 0.0,
+    "max_heldout_transport_abs_arm_diff": 0.0
+  },
+  "by_heldout_scanner": {
+    "B300": {
+      "alignment_control_minus_candidate": -0.00802269,
+      "positive_alignment_slides": 8,
+      "n_slides": 48,
+      "heldout_transport_gain": 0.05401823
+    },
+    "DP200": {
+      "alignment_control_minus_candidate": -0.00405357,
+      "positive_alignment_slides": 10,
+      "n_slides": 48,
+      "heldout_transport_gain": 0.00936746
+    },
+    "GT450": {
+      "alignment_control_minus_candidate": 0.00511946,
+      "positive_alignment_slides": 33,
+      "n_slides": 48,
+      "heldout_transport_gain": 0.03997203
+    },
+    "P1000": {
+      "alignment_control_minus_candidate": -0.01278845,
+      "positive_alignment_slides": 4,
+      "n_slides": 48,
+      "heldout_transport_gain": 0.01350026
+    }
+  },
+  "slide_heterogeneity": {
+    "slides_with_zero_positive_alignment_holdouts": 13,
+    "slides_with_all_four_positive_alignment_holdouts": 0,
+    "n_slides": 48
+  },
+  "descriptive_fold_holdout_correlations_with_alignment_effect": {
+    "calibration_final_loss": {"pearson": -0.5354, "spearman": -0.6286, "n": 20},
+    "calibration_fractional_reduction": {"pearson": 0.6626, "spearman": 0.6556, "n": 20},
+    "heldout_transport_gain": {"pearson": 0.0730, "spearman": 0.0180, "n": 20},
+    "known_transport_gain": {"pearson": -0.5140, "spearman": -0.4962, "n": 20},
+    "retrieval_difference": {"pearson": 0.6471, "spearman": 0.3341, "n": 20},
+    "probe_reduction": {"pearson": 0.0054, "spearman": -0.0286, "n": 20},
+    "reference_reconstruction_advantage": {"pearson": 0.0624, "spearman": 0.0887, "n": 20}
+  },
+  "localization": "Heldout calibration and heldout operator-only transport are identical between candidate and control by construction and observation, yet heldout biological alignment differs. The next prospective mechanistic question is therefore encoder response to the shared post-transport residual, not operator capacity or calibration duration.",
+  "claim_boundary": "Descriptive post-outcome localization only. This record does not alter RT1 failure, promote a scanner subset, or establish a successor mechanism."
+}
