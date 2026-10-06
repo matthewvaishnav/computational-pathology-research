@@ -369,6 +369,13 @@ def run_rt2(
 
                 candidate = models["inverse_transport"]
                 control = models["no_inverse_transport_control"]
+                candidate_params = rt1.parameter_count(candidate)
+                control_params = rt1.parameter_count(control)
+                if candidate_params != control_params:
+                    raise RT2Error(
+                        f"Capacity mismatch fold={fold} heldout={heldout_name} seed={seed}: "
+                        f"candidate={candidate_params} control={control_params}"
+                    )
                 op_diff = _state_max_abs_diff(
                     candidate.operator_module(heldout_index),
                     control.operator_module(heldout_index),
@@ -427,8 +434,8 @@ def run_rt2(
                         "fold": int(fold),
                         "heldout_scanner": heldout_name,
                         "seed": int(seed),
-                        "parameter_count_candidate": rt1.parameter_count(candidate),
-                        "parameter_count_control": rt1.parameter_count(control),
+                        "parameter_count_candidate": candidate_params,
+                        "parameter_count_control": control_params,
                         "heldout_operator_max_abs_arm_diff": op_diff,
                         "heldout_residual_max_abs_arm_diff": residual_diff,
                         "candidate_training": training["inverse_transport"],
