@@ -346,9 +346,11 @@ def _summarize(runs: Sequence[Dict[str, Any]], config: rt1.RT1Config) -> Dict[st
 
     # Average seeds.
     seed_avg_rows: List[Dict[str, Any]] = []
+    first_seed_rows = next(iter(seed_averaged.values()))
+    first_seed_row = first_seed_rows[0]
     metric_names = tuple(
         k
-        for k in next(iter(next(iter(seed_averaged.values())))).keys()
+        for k in first_seed_row.keys()
         if k not in {"slide_id", "heldout_scanner"}
     )
     for (slide, heldout), rows in sorted(seed_averaged.items()):
