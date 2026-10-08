@@ -1,0 +1,96 @@
+{
+  "schema_version": "pa-nf-v5-rt3-frozen-result-record/v1",
+  "record_date": "2026-10-08",
+  "run_label": "pa_nf_v5_rt3_residual_tangent_regularization_20261006",
+  "status": "completed_frozen_development_failure",
+  "rt3_development_pass": false,
+  "number_of_fits": 240,
+  "focus_tests_passed": 5,
+  "preflight_validator_log_available_in_user_attachment": false,
+  "evidence_class": "mechanism-repair development on previously studied SCORPION, not independent confirmation",
+  "gates": {
+    "baseline_minus_residual_alignment_ci_positive": true,
+    "control_minus_residual_alignment_ci_positive": true,
+    "control_minus_residual_probe_accuracy_ci_positive": true,
+    "isotropic_minus_residual_alignment_ci_positive": false,
+    "max_operator_inverse_roundtrip_mse_below_1e_8": true,
+    "parameter_counts_equal": true,
+    "residual_heldout_transport_ci_positive": true,
+    "residual_known_transport_ci_positive": true,
+    "residual_minus_control_retrieval_noninferior": true,
+    "rt3_development_pass": false
+  },
+  "primary_slide_level_intervals": {
+    "baseline_minus_residual_alignment": {
+      "mean": 0.07022348082157098,
+      "ci_025": 0.06326274382851504,
+      "ci_975": 0.07786654410965638
+    },
+    "control_minus_residual_alignment": {
+      "mean": 0.0631002085392538,
+      "ci_025": 0.05747413884156332,
+      "ci_975": 0.0695346111038614
+    },
+    "isotropic_minus_residual_alignment": {
+      "mean": -0.001546953549728237,
+      "ci_025": -0.001992297630663921,
+      "ci_975": -0.0011282072227358085
+    },
+    "control_minus_residual_probe_accuracy": {
+      "mean": 0.013802083333333333,
+      "ci_025": 0.008506944444444444,
+      "ci_975": 0.01927083333333333
+    },
+    "residual_minus_control_retrieval_top1": {
+      "mean": 0.0059027777777777785,
+      "ci_025": -0.0017361111111111082,
+      "ci_975": 0.013715277777777778
+    },
+    "residual_operator_only_heldout_transport_gain": {
+      "mean": 0.028684893597124353,
+      "ci_025": 0.02581504607409847,
+      "ci_975": 0.03168797438686144
+    },
+    "residual_operator_only_known_transport_gain": {
+      "mean": 0.050650143170733596,
+      "ci_025": 0.04640430626902715,
+      "ci_975": 0.05491164361425303
+    },
+    "residual_jvp_residual_gain": {
+      "mean": 0.04888242661480843,
+      "ci_025": 0.04560003708187045,
+      "ci_975": 0.05247424848655808
+    },
+    "residual_jvp_random_gain": {
+      "mean": 0.09257851429154268,
+      "ci_025": 0.08841000316024292,
+      "ci_975": 0.09688565621472663
+    },
+    "baseline_jvp_residual_gain": {
+      "mean": 0.4300445661259194,
+      "ci_025": 0.41164750384697174,
+      "ci_975": 0.44922419706579403
+    },
+    "isotropic_jvp_residual_gain": {
+      "mean": 0.03634555088420812,
+      "ci_025": 0.03387911982087341,
+      "ci_975": 0.03907481551448453
+    },
+    "residual_reference_reconstruction_mse": {
+      "mean": 0.7256199032275212,
+      "ci_025": 0.6535410304626242,
+      "ci_975": 0.8078543968346072
+    }
+  },
+  "interpretation": "Residual-tangent regularization substantially improves paired alignment versus unregularized inverse and no-inverse control, but is inferior to isotropic smoothing under the preregistered head-to-head; full RT3 promotion fails. This does not demonstrate that isotropic smoothing retains biology or that residual-specific correction is necessary.",
+  "current_next_action": "Run read-only four-arm retention-risk audit on completed RT3 JSON; specifically check reference reconstruction tradeoffs and final training variance-floor proxy without retraining.",
+  "insufficient_evidence": [
+    "Full held-out latent spectrum was not saved",
+    "Independent biology-task readout was not frozen or saved",
+    "Retrieved top1 and alignment are not sufficient to rule out representation contraction",
+    "Do not call RT3 a rescued version of RT1",
+    "The uploaded transcript did not show the RT3 pre-outcome validator being run"
+  ],
+  "provenance": "Numbers transcribed from uploaded Windows terminal output dated 2026-10-08; original outcome JSON remains on the user's local machine.",
+  "claim_boundary": "Post-outcome record only; do not rewrite frozen gates, promote models, or treat this as external confirmation."
+}
