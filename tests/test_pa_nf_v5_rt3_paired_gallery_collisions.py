@@ -85,3 +85,44 @@ def test_collision_audit_requires_two_source_slides():
         collision.paired_gallery_slide_metrics(
             ref, ref, np.asarray(["s0"] * 4)
         )
+
+
+def test_matched_cross_slide_negative_pool_resists_gallery_size_artifact():
+    # Each slide has one hard within-slide impostor (orthogonal) but the
+    # cross-slide gallery has TWO impostors; paired samples use one at a time.
+    reference = np.asarray([
+        [1.0, 0.0], [0.0, 1.0],
+        [0.8, 0.6], [-1.0, 0.0],
+    ], dtype=np.float32)
+    slides = np.asarray(["s0", "s0", "s1", "s1"])
+    a = collision.paired_gallery_slide_metrics(
+        reference, reference, slides, distractor_seed=123, distractor_draws=64
+    )
+    b = collision.paired_gallery_slide_metrics(
+        reference, reference, slides, distractor_seed=123, distractor_draws=64
+    )
+    assert a == b
+    assert a["s0"]["within_slide_top1"] == 1.0
+    assert a["s0"]["matched_cross_slide_nine_strict_top1"] == 1.0
+    assert a["s0"]["matched_cross_slide_nine_cosine_margin"] > 0
+
+
+def test_exact_duplicates_are_reported_as_ties_not_positive_separation():
+    ref = np.concatenate([np.eye(2, dtype=np.float32)] * 2, axis=0)
+    slides = np.asarray(["s0", "s0", "s1", "s1"])
+    m = collision.paired_gallery_slide_metrics(
+        ref, ref, slides, distractor_seed=42, distractor_draws=20
+    )
+    for slide in ("s0", "s1"):
+        assert m[slide]["cross_slide_near_tie_rate"] == 1.0
+        assert m[slide]["cross_slide_cosine_margin"] == pytest.approx(0.0)
+        assert m[slide]["matched_cross_slide_nine_strict_top1"] == 0.0
+
+
+def test_reject_zero_negative_sampler_draws():
+    ref = np.eye(4, dtype=np.float32)
+    slides = np.asarray(["s0", "s0", "s1", "s1"])
+    with pytest.raises(collision.CollisionAuditError, match="distractor_draws"):
+        collision.paired_gallery_slide_metrics(
+            ref, ref, slides, distractor_draws=0
+        )
