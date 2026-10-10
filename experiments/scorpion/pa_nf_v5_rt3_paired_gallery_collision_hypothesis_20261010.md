@@ -21,6 +21,8 @@ All these are average descriptive outcomes from user-reported complete replay, n
 
 **What is NOT supported:** The claim that isotropic lost retrieval mainly because its biological latent rank collapsed. It had the highest average effective rank of four arms. Effective rank alone does not identify what latent directions encode.
 
+**Already-visible gallery-expansion penalties** (within-slide top1 minus full-fold top1, from rounded 4-decimal replay summaries): no-inverse 6.96 percentage points, inverse baseline 7.49, isotropic 11.40, residual-tangent 5.39. Thus adding other-slide regions causes about 6.01 pp greater retrieval loss for isotropic than residual-tangent. This strongly motivates a cross-slide impostor decomposition. The exact denominators/ties and cosine margins are not known from those rounded summary means alone.
+
 **What remains plausible:** Both types of regularization suppress the within-region scanner displacement, but generic isotropic smoothing weakens cosine discrimination against other region identities; the residual-tangent objective may better preserve those discriminative angular directions. This is a hypothesis, not an established root cause.
 
 At lambda 0.01 the normalized known-scanner probe and original probe are equal to four decimal places. A large scale artifact at that one probe setting is not supported by the displayed data, but probe-lambda dependence and nonlinear leakage remain unexamined.
