@@ -39,12 +39,19 @@ SEEDS = tuple(rt3.MODEL_SEEDS)
 EXPECTED_FITS = len(FOLDS) * len(HELDOUT) * len(SEEDS) * len(ARMS)
 BOOTSTRAP_SEED = 2026101001
 DRAWS = 100000
+MATCHED_CROSS_DRAW_COUNT = 32
+MATCHED_CROSS_SEED = 2026101011
+TIE_TOL = 1e-6
 METRICS = (
     "within_slide_top1",
     "fold_global_top1",
     "cross_slide_only_error_rate",
     "within_slide_error_rate",
     "global_cross_slide_error_rate",
+    "matched_cross_slide_nine_strict_top1",
+    "matched_cross_slide_nine_cosine_margin",
+    "within_slide_near_tie_rate",
+    "cross_slide_near_tie_rate",
     "correct_match_cosine",
     "max_within_slide_impostor_cosine",
     "max_cross_slide_impostor_cosine",
@@ -73,6 +80,9 @@ def paired_gallery_slide_metrics(
     heldout: np.ndarray,
     reference: np.ndarray,
     slide_ids: np.ndarray,
+    *,
+    distractor_seed: int = MATCHED_CROSS_SEED,
+    distractor_draws: int = MATCHED_CROSS_DRAW_COUNT,
 ) -> Dict[str, Dict[str, float]]:
     """Each row's index is its registered paired AT2 region identity."""
     q, g = _normalize(heldout), _normalize(reference)
@@ -99,6 +109,29 @@ def paired_gallery_slide_metrics(
     predicted_cross = slide_ids[nearest_global] != slide_ids
     max_within_negative = np.where(within_negative, sim, -np.inf).max(axis=1)
     max_cross_negative = np.where(cross_negative, sim, -np.inf).max(axis=1)
+
+    # Match the cross-slide negative-pool size to the number of within-slide
+    # negatives on each query; fix the sampling by row identity and fold/scanner,
+    # not by arm or model seed. Strict dominance treats exact ties as ambiguous.
+    if distractor_draws <= 0:
+        raise CollisionAuditError("distractor_draws must be positive")
+    rng = np.random.default_rng(distractor_seed)
+    matched_negative_max = np.empty((n, distractor_draws), dtype=sim.dtype)
+    for query_idx in range(n):
+        cross_candidates = np.flatnonzero(cross_negative[query_idx])
+        count = min(int(within_negative[query_idx].sum()), len(cross_candidates))
+        for d in range(distractor_draws):
+            selected = rng.choice(cross_candidates, size=count, replace=False)
+            matched_negative_max[query_idx, d] = np.max(sim[query_idx, selected])
+    matched_cross_top1 = np.mean(
+        diagonal[:, None] > matched_negative_max + TIE_TOL, axis=1
+    )
+    matched_cross_margin = np.mean(
+        diagonal[:, None] - matched_negative_max, axis=1
+    )
+    within_near_tie = np.abs(diagonal - max_within_negative) <= TIE_TOL
+    cross_near_tie = np.abs(diagonal - max_cross_negative) <= TIE_TOL
+
     # Rank uses strict greater-than as tie-resolution agnostic descriptive
     # quantity; actual top-1 follows np.argmax deterministically.
     ranks = 1 + ((sim > diagonal[:, None] + 1e-12) & offdiag).sum(axis=1)
@@ -117,6 +150,14 @@ def paired_gallery_slide_metrics(
             "global_cross_slide_error_rate": float(
                 (~global_success[idx] & predicted_cross[idx]).mean()
             ),
+            "matched_cross_slide_nine_strict_top1": float(
+                matched_cross_top1[idx].mean()
+            ),
+            "matched_cross_slide_nine_cosine_margin": float(
+                matched_cross_margin[idx].mean()
+            ),
+            "within_slide_near_tie_rate": float(within_near_tie[idx].mean()),
+            "cross_slide_near_tie_rate": float(cross_near_tie[idx].mean()),
             "correct_match_cosine": float(np.mean(diagonal[idx])),
             "max_within_slide_impostor_cosine": float(
                 np.mean(max_within_negative[idx])
@@ -322,7 +363,8 @@ def main() -> None:
                         model, test, (rt1.REFERENCE_INDEX, heldout_idx), device
                     )
                     margins = paired_gallery_slide_metrics(
-                        z[heldout_idx], z[rt1.REFERENCE_INDEX], test.slide_ids
+                        z[heldout_idx], z[rt1.REFERENCE_INDEX], test.slide_ids,
+                        distractor_seed=(MATCHED_CROSS_SEED + fold * 100 + heldout_idx),
                     )
                     for source_slide, metrics in margins.items():
                         original_slide = next(
@@ -352,6 +394,8 @@ def main() -> None:
         "original_rt3_result_sha256": original_sha,
         "replayed_arm_fits_verified": successful_replays,
         "source_slide_count": 48,
+        "matched_cross_slide_negative_draws": MATCHED_CROSS_DRAW_COUNT,
+        "matched_cross_slide_negative_seed": MATCHED_CROSS_SEED,
         "identity_metrics": report,
         "claim_boundary": "Exploratory geometry on burned SCORPION; RT3 remains failed."
     }
@@ -366,13 +410,17 @@ def main() -> None:
             f"within_top1={a['within_slide_top1']:.6f} "
             f"crossslide_only_error={a['cross_slide_only_error_rate']:.6f} "
             f"crossslide_margin={a['cross_slide_cosine_margin']:+.6f} "
+            f"matched_cross_top1={a['matched_cross_slide_nine_strict_top1']:.6f} "
             f"withinslide_margin={a['within_slide_cosine_margin']:+.6f}"
         )
     print("Paired slide contrasts: isotropic minus residual-tangent")
     for name in (
         "fold_global_top1", "cross_slide_only_error_rate",
         "cross_slide_cosine_margin", "within_slide_cosine_margin",
-        "correct_match_cosine", "max_cross_slide_impostor_cosine"
+        "correct_match_cosine", "max_cross_slide_impostor_cosine",
+        "matched_cross_slide_nine_strict_top1",
+        "matched_cross_slide_nine_cosine_margin",
+        "within_slide_near_tie_rate", "cross_slide_near_tie_rate"
     ):
         d = report["paired_slide_contrasts_isotropic_minus_residual_tangent"][name]
         print(
