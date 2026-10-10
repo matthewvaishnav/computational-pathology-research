@@ -1,0 +1,58 @@
+{
+  "schema_version": "pa-nf-v5-rt3-exact-replay-geometry-record/v1",
+  "record_date": "2026-10-10",
+  "status": "complete_frozen_replay_verified_postoutcome_diagnostic",
+  "frozen_rt3_development_pass": false,
+  "reported_tests_passed": 7,
+  "replayed_fits": 240,
+  "replicated_slide_metric_sets": 2304,
+  "replay_source": "User-supplied local console; complete JSON remains local.",
+  "replay_artifact": "results/pa_nf_v5_rt3_residual_tangent_regularization_20261006/pa_nf_v5_rt3_exact_replay_geometry_audit_20261010.json",
+  "by_arm": {
+    "no_inverse_control": {
+      "reference_effective_rank": 6.4209,
+      "heldout_effective_rank": 6.4132,
+      "heldout_top1_variance_share": 0.3106,
+      "fold_global_top1": 0.8799,
+      "within_slide_top1": 0.9495,
+      "raw_known_scanner_probe_accuracy": 0.2789,
+      "normalized_known_scanner_probe_lambda_0_01": 0.2789
+    },
+    "inverse_baseline": {
+      "reference_effective_rank": 6.4657,
+      "heldout_effective_rank": 6.4587,
+      "heldout_top1_variance_share": 0.3048,
+      "fold_global_top1": 0.8692,
+      "within_slide_top1": 0.9441,
+      "raw_known_scanner_probe_accuracy": 0.2709,
+      "normalized_known_scanner_probe_lambda_0_01": 0.2709
+    },
+    "inverse_isotropic": {
+      "reference_effective_rank": 6.7249,
+      "heldout_effective_rank": 6.7152,
+      "heldout_top1_variance_share": 0.2905,
+      "fold_global_top1": 0.7999,
+      "within_slide_top1": 0.9139,
+      "raw_known_scanner_probe_accuracy": 0.2897,
+      "normalized_known_scanner_probe_lambda_0_01": 0.2897
+    },
+    "inverse_residual_tangent": {
+      "reference_effective_rank": 6.2146,
+      "heldout_effective_rank": 6.1956,
+      "heldout_top1_variance_share": 0.3288,
+      "fold_global_top1": 0.9018,
+      "within_slide_top1": 0.9557,
+      "raw_known_scanner_probe_accuracy": 0.2649,
+      "normalized_known_scanner_probe_lambda_0_01": 0.2649
+    }
+  },
+  "interpretation": [
+    "Mean effective rank of isotropic is higher than other arms; simple rank-collapse account for isotropic poor retrieval is not supported.",
+    "Isotropic loses markedly more whole-fold retrieval than residual-tangent, suggesting cross-slide region-identity confusion may be an important failure mode.",
+    "Residual-tangent retains superior same-region retrieval with less average effective rank, so latent dimensionality alone cannot explain identity performance.",
+    "At lambda=0.01, train-standardized scanner probe matches raw probe to four decimals in the reported summary, not supporting a material scale artifact at that setting; other lambdas and nonlinear probes remain unresolved.",
+    "Fold-global top1 retrieval is a scanner-to-reference same-region metric, not proof of biological label sufficiency.",
+    "Twenty-fold scanner/seed repeated rows are not independent biological replicates; inference, where used, must cluster at 48 source slides."
+  ],
+  "followup": "Run a distinct reproducibility-checked two-arm identity collision audit measuring per-region correct-match cosine margins to hardest within-slide and cross-slide impostors, aggregating to source-slide inference; no RT3 promotion."
+}
