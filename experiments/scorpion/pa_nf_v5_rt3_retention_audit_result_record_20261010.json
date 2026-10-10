@@ -1,0 +1,110 @@
+{
+  "schema_version": "pa-nf-v5-rt3-retention-audit-result-record/v1",
+  "date_recorded": "2026-10-10",
+  "evidence_class": "post-outcome read-only descriptive audit of burned SCORPION; not a new frozen model comparison",
+  "rt3_frozen_status": "FAIL",
+  "original_rt3_artifact_sha256": "021435970716e1a13a26ba3b8b4d16788453f328abef3737fe6bbf19a1b3dd25",
+  "original_rt3_artifact_path": "results/pa_nf_v5_rt3_residual_tangent_regularization_20261006/pa_nf_v5_rt3_residual_tangent_regularization_result.json",
+  "audit_artifact_path": "results/pa_nf_v5_rt3_residual_tangent_regularization_20261006/pa_nf_v5_rt3_readonly_retention_risk_audit_20261008.json",
+  "provenance": "Verbatim numerical values transcribed from user's local PowerShell audit console. Original result and audit JSON remain locally stored; no uploaded JSON verified here.",
+  "focused_audit_tests": "4 passed",
+  "independent_unit": "48 original source slides, after averaging three model seeds and four scanner holdouts per slide",
+  "arms": {
+    "no_inverse_control": {
+      "alignment_mse": 0.07195316,
+      "retrieval_top1": 0.95,
+      "known_scanner_probe_accuracy": 0.278819,
+      "reference_reconstruction_mse": 0.689982,
+      "final_train_latent_variance_penalty": 0
+    },
+    "inverse_baseline": {
+      "alignment_mse": 0.07907643,
+      "retrieval_top1": 0.944271,
+      "known_scanner_probe_accuracy": 0.270964,
+      "reference_reconstruction_mse": 0.691357,
+      "final_train_latent_variance_penalty": 0
+    },
+    "inverse_isotropic": {
+      "alignment_mse": 0.007306,
+      "retrieval_top1": 0.913889,
+      "known_scanner_probe_accuracy": 0.289627,
+      "reference_reconstruction_mse": 0.744385,
+      "final_train_latent_variance_penalty": 0.00000268
+    },
+    "inverse_residual_tangent": {
+      "alignment_mse": 0.00885295,
+      "retrieval_top1": 0.955903,
+      "known_scanner_probe_accuracy": 0.265017,
+      "reference_reconstruction_mse": 0.72562,
+      "final_train_latent_variance_penalty": 0
+    }
+  },
+  "post_outcome_descriptive_differences": {
+    "isotropic_minus_residual_tangent": {
+      "heldout_alignment_mse": {
+        "mean": -0.00154695,
+        "ci_025": -0.00198971,
+        "ci_975": -0.00112523
+      },
+      "reference_reconstruction_mse": {
+        "mean": 0.01876468,
+        "ci_025": 0.01199978,
+        "ci_975": 0.02583477
+      },
+      "retrieval_top1": {
+        "mean": -0.04201389,
+        "ci_025": -0.05277778,
+        "ci_975": -0.03177083
+      }
+    },
+    "isotropic_minus_no_inverse_control": {
+      "heldout_alignment_mse": {
+        "mean": -0.06464716,
+        "ci_025": -0.0713082,
+        "ci_975": -0.05874733
+      },
+      "reference_reconstruction_mse": {
+        "mean": 0.05440301,
+        "ci_025": 0.04651571,
+        "ci_975": 0.06321662
+      },
+      "retrieval_top1": {
+        "mean": -0.03611111,
+        "ci_025": -0.04704861,
+        "ci_975": -0.02551649
+      }
+    },
+    "residual_tangent_minus_no_inverse_control": {
+      "heldout_alignment_mse": {
+        "mean": -0.06310021,
+        "ci_025": -0.0694701,
+        "ci_975": -0.05742477
+      },
+      "reference_reconstruction_mse": {
+        "mean": 0.03563833,
+        "ci_025": 0.02906203,
+        "ci_975": 0.04208826
+      },
+      "retrieval_top1": {
+        "mean": 0.00590278,
+        "ci_025": -0.0015625,
+        "ci_975": 0.01371528
+      }
+    }
+  },
+  "rt3_frozen_promotion_gate_failure": "isotropic-minus-residual-tangent heldout alignment MSE 95% lower bound was not positive; RT3 FAIL",
+  "interpretation": [
+    "Isotropic regularization was better on the frozen alignment head-to-head, so original RT3 gate does not pass.",
+    "Isotropic had lower retrieval, higher known-scanner probe accuracy, and higher reference reconstruction MSE than residual-tangent, an unfavorable descriptive retention tradeoff.",
+    "Residual-tangent achieved near-control retrieval and improved scanner probe while much lowering heldout alignment MSE, but reconstruction MSE worsened relative to the no-inverse control.",
+    "Nonzero high retrieval argues against complete constant-latent collapse; these aggregate metrics cannot establish preservation of diagnostically/biologically useful information or rule out partial rank contraction.",
+    "The final training variance-floor penalty was near zero but does not prove heldout latent rank or biological sufficiency."
+  ],
+  "cannot_claim": [
+    "RT3 full promotion/pass",
+    "that residual-tangent is a confirmed scientific winner",
+    "that isotropic smoothing is biologically invalid or truly collapsed",
+    "independent confirmation, clinical utility, or patient-level validity"
+  ],
+  "next_action": "Do not tune or rerun RT3 on burned SCORPION; secure genuinely independent paired physical-slide acquisitions and independent biological labels/diagnostic endpoints, then prospectively freeze tissue-retention and scanner-invariance gates before evaluation."
+}
