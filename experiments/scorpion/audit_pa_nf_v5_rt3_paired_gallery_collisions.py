@@ -61,7 +61,9 @@ class CollisionAuditError(RuntimeError):
 
 
 def _normalize(x: np.ndarray) -> np.ndarray:
-    x = np.asarray(x, dtype=np.float64)
+    x = np.asarray(x)
+    if x.dtype not in (np.float32, np.float64):
+        x = x.astype(np.float32)
     if x.ndim != 2 or not np.isfinite(x).all():
         raise CollisionAuditError("Embeddings must be finite rank-two arrays")
     return x / np.maximum(np.linalg.norm(x, axis=1, keepdims=True), 1e-12)
