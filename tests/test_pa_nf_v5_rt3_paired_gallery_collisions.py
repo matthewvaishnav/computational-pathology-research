@@ -108,15 +108,35 @@ def test_matched_cross_slide_negative_pool_resists_gallery_size_artifact():
 
 
 def test_exact_duplicates_are_reported_as_ties_not_positive_separation():
-    ref = np.concatenate([np.eye(2, dtype=np.float32)] * 2, axis=0)
+    # Every cross-slide candidate is an exact duplicate, so EVERY sampled
+    # negative subset contains a tie, even when only one negative is drawn.
+    ref = np.ones((4, 2), dtype=np.float32)
     slides = np.asarray(["s0", "s0", "s1", "s1"])
     m = collision.paired_gallery_slide_metrics(
         ref, ref, slides, distractor_seed=42, distractor_draws=20
     )
     for slide in ("s0", "s1"):
         assert m[slide]["cross_slide_near_tie_rate"] == 1.0
+        assert m[slide]["within_slide_near_tie_rate"] == 1.0
         assert m[slide]["cross_slide_cosine_margin"] == pytest.approx(0.0)
         assert m[slide]["matched_cross_slide_nine_strict_top1"] == 0.0
+
+
+def test_matched_negative_sampling_can_avoid_duplicate_in_partial_gallery():
+    # One of two cross-slide negatives duplicates the positive; the other is
+    # orthogonal. Sampling one of them must SOMETIMES yield a strict success.
+    # In the *full* gallery there is always an exact cross-slide tie.
+    ref = np.concatenate([np.eye(2, dtype=np.float32)] * 2, axis=0)
+    slides = np.asarray(["s0", "s0", "s1", "s1"])
+    m = collision.paired_gallery_slide_metrics(
+        ref, ref, slides, distractor_seed=42, distractor_draws=1000
+    )
+    for slide in ("s0", "s1"):
+        assert m[slide]["cross_slide_near_tie_rate"] == 1.0
+        assert m[slide]["cross_slide_cosine_margin"] == pytest.approx(0.0)
+        # Half of the size-matched subsamples omit the duplicate by design.
+        success = m[slide]["matched_cross_slide_nine_strict_top1"]
+        assert 0.40 < success < 0.60
 
 
 def test_reject_zero_negative_sampler_draws():
