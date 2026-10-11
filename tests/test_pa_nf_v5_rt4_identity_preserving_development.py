@@ -186,6 +186,7 @@ def test_slide_level_summary_counts_48_slides_not_360_repeated_fits():
                             "within_slide_top1": arm_score[arm],
                             "cross_slide_cosine_margin": 0.1,
                             "matched_cross_slide_nine_strict_top1": arm_score[arm],
+                            "scale_normalized_known_scanner_probe_accuracy": 0.25,
                         }
                     fake_runs.append({
                         "fold": fold,
@@ -198,6 +199,11 @@ def test_slide_level_summary_counts_48_slides_not_360_repeated_fits():
                             "max_operator_inverse_roundtrip_mse": 1e-11,
                         },
                         "identity_metrics": identity,
+                        "latent_geometry": {
+                            "reference_effective_rank": 6.0,
+                            "heldout_effective_rank": 6.0,
+                            "heldout_top1_variance_share": 0.3,
+                        },
                     })
     config = rt1.RT1Config()
     config.bootstrap_draws = 200
@@ -209,3 +215,27 @@ def test_slide_level_summary_counts_48_slides_not_360_repeated_fits():
     fake_runs.pop()
     with pytest.raises(rt4.RT4Error, match="Expected 360"):
         rt4._summarize(fake_runs, config)
+
+
+def test_geometry_and_normalized_probe_evaluated_with_train_only_normalization():
+    bundle = _toy(n_slides=5)
+    train = rt1.SplitBundle(
+        observations=bundle.observations[:30],
+        slide_ids=bundle.slide_ids[:30],
+        region_ids=bundle.region_ids[:30],
+    )
+    test = rt1.SplitBundle(
+        observations=bundle.observations[30:],
+        slide_ids=bundle.slide_ids[30:],
+        region_ids=bundle.region_ids[30:],
+    )
+    heldout = 1
+    known = (0, 2, 3, 4)
+    v4.set_deterministic_seed(rt4.MODEL_SEEDS[0])
+    model = rt1.RT1ReferenceGaugeModel(rt1.RT1Config(), "inverse_transport")
+    metrics, spectral = rt4._eval_identity(model, train, test, known, heldout, fold=0)
+    assert set(metrics) == {"slide_3", "slide_4"}
+    assert 0 <= spectral["heldout_effective_rank"] <= 8
+    for row in metrics.values():
+        assert 0 <= row["scale_normalized_known_scanner_probe_accuracy"] <= 1
+        assert row["fold_global_top1"] <= row["within_slide_top1"] + 1e-6
