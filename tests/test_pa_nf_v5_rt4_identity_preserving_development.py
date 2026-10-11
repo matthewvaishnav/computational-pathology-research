@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -135,8 +136,7 @@ def test_rejects_unknown_model_arms():
 def test_two_epoch_identity_training_smoke_without_evaluation_data():
     bundle = _toy(n_slides=4)
     known = (0, 2, 3, 4)
-    config = rt1.RT1Config()
-    config.epochs = 2
+    config = replace(rt1.RT1Config(), epochs=2)
     v4.set_deterministic_seed(rt4.MODEL_SEEDS[0])
     model = rt1.RT1ReferenceGaugeModel(config, "inverse_transport")
     units = __import__(
@@ -205,8 +205,7 @@ def test_slide_level_summary_counts_48_slides_not_360_repeated_fits():
                             "heldout_top1_variance_share": 0.3,
                         },
                     })
-    config = rt1.RT1Config()
-    config.bootstrap_draws = 200
+    config = replace(rt1.RT1Config(), bootstrap_draws=200)
     result = rt4._summarize(fake_runs, config)
     assert len(fake_runs) == 360
     assert len(result["source_slide_rows"]) == 48
