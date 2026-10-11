@@ -216,16 +216,46 @@ def _train_identity_arm(
 
 def _eval_identity(
     model: rt1.RT1ReferenceGaugeModel,
+    train: rt1.SplitBundle,
     test: rt1.SplitBundle,
+    known: Sequence[int],
     heldout_index: int,
     *,
     fold: int,
-) -> Dict[str, Dict[str, float]]:
-    reps = rt1.representations(model, test, (rt1.REFERENCE_INDEX, heldout_index), next(model.parameters()).device)
-    return collision.paired_gallery_slide_metrics(
-        reps[heldout_index], reps[rt1.REFERENCE_INDEX], test.slide_ids,
+) -> tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
+    device = next(model.parameters()).device
+    test_all = rt1.representations(model, test, range(len(rt1.SCANNERS)), device)
+    metrics = collision.paired_gallery_slide_metrics(
+        test_all[heldout_index], test_all[rt1.REFERENCE_INDEX], test.slide_ids,
         distractor_seed=collision.MATCHED_CROSS_SEED + 100 * fold + heldout_index,
     )
+
+    # Independent train-only normalization removes global coordinate-scale
+    # effects from the known-scanner linear ridge probe.
+    train_reps = rt1.representations(model, train, known, device)
+    fit = np.concatenate([train_reps[i] for i in known], axis=0).astype(np.float64)
+    mu = fit.mean(axis=0, keepdims=True)
+    sd = fit.std(axis=0, keepdims=True)
+    sd[sd < 1e-8] = 1.0
+    x_fit = (fit - mu) / sd
+    y_fit = np.concatenate([np.full(len(train_reps[i]), k) for k, i in enumerate(known)])
+    onehot = np.eye(len(known), dtype=np.float64)[y_fit]
+    weights = v4._ridge_fit(x_fit, onehot, lam=0.01)
+    for slide in metrics:
+        indices = np.flatnonzero(test.slide_ids == slide)
+        x = np.concatenate([test_all[i][indices] for i in known], axis=0).astype(np.float64)
+        y = np.concatenate([np.full(len(indices), k) for k in range(len(known))])
+        predicted = v4._ridge_predict((x - mu) / sd, weights).argmax(axis=1)
+        metrics[slide]["scale_normalized_known_scanner_probe_accuracy"] = float(np.mean(predicted == y))
+
+    ref_geometry = geometry.covariance_geometry(test_all[rt1.REFERENCE_INDEX])
+    heldout_geometry = geometry.covariance_geometry(test_all[heldout_index])
+    diagnostic = {
+        "reference_effective_rank": float(ref_geometry["effective_rank_entropy"]),
+        "heldout_effective_rank": float(heldout_geometry["effective_rank_entropy"]),
+        "heldout_top1_variance_share": float(heldout_geometry["top1_variance_share"]),
+    }
+    return metrics, diagnostic
 
 
 def _summarize(runs: list[Dict[str, Any]], config: rt1.RT1Config) -> Dict[str, Any]:
@@ -272,6 +302,7 @@ def _summarize(runs: list[Dict[str, Any]], config: rt1.RT1Config) -> Dict[str, A
         "candidate_minus_isotropic_true_fullfold": (ARM_TANGENT_TRUE, ARM_ISO_TRUE, "fold_global_top1"),
         "candidate_minus_tangent_reconstruction": (ARM_TANGENT_TRUE, ARM_TANGENT, "reference_reconstruction_mse"),
         "candidate_minus_tangent_probe_accuracy": (ARM_TANGENT_TRUE, ARM_TANGENT, "known_scanner_probe_accuracy"),
+        "candidate_minus_tangent_scale_normalized_probe": (ARM_TANGENT_TRUE, ARM_TANGENT, "scale_normalized_known_scanner_probe_accuracy"),
         "candidate_minus_tangent_withinslide": (ARM_TANGENT_TRUE, ARM_TANGENT, "within_slide_top1"),
         "candidate_heldout_operator_gain": (ARM_TANGENT_TRUE, None, "operator_only_heldout_transport_gain"),
         "candidate_known_operator_gain": (ARM_TANGENT_TRUE, None, "operator_only_known_transport_gain"),
@@ -292,6 +323,7 @@ def _summarize(runs: list[Dict[str, Any]], config: rt1.RT1Config) -> Dict[str, A
         "candidate_fullfold_gain_over_sham_ci_positive": intervals["candidate_minus_sham_fullfold"]["ci_025"] > 0,
         "reconstruction_noninferior": intervals["candidate_minus_tangent_reconstruction"]["ci_975"] <= 0.03,
         "scanner_linear_probe_noninferior": intervals["candidate_minus_tangent_probe_accuracy"]["ci_975"] <= 0.02,
+        "scanner_scale_normalized_probe_noninferior": intervals["candidate_minus_tangent_scale_normalized_probe"]["ci_975"] <= 0.02,
         "within_slide_retrieval_noninferior": intervals["candidate_minus_tangent_withinslide"]["ci_025"] >= -0.02,
         "heldout_transport_ci_positive": intervals["candidate_heldout_operator_gain"]["ci_025"] > 0,
         "known_transport_ci_positive": intervals["candidate_known_operator_gain"]["ci_025"] > 0,
@@ -299,10 +331,20 @@ def _summarize(runs: list[Dict[str, Any]], config: rt1.RT1Config) -> Dict[str, A
         "capacity_equal": all(params[a] == {9640} for a in ARMS),
     }
     gate["mechanism_development_supported_only"] = all(gate.values())
+    per_arm_geometry = {
+        a: {
+            key: float(np.mean([
+                run["latent_geometry"][key] for run in runs if run["arm"] == a
+            ]))
+            for key in ("reference_effective_rank", "heldout_effective_rank", "heldout_top1_variance_share")
+        }
+        for a in ARMS
+    }
     return {
         "mechanism_gate": gate,
         "intervals": intervals,
         "arm_slide_means": arm_summary,
+        "latent_geometry_descriptive": per_arm_geometry,
         "source_slide_rows": by_slide,
         "parameter_counts": {a: sorted(params[a]) for a in ARMS},
         "max_operator_roundtrip_mse": max(inverse_errors),
@@ -360,7 +402,9 @@ def run(
                         training = rt3.train_arm(model, arm, train, known, config, device, directions)
                     calibration = rt1.calibrate_heldout_operator(model, cal, heldout_idx, config, device)
                     evaluation = rt1.evaluate_model(model, train, test, known, heldout_idx, device, seed)
-                    identity_metrics = _eval_identity(model, test, heldout_idx, fold=fold)
+                    identity_metrics, latent_geometry = _eval_identity(
+                        model, train, test, known, heldout_idx, fold=fold
+                    )
                     for r in evaluation["slide_metrics"]:
                         if abs(float(r["heldout_retrieval_top1"]) - identity_metrics[r["slide_id"]]["within_slide_top1"]) > 1e-6:
                             raise RT4Error(f"Retrieval implementation mismatch: {r['slide_id']}")
@@ -370,6 +414,7 @@ def run(
                         "parameter_count": rt1.parameter_count(model),
                         "training": training, "heldout_calibration": calibration,
                         "evaluation": evaluation, "identity_metrics": identity_metrics,
+                        "latent_geometry": latent_geometry,
                     })
                 counts = {a: rt1.parameter_count(m) for a, m in models.items()}
                 if set(counts.values()) != {9640}:
