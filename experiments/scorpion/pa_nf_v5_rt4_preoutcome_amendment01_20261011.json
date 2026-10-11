@@ -1,0 +1,26 @@
+{
+  "schema_version": "pa-nf-v5-rt4-preoutcome-amendment-01/v1",
+  "date": "2026-10-11",
+  "status": "pre_outcome_preflight_pending_mechanical_and_protection_amendment",
+  "prior_spec_path": "experiments/scorpion/pa_nf_v5_rt4_identity_preserving_development_spec_20261011.json",
+  "reason": "Strengthen already registered scanner-invariance protection against ridge input-scale confounding and record descriptive test latent geometry. No RT4 fit has been launched or outcome observed.",
+  "addition": {
+    "normalization_scope": "fit mean and standard deviation exclusively from known-scanner TRAIN encoded regions; apply same scaler to test slide known scanner codes",
+    "probe": "four-class train-fit ridge probe with lambda 0.01 in standardized biological coordinates",
+    "per_slide_metric": "scale_normalized_known_scanner_probe_accuracy",
+    "mechanism_guardrail": "upper 95% source-slide-bootstrap CI of (inverse_residual_true_identity - inverse_residual_tangent) normalized probe accuracy <= +0.02, alongside original unstandardized probe guardrail",
+    "latent_geometry": "per-fit test-fold reference/heldout covariance effective rank and heldout top eigenvalue share, descriptive only; no rank-based selection",
+    "label_limit": "four-class ~25% balanced-chance scanner linear probes do not establish absence of nonlinear scanner leakage; diagnostic biological labels still unavailable"
+  },
+  "unchanged": [
+    "six arms",
+    "identity weight 0.1",
+    "temperature 0.2",
+    "within/cross negatives 4/4",
+    "seeds 5001-5003",
+    "bootstrap seed 2026101103",
+    "all frozen RT1-RT3 outcomes",
+    "no external scientific or clinical promotion"
+  ],
+  "claim_boundary": "This is a pre-outcome addition to fail-closed RT4 mechanism-development safeguards, not a post-outcome gate relaxation."
+}
