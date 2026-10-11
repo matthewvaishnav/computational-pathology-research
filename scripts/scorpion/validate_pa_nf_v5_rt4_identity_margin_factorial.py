@@ -49,7 +49,10 @@ def main() -> None:
             X, frame, MANIFESTS / f"fold_{fold}_manifest.csv", fold
         )
         rt1.validate_fold_partition(aligned, fold)
-        train=rt1.build_split_bundle(bound,aligned,"train")
+        transformed, _, _ = rt1.fit_reference_preprocessing(
+            bound, aligned, rt1.RT1Config().feature_dim
+        )
+        train=rt1.build_split_bundle(transformed,aligned,"train")
         rt4._check_training_region_identity(train)
         manifest_reports.append(report)
 
