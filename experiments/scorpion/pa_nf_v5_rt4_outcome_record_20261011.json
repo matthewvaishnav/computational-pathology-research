@@ -116,5 +116,120 @@
     "Original RT4 JSON not uploaded; numerical record manually transcribed from console, not independently hash verified",
     "RT4 frozen FAIL; RT1 and RT3 remain FAIL",
     "No patient-level independence, diagnosis retention, external scanner claim"
+  ],
+  "original_rt4_local_json_sha256": "4827ebc21de876e4fc10bbbc9fc3ec8ffc752a673b7f122be533f0d3a2dbbb3e",
+  "postoutcome_readonly_audit": {
+    "tests_passed": 5,
+    "fits_checked": 360,
+    "source_slides": 48,
+    "complete": true,
+    "second_invocation_status": "expected overwrite refusal; report already generated",
+    "identity_metrics": {
+      "inverse_residual_tangent": {
+        "global_top1": 0.899826,
+        "within_top1": 0.960417,
+        "cross_slide_only_error_rate": 0.06059,
+        "cross_slide_cosine_margin": 0.111528,
+        "global_rank_mean": 1.23316
+      },
+      "inverse_residual_true_identity": {
+        "global_top1": 0.900521,
+        "within_top1": 0.955382,
+        "cross_slide_only_error_rate": 0.054861,
+        "cross_slide_cosine_margin": 0.143384,
+        "global_rank_mean": 1.28247
+      },
+      "inverse_residual_sham_identity": {
+        "global_top1": 0.761458,
+        "within_top1": 0.893576,
+        "cross_slide_only_error_rate": 0.132118,
+        "cross_slide_cosine_margin": 0.085246,
+        "global_rank_mean": 2.06372
+      },
+      "inverse_isotropic": {
+        "global_top1": 0.816493,
+        "within_top1": 0.922222,
+        "cross_slide_only_error_rate": 0.105729,
+        "cross_slide_cosine_margin": 0.081688,
+        "global_rank_mean": 1.66563
+      },
+      "inverse_isotropic_true_identity": {
+        "global_top1": 0.837153,
+        "within_top1": 0.935069,
+        "cross_slide_only_error_rate": 0.097917,
+        "cross_slide_cosine_margin": 0.123159,
+        "global_rank_mean": 1.55573
+      }
+    },
+    "candidate_minus_original_tangent": {
+      "fullfold_top1": {
+        "mean": 0.000694,
+        "ci_025": -0.010764,
+        "ci_975": 0.011979,
+        "slides_higher": 23,
+        "slides_equal": 6,
+        "slides_lower": 19
+      },
+      "cross_slide_only_error_rate": {
+        "mean": -0.005729,
+        "ci_025": -0.015278,
+        "ci_975": 0.003993,
+        "slides_higher": 17,
+        "slides_equal": 7,
+        "slides_lower": 24
+      },
+      "cross_slide_margin": {
+        "mean": 0.031856,
+        "ci_025": 0.025754,
+        "ci_975": 0.037609,
+        "slides_higher": 44,
+        "slides_equal": 0,
+        "slides_lower": 4
+      },
+      "correct_pair_cosine": {
+        "mean": -0.027149,
+        "ci_025": -0.031835,
+        "ci_975": -0.022733,
+        "slides_higher": 1,
+        "slides_equal": 0,
+        "slides_lower": 47
+      },
+      "hardest_cross_slide_impostor_cosine": {
+        "mean": -0.059004,
+        "ci_025": -0.066414,
+        "ci_975": -0.051267,
+        "slides_higher": 0,
+        "slides_equal": 0,
+        "slides_lower": 48
+      },
+      "global_rank_mean": {
+        "mean": 0.049306,
+        "ci_025": -0.015977,
+        "ci_975": 0.110942,
+        "slides_higher": 28,
+        "slides_equal": 1,
+        "slides_lower": 19
+      },
+      "normalized_scanner_probe_accuracy": {
+        "mean": 0.002778,
+        "ci_025": -0.001389,
+        "ci_975": 0.007075
+      }
+    },
+    "candidate_minus_original_tangent_fullfold_by_heldout_scanner": {
+      "GT450": -0.000694,
+      "DP200": 0,
+      "P1000": -0.011806,
+      "B300": 0.015278
+    }
+  },
+  "postoutcome_interpretation": [
+    "Retrieval primary effect remains near zero, no new promotion gate; original RT4 FAIL.",
+    "Pairwise angular margin increase is entirely explained algebraically by correct-match cosine dropping 0.027149 and hardest cross-slide impostor cosine dropping 0.059004.",
+    "Under that metric, identity anchor largely repels negatives, but also moves paired positives farther apart; this is representational geometry, not proof of tissue-label retention.",
+    "Per-scanner signs differ: P1000 retrieval declines 1.18pp while B300 improves 1.53pp. This suggests cancellation but scanner-specific intervals unavailable in summary.",
+    "Global rank mean is slightly worse (1.233 to 1.282), CI for mean rank contrast crosses zero, consistent with no reliable retrieval improvement.",
+    "No per-region predictions/checkpoints saved in RT4 JSON; cannot determine exact query transitions or hard-case composition without replay.",
+    "An alternative RT4 identity-margin factorial branch exists; it diverges from executed RT4, reuses seeds 5001–5003, and uses different temperature and negatives. Do not substitute its outcomes for RT4 confirmation."
   ]
 }
