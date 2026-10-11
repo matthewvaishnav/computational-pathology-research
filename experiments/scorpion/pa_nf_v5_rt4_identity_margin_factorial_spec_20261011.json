@@ -1,0 +1,130 @@
+{
+  "schema_version": "pa-nf-v5-rt4-identity-margin-factorial/v1",
+  "status": "frozen_pre_outcome_development_only",
+  "authored_date": "2026-10-11",
+  "dataset_claim": "SCORPION was inspected repeatedly in RT1-RT3; RT4 is post-hoc mechanism-intervention development, NOT external confirmation",
+  "motivation": "RT3 exact replay and paired-gallery collision audit showed isotropic versus residual-tangent: fold global top1 -0.102431 CI[-0.117361,-0.088194]; cross-slide-only errors +0.060417 CI[0.046875,0.073611]; size-matched nine-negative retrieval -0.027143 CI[-0.031245,-0.023090], crossslide margin -0.037438 CI[-0.042966,-0.031980], withinslide margin -0.036098 CI[-0.045601,-0.027060]. These support identity crowding, but not its cause or any clinical-biology claim.",
+  "input_binding": {
+    "scorpion_slides": 48,
+    "aligned_regions_per_slide": 10,
+    "acquisitions_per_region": 5,
+    "observations": 2400,
+    "features": "results/scorpion/features/fold_0_dinov2_base.npz",
+    "features_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+    "manifests": "data/scorpion/splits/fold_{0..4}_manifest.csv",
+    "split": "unchanged RT1 semantic slide partition, train/val/test"
+  },
+  "design": {
+    "factorial_axes": {
+      "smoothing": [
+        "isotropic",
+        "residual_tangent"
+      ],
+      "identity_margin": [
+        "off",
+        "on"
+      ]
+    },
+    "arms": [
+      "no_inverse_control",
+      "isotropic_original",
+      "isotropic_identity",
+      "residual_original",
+      "residual_identity"
+    ],
+    "models": "exact RT1 architecture (encoder 32→64→8, decoder 8→64→32, scanner operators); all 9640 trainable parameters",
+    "parameters_must_match": true,
+    "model_seeds": [
+      5001,
+      5002,
+      5003
+    ],
+    "prior_seeds_burned": [
+      4701,
+      4702,
+      4703,
+      4801,
+      4802,
+      4803,
+      4804,
+      4805,
+      4901,
+      4902,
+      4903
+    ],
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "heldout_scanners": [
+      "GT450",
+      "DP200",
+      "P1000",
+      "B300"
+    ],
+    "reference": "AT2",
+    "full_fit_count": 300,
+    "train_only_identity_supervision": true,
+    "heldout_scanner_excluded_from_shared_training": true,
+    "heldout_operator_calibration": "unchanged RT1 on val slides, isolated heldout operator",
+    "evaluation": "unchanged RT1 slide metrics plus whole-heldout-fold same-region cosine top1 and true vs hardest within/cross slide margins"
+  },
+  "optimization": {
+    "base_objective": "identical RT3 objective with no-inverse control and isotropic/residual smoothing; 160 epochs, AdamW lr 0.001 wd 0.0001; unchanged RT1 weights and latent variance floor",
+    "sensitivity_weight": 1,
+    "isotropic_directions": "exact original RT3 fixed seed 2026100603, matching residual RMS; no retuning",
+    "identity_objective": "symmetric cross-entropy InfoNCE: reference E(x_AT2) <-> transported known-scanner E(T_s^-1(x_s)) across ALL distinct TRAIN region rows as negatives; true positive diagonal matched by slide_id+region_id, compared only with other TRAIN regions, all scanners s except AT2 and heldout",
+    "identity_negative_groups": "both same-slide and other-slide train regions, no externally labelled biology",
+    "identity_weight": 0.1,
+    "temperature": 0.1,
+    "identity_active_only_in": [
+      "isotropic_identity",
+      "residual_identity"
+    ],
+    "identity_operator_gradients": "stop-gradient inverse-transport inputs for identity term; encoder gradients permitted. Base reconstruction/transport losses still update known operators",
+    "reference_anchor": "reference E(x_AT2) is not detached: both encoder views receive gradients, operator inputs detached in the contrastive add-on",
+    "denominator": "cross-entropy over all unique TRAIN region indices (not slide indices), mean across known nonreference scanners and bidirectional query directions",
+    "tuning_policy": "no outcome-driven weight/temperature/margin/seeds tuning; any revision becomes separate experiment and cannot rescue this frozen RT4"
+  },
+  "statistical_unit": {
+    "independent": "source slide only n=48",
+    "mean": "average three seeds per (slide,scanner,arm), then four scanner holdouts per slide",
+    "bootstrap_draws": 100000,
+    "bootstrap_seed": 2026101104,
+    "interval": "95% nonparametric source-slide bootstrap (descriptive on burned SCORPION)"
+  },
+  "frozen_primary_mechanism_checks": [
+    "Global heldout-fold top1 retrieval: isotropic_identity minus isotropic_original lower 95% CI > 0",
+    "Cross-slide correct-minus-hardest-impostor cosine margin: isotropic_identity minus isotropic_original lower 95% CI > 0",
+    "Isotropic identity enhancement does not sacrifice its alignment beyond 0.005 absolute MSE: upper 95% CI(isotropic_identity minus isotropic_original alignment MSE) < +0.005",
+    "Isotropic_identity vs no_inverse_control fold-global retrieval noninferior, lower CI > -0.02",
+    "Isotropic_identity alignment improved over no_inverse_control: lower 95% CI(control minus isotropic_identity alignment MSE) > 0",
+    "Isotropic_identity scanner-probe accuracy lower than no_inverse_control: lower 95% CI(control minus isotropic_identity known-scanner probe) > 0",
+    "All arms capacity-identical; heldout operators matched across arms within fold/scanner/seed (1e-7 absolute state tolerance), operator roundtrip below 1e-8"
+  ],
+  "secondary_interactions": [
+    "Identity term marginal gain on residual family global retrieval and crossslide cosine margins",
+    "Difference-in-differences of identity contribution: (iso+id - iso) - (res+id - res) on global retrieval",
+    "Test-tissue cosine margin within slide, size-matched cross-slide nine-negative top1, cross-slide-only error",
+    "Within-slide top1, reference reconstruction, acquisition leakage after train standardization, effective rank",
+    "Per-scanner, per-fold, per-slide heterogeneity and training loss trajectories",
+    "Compare all four 2x2 cells, not only highest scoring arm"
+  ],
+  "decision_tree": {
+    "all_primary_checks_pass": "Identity-anchor causally repairs this defined isotropic failure on burned SCORPION; still development-only, not architecture promotion",
+    "identity_improves_retrieval_but_hurts_alignment": "Pareto tradeoff; identity protection not a simultaneous invariance repair",
+    "identity_improves_isotropic_but_not_tangent": "Counteracts generic over-smoothing, not general identity advantage",
+    "no_retrieval_margin_improvement": "Identity-crowding audit was descriptive but this defined intervention does not repair it"
+  },
+  "required_beyond_scorpion": "Freeze any ensuing model on genuinely unseen scanner-paired physical slides and independent biological task labels, patient/specimen hierarchy where available, fair ComBat/FEATMAP/centroid/Procrustes/PA-NF comparators, no post outcome retuning",
+  "anti_claims": [
+    "RT1 rescue",
+    "RT3 reversal",
+    "independent biological preservation",
+    "clinical utility",
+    "PA-NF superiority solely from development results"
+  ]
+}
