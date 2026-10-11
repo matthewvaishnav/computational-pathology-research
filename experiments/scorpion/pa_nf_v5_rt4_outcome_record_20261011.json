@@ -1,0 +1,120 @@
+{
+  "schema_version": "pa-nf-v5-rt4-completed-development-evidence-record/v1",
+  "date": "2026-10-11",
+  "source": "User-provided PowerShell log: 2026-10-11, terminal run; original full RT4 JSON remains on user's local machine.",
+  "status": "frozen_development_failed_one_gate",
+  "preflight": {
+    "focused_tests_passed": 11,
+    "validator_passed": true,
+    "capacity_counts": [
+      9640,
+      9640,
+      9640,
+      9640,
+      9640,
+      9640
+    ],
+    "model_seeds": [
+      5001,
+      5002,
+      5003
+    ],
+    "folds": 5,
+    "heldout_scanners": 4,
+    "arms": 6,
+    "completed_fits": 360
+  },
+  "frozen_gate": {
+    "candidate_fullfold_gain_over_sham_ci_positive": true,
+    "candidate_fullfold_gain_over_tangent_ci_positive": false,
+    "capacity_equal": true,
+    "heldout_transport_ci_positive": true,
+    "inverse_roundtrip_below_1e_minus_8": true,
+    "known_transport_ci_positive": true,
+    "mechanism_development_supported_only": false,
+    "reconstruction_noninferior": true,
+    "scanner_linear_probe_noninferior": true,
+    "scanner_scale_normalized_probe_noninferior": true,
+    "within_slide_retrieval_noninferior": true
+  },
+  "source_slide_bootstrap_intervals": {
+    "candidate_heldout_operator_gain": {
+      "mean": 0.0290445678983815,
+      "ci_025": 0.026235220224366966,
+      "ci_975": 0.03199319122860389
+    },
+    "candidate_known_operator_gain": {
+      "mean": 0.0506893541223016,
+      "ci_025": 0.0464618788323639,
+      "ci_975": 0.05504968540669695
+    },
+    "candidate_minus_isotropic_true_fullfold": {
+      "mean": 0.06336805555555558,
+      "ci_025": 0.05000000000000004,
+      "ci_975": 0.07690972222222227
+    },
+    "candidate_minus_sham_fullfold": {
+      "mean": 0.13906250000000006,
+      "ci_025": 0.12291666666666673,
+      "ci_975": 0.1546875000000001
+    },
+    "candidate_minus_sham_matched_crossslide": {
+      "mean": 0.04195963541666669,
+      "ci_025": 0.036062282986111145,
+      "ci_975": 0.04800889756944445
+    },
+    "candidate_minus_tangent_alignment": {
+      "mean": -0.00047314217631032503,
+      "ci_025": -0.0008619871544093864,
+      "ci_975": -0.0001503605204207917
+    },
+    "candidate_minus_tangent_crossslide_margin": {
+      "mean": 0.03185553885345548,
+      "ci_025": 0.02584212770741741,
+      "ci_975": 0.03767529235848694
+    },
+    "candidate_minus_tangent_fullfold": {
+      "mean": 0.0006944444444444559,
+      "ci_025": -0.010590277777777773,
+      "ci_975": 0.011979166666666664
+    },
+    "candidate_minus_tangent_probe_accuracy": {
+      "mean": 0.002734374999999999,
+      "ci_025": -0.0014756944444444346,
+      "ci_975": 0.007031249999999986
+    },
+    "candidate_minus_tangent_reconstruction": {
+      "mean": -0.0016305548242396817,
+      "ci_025": -0.007980031493223367,
+      "ci_975": 0.004726753793656812
+    },
+    "candidate_minus_tangent_scale_normalized_probe": {
+      "mean": 0.0027777777777777766,
+      "ci_025": -0.001388888888888884,
+      "ci_975": 0.007031249999999996
+    },
+    "candidate_minus_tangent_withinslide": {
+      "mean": -0.005034722222222221,
+      "ci_025": -0.013020833333333336,
+      "ci_975": 0.002777777777777761
+    },
+    "isotropic_true_minus_isotropic_fullfold": {
+      "mean": 0.020659722222222236,
+      "ci_025": 0.00746527777777779,
+      "ci_975": 0.033680555555555554
+    }
+  },
+  "interpretation": [
+    "Correct region pairing changes the optimization relative to an intentionally incorrect cross-slide sham, but does not improve frozen full-fold retrieval over the original residual tangent arm at the registered primary gate.",
+    "Cosine margins improve and alignment MSE is lower, while whole-fold top1 has a CI crossing zero; a margin change alone is insufficient to call a retrieval gain.",
+    "Relative scanner probe noninferiority passed only the specified small-delta guards; it does not prove scanner information absent.",
+    "Sham positivity mapping onto wrong slide identities is a deliberately destructive negative control, not an unbiased placebo for adding any auxiliary loss.",
+    "Because RT4 outcome came from the already-studied 48 SCORPION slides, neither this result nor a post-outcome audit can establish independent scientific confirmation."
+  ],
+  "next_step": "Read-only decomposition of preexisting RT4 JSON: slide/scanner/seed heterogeneity, top1 ceiling and margin/rank shifts. No retraining or post-hoc gate editing.",
+  "restrictions": [
+    "Original RT4 JSON not uploaded; numerical record manually transcribed from console, not independently hash verified",
+    "RT4 frozen FAIL; RT1 and RT3 remain FAIL",
+    "No patient-level independence, diagnosis retention, external scanner claim"
+  ]
+}
