@@ -1,0 +1,109 @@
+{
+  "schema_version": "pa-nf-v5-rt3-paired-gallery-collision-result-record/v1",
+  "recorded_date": "2026-10-11",
+  "status": "completed_readonly_postoutcome_replay_audit",
+  "frozen_rt3_development_pass": false,
+  "replayed_fits_verified": 120,
+  "test_results": "10 passed; user-reported PowerShell console",
+  "source_slide_inference_unit_count": 48,
+  "data_class": "Previously studied SCORPION only; exploratory mechanism audit",
+  "two_arm_slide_means": {
+    "inverse_isotropic": {
+      "fold_global_top1": 0.799306,
+      "within_slide_top1": 0.913889,
+      "cross_slide_only_error_rate": 0.114583,
+      "cross_slide_cosine_margin": 0.060261,
+      "matched_cross_slide_nine_strict_top1": 0.957948,
+      "within_slide_cosine_margin": 0.114759
+    },
+    "inverse_residual_tangent": {
+      "fold_global_top1": 0.901736,
+      "within_slide_top1": 0.955903,
+      "cross_slide_only_error_rate": 0.054167,
+      "cross_slide_cosine_margin": 0.0977,
+      "matched_cross_slide_nine_strict_top1": 0.985091,
+      "within_slide_cosine_margin": 0.150857
+    }
+  },
+  "paired_slide_bootstrap_intervals_isotropic_minus_residual_tangent": {
+    "fold_global_top1": {
+      "mean": -0.102431,
+      "ci95": [
+        -0.117361,
+        -0.088194
+      ]
+    },
+    "cross_slide_only_error_rate": {
+      "mean": 0.060417,
+      "ci95": [
+        0.046875,
+        0.073611
+      ]
+    },
+    "cross_slide_cosine_margin": {
+      "mean": -0.037438,
+      "ci95": [
+        -0.042966,
+        -0.03198
+      ]
+    },
+    "within_slide_cosine_margin": {
+      "mean": -0.036098,
+      "ci95": [
+        -0.045601,
+        -0.02706
+      ]
+    },
+    "correct_match_cosine": {
+      "mean": -0.007975,
+      "ci95": [
+        -0.010781,
+        -0.005217
+      ]
+    },
+    "max_cross_slide_impostor_cosine": {
+      "mean": 0.029463,
+      "ci95": [
+        0.023183,
+        0.035819
+      ]
+    },
+    "matched_cross_slide_nine_strict_top1": {
+      "mean": -0.027143,
+      "ci95": [
+        -0.031245,
+        -0.02309
+      ]
+    },
+    "matched_cross_slide_nine_cosine_margin": {
+      "mean": -0.082235,
+      "ci95": [
+        -0.091144,
+        -0.073788
+      ]
+    },
+    "within_slide_near_tie_rate": {
+      "mean": 0,
+      "ci95": [
+        0,
+        0
+      ]
+    },
+    "cross_slide_near_tie_rate": {
+      "mean": 0,
+      "ci95": [
+        0,
+        0
+      ]
+    }
+  },
+  "data_provenance": "From user's transcript of the completed Python audit. The full sidecar JSON remains in the user's Windows repository and was not uploaded.",
+  "summary": "Isotropic produces worse tissue-pair retrieval discrimination against both within-slide and cross-slide impostors, persists under a size-matched nine-negative control, and is not attributable to exact/near cosine ties. This is a descriptive geometrical mechanism, not a demonstration of diagnostic biological retention or a causal scanner residual mechanism.",
+  "claim_boundaries": [
+    "RT3 frozen primary gate stays failed",
+    "No independent biological labels",
+    "No external scanner confirmation",
+    "Do not promote either arm on postoutcome diagnostics",
+    "Bootstrapped source slides all have already been inspected in development"
+  ]
+}
