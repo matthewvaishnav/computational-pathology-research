@@ -130,3 +130,82 @@ def test_rejects_sham_positive_on_same_slide_and_small_groups():
 def test_rejects_unknown_model_arms():
     with pytest.raises(rt4.RT4Error, match="Unknown"):
         rt4._family("not_an_arm")
+
+
+def test_two_epoch_identity_training_smoke_without_evaluation_data():
+    bundle = _toy(n_slides=4)
+    known = (0, 2, 3, 4)
+    config = rt1.RT1Config()
+    config.epochs = 2
+    v4.set_deterministic_seed(rt4.MODEL_SEEDS[0])
+    model = rt1.RT1ReferenceGaugeModel(config, "inverse_transport")
+    units = __import__(
+        "experiments.scorpion.run_pa_nf_v5_rt3_residual_tangent_regularization",
+        fromlist=["_unit_random_directions"]
+    )._unit_random_directions(
+        bundle, known, fold=0, heldout_index=1, seed=rt4.MODEL_SEEDS[0], device=torch.device("cpu")
+    )
+    out = rt4._train_identity_arm(
+        model, rt4.ARM_TANGENT_TRUE, bundle, known, config,
+        torch.device("cpu"), units, _pools(bundle)
+    )
+    assert [r["epoch"] for r in out["history"]] == [1.0, 2.0]
+    assert all(np.isfinite(r["identity_loss"]) for r in out["history"])
+    assert rt1.parameter_count(model) == 9640
+
+
+def test_slide_level_summary_counts_48_slides_not_360_repeated_fits():
+    # Every source slide is test in exactly one fold, then appears for
+    # 4 heldout scanners x 3 matched seeds x 6 arms.
+    slides_by_fold = [
+        [f"slide_{i:02d}" for i in range(k * 10, min((k + 1) * 10, 48))]
+        for k in range(5)
+    ]
+    fake_runs = []
+    arm_score = {arm: 0.8 + 0.005 * i for i, arm in enumerate(rt4.ARMS)}
+    for fold, slide_ids in enumerate(slides_by_fold):
+        for scanner in rt1.HELDOUT_SCANNERS:
+            for seed in rt4.MODEL_SEEDS:
+                for arm in rt4.ARMS:
+                    eval_rows = []
+                    identity = {}
+                    for slide in slide_ids:
+                        eval_rows.append({
+                            "slide_id": slide,
+                            "region_count": 10,
+                            "heldout_retrieval_top1": arm_score[arm],
+                            "reference_reconstruction_mse": 0.7,
+                            "known_scanner_probe_accuracy": 0.25,
+                            "heldout_alignment_mse": 0.04,
+                            "operator_only_known_transport_gain": 0.05,
+                            "operator_only_heldout_transport_gain": 0.03,
+                        })
+                        identity[slide] = {
+                            "region_count": 10,
+                            "fold_global_top1": arm_score[arm],
+                            "within_slide_top1": arm_score[arm],
+                            "cross_slide_cosine_margin": 0.1,
+                            "matched_cross_slide_nine_strict_top1": arm_score[arm],
+                        }
+                    fake_runs.append({
+                        "fold": fold,
+                        "heldout_scanner": scanner,
+                        "seed": seed,
+                        "arm": arm,
+                        "parameter_count": 9640,
+                        "evaluation": {
+                            "slide_metrics": eval_rows,
+                            "max_operator_inverse_roundtrip_mse": 1e-11,
+                        },
+                        "identity_metrics": identity,
+                    })
+    config = rt1.RT1Config()
+    config.bootstrap_draws = 200
+    result = rt4._summarize(fake_runs, config)
+    assert len(fake_runs) == 360
+    assert len(result["source_slide_rows"]) == 48
+    assert set(result["source_slide_rows"]["slide_00"]) == set(rt4.ARMS)
+    assert result["intervals"]["candidate_minus_tangent_fullfold"]["mean"] == pytest.approx(0.01)
+    fake_runs.pop()
+    with pytest.raises(rt4.RT4Error, match="Expected 360"):
+        rt4._summarize(fake_runs, config)
