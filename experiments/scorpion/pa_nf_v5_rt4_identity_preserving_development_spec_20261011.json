@@ -1,0 +1,126 @@
+{
+  "schema_version": "pa-nf-v5-rt4-identity-preserving-development/v1",
+  "status": "protocol_frozen_before_rt4_outcome_computation_pending_preflight",
+  "date": "2026-10-11",
+  "evidence_class": "new development intervention on previously inspected SCORPION; NOT independent confirmation, cannot convert RT3/RT1 failures into passes",
+  "hypothesis": "a train-only scanner-matched region-identity contrastive anchor can prevent isotropic/tangent invariance objectives from crowding distinct tissue regions, and may improve tangent regularization without increased scanner leakage",
+  "dataset": {
+    "name": "SCORPION",
+    "rows": 2400,
+    "source_slides": 48,
+    "regions": 480,
+    "scanner_ids": [
+      "AT2",
+      "GT450",
+      "DP200",
+      "P1000",
+      "B300"
+    ],
+    "reference": "AT2",
+    "heldout": [
+      "GT450",
+      "DP200",
+      "P1000",
+      "B300"
+    ],
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "split_unit": "slide_id",
+    "feature_archive": "results/scorpion/features/fold_0_dinov2_base.npz",
+    "feature_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+    "manifests_dir": "data/scorpion/splits",
+    "preprocessing": "exact RT1 AT2 train slide-only PCA",
+    "shared_fit": "train",
+    "heldout_operator_calibration": "val only, calibrated transfer NOT zero-shot",
+    "evaluation": "test (previously consumed; development descriptive only)",
+    "patient_independence": "not established"
+  },
+  "arms": [
+    "no_inverse_control",
+    "inverse_isotropic",
+    "inverse_residual_tangent",
+    "inverse_isotropic_true_identity",
+    "inverse_residual_true_identity",
+    "inverse_residual_sham_identity"
+  ],
+  "training": {
+    "fresh_seeds": [
+      5001,
+      5002,
+      5003
+    ],
+    "random_direction_seed": 2026100603,
+    "identity_pairing_seed": 2026101101,
+    "negative_pool_seed": 2026101102,
+    "bootstrap_seed": 2026101103,
+    "base_training": "RT3 train_arm exactly for arms without identity; RT3 matched initialization and 160 epochs, AdamW LR1e-3 WD1e-4 for new arms",
+    "scanner_operator_gradients_from_identity_loss": "forbidden through detached canonical inputs",
+    "known_scanners_only": true,
+    "identity_temperature": 0.2,
+    "identity_weight": 0.1,
+    "within_slide_negatives": 4,
+    "cross_slide_negatives": 4,
+    "symmetric_anchor": true,
+    "identity_positive": "correct paired same region across AT2 and each known nonreference scanner; scanner input inverse is stop_gradient(T_s^-1(x_s))",
+    "sham_positive": "fixed slide-deranged one-to-one train-region mapping, every positive on a different train slide",
+    "sampling": "8 train-only AT2 candidate regions per training query, four from designated positive's slide and four from other training slides, excluding designated positive",
+    "hyperparam_search": "none, one fixed mechanistic contrast; no selection on consumed test slides",
+    "training_fit_total": 360,
+    "model_parameter_count": 9640
+  },
+  "evaluation": {
+    "unit": "source slide (48) independent only if slide independence is valid; no patient identity inference",
+    "seed_mean": "average within slide x heldout scanner across 3 seeds",
+    "scanner_mean": "average 4 scanner holdout contrasts within slide",
+    "bootstrap_draws": 100000,
+    "primary_retrieval": "same-region cosine top1 against entire heldout test fold AT2 reference gallery",
+    "supplemental": [
+      "within-slide top1",
+      "same-v-cross-slide hard-negative margins",
+      "matched-size nine-cross-slide top1",
+      "known-scanner ridge probe",
+      "reconstruction",
+      "known and heldout operator transport",
+      "latent covariance effective rank",
+      "per-scanner results"
+    ],
+    "original_rt3_gate": "unchanged, RT3 FAIL"
+  },
+  "mechanism_gate": {
+    "primary_contrasts": [
+      "inverse_residual_true_identity minus inverse_residual_tangent fullfold retrieval",
+      "inverse_residual_true_identity minus inverse_residual_sham_identity fullfold retrieval"
+    ],
+    "confidence": "both lower 95% source-slide bootstrap bounds > 0, descriptive development only",
+    "guardrails": [
+      "candidate minus inverse_residual_tangent reference reconstruction upper95CI <= +0.03 MSE",
+      "candidate minus inverse_residual_tangent known-scanner ridge probe accuracy upper95CI <= +0.02",
+      "candidate minus inverse_residual_tangent within-slide retrieval lower95CI >= -0.02",
+      "candidate heldout and known direct transport gains lower95CI > 0",
+      "all arms exactly 9640 model parameters and initialized identically within model seed",
+      "maximum operator inverse roundtrip mse < 1e-8"
+    ],
+    "status_if_all_pass": "mechanism_development_supported_only; NOT biological sufficient or independently confirmed",
+    "independent_biology_gate": "unavailable from current evidence, explicitly OPEN, cannot claim full PA-NF scientific superiority"
+  },
+  "interpretation": {
+    "real_beats_sham_and_target": "correct paired-region supervision contributes to retrieval; not evidence of clinical biology retention",
+    "real_beats_target_not_sham": "generic auxiliary training or accidental regularization may explain gain",
+    "identity_help_retrieval_but_hurts_probes": "failure to preserve scanner suppression",
+    "identity_help_retrieval_but_hurts_reconstruction": "representation tradeoff, not mechanism pass",
+    "no_gain": "identity anchor does not repair crowding as implemented"
+  },
+  "traceability": {
+    "rt3_frozen_json_sha256": "021435970716e1a13a26ba3b8b4d16788453f328abef3737fe6bbf19a1b3dd25",
+    "status_rt1": "FAIL",
+    "status_rt3": "FAIL",
+    "external_paired_scanner_evidence": "required for scientific confirmation",
+    "registered_after_rt3_posthoc_audits": true
+  },
+  "claim_boundary": "RT4 tests a single fixed mechanism on burned development data; even a pass does not rescue prior frozen failures or support independent clinical biological sufficiency."
+}
