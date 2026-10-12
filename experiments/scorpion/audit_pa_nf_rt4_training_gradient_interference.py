@@ -149,7 +149,16 @@ def loss_components(
         "operator_inverse": config.operator_inverse_weight * inverse,
         "identity_total": rt4.IDENTITY_WEIGHT * original_identity,
     }
-    terms["total"] = sum(terms.values())
+    # Preserve the precise RT4 summation order to minimize float32 replay drift.
+    terms["total"] = (
+        reconstruction
+        + config.biological_consistency_weight * consistency
+        + config.operator_forward_weight * forward
+        + config.operator_inverse_weight * inverse
+        + config.latent_variance_floor_weight * variance
+        + rt3.SENSITIVITY_WEIGHT * sensitivity
+        + rt4.IDENTITY_WEIGHT * original_identity
+    )
     return terms
 
 
