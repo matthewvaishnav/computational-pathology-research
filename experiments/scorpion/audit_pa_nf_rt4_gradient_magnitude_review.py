@@ -90,6 +90,25 @@ def summarize_checkpoint(row: Mapping[str, Any]) -> dict[str, Any]:
             f"Combined gradient norm disagrees with decomposed norms "
             f"(pred={reconstructed_norm:.8g}, actual={ntotal:.8g})"
         )
+    # Verify the vector decomposition against saved guard projections and the
+    # signed first-order change in correct paired-region cosine distance.
+    for guard in (RECON, SENS):
+        gnorm = _finite_number(norm[guard], guard)
+        cp = _cos_value(matrix, POS, guard)
+        cn = _cos_value(matrix, NEG, guard)
+        ct = _cos_value(matrix, IDENTITY, guard)
+        if gnorm > 1e-14 and npos > 1e-14 and nneg > 1e-14 and ntotal > 1e-14:
+            if None in (cp, cn, ct):
+                raise ReviewError("Missing nonzero-gradient alignment cosine")
+            lhs = npos*cp+nneg*cn
+            rhs = ntotal*ct
+            if abs(lhs-rhs) > 3e-5 * max(1.0, npos+nneg, ntotal):
+                raise ReviewError("Saved gradient directions violate positive+negative attribution")
+    pdelta = _finite_number(distance_change[POS], "positive pair distance direction")
+    ndelta = _finite_number(distance_change[NEG], "negative pair distance direction")
+    tdelta = _finite_number(distance_change[IDENTITY], "identity pair distance direction")
+    if abs(pdelta+ndelta-tdelta) > 3e-5 * max(1.0, abs(pdelta)+abs(ndelta)):
+        raise ReviewError("Pair-distance directional effect violates gradient sum")
 
     cancellation_ratio = (
         ntotal/(npos+nneg) if npos+nneg > 1e-14 else None
