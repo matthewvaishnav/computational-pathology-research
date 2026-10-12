@@ -1,0 +1,77 @@
+{
+  "schema_version": "pa-nf-rt4-postoutcome-training-gradient-interference-audit/v1",
+  "created": "2026-10-12",
+  "status": "fixed_postoutcome_readonly_training_replay_diagnostic_pre_result",
+  "provenance": {
+    "base_branch": "research/panf-rt4-postoutcome-error-attribution-20261011",
+    "rt4_result_raw_sha256": "4827ebc21de876e4fc10bbbc9fc3ec8ffc752a673b7f122be533f0d3a2dbbb3e",
+    "feature_sha256": "dbbd75887b8674921e388e4a0d09635a658ab078e934b67326af3fcc69483e71",
+    "notion_hypothesis_page": "https://app.notion.com/p/3f66710bb9fa8177b750ed6ef98d23a4"
+  },
+  "protocol": {
+    "fold": 0,
+    "scanner_holdouts": [
+      "P1000",
+      "B300"
+    ],
+    "model_seed": 5001,
+    "arm": "inverse_residual_true_identity",
+    "checkpoints_pre_optimizer_step": [
+      1,
+      40,
+      80,
+      160
+    ],
+    "total_epochs": 160,
+    "rt4_identity_weight": 0.1,
+    "identity_temperature": 0.2,
+    "shared_fit_split": "train",
+    "forbidden_fit_splits": [
+      "val",
+      "test"
+    ],
+    "original_optimizer": "AdamW lr=0.001 wd=0.0001 as frozen RT4",
+    "result_input_usage": "original RT4 JSON is only used to validate raw SHA, self-hash, protocol and saved training history for exact selected replay cells; test evaluation metrics are never read into audit logic",
+    "output_policy": "fresh sidecar only; never overwrite or modify original"
+  },
+  "gradient_decomposition": {
+    "terms": [
+      "reconstruction",
+      "biological_consistency",
+      "variance_floor",
+      "residual_tangent_sensitivity",
+      "positive_attraction_gradient",
+      "negative_repulsion_gradient",
+      "combined_identity",
+      "reference_positive_pair_distance"
+    ],
+    "weights": {
+      "reconstruction": 1,
+      "biological_consistency": 1,
+      "variance_floor": 0.05,
+      "residual_tangent_sensitivity": 1,
+      "positive_attraction_gradient": 0.1,
+      "negative_repulsion_gradient": 0.1,
+      "combined_identity": 0.1
+    },
+    "mathematical_basis": "InfoNCE gradient exactly equals (p_positive - 1)*gradient(positive logit) + sum_j p_negative_j*gradient(negative logit); probabilities are stop-gradient for attributed directional gradients; positive/negative surrogate scalar values are not losses",
+    "checks": [
+      "sum weighted positive and negative gradients equals weighted original InfoNCE encoder gradient to numerical tolerance",
+      "original RT4 optimizer and data flow reproduced exactly at all epochs and full saved training history matches",
+      "all gradient attributes on train rows only and operator-gradient isolation for identity term",
+      "report gradient norms, pairwise cosines, relative dot products, and change-in-pair-distance first-order directional projections"
+    ]
+  },
+  "interpretation": {
+    "H1_support": "material negative cosine and non-negligible gradient magnitudes between positive attraction, reconstruction or residual suppression, persisting at later checkpoints (descriptive only)",
+    "H1_not_supported": "objectives aligned or conflicts negligible at sampled cells; cannot infer a general absence of interference",
+    "limitations": [
+      "two sampled fold/scanner cells are diagnostic not representative or independent",
+      "data repeatedly inspected",
+      "gradient sign does not establish actual training counterfactual or biological label retention",
+      "pre-optimizer evaluation after exact frozen fitting reproduction",
+      "no results or new model promotion"
+    ]
+  },
+  "claim_boundary": "RT4, RT3, RT1 development gates remain failed; exploratory training replay does not constitute new confirmation."
+}
