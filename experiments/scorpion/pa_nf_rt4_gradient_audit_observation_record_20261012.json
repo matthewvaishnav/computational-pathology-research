@@ -1,0 +1,130 @@
+{
+  "schema_version": "pa-nf-rt4-training-gradient-interference-readonly-observed-record/v1",
+  "date": "2026-10-12",
+  "evidence_status": "user_supplied_terminal_output_not_raw_sidecar_uploaded",
+  "frozen_rt4_status": "FAIL",
+  "rt4_original_local_sha256": "4827ebc21de876e4fc10bbbc9fc3ec8ffc752a673b7f122be533f0d3a2dbbb3e",
+  "audit": {
+    "focused_tests_passed": 8,
+    "training_replay_conditions_verified": 2,
+    "epochs_replayed_per_condition": 160,
+    "pre_optimizer_diagnostic_epochs": [
+      1,
+      40,
+      80,
+      160
+    ],
+    "fold": 0,
+    "model_seed": 5001,
+    "arm": "inverse_residual_true_identity",
+    "inference_scope": "training only",
+    "scanners": [
+      "P1000",
+      "B300"
+    ]
+  },
+  "cosine_columns": [
+    "positive_vs_reconstruction",
+    "positive_vs_residual_sensitivity",
+    "negative_vs_reconstruction",
+    "negative_vs_residual_sensitivity",
+    "decomposition_gradient_max_abs_error"
+  ],
+  "checkpoints": {
+    "P1000": [
+      {
+        "epoch": 1,
+        "values": [
+          -0.09876869723303545,
+          0.5068766125746722,
+          0.08116988565207353,
+          -0.25266868888840444,
+          7.451e-9
+        ]
+      },
+      {
+        "epoch": 40,
+        "values": [
+          -0.0031988381780576943,
+          0.23364540553421867,
+          -0.31814413774560885,
+          -0.18170246861742578,
+          1.63e-9
+        ]
+      },
+      {
+        "epoch": 80,
+        "values": [
+          -0.12228499749780307,
+          0.31026073393935166,
+          -0.23406524742655824,
+          -0.09688016841579297,
+          8.149e-10
+        ]
+      },
+      {
+        "epoch": 160,
+        "values": [
+          -0.11312296394327849,
+          0.2530448587089983,
+          -0.21790791791467004,
+          -0.12853705279953812,
+          8.149e-10
+        ]
+      }
+    ],
+    "B300": [
+      {
+        "epoch": 1,
+        "values": [
+          -0.07195410586758393,
+          0.4032986035777524,
+          0.07275060125166669,
+          -0.21880600713565437,
+          9.313e-9
+        ]
+      },
+      {
+        "epoch": 40,
+        "values": [
+          0.02236315505519029,
+          0.20971405821786018,
+          -0.30868569154691106,
+          -0.17623144059695672,
+          2.794e-9
+        ]
+      },
+      {
+        "epoch": 80,
+        "values": [
+          -0.09426023691094113,
+          0.3028014568248142,
+          -0.24559360545152703,
+          -0.10702909824535042,
+          1.048e-9
+        ]
+      },
+      {
+        "epoch": 160,
+        "values": [
+          -0.13892871433769877,
+          0.2727479089378868,
+          -0.22850281690282376,
+          -0.12140064098930424,
+          9.313e-10
+        ]
+      }
+    ]
+  },
+  "observations": [
+    "Training-history replay checks passed for two fixed heldout-scanner cells; proof of exact bitwise parameter trajectory not separately supplied.",
+    "Positive-attraction gradients show positive cosine with residual suppression at all eight checkpoints.",
+    "Negative-repulsion gradients show negative cosine with residual suppression at all eight checkpoints.",
+    "Negative-repulsion gradients show negative cosine with reconstruction at both scanners epochs 40,80,160; epoch 1 positives.",
+    "These are gradient directions only; weighted norm magnitudes and pair-distance projections still need inspection from existing sidecar.",
+    "Training cell identity is defined by withheld scanner but known-scanner composition changes with scanner, so pair is not two independent biological replicates.",
+    "RT4 failed registered primary retrieval gate; this diagnostic cannot promote or rescue RT4."
+  ],
+  "new_readonly_summary": "experiments/scorpion/audit_pa_nf_rt4_gradient_magnitude_review.py",
+  "claim_limit": "Training-only gradients, not proof of clinical morphology labels or external scanner robustness."
+}
