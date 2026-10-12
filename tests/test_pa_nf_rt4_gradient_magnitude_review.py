@@ -22,8 +22,8 @@ def gradient_row(epoch=1):
         "reconstruction__vs__identity_negative_repulsion":-0.25,
         "residual_sensitivity__vs__identity_positive_attraction":0.50,
         "residual_sensitivity__vs__identity_negative_repulsion":-0.50,
-        "reconstruction__vs__identity_total":0.10,
-        "residual_sensitivity__vs__identity_total":0.20,
+        "reconstruction__vs__identity_total":0.25,
+        "residual_sensitivity__vs__identity_total":0.50,
     }
     pair_step = {
         "identity_positive_attraction":-0.50,
@@ -126,4 +126,15 @@ def test_zero_vectors_and_nonfinite_scalars_rejected_or_explicitly_missing():
     row=gradient_row()
     row["attribution_gradient_max_abs_error"] = 0.1
     with pytest.raises(audit.ReviewError, match="decomposition"):
+        audit.summarize_checkpoint(row)
+
+
+def test_inconsistent_gradient_projections_or_pair_delta_fail_closed():
+    row=gradient_row()
+    row["encoder_gradient_cosine"]["reconstruction__vs__identity_total"]=-0.75
+    with pytest.raises(audit.ReviewError, match="directions violate"):
+        audit.summarize_checkpoint(row)
+    row=gradient_row()
+    row["first_order_change_pair_distance_per_gradient_descent_unit_step"]["identity_total"] = 4.0
+    with pytest.raises(audit.ReviewError, match="directional effect"):
         audit.summarize_checkpoint(row)
