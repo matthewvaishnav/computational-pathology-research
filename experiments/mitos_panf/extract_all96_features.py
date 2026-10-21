@@ -147,7 +147,41 @@ def main() -> None:
                 "patient_id": r["patient_id"],
             }, allow_nan=False) + "\n")
 
+    # Reconcile every previously materialized annotation-centered embedding.
+    previous = root / "PA-NF-MITOS-CELL-CENTERED-v1"
+    prior_report = previous / "localized_pilot_report.json"
+    prior_digest = "BDDDB702BC1EB739B41B40EC172E954D0925266108134EE5E0C19E04B3CEB882"
+    if sha256(prior_report) != prior_digest:
+        raise RuntimeError("Prior 392-pair localized report digest mismatch")
+    prev = json.loads(prior_report.read_text(encoding="utf-8"))
+    for name, expected in prev["output_hashes"].items():
+        if sha256(previous / name) != expected:
+            raise RuntimeError("Prior localized source hash mismatch: " + name)
+    oldrows = [json.loads(s) for s in
+               (previous / "cell_centered_index.jsonl").read_text(encoding="utf-8").splitlines()]
+    oldfeatures = np.load(previous / "cell_centered_cls_float32.npy")
+    fullfeatures = np.load(feature_path, mmap_mode="r")
+    if len(oldrows) != 392 or oldfeatures.shape != (392, 2, 768):
+        raise RuntimeError("Unexpected prior localized inventory")
+    for i, row in enumerate(oldrows):
+        if (row["localized_row"] != i or
+            row["id"] != rows[row["original_row"]]["id"]):
+            raise RuntimeError("Localized identity mismatch")
+    observed = fullfeatures[np.array([r["original_row"] for r in oldrows])]
+    aa = oldfeatures.astype(np.float64)
+    bb = np.asarray(observed, dtype=np.float64)
+    cosine = (aa*bb).sum(axis=-1) / (
+        np.linalg.norm(aa,axis=-1)*np.linalg.norm(bb,axis=-1))
+    parity = {"min_cosine": float(cosine.min()),
+              "max_abs_difference": float(np.max(np.abs(aa-bb)))}
+    if not np.isfinite(cosine).all() or parity["min_cosine"] < 0.9999:
+        raise RuntimeError(f"392-pair extraction parity failed: {parity}")
+    del fullfeatures, observed
+    print("PASS: 392 prior localized pairs reproduced", parity, flush=True)
+
     report = {
+        "localized_392_report_sha256": prior_digest,
+        "localized_392_parity": parity,
         "status": "STAGED_FULL_96PX_EMBEDDINGS_NO_TRAINING",
         "shape": [1614, 2, 768],
         "crop_bounds": [OFFSET, OFFSET+CROP],
