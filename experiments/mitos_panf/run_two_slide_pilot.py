@@ -305,8 +305,15 @@ def main():
         if len(train)+len(test)!=len(records) or min(len(train),len(test))<100:
             raise RuntimeError("Invalid physical slide split")
         fold=f"train_{fit_slide}_test_{test_slide}"
+        raw_unit = unit(feature.astype(np.float64))
+        mean_a = raw_unit[train, 0].mean(axis=0)
+        mean_h = raw_unit[train, 1].mean(axis=0)
+        shifted = raw_unit.copy()
+        shifted[:, 1] = unit(raw_unit[:, 1] - mean_h + mean_a)
         result["folds"][fold]={"fit_n":len(train),"test_n":len(test),
-                              "raw":outcomes(feature,None,records,train,test),"methods":{}}
+                              "raw":outcomes(feature,None,records,train,test),
+                              "fit_only_mean_shift":outcomes(shifted,None,records,train,test),
+                              "methods":{}}
         for method,config in METHODS.items():
             result["folds"][fold]["methods"][method]={}
             for seed in seeds:
