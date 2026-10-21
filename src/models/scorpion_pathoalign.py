@@ -59,6 +59,9 @@ class ScorpionProjection(nn.Module):
             raise ValueError(f"Unknown method: {method}")
         self.method = method
         self.config = config
+        if n_scanners < 2:
+            raise ValueError("Paired-scanner projection requires at least two scanners")
+        self.n_scanners = int(n_scanners)
         self.biological = _mlp(config.input_dim, config.hidden_dim, config.biological_dim)
 
         if method == "pathoalign":
@@ -195,7 +198,7 @@ def projection_loss(
         acquisition = output["acquisition"]
         parts["scanner_b"] = F.cross_entropy(output["scanner_b"], scanner_labels)
         parts["scanner_a"] = F.cross_entropy(output["scanner_a"], scanner_labels)
-        parts["scanner_dependence"] = scanner_dependence_loss(biological, scanner_labels)
+        parts["scanner_dependence"] = scanner_dependence_loss(biological, scanner_labels, n_scanners=model.n_scanners)
         parts["variance_a"] = variance_loss(acquisition)
         parts["cross_covariance"] = cross_covariance_loss(biological, acquisition)
         total = (
