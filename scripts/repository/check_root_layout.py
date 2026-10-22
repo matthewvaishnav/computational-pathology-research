@@ -12,7 +12,6 @@ ALLOWED_ROOT_MARKDOWN = {
     "README.md",
     "CHANGELOG.md",
     "CLAIM_BOUNDARY.md",
-    "CONTRIBUTING.md",
     "SECURITY.md",
     "CODE_OF_CONDUCT.md",
 }

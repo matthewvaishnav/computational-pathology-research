@@ -433,10 +433,6 @@ rm -rf ./certs
 # Certificates will be regenerated on next connection
 ```
 
-## Contributing
-
-See the main project CONTRIBUTING.md for guidelines.
-
 ## License
 
 See the main project LICENSE file.

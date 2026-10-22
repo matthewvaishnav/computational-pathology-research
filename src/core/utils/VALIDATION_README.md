@@ -440,7 +440,7 @@ class MultimodalFusionModel(nn.Module):
 ### Exceptions
 - `ValidationError` - Raised when validation fails
 
-## Contributing
+## Maintenance
 
 When adding new validation functions:
 1. Follow the existing pattern for error messages

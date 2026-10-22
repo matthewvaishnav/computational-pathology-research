@@ -99,17 +99,15 @@ When describing what the system, platform, or model does (technical capabilities
 
 ### Rule 4: Collaborative Contexts
 
-When discussing partnerships, collaborations, or seeking contributors:
+When discussing research partnerships, collaborations, or external validation:
 
 ✅ **Correct Examples**:
 - "I'm looking for clinical partners to validate the system"
-- "I welcome contributions from researchers and developers"
 - "I offer flexible deployment options for hospital partners"
 - "I can work with your existing infrastructure"
 
 ❌ **Incorrect Examples**:
 - "We're looking for clinical partners"
-- "We welcome contributions"
 - "We offer flexible deployment options"
 
 ### Rule 5: Comparative Contexts
@@ -236,7 +234,7 @@ I plan to extend this work in several directions:
 3. **Federated Learning**: The system will support federated training across 
    multiple institutions
 
-I welcome collaborations and contributions in these areas.
+I may seek external validation in these areas.
 ```
 
 ❌ **Incorrect**:
@@ -252,7 +250,7 @@ We plan to extend this work in several directions:
 3. **Federated Learning**: Our system will support federated training across 
    multiple institutions
 
-We welcome collaborations and contributions in these areas.
+We may seek external validation in these areas.
 ```
 
 ## Special Cases
@@ -485,13 +483,13 @@ Use "I" for your plans and intentions:
 - "I'm working on implementing..."
 - "I will benchmark against..."
 
-### What About Contributions?
+### What About External Feedback?
 
-Use "I" when welcoming contributions:
+Use "I" when describing requests for feedback or independent validation:
 
 ✅ **Correct**:
-- "I welcome contributions from..."
-- "I'm looking for collaborators to..."
+- "I welcome independent scientific feedback on..."
+- "I'm looking for clinical validation partners to..."
 - "I appreciate feedback on..."
 
 ## Summary
@@ -507,8 +505,6 @@ Use "I" when welcoming contributions:
 **When in doubt**: Ask "Who/what is performing this action?" and choose the voice accordingly.
 
 ---
-
-For questions about these guidelines or specific cases, please open an issue or refer to [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Last Updated**: 2026
 **Version**: 1.0

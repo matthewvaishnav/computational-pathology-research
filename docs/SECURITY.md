@@ -218,6 +218,6 @@ See `docs/SECURITY_INCIDENT_RESPONSE.md` for incident response procedures.
 
 See `docs/SECURITY_TESTING.md` for security testing guide.
 
-## Contributing Security Fixes
+## Secure Coding Patterns
 
-See `docs/CONTRIBUTING_SECURITY.md` for secure coding patterns and best practices.
+See [`SECURE_CODING.md`](SECURE_CODING.md) for secure coding patterns and best practices.

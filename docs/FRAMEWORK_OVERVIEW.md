@@ -209,7 +209,7 @@ rural_weight = 1.12    # Critical access hospital
 | **Customization** | Limited | Full control |
 | **Multi-site Training** | Centralized | Federated |
 | **Expertise Integration** | Manual | Automated |
-| **Innovation Speed** | Corporate | Community-driven |
+| **Innovation Speed** | Corporate | Independently developed |
 
 **Bottom Line**: the platform is the only framework that combines medical expertise weighting, federated learning, and production-ready clinical integration in an open-source package.
 
@@ -342,7 +342,6 @@ pip install -e .
 1. **Try the PCam example** - Train on real pathology data
 2. **Explore DMI concepts** - Run medical expertise weighting simulations
 3. **Test WSI processing** - Process whole-slide images
-4. **Join the community** - Contribute to open-source development
 
 ### Documentation
 - [Installation Guide](INSTALLATION.md) - Complete setup instructions
@@ -363,15 +362,6 @@ pip install -e .
 - 🔄 **Regulatory compliance** - FDA pre-submission pathway
 - 🔄 **Multi-site deployment** - Scale to 10+ hospitals
 - 🔄 **Commercial partnerships** - Integration with medical AI companies
-
-## Contributing
-
-the platform is **open source** and welcomes contributions:
-
-- **Code contributions** - Bug fixes, new features, optimizations
-- **Clinical validation** - Hospital partnerships, real-world testing
-- **Documentation** - Tutorials, examples, best practices
-- **Research collaboration** - Academic partnerships, publications
 
 ## License & Support
 

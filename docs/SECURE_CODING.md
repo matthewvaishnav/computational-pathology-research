@@ -1,4 +1,4 @@
-# Security Contribution Guide
+# Secure Coding Guide
 
 ## Secure Coding Patterns
 

@@ -246,6 +246,3 @@ See [requirements.md](../../.kiro/specs/competitor-benchmark-system/requirements
 
 See [LICENSE](../../LICENSE) for details.
 
-## Contributing
-
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines.

@@ -352,15 +352,13 @@ python -m uvicorn src.api.main:app --reload --port 8001
 - **Documentation**: Check `docs/` directory
 - **Issues**: Open GitHub issue with `question` label
 - **Security**: Email security@example.com (do not open public issues)
-- **Contributing**: See `CONTRIBUTING.md`
 
 ## Next Steps
 
 1. **Read Security Documentation**: Review `docs/SECURITY.md`
-2. **Review Contributing Guide**: See `docs/CONTRIBUTING_SECURITY.md`
+2. **Review Secure Coding Guide**: See `docs/SECURE_CODING.md`
 3. **Run Tests**: Ensure all tests pass locally
-4. **Start Coding**: Follow security best practices
-5. **Submit PR**: Include tests and documentation
+4. **Review Implementation**: Follow secure coding best practices
 
 ## Additional Resources
 
