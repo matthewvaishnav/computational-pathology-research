@@ -113,7 +113,9 @@ class FairWeightsHEngine:
         # Keep caller-facing IDs stable while enforcing exact zero weight for
         # every excluded institution. The entropy denominator counts eligible
         # institutions only, not invalid placeholders.
-        weights = {institution_id: eligible_weights.get(institution_id, 0.0) for institution_id in ids}
+        weights = {
+            institution_id: eligible_weights.get(institution_id, 0.0) for institution_id in ids
+        }
         entropy = self._normalized_entropy(eligible_weights)
         effective_n = 1.0 / sum(w * w for w in eligible_weights.values())
 
@@ -144,8 +146,12 @@ class FairWeightsHEngine:
 
     def _linear_score(self, s: InstitutionWeightSignals) -> float:
         cfg = self.config
-        diversity_weight = 0.25 * cfg.lambda_diversity if cfg.conservative_mode else cfg.lambda_diversity
-        fairness_weight = 0.5 * cfg.lambda_fairness if cfg.conservative_mode else cfg.lambda_fairness
+        diversity_weight = (
+            0.25 * cfg.lambda_diversity if cfg.conservative_mode else cfg.lambda_diversity
+        )
+        fairness_weight = (
+            0.5 * cfg.lambda_fairness if cfg.conservative_mode else cfg.lambda_fairness
+        )
 
         quality_term = cfg.lambda_quality * (s.adjusted_quality + s.process_quality)
         diversity_term = diversity_weight * s.useful_uniqueness
@@ -165,8 +171,12 @@ class FairWeightsHEngine:
 
     def _log_linear_score(self, s: InstitutionWeightSignals) -> float:
         cfg = self.config
-        diversity_weight = 0.25 * cfg.lambda_diversity if cfg.conservative_mode else cfg.lambda_diversity
-        fairness_weight = 0.5 * cfg.lambda_fairness if cfg.conservative_mode else cfg.lambda_fairness
+        diversity_weight = (
+            0.25 * cfg.lambda_diversity if cfg.conservative_mode else cfg.lambda_diversity
+        )
+        fairness_weight = (
+            0.5 * cfg.lambda_fairness if cfg.conservative_mode else cfg.lambda_fairness
+        )
 
         eps = cfg.epsilon
         adjusted_quality_term = cfg.lambda_quality * math.log(max(eps, s.adjusted_quality))
@@ -260,13 +270,14 @@ class FairWeightsHEngine:
         if any(not math.isfinite(value) for value in numeric_fields):
             raise ValueError(f"Non-finite FAIR-WEIGHTS-H signal for {s.institution_id}")
 
-    def _validate_previous_weights(self, previous_weights: Dict[str, float], ids: List[str]) -> None:
+    def _validate_previous_weights(
+        self, previous_weights: Dict[str, float], ids: List[str]
+    ) -> None:
         missing = sorted(set(ids) - set(previous_weights))
         extra = sorted(set(previous_weights) - set(ids))
         if missing or extra:
             raise ValueError(
-                "previous_weights must match institution IDs; "
-                f"missing={missing}, extra={extra}"
+                "previous_weights must match institution IDs; " f"missing={missing}, extra={extra}"
             )
         if any(weight < 0.0 or not math.isfinite(weight) for weight in previous_weights.values()):
             raise ValueError("previous_weights must be finite and non-negative")
