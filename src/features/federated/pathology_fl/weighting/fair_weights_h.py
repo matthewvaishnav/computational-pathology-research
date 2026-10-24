@@ -84,15 +84,38 @@ class FairWeightsHEngine:
         if len(ids) != len(set(ids)):
             raise ValueError("Institution IDs must be unique")
 
-        scores = {s.institution_id: self._score(s) for s in signals}
-        if self.config.update_rule == "mirror_descent":
-            weights = self._mirror_descent(scores, ids, previous_weights)
-        else:
-            weights = self._stable_softmax(scores)
-        weights = self._apply_caps_and_normalize(weights)
+        # A hard integrity gate is a membership constraint, not a low score.
+        # Invalid clients must never reach a weight floor or normalization.
+        for signal in signals:
+            self._validate_signal(signal)
+        eligible = [s for s in signals if s.integrity_ok]
+        if not eligible:
+            raise ValueError("No integrity-eligible institutions; refusing aggregation")
 
-        entropy = self._normalized_entropy(weights)
-        effective_n = 1.0 / sum(w * w for w in weights.values())
+        eligible_ids = [s.institution_id for s in eligible]
+        scores = {s.institution_id: self._score(s) for s in eligible}
+        if self.config.update_rule == "mirror_descent":
+            eligible_previous = None
+            if previous_weights is not None:
+                # Preserve the public prior contract: supplied IDs match all
+                # submitted institutions, including excluded ones.
+                self._validate_previous_weights(previous_weights, ids)
+                eligible_previous = {k: previous_weights[k] for k in eligible_ids}
+                if sum(eligible_previous.values()) <= 0.0:
+                    raise ValueError(
+                        "previous_weights assign no mass to integrity-eligible institutions"
+                    )
+            eligible_weights = self._mirror_descent(scores, eligible_ids, eligible_previous)
+        else:
+            eligible_weights = self._stable_softmax(scores)
+        eligible_weights = self._apply_caps_and_normalize(eligible_weights)
+
+        # Keep caller-facing IDs stable while enforcing exact zero weight for
+        # every excluded institution. The entropy denominator counts eligible
+        # institutions only, not invalid placeholders.
+        weights = {institution_id: eligible_weights.get(institution_id, 0.0) for institution_id in ids}
+        entropy = self._normalized_entropy(eligible_weights)
+        effective_n = 1.0 / sum(w * w for w in eligible_weights.values())
 
         return WeightComputationResult(
             weights=weights,
@@ -113,7 +136,7 @@ class FairWeightsHEngine:
     def _score(self, s: InstitutionWeightSignals) -> float:
         self._validate_signal(s)
         if not s.integrity_ok:
-            return -1e9
+            raise ValueError("Cannot score an integrity-ineligible institution")
 
         if self.config.score_transform == "log_linear":
             return self._log_linear_score(s)
