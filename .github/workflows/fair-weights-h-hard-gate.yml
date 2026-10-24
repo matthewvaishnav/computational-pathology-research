@@ -17,8 +17,7 @@ jobs:
           python-version: '3.10'
       - name: Install focused test dependencies
         run: python -m pip install 'pytest>=7,<10' 'pytest-cov>=4,<8' 'black==24.10.0'
-      - name: Show Python formatting delta (diagnostic)
-        continue-on-error: true
+      - name: Enforce Black formatting
         run: |
           black --diff --check \
             src/features/federated/pathology_fl/weighting/fair_weights_h.py \
