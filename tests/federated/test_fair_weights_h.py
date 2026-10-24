@@ -152,7 +152,11 @@ def test_integrity_hard_gate_survives_positive_weight_floor(update_rule, score_t
         invalid.institution_id: 0.70,
     }
     result = engine.compute([good_a, invalid, good_b], previous_weights=previous)
-    assert list(result.weights) == [good_a.institution_id, invalid.institution_id, good_b.institution_id]
+    assert list(result.weights) == [
+        good_a.institution_id,
+        invalid.institution_id,
+        good_b.institution_id,
+    ]
     assert result.weights[invalid.institution_id] == 0.0
     assert sum(result.weights.values()) == pytest.approx(1.0)
     assert all(result.weights[s.institution_id] > 0.0 for s in (good_a, good_b))
@@ -164,9 +168,7 @@ def test_all_ineligible_clients_fail_closed(update_rule):
     from dataclasses import replace
 
     invalid = [replace(signal, integrity_ok=False) for signal in _signals()]
-    engine = FairWeightsHEngine(
-        FairWeightsHConfig(min_weight=0.1, update_rule=update_rule)
-    )
+    engine = FairWeightsHEngine(FairWeightsHConfig(min_weight=0.1, update_rule=update_rule))
     with pytest.raises(ValueError, match="No integrity-eligible"):
         engine.compute(invalid)
 
