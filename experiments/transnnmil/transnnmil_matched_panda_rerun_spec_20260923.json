@@ -1,0 +1,120 @@
+{
+  "schema_version": "transnnmil-matched-panda-rerun/v1",
+  "status": "preregistered_before_full_execution",
+  "frozen_date": "2026-09-23",
+  "claim_boundary": "Internal PANDA development-set evidence only; not blinded external validation or clinical evidence.",
+  "source_manifest": "results/panda_manifest/panda_phikon_manifest.csv",
+  "locked_split": {
+    "seed": 20260923,
+    "train_fraction": 0.7,
+    "selection_fraction": 0.15,
+    "confirmation_fraction": 0.15,
+    "stratification": "provider_plus_isup_grade_with_grade_fallback",
+    "checkpoint_selection": "selection_qwk_only",
+    "confirmation_access": "after_checkpoint_selection_only"
+  },
+  "models": [
+    "attention_mil",
+    "nnmil",
+    "transmil",
+    "transnnmil_repaired",
+    "transnnmil_concat",
+    "transnnmil_gate",
+    "transnnmil_branch_attention"
+  ],
+  "primary_model": "transnnmil_repaired",
+  "secondary_model": "transnnmil_branch_attention",
+  "required_primary_comparators": [
+    "nnmil",
+    "transmil",
+    "transnnmil_concat",
+    "transnnmil_gate"
+  ],
+  "context_comparators": [
+    "attention_mil",
+    "transnnmil_branch_attention"
+  ],
+  "seeds": [
+    7,
+    19,
+    42,
+    123,
+    2025
+  ],
+  "optimization": {
+    "epochs": 20,
+    "batch_size": 8,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "hidden_dim": 256,
+    "num_layers": 2,
+    "num_heads": 8,
+    "dropout": 0.25,
+    "scheduler": "warmup_cosine",
+    "warmup_epochs": 2,
+    "min_learning_rate": 0.000001,
+    "gradient_clip_norm": 1,
+    "early_stopping_patience": 6,
+    "early_stopping_min_delta": 0,
+    "max_patches": null,
+    "class_weighting": "inverse_frequency_from_train_partition_only"
+  },
+  "primary_endpoint": "confirmation_quadratic_weighted_kappa",
+  "secondary_endpoints": [
+    "confirmation_accuracy",
+    "confirmation_macro_f1",
+    "parameter_count",
+    "training_seconds",
+    "branch_ablation_change_fraction",
+    "branch_gradient_norm",
+    "branch_weight_collapse_fraction_when_defined"
+  ],
+  "inference": {
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 20260923,
+    "method": "hierarchical paired bootstrap: resample prespecified seeds, then identical confirmation cases within each selected seed",
+    "confidence_interval": [
+      0.025,
+      0.975
+    ]
+  },
+  "preregistered_primary_success_rule": {
+    "all_required_comparators_must_pass": true,
+    "mean_confirmation_qwk_difference": "greater_than_zero",
+    "positive_seed_differences": "at_least_4_of_5",
+    "hierarchical_paired_bootstrap_lower_95": "greater_than_zero",
+    "practical_branch_collapse": false
+  },
+  "branch_collapse_rule": {
+    "weight_collapse": "max normalized branch weight > 0.9 on >= 90% of confirmation slides, when the fusion exposes normalized branch weights",
+    "ablation_collapse": "ablating one branch changes < 1% of confirmation predictions while ablating the other changes >= 1%"
+  },
+  "interpretation_rules": [
+    "Do not tune models, seeds, split, optimization settings, or decision thresholds using confirmation outcomes.",
+    "Do not report only the best seed.",
+    "Historical pre-remediation TransnnMIL QWK values are not repaired-model evidence.",
+    "If the primary rule fails, retain the result and report the failed gate rather than retuning.",
+    "The secondary learned branch-attention model is reported separately and cannot retroactively redefine the primary model."
+  ],
+  "source_manifest_git_blob_sha": "c928627705929ef7981934c05b9f294572671aad",
+  "expected_feature_dim": 768,
+  "expected_structurally_valid_feature_bags": 10614,
+  "expected_readable_feature_bags": 10611,
+  "preexisting_runtime_unreadable_exclusions": {
+    "provenance": "results/panda_transnnmil_baseline/unreadable_features.csv",
+    "application_order": "after frozen split assignment; never re-split",
+    "image_ids": [
+      "0032bfa835ce0f43a92ae0bbab6871cb",
+      "003a91841da04a5a31f808fb5c21538a",
+      "004391d48d58b18156f811087cd38abf"
+    ]
+  },
+  "amendments": [
+    {
+      "date": "2026-09-23",
+      "stage": "before_any_full_training_or_confirmation_evaluation",
+      "reason": "Implementation clarification after preflight encountered the already-documented HDF5 decompression failure. The frozen split assignment is preserved unchanged; only the three pre-existing runtime-unreadable bags are excluded afterward.",
+      "scientific_change": false
+    }
+  ]
+}
