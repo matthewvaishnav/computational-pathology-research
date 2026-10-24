@@ -98,7 +98,7 @@ def test_integrity_gate_excludes_institution_nearly_entirely():
 
     weights = FairWeightsHEngine().compute([valid, invalid]).weights
     assert weights["valid"] == pytest.approx(1.0)
-    assert weights["invalid"] == pytest.approx(0.0)
+    assert weights["invalid"] == 0.0
 
 
 def test_duplicate_institution_ids_raise():
@@ -126,3 +126,82 @@ def test_conservative_mode_changes_weights():
 def test_invalid_config_raises():
     with pytest.raises(ValueError, match="min_weight cannot exceed max_weight"):
         FairWeightsHEngine(FairWeightsHConfig(min_weight=0.5, max_weight=0.1))
+
+
+@pytest.mark.parametrize("update_rule", ["softmax", "mirror_descent"])
+@pytest.mark.parametrize("score_transform", ["linear", "log_linear"])
+def test_integrity_hard_gate_survives_positive_weight_floor(update_rule, score_transform):
+    from dataclasses import replace
+
+    good_a, good_b, _ = _signals()
+    invalid = replace(
+        _signals()[2],
+        adjusted_quality=10.0,
+        process_quality=10.0,
+        integrity_ok=False,
+    )
+    config = FairWeightsHConfig(
+        min_weight=0.1,
+        update_rule=update_rule,
+        score_transform=score_transform,
+    )
+    engine = FairWeightsHEngine(config)
+    previous = {
+        good_a.institution_id: 0.15,
+        good_b.institution_id: 0.15,
+        invalid.institution_id: 0.70,
+    }
+    result = engine.compute([good_a, invalid, good_b], previous_weights=previous)
+    assert list(result.weights) == [good_a.institution_id, invalid.institution_id, good_b.institution_id]
+    assert result.weights[invalid.institution_id] == 0.0
+    assert sum(result.weights.values()) == pytest.approx(1.0)
+    assert all(result.weights[s.institution_id] > 0.0 for s in (good_a, good_b))
+    assert result.diagnostics["integrity_exclusions"] == 1.0
+
+
+@pytest.mark.parametrize("update_rule", ["softmax", "mirror_descent"])
+def test_all_ineligible_clients_fail_closed(update_rule):
+    from dataclasses import replace
+
+    invalid = [replace(signal, integrity_ok=False) for signal in _signals()]
+    engine = FairWeightsHEngine(
+        FairWeightsHConfig(min_weight=0.1, update_rule=update_rule)
+    )
+    with pytest.raises(ValueError, match="No integrity-eligible"):
+        engine.compute(invalid)
+
+
+@pytest.mark.parametrize("update_rule", ["softmax", "mirror_descent"])
+def test_eligible_only_and_excluded_client_have_identical_eligible_weights(update_rule):
+    from dataclasses import replace
+
+    good_a, good_b, excluded = _signals()
+    excluded = replace(excluded, integrity_ok=False)
+    config = FairWeightsHConfig(min_weight=0.08, update_rule=update_rule)
+    engine = FairWeightsHEngine(config)
+    if update_rule == "mirror_descent":
+        both_prior = {good_a.institution_id: 0.6, good_b.institution_id: 0.4}
+        extended_prior = {**both_prior, excluded.institution_id: 0.7}
+    else:
+        both_prior = None
+        extended_prior = None
+    baseline = engine.compute([good_a, good_b], previous_weights=both_prior)
+    with_excluded = engine.compute([good_a, excluded, good_b], previous_weights=extended_prior)
+    assert with_excluded.weights[good_a.institution_id] == pytest.approx(
+        baseline.weights[good_a.institution_id]
+    )
+    assert with_excluded.weights[good_b.institution_id] == pytest.approx(
+        baseline.weights[good_b.institution_id]
+    )
+    assert with_excluded.weights[excluded.institution_id] == 0.0
+
+
+def test_mirror_descent_rejects_prior_mass_only_on_excluded_clients():
+    from dataclasses import replace
+
+    valid, excluded, _ = _signals()
+    excluded = replace(excluded, integrity_ok=False)
+    previous = {valid.institution_id: 0.0, excluded.institution_id: 1.0}
+    engine = FairWeightsHEngine(FairWeightsHConfig(update_rule="mirror_descent"))
+    with pytest.raises(ValueError, match="no mass to integrity-eligible"):
+        engine.compute([valid, excluded], previous_weights=previous)
