@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this repository or its results, please cite the associated paper described in preferred-citation."
+message: "For the public PA-NF pipeline preprint, use preferred-citation. Cite individual research-line papers or evidence releases separately when appropriate."
 type: software
 title: "Computational Pathology Research"
 abstract: >
@@ -24,9 +24,9 @@ license: MIT
 version: "0.1.0"
 preferred-citation:
   type: article
-  title: "When More Data Is Less Trustworthy: Site-Signal Alignment Failure Modes in Federated Computational Pathology"
+  title: "Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline"
   authors:
     - family-names: "Vaishnav"
       given-names: "Matthew"
   year: 2026
-  url: "https://matthewvaishnav.github.io/computational-pathology-research/"
+  url: "https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline.pdf"

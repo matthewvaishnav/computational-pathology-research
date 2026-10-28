@@ -12,6 +12,8 @@ public paper, with the corrected focused PA-NF manuscript retained as a secondar
 supporting paper. Scientific-audit remediation continues for research lines whose
 controlled evaluations remain pending. Code fixes and corrected replacements do
 not retroactively validate older artifacts.
+This paragraph records the August publication history, not the current
+canonical-paper identity given in the section below.
 
 ## Current safe central claim
 
@@ -248,12 +250,26 @@ The corrected canine fixed-estimand audit, fold-aware SCORPION inference,
 175-fit capacity-matched campaign, and 450-fit factorial are complete and
 promoted only within the boundaries above.
 
-The primary public manuscript is:
-`https://matthewvaishnav.github.io/computational-pathology-research/accountable-neural-aggregation-in-computational-pathology.pdf`.
+## Current publication identity
 
-The corrected focused PA-NF manuscript remains available as a secondary paper at:
-`https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization.pdf`.
-Every earlier focused PA-NF PDF remains superseded and on audit hold.
+The single canonical public pipeline manuscript is **Paired-Acquisition Neural
+Factorization: An End-to-End Computational Pathology Pipeline**:
+`https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline.pdf`.
+
+The flagship paper covers paired-acquisition representation factorization,
+whole-slide modeling, and multi-institutional learning under the distinct
+scientific claim boundaries above. The separate working-paper draft **When More
+Data Is Less Trustworthy: Site-Signal Alignment Failure Modes in Federated
+Computational Pathology** is retained at
+`docs/research/dominant-site-federated-pathology-paper.md`. That report studies
+simulated federation site-signal alignment; it is not an alternate title for
+the canonical pipeline manuscript.
+
+The older `accountable-neural-aggregation-in-computational-pathology.pdf` and
+`paired-acquisition-neural-factorization.pdf` paths are retired publication
+identities, not active primary or secondary PDF links. Historical manuscripts
+and evidence remain in repository history. This metadata does not assert an
+unverified DOI or a journal publication.
 
 The detailed remediation ledger is
 `docs/research/scientific-audit-remediation-20260725.md`.

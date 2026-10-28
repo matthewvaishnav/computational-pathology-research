@@ -16,6 +16,8 @@ This repository is the **program-level hub and evidence ledger**. Distinct metho
 
 The root GitHub Pages URL opens this PDF directly. This is the only public main-paper PDF; corrections and evidence updates are made directly in it rather than published as a separate focused or "corrected" paper.
 
+**Citation and manuscript identity.** The repository-level [`CITATION.cff`](CITATION.cff) prefers the public PA-NF pipeline manuscript above; it does not identify every distinct research-line paper. The federated-pathology study, [*When More Data Is Less Trustworthy*](docs/research/dominant-site-federated-pathology-paper.md), is a separate **working-paper draft** about site-signal alignment in simulated federations, not an alternative title for the pipeline manuscript. Earlier foundations and focused-PA-NF PDF titles are historical publication identities, not current primary-paper links. No DOI is claimed in the repository citation metadata.
+
 ## Research lines
 
 | Research line | Repository / status | Current evidence boundary |
