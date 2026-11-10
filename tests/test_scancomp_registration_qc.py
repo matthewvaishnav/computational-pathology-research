@@ -53,3 +53,65 @@ def test_grid_determinism_and_no_target_label_dependency():
 def test_reject_blank_reference():
     blank=np.full((256,256,3),255,np.uint8)
     assert not tissue_and_texture(blank,.16,12)[0]
+
+
+def test_peak_gap_rejects_periodic_ambiguous_image():
+    from scripts.external_multiscanner.scancomp_registration_qc import second_peak_gap
+
+    y, x = np.indices((128, 128))
+    patch = (((x // 8) + (y // 8)) % 2 * 255).astype(np.uint8)
+    template = np.stack((patch, patch, patch), axis=-1)
+    y2, x2 = np.indices((208, 208))
+    tiled = (((x2 // 8) + (y2 // 8)) % 2 * 255).astype(np.uint8)
+    window = np.stack((tiled, tiled, tiled), axis=-1)
+    assert second_peak_gap(template, window, 40) < 0.02
+
+
+def test_registration_candidate_is_not_an_anatomical_certificate():
+    from scripts.external_multiscanner.scancomp_registration_qc import candidate_gate
+
+    good = {
+        'accepted_fit': 18,
+        'accepted_heldout': 8,
+        'all_candidates': 30,
+        'coverage_fraction': {'x_span_fraction': 0.75, 'y_span_fraction': 0.75},
+        'heldout_errors': {'affine': {'median_level0_pixels': 2.0, 'p90_level0_pixels': 6.0}},
+    }
+    assert candidate_gate(good, 8.0, 4.0, 0.60, 0.25) == (True, [])
+    bad = dict(good)
+    bad['heldout_errors'] = {'affine': {'median_level0_pixels': 2.0, 'p90_level0_pixels': 12.0}}
+    valid, failures = candidate_gate(bad, 8.0, 4.0, 0.60, 0.25)
+    assert not valid and 'PRIMARY_AFFINE_HELDOUT_RESIDUAL_EXCEEDS_POLICY' in failures
+    bad = dict(good)
+    bad['coverage_fraction'] = {'x_span_fraction': 0.75, 'y_span_fraction': 0.01}
+    assert 'INSUFFICIENT_SPATIAL_COVERAGE' in candidate_gate(bad, 8.0, 4.0, 0.60, 0.25)[1]
+    bad = dict(good)
+    bad['accepted_heldout'] = 2
+    assert 'INSUFFICIENT_FIT_OR_HELDOUT' in candidate_gate(bad, 8.0, 4.0, 0.60, 0.25)[1]
+
+
+def test_forward_reverse_cycle_on_known_translation():
+    rng = np.random.default_rng(16)
+    a = cv2.GaussianBlur(rng.integers(0, 255, (512, 512, 3), np.uint8), (5, 5), 0)
+    shifted = cv2.warpAffine(a, np.float32([[1, 0, 9], [0, 1, -6]]),
+                             (512, 512), borderValue=(255, 255, 255))
+    x, y, patch, margin = 200, 200, 96, 24
+    ref_patch = a[y:y+patch, x:x+patch]
+    window = shifted[y-margin:y+patch+margin, x-margin:x+patch+margin]
+    dx, dy, score = template_shift(ref_patch, window, margin)
+    assert (dx, dy) == (9, -6) and score > 0.99
+    target_patch = window[margin+dy:margin+dy+patch, margin+dx:margin+dx+patch]
+    reverse_window = a[y+dy-margin:y+dy+patch+margin,
+                       x+dx-margin:x+dx+patch+margin]
+    rdx, rdy, rscore = template_shift(target_patch, reverse_window, margin)
+    assert (rdx, rdy) == (-dx, -dy) and rscore > 0.99
+
+
+def test_sha256_provenance_of_original_bytes(tmp_path):
+    import hashlib
+    from scripts.external_multiscanner.scancomp_registration_qc import sha256_file
+
+    data = b'big-tiff-source-bytes\x00\xff' * 100
+    source = tmp_path / 'sample.big.tiff'
+    source.write_bytes(data)
+    assert sha256_file(source) == hashlib.sha256(data).hexdigest()
