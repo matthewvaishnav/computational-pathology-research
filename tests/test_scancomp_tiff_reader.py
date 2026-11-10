@@ -96,3 +96,37 @@ def test_non_scancomp_tiff_does_not_use_fallback(tmp_path, monkeypatch):
     monkeypatch.setattr(wsi_module, 'OPENSLIDE_AVAILABLE', False)
     with pytest.raises(FileFormatError, match='OpenSlide is not installed'):
         wsi_module.WSIReader(path)
+
+
+def test_incomplete_decode_rejected(tmp_path, monkeypatch):
+    path, _ = make_slide(tmp_path)
+    with ScanCompTiffReader(path) as slide:
+        original_decode = slide._decode_tile
+
+        def short_first_tile(index):
+            decoded = original_decode(index)
+            if index == 0:
+                return decoded[:-1, :, :]
+            return decoded
+
+        monkeypatch.setattr(slide, "_decode_tile", short_first_tile)
+        with pytest.raises(ValueError, match="INCOMPLETE_SOURCE_TILE_COVERAGE"):
+            slide.read_region((0, 0), 0, (16, 16))
+
+
+def test_incomplete_decode_does_not_escape_through_canonical_reader(tmp_path, monkeypatch):
+    from src.data.wsi_pipeline import reader as wsi_module
+    from src.data.wsi_pipeline.exceptions import ProcessingError
+
+    path, _ = make_slide(tmp_path)
+    monkeypatch.setattr(wsi_module, "OPENSLIDE_AVAILABLE", False)
+    with wsi_module.WSIReader(path) as reader:
+        original_decode = reader._reader._decode_tile
+
+        def short_first_tile(index):
+            decoded = original_decode(index)
+            return decoded[:-1, :, :] if index == 0 else decoded
+
+        monkeypatch.setattr(reader._reader, "_decode_tile", short_first_tile)
+        with pytest.raises(ProcessingError, match="INCOMPLETE_SOURCE_TILE_COVERAGE"):
+            reader.read_region((0, 0), 0, (16, 16))
