@@ -115,7 +115,7 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--sha256",
         action="store_true",
-        help="Stream/hash each original file (optional and read-only)",
+        help="Deprecated no-op: original file SHA-256 is now always recorded",
     )
     args = parser.parse_args(argv)
     if not __import__("re").fullmatch(r"[a-z]{3}[0-9]{3}", args.slide_id):
@@ -131,12 +131,13 @@ def main(argv=None) -> int:
         "registration": "NOT_PERFORMED",
         "independent_biological_labels": "NOT_AVAILABLE",
         "clinical_G0": "DATA_BLOCKED",
+        "source_sha256_required": True,
         "images": {},
     }
     for scanner in SCANNERS:
         filename = f"{args.slide_id}_{scanner}.big.tiff"
         print(f"[SCAN] {filename}", flush=True)
-        info = validate_one(args.data_dir / filename, args.out_dir, args.patch_size, args.sha256)
+        info = validate_one(args.data_dir / filename, args.out_dir, args.patch_size, True)
         receipt["images"][scanner] = info
         print(
             f"  {info['status']} {info.get('decoded_count', 0)}/25 regions; "
