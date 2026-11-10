@@ -20,7 +20,9 @@ from typing import Dict, Tuple, Union
 import numpy as np
 
 # Explicit filename namespace: no fallback for unrelated TIFFs.
-_SCANCOMP_NAME = re.compile(r"^[a-z]{3}[0-9]{3}_(?:hms360|hstp1000|lcap450|phufs)\.big\.tiff$", re.I)
+_SCANCOMP_NAME = re.compile(
+    r"^[a-z]{3}[0-9]{3}_(?:hms360|hstp1000|lcap450|phufs)\.big\.tiff$", re.I
+)
 _MAX_COMPRESSED_SEGMENT_BYTES = 16 * 1024 * 1024
 _MAX_DECODED_SEGMENT_BYTES = 64 * 1024 * 1024
 _MAX_REGION_PIXELS = 4_194_304
@@ -64,18 +66,23 @@ class ScanCompTiffReader:
             if int(p.planarconfig) != 1 or int(p.samplesperpixel) not in (3, 4):
                 raise ValueError("Unsupported planar configuration or RGB channel count")
             # 2 = RGB, 6 = YCbCr (codec must deliver decoded RGB to the caller).
-            if int(p.photometric) not in (2, 6) or p.dtype != np.dtype('uint8'):
+            if int(p.photometric) not in (2, 6) or p.dtype != np.dtype("uint8"):
                 raise ValueError("Expected 8-bit RGB/YCbCr image data")
             self._columns = math.ceil(self.width / self.tile_width)
             self._rows = math.ceil(self.height / self.tile_height)
             self._offsets = tuple(int(x) for x in p.dataoffsets)
             self._counts = tuple(int(x) for x in p.databytecounts)
-            if len(self._offsets) != self._columns * self._rows or len(self._counts) != len(self._offsets):
+            if len(self._offsets) != self._columns * self._rows or len(self._counts) != len(
+                self._offsets
+            ):
                 raise ValueError("First-IFD source-tile layout does not match image dimensions")
-            if self.tile_width * self.tile_height * int(p.samplesperpixel) > _MAX_DECODED_SEGMENT_BYTES:
+            if (
+                self.tile_width * self.tile_height * int(p.samplesperpixel)
+                > _MAX_DECODED_SEGMENT_BYTES
+            ):
                 raise ValueError("One decoded source tile would exceed 64 MiB")
             self._file_size = self.path.stat().st_size
-            self._source = self.path.open('rb')
+            self._source = self.path.open("rb")
         except BaseException:
             self.close()
             raise
@@ -100,11 +107,11 @@ class ScanCompTiffReader:
     def properties(self) -> Dict[str, str]:
         # No patient or case ID inference; filenames identify physical slides only.
         return {
-            'scancomp.adapter': 'first-ifd-bounded',
-            'scancomp.slide-alias': self.path.name.split('_', 1)[0],
-            'scancomp.scanner-alias': self.path.name.rsplit('_', 1)[1].removesuffix('.big.tiff'),
-            'scancomp.registration': 'not-verified',
-            'scancomp.pyramid': 'not-verified',
+            "scancomp.adapter": "first-ifd-bounded",
+            "scancomp.slide-alias": self.path.name.split("_", 1)[0],
+            "scancomp.scanner-alias": self.path.name.rsplit("_", 1)[1].removesuffix(".big.tiff"),
+            "scancomp.registration": "not-verified",
+            "scancomp.pyramid": "not-verified",
         }
 
     def _decode_tile(self, index: int) -> np.ndarray:
@@ -122,8 +129,8 @@ class ScanCompTiffReader:
         p = self._page
         kwargs = {}
         if int(p.compression) in (6, 7, 34892, 33007):
-            kwargs['jpegtables'] = p.jpegtables
-            kwargs['jpegheader'] = p.jpegheader
+            kwargs["jpegtables"] = p.jpegtables
+            kwargs["jpegheader"] = p.jpegheader
         tile, _position, _shape = p.decode(encoded, index, **kwargs)
         if tile is None:
             raise ValueError("TIFF tile codec returned no pixels")
@@ -134,12 +141,16 @@ class ScanCompTiffReader:
         if array.ndim == 4 and array.shape[0] == 1:
             array = array[0]
         if array.ndim != 3 or array.shape[2] not in (3, 4) or array.dtype != np.uint8:
-            raise ValueError(f"Unexpected decoded tile RGB shape/dtype: {array.shape}/{array.dtype}")
+            raise ValueError(
+                f"Unexpected decoded tile RGB shape/dtype: {array.shape}/{array.dtype}"
+            )
         if array.shape[0] > self.tile_height or array.shape[1] > self.tile_width:
             raise ValueError("Decoded segment dimensions exceed TIFF tile geometry")
         return array[:, :, :3]
 
-    def read_region(self, location: Tuple[int, int], level: int, size: Tuple[int, int]) -> np.ndarray:
+    def read_region(
+        self, location: Tuple[int, int], level: int, size: Tuple[int, int]
+    ) -> np.ndarray:
         if level != 0:
             raise ValueError("Only TIFF IFD 0 is validated; no artificial pyramid levels")
         x, y = (int(v) for v in location)
@@ -153,7 +164,10 @@ class ScanCompTiffReader:
         n_tiles = (col1 - col0 + 1) * (row1 - row0 + 1)
         if n_tiles > _MAX_SEGMENTS_PER_REGION:
             raise ValueError("Requested region spans too many source tiles")
-        out = np.empty((h, w, 3), dtype=np.uint8)
+        # Track exact coverage: a short/partially decoded source tile must never
+        # leave uninitialized output bytes masquerading as valid image pixels.
+        out = np.zeros((h, w, 3), dtype=np.uint8)
+        covered = np.zeros((h, w), dtype=np.bool_)
         for row in range(row0, row1 + 1):
             for col in range(col0, col1 + 1):
                 tile = self._decode_tile(row * self._columns + col)
@@ -162,14 +176,21 @@ class ScanCompTiffReader:
                 right, bottom = min(x + w, sx + tile.shape[1]), min(y + h, sy + tile.shape[0])
                 if right <= left or bottom <= top:
                     raise ValueError("Source tile does not cover expected region")
-                out[top-y:bottom-y, left-x:right-x] = tile[top-sy:bottom-sy, left-sx:right-sx]
+                out[top - y : bottom - y, left - x : right - x] = tile[
+                    top - sy : bottom - sy, left - sx : right - sx
+                ]
+                covered[top - y : bottom - y, left - x : right - x] = True
+        if not np.all(covered):
+            raise ValueError(
+                "INCOMPLETE_SOURCE_TILE_COVERAGE: requested RGB region has undecoded pixels"
+            )
         return out
 
     def close(self) -> None:
-        if getattr(self, '_source', None) is not None:
+        if getattr(self, "_source", None) is not None:
             self._source.close()
             self._source = None
-        if getattr(self, '_tiff', None) is not None:
+        if getattr(self, "_tiff", None) is not None:
             self._tiff.close()
             self._tiff = None
 
