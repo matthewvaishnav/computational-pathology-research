@@ -51,13 +51,13 @@ class TestGeometry(unittest.TestCase):
 
     def test_pixel_gallery_nonoverlap(self):
         sites = [
-            {"site_id": str(i), "center_x_px": 1000 + 1800 * i, "center_y_px": 2000}
+            {"site_id": str(i), "center_x_px": 3000 + 1800 * i, "center_y_px": 3000}
             for i in range(5)
         ]
-        boxes = validate_gallery(sites, 1024, (10000, 6000), clearance=64)
+        boxes = validate_gallery(sites, 1024, (14000, 6000), clearance=64)
         self.assertEqual(len(boxes), 5)
         with self.assertRaisesRegex(ValueError, "overlap"):
-            validate_gallery(sites, 3477, (12000, 6000), clearance=64)
+            validate_gallery(sites, 3477, (14000, 6000), clearance=64)
 
     def test_bounds_duplicates_and_minimum_fail_closed(self):
         sites = [
