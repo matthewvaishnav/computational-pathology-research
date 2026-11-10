@@ -70,3 +70,29 @@ def test_reject_stripped_source(tmp_path):
     tifffile.imwrite(path, arr, bigtiff=True, photometric='rgb', metadata=None)
     with pytest.raises(ValueError, match='FIRST_IFD_NOT_TILED'):
         ScanCompTiffReader(path)
+
+
+def test_canonical_wsi_reader_fallback_without_openslide(tmp_path, monkeypatch):
+    from src.data.wsi_pipeline import reader as wsi_module
+    from src.data.wsi_pipeline.exceptions import ProcessingError
+
+    path, pixels = make_slide(tmp_path, broken_next=True)
+    monkeypatch.setattr(wsi_module, 'OPENSLIDE_AVAILABLE', False)
+    with wsi_module.WSIReader(path) as reader:
+        assert reader._format == 'scancomp_tiff'
+        assert reader.level_count == 1
+        assert reader.level_downsamples == [1.0]
+        assert reader.properties['scancomp.registration'] == 'not-verified'
+        assert np.array_equal(reader.read_region((8, 8), 0, (24, 32)), pixels[8:40, 8:32])
+        with pytest.raises(ProcessingError, match='no verified image pyramid'):
+            reader.get_thumbnail()
+
+
+def test_non_scancomp_tiff_does_not_use_fallback(tmp_path, monkeypatch):
+    from src.data.wsi_pipeline import reader as wsi_module
+    from src.data.wsi_pipeline.exceptions import FileFormatError
+
+    path, _ = make_slide(tmp_path, name='ordinary.tiff')
+    monkeypatch.setattr(wsi_module, 'OPENSLIDE_AVAILABLE', False)
+    with pytest.raises(FileFormatError, match='OpenSlide is not installed'):
+        wsi_module.WSIReader(path)
