@@ -21,7 +21,7 @@ cd "$env:USERPROFILE\computational-pathology-research"
 python -m scripts.external_multiscanner.scancomp_validate_wsi --data-dir "$env:USERPROFILE\Downloads\hmi" --out-dir "$env:USERPROFILE\Documents\PA_NF_ScanComp_Intake\hmi825_repo" --slide-id hmi825
 ```
 
-Output: `SCANCOMP_PIXEL_DECODE_RECEIPT.json`, `README_RESULTS.txt`, and at most four `*_UNREGISTERED_sparse_contact_sheet.png` files. The source TIFFs are never modified. If the 25 source-region probes for each scanner cannot all be decoded, the command exits with status 2 and the JSON documents the errors. Hashing the source is optional (`--sha256`).
+Output: `SCANCOMP_PIXEL_DECODE_RECEIPT.json`, `README_RESULTS.txt`, and at most four `*_UNREGISTERED_sparse_contact_sheet.png` files. The source TIFFs are never modified. If the 25 source-region probes for each scanner cannot all be decoded, the command exits with status 2 and the JSON documents the errors. SHA-256 streaming hashes are recorded by default for all four source files. The older `--sha256` option remains supported as a no-op for compatibility. Prior receipts lacking hashes require a new intake run for byte-level provenance.
 
 Run synthetic tests:
 
