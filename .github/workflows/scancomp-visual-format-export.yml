@@ -1,0 +1,25 @@
+name: ScanComp visual QC Black source export
+on:
+  push:
+    branches:
+      - scancomp/registration-qc-20261110
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Emit exact Black-24.10.0 source as base64 for audited upload
+        run: |
+          python -m pip install black==24.10.0
+          black scripts/external_multiscanner/scancomp_visual_holdout_qc.py tests/test_scancomp_visual_holdout_qc.py
+          for file in scripts/external_multiscanner/scancomp_visual_holdout_qc.py tests/test_scancomp_visual_holdout_qc.py; do
+            echo "VISUAL_FORMAT_START::$file"
+            base64 -w0 "$file"
+            echo
+            echo "VISUAL_FORMAT_END::$file"
+          done
