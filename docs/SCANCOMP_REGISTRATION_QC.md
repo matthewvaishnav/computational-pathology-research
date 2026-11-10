@@ -44,3 +44,45 @@ Use the stacked registration branch's checkout, not the original draft PR #103 c
 ## Important prohibitions
 
 Do **not** treat the resulting data as independent clinical labels, scanner-agnostic frozen PA-NF intervention validation, 4× independent human specimens, or proof of biological purity. There is only one physical H&E slide in this pilot. The G0 patient/case identity and independently adjudicated clinical labels are missing. No training, checkpoint changes, or protected G0 test evaluation is performed here.
+
+## 10 November 2026 independent review corrections — v2
+
+This change remains **an exploratory geometric intake check, not registration
+admission**. The ScanComp public images were processed with device-specific colour
+and geometric registration (including VALIS); these tests characterize residual
+alignment on those processed images, not an independent new physical registration
+of raw acquisitions. The original clinical G0 is **DATA_BLOCKED**.
+
+Changes following audit:
+
+- Every first-IFD source file is SHA-256 hashed from local bytes and its byte
+  length recorded before attempting geometric fits. Do not interchange these
+  hashes with the earlier TIFF listing's approximate printed sizes.
+- References are selected on reference-only tissue/texture criteria, and the
+  fit/heldout split is deterministic *before* target matching.
+- Candidate matches must pass the NCC threshold, a non-adjacent peak-uniqueness
+  check, a search-edge check, and forward/reverse same-matcher consistency.
+  These are **algorithmic self-consistency controls**, not independent manual
+  anatomical landmarks; they may jointly fail on repeated histological texture.
+  Rejected matches and the reasons remain in the CSV denominator.
+- Report overall fit/heldout tissue spatial spread and all failure categories.
+  Model fitting uses the fit split; the *predeclared full-affine* model is the
+  candidate gate's primary heldout model. Translation, similarity and identity
+  remain descriptive references, not candidates chosen after seeing holdout.
+- A provisional candidate requires at least 8 fit and 5 heldout matches,
+  >=60% correspondence coverage, >=25% span on both slide axes, and full-affine
+  heldout pseudolandmark median <=4 and p90 <=8 level-0 pixels. These thresholds
+  are engineering triage values, **not validated anatomical tolerance or
+  sufficient evidence for scanner-invariant DINOv2 features**.
+- Success exit status means only `CANDIDATE_ONLY_NOT_CERTIFIED`. Failure exit
+  status means `QC_BLOCKED`. The JSON always sets
+  `registration_accepted=false`; independent visual/landmark verification and
+  downstream matching controls remain prerequisites.
+- The script does not infer H&E or any diagnosis from filenames for other slide
+  aliases. Only `hmi825`'s H&E stain is sourced from the prior joined portal
+  manifest; unrelated aliases retain `NOT_AUTHENTICATED`.
+
+All new tests are synthetic; **no full-resolution registration on the user's
+four images has been executed under this revised method**. Results must be
+reviewed without turning the same `hmi825` development slide into an untouched
+confirmation sample.
