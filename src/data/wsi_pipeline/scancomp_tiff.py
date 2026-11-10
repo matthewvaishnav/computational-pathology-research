@@ -153,7 +153,10 @@ class ScanCompTiffReader:
         n_tiles = (col1 - col0 + 1) * (row1 - row0 + 1)
         if n_tiles > _MAX_SEGMENTS_PER_REGION:
             raise ValueError("Requested region spans too many source tiles")
-        out = np.empty((h, w, 3), dtype=np.uint8)
+        # Track exact coverage: a short/partially decoded source tile must never
+        # leave uninitialized output bytes masquerading as valid image pixels.
+        out = np.zeros((h, w, 3), dtype=np.uint8)
+        covered = np.zeros((h, w), dtype=np.bool_)
         for row in range(row0, row1 + 1):
             for col in range(col0, col1 + 1):
                 tile = self._decode_tile(row * self._columns + col)
@@ -163,6 +166,9 @@ class ScanCompTiffReader:
                 if right <= left or bottom <= top:
                     raise ValueError("Source tile does not cover expected region")
                 out[top-y:bottom-y, left-x:right-x] = tile[top-sy:bottom-sy, left-sx:right-sx]
+                covered[top-y:bottom-y, left-x:right-x] = True
+        if not np.all(covered):
+            raise ValueError("INCOMPLETE_SOURCE_TILE_COVERAGE: requested RGB region has undecoded pixels")
         return out
 
     def close(self) -> None:
