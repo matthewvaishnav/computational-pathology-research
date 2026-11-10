@@ -1,0 +1,38 @@
+name: ScanComp PA-NF 001R two-track contract (synthetic only)
+on:
+  push:
+    branches:
+      - scancomp/panf-001r-two-track-protocol-20261110
+  pull_request:
+    branches:
+      - scancomp/registration-qc-20261110
+permissions:
+  contents: read
+jobs:
+  python-synthetic-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile source and tests
+        run: python -m compileall -q scripts/external_multiscanner/scancomp_panf_001r_contract.py scripts/external_multiscanner/scancomp_panf_001r_preflight.py tests/test_scancomp_panf_001r_contract.py
+      - name: Run standard-library synthetic tests (no WSI/model access)
+        run: python -m unittest -v tests.test_scancomp_panf_001r_contract
+  powershell-windows-parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell 5-compatible preflight script
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          $script = (Resolve-Path 'scripts/external_multiscanner/Run-ScanCompPANF001RPreflight.ps1').Path
+          [System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -ne 0) {
+            $parseErrors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'PowerShell syntax parsed successfully; no local TIFFs accessed.'
