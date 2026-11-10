@@ -51,7 +51,8 @@ def check_inputs(receipt: dict, landmark_rows: list[dict]) -> list[dict]:
         if affine.shape != (2, 3) or not np.all(np.isfinite(affine)):
             raise ValueError(f"Invalid affine model for {s}")
     positions = [
-        r for r in landmark_rows
+        r
+        for r in landmark_rows
         if r.get("scanner") == REFERENCE
         and r.get("status") == "REFERENCE_TISSUE"
         and r.get("split") == "heldout"
@@ -100,7 +101,9 @@ def warp_affine_target_patch(reader, affine: np.ndarray, x: int, y: int, patch: 
     return aligned
 
 
-def display_panel(reference: np.ndarray, aligned_target: np.ndarray, caption: str) -> tuple[Image.Image, dict]:
+def display_panel(
+    reference: np.ndarray, aligned_target: np.ndarray, caption: str
+) -> tuple[Image.Image, dict]:
     if reference.shape != aligned_target.shape or reference.dtype != np.uint8:
         raise ValueError("Reference and predicted-aligned target must share RGB uint8 shape")
     if reference.ndim != 3 or reference.shape[2] != 3:
@@ -115,8 +118,12 @@ def display_panel(reference: np.ndarray, aligned_target: np.ndarray, caption: st
     centered2 = gray2 - gray2.mean()
     denom = np.linalg.norm(centered1) * np.linalg.norm(centered2)
     fixed_ncc = float(np.sum(centered1 * centered2) / denom) if denom > 0 else float("nan")
-    rgb_mae = float(np.mean(np.abs(reference.astype(np.float32) - aligned_target.astype(np.float32))))
-    blended = np.rint((reference.astype(np.float32) + aligned_target.astype(np.float32)) / 2).astype(np.uint8)
+    rgb_mae = float(
+        np.mean(np.abs(reference.astype(np.float32) - aligned_target.astype(np.float32)))
+    )
+    blended = np.rint(
+        (reference.astype(np.float32) + aligned_target.astype(np.float32)) / 2
+    ).astype(np.uint8)
     yy, xx = np.indices((patch, patch))
     check = ((xx // 32 + yy // 32) % 2).astype(bool)
     checkerboard = np.where(check[:, :, None], aligned_target, reference)
@@ -164,9 +171,12 @@ def main(argv=None) -> int:
     }
     from src.data.wsi_pipeline.reader import WSIReader
     from contextlib import ExitStack
+
     with ExitStack() as stack:
         readers = {
-            s: stack.enter_context(WSIReader(args.data_dir / receipt["source_files"][s]["filename"]))
+            s: stack.enter_context(
+                WSIReader(args.data_dir / receipt["source_files"][s]["filename"])
+            )
             for s in (REFERENCE, *TARGETS)
         }
         for scanner, data in receipt["source_files"].items():
@@ -182,21 +192,35 @@ def main(argv=None) -> int:
             for site in held_sites:
                 x, y = int(site["x"]), int(site["y"])
                 patch = int(receipt["patch"])
-                label = f"{slide} {scanner} grid({site['grid_row']},{site['grid_col']}) FIT-AFFINE ONLY"
+                label = (
+                    f"{slide} {scanner} grid({site['grid_row']},{site['grid_col']}) FIT-AFFINE ONLY"
+                )
                 ref_pixels = readers[REFERENCE].read_region((x, y), 0, (patch, patch))
                 target_pixels = warp_affine_target_patch(readers[scanner], affine, x, y, patch)
                 panel, metrics = display_panel(ref_pixels, target_pixels, label)
                 panels.append(panel)
-                manifest.append({"grid_row":int(site["grid_row"]),"grid_col":int(site["grid_col"]),
-                                 "x":x,"y":y, **metrics})
+                manifest.append(
+                    {
+                        "grid_row": int(site["grid_row"]),
+                        "grid_col": int(site["grid_col"]),
+                        "x": x,
+                        "y": y,
+                        **metrics,
+                    }
+                )
             montage = Image.new("RGB", (1024, len(panels) * 300), (250, 250, 250))
             for i, panel in enumerate(panels):
                 montage.paste(panel, (0, i * 300))
             filename = f"{slide}_{scanner}_FIT_AFFINE_HELDOUT_8SITE_MONTAGE.png"
             montage.save(args.out_dir / filename, optimize=True)
-            record["scanners"][scanner] = {"image":filename,"heldout":manifest,
-                                           "affine_fit_only":affine.tolist()}
-    (args.out_dir / "SCANCOMP_BLINDED_VISUAL_QC_RECEIPT.json").write_text(json.dumps(record,indent=2),encoding="utf-8")
+            record["scanners"][scanner] = {
+                "image": filename,
+                "heldout": manifest,
+                "affine_fit_only": affine.tolist(),
+            }
+    (args.out_dir / "SCANCOMP_BLINDED_VISUAL_QC_RECEIPT.json").write_text(
+        json.dumps(record, indent=2), encoding="utf-8"
+    )
     print("[QC] Exported three fixed-transform heldout montages; NO registration certified.")
     print(args.out_dir)
     return 0
