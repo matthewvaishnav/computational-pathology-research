@@ -111,5 +111,26 @@ class TestVariance(unittest.TestCase):
             l2_unit([0, 0])
 
 
+
+class TestProtocolLock(unittest.TestCase):
+    def test_track_b_is_machine_readably_blocked(self):
+        import json
+        from pathlib import Path
+
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "research"
+            / "scancomp_panf_frozen_001r_protocol_lock.json"
+        )
+        lock = json.loads(path.read_text(encoding="utf-8"))
+        self.assertIsNone(lock["track_b"]["registered_export_mpp_xy"])
+        self.assertFalse(lock["track_b"]["physical_scale_authenticated"])
+        self.assertFalse(lock["track_b"]["model_inference_admitted"])
+        self.assertFalse(lock["track_a"]["physical_units_claim_allowed"])
+        self.assertFalse(lock["model_execution_performed"])
+        self.assertEqual(lock["frozen_panf"]["checkpoints"], 25)
+
+
 if __name__ == "__main__":
     unittest.main()
