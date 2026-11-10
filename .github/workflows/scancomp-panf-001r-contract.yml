@@ -18,6 +18,8 @@ jobs:
           python-version: '3.11'
       - name: Compile source and tests
         run: python -m compileall -q scripts/external_multiscanner/scancomp_panf_001r_contract.py scripts/external_multiscanner/scancomp_panf_001r_preflight.py tests/test_scancomp_panf_001r_contract.py tests/test_scancomp_panf_001r_preflight.py
+      - name: Validate machine-readable protocol lock
+        run: python -m json.tool docs/research/scancomp_panf_frozen_001r_protocol_lock.json > /dev/null
       - name: Run standard-library synthetic tests (no WSI/model access)
         run: python -m unittest -v tests.test_scancomp_panf_001r_contract tests.test_scancomp_panf_001r_preflight
   powershell-windows-parse:
