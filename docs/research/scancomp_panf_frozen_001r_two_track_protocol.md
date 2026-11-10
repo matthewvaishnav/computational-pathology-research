@@ -86,6 +86,7 @@ Produce only after execution: metadata receipt, source-hash manifest, immutable 
 
 ## 7. What is implemented now
 
+- **Machine-readable gate lock:** docs/research/scancomp_panf_frozen_001r_protocol_lock.json — both tracks' inference gates remain closed; physical registered-export scale is null.
 - **Pure contracts:** scripts/external_multiscanner/scancomp_panf_001r_contract.py — candidate TIFF density, malformed OME fragment values, top-left-to-center conversion, half-open box overlap and clearance, affine singular values, unit L2 normalization, balanced variance decomposition.
 - **Read-only preflight:** scripts/external_multiscanner/scancomp_panf_001r_preflight.py — first-IFD metadata only, optional SHA256 verification, FIT receipt check, legacy-site overlap scenarios and optional pixel-gallery geometry gate. **Always reports physical calibration unauthenticated**.
 - **Windows launcher:** scripts/external_multiscanner/Run-ScanCompPANF001RPreflight.ps1.
