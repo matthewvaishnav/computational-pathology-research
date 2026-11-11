@@ -13,12 +13,20 @@ been generated in the main repository.
 #>
 
 param(
-    [string]$SourceRoot = "C:\Users\matth\computational-pathology-research",
-    [string]$DestinationRoot = "C:\Users\matth\paired-acquisition-factorization-caninescc",
+    [string]$SourceRoot = (Join-Path $PSScriptRoot "..\.."),
+    [string]$DestinationRoot = "",
     [switch]$InitializeGit
 )
 
 $ErrorActionPreference = "Stop"
+$SourceRoot = (Resolve-Path -LiteralPath $SourceRoot).Path
+$expectedDestination = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $SourceRoot) "paired-acquisition-factorization-caninescc"))
+if (-not $DestinationRoot) { $DestinationRoot = $expectedDestination }
+$DestinationRoot = [System.IO.Path]::GetFullPath($DestinationRoot)
+if ($DestinationRoot -ne $expectedDestination) {
+    throw "Refusing unexpected DestinationRoot; expected sibling output directory."
+}
+
 
 function Copy-RequiredFile {
     param(
