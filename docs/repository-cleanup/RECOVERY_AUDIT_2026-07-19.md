@@ -163,7 +163,7 @@ claim/figure validation against that archive before retiring any evidence ref.
 - no result-table or manuscript-number edits;
 - no child-repository changes;
 - no release, tag, DOI, Zenodo, issue-state, or GitHub Pages changes;
-- no merge of quarantined ChatGPT/recovery-era work.
+- no merge of quarantined unreviewed recovery-era work.
 
 ## Approval gate
 
