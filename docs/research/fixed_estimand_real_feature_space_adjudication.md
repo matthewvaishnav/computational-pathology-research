@@ -33,7 +33,7 @@ The runner verifies the complete inherited chain before any evaluation:
 | `real_paired_scanner_bottleneck_allocation_validation_result.json` | `7293ddcd…57762` | `fbb8be9a…960f7` |
 | `real_paired_scanner_bottleneck_allocation_readiness.json` | `31360bbd…c86ed` | `b092a70a…b13e` |
 | `real_paired_scanner_bottleneck_allocation_validation_manifest.json` | `9c61429e…d136037` | `bf305048…6a0066` |
-| copied result (Documents/Codex path) | `7293ddcd…57762` | n/a |
+| verified local result copy (path omitted) | `7293ddcd…57762` | n/a |
 
 All 225 immutable input artifacts registered in the frozen result are re-hashed
 before and after execution. The frozen synthetic factorial result and its 11
