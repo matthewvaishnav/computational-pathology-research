@@ -5,7 +5,7 @@
 $ErrorActionPreference = "Stop"
 
 # Set PYTHONPATH to project root
-$env:PYTHONPATH = "c:\Users\matth\Desktop\computational-pathology-research"
+$env:PYTHONPATH = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 
 $ROUNDS = 30
 $NUM_SITES = 5
