@@ -79,11 +79,11 @@ python experiments/baselines/run_pair_integrity_baseline_murder_test.py --out-di
 
 ## Manifests used
 
-- scorpion fold 0: C:\Users\matth\computational-pathology-research\data\scorpion\splits\fold_0_manifest.csv
-- scorpion fold 1: C:\Users\matth\computational-pathology-research\data\scorpion\splits\fold_1_manifest.csv
-- scorpion fold 2: C:\Users\matth\computational-pathology-research\data\scorpion\splits\fold_2_manifest.csv
-- scorpion fold 3: C:\Users\matth\computational-pathology-research\data\scorpion\splits\fold_3_manifest.csv
-- scorpion fold 4: C:\Users\matth\computational-pathology-research\data\scorpion\splits\fold_4_manifest.csv
+- scorpion fold 0: <LOCAL_USER_HOME>\computational-pathology-research\data\scorpion\splits\fold_0_manifest.csv
+- scorpion fold 1: <LOCAL_USER_HOME>\computational-pathology-research\data\scorpion\splits\fold_1_manifest.csv
+- scorpion fold 2: <LOCAL_USER_HOME>\computational-pathology-research\data\scorpion\splits\fold_2_manifest.csv
+- scorpion fold 3: <LOCAL_USER_HOME>\computational-pathology-research\data\scorpion\splits\fold_3_manifest.csv
+- scorpion fold 4: <LOCAL_USER_HOME>\computational-pathology-research\data\scorpion\splits\fold_4_manifest.csv
 
 ## Claim boundary
 
