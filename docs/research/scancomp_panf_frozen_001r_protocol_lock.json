@@ -1,0 +1,95 @@
+{
+  "protocol_id": "SCANCOMP-PANF-FROZEN-001R-TWO-TRACK",
+  "version": 1,
+  "status": "PREPROCESSING_PROTOCOL_ONLY",
+  "reference_scanner": "hms360",
+  "slide_alias": "hmi825",
+  "scanners": [
+    "hms360",
+    "hstp1000",
+    "lcap450",
+    "phufs"
+  ],
+  "source_grid_dimensions_pixels": [
+    23337,
+    21006
+  ],
+  "historical_legacy_patch": {
+    "size_pixels": 256,
+    "coordinate_convention": "top_left",
+    "center_offset_pixels": [
+      128,
+      128
+    ],
+    "preserve_original_eight_sites": true
+  },
+  "track_a": {
+    "id": "REGISTERED_PIXEL_CONTEXT_SENSITIVITY",
+    "field_sides_reference_pixels": [
+      256,
+      512,
+      1024
+    ],
+    "physical_units_claim_allowed": false,
+    "model_inference_admitted": false,
+    "required_gates": [
+      "SOURCE_SHA256",
+      "FIT_ONLY_MAPPING",
+      "NONOVERLAP_FOR_RETRIEVAL",
+      "BOUNDED_TILED_WARP",
+      "ENLARGED_FIELD_QC",
+      "FROZEN_ENCODER_PARITY"
+    ]
+  },
+  "track_b": {
+    "id": "PHYSICALLY_MATCHED_SCORPION_FIELD",
+    "historical_field_um_xy": [
+      800,
+      800
+    ],
+    "registered_export_mpp_xy": null,
+    "physical_scale_authenticated": false,
+    "model_inference_admitted": false,
+    "required_gates": [
+      "SOURCE_SHA256",
+      "FIT_ONLY_MAPPING",
+      "AUTHORITATIVE_REGISTERED_EXPORT_MPP",
+      "NEW_NONOVERLAPPING_PHYSICAL_GALLERY",
+      "BOUNDED_TILED_WARP",
+      "ENLARGED_FIELD_QC",
+      "FROZEN_ENCODER_PARITY"
+    ]
+  },
+  "frozen_encoder": {
+    "repo": "facebook/dinov2-base",
+    "revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+    "feature": "last_hidden_state[:,0,:]",
+    "dimension": 768
+  },
+  "frozen_panf": {
+    "repo": "MatthewVaishnav/paired-acquisition-neural-factorization",
+    "revision": "b5de3cf9c062cb0d5623628165098c26923309c7",
+    "checkpoints": 25,
+    "folds": 5,
+    "seeds_per_fold": 5,
+    "biological_branch_dim": 256,
+    "acquisition_branch_dim": 64,
+    "fold_specific_standardization_required": true
+  },
+  "site_selection": {
+    "pixel_gallery_minimum_geometry_sites": 5,
+    "preferred_retrieval_sites": 8,
+    "pixel_gallery_minimum_clearance_pixels": 64,
+    "reference_only_no_model_output_selection": true
+  },
+  "prohibitions": [
+    "NO_RETRAINING",
+    "NO_CHECKPOINT_SELECTION",
+    "NO_HELDOUT_REFIT",
+    "NO_MPP_FROM_LEGACY_TIFF_TAGS",
+    "NO_G0_OR_CLINICAL_CLAIMS",
+    "NO_POPULATION_INFERENCE_FROM_ONE_SLIDE"
+  ],
+  "source_pixels_modified": false,
+  "model_execution_performed": false
+}
