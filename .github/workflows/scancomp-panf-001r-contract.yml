@@ -22,6 +22,19 @@ jobs:
         run: python -m json.tool docs/research/scancomp_panf_frozen_001r_protocol_lock.json > /dev/null
       - name: Run standard-library synthetic tests (no WSI/model access)
         run: python -m unittest -v tests.test_scancomp_panf_001r_contract tests.test_scancomp_panf_001r_preflight
+  tiled-synthetic-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install synthetic geometry/QC dependencies
+        run: python -m pip install --disable-pip-version-check numpy opencv-python-headless pillow
+      - name: Compile tiled geometry and QC
+        run: python -m compileall -q scripts/external_multiscanner/scancomp_panf_001r_tiled.py scripts/external_multiscanner/scancomp_panf_001r_largefield_qc.py tests/test_scancomp_panf_001r_tiled.py
+      - name: Run tiled synthetic parity, seam and OOB tests (no TIFF files)
+        run: python -m unittest -v tests.test_scancomp_panf_001r_tiled
   powershell-windows-parse:
     runs-on: windows-latest
     steps:
