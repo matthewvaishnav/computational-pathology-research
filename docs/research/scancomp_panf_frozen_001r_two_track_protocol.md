@@ -24,7 +24,7 @@
 | Presentation | Exact historical DINOv2 processor; log any added resampling | Entire physical field resized to 1024 × 1024 RGB **before** historical processor |
 | Sites | Original eight centers; retrieval only if no overlap at that size; otherwise separately frozen pixel gallery | **New** nonoverlapping reference-only tissue gallery, frozen after scale authentication |
 | Physical scale required? | **No**, forbid physical-equivalence language | **Yes**, fail closed |
-| Current status | Preflight available; enlarged-field tiled warping and QC **pending** | **BLOCKED** pending authoritative registered-export scale |
+| Current status | Preflight and tiled QC tooling available; real-TIFF QC and manual review **pending** | **BLOCKED** pending authoritative registered-export scale |
 
 Track A cannot be used to bypass Track B's physical calibration gate or to support G0.
 
@@ -116,7 +116,7 @@ Writes only a JSON preflight receipt to Documents\PA_NF_ScanComp_Intake\hmi825_p
 - [VALIS documentation](https://valis.readthedocs.io/en/latest/) describes conversion and registration capabilities but **does not** establish this publisher's final export calibration.
 - [PA-NF project source](https://github.com/matthewvaishnav/computational-pathology-research) and [PA-NF pipeline report](https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline.pdf). Verify historical SCORPION image extraction and preprocessing against the immutable release, not this narrative alone.
 
-**Decision:** Track A **preflight implementation available, inference blocked pending enlarged-field extraction/QC and manifest**. Track B **blocked at physical-scale provenance**. Research-only.
+**Decision:** Track A **preflight and synthetic tiled extraction available, inference blocked pending real-TIFF large-field QC and independent review of site provenance**. Track B **blocked at physical-scale provenance**. Research-only.
 
 ### Local enlarged-field QC (after successful SHA-verified preflight and zero-overlap audit)
 
