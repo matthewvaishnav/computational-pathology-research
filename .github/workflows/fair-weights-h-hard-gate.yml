@@ -1,0 +1,26 @@
+name: FAIR-WEIGHTS-H Hard Gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/features/federated/pathology_fl/weighting/fair_weights_h.py'
+      - 'tests/federated/test_fair_weights_h.py'
+      - '.github/workflows/fair-weights-h-hard-gate.yml'
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install focused test dependencies
+        run: python -m pip install 'pytest>=7,<10' 'pytest-cov>=4,<8' 'black==24.10.0'
+      - name: Enforce Black formatting
+        run: |
+          black --diff --check \
+            src/features/federated/pathology_fl/weighting/fair_weights_h.py \
+            tests/federated/test_fair_weights_h.py
+      - name: Execute FAIR-WEIGHTS-H hard-gate regressions
+        run: python -m pytest -q tests/federated/test_fair_weights_h.py
