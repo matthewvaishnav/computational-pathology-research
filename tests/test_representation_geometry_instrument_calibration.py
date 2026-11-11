@@ -18,16 +18,8 @@ from experiments.paired_acquisition import (
 )
 
 
-PRIMARY = Path(
-    r"C:\Users\matth\computational-pathology-research\results"
-    r"\unseen_identity_crossed_generalization_smoke_20260802T101904"
-    r"\unseen_identity_generalization_result.json"
-)
-FAILED = Path(
-    r"C:\Users\matth\computational-pathology-research\results"
-    r"\unseen_identity_representation_geometry_smoke_20260802T131914"
-    r"\unseen_identity_representation_geometry_result.json"
-)
+PRIMARY = Path(__file__).resolve().parents[1] / "results" / "unseen_identity_crossed_generalization_smoke_20260802T101904" / "unseen_identity_generalization_result.json"
+FAILED = Path(__file__).resolve().parents[1] / "results" / "unseen_identity_representation_geometry_smoke_20260802T131914" / "unseen_identity_representation_geometry_result.json"
 
 
 def _identity_dataset(case: str = "identity_map") -> experiment.CalibrationDataset:
