@@ -79,11 +79,11 @@ python experiments/baselines/run_pair_integrity_baseline_murder_test.py --out-di
 
 ## Manifests used
 
-- caninescc fold 0: C:\Users\matth\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_0_patch_manifest.csv
-- caninescc fold 1: C:\Users\matth\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_1_patch_manifest.csv
-- caninescc fold 2: C:\Users\matth\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_2_patch_manifest.csv
-- caninescc fold 3: C:\Users\matth\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_3_patch_manifest.csv
-- caninescc fold 4: C:\Users\matth\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_4_patch_manifest.csv
+- caninescc fold 0: <LOCAL_USER_HOME>\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_0_patch_manifest.csv
+- caninescc fold 1: <LOCAL_USER_HOME>\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_1_patch_manifest.csv
+- caninescc fold 2: <LOCAL_USER_HOME>\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_2_patch_manifest.csv
+- caninescc fold 3: <LOCAL_USER_HOME>\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_3_patch_manifest.csv
+- caninescc fold 4: <LOCAL_USER_HOME>\computational-pathology-research\data\external_multiscanner_caninescc\patch_manifests\splits\fold_4_patch_manifest.csv
 
 ## Claim boundary
 
