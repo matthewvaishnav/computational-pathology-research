@@ -98,7 +98,7 @@ def fake_replay(training=None, layer1=None):
 
 def test_frozen_result_file_and_internal_hash_verify():
     verified = recovery.adjudication.verify_frozen_real_validation(
-        FROZEN_RESULT, REPOSITORY, copied_path=Path(recovery.adjudication.FROZEN_RESULT_COPY_PATH)
+        FROZEN_RESULT, REPOSITORY, copied_path=recovery.adjudication.optional_copy_path()
     )
     assert verified["chain_verified"]
     assert verified["frozen_result"]["internal_sha256"] == recovery.adjudication.FROZEN_RESULT_INTERNAL_SHA256
