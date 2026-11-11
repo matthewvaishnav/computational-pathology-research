@@ -891,11 +891,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    copied = (
-        Path(adj.FROZEN_RESULT_COPY_PATH)
-        if args.copied_result is None
-        else args.copied_result
-    )
+    copied = adj.optional_copy_path(args.copied_result)
     started = time.time()
     result = run_adjudication_v2(
         args.real_validation_result.resolve(),
