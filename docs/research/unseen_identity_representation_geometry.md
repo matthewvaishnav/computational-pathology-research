@@ -98,8 +98,8 @@ result is reported as decoder-dependent, hidden-leakage, mixed, or
 py -m experiments.paired_acquisition.run_unseen_identity_representation_geometry `
   --mode smoke `
   --device cuda `
-  --reference-result "C:\Users\matth\computational-pathology-research\results\unseen_identity_crossed_generalization_smoke_20260802T101904\unseen_identity_generalization_result.json" `
-  --output-root "C:\Users\matth\computational-pathology-research\results\unseen_identity_representation_geometry_smoke_<timestamp>"
+  --reference-result "results\unseen_identity_crossed_generalization_smoke_20260802T101904\unseen_identity_generalization_result.json" `
+  --output-root "results\unseen_identity_representation_geometry_smoke_<timestamp>"
 ```
 
 The output directory must not already exist. The runner writes the result JSON,
