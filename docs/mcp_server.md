@@ -22,15 +22,15 @@ The server is rooted to this repository by default and exposes these tools:
 
 ## Client Setup
 
-### Codex
+### Generic MCP clients
 
-Register a local stdio MCP server in Codex using this command:
+Configure any compatible stdio MCP client with the following command:
 
 - `command`: `python`
 - `args`: `["C:/path/to/computational-pathology-research/scripts/project_mcp_server.py"]`
 
 If you are using a virtual environment, replace `python` with the exact
-interpreter path you want Codex to launch.
+interpreter path you want the client to launch.
 
 ### Cursor
 
