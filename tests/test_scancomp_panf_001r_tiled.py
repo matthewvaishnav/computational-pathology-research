@@ -14,6 +14,8 @@ from scripts.external_multiscanner.scancomp_panf_001r_tiled import (
 from scripts.external_multiscanner.scancomp_panf_001r_largefield_qc import (
     _qc_panel,
     _subfield_origins,
+    _full_field_overview,
+    _processor_geometry_view,
 )
 from scripts.external_multiscanner.scancomp_visual_holdout_qc import (
     warp_affine_target_patch,
@@ -106,6 +108,27 @@ class TestTiledReference(unittest.TestCase):
         with patch.object(reader, "read_region", return_value=np.zeros((2, 2, 3), np.uint8)):
             with self.assertRaisesRegex(ValueError, "Decoder returned invalid"):
                 read_reference_tiled(reader, 100, 100, 256, 256)
+
+
+    def test_1024_target_affine_parity_and_tile_independence(self):
+        affine = np.array([[1.0004, -0.0003, 8], [0.0002, 0.9997, -7]], dtype=float)
+        shifted = cv2.warpAffine(self.raw, affine, (1500, 1400))
+        reader = FakeReader(shifted)
+        tiled128, _ = warp_affine_tiled(reader, affine, 180, 150, 1024, 1024, tile_side=128)
+        tiled256, _ = warp_affine_tiled(reader, affine, 180, 150, 1024, 1024, tile_side=256)
+        np.testing.assert_allclose(tiled128, tiled256, rtol=0, atol=1)
+        self.assertTrue(all(w * h <= 4_194_304 for _, _, w, h in reader.requests))
+        # Reference is a synthetic image; the approximate inverse is not exact
+        # because the image has undergone bilinear interpolation twice.
+        self.assertLess(float(np.abs(
+            tiled256.astype(np.int16) - self.raw[150:1174, 180:1204].astype(np.int16)
+        ).mean()), 6.0)
+
+    def test_full_field_and_processor_geometry_views(self):
+        ref = self.raw[150:662, 180:692]
+        overview = _full_field_overview(ref, ref.copy())
+        self.assertEqual(overview.size, (1024, 2 * (512 + 24)))
+        self.assertEqual(_processor_geometry_view(ref).size, (224, 224))
 
     def test_largefield_visual_panels_are_diagnostics_only(self):
         ref = self.raw[150:662, 180:692]
