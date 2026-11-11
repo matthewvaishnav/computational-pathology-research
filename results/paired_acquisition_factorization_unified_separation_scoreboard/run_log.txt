@@ -17,7 +17,7 @@ Validation issues: 9
   - biological_category_preservation: 5 nonfinite values
   - acquisition_scanner_capture: 5 nonfinite values
   - acquisition_category_leakage: 5 nonfinite values
-Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Report: <LOCAL_USER_HOME>\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
 Runtime: 0.2s
 
 ================================================================================
@@ -40,7 +40,7 @@ Validation issues: 8
   - acquisition_category_leakage: 7 nonfinite
   - biological_scanner_leakage: 7 nonfinite
   - biological_category_preservation: 7 nonfinite
-Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Report: <LOCAL_USER_HOME>\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
 Runtime: 0.1s
 
 ================================================================================
@@ -75,7 +75,7 @@ Validation issues: 20
   - scorpion_phikon_acquisition_scanner_capture: 9 nonfinite
   - scorpion_resnet50_acquisition_pair_retrieval_leakage: 9 nonfinite
   - scorpion_resnet50_acquisition_scanner_capture: 9 nonfinite
-Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Report: <LOCAL_USER_HOME>\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
 Runtime: 0.2s
 
 ================================================================================
@@ -91,7 +91,7 @@ Scoreboard rows: 12
 Source entries: 24
 Validation issues: 1
   - category_weighted_f1: 1 nonfinite (unexpected)
-Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Report: <LOCAL_USER_HOME>\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
 Runtime: 0.2s
 
 ================================================================================
@@ -106,5 +106,5 @@ BUILD UNIFIED SEPARATION SCOREBOARD
 Scoreboard rows: 12
 Source entries: 24
 Validation issues: 0
-Report: C:\Users\matth\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
+Report: <LOCAL_USER_HOME>\computational-pathology-research\results\paired_acquisition_factorization_unified_separation_scoreboard\unified_separation_scoreboard_report.md
 Runtime: 0.2s
