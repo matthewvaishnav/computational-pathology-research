@@ -1,7 +1,7 @@
 ﻿# Paired-Acquisition Factorization Autonomous Research Run Log
 
 Start time: 2026-07-03T11:29:37.8557480-04:00
-Workspace: C:\Users\matth\computational-pathology-research
+Workspace: <LOCAL_USER_HOME>\computational-pathology-research
 
 Initial actions:
 - git switch main
