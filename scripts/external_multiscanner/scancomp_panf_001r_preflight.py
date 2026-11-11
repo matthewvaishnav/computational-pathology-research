@@ -55,13 +55,26 @@ def legacy_centers(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     sites = []
     ids = set()
     for index, row in enumerate(rows):
-        xval = row.get("ref_coord_x", row.get("x"))
-        yval = row.get("ref_coord_y", row.get("y"))
-        if xval is None or yval is None:
-            raise ValueError("Legacy site CSV requires ref_coord_x/y or x/y")
-        x, y = int(xval), int(yval)
-        cx, cy = legacy_top_left_to_center(x, y)
-        name = str(row.get("region_id") or row.get("site_id") or index)
+        # A preparation-stage locked site CSV has the original pilot's
+        # top-left and center explicitly. Parsing here is geometry-only:
+        # only the site-lock validator authenticates its SHA/receipt chain.
+        if "original_patch_x" in row or "original_patch_y" in row:
+            x, y = int(row["original_patch_x"]), int(row["original_patch_y"])
+            cx, cy = legacy_top_left_to_center(x, y)
+            if (
+                float(row["locked_center_x"]) != cx
+                or float(row["locked_center_y"]) != cy
+            ):
+                raise ValueError("Locked site top-left/center disagreement")
+            name = f"r{int(row['grid_row'])}_c{int(row['grid_col'])}"
+        else:
+            xval = row.get("ref_coord_x", row.get("x"))
+            yval = row.get("ref_coord_y", row.get("y"))
+            if xval is None or yval is None:
+                raise ValueError("Legacy site CSV requires ref_coord_x/y or x/y")
+            x, y = int(xval), int(yval)
+            cx, cy = legacy_top_left_to_center(x, y)
+            name = str(row.get("region_id") or row.get("site_id") or index)
         if name in ids:
             raise ValueError("Duplicated legacy site ID: " + name)
         ids.add(name)
