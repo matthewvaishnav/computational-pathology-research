@@ -13,12 +13,20 @@ generated run directories.
 #>
 
 param(
-    [string]$SourceRoot = "C:\Users\matth\computational-pathology-research",
-    [string]$DestinationRoot = "C:\Users\matth\paired-acquisition-factorization-scorpion",
+    [string]$SourceRoot = (Join-Path $PSScriptRoot "..\.."),
+    [string]$DestinationRoot = "",
     [switch]$InitializeGit
 )
 
 $ErrorActionPreference = "Stop"
+$SourceRoot = (Resolve-Path -LiteralPath $SourceRoot).Path
+$expectedDestination = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $SourceRoot) "paired-acquisition-factorization-scorpion"))
+if (-not $DestinationRoot) { $DestinationRoot = $expectedDestination }
+$DestinationRoot = [System.IO.Path]::GetFullPath($DestinationRoot)
+if ($DestinationRoot -ne $expectedDestination) {
+    throw "Refusing unexpected DestinationRoot; expected sibling output directory."
+}
+
 
 function Copy-RequiredFile {
     param(
@@ -137,7 +145,7 @@ if (!(Test-Path $SourceRoot)) {
 
 New-Item -ItemType Directory -Force $DestinationRoot | Out-Null
 $resolvedDestination = (Resolve-Path $DestinationRoot).Path
-if ($resolvedDestination -ne "C:\Users\matth\paired-acquisition-factorization-scorpion") {
+if ($resolvedDestination -ne $expectedDestination) {
     throw "Refusing to clean unexpected DestinationRoot: $resolvedDestination"
 }
 Get-ChildItem -LiteralPath $DestinationRoot -Force |
