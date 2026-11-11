@@ -705,11 +705,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    copied = (
-        Path(adjudication.FROZEN_RESULT_COPY_PATH)
-        if args.copied_result is None
-        else args.copied_result
-    )
+    copied = adjudication.optional_copy_path(args.copied_result)
     started = time.time()
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
