@@ -116,18 +116,54 @@ Writes only a JSON preflight receipt to Documents\PA_NF_ScanComp_Intake\hmi825_p
 - [VALIS documentation](https://valis.readthedocs.io/en/latest/) describes conversion and registration capabilities but **does not** establish this publisher's final export calibration.
 - [PA-NF project source](https://github.com/matthewvaishnav/computational-pathology-research) and [PA-NF pipeline report](https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline.pdf). Verify historical SCORPION image extraction and preprocessing against the immutable release, not this narrative alone.
 
-**Decision:** Track A **preflight and synthetic tiled extraction available, inference blocked pending real-TIFF large-field QC and independent review of site provenance**. Track B **blocked at physical-scale provenance**. Research-only.
+**Decision:** Track A **locked-site provenance tooling and synthetic extraction are available; real-TIFF 512/1024 anatomical QC and 256px processor/legacy-warp parity remain pending.** Inference remains blocked until their explicit review. The byte-exact 2026-11-10 locked preparation manifest is now retained in the PR; it is linked to original pilot evidence but must not be claimed to have been originally authored during the pilot. Track B **blocked at physical-scale provenance**. Research-only.
 
-### Local enlarged-field QC (after successful SHA-verified preflight and zero-overlap audit)
+### Locked eight-site provenance and real-TIFF anatomical QC
 
-The following **Python-only** commands avoid PowerShell execution-policy changes. They read the four TIFFs, create 512/1024-pixel 3×3 fixed-transform panel PNGs, and write a QC-only receipt. They do **not** run DINOv2/PA-NF or admit registration. Use the **reconstructed** site manifest only as a geometry-derived audit; its provenance remains explicitly unverified.
+Use the repository's byte-exact `docs/research/scancomp_hmi825_locked_sites_20261110.csv` (SHA256 `ef4badb05a4cf164e5b40d03a24f92a3c6c798cfa89c3a4014978a8c5ef16fb8`) instead of a reconstructed coordinate list. This CSV comes from the **November 10 preparation archive**, not an independently authenticated original-pilot file. The strict validator checks the exact eight grid IDs (`r2_c2` ... `r5_c6`, including weak site `r3_c6`), top-left coordinates and +128px center conversion against the original HELDOUT landmark CSV and all eight sites in the visual-QC receipt for each target scanner. It checks SHA bindings among the preparation CSV, original registration receipt, landmarks and visual-QC receipt. It does **not** claim to have rehashed the local-only `OBSERVATIONS.csv` original-pilot file.
+
+Use a **new output directory** for each run. Existing folders are rejected to prevent mixing files with earlier results. The 3×3 128px subfield diagnostics are retained, but a native RGB view, full-field overview, reference/target processor-geometry view and an `ANATOMY_REVIEW.csv` with 48 **UNREVIEWED** scanner/site/size rows are also emitted. Native images permit assessment outside the nine sampled subfields. The 224px pre-normalization processor-geometry visual crops are `PIL.BICUBIC` previews **not verified encoder inputs** until the separately run parity bridge passes.
 
 ~~~powershell
 Set-Location "$env:USERPROFILE\scancomp-panf-001r"
+git fetch origin scancomp/panf-001r-two-track-protocol-20261110
+git switch --detach origin/scancomp/panf-001r-two-track-protocol-20261110
+
 $root = "$env:USERPROFILE\Documents\PA_NF_ScanComp_Intake"
-python -m scripts.external_multiscanner.scancomp_panf_001r_largefield_qc --data-dir "$env:USERPROFILE\Downloads\hmi" --receipt "$root\hmi825_registration_v2\SCANCOMP_REGISTRATION_DIAGNOSTIC.json" --preflight "$root\hmi825_panf_001r_overlap_audit.json" --sites "$root\RECONSTRUCTED_HMI825_SITES_GEOMETRY_ONLY.csv" --out-dir "$root\hmi825_panf_001r_largefield_qc" --sizes 512 1024
+$sites = "docs\research\scancomp_hmi825_locked_sites_20261110.csv"
+$regDir = "$root\hmi825_registration_v2"
+$visual = "$root\hmi825_visual_holdout_qc\SCANCOMP_BLINDED_VISUAL_QC_RECEIPT.json"
+$out = "$root\hmi825_panf_001r_largefield_qc_locked_run1"
+
+python -m scripts.external_multiscanner.scancomp_panf_001r_largefield_qc `
+  --data-dir "$env:USERPROFILE\Downloads\hmi" `
+  --receipt "$regDir\SCANCOMP_REGISTRATION_DIAGNOSTIC.json" `
+  --landmarks "$regDir\SCANCOMP_REGISTRATION_LANDMARKS.csv" `
+  --visual-receipt "$visual" `
+  --preflight "$root\hmi825_panf_001r_overlap_audit.json" `
+  --sites "$sites" `
+  --out-dir "$out" --sizes 512 1024
 ~~~
 
-Requires Python imports: **numpy, opencv-python, Pillow, tifffile**, and the existing ScanComp TIFF reader's compressed-tile codec (usually **imagecodecs**). If a module is missing, stop and install only the missing package into the intended environment. **Do not alter the TIFFs or regenerate transforms.** A missing codec or incomplete tile coverage must fail closed.
+The visual receipt and landmarks must be placed at the provided paths from their **original unmodified** artifacts. The QC script rejects wrong hashes, wrong IDs, different coordinates or visual/registration receipt mismatches. An actual success returns **48 PNG 3×3 panels** and 64 field records; additional native/overview/preprocessor-geometry PNGs are deliberately included. The 48 reviewer rows remain `UNREVIEWED` until a distinct manual review. No scanner-blinding is claimed because filenames/captions identify each scanner. This does not run PA-NF or admit a frozen test.
 
-Expected on success: 8 sites × 3 target scanners × 2 sizes = **48 PNG panels**, plus one JSON receipt containing **64 total field records** (including the 16 reference fields). Nine 128px subfields per panel. This is a *visual review queue*, not a pass or an inference gate. If a panel is absent or corrupted, stop and report the error rather than claiming the large-field QC succeeded.
+### Original 256px frozen preprocessing bridge (before any new model inference)
+
+The read-only bridge compares the **existing** legacy 256px fixed-affine helper to the tiled implementation for all eight sites and four scanner views and evaluates both through the **cached pinned slow BitImageProcessor** (shortest-edge 256, PIL bicubic, center crop 224, ImageNet RGB normalization). It also links the pre-existing historical TRAIN-only parity JSON by SHA256; it **does not** replay original TRAIN neural inference or independently compare original private pilot RGB bytes. Exact original-output replay remains an additional distinct custody obligation where necessary, never silently inferred from helper parity.
+
+~~~powershell
+$historical = "$env:USERPROFILE\scancomp-pr104\results\scancomp_panf_frozen_001_dev_20261110T211740Z\HISTORICAL_PREPROCESSING_PARITY.json"
+python -m scripts.external_multiscanner.scancomp_panf_001r_pilot_bridge `
+  --data-dir "$env:USERPROFILE\Downloads\hmi" `
+  --registration-receipt "$regDir\SCANCOMP_REGISTRATION_DIAGNOSTIC.json" `
+  --landmarks "$regDir\SCANCOMP_REGISTRATION_LANDMARKS.csv" `
+  --visual-receipt "$visual" `
+  --preflight "$root\hmi825_panf_001r_overlap_audit.json" `
+  --sites "$sites" --historical-train-parity "$historical" `
+  --out "$root\hmi825_panf_001r_256px_bridge_run1.json"
+~~~
+
+The processor must already be cached at pinned revision `f9e44c814b77203eaa57a6bdbbd535f21ede1415`; the bridge fails closed rather than downloading or changing the release. A pass establishes new-versus-legacy 256px extraction and processor compatibility on actual local BigTIFFs, **not new checkpoint performance, original-pilot-byte replay, G0 approval or permission to train**.
+
+**Track B:** blocked at authoritative registered-export MPP; no physical 800µm label from any 256/512/1024px crop. No changes to the frozen October 19 clinical G0, no protected TEST execution.
+
