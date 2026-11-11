@@ -38,7 +38,7 @@ def verified():
     return adj.verify_frozen_real_validation(
         FROZEN_RESULT,
         REPOSITORY,
-        copied_path=Path(adj.FROZEN_RESULT_COPY_PATH),
+        copied_path=adj.optional_copy_path(),
     )
 
 
@@ -94,8 +94,15 @@ def test_complete_inherited_chain_verifies(verified):
     assert verified["frozen_synthetic"]["status"] == adj.real_validation.SYNTHETIC_STATUS
 
 
-def test_copied_frozen_result_hash_verifies(verified):
-    assert verified["copied_result"]["file_sha256"] == adj.FROZEN_RESULT_FILE_SHA256
+def test_copied_frozen_result_hash_verifies(tmp_path):
+    # A temporary independent byte copy exercises the extra hash gate,
+    # without relying on the author's former machine-specific path.
+    copied = tmp_path / "copied_frozen_result.json"
+    copied.write_bytes(FROZEN_RESULT.read_bytes())
+    checked = adj.verify_frozen_real_validation(
+        FROZEN_RESULT, REPOSITORY, copied_path=copied
+    )
+    assert checked["copied_result"]["file_sha256"] == adj.FROZEN_RESULT_FILE_SHA256
 
 
 # ---------------------------------------------------------------------------
