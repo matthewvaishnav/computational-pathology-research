@@ -76,7 +76,7 @@ class SiteLockTests(unittest.TestCase):
                 self.assertIn("r3_c6", provenance["site_ids"])
                 obj["scanners"]["phufs"]["heldout"][0]["x"] += 1
                 visual.write_text(json.dumps(obj), encoding="utf-8")
-                with self.assertRaisesRegex(ValueError, "Visual QC site mismatch"):
+                with self.assertRaisesRegex(ValueError, "visual QC site mismatch"):
                     lock.authenticate_sites(sites_path, reg, landmarks, visual)
 
     def test_wrong_manifest_hash_fails_closed(self):
