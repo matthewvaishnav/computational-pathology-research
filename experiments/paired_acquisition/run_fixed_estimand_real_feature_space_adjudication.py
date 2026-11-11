@@ -79,6 +79,16 @@ READINESS_FILE_SHA256 = "31360bbd03416fdd775e9397ccfc363e0da818be59f1d15d3010c4a
 READINESS_INTERNAL_SHA256 = "b092a70a1a94a025dcab72458ccb1a07b1c91bb8a877cc770eac16057d62b13e"
 MANIFEST_FILE_SHA256 = "9c61429e828ff963de0dd6b10445cab84bc5523f1393fea0a3b9408afd136037"
 MANIFEST_INTERNAL_SHA256 = "bf30504865f1a852c40ad5d77e984c780d40a7876df9de91bf1b2765e68a0066"
+# Optional independent verification copy; never embed a machine-local path.
+FROZEN_RESULT_COPY_PATH = os.environ.get("PANF_FROZEN_RESULT_COPY_PATH")
+
+
+def optional_copy_path(cli_path: Path | None = None) -> Path | None:
+    if cli_path is not None:
+        return cli_path
+    return Path(FROZEN_RESULT_COPY_PATH) if FROZEN_RESULT_COPY_PATH else None
+
+
 FROZEN_STATUS = "complete_mixed_real_paired_scanner_allocation_effects"
 
 FIXED_CATEGORIES = ["Dermis", "Epidermis", "Inflamm/Necrosis", "SCC", "Subcutis"]
@@ -1780,7 +1790,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    copied = args.copied_result
+    copied = optional_copy_path(args.copied_result)
     started = time.time()
     result = run_experiment(
         args.real_validation_result.resolve(),
