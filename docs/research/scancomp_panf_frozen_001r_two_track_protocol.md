@@ -50,9 +50,9 @@ Track A cannot be used to bypass Track B's physical calibration gate or to suppo
 
 ## 4. Enlarged-field extraction and QC
 
-**E0 — bounded tiled extraction:** Current first-IFD WSIReader has a **4,194,304-pixel bounded read cap**, and the existing FIT-affine warp helper allows at most **512 output pixels**. Do **not** pass 1024 or 3000+-pixel fields to it. Implement a deterministic tiled extractor with fixed output reference grid, bounded target sampling and interpolation guard per tile, synthetic oracle comparison, seam checks, coverage and out-of-bounds rejection, and per-tile source-window manifest. Never change the FIT transform silently.
+**E0 — bounded tiled extraction:** Current first-IFD WSIReader has a **4,194,304-pixel bounded read cap**, and the original FIT-affine warp helper allows at most **512 output pixels**. Do **not** pass 1024 or 3000+-pixel fields to that helper. The new tiled implementation uses <=512-pixel output tiles, 2-pixel bilinear guards, strict source bounds, explicit per-tile source windows and a 4096-pixel maximum output side. **Synthetic parity/seam tests do not certify actual TIFF decoding; local execution is still required.** The FIT transform must not change.
 
-**E1 — large-field correspondence:** Predeclare distributed subfield QC (e.g. 3×3 positions and borders) for every region/scanner. Evaluate fixed-transform overlays/checkerboards and local correspondence without optimizing on held-out data. Reject/record local non-rigid mismatch and coverage failure. The existing 256-pixel held-out QC does **not** certify 512-, 1024-pixel or physical fields. This gate is mandatory for Track A enlarged contexts as well.
+**E1 — large-field correspondence:** The new QC script predeclares nine 128-pixel subfields in a 3×3 layout for every 512/1024-pixel site/scanner. It emits fixed-transform overlays/checkerboards, gray NCC and RGB MAE **without optimizing on target data**. **This is diagnostic output, not an automatic QC PASS**: independent blinded review must assess non-rigid mismatch, tissue coverage and any local failure. The existing 256-pixel held-out QC does **not** certify enlarged fields. A full physical-field QC protocol remains pending Track B calibration.
 
 **E2 — frozen encoder parity:** Use exact pinned processor and DINOv2 CLS last_hidden_state[:,0,:] 768-D, original RGB order, normalization and library revisions. Validate historical feature parity on a known patch. Hash presentation images and record source hash, center, dimensions, affine, tile manifest, resize and processor version. Do not run models until E0–E2 pass.
 
@@ -89,9 +89,11 @@ Produce only after execution: metadata receipt, source-hash manifest, immutable 
 - **Machine-readable gate lock:** docs/research/scancomp_panf_frozen_001r_protocol_lock.json — both tracks' inference gates remain closed; physical registered-export scale is null.
 - **Pure contracts:** scripts/external_multiscanner/scancomp_panf_001r_contract.py — candidate TIFF density, malformed OME fragment values, top-left-to-center conversion, half-open box overlap and clearance, affine singular values, unit L2 normalization, balanced variance decomposition.
 - **Read-only preflight:** scripts/external_multiscanner/scancomp_panf_001r_preflight.py — first-IFD metadata only, optional SHA256 verification, FIT receipt check, legacy-site overlap scenarios and optional pixel-gallery geometry gate. **Always reports physical calibration unauthenticated**.
-- **Windows launcher:** scripts/external_multiscanner/Run-ScanCompPANF001RPreflight.ps1.
-- **Synthetic tests:** tests/test_scancomp_panf_001r_contract.py; CI includes Linux Python compile/unittest and Windows PowerShell parser.
-- **Not implemented or executed:** local pilot commit/results, publisher scale authentication, tissue-only gallery selection, tiled extraction, large-field QC, 25-checkpoint inference, or real ScanComp model runs. CI tests are **synthetic contracts**, not data-level validation.
+- **Bounded image reader:** scripts/external_multiscanner/scancomp_panf_001r_tiled.py — fixed-affine target warp and exact reference assembly, with source-window manifests and output caps.
+- **Large-field QC script:** scripts/external_multiscanner/scancomp_panf_001r_largefield_qc.py — verifies original TIFF hashes again, reads the reconstructed sites, emits 512/1024-pixel fixed-transform 3×3 panels, and writes a **QC-not-admitted** receipt.
+- **Windows launcher:** scripts/external_multiscanner/Run-ScanCompPANF001RPreflight.ps1 (execution policy may block PS1; invoke the Python module directly instead).
+- **Synthetic tests:** tests/test_scancomp_panf_001r_contract.py, tests/test_scancomp_panf_001r_preflight.py, tests/test_scancomp_panf_001r_tiled.py; CI includes Linux Python tests (including OpenCV tiled parity) and Windows PowerShell parser.
+- **Not implemented or executed:** local pilot commit/results, publisher scale authentication, independent tissue-only gallery selection, manual large-field QC acceptance, 25-checkpoint inference, or real ScanComp model runs. **Tiled extraction and 512/1024-pixel QC tooling are implemented but have not been run on real ScanComp TIFFs by this PR.** CI tests are synthetic, not data-level validation.
 
 ### PowerShell — no ZIP download
 
@@ -115,3 +117,17 @@ Writes only a JSON preflight receipt to Documents\PA_NF_ScanComp_Intake\hmi825_p
 - [PA-NF project source](https://github.com/matthewvaishnav/computational-pathology-research) and [PA-NF pipeline report](https://matthewvaishnav.github.io/computational-pathology-research/paired-acquisition-neural-factorization-pipeline.pdf). Verify historical SCORPION image extraction and preprocessing against the immutable release, not this narrative alone.
 
 **Decision:** Track A **preflight implementation available, inference blocked pending enlarged-field extraction/QC and manifest**. Track B **blocked at physical-scale provenance**. Research-only.
+
+### Local enlarged-field QC (after successful SHA-verified preflight and zero-overlap audit)
+
+The following **Python-only** commands avoid PowerShell execution-policy changes. They read the four TIFFs, create 512/1024-pixel 3×3 fixed-transform panel PNGs, and write a QC-only receipt. They do **not** run DINOv2/PA-NF or admit registration. Use the **reconstructed** site manifest only as a geometry-derived audit; its provenance remains explicitly unverified.
+
+~~~powershell
+Set-Location "$env:USERPROFILE\scancomp-panf-001r"
+$root = "$env:USERPROFILE\Documents\PA_NF_ScanComp_Intake"
+python -m scripts.external_multiscanner.scancomp_panf_001r_largefield_qc --data-dir "$env:USERPROFILE\Downloads\hmi" --receipt "$root\hmi825_registration_v2\SCANCOMP_REGISTRATION_DIAGNOSTIC.json" --preflight "$root\hmi825_panf_001r_overlap_audit.json" --sites "$root\RECONSTRUCTED_HMI825_SITES_GEOMETRY_ONLY.csv" --out-dir "$root\hmi825_panf_001r_largefield_qc" --sizes 512 1024
+~~~
+
+Requires Python imports: **numpy, opencv-python, Pillow, tifffile**, and the existing ScanComp TIFF reader's compressed-tile codec (usually **imagecodecs**). If a module is missing, stop and install only the missing package into the intended environment. **Do not alter the TIFFs or regenerate transforms.** A missing codec or incomplete tile coverage must fail closed.
+
+Expected on success: 8 sites × 3 target scanners × 2 sizes = **48 PNG panels**, plus one JSON receipt containing **64 total field records** (including the 16 reference fields). Nine 128px subfields per panel. This is a *visual review queue*, not a pass or an inference gate. If a panel is absent or corrupted, stop and report the error rather than claiming the large-field QC succeeded.
