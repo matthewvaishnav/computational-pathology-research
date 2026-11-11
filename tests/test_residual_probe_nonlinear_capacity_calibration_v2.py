@@ -16,11 +16,7 @@ from experiments.paired_acquisition import (
 )
 
 
-V1_RESULT = Path(
-    r"C:\Users\matth\computational-pathology-research\results"
-    r"\representation_geometry_instrument_calibration_20260802T135823"
-    r"\representation_geometry_instrument_calibration_result.json"
-)
+V1_RESULT = Path(__file__).resolve().parents[1] / "results" / "representation_geometry_instrument_calibration_20260802T135823" / "representation_geometry_instrument_calibration_result.json"
 
 
 def _small_dataset(control: str, seed: int = 9901):
