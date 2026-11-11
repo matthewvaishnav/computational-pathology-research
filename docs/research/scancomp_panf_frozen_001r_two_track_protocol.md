@@ -165,5 +165,17 @@ python -m scripts.external_multiscanner.scancomp_panf_001r_pilot_bridge `
 
 The processor must already be cached at pinned revision `f9e44c814b77203eaa57a6bdbbd535f21ede1415`; the bridge fails closed rather than downloading or changing the release. A pass establishes new-versus-legacy 256px extraction and processor compatibility on actual local BigTIFFs, **not new checkpoint performance, original-pilot-byte replay, G0 approval or permission to train**.
 
+### Verify the actual pinned processor context on enlarged fields
+
+After generating the 64 native RGB QC fields, verify the 224×224 center views against the *actual* cached slow `BitImageProcessor` normalized tensors (without loading DINOv2 or PA-NF). The earlier QC geometry images are only pre-normalization previews; this step checks both their pixel identity and normalization against the true processor contract and records each tensor's SHA256. The receipt itself does not authorize model inference.
+
+~~~powershell
+python -m scripts.external_multiscanner.scancomp_panf_001r_processor_views `
+  --qc-receipt "$out\SCANCOMP_PANF_001R_LARGEFIELD_QC_RECEIPT.json" `
+  --out "$root\hmi825_panf_001r_largefield_processor_parity_run1.json"
+~~~
+
+A pass requires all **64 native field PNGs** to match their individual QC SHA256 records, all saved 224px visual crops to match their hashes, and all processor tensors to match the frozen normalization and geometry within 0.02 maximum absolute/0.001 relative L2. No disease labels, model outputs, training or protected G0 data are accessed.
+
 **Track B:** blocked at authoritative registered-export MPP; no physical 800µm label from any 256/512/1024px crop. No changes to the frozen October 19 clinical G0, no protected TEST execution.
 
