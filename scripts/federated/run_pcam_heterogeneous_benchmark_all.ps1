@@ -4,7 +4,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$env:PYTHONPATH = "c:\Users\matth\Desktop\computational-pathology-research"
+$env:PYTHONPATH = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 
 $ROUNDS = 30
 $SEEDS = @(42, 43, 44)
