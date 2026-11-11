@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scripts.external_multiscanner import scancomp_panf_001r_site_lock as lock
+from scripts.external_multiscanner.scancomp_panf_001r_preflight import legacy_centers, read_csv
 
 
 def actual_sha(path):
@@ -78,6 +79,14 @@ class SiteLockTests(unittest.TestCase):
                 visual.write_text(json.dumps(obj), encoding="utf-8")
                 with self.assertRaisesRegex(ValueError, "visual QC site mismatch"):
                     lock.authenticate_sites(sites_path, reg, landmarks, visual)
+
+    def test_preflight_reads_locked_columns_as_geometry_without_certification(self):
+        path = Path("docs/research/scancomp_hmi825_locked_sites_20261110.csv")
+        sites = legacy_centers(read_csv(path))
+        self.assertEqual({site["site_id"] for site in sites}, set(lock.EXPECTED_SITE_XY))
+        for site in sites:
+            x, y = lock.EXPECTED_SITE_XY[site["site_id"]]
+            self.assertEqual((site["center_x_px"], site["center_y_px"]), (x + 128, y + 128))
 
     def test_wrong_manifest_hash_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
