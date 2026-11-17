@@ -1,0 +1,12 @@
+{
+  "primary_paper": "Paired-Acquisition Neural Factorization: An End-to-End Computational Pathology Pipeline",
+  "primary_status": "public_flagship_preprint",
+  "source_commit": "ae0dcd332bfb99c33c96b51ef483dd445eeeb259",
+  "primary_pdf": "paired-acquisition-neural-factorization-pipeline.pdf",
+  "primary_pdf_sha256": "94d42a58221d26efc9f57789017cf5297387e5258af03f172154773333208c73",
+  "supplement": "paired-acquisition-neural-factorization-pipeline-supplement.pdf",
+  "supplement_sha256": "9ba3e3c02169ddee04503a94c8610394de15be1b362709d6645eeee63b634479",
+  "primary_source": "paired-acquisition-neural-factorization-pipeline-arxiv-source.zip",
+  "primary_source_sha256": "9d931bd9d8fe1e43ce3dc13367c5fe668cf4316fbd428aac1279a3b0a34a75bc",
+  "claim_boundary": "https://github.com/matthewvaishnav/computational-pathology-research/blob/main/CLAIM_BOUNDARY.md"
+}
