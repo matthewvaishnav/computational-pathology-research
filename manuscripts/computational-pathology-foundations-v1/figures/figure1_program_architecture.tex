@@ -1,16 +1,19 @@
 \begin{equation}
 \begin{aligned}
-h_{r,s} &= E_{\omega}(x_{r,s}), \\
-\mathcal{F}_{\mathrm{pair}}:\ \{h_{r,s}\}_{s\in\mathcal{S}_{r}}
-&\longmapsto \left(z^{\mathrm{tissue}}_{r,s},z^{\mathrm{acq}}_{r,s}\right), \\
-\mathcal{A}_{\mathrm{slide}}:\ \{(z_{k,j},p_{k,j})\}_{j\in\mathcal{B}_{k}}
-&\longmapsto \widehat y_{k}, \\
-\mathcal{A}_{\mathrm{site}}:\ \{(\Delta\theta_{i}^{(t)},w_{i}^{(t)})\}_{i\in\mathcal{I}_{t}}
-&\longmapsto \theta^{(t+1)}, \\
-\mathcal{P}_{\mathrm{PA\text{-}NF}}
-&= \mathcal{A}_{\mathrm{site}}\circ\mathcal{A}_{\mathrm{slide}}\circ\mathcal{F}_{\mathrm{pair}}\circ E_{\omega}.
+\text{Paired acquisition:}\quad
+&\{h_{r,s}\}_{s\in\mathcal S_r}
+ \xrightarrow{\ \mathcal F_{\mathrm{pair}}\ }
+ (b_{r,s},a_{r,s}),\\
+\text{Whole slide:}\quad
+&\{(z_{k,j},p_{k,j})\}_{j\in\mathcal B_k}
+ \xrightarrow{\ \mathcal A_{\mathrm{slide}}\ }
+ \widehat y_k,\\
+\text{Multi-site:}\quad
+&\{(\Delta\theta_i^{(t)},w_i^{(t)})\}_{i\in\mathcal I_t}
+ \xrightarrow{\ \mathcal A_{\mathrm{site}}\ }
+ \theta^{(t+1)}.
 \end{aligned}
 \label{eq:program}
 \end{equation}
 
-\noindent Here $E_{\omega}$ denotes a frozen or task-trained visual encoder, $\mathcal{F}_{\mathrm{pair}}$ paired-acquisition factorization, $\mathcal{A}_{\mathrm{slide}}$ whole-slide aggregation, and $\mathcal{A}_{\mathrm{site}}$ institutional aggregation. Spatial coordinates $p_{k,j}$ are optional at the slide stage. The composition $\mathcal{P}_{\mathrm{PA\text{-}NF}}$ specifies the research framework's \emph{intended interface}, not a single jointly trained or validated end-to-end model. The experiments in this paper test individual stages on different data and do not estimate a causal effect for the full composition.
+\noindent These mappings describe three evaluated decision levels. The paired representation experiment uses frozen visual features $h_{r,s}=E_\omega(x_{r,s})$; slide aggregation uses a bag of patch representations $z_{k,j}$ with optional positions $p_{k,j}$; institutional aggregation combines client updates using weights $w_i^{(t)}$. The reported results use different datasets, splits and comparators. In particular, no experiment in this manuscript estimates a jointly trained mapping from PA-NF features through slide prediction to federated updates.
