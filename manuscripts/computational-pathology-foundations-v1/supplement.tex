@@ -105,6 +105,24 @@ The authoritative artifact hashes are recorded in
 \item dimensionality/cross-covariance release manifest: \codepath{evidence/paired_acquisition/dimensionality-xcov-factorial-20260726/release_manifest.json}.
 \end{itemize}
 
+\section{Original PA-NF objective and checkpoint provenance}
+The registered 175-fit campaign was executed at training commit
+\codepath{0adea50f1ef22865969109f1834a3c175e3f8b43}. Its original model
+definition \codepath{src/models/scorpion_pathoalign.py} implements the objective
+shown in Equation~\ref{eq:panf} of the main manuscript: a multi-positive
+supervised-contrastive loss using matched region identities, \emph{same-view}
+feature reconstruction by a decoder consuming concatenated B/A branches,
+variance and covariance penalties, cross-branch covariance, normalized
+B--scanner-label dependence, a gradient-reversed B scanner classifier, and
+an ordinary A scanner classifier. It does not implement a crossed-target
+decoder loss or a prototype loss in the released 25-checkpoint
+\codepath{pathoalign_dep20} family. These details were checked against the exact
+model source blob at the training commit and the 25-checkpoint model-release
+audit. The release audit binds fold-specific feature standardization, 75
+training epochs, checkpoint dimensions $768\to B256/A64$, and all 25
+registered fold/seed checkpoints. Describing the losses as constraints on
+measured information accessibility does not assume latent-factor uniqueness.
+
 \section{PA-NF controlled-result boundary}
 The primary registered SCORPION comparison is the 175-fit capacity-matched campaign: seven variants, five folds, and five seeds. PA-NF reduces tissue-branch scanner balanced accuracy by 0.3108 relative to the equal-capacity two-branch neural control while satisfying the registered same-region retrieval noninferiority criterion and retaining strong acquisition-branch scanner information.
 
