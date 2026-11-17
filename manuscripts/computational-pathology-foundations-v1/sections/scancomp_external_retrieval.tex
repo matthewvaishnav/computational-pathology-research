@@ -10,14 +10,15 @@ For each physically distinct slide, 32 reference-selected held-out regions yield
 \caption{Two distinct ScanComp physical slides: mean strict cross-scanner same-region top-1 and positive-minus-hardest-negative cosine margin over the 25 frozen full-model checkpoints. Control contrasts are paired by original fold and seed. Percentage-point differences refer to top-1; margin differences are dimensionless. These are descriptive within-slide measurements, not independent patient-level effects.}
 \label{tab:scancomp_external_retrieval}
 \small
-\begin{tabular}{lrrrrrr}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrr}
 \toprule
-Slide & Raw top-1 (\%) & Full top-1 (\%) & Gain (pp) & Raw margin & Full margin & Full minus no-adversary / no-scanner margin \\
+Slide & Raw top-1 (\%) & Full top-1 (\%) & Gain (pp) & Raw margin & Full margin & $\Delta$ no-adv & $\Delta$ no-scanner \\
 \midrule
-kwo930 & 92.96875 & 97.50000 & +4.53125 & 0.052554 & 0.144004 & +0.003302 / +0.012552 \\
-jye249 & 81.25000 & 88.21875 & +6.96875 & 0.036323 & 0.084129 & +0.004706 / +0.010454 \\
+kwo930 & 92.96875 & 97.50000 & +4.53125 & 0.052554 & 0.144004 & +0.003302 & +0.012552 \\
+jye249 & 81.25000 & 88.21875 & +6.96875 & 0.036323 & 0.084129 & +0.004706 & +0.010454 \\
 \midrule
-Equal-slide descriptive mean & 87.10938 & 92.85938 & +5.75000 & 0.044438 & 0.114067 & +0.004004 / +0.011503 \\
+Equal-slide mean & 87.10938 & 92.85938 & +5.75000 & 0.044438 & 0.114067 & +0.004004 & +0.011503 \\
 \bottomrule
 \end{tabular}
 \end{table*}
