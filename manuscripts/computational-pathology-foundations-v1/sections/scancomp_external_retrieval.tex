@@ -1,0 +1,30 @@
+\subsection{Exploratory ScanComp external retrieval with frozen PA-NF checkpoints}
+\label{sec:scancomp_external}
+
+A separate ScanComp H\&E multi-scanner evaluation tested the original SCORPION-trained PA-NF representation on previously unseen physical slides, using pinned DINOv2 feature extraction and the original 25 full B256/A64 checkpoints. The same fold- and seed-matched historical controls (25 without the scanner adversary; 25 with both scanner-related objectives removed) were evaluated without retraining or post hoc checkpoint selection. These analyses concern cross-scanner recognition of the same tissue region, not diagnostic label preservation or biological purity.
+
+For each physically distinct slide, 32 reference-selected held-out regions yielded 96 three-scanner observations (HMS360, HSTP1000, and LCAP450). Both HMS360--target registrations satisfied the original held-out median $\leq4$ and p90 $\leq8$ pixel thresholds together with the original matching gates. PHUFS did not satisfy the full four-scanner registration gate on either slide. Consequently, the three-scanner results were selected \emph{after} registration QC and are exploratory, not the originally planned four-scanner confirmation.
+
+\begin{table*}[t]
+\centering
+\caption{Two distinct ScanComp physical slides: mean strict cross-scanner same-region top-1 and positive-minus-hardest-negative cosine margin over the 25 frozen full-model checkpoints. Control contrasts are paired by original fold and seed. Percentage-point differences refer to top-1; margin differences are dimensionless. These are descriptive within-slide measurements, not independent patient-level effects.}
+\label{tab:scancomp_external_retrieval}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Slide & Raw top-1 (\%) & Full top-1 (\%) & Gain (pp) & Raw margin & Full margin & Full minus no-adversary / no-scanner margin \\
+\midrule
+kwo930 & 92.96875 & 97.50000 & +4.53125 & 0.052554 & 0.144004 & +0.003302 / +0.012552 \\
+jye249 & 81.25000 & 88.21875 & +6.96875 & 0.036323 & 0.084129 & +0.004706 / +0.010454 \\
+\midrule
+Equal-slide descriptive mean & 87.10938 & 92.85938 & +5.75000 & 0.044438 & 0.114067 & +0.004004 / +0.011503 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The original full model improved strict top-1 by 4.53125 and 6.96875 percentage points, respectively, over the raw DINOv2 comparator. In both slides its mean margin also exceeded the two matched objective controls, although the incremental full-minus-no-adversary margin was small (approximately 0.0033 and 0.0047). Positive retrieval contrasts do not isolate a causal benefit from each loss term. Moreover, normalized scanner sum-of-squares fractions for full B256 were higher than raw X768 on both selected slides; this evaluation therefore must not be described as demonstrated scanner-signal suppression or pure biological representation.
+
+The slides are two physical specimens, not 50 independent checkpoint-level biological replicates. Clinical labels and patient-level grouping are not authenticated. Registration-ineligible attempts are retained separately in the source-selected eligibility record; they were not run through PA-NF and are neither model successes nor model failures. An independent human biological-confirmation gate remains blocked. These external measurements strengthen a bounded technical retrieval claim only.
+
+\subsection{Retrospective scanner-objective mechanism boundary}
+On 14 previously exposed SCORPION TRAIN-AUDIT slides, an independent replay of five original fold-0 seeds found lower standardized feature-space source, target, and observed scanner-contrast reconstruction errors for the \texttt{no\_adversary} variant than for the original full objective (source MSE 0.063253 versus 0.066162, target 0.065253 versus 0.068403, contrast 0.068017 versus 0.072047). Its linear B256 scanner probe also showed lower accuracy. However, changes in pooled scanner centroids did not agree in direction with slide-conditioned centroid variation. These are retrospective mechanistic measurements on previously exposed data: they neither negate the prospective SCORPION registered comparison nor establish an independently validated biological/acquisition split.
