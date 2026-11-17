@@ -16,54 +16,10 @@ The wider TransnnMIL family also contains:
 \item two-branch and three-branch variants for matched ablation studies.
 \end{itemize}
 
-These modules are part of the authored whole-slide architecture. The corrected canonical implementation was subsequently evaluated in a completed, separately frozen seven-architecture by five-seed PANDA comparison (35 fits). The numerical 18-run stability grid below remains historical pre-remediation evidence and must not be confused with those repaired-model outcomes.
+These components are evaluated under frozen, architecture-matched controls rather than inferred to be beneficial from their design alone.
 
-\subsection{Full-PANDA feature pipeline}
-PANDA \cite{bulten2022panda} provides the primary slide-level substrate. The feature manifest was verified before training: 10,614 candidate HDF5 files were attempted, 10,611 were readable, and three unreadable files were removed. The resulting split contains 8,488 training slides and 2,123 validation slides, with 768-dimensional Phikon patch embeddings.
-
-Before the later TransnnMIL implementation remediation, mean-pooled Phikon followed by an MLP reached validation QWK 0.7274, while gated AttentionMIL reached 0.8100. Three historical TransnnMIL executions reached 0.8155, 0.8225, and 0.8086. These values remain records of the historical execution path; because that path was later found to contain fusion and topology implementation defects, they do not validate genuine repaired TransMIL--nnMIL fusion or a trained repaired topology contribution.
-
-\begin{table}[t]
-\centering
-\caption{Historical pre-remediation PANDA whole-slide execution results on Phikon feature bags. QWK is quadratic weighted kappa. The TransnnMIL values do not constitute validation of the repaired canonical architecture.}
-\label{tab:panda_mil}
-\small
-\begin{tabular}{lr}
-\toprule
-Model / historical run & Validation QWK \\
-\midrule
-Mean-pooled Phikon + MLP & 0.7274 \\
-Gated AttentionMIL & 0.8100 \\
-Historical TransnnMIL seed 42 & 0.8155 \\
-Historical TransnnMIL seed 123 & 0.8225 \\
-Historical TransnnMIL seed 2025 & 0.8086 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Historical optimizer-stability record}
-The pre-remediation TransnnMIL execution path exposed substantial learning-rate sensitivity. A stabilization recipe combining AdamW, warmup-cosine scheduling, two warmup epochs, gradient clipping at norm 1.0, and early stopping was evaluated across six learning rates and seeds 42, 123, and 2025, producing 18 historical full-PANDA runs.
-
-\begin{table*}[t]
-\centering
-\caption{Historical pre-remediation TransnnMIL optimization-stability grid on the full readable PANDA feature manifest. These results characterize the earlier execution path and are not evidence for the repaired canonical implementation.}
-\label{tab:transnnmil_stability}
-\small
-\begin{tabular}{lrrrr}
-\toprule
-Learning rate & Mean best val QWK & Std. & Min. & Max. \\
-\midrule
-$1\times10^{-4}$ & \textbf{0.8257} & 0.0169 & 0.8087 & 0.8425 \\
-$2\times10^{-4}$ & 0.8245 & 0.0192 & 0.8077 & \textbf{0.8455} \\
-$3\times10^{-4}$ & 0.8238 & 0.0160 & 0.8127 & 0.8422 \\
-$5\times10^{-4}$ & 0.8158 & 0.0144 & 0.8042 & 0.8319 \\
-$7\times10^{-4}$ & 0.8117 & 0.0163 & 0.7994 & 0.8301 \\
-$1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-The defensible conclusion from this grid is limited to the historical execution path: optimizer stabilization widened its usable learning-rate range. It does not establish stability, competitiveness, or predictive superiority of the repaired canonical TransnnMIL. The completed frozen repaired-architecture matched result below governs comparative claims, rather than the historical stability grid.
+\subsection{PANDA feature substrate}
+PANDA \cite{bulten2022panda} provides the primary slide-level test bed. Of 10,614 candidate feature bags, 10,611 were readable. They contain 768-dimensional Phikon patch representations; the inherited full-feature split comprised 8,488 training and 2,123 validation slides. The repaired-model comparison used a separately frozen train/selection/confirmation protocol. Earlier pre-remediation optimization records are retained in the supplement rather than used as evidence for this repaired comparison.
 
 \subsection{Completed repaired-architecture matched PANDA comparison}
 The subsequent frozen experiment compared seven architectures at five matched seeds (7, 19, 42, 123, 2025), for 35 completed fits on the PANDA Phikon feature bags. It used a slide-disjoint 70/15/15 train/selection/confirmation partition, with checkpoint choice on selection rather than confirmation data. Patient-level grouping has not been established.
