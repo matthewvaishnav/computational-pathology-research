@@ -1,16 +1,16 @@
 \section{Institutional weighting beyond sample count}
 \input{figures/figure5_fair_weights_h_flow}
 
-FAIR-WEIGHTS-H is the institutional-weighting component of PathologyFL. Its purpose is to study aggregation rules in which influence can depend on more than local sample volume. The implemented engine combines adjusted validation quality, useful uniqueness, uncertainty penalties, integrity gates, bounded weights, entropy diagnostics, and conservative fallbacks.
+FAIR-WEIGHTS-H is the institutional-weighting component of PathologyFL. Its purpose is to study aggregation rules in which influence can depend on more than local sample volume. The proposed scoring and weighting design combines adjusted validation quality, useful uniqueness, uncertainty penalties, integrity eligibility, bounded weights, entropy diagnostics, and conservative fallbacks. The idealized hard-exclusion and cap statements below specify the intended policy; they do not establish that every historical implementation path enforced those constraints.
 
-For institution $i$, let $q_i$ denote adjusted validation quality, $u_i$ a useful-uniqueness signal, $p_i$ an uncertainty penalty, and $g_i\in\{0,1\}$ an integrity gate. The implemented score takes the form
+For institution $i$, let $q_i$ denote adjusted validation quality, $u_i$ a useful-uniqueness signal, $p_i$ an uncertainty penalty, and $g_i\in\{0,1\}$ an integrity gate. The target eligibility-gated score takes the form
 \[
 s_i = \begin{cases}
 -\infty, & g_i=0,\\
 \alpha q_i+\beta u_i-\lambda p_i, & g_i=1,
 \end{cases}
 \]
-with nonnegative coefficients $\alpha,\beta,\lambda$. Scores are converted to normalized weights with either a softmax or a bounded mirror-descent update. Lower and upper weight caps prevent a single source from collapsing the aggregate, while normalized entropy and effective-client-count summaries quantify concentration of influence.
+with nonnegative coefficients $\alpha,\beta,\lambda$. Scores are converted to normalized weights with either a softmax or a bounded mirror-descent update. Lower and upper weight caps are intended to prevent a single source from collapsing the aggregate, while normalized entropy and effective-client-count summaries quantify concentration of influence. Complete hard-gate and cap enforcement requires a separate implementation-level verification and must not be inferred merely from the mathematical specification.
 
 The wider design also specifies training/validation/monitoring weight separation, difficulty adjustment, subgroup constraints, contribution estimators, and explicit weight-change limits. Some of those extensions remain specification-level rather than fully implemented. Accordingly, the empirical claims in this paper come from the concrete dominance-aware PANDA experiments and the CAMELYON17 source-weighting studies, not from the method name itself or from a general fairness claim.
 
