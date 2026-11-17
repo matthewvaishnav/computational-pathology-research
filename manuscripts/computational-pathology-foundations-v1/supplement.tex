@@ -126,7 +126,7 @@ The original pre-remediation PANDA execution path was evaluated before correctio
 This section preserves the earlier execution-path evidence. The corrected canonical implementation was subsequently evaluated in a completed, separately frozen seven-architecture by five-seed PANDA comparison (35 fits). The numerical 18-run stability grid below remains historical pre-remediation evidence and must not be confused with those repaired-model outcomes.
 
 \subsection{Full-PANDA feature pipeline}
-PANDA \cite{bulten2022panda} provides the primary slide-level substrate. The feature manifest was verified before training: 10,614 candidate HDF5 files were attempted, 10,611 were readable, and three unreadable files were removed. The resulting split contains 8,488 training slides and 2,123 validation slides, with 768-dimensional Phikon patch embeddings.
+PANDA provides the primary slide-level substrate. The feature manifest was verified before training: 10,614 candidate HDF5 files were attempted, 10,611 were readable, and three unreadable files were removed. The resulting split contains 8,488 training slides and 2,123 validation slides, with 768-dimensional Phikon patch embeddings.
 
 Before the later TransnnMIL implementation remediation, mean-pooled Phikon followed by an MLP reached validation QWK 0.7274, while gated AttentionMIL reached 0.8100. Three historical TransnnMIL executions reached 0.8155, 0.8225, and 0.8086. These values remain records of the historical execution path; because that path was later found to contain fusion and topology implementation defects, they do not validate genuine repaired TransMIL--nnMIL fusion or a trained repaired topology contribution.
 
