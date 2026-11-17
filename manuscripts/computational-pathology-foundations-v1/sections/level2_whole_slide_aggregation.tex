@@ -16,7 +16,7 @@ The wider TransnnMIL family also contains:
 \item two-branch and three-branch variants for matched ablation studies.
 \end{itemize}
 
-These modules are part of the authored whole-slide architecture. The repaired canonical fusion and topology implementation has not yet received a provenance-complete matched PANDA rerun. The numerical PANDA results below are retained as historical pre-remediation execution records and must not be interpreted as empirical validation of the repaired architecture.
+These modules are part of the authored whole-slide architecture. The corrected canonical implementation was subsequently evaluated in a completed, separately frozen seven-architecture by five-seed PANDA comparison (35 fits). The numerical 18-run stability grid below remains historical pre-remediation evidence and must not be confused with those repaired-model outcomes.
 
 \subsection{Full-PANDA feature pipeline}
 PANDA \cite{bulten2022panda} provides the primary slide-level substrate. The feature manifest was verified before training: 10,614 candidate HDF5 files were attempted, 10,611 were readable, and three unreadable files were removed. The resulting split contains 8,488 training slides and 2,123 validation slides, with 768-dimensional Phikon patch embeddings.
@@ -63,7 +63,32 @@ $1\times10^{-3}$ & 0.8160 & 0.0170 & 0.7998 & 0.8337 \\
 \end{tabular}
 \end{table*}
 
-The defensible conclusion from this grid is limited to the historical execution path: optimizer stabilization widened its usable learning-rate range. It does not establish stability, competitiveness, or predictive superiority of the repaired canonical TransnnMIL. New matched reruns of the repaired implementation against AttentionMIL, TransMIL, nnMIL, concat, gate, and learned branch-attention controls are required before promoting a repaired-architecture empirical claim.
+The defensible conclusion from this grid is limited to the historical execution path: optimizer stabilization widened its usable learning-rate range. It does not establish stability, competitiveness, or predictive superiority of the repaired canonical TransnnMIL. The completed frozen repaired-architecture matched result below governs comparative claims, rather than the historical stability grid.
+
+\subsection{Completed repaired-architecture matched PANDA comparison}
+The subsequent frozen experiment compared seven architectures at five matched seeds (7, 19, 42, 123, 2025), for 35 completed fits on the PANDA Phikon feature bags. It used a slide-disjoint 70/15/15 train/selection/confirmation partition, with checkpoint choice on selection rather than confirmation data. Patient-level grouping has not been established.
+
+\begin{table}[t]
+\centering
+\caption{Completed repaired-architecture comparison: five-seed mean confirmation quadratic weighted kappa (QWK). This is distinct from the pre-remediation optimizer study.}
+\label{tab:transnnmil_repaired_matched}
+\small
+\begin{tabular}{lr}
+\toprule
+Frozen architecture & Mean confirmation QWK \\
+\midrule
+TransMIL & 0.805826 \\
+TransnnMIL gate & 0.798476 \\
+TransnnMIL learned branch attention & 0.795407 \\
+TransnnMIL concat & 0.794834 \\
+AttentionMIL & 0.794186 \\
+Repaired TransnnMIL (primary) & 0.792195 \\
+nnMIL & 0.779618 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The primary repaired-minus-TransMIL QWK difference was $-0.013631$, with zero of five paired seeds favoring the repaired model; the registered primary comparison therefore failed. The repaired model exceeded nnMIL by $+0.012577$ on average (five of five seeds) but this does not reverse the failed primary. In particular, the full registered hierarchical bootstrap criterion is not established by five mean checkpoint scores alone. The gate variant included one seed flagged for practical branch collapse. These results demonstrate completed training and a negative primary comparator outcome, not superiority of repaired fusion.
 
 \subsection{Spatial tissue-dynamics extension}
 PA-NF also contains an experimental WSI-NCA line that replaces one-shot bag aggregation with repeated local state updates over spatial neighbourhoods. A frozen PANDA-300 ladder compared static, one-step, four-step tied, shuffled-topology, and untied controls across five seeds. The four-step tied model did not outperform the static or one-step controls on mean held-out QWK, and real topology did not consistently outperform shuffled topology. WSI-NCA therefore remains an active spatial-modeling extension rather than a demonstrated predictive improvement in the current pipeline.
