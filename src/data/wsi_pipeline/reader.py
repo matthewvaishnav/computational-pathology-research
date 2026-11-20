@@ -91,18 +91,44 @@ class WSIReader:
             except Exception as e:
                 logger.debug(f"Failed to open as DICOM: {e}")
 
-        # Try OpenSlide for standard formats
+        # Preserve normal OpenSlide behavior. Only the known ScanComp BigTIFF
+        # naming convention is eligible for a bounded first-IFD fallback.
         if suffix in [".svs", ".tiff", ".tif", ".ndpi", ".vms", ".vmu", ".scn", ".mrxs", ".bif"]:
-            if not OPENSLIDE_AVAILABLE:
+            from .scancomp_tiff import is_scancomp_tiff
+
+            scancomp_candidate = is_scancomp_tiff(self.wsi_path)
+            openslide_error = None
+            if OPENSLIDE_AVAILABLE:
+                try:
+                    self._reader = OpenSlide(str(self.wsi_path))
+                    self._format = "openslide"
+                    return
+                except Exception as e:
+                    openslide_error = e
+                    if not scancomp_candidate:
+                        raise ProcessingError(f"Failed to open WSI file: {e}") from e
+            elif not scancomp_candidate:
                 raise FileFormatError(
                     "OpenSlide is not installed. Install with: pip install openslide-python"
                 )
-            try:
-                self._reader = OpenSlide(str(self.wsi_path))
-                self._format = "openslide"
-                return
-            except Exception as e:
-                raise ProcessingError(f"Failed to open WSI file: {e}")
+
+            if scancomp_candidate:
+                from .scancomp_tiff import ScanCompTiffReader
+
+                try:
+                    self._reader = ScanCompTiffReader(self.wsi_path)
+                    self._format = "scancomp_tiff"
+                    logger.warning(
+                        "Using bounded first-IFD ScanComp TIFF fallback for %s "
+                        "(OpenSlide error: %s). Registration is NOT verified.",
+                        self.wsi_path.name,
+                        openslide_error,
+                    )
+                    return
+                except Exception as e:
+                    raise ProcessingError(
+                        f"ScanComp first-IFD fallback failed for {self.wsi_path.name}: {e}"
+                    ) from e
 
         # Unsupported format
         raise FileFormatError(
@@ -128,7 +154,7 @@ class WSIReader:
         Returns:
             Tuple of (width, height) in pixels
         """
-        if self._format == "openslide":
+        if self._format in ("openslide", "scancomp_tiff"):
             return self._reader.dimensions
         elif self._format == "dicom":
             # DICOM: get dimensions from first level
@@ -143,7 +169,7 @@ class WSIReader:
         Returns:
             Number of pyramid levels available
         """
-        if self._format == "openslide":
+        if self._format in ("openslide", "scancomp_tiff"):
             return self._reader.level_count
         elif self._format == "dicom":
             return len(self._reader.levels)
@@ -156,7 +182,7 @@ class WSIReader:
         Returns:
             List of (width, height) tuples for each level
         """
-        if self._format == "openslide":
+        if self._format in ("openslide", "scancomp_tiff"):
             return list(self._reader.level_dimensions)
         elif self._format == "dicom":
             return [(level.width, level.height) for level in self._reader.levels]
@@ -169,7 +195,7 @@ class WSIReader:
         Returns:
             List of downsample factors (level 0 = 1.0)
         """
-        if self._format == "openslide":
+        if self._format in ("openslide", "scancomp_tiff"):
             return list(self._reader.level_downsamples)
         elif self._format == "dicom":
             # Calculate downsamples relative to level 0
@@ -184,7 +210,7 @@ class WSIReader:
         Returns:
             Dictionary of slide properties
         """
-        if self._format == "openslide":
+        if self._format in ("openslide", "scancomp_tiff"):
             return dict(self._reader.properties)
         elif self._format == "dicom":
             # Extract relevant DICOM metadata
@@ -332,6 +358,10 @@ class WSIReader:
             ProcessingError: If region cannot be read
         """
         try:
+            if self._format == "scancomp_tiff":
+                # Source coordinates only; no inferred ScanComp scanner registration.
+                return self._reader.read_region(location, level, size)
+
             if self._format == "openslide":
                 # OpenSlide returns RGBA PIL Image
                 region = self._reader.read_region(location, level, size)
@@ -366,6 +396,11 @@ class WSIReader:
         Returns:
             PIL Image thumbnail
         """
+        if self._format == "scancomp_tiff":
+            raise ProcessingError(
+                "ScanComp first-IFD source has no verified image pyramid or "
+                "whole-slide thumbnail. Use the bounded sparse-patch intake tool."
+            )
         if self._format == "openslide":
             return self._reader.get_thumbnail(size)
         elif self._format == "dicom":
@@ -385,7 +420,7 @@ class WSIReader:
         """Close the slide and release resources."""
         if hasattr(self, "_reader") and self._reader is not None:
             try:
-                if self._format == "openslide":
+                if self._format in ("openslide", "scancomp_tiff"):
                     self._reader.close()
                 elif self._format == "dicom":
                     self._reader.close()
